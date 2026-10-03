@@ -35,6 +35,15 @@ npm run perf              # Performance budgets on a production build (run npm r
 npm run generate     # Generate static output
 ```
 
+## Plan and Progress
+
+Micelio's roadmap is tracked on GitHub, which is the source of truth for agents:
+
+- The epic **#240** lists every phase and issue, with a dependency graph. Start there to see what is done, in progress and unblocked.
+- Each issue has a **Progress** section once work starts: PRs, numbers, findings that changed the plan, and what remains.
+- When a PR advances an issue, update that issue's Progress section and tick the epic's box in the same change. Use `Refs #N` while work remains and `Closes #N` in the last PR.
+- `docs/performance.md` records budgets and their history; ADRs in `docs/adr/` record decisions.
+
 ## Agent Skills
 
 Project skills live in `.claude/skills/`; load the one that matches the task before starting:

@@ -26,6 +26,10 @@ description: Branch, commit and open a pull request in the Micelio frontend the 
   - `## Tests`: exact commands and counts, and how equivalence was proven (see **verify-change**).
 - End with the attribution line the session gives.
 
+## Tracking
+
+If the PR advances an issue of the Micelio plan (epic #240), update the issue's **Progress** section after opening it: the PR, what changed with numbers, and what remains. Tick the epic's checkbox when the issue is done. `gh issue view <n> --json body -q .body` and `gh issue edit <n> --body-file <file>`.
+
 ## Before and after opening
 
 - Conflicts with `main` and with the other open PRs:
