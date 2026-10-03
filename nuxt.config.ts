@@ -125,6 +125,7 @@ export default defineNuxtConfig({
   nitro: {
     static: false,
     preset: 'node-server',
+    compressPublicAssets: { gzip: true, brotli: true },
     externals: {
       inline: [/nodemailer/],
     },

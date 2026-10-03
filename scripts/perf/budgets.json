@@ -28,8 +28,8 @@
   "limits": {
     "home": {
       "error": {
-        "jsKb": 544.4,
-        "cssKb": 160.9,
+        "jsKb": 180.0,
+        "cssKb": 23.7,
         "htmlKb": 114.0,
         "fontKb": 150.8,
         "thirdPartyRequests": 0,
@@ -37,15 +37,15 @@
         "accessibility": 100
       },
       "warn": {
-        "lcpMs": 9700,
+        "lcpMs": 7200,
         "tbtMs": 300,
-        "performance": 48
+        "performance": 63
       }
     },
     "blog": {
       "error": {
-        "jsKb": 528.5,
-        "cssKb": 160.9,
+        "jsKb": 174.9,
+        "cssKb": 23.7,
         "htmlKb": 80.5,
         "fontKb": 150.8,
         "thirdPartyRequests": 0,
@@ -53,15 +53,15 @@
         "accessibility": 99
       },
       "warn": {
-        "lcpMs": 7100,
+        "lcpMs": 5000,
         "tbtMs": 200,
-        "performance": 56
+        "performance": 76
       }
     },
     "article": {
       "error": {
-        "jsKb": 795.0,
-        "cssKb": 161.1,
+        "jsKb": 256.7,
+        "cssKb": 24.0,
         "htmlKb": 81.0,
         "fontKb": 150.8,
         "thirdPartyRequests": 0,
@@ -69,15 +69,15 @@
         "accessibility": 95
       },
       "warn": {
-        "lcpMs": 8100,
-        "tbtMs": 1150,
-        "performance": 33
+        "lcpMs": 5500,
+        "tbtMs": 1050,
+        "performance": 55
       }
     },
     "about": {
       "error": {
-        "jsKb": 752.5,
-        "cssKb": 161.1,
+        "jsKb": 243.1,
+        "cssKb": 24.0,
         "htmlKb": 95.0,
         "fontKb": 150.8,
         "thirdPartyRequests": 0,
@@ -85,15 +85,15 @@
         "accessibility": 100
       },
       "warn": {
-        "lcpMs": 11100,
-        "tbtMs": 200,
-        "performance": 48
+        "lcpMs": 8100,
+        "tbtMs": 250,
+        "performance": 61
       }
     },
     "privacy": {
       "error": {
-        "jsKb": 499.0,
-        "cssKb": 160.9,
+        "jsKb": 163.2,
+        "cssKb": 23.7,
         "htmlKb": 71.2,
         "fontKb": 150.8,
         "thirdPartyRequests": 0,
@@ -101,9 +101,9 @@
         "accessibility": 100
       },
       "warn": {
-        "lcpMs": 7300,
+        "lcpMs": 4700,
         "tbtMs": 200,
-        "performance": 54
+        "performance": 78
       }
     }
   }
