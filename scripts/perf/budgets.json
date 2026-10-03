@@ -1,0 +1,110 @@
+{
+  "mode": "dynamic",
+  "firstPartyOrigins": [
+    "http://127.0.0.1:4310"
+  ],
+  "pages": [
+    {
+      "name": "home",
+      "path": "/"
+    },
+    {
+      "name": "blog",
+      "path": "/blog"
+    },
+    {
+      "name": "article",
+      "path": "/blog/linux-server-hardening-guide"
+    },
+    {
+      "name": "about",
+      "path": "/about"
+    },
+    {
+      "name": "privacy",
+      "path": "/privacy"
+    }
+  ],
+  "limits": {
+    "home": {
+      "error": {
+        "jsKb": 544.4,
+        "cssKb": 161.4,
+        "htmlKb": 114.0,
+        "fontKb": 150.8,
+        "thirdPartyRequests": 0,
+        "cls": 0.02,
+        "accessibility": 100
+      },
+      "warn": {
+        "lcpMs": 9700,
+        "tbtMs": 300,
+        "performance": 48
+      }
+    },
+    "blog": {
+      "error": {
+        "jsKb": 582.7,
+        "cssKb": 161.4,
+        "htmlKb": 80.5,
+        "fontKb": 150.8,
+        "thirdPartyRequests": 0,
+        "cls": 0.02,
+        "accessibility": 99
+      },
+      "warn": {
+        "lcpMs": 7100,
+        "tbtMs": 200,
+        "performance": 56
+      }
+    },
+    "article": {
+      "error": {
+        "jsKb": 3251.5,
+        "cssKb": 161.6,
+        "htmlKb": 81.0,
+        "fontKb": 150.8,
+        "thirdPartyRequests": 0,
+        "cls": 0.02,
+        "accessibility": 95
+      },
+      "warn": {
+        "lcpMs": 8100,
+        "tbtMs": 1150,
+        "performance": 33
+      }
+    },
+    "about": {
+      "error": {
+        "jsKb": 826.9,
+        "cssKb": 161.6,
+        "htmlKb": 95.0,
+        "fontKb": 150.8,
+        "thirdPartyRequests": 0,
+        "cls": 0.02,
+        "accessibility": 100
+      },
+      "warn": {
+        "lcpMs": 11100,
+        "tbtMs": 200,
+        "performance": 48
+      }
+    },
+    "privacy": {
+      "error": {
+        "jsKb": 582.7,
+        "cssKb": 161.4,
+        "htmlKb": 71.2,
+        "fontKb": 150.8,
+        "thirdPartyRequests": 0,
+        "cls": 0.02,
+        "accessibility": 100
+      },
+      "warn": {
+        "lcpMs": 7300,
+        "tbtMs": 200,
+        "performance": 54
+      }
+    }
+  }
+}

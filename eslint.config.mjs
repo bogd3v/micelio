@@ -11,7 +11,7 @@ export default withNuxt(
     },
   },
   {
-    files: ['.claude/skills/**/scripts/*.mjs'],
+    files: ['.claude/skills/**/scripts/*.mjs', 'scripts/**/*.mjs'],
     rules: {
       'no-console': 'off',
     },
