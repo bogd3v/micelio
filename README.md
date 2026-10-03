@@ -1,6 +1,8 @@
-# BogDev — Personal Blog
+# Micelio
 
-A bilingual (English/Spanish) personal blog built with **Nuxt 4** and **Strapi CMS**, following a **JAMStack architecture**. Designed as a modern, SEO-friendly, and accessible blogging platform.
+A blog engine built with **Nuxt 4** and **Strapi CMS**, following a **JAMStack architecture**: bilingual (English/Spanish), SEO-friendly and accessible. This repository is the frontend; the CMS lives in [micelio-cms](https://github.com/bogd3v/micelio-cms).
+
+[BogDev](https://bogdev.com.co) is the reference site running Micelio, and its design is the default theme.
 
 ## Features
 
@@ -22,7 +24,7 @@ A bilingual (English/Spanish) personal blog built with **Nuxt 4** and **Strapi C
 ## Prerequisites
 
 - **Node.js** >= 22.12
-- **Strapi 5** backend: [devbog-blog-backend](https://github.com/ale9420/devbog-blog-backend)
+- **Strapi 5** backend: [micelio-cms](https://github.com/bogd3v/micelio-cms)
 - **SMTP server** (for newsletter emails) — optional
 
 ## Getting Started
@@ -30,8 +32,8 @@ A bilingual (English/Spanish) personal blog built with **Nuxt 4** and **Strapi C
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/ale9420/devbog-blog-front.git
-cd devbog-blog-front
+git clone https://github.com/bogd3v/micelio.git
+cd micelio
 ```
 
 ### 2. Install dependencies
@@ -70,7 +72,7 @@ The tracker only reports visits whose host matches `NUXT_PUBLIC_SITE_URL`, so lo
 
 ### 4. Set up Strapi CMS
 
-Run the [devbog-blog-backend](https://github.com/ale9420/devbog-blog-backend) Strapi project: it defines every content type this frontend reads (articles, authors, categories, tags, About, subscribers), the Comments plugin and the fediverse endpoints. Point `NUXT_PUBLIC_STRAPI_URL` at it and create an API token for `NUXT_STRAPI_API_TOKEN` with read access to the content and create, update and delete on subscribers.
+Run the [micelio-cms](https://github.com/bogd3v/micelio-cms) Strapi project: it defines every content type this frontend reads (articles, authors, categories, tags, About, subscribers), the Comments plugin and the fediverse endpoints. Point `NUXT_PUBLIC_STRAPI_URL` at it and create an API token for `NUXT_STRAPI_API_TOKEN` with read access to the content and create, update and delete on subscribers.
 
 ### 5. Start the development server
 

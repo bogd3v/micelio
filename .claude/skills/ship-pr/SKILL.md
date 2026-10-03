@@ -1,6 +1,6 @@
 ---
 name: ship-pr
-description: Branch, commit and open a pull request in the BogDev frontend the way this repo does it - conventional prefixes, English commits, Spanish PR, conflict checks against other open PRs, labels and releases. Use when a change is ready to be committed or when the user asks to open, update, rebase or release.
+description: Branch, commit and open a pull request in the Micelio frontend the way this repo does it - conventional prefixes, English commits, Spanish PR, conflict checks against other open PRs, labels and releases. Use when a change is ready to be committed or when the user asks to open, update, rebase or release.
 ---
 
 # Ship a PR

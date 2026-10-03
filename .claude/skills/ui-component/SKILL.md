@@ -1,6 +1,6 @@
 ---
 name: ui-component
-description: Build or change a Vue component or page of the BogDev frontend following its design system (Bd* components, design tokens, layered CSS), i18n, accessibility and SEO conventions. Use for any new component, page, visual change or CSS refactor.
+description: Build or change a Vue component or page of the Micelio frontend following its design system (Bd* components, design tokens, layered CSS), i18n, accessibility and SEO conventions. Use for any new component, page, visual change or CSS refactor.
 ---
 
 # UI component

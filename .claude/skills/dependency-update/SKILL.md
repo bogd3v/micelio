@@ -1,6 +1,6 @@
 ---
 name: dependency-update
-description: Review and apply dependency updates in the BogDev frontend - Dependabot PRs, npm audit findings and major upgrades (Nuxt, unhead, Vite, Vitest, ESLint, nodemailer, GitHub Actions, Docker base image). Use when triaging Dependabot, fixing a vulnerability, or upgrading a package to a new major.
+description: Review and apply dependency updates in the Micelio frontend - Dependabot PRs, npm audit findings and major upgrades (Nuxt, unhead, Vite, Vitest, ESLint, nodemailer, GitHub Actions, Docker base image). Use when triaging Dependabot, fixing a vulnerability, or upgrading a package to a new major.
 ---
 
 # Dependency update
