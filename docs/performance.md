@@ -47,10 +47,19 @@ Dynamic mode, production build of `main` at `9aa9c3f`, against the e2e mock:
 
 ### Findings
 
-1. **Nothing is compressed.** The Nitro server sends JS, CSS and HTML raw, and so does production: `https://bogdev.com.co/_nuxt/*.js` answers without `content-encoding` even with `Accept-Encoding: br, gzip`. Compression alone would cut the transferred JS by about 63 % and is the main reason LCP sits between 6 and 9 s.
+1. **Nothing is compressed.** The Nitro server sends JS, CSS and HTML raw, and so does production: `https://bogdev.com.co/_nuxt/*.js` answers without `content-encoding` even with `Accept-Encoding: br, gzip`. Compression alone would cut the transferred JS by about 63 % and is the main reason LCP sits between 6 and 9 s. Assets are fixed (see History); HTML still needs compression at the proxy.
 2. **Mermaid loads with the article.** On top of its 757 KB of initial JS, the article with diagrams downloads about 2.7 MB of Mermaid chunks while it loads. They are not in the initial budget; Mermaid is the first heavy island to budget (ADR 0006).
 3. **`@nuxt/ui` and full hydration** keep the base JS above 190 KB gzipped on every page.
 4. **Accessibility:** on `/blog` the card titles are `<h3>` with no `<h2>` before them (`heading-order`). On the article, the only failure is an `<img src="x">` without `alt` that comes from the mock content.
+
+## History
+
+| Date | Change | Effect on the home page |
+| --- | --- | --- |
+| 2026-10-03 | Baseline (#251) | 518.4 KB JS and 153.2 KB CSS sent, LCP 8.0 s, performance 58 |
+| 2026-10-03 | Precompressed public assets: Nitro `compressPublicAssets` writes `.br` and `.gz` next to every asset at build time and serves the one the browser accepts, with `Vary: Accept-Encoding` | 171.4 KB JS (−67 %) and 22.5 KB CSS (−85 %) sent, LCP 5.1 s, performance 73. On `/privacy`, LCP 6.1 → 3.3 s and performance 64 → 88 |
+
+Pending: the HTML is rendered per request, so Nitro does not compress it (108.5 KB on the home page, 27.1 KB gzipped). The reverse proxy (Traefik in Dokploy) should compress responses that arrive without `content-encoding`; it leaves the precompressed assets alone.
 
 ## Targets
 
