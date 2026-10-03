@@ -3,7 +3,9 @@
 // See docs/performance.md for what each number means and how budgets change.
 import { spawn } from 'node:child_process'
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs'
-import { gzipSync } from 'node:zlib'
+import { request as httpRequest } from 'node:http'
+import { request as httpsRequest } from 'node:https'
+import { brotliDecompressSync, gunzipSync, gzipSync } from 'node:zlib'
 import { chromium } from '@playwright/test'
 import lighthouse from 'lighthouse'
 
@@ -11,7 +13,7 @@ const ROOT = new URL('../../', import.meta.url).pathname
 const MOCK_PORT = 4310
 const SERVER_PORT = 3211
 const DEBUG_PORT = 9223
-const WEIGHT_TYPES = { script: 'js', stylesheet: 'css', document: 'html', font: 'font' }
+const FONT_URL = /url\(\s*['"]?([^'")]+\.(?:woff2?|ttf|otf))/g
 
 const args = parseArgs(process.argv.slice(2))
 const budgets = JSON.parse(readFileSync(new URL('./budgets.json', import.meta.url), 'utf8'))
@@ -56,33 +58,78 @@ async function waitFor(url, timeoutMs = 30000) {
   throw new Error(`${url} did not respond within ${timeoutMs} ms`)
 }
 
-async function measureWeight(browser, url) {
+function fetchAsSent(url) {
+  const request = url.startsWith('https:') ? httpsRequest : httpRequest
+  return new Promise((resolve, reject) => {
+    request(url, { headers: { 'accept-encoding': 'br, gzip' } }, (res) => {
+      const chunks = []
+      res.on('data', chunk => chunks.push(chunk))
+      res.on('end', () => {
+        const raw = Buffer.concat(chunks)
+        const encoding = res.headers['content-encoding']
+        const body = encoding === 'br' ? brotliDecompressSync(raw) : encoding === 'gzip' ? gunzipSync(raw) : raw
+        resolve({ sent: raw.length, gzip: gzipSync(body).length, text: body.toString('utf8') })
+      })
+      res.on('error', reject)
+    }).on('error', reject).end()
+  })
+}
+
+function attribute(tag, name) {
+  return tag.match(new RegExp(`\\s${name}="([^"]*)"`))?.[1]
+}
+
+function declaredAssets(html, pageUrl) {
+  const scripts = new Set()
+  const stylesheets = new Set()
+  const fonts = new Set()
+  for (const tag of html.match(/<script\b[^>]*>/g) ?? []) {
+    const src = attribute(tag, 'src')
+    if (src) scripts.add(new URL(src, pageUrl).href)
+  }
+  for (const tag of html.match(/<link\b[^>]*>/g) ?? []) {
+    const href = attribute(tag, 'href')
+    const rel = attribute(tag, 'rel')
+    if (!href) continue
+    if (rel === 'modulepreload') scripts.add(new URL(href, pageUrl).href)
+    if (rel === 'stylesheet') stylesheets.add(new URL(href, pageUrl).href)
+    if (rel === 'preload' && attribute(tag, 'as') === 'font') fonts.add(new URL(href, pageUrl).href)
+  }
+  return { scripts, stylesheets, fonts }
+}
+
+async function measureWeight(url) {
+  const page = await fetchAsSent(url)
+  const { scripts, stylesheets, fonts } = declaredAssets(page.text, url)
+  const total = async urls => (await Promise.all([...urls].map(fetchAsSent))).reduce(
+    (sum, asset) => ({ sent: sum.sent + asset.sent, gzip: sum.gzip + asset.gzip, texts: [...sum.texts, asset.text] }),
+    { sent: 0, gzip: 0, texts: [] },
+  )
+  const js = await total(scripts)
+  const css = await total(stylesheets)
+  ;[...stylesheets].forEach((cssUrl, i) => {
+    for (const [, fontPath] of css.texts[i].matchAll(FONT_URL)) fonts.add(new URL(fontPath, cssUrl).href)
+  })
+  const font = await total(fonts)
+  const kb = value => Math.round(value / 102.4) / 10
+  return {
+    jsKb: kb(js.sent), cssKb: kb(css.sent), htmlKb: kb(page.sent), fontKb: kb(font.sent),
+    jsGzipKb: kb(js.gzip), cssGzipKb: kb(css.gzip), htmlGzipKb: kb(page.gzip),
+  }
+}
+
+async function countThirdParty(browser, url) {
   const context = await browser.newContext({ viewport: { width: 412, height: 823 }, isMobile: true })
   const page = await context.newPage()
   const firstParty = new Set([new URL(url).origin, ...(budgets.firstPartyOrigins ?? [])])
-  const sent = { js: 0, css: 0, html: 0, font: 0 }
-  const gzip = { js: 0, css: 0, html: 0, font: 0 }
-  const pending = []
   const thirdParty = []
-  page.on('response', (response) => {
-    const responseUrl = response.url()
-    if (!responseUrl.startsWith('data:') && !firstParty.has(new URL(responseUrl).origin)) thirdParty.push(responseUrl)
-    const kind = WEIGHT_TYPES[response.request().resourceType()]
-    if (!kind) return
-    pending.push(Promise.all([response.request().sizes(), response.body()]).then(([sizes, body]) => {
-      sent[kind] += sizes.responseBodySize
-      gzip[kind] += gzipSync(body).length
-    }).catch(() => {}))
+  page.on('request', (request) => {
+    const requestUrl = request.url()
+    if (/^https?:/.test(requestUrl) && !firstParty.has(new URL(requestUrl).origin)) thirdParty.push(requestUrl)
   })
   await page.goto(url, { waitUntil: 'networkidle' })
-  await Promise.all(pending)
   await context.close()
-  const kb = value => Math.round(value / 102.4) / 10
-  return {
-    jsKb: kb(sent.js), cssKb: kb(sent.css), htmlKb: kb(sent.html), fontKb: kb(sent.font),
-    jsGzipKb: kb(gzip.js), cssGzipKb: kb(gzip.css), htmlGzipKb: kb(gzip.html),
-    thirdPartyRequests: thirdParty.length, thirdPartyUrls: thirdParty,
-  }
+  return { thirdPartyRequests: thirdParty.length, thirdPartyUrls: thirdParty }
 }
 
 function median(values) {
@@ -141,7 +188,7 @@ try {
   for (const { name, path } of budgets.pages) {
     const url = new URL(path, base).href
     await fetch(url)
-    const metrics = { ...(await measureWeight(browser, url)), ...(await measureLighthouse(url)) }
+    const metrics = { ...(await measureWeight(url)), ...(await countThirdParty(browser, url)), ...(await measureLighthouse(url)) }
     const limits = budgets.limits[name] ?? {}
     problems.push(...compare(name, metrics, limits.error, 'error'), ...compare(name, metrics, limits.warn, 'warn'))
     report.push({ page: name, path, metrics })
