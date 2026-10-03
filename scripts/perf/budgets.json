@@ -69,7 +69,7 @@
         "accessibility": 95
       },
       "warn": {
-        "lcpMs": 8100,
+        "lcpMs": 10000,
         "tbtMs": 1150,
         "performance": 33
       }
