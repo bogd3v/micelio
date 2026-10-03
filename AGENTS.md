@@ -4,7 +4,7 @@ This file contains instructions and guidelines for agentic coding agents working
 
 ## Project Overview
 
-This is a Nuxt 4 personal blog application (BogDev) with:
+This is the frontend of Micelio, a blog engine whose CMS lives in `micelio-cms`. BogDev (bogdev.com.co) is the reference site running it. Stack:
 - Nuxt 4 + Vue 3 + TypeScript frontend
 - Server-side API routes (Nitro)
 - Strapi CMS integration for content

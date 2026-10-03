@@ -71,7 +71,7 @@ describe('StrapiProjectsBlock', () => {
     const featured = wrapper.get('.bd-project-featured')
     expect(featured.get('h3').text()).toBe('BogDev on the fediverse')
     expect(featured.get('svg[role="img"]').attributes('aria-label')).toContain('Strapi publishes articles')
-    const repo = featured.get('a[href="https://github.com/ale9420/devbog-blog-backend"]')
+    const repo = featured.get('a[href="https://github.com/bogd3v/micelio-cms"]')
     expect(repo.attributes('target')).toBe('_blank')
     expect(repo.attributes('rel')).toBe('noopener noreferrer')
     const others = wrapper.findAll('.bd-project-grid .bd-project')

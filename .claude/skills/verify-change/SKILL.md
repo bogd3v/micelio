@@ -1,6 +1,6 @@
 ---
 name: verify-change
-description: Verify a change to the BogDev frontend before opening or merging a PR - the full check suite, how to tell a flaky e2e from a regression, and how to prove that a refactor, CSS move, dependency update or CSP change did not alter what users get. Use after any code change and before reporting it as done.
+description: Verify a change to the Micelio frontend before opening or merging a PR - the full check suite, how to tell a flaky e2e from a regression, and how to prove that a refactor, CSS move, dependency update or CSP change did not alter what users get. Use after any code change and before reporting it as done.
 ---
 
 # Verify a change

@@ -1,6 +1,6 @@
 ---
 name: server-route
-description: Add or change a Nitro route in server/api or server/routes of the BogDev frontend - input schema, Strapi call, error contract, protections, tests and docs. Use for any new endpoint, any change to what a route accepts or returns, and any new call to Strapi.
+description: Add or change a Nitro route in server/api or server/routes of the Micelio frontend - input schema, Strapi call, error contract, protections, tests and docs. Use for any new endpoint, any change to what a route accepts or returns, and any new call to Strapi.
 ---
 
 # Server route
