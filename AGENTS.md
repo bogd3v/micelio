@@ -49,15 +49,15 @@ Project skills live in `.claude/skills/`; load the one that matches the task bef
 
 ## Commits and Pull Requests
 
-- Commit messages in English; PR titles and descriptions in Spanish
-- Start every commit and PR title with a conventional prefix: `feat`, `fix`, `docs`, `refactor`, `style`, `test`, `ci`, `perf` or `chore`, with an optional scope (`fix(newsletter): …`). The PR title prefix sets the label that groups it in the release notes; use the `seguridad`/`security` scope for security fixes and `chore(deps)` for dependency updates
+- Commit messages, PR titles and PR descriptions in English
+- Start every commit and PR title with a conventional prefix: `feat`, `fix`, `docs`, `refactor`, `style`, `test`, `ci`, `perf` or `chore`, with an optional scope (`fix(newsletter): …`). The PR title prefix sets the label that groups it in the release notes; use the `security` scope for security fixes and `chore(deps)` for dependency updates
 
 ## Code Style Guidelines
 
 ### General Conventions
 
 - **Code in English**: All identifiers are in English: props, emits, variables, functions, composables, types and union/enum values, CSS classes and custom properties, test names and developer-facing messages. This applies even when an issue or `docs/design/` names them in Spanish (e.g. `activa` → `active`, `lectura` → `reading`, `tema` → `theme`). User-facing text goes through i18n. External data contracts keep their values: Strapi slugs (`'privacidad'`), `data-theme="noche" | "dia"` and its stored value, and design token names (`--mirla`, `--pinchaflor`)
-- **No comments**: Do not add code comments unless explicitly requested
+- **Comments**: Keep code comments short and concise. When something needs more detail, write it in a Markdown document (`docs/`, an ADR) and reference it from the comment
 - **TypeScript**: Always use explicit types for props, function parameters, and return values
 - **Vue 3 Composition API**: Use `<script setup lang="ts">` syntax for all components
 - **Script setup order**: Imports → Props/Emits → Composables → Reactive state → Computed → Functions → Lifecycle hooks

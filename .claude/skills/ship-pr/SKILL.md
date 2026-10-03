@@ -1,6 +1,6 @@
 ---
 name: ship-pr
-description: Branch, commit and open a pull request in the Micelio frontend the way this repo does it - conventional prefixes, English commits, Spanish PR, conflict checks against other open PRs, labels and releases. Use when a change is ready to be committed or when the user asks to open, update, rebase or release.
+description: Branch, commit and open a pull request in the Micelio frontend the way this repo does it - conventional prefixes, English commits and PRs, conflict checks against other open PRs, labels and releases. Use when a change is ready to be committed or when the user asks to open, update, rebase or release.
 ---
 
 # Ship a PR
@@ -18,12 +18,12 @@ description: Branch, commit and open a pull request in the Micelio frontend the 
 
 ## Pull request
 
-- Title in Spanish with the same prefix: `fix(seguridad): …`, `docs: …`. The prefix sets the release label automatically (`PR labels` workflow); a title without one ends up in "Other changes".
-- Body in Spanish, sections as needed:
-  - `## Problema`: what was wrong, with evidence (error, PR number, measurement).
-  - `## Qué cambia`: bullets or a table.
-  - `## Para revisar`: risks, behaviour changes, manual steps (Dokploy variables, Strapi permissions).
-  - `## Pruebas`: exact commands and counts, and how equivalence was proven (see **verify-change**).
+- Title in English with the same prefix: `fix(security): …`, `docs: …`. The prefix sets the release label automatically (`PR labels` workflow); a title without one ends up in "Other changes".
+- Body in English, sections as needed:
+  - `## Problem`: what was wrong, with evidence (error, PR number, measurement).
+  - `## What changes`: bullets or a table.
+  - `## For review`: risks, behaviour changes, manual steps (Dokploy variables, Strapi permissions).
+  - `## Tests`: exact commands and counts, and how equivalence was proven (see **verify-change**).
 - End with the attribution line the session gives.
 
 ## Before and after opening
