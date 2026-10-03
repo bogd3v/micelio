@@ -1,4 +1,3 @@
-import qs from 'qs'
 import { toValue, type MaybeRef } from 'vue'
 import type {
   StrapiAbout,
@@ -9,6 +8,7 @@ import type {
   Locale, CategoryCount, BlogSort, TagCount } from '~/interfaces'
 import { defaultLocale } from '~/interfaces'
 import { toStrapiPost } from '~/helpers/post'
+import { toQueryString } from '~/helpers/query'
 
 /**
  * Strapi data access for client pages. Every helper below goes through
@@ -30,7 +30,7 @@ export function useStrapi() {
     content?: MaybeRef<boolean | undefined>
   }) {
     const buildQuery = () => {
-      return qs.stringify({
+      return toQueryString({
         page: toValue(params?.page),
         pageSize: toValue(params?.pageSize),
         locale: toValue(params?.locale),
@@ -39,7 +39,7 @@ export function useStrapi() {
         search: toValue(params?.search) || undefined,
         sort: toValue(params?.sort) || undefined,
         content: toValue(params?.content) ? '1' : undefined,
-      }, { skipNulls: true })
+      })
     }
 
     return useAsyncData(() => `posts-${buildQuery() || 'default'}`, async () => {
@@ -78,9 +78,9 @@ export function useStrapi() {
 
   function fetchPost(slug: string, locale?: Locale) {
     return useAsyncData<StrapiPost | null>(`post-${slug}-${locale}`, async () => {
-      const query = qs.stringify({
+      const query = toQueryString({
         locale: locale || undefined,
-      }, { skipNulls: true })
+      })
 
       const response = await $fetch<RawStrapiArticle | null>(
         `/api/posts/${slug}?${query}`,
@@ -98,9 +98,9 @@ export function useStrapi() {
 
   function fetchCategories(locale?: Locale) {
     return useAsyncData(`categories-${locale || defaultLocale}`, async () => {
-      const query = qs.stringify({
+      const query = toQueryString({
         locale: locale || undefined,
-      }, { skipNulls: true })
+      })
 
       return $fetch<CategoryCount[]>(
         `/api/categories?${query}`,
@@ -112,9 +112,9 @@ export function useStrapi() {
 
   function fetchTags(locale?: Locale) {
     return useAsyncData(`tags-${locale || defaultLocale}`, async () => {
-      const query = qs.stringify({
+      const query = toQueryString({
         locale: locale || undefined,
-      }, { skipNulls: true })
+      })
 
       return $fetch<TagCount[]>(
         `/api/tags?${query}`,
@@ -128,9 +128,9 @@ export function useStrapi() {
     return useAsyncData<StrapiAbout>(
       `about-${locale || defaultLocale}`,
       async () => {
-        const query = qs.stringify({
+        const query = toQueryString({
           locale: locale || undefined,
-        }, { skipNulls: true })
+        })
 
         return $fetch<StrapiAbout>(`/api/about?${query}`)
       },

@@ -58,6 +58,7 @@ Dynamic mode, production build of `main` at `9aa9c3f`, against the e2e mock:
 | --- | --- | --- |
 | 2026-10-03 | Baseline (#251) | 518.4 KB JS and 153.2 KB CSS sent, LCP 8.0 s, performance 58 |
 | 2026-10-03 | Precompressed public assets: Nitro `compressPublicAssets` writes `.br` and `.gz` next to every asset at build time and serves the one the browser accepts, with `Vary: Accept-Encoding` | 171.4 KB JS (−67 %) and 22.5 KB CSS (−85 %) sent, LCP 5.1 s, performance 73. On `/privacy`, LCP 6.1 → 3.3 s and performance 64 → 88 |
+| 2026-10-03 | `qs` out of the client bundle: `useStrapi` builds its flat query strings with `URLSearchParams` (`app/helpers/query.ts`) | 160.2 KB JS sent (−11.2 KB on every page; −12.2 KB gzipped) |
 
 Pending: the HTML is rendered per request, so Nitro does not compress it (108.5 KB on the home page, 27.1 KB gzipped). The reverse proxy (Traefik in Dokploy) should compress responses that arrive without `content-encoding`; it leaves the precompressed assets alone.
 
