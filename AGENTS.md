@@ -230,6 +230,6 @@ public/                  # Static assets
 - `@nuxt/image` - Image optimization
 - `@nuxtjs/i18n` - Internationalization
 - `@vueuse/nuxt` - VueUse composables
-- `marked` + `sanitize-html` - Markdown rendering of Strapi rich text, always sanitized
+- `marked` + `sanitize-html` - Markdown rendering of Strapi rich text, on the server only (`app/helpers/markdown.ts`), always sanitized
 - `mermaid` - Diagrams, loaded only on articles that have them
 - `nodemailer` - Newsletter emails over SMTP

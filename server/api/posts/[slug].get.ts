@@ -1,5 +1,6 @@
 import qs from 'qs'
 import type { RawStrapiArticle } from '~/interfaces'
+import { renderArticleBlocks } from '~/helpers/markdown'
 import { localeQuerySchema } from '../../schemas/query'
 
 export default defineEventHandler(async (event) => {
@@ -36,5 +37,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Post not found' })
   }
 
-  return data[0]
+  const article = data[0]!
+  return { ...article, blocks: renderArticleBlocks(article.blocks, article.references, markdownRenderer(locale)) }
 })

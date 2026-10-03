@@ -12,12 +12,14 @@ export interface StrapiRichText {
   id: number
   __component: 'shared.rich-text'
   body: string
+  html?: string
 }
 
 export interface StrapiQuote {
   id: number
   __component: 'shared.quote'
   body: string
+  html?: string
   title?: string
 }
 
@@ -90,6 +92,7 @@ export interface StrapiItem {
   id: number
   title?: string | null
   text: string
+  html?: string
 }
 
 export interface StrapiTopic {

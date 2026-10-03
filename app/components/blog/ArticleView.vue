@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Category, CitationIndex, NumberedReference, StrapiPost, TocHeading } from '~/interfaces'
-import { buildCitationIndex, numberReferences } from '~/helpers/citations'
+import type { Category, NumberedReference, StrapiPost, TocHeading } from '~/interfaces'
+import { numberReferences } from '~/helpers/citations'
 import { isCategory } from '~/helpers/categories'
 import { formatDotDate } from '~/helpers/formatDate'
 import { mastodonShareUrl } from '~/helpers/share'
@@ -28,7 +28,6 @@ const category = computed<Category | undefined>(() => {
   return isCategory(slug) ? slug : undefined
 })
 const references = computed<NumberedReference[]>(() => numberReferences(props.post.blocks, props.post.references))
-const citationIndex = computed<CitationIndex>(() => buildCitationIndex(props.post.blocks, props.post.references))
 const headings = computed<TocHeading[]>(() => {
   const blockHeadings = extractHeadings(props.post.blocks)
   if (!references.value.length) return blockHeadings
@@ -39,7 +38,6 @@ const publishedDate = computed<string>(() => formatDotDate(props.post.publishedA
 const federated = computed<boolean>(() => !props.draft && locale.value === config.public.fediverseLocale && Boolean(props.post.documentId))
 const readDocumentId = computed<string | undefined>(() => props.draft ? undefined : props.post.documentId)
 
-provideCitations(citationIndex)
 useMarkAsRead(prose, readDocumentId)
 </script>
 

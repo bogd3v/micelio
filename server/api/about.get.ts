@@ -1,4 +1,6 @@
 import qs from 'qs'
+import type { StrapiBlock } from '~/interfaces'
+import { renderBlocks } from '~/helpers/markdown'
 import { localeQuerySchema } from '../schemas/query'
 
 export default defineEventHandler(async (event) => {
@@ -39,10 +41,10 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const data: unknown = response.data
+  const data = response.data as { blocks?: StrapiBlock[] | null } | undefined
   if (!data) {
     throw createError({ statusCode: 404, message: 'About page not found' })
   }
 
-  return data
+  return { ...data, blocks: renderBlocks(data.blocks, markdownRenderer(locale)) }
 })

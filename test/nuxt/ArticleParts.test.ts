@@ -1,14 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
-import type { VNode } from 'vue'
 import BlogTableOfContents from '~/components/blog/TableOfContents.vue'
 import BlogCopyLinkButton from '~/components/blog/CopyLinkButton.vue'
 import BlogCommentSection from '~/components/blog/CommentSection.vue'
 import StrapiRichTextBlock from '~/components/strapi/RichTextBlock.vue'
 import StrapiQuoteBlock from '~/components/strapi/QuoteBlock.vue'
 import BlogReferences from '~/components/blog/References.vue'
-import { buildCitationIndex, numberReferences } from '~/helpers/citations'
+import { numberReferences } from '~/helpers/citations'
 import type { StrapiBlock, StrapiQuote, StrapiReference, StrapiRichText } from '~/interfaces'
 
 registerEndpoint('/api/comments/flat', () => ({
@@ -67,17 +66,26 @@ describe('BlogCommentSection', () => {
 })
 
 describe('StrapiRichTextBlock', () => {
-  it('renders GitHub alerts as design system callouts', async () => {
+  it('renders the HTML the server rendered', async () => {
     const wrapper = await mountSuspended(StrapiRichTextBlock, {
-      props: { block: { id: 1, __component: 'shared.rich-text', body: '> [!NOTE] Analogy\n> A **recipe**.\n\n> [!WARNING]\n> Careful.\n\n> Plain quote.' } },
+      props: { block: { id: 1, __component: 'shared.rich-text', body: '**a**', html: '<p><strong>a</strong></p>' } },
     })
-    const callouts = wrapper.findAll('aside.bd-callout')
-    expect(callouts).toHaveLength(2)
-    expect(callouts[0]!.attributes('role')).toBe('note')
-    expect(callouts[0]!.get('.bd-callout-label').text()).toBe('◆ Analogy')
-    expect(callouts[0]!.get('.bd-callout-body').html()).toContain('<strong>recipe</strong>')
-    expect(callouts[1]!.get('.bd-callout-label').text()).toBe('▲ Warning')
-    expect(wrapper.get('blockquote').text()).toBe('Plain quote.')
+    expect(wrapper.get('strong').text()).toBe('a')
+  })
+
+  it('renders nothing without server HTML', async () => {
+    const wrapper = await mountSuspended(StrapiRichTextBlock, { props: { block: { id: 1, __component: 'shared.rich-text', body: '**a**' } } })
+    expect(wrapper.text()).toBe('')
+  })
+})
+
+describe('StrapiQuoteBlock', () => {
+  it('renders the server HTML and the source', async () => {
+    const wrapper = await mountSuspended(StrapiQuoteBlock, {
+      props: { block: { id: 2, __component: 'shared.quote', body: 'Quoted', html: 'Quoted <sup><a class="bd-cite" href="#ref-2">[2]</a></sup>', title: 'Ji' } },
+    })
+    expect(wrapper.get('blockquote sup > a.bd-cite').text()).toBe('[2]')
+    expect(wrapper.get('cite').text()).toBe('— Ji')
   })
 })
 
@@ -90,41 +98,6 @@ const citationReferences: StrapiReference[] = [
 const citingText: StrapiRichText = { id: 1, __component: 'shared.rich-text', body: 'RAG [@lewis-2020] hallucinates [@ji-2023; @lewis-2020] `[@code]` [@missing].' }
 const citingQuote: StrapiQuote = { id: 2, __component: 'shared.quote', body: 'Quoted [@ji-2023].' }
 const citationBlocks: StrapiBlock[] = [citingText, citingQuote]
-
-function withCitations(render: () => VNode) {
-  return defineComponent({
-    setup() {
-      provideCitations(computed(() => buildCitationIndex(citationBlocks, citationReferences)))
-      return render
-    },
-  })
-}
-
-describe('citations', () => {
-  it('numbers citations and anchors only the first appearance', async () => {
-    const wrapper = await mountSuspended(withCitations(() => h(StrapiRichTextBlock, { block: citingText })))
-    const cites = wrapper.findAll('sup > a.bd-cite')
-    expect(cites.map(cite => cite.text())).toEqual(['[1]', '[2]', '[1]'])
-    expect(cites.map(cite => cite.attributes('href'))).toEqual(['#ref-1', '#ref-2', '#ref-1'])
-    expect(cites.map(cite => cite.attributes('id'))).toEqual(['cite-1', 'cite-2', undefined])
-    expect(cites[0]!.attributes('aria-label')).toBe('Reference 1')
-    expect(wrapper.text()).toContain('[@missing]')
-    expect(wrapper.get('code').text()).toBe('[@code]')
-  })
-
-  it('renders citations in quotes without repeating the anchor', async () => {
-    const wrapper = await mountSuspended(withCitations(() => h(StrapiQuoteBlock, { block: citingQuote })))
-    const cite = wrapper.get('blockquote sup > a.bd-cite')
-    expect(cite.text()).toBe('[2]')
-    expect(cite.attributes('id')).toBeUndefined()
-  })
-
-  it('leaves citations as text outside an article', async () => {
-    const wrapper = await mountSuspended(StrapiRichTextBlock, { props: { block: citingText } })
-    expect(wrapper.find('.bd-cite').exists()).toBe(false)
-    expect(wrapper.text()).toContain('[@lewis-2020]')
-  })
-})
 
 describe('BlogReferences', () => {
   it('lists cited sources first with a way back to the text', async () => {
