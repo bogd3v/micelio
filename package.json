@@ -18,7 +18,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run -c vitest.config.integration.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "perf": "node scripts/perf/measure.mjs --serve"
   },
   "dependencies": {
     "@nuxt/image": "^2.0.0",
@@ -50,6 +51,7 @@
     "eslint-plugin-vue": "^10.11.1",
     "globals": "^17.12.0",
     "happy-dom": "^20.14.5",
+    "lighthouse": "^13.5.0",
     "typescript-eslint": "^8.71.0",
     "vitest": "^5.0.2",
     "vue-tsc": "^3.3.11"
