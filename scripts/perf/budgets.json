@@ -28,7 +28,7 @@
   "limits": {
     "home": {
       "error": {
-        "jsKb": 167.5,
+        "jsKb": 163.3,
         "cssKb": 23.7,
         "htmlKb": 113.9,
         "fontKb": 150.8,
@@ -44,7 +44,7 @@
     },
     "blog": {
       "error": {
-        "jsKb": 162.6,
+        "jsKb": 158.4,
         "cssKb": 23.7,
         "htmlKb": 80.4,
         "fontKb": 150.8,
@@ -60,7 +60,7 @@
     },
     "article": {
       "error": {
-        "jsKb": 179.8,
+        "jsKb": 175.7,
         "cssKb": 24.0,
         "htmlKb": 82.7,
         "fontKb": 150.8,
@@ -76,7 +76,7 @@
     },
     "about": {
       "error": {
-        "jsKb": 165.2,
+        "jsKb": 161.1,
         "cssKb": 24.0,
         "htmlKb": 95.3,
         "fontKb": 150.8,
@@ -92,7 +92,7 @@
     },
     "privacy": {
       "error": {
-        "jsKb": 150.9,
+        "jsKb": 146.7,
         "cssKb": 23.7,
         "htmlKb": 71.1,
         "fontKb": 150.8,
