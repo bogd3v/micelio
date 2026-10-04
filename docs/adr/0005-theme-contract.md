@@ -1,6 +1,6 @@
 # ADR-0005: Theme contract v1
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-03
 **Deciders:** BogDev maintainer
 
