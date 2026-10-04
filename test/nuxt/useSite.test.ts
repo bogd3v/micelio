@@ -41,4 +41,22 @@ describe('useSite', () => {
     await flushPromises()
     expect(wrapper.text()).toBe('BogDev · comments')
   })
+
+  it('fetches once per locale however many components read it', async () => {
+    let calls = 0
+    unregister = registerEndpoint('/api/site', (event) => {
+      calls++
+      const locale = new URL(event.path, 'http://localhost').searchParams.get('locale')
+      return { name: `Micelio ${locale}`, modules: { comments: true } } as Partial<Site>
+    })
+    const Many = defineComponent({ setup: () => () => h('div', [h(SiteName), h(SiteName), h(SiteName), h(SiteName)]) })
+    const wrapper = await mountSuspended(Many)
+    await vi.waitFor(() => expect(wrapper.text()).toContain('Micelio en'))
+    const before = calls
+    await useNuxtApp().$i18n.setLocale('es')
+    await vi.waitFor(() => expect(wrapper.findAll('p').every(p => p.text().startsWith('Micelio es'))).toBe(true))
+    await flushPromises()
+    expect(calls - before).toBe(1)
+    await useNuxtApp().$i18n.setLocale('en')
+  })
 })

@@ -12,7 +12,7 @@ export function useSite(): ComputedRef<Site> {
   const { data } = useAsyncData(
     () => `site-${locale.value}`,
     () => $fetch<Site>('/api/site', { query: { locale: locale.value } }),
-    { default: () => defaults },
+    { default: () => defaults, dedupe: 'defer' },
   )
 
   return computed<Site>(() => data.value ?? defaults)
