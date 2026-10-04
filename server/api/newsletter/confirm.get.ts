@@ -1,3 +1,4 @@
+import type { Locale } from '~/interfaces'
 import { sendWelcomeEmail } from '../../utils/email'
 import { findSubscriber, newUnsubscribeToken, updateSubscriber } from '../../utils/subscribers'
 import { isNewsletterToken, newsletterLanguage } from '~/helpers/newsletter'
@@ -54,7 +55,8 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
   }
 
   try {
-    await sendWelcomeEmail(subscriber.email, language, unsubscribeToken)
+    const { site } = await loadSite(language as Locale)
+    await sendWelcomeEmail(subscriber.email, language, unsubscribeToken, site.name)
   } catch (error: unknown) {
     console.error('Newsletter welcome email error:', error)
   }

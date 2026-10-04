@@ -1,3 +1,4 @@
+import type { Locale } from '~/interfaces'
 import { randomUUID } from 'crypto'
 import { sendConfirmationEmail } from '../../utils/email'
 import { createSubscriber, deleteSubscriber, findSubscriber, newUnsubscribeToken } from '../../utils/subscribers'
@@ -37,7 +38,8 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
       language,
     })
 
-    await sendConfirmationEmail(email, confirmationToken, language)
+    const { site } = await loadSite(language as Locale)
+    await sendConfirmationEmail(email, confirmationToken, language, site.name)
 
     return successResponse(language)
   } catch (error: unknown) {
