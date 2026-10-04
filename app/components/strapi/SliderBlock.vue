@@ -134,7 +134,7 @@ onUnmounted(stopAutoplay)
 
 <template>
   <figure
-    class="bd-fig select-none"
+    class="bd-fig bd-slider"
     tabindex="0"
     role="region"
     aria-roledescription="carousel"
@@ -142,19 +142,19 @@ onUnmounted(stopAutoplay)
     @keydown="onKeydown"
   >
     <div
-      class="bd-fig-media relative group"
+      class="bd-fig-media bd-slider-media"
       @mouseenter="isPaused = true"
       @mouseleave="isPaused = false"
       @touchstart.passive="onTouchStart"
       @touchmove.passive="onTouchMove"
       @touchend.passive="onTouchEnd"
     >
-      <div class="relative aspect-[16/10]">
+      <div class="bd-slider-frame">
         <div
           v-for="(slide, index) in slides"
           :key="index"
-          class="absolute inset-0 transition-opacity duration-700 ease-in-out"
-          :class="index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'"
+          class="bd-slider-slide"
+          :class="{ 'bd-slider-slide-active': index === currentIndex }"
           role="group"
           :aria-roledescription="hasMultiple ? 'slide' : undefined"
           :aria-label="`${index + 1} ${t('common.of', 'of')} ${totalSlides}`"
@@ -167,35 +167,33 @@ onUnmounted(stopAutoplay)
             format="webp"
             loading="lazy"
             draggable="false"
-            class="w-full h-full object-cover"
-            :class="{
-              'scale-105 animate-[kenburns_8s_ease-out_forwards]': index === currentIndex && !prefersReducedMotion,
-            }"
+            class="bd-slider-img"
+            :class="{ 'bd-slider-img-zoom': index === currentIndex && !prefersReducedMotion }"
           />
         </div>
       </div>
 
       <div
         v-if="hasMultiple"
-        class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none z-20"
+        class="bd-slider-scrim"
       />
 
       <template v-if="hasMultiple">
         <button
           :aria-label="t('common.ariaPrevSlide', 'Previous slide')"
-          class="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-xl hover:bg-white hover:scale-110 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 text-neutral-900 dark:text-white"
+          class="bd-slider-arrow bd-slider-prev"
           @click="prev"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <button
           :aria-label="t('common.ariaNextSlide', 'Next slide')"
-          class="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md shadow-xl hover:bg-white hover:scale-110 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 text-neutral-900 dark:text-white"
+          class="bd-slider-arrow bd-slider-next"
           @click="next"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -203,26 +201,26 @@ onUnmounted(stopAutoplay)
 
       <div
         v-if="hasMultiple"
-        class="absolute bottom-0 inset-x-0 p-5 flex items-center justify-center gap-3 z-30"
+        class="bd-slider-dots"
       >
-        <div class="flex items-center gap-2">
+        <div class="bd-slider-dot-list">
           <button
             v-for="(_, index) in slides"
             :key="index"
             :aria-label="`${t('common.goToSlide', 'Go to slide')} ${index + 1}`"
-            class="relative h-1 rounded-full overflow-hidden transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-            :class="index === currentIndex ? 'w-10' : 'w-6 hover:w-8'"
+            class="bd-slider-dot"
+            :class="{ 'bd-slider-dot-active': index === currentIndex }"
             @click="goTo(index)"
           >
-            <span class="absolute inset-0 bg-white/30 rounded-full" />
+            <span class="bd-slider-dot-track" />
             <span
               v-if="index === currentIndex"
-              class="absolute inset-y-0 left-0 bg-white rounded-full transition-all duration-100 ease-linear"
+              class="bd-slider-dot-fill"
               :style="{ width: `${progress}%` }"
             />
             <span
               v-else
-              class="absolute inset-0 bg-white/60 rounded-full opacity-0 hover:opacity-100 transition-opacity"
+              class="bd-slider-dot-hover"
             />
           </button>
         </div>
@@ -230,9 +228,9 @@ onUnmounted(stopAutoplay)
 
       <div
         v-if="hasMultiple"
-        class="absolute top-4 right-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        class="bd-slider-count"
       >
-        <span class="text-xs text-white/90 font-mono tabular-nums tracking-wider bg-black/40 backdrop-blur-sm px-2.5 py-1 rounded-full">
+        <span class="bd-slider-count-text">
           {{ String(currentIndex + 1).padStart(2, '0') }} / {{ String(totalSlides).padStart(2, '0') }}
         </span>
       </div>
@@ -247,21 +245,3 @@ onUnmounted(stopAutoplay)
     </figcaption>
   </figure>
 </template>
-
-<style scoped>
-@keyframes kenburns {
-  0% {
-    transform: scale(1) translate(0, 0);
-  }
-  100% {
-    transform: scale(1.08) translate(-1%, -1%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-\[kenburns_8s_ease-out_forwards\] {
-    animation: none !important;
-    transform: scale(1) !important;
-  }
-}
-</style>

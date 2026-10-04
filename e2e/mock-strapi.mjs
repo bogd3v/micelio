@@ -122,6 +122,9 @@ const figuresVueEs = [
   },
 ]
 
+// A quote block, so verify-change and e2e cover QuoteBlock
+figuresVueEs.push({ id: 6, __component: 'shared.quote', body: 'El agua está ahí, pero alguien tiene que ir a buscarla.', title: 'Guía del páramo' })
+
 const referencesVueEs = [
   { id: 1, key: 'ji-2023', type: 'journal', authors: 'Ji, Z., Lee, N., Frieske, R., Yu, T., Su, D., Xu, Y., et al.', year: '2023', title: 'Survey of Hallucination in Natural Language Generation', container: 'ACM Computing Surveys', volume: '55', issue: '12', pages: null, venueLabel: null, doi: '10.1145/3571730', url: null, accessedAt: '2026-09-11' },
   { id: 2, key: 'lewis-2020', type: 'conference', authors: 'Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., et al.', year: '2020', title: 'Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks', container: 'Advances in Neural Information Processing Systems', volume: '33', issue: null, pages: null, venueLabel: 'NeurIPS 2020', doi: null, url: 'https://arxiv.org/abs/2005.11401', accessedAt: '2026-09-11' },

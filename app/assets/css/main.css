@@ -11,6 +11,7 @@
 @import "./base/view-transition.css" layer(bd.base);
 @import "./base/focus.css" layer(bd.base);
 
+@import "./components/icon.css" layer(bd.components);
 @import "./components/button.css" layer(bd.components);
 @import "./components/tag.css" layer(bd.components);
 @import "./components/logo.css" layer(bd.components);
@@ -43,11 +44,15 @@
 @import "./components/badge.css" layer(bd.components);
 @import "./components/account-menu.css" layer(bd.components);
 @import "./components/privacy-notice.css" layer(bd.components);
+@import "./components/quote.css" layer(bd.components);
+@import "./components/slider.css" layer(bd.components);
 
 @import "./layout/page.css" layer(bd.layout);
 @import "./layout/header.css" layer(bd.layout);
 @import "./layout/mobile-nav.css" layer(bd.layout);
 @import "./layout/footer.css" layer(bd.layout);
+@import "./layout/skip-links.css" layer(bd.layout);
+@import "./layout/back-to-top.css" layer(bd.layout);
 
 @import "./pages/home/hero.css" layer(bd.pages);
 @import "./pages/home/sections.css" layer(bd.pages);
@@ -70,6 +75,8 @@
 @import "./pages/drafts/strip.css" layer(bd.pages);
 @import "./pages/privacy/privacy.css" layer(bd.pages);
 @import "./pages/newsletter/unsubscribe.css" layer(bd.pages);
+@import "./pages/error/error.css" layer(bd.pages);
+@import "./pages/confirm/confirm.css" layer(bd.pages);
 
 @import "./animations/keyframes.css" layer(bd.animations);
 

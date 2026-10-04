@@ -22,3 +22,14 @@
         --bd-home-gutter: max(clamp(24px, 8vw, 120px), calc((100% - 1200px) / 2));
     }
 }
+
+/* App shell: the footer stays at the bottom of short pages */
+.bd-app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.bd-app-main {
+    flex: 1;
+}
