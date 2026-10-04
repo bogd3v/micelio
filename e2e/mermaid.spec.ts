@@ -3,12 +3,18 @@ import type { Page } from '@playwright/test'
 
 const ARTICLE = '/blog/linux-server-hardening-guide'
 
-function trackMermaid(page: Page): string[] {
-  const requests: string[] = []
-  page.on('request', (request) => {
-    if (/(deps|node_modules)\/mermaid/.test(request.url())) requests.push(request.url())
+/** Scripts that hold Mermaid's API: deps/mermaid.js in dev, a hashed chunk in the build */
+function trackMermaid(page: Page): Promise<string>[] {
+  const scripts: Promise<string>[] = []
+  page.on('response', (response) => {
+    if (response.request().resourceType() !== 'script') return
+    scripts.push(response.text().then(body => body.includes('mermaidAPI') ? response.url() : '', () => ''))
   })
-  return requests
+  return scripts
+}
+
+async function mermaidScripts(scripts: Promise<string>[]): Promise<string[]> {
+  return (await Promise.all(scripts)).filter(Boolean)
 }
 
 test('renders flowcharts and sequence diagrams as labelled images', async ({ page }) => {
@@ -54,11 +60,11 @@ test('redraws the diagrams with the colors of the new theme', async ({ page }) =
 })
 
 test('only downloads Mermaid on articles with diagrams', async ({ page }) => {
-  const requests = trackMermaid(page)
+  const scripts = trackMermaid(page)
   await page.goto('/blog/understanding-vue-composables', { waitUntil: 'networkidle' })
-  expect(requests).toEqual([])
+  expect(await mermaidScripts(scripts)).toEqual([])
 
   await page.goto(ARTICLE, { waitUntil: 'networkidle' })
   await expect(page.locator('.bd-mermaid-diagram')).toHaveCount(2)
-  expect(requests.length).toBeGreaterThan(0)
+  expect((await mermaidScripts(scripts)).length).toBeGreaterThan(0)
 })
