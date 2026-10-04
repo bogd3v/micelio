@@ -5,6 +5,8 @@ export default defineConfig({
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,
+  // The build (E2E_BUILD=1) keeps up with one worker per core; nuxt dev does not
+  workers: process.env.E2E_BUILD ? '100%' : undefined,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'html',
   use: { baseURL: 'http://127.0.0.1:3210', colorScheme: 'light' },
@@ -28,7 +30,8 @@ export default defineConfig({
         // A full SMTP setting keeps the newsletter module on; nothing is sent
         'NUXT_SMTP_HOST=127.0.0.1 NUXT_SMTP_PORT=1 NUXT_SMTP_USER=test NUXT_SMTP_PASS=test',
         'NUXT_NEWSLETTER_FROM="BogDev <no-reply@bogdev.test>"',
-        'npm run dev',
+        // E2E_BUILD=1 serves .output from npm run build: no on-demand compiling, same CSP as production
+        process.env.E2E_BUILD ? 'node .output/server/index.mjs' : 'npm run dev',
       ].join(' '),
       port: 3210,
       reuseExistingServer: !process.env.CI,
