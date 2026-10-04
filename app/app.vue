@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defaultLocale, Locale } from '~/interfaces'
-import { xHandle } from '~/helpers/site'
+import { iconType, xHandle } from '~/helpers/site'
 
 const { locale } = useI18n()
 const { localePaths } = useLocaleUtils()
@@ -31,7 +31,7 @@ useHead({
     { property: 'og:locale', content: locale.value === 'es' ? 'es_CO' : 'en_US' },
   ],
   link: () => [
-    ...(site.value.favicon ? [{ rel: 'icon' as const, type: 'image/x-icon', href: site.value.favicon.url }] : []),
+    ...(site.value.favicon ? [{ rel: 'icon' as const, type: iconType(site.value.favicon.url), href: site.value.favicon.url }] : []),
     { rel: 'alternate' as const, type: 'application/rss+xml', title: `${site.value.name} RSS Feed`, href: '/feed.xml' },
     ...hreflangLinks.value,
   ],

@@ -97,3 +97,18 @@ export const FOOTER_SOCIALS: Readonly<Partial<Record<SocialNetwork, { label: str
   bluesky: { label: 'Bluesky', abbr: 'bs' },
   website: { label: 'Website', abbr: 'www' },
 }
+
+const ICON_TYPES: Readonly<Record<string, string>> = {
+  svg: 'image/svg+xml',
+  png: 'image/png',
+  ico: 'image/x-icon',
+  webp: 'image/webp',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+}
+
+/** The media type of a favicon from its file extension, or undefined to let the browser sniff it. */
+export function iconType(url: string): string | undefined {
+  const extension = url.split(/[?#]/)[0]?.split('.').pop()?.toLowerCase() ?? ''
+  return ICON_TYPES[extension]
+}

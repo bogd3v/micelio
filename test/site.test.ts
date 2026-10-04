@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ALL_MODULES_ON, fediverseUser, mergeSite, siteFromAppConfig, xHandle } from '../app/helpers/site'
+import { ALL_MODULES_ON, fediverseUser, iconType, mergeSite, siteFromAppConfig, xHandle } from '../app/helpers/site'
 import type { AppSiteConfig } from '../app/helpers/site'
 import { parseSiteSettings } from '../server/schemas/site'
 import { Locale } from '../app/interfaces/locale'
@@ -66,6 +66,18 @@ describe('fediverseUser', () => {
     expect(fediverseUser('@bogdev@api.bogdev.com.co')).toBe('@bogdev')
     expect(fediverseUser('bogdev@example.org')).toBe('@bogdev')
     expect(fediverseUser('')).toBe('')
+  })
+})
+
+describe('iconType', () => {
+  it('reads the media type from the extension', () => {
+    expect(iconType('/bogdev.svg')).toBe('image/svg+xml')
+    expect(iconType('https://cdn.test/avatar.PNG?v=2')).toBe('image/png')
+    expect(iconType('/favicon.ico')).toBe('image/x-icon')
+  })
+
+  it('leaves an unknown extension to the browser', () => {
+    expect(iconType('/icon')).toBeUndefined()
   })
 })
 
