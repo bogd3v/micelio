@@ -12,11 +12,11 @@ function scrollToTop() {
   <Transition name="fade">
     <button
       v-if="isVisible"
-      class="fixed bottom-[calc(var(--bd-tabbar-h)+1.5rem)] right-6 z-50 w-12 h-12 rounded-full bg-[var(--link)] text-[var(--on-ink)] shadow-lg hover:bg-[color-mix(in oklab, var(--link) 80%, var(--ink))] hover:scale-110 transition-all duration-200 flex items-center justify-center"
+      class="bd-back-to-top"
       :aria-label="t('common.backToTop')"
       @click="scrollToTop"
     >
-      <UIcon name="i-heroicons-chevron-up" class="w-6 h-6" />
+      <IconsChevronUp />
     </button>
   </Transition>
 </template>

@@ -196,3 +196,9 @@
         translate: 0 0;
     }
 }
+
+@keyframes bd-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

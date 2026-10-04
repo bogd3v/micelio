@@ -1,0 +1,46 @@
+.bd-confirm-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding-inline: 1rem;
+}
+
+.bd-confirm-body {
+    width: 100%;
+    max-width: 28rem;
+    text-align: center;
+}
+
+.bd-confirm-card {
+    padding: 2rem;
+}
+
+.bd-confirm-icon {
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+}
+
+.bd-confirm-loading {
+    width: 3rem;
+    height: 3rem;
+    color: var(--link);
+    animation: bd-spin 1s linear infinite;
+}
+
+.bd-confirm-title {
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: calc(2 / 1.5);
+}
+
+.bd-confirm-text {
+    margin-bottom: 1.5rem;
+    color: var(--ink-muted);
+}
+
+.bd-confirm-status {
+    color: var(--ink-muted);
+}

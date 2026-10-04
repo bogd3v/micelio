@@ -27,38 +27,38 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center px-4">
-    <div class="text-center max-w-md">
-      <div class="w-32 h-32 mx-auto mb-8 rounded-full gradient-bogota-subtle flex items-center justify-center">
-        <span class="text-6xl font-display font-bold text-[var(--link)]">
+  <div class="bd-error-page">
+    <div class="bd-error-body">
+      <div class="bd-error-code gradient-bogota-subtle">
+        <span class="bd-error-code-text font-display">
           {{ error.statusCode || 404 }}
         </span>
       </div>
 
-      <h1 class="text-3xl font-display font-semibold mb-4">
+      <h1 class="bd-error-title font-display">
         {{ error.statusCode === 404 ? t('error.pageNotFound') : t('error.somethingWentWrong') }}
       </h1>
 
-      <p class="text-[var(--ink-muted)] mb-8">
+      <p class="bd-error-text">
         {{ error.statusCode === 404
           ? t('error.notExist')
           : t('error.unexpected')
         }}
       </p>
 
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <div class="bd-error-actions">
         <BdButton @click="handleError">
-          <UIcon name="i-heroicons-home" class="w-4 h-4" />
+          <IconsHome />
           {{ t('error.goHome') }}
         </BdButton>
         <BdButton :href="localizePath('/blog')" variant="secondary">
-          <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
+          <IconsDocumentText />
           {{ t('error.browseBlog') }}
         </BdButton>
       </div>
 
-      <div class="mt-12 p-4 rounded-lg bg-[var(--surface-sunken)]">
-        <p class="text-sm text-[var(--ink-muted)]">
+      <div class="bd-error-help">
+        <p>
           {{ t('error.contactSupport') }}
         </p>
       </div>

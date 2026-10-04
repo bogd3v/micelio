@@ -1,0 +1,5 @@
+/* Inline SVG icons (app/components/icons/): inline and on the baseline, like the icon font they replaced */
+.bd-icon {
+    display: inline-block;
+    vertical-align: baseline;
+}

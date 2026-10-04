@@ -1,0 +1,28 @@
+.bd-back-to-top {
+    position: fixed;
+    right: 1.5rem;
+    bottom: calc(var(--bd-tabbar-h) + 1.5rem);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: calc(infinity * 1px);
+    color: var(--on-ink);
+    background-color: var(--link);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* The old hover color never applied (a utility with spaces Tailwind could not parse); only the zoom did */
+@media (hover: hover) {
+    .bd-back-to-top:hover {
+        scale: 1.1;
+    }
+}
+
+.bd-back-to-top .bd-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+}

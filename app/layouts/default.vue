@@ -24,7 +24,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="bd-app">
     <LayoutSkipLinks />
     <LayoutBackToTop />
 
@@ -45,7 +45,7 @@ onMounted(() => {
 
     <BdSearchPalette v-if="searchOn" :open="isSearchOpen" @close="isSearchOpen = false" />
 
-    <main id="main-content" class="flex-1" role="main">
+    <main id="main-content" class="bd-app-main" role="main">
       <slot />
     </main>
 

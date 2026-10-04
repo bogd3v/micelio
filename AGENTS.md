@@ -137,7 +137,8 @@ function handleClick() {
 ### CSS/Styling Conventions
 
 - Colors, shadows and glows come from the semantic roles of ADR 0005 (`var(--ink)`, `var(--ink-muted)`, `var(--surface)`, `var(--link)`, `var(--accent)`, `var(--danger)`, `var(--category-3)`…), never from the theme's primitives (`--mirla`, `--chillon`, `--tingua`…). Primitives live only in `assets/css/settings/`; `npm run lint` fails otherwise (`scripts/check-primitives.mjs`). A category's color is `categoryColor(slug)` from `app/helpers/categories.ts`
-- Use Tailwind utility classes as base, supplemented with custom CSS
+- No utility classes in templates: every class is a `bd-*` class in its layer, or one of the core helpers (`card`, `font-display`, `font-mono`, `gradient-bogota-subtle`, `not-prose`). `npm run lint` fails otherwise (`scripts/check-classes.mjs`; ADR 0005, section 3)
+- Icons are inline SVG components in `app/components/icons/` (`<IconsHome />`), sized by the parent's CSS
 - Use `.card` class for card components with hover effects
 - Use `<BdButton>` (`app/components/bd/`) for buttons and button-styled links; the `Bd*` components mirror the BogDev design system (see `docs/design/DESIGN.md`)
 - Use `.input-field` for form inputs
@@ -158,7 +159,7 @@ Global styles live in `app/assets/css/`, split by responsibility (ITCSS-style, p
 | `animations/` | `bd.animations` | Every `@keyframes` |
 | `utilities/` | `bd.utilities` | Single-purpose helpers (`.bd-sr`, `.bd-reveal`, `.bd-wide`…) and the `prose-devbog` Tailwind utility |
 
-- Layers decide precedence before specificity: `bd.components` < `bd.layout` < `bd.pages` < `bd.utilities` < Tailwind utilities. A page or layout rule can restyle a component without raising specificity, and a Tailwind utility on an element always wins over `.bd-*`
+- Layers decide precedence before specificity: `bd.components` < `bd.layout` < `bd.pages` < `bd.utilities`. A page or layout rule can restyle a component without raising specificity. Within a layer, a component that must beat a context rule (`.bd-prose blockquote`) matches its specificity (`blockquote.bd-quote`) and comes later in `main.css`
 - New `.bd-*` block: create its own file in the matching folder and add the `@import` with its layer to `main.css`, in the same folder group
 - Keep a block's `@media`, `@container` and `prefers-reduced-motion` rules in the block's own file
 - Keep files under ~500 lines; split by sub-block when they grow

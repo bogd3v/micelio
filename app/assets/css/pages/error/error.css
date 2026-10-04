@@ -1,0 +1,73 @@
+.bd-error-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding-inline: 1rem;
+}
+
+.bd-error-body {
+    max-width: 28rem;
+    text-align: center;
+}
+
+.bd-error-code {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 8rem;
+    height: 8rem;
+    margin: 0 auto 2rem;
+    border-radius: calc(infinity * 1px);
+}
+
+.bd-error-code-text {
+    color: var(--link);
+    font-size: 3.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.bd-error-title {
+    margin-bottom: 1rem;
+    font-size: 1.875rem;
+    font-weight: 600;
+    line-height: calc(2.25 / 1.875);
+}
+
+.bd-error-text {
+    margin-bottom: 2rem;
+    color: var(--ink-muted);
+}
+
+.bd-error-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+@media (min-width: 40rem) {
+    .bd-error-actions {
+        flex-direction: row;
+    }
+}
+
+.bd-error-actions .bd-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.bd-error-help {
+    margin-top: 3rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: var(--surface-sunken);
+}
+
+.bd-error-help p {
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+    line-height: calc(1.25 / 0.875);
+}

@@ -43,30 +43,23 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="min-h-[60vh] flex items-center justify-center px-4">
-    <div class="max-w-md w-full text-center">
-      <div v-if="status === 'loading'" class="card p-8">
-        <UIcon
-          name="i-heroicons-arrow-path"
-          class="w-12 h-12 mx-auto mb-4 text-[var(--link)] animate-spin"
-        />
-        <p class="text-[var(--ink-muted)]">{{ t("common.loading") }}</p>
+  <div class="bd-confirm-page">
+    <div class="bd-confirm-body">
+      <div v-if="status === 'loading'" class="card bd-confirm-card">
+        <IconsArrowPath class="bd-confirm-icon bd-confirm-loading" />
+        <p class="bd-confirm-status">{{ t("common.loading") }}</p>
       </div>
 
       <div
         v-else-if="status === 'success'"
-        class="card p-8"
+        class="card bd-confirm-card"
         style="background-color: var(--success-soft); border-color: var(--success)"
       >
-        <UIcon
-          name="i-heroicons-check-circle"
-          class="w-16 h-16 mx-auto mb-4"
-          style="color: var(--success)"
-        />
-        <h1 class="font-display text-2xl font-semibold mb-2">
+        <IconsCheckCircle class="bd-confirm-icon" style="color: var(--success)" />
+        <h1 class="bd-confirm-title font-display">
           {{ t("confirm.successTitle") }}
         </h1>
-        <p class="text-[var(--ink-muted)] mb-6">{{ successMessage }}</p>
+        <p class="bd-confirm-text">{{ successMessage }}</p>
         <BdButton href="/blog">
           {{ t("confirm.browseBlog") }}
         </BdButton>
@@ -74,18 +67,14 @@ useSeoMeta({
 
       <div
         v-else
-        class="card p-8"
+        class="card bd-confirm-card"
         style="background-color: var(--danger-soft); border-color: var(--danger)"
       >
-        <UIcon
-          name="i-heroicons-x-circle"
-          class="w-16 h-16 mx-auto mb-4"
-          style="color: var(--danger)"
-        />
-        <h1 class="font-display text-2xl font-semibold mb-2">
+        <IconsXCircle class="bd-confirm-icon" style="color: var(--danger)" />
+        <h1 class="bd-confirm-title font-display">
           {{ t("confirm.errorTitle") }}
         </h1>
-        <p class="text-[var(--ink-muted)] mb-6">{{ errorMessage }}</p>
+        <p class="bd-confirm-text">{{ errorMessage }}</p>
         <BdButton href="/" variant="secondary">
           {{ t("confirm.goHome") }}
         </BdButton>
