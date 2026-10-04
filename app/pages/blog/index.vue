@@ -190,6 +190,7 @@ useSeoMeta({
 
     <div class="bd-blog-body">
       <div id="posts" class="bd-blog-main" :aria-busy="status === 'pending'">
+        <h2 v-if="posts.length && view !== 'log'" class="bd-sr">{{ t("blog.listTitle") }}</h2>
         <BlogLog v-if="posts.length && view === 'log'" :posts="posts" :federated="federated" :highlight="filters.search" />
 
         <div v-else-if="posts.length" class="bd-blog-grid">
