@@ -29,6 +29,7 @@ interface MockSubscriber {
 interface MockFailures {
   pathOrder: boolean
   about: boolean
+  site: boolean
 }
 
 interface MockStrapiResult {
@@ -424,7 +425,7 @@ function recordRequest(
 
 export async function startMockStrapi(): Promise<MockStrapiResult> {
   const requests: RecordedRequest[] = []
-  const failures: MockFailures = { pathOrder: false, about: false }
+  const failures: MockFailures = { pathOrder: false, about: false, site: false }
   const authMock = createAuthMock({ frontendUrl: 'https://bogdev.test' })
   const draftsMock = createDraftsMock({ userFromAuth: authMock.userFromAuth, publishedArticles: articles })
 
@@ -596,6 +597,36 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
           .map(article => ({ id: article.id })),
       }))
       sendJson(res, 200, { data: categories })
+      return
+    }
+
+    if (method === 'GET' && url.pathname === '/api/site-setting') {
+      if (failures.site) {
+        sendJson(res, 500, { data: null, error: { status: 500, name: 'InternalServerError', message: 'Internal Server Error' } })
+        return
+      }
+      const locale = (query.locale as string | undefined) ?? 'en'
+      sendJson(res, 200, {
+        data: {
+          id: 1,
+          documentId: 'site',
+          locale,
+          name: 'Micelio',
+          description: locale === 'es' ? 'Un motor de blogs' : '',
+          url: 'https://micelio.test',
+          defaultLocale: 'en',
+          author: { id: 1, name: 'Grace', url: null },
+          logo: { id: 9, url: '/uploads/logo.svg', alternativeText: 'Micelio', width: 120, height: 40 },
+          favicon: null,
+          defaultOgImage: null,
+          socialLinks: [{ id: 1, network: 'codeberg', url: 'https://codeberg.org/micelio' }],
+          contactEmail: 'hola@micelio.test',
+          privacyContactEmail: null,
+          privacyUpdatedAt: null,
+          supportHandle: null,
+          modules: { id: 1, newsletter: true, comments: false, accounts: true, drafts: true, fediverse: true, search: true, support: true },
+        },
+      })
       return
     }
 

@@ -23,6 +23,7 @@ Create a **Custom** token, never Full Access or Read Only, with exactly these pe
 | Article | `find` | Blog list, article page (looked up by slug), reading path, RSS feeds. The search route (`/api/articles/search`) is public in the backend and needs no permission |
 | Category, Tag | `find` | Filters and counts |
 | About | `find` | About page |
+| Site-setting | `find` | Site identity and modules (`/api/site`). Without it Strapi answers 403 and every page falls back to `app.config.ts` |
 | Comments (plugin) | read (hierarchy and flat), create | Comment threads and guest comments |
 | Subscriber | `find`, `create`, `update`, `delete` | Newsletter: subscribe, confirm, unsubscribe |
 
@@ -45,7 +46,7 @@ Every request body and query is validated with a zod schema (`server/schemas/`) 
 
 | Endpoint | Access | Protections |
 | --- | --- | --- |
-| `GET /api/posts`, `/api/posts/:slug`, `/api/search`, `/api/categories`, `/api/tags`, `/api/about`, `/api/reading-path` | Public | Query schema: known locales only, `pageSize` ≤ 50, slugs, search ≤ 200 chars |
+| `GET /api/posts`, `/api/posts/:slug`, `/api/search`, `/api/categories`, `/api/tags`, `/api/about`, `/api/reading-path`, `/api/site` | Public | Query schema: known locales only, `pageSize` ≤ 50, slugs, search ≤ 200 chars |
 | `GET /api/comments`, `/api/comments/flat` | Public | Relation must be `api::article.article:<id>`; pagination and sort validated; email and hidden comments never returned |
 | `POST /api/comments` | Public | Same-origin check, 10 per IP every 10 min, allow-listed fields and lengths, author id set by the server |
 | `GET /api/fediverse/stats`, `/api/fediverse/stats/:documentId` | Public | Document id pattern, at most 50 ids |
