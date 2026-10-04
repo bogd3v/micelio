@@ -557,8 +557,8 @@
     }
   },
   "feed": {
-    "categoryTitle": "BogDev - {category}",
-    "categoryDescription": "BogDev articles about {category}, from Bogotá, Colombia."
+    "categoryTitle": "{site} - {category}",
+    "categoryDescription": "{site} articles about {category}, from Bogotá, Colombia."
   },
   "account": {
     "meta": {

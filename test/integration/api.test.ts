@@ -294,7 +294,8 @@ describe('RSS feeds', () => {
     expect(english.status).toBe(200)
     expect(english.type).toBe('application/rss+xml; charset=utf-8')
     expect(english.cache).toBe('public, s-maxage=1800, stale-while-revalidate=3600')
-    expect(english.body).toContain('<title>BogDev - Personal Blog</title>')
+    expect(english.body).toContain('<title>Micelio - Personal Blog</title>')
+    expect(english.body).toContain('<generator>Micelio</generator>')
     expect(english.body).toContain(`<atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml"/>`)
     expect(items(english.body)).toEqual(['Understanding Vue Composables', 'Linux Server Hardening Guide'])
 
@@ -302,7 +303,7 @@ describe('RSS feeds', () => {
     const legacy = await feed('/feed.xml?lang=es')
     expect(spanish.status).toBe(200)
     expect(spanish.body.replace(/<lastBuildDate>.*<\/lastBuildDate>/, '')).toBe(legacy.body.replace(/<lastBuildDate>.*<\/lastBuildDate>/, ''))
-    expect(spanish.body).toContain('<title>BogDev - Personal Blog (Español)</title>')
+    expect(spanish.body).toContain('<title>Micelio - Personal Blog (Español)</title>')
     expect(items(spanish.body)).toEqual(['Guía de Vue Composables'])
   })
 
@@ -311,8 +312,8 @@ describe('RSS feeds', () => {
     expect(linux.status).toBe(200)
     expect(linux.type).toBe('application/rss+xml; charset=utf-8')
     expect(linux.cache).toBe('public, s-maxage=1800, stale-while-revalidate=3600')
-    expect(linux.body).toContain('<title>BogDev - Linux and open source</title>')
-    expect(linux.body).toContain('<description>BogDev articles about Linux and open source, from Bogotá, Colombia.</description>')
+    expect(linux.body).toContain('<title>Micelio - Linux and open source</title>')
+    expect(linux.body).toContain('<description>Micelio articles about Linux and open source, from Bogotá, Colombia.</description>')
     expect(linux.body).toContain(`<link>${SITE_URL}/blog?category=linux</link>`)
     expect(linux.body).toContain(`<atom:link href="${SITE_URL}/feed/linux.xml" rel="self" type="application/rss+xml"/>`)
     expect(linux.body).toContain(`<atom:link href="${SITE_URL}/es/feed/linux.xml" rel="alternate" type="application/rss+xml" hreflang="es"/>`)
@@ -320,7 +321,7 @@ describe('RSS feeds', () => {
 
     const software = await feed('/es/feed/software.xml')
     expect(software.status).toBe(200)
-    expect(software.body).toContain('<title>BogDev - Desarrollo de software</title>')
+    expect(software.body).toContain('<title>Micelio - Desarrollo de software</title>')
     expect(software.body).toContain('<language>es-co</language>')
     expect(software.body).toContain(`<atom:link href="${SITE_URL}/es/feed/software.xml" rel="self" type="application/rss+xml"/>`)
     expect(items(software.body)).toEqual(['Guía de Vue Composables'])
@@ -332,9 +333,17 @@ describe('RSS feeds', () => {
   it('returns a valid empty feed for a category without articles', async () => {
     const privacy = await feed('/feed/privacidad.xml')
     expect(privacy.status).toBe(200)
-    expect(privacy.body).toContain('<title>BogDev - Privacy</title>')
+    expect(privacy.body).toContain('<title>Micelio - Privacy</title>')
     expect(privacy.body).not.toContain('<item>')
     expect(privacy.body.trim().endsWith('</channel>\n</rss>')).toBe(true)
+  })
+
+  it('names the feed from app.config.ts when Strapi has no site-setting', async () => {
+    mock.failures.site = true
+    const english = await feed('/feed.xml')
+    expect(english.status).toBe(200)
+    expect(english.body).toContain('<title>BogDev - Personal Blog</title>')
+    expect(english.body).toContain('<generator>BogDev</generator>')
   })
 
   it('answers 404 for unknown categories or files without calling Strapi', async () => {

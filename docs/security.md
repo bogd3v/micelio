@@ -23,7 +23,7 @@ Create a **Custom** token, never Full Access or Read Only, with exactly these pe
 | Article | `find` | Blog list, article page (looked up by slug), reading path, RSS feeds. The search route (`/api/articles/search`) is public in the backend and needs no permission |
 | Category, Tag | `find` | Filters and counts |
 | About | `find` | About page |
-| Site-setting | `find` | Site identity and modules (`/api/site`). Without it Strapi answers 403 and every page falls back to `app.config.ts` |
+| Site-setting | `find` | Site identity and modules (`/api/site`, RSS feeds, newsletter emails). Without it Strapi answers 403 and everything falls back to `app.config.ts` |
 | Comments (plugin) | read (hierarchy and flat), create | Comment threads and guest comments |
 | Subscriber | `find`, `create`, `update`, `delete` | Newsletter: subscribe, confirm, unsubscribe |
 

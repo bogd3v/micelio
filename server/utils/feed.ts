@@ -1,6 +1,6 @@
 import qs from 'qs'
 import type { H3Event } from 'h3'
-import type { Category, RawStrapiArticle } from '~/interfaces'
+import type { Category, Locale, RawStrapiArticle } from '~/interfaces'
 import { isCategory } from '~/helpers/categories'
 import { feedPath } from '~/helpers/feed'
 import en from '../../i18n/locales/en.json'
@@ -36,14 +36,18 @@ function escapeXml(value: string): string {
     .replaceAll('"', '&quot;')
 }
 
-function channelTitle(locale: FeedLocale, category?: Category): string {
-  if (!category) return `BogDev - Personal Blog${locale === 'es' ? ' (Español)' : ''}`
-  return MESSAGES[locale].feed.categoryTitle.replace('{category}', MESSAGES[locale].bd.categories[category])
+function categoryMessage(message: string, siteName: string, locale: FeedLocale, category: Category): string {
+  return message.replace('{site}', siteName).replace('{category}', MESSAGES[locale].bd.categories[category])
 }
 
-function channelDescription(locale: FeedLocale, category?: Category): string {
+function channelTitle(siteName: string, locale: FeedLocale, category?: Category): string {
+  if (!category) return `${siteName} - Personal Blog${locale === 'es' ? ' (Español)' : ''}`
+  return categoryMessage(MESSAGES[locale].feed.categoryTitle, siteName, locale, category)
+}
+
+function channelDescription(siteName: string, locale: FeedLocale, category?: Category): string {
   if (!category) return 'Exploring AI, Software Development, Linux, and more. A personal space for thoughts, tutorials, and experiments from Bogotá, Colombia.'
-  return MESSAGES[locale].feed.categoryDescription.replace('{category}', MESSAGES[locale].bd.categories[category])
+  return categoryMessage(MESSAGES[locale].feed.categoryDescription, siteName, locale, category)
 }
 
 async function fetchFeedPosts({ locale, category }: FeedOptions): Promise<RawStrapiArticle[]> {
@@ -62,15 +66,15 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
   const { locale, category } = options
   const config = useRuntimeConfig()
   const baseUrl = config.public.siteUrl
-  const posts = await fetchFeedPosts(options)
+  const [posts, { site }] = await Promise.all([fetchFeedPosts(options), loadSite(locale as Locale)])
 
   const feedUrl = `${baseUrl}${feedPath(locale, category)}`
   const altFeedUrl = `${baseUrl}${feedPath(otherLocale(locale), category)}`
   const channelLink = category
     ? `${baseUrl}${localePrefix(locale)}/blog?category=${category}`
     : `${baseUrl}${localePrefix(locale)}`
-  const title = category ? escapeXml(channelTitle(locale, category)) : channelTitle(locale)
-  const description = category ? escapeXml(channelDescription(locale, category)) : channelDescription(locale)
+  const title = escapeXml(channelTitle(site.name, locale, category))
+  const description = escapeXml(channelDescription(site.name, locale, category))
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xhtml="http://www.w3.org/1999/xhtml">
@@ -82,7 +86,7 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml"/>
     <atom:link href="${altFeedUrl}" rel="alternate" type="application/rss+xml" hreflang="${otherLocale(locale)}"/>
-    <generator>BogDev</generator>
+    <generator>${escapeXml(site.name)}</generator>
     ${posts
       .map((post) => {
         const coverUrl = post.cover?.url
