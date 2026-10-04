@@ -7,6 +7,16 @@ const privatePageHeaders = {
   'x-robots-tag': 'noindex, nofollow',
 }
 
+// Lightning CSS encodes a version as (major << 16) | (minor << 8)
+const version = (major: number, minor = 0): number => (major << 16) | (minor << 8)
+const BROWSER_TARGETS = {
+  chrome: version(111),
+  edge: version(111),
+  firefox: version(114),
+  safari: version(16, 4),
+  ios_saf: version(16, 4),
+}
+
 export default defineNuxtConfig({
   modules: ['@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
   ssr: true,
@@ -121,7 +131,12 @@ export default defineNuxtConfig({
     },
   },
   vite: {
+    css: {
+      transformer: 'lightningcss',
+      lightningcss: { targets: BROWSER_TARGETS },
+    },
     build: {
+      cssTarget: ['chrome111', 'edge111', 'firefox114', 'safari16.4', 'ios16.4'],
       rollupOptions: {
         experimental: {
           // Merging pulled Mermaid's d3 chunk into every page; see docs/performance.md
