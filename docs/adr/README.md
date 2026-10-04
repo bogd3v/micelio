@@ -8,6 +8,7 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0002](0002-first-party-umami-proxy.md) | Serve Umami analytics first-party through a Nitro proxy | Accepted | 2026-09-30 |
 | [0003](0003-session-in-httponly-cookie.md) | Keep the Strapi JWT in an httpOnly cookie behind a server-side BFF | Accepted | 2026-09-30 |
 | [0004](0004-hash-based-csp.md) | Build the Content Security Policy from hashes of the rendered HTML | Accepted | 2026-10-02 |
+| [0005](0005-theme-contract.md) | Theme contract v1: plain CSS, semantic roles, layout variants, public hooks, theme-declared modes and bounded overrides | Proposed | 2026-10-03 |
 
 ## Writing a new record
 
