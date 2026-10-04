@@ -1,6 +1,7 @@
 import qs from 'qs'
 import type { H3Event } from 'h3'
 import type { DraftArticleResponse, Locale, PublishedVersion, RawStrapiArticle } from '~/interfaces'
+import { renderArticleBlocks } from '~/helpers/markdown'
 
 async function fetchPublishedVersion(event: H3Event, jwt: string, path: string, locale: Locale | undefined): Promise<PublishedVersion | null> {
   const query = qs.stringify({ status: 'published', locale, fields: ['slug', 'updatedAt', 'publishedAt'] }, { skipNulls: true })
@@ -29,5 +30,6 @@ export default defineEventHandler(async (event): Promise<DraftArticleResponse> =
   ])
   if (!draft.data) throw draftNotFound()
 
-  return { article: draft.data, published }
+  const article = { ...draft.data, blocks: renderArticleBlocks(draft.data.blocks, draft.data.references, markdownRenderer(locale)) }
+  return { article, published }
 })

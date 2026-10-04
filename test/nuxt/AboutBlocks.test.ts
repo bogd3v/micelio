@@ -9,6 +9,7 @@ import StrapiProjectsBlock from '~/components/strapi/ProjectsBlock.vue'
 import StrapiPrinciplesBlock from '~/components/strapi/PrinciplesBlock.vue'
 import StrapiOpenSourceBlock from '~/components/strapi/OpenSourceBlock.vue'
 import StrapiContactBlock from '~/components/strapi/ContactBlock.vue'
+import { createMarkdownRenderer, renderBlocks } from '~/helpers/markdown'
 
 const blocks = aboutBlocks('en') as StrapiBlock[]
 
@@ -89,9 +90,13 @@ describe('StrapiPrinciplesBlock', () => {
   })
 })
 
+function rendered(openSource: StrapiOpenSource): StrapiOpenSource {
+  return renderBlocks([openSource], createMarkdownRenderer({ callout: tone => tone, cite: n => `${n}` }))[0] as StrapiOpenSource
+}
+
 describe('StrapiOpenSourceBlock', () => {
   it('renders inline links and opens the search from the guide', async () => {
-    const wrapper = await mountSuspended(StrapiOpenSourceBlock, { props: { block: block<StrapiOpenSource>('about.open-source') } })
+    const wrapper = await mountSuspended(StrapiOpenSourceBlock, { props: { block: rendered(block<StrapiOpenSource>('about.open-source')) } })
     expect(wrapper.find('figure.bd-code').exists()).toBe(true)
     const items = wrapper.findAll('.bd-guide-list li')
     expect(items).toHaveLength(4)
@@ -105,7 +110,7 @@ describe('StrapiOpenSourceBlock', () => {
 
   it('does not render raw HTML from Strapi', async () => {
     const openSource = { ...block<StrapiOpenSource>('about.open-source'), guide: [{ id: 1, text: 'Hi <img src=x onerror=alert(1)> **there**' }] }
-    const wrapper = await mountSuspended(StrapiOpenSourceBlock, { props: { block: openSource } })
+    const wrapper = await mountSuspended(StrapiOpenSourceBlock, { props: { block: rendered(openSource) } })
     const html = wrapper.get('.bd-guide-list li').html()
     expect(html).not.toContain('<img')
     expect(html).toContain('<strong>there</strong>')

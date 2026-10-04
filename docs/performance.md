@@ -59,8 +59,9 @@ Dynamic mode, production build of `main` at `9aa9c3f`, against the e2e mock:
 | 2026-10-03 | Baseline (#251) | 518.4 KB JS and 153.2 KB CSS sent, LCP 8.0 s, performance 58 |
 | 2026-10-03 | Precompressed public assets: Nitro `compressPublicAssets` writes `.br` and `.gz` next to every asset at build time and serves the one the browser accepts, with `Vary: Accept-Encoding` | 171.4 KB JS (−67 %) and 22.5 KB CSS (−85 %) sent, LCP 5.1 s, performance 73. On `/privacy`, LCP 6.1 → 3.3 s and performance 64 → 88 |
 | 2026-10-03 | `qs` out of the client bundle: `useStrapi` builds its flat query strings with `URLSearchParams` (`app/helpers/query.ts`) | 160.2 KB JS sent (−11.2 KB on every page; −12.2 KB gzipped) |
+| 2026-10-03 | Markdown rendered on the server: `/api/posts/:slug`, `/api/about` and `/api/drafts/:documentId` return each text block's sanitized `html` (`app/helpers/markdown.ts`), so `marked`, `sanitize-html`, `postcss`, `htmlparser2` and `entities` leave the client. Rolldown's `chunkOptimization.mergeCommonChunks` is off: with those CommonJS packages gone, merging moved its runtime helpers into the chunk with Mermaid's d3 and `dayjs`, which the icon chunk on every page imports (+14 KB on the home page) | Home 159.5 KB JS sent (no change); article 233.3 → 171.2 KB (−27 %) and about 220.3 → 157.3 KB (−29 %). The article HTML grows 1.6 KB raw because the payload carries `html` |
 
-Pending: the HTML is rendered per request, so Nitro does not compress it (108.5 KB on the home page, 27.1 KB gzipped). The reverse proxy (Traefik in Dokploy) should compress responses that arrive without `content-encoding`; it leaves the precompressed assets alone.
+The HTML is rendered per request, so Nitro does not compress it (108.5 KB on the home page here). In production Traefik compresses it, together with Strapi's JSON (bogd3v/bogdev-infra#10): the home page HTML goes from 141.8 KB to 27.7 KB with brotli. This measurement serves the Nitro build directly, so it still reports the uncompressed HTML.
 
 ## Targets
 

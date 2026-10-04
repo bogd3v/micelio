@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import type { StrapiRichText } from '~/interfaces'
 
-const props = defineProps<{
+defineProps<{
   block: StrapiRichText
 }>()
-
-const { renderMarkdown } = useMarkdownRenderer()
-const citations = useBlockCitations(() => props.block)
 
 const root = ref<HTMLElement | null>(null)
 
@@ -15,5 +12,5 @@ useMermaid(root)
 </script>
 
 <template>
-  <div ref="root" v-html="renderMarkdown(block.body, citations)" />
+  <div ref="root" v-html="block.html ?? ''" />
 </template>

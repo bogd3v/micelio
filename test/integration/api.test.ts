@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 import type { RawStrapiArticle } from '~/interfaces/strapi-post'
+import type { StrapiRichText } from '~/interfaces/strapi-blocks'
 import { Category } from '~/interfaces/design'
 import { startMockStrapi } from './mock-strapi'
 import { MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
@@ -400,6 +401,13 @@ describe('/api/posts/[slug]', () => {
     expect(result.blocks).toHaveLength(1)
     expect(result.category?.slug).toBe(Category.Software)
     expect(result.tags?.map(tag => tag.name)).toEqual(['Vue', 'TypeScript', 'DevOps'])
+  })
+
+  it('renders the Markdown of each block on the server', async () => {
+    const result = await $fetch<RawStrapiArticle>('/api/posts/understanding-vue-composables', { query: { locale: 'en' } })
+    const block = result.blocks?.[0] as StrapiRichText
+    expect(block.body).toContain('## Getting Started')
+    expect(block.html).toBe('<h2 id="getting-started">Getting Started</h2>\n<p>Composables let you share stateful logic across components.</p>\n')
   })
 
   it('asks Strapi for the article references', async () => {

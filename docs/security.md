@@ -62,8 +62,8 @@ Rate limits are in memory (`server/utils/rateLimit.ts`): they reset when the con
 ## Browser-side protections
 
 - **Security headers** on every response (`SECURITY_HEADERS` in `app/helpers/securityHeaders.ts`): HSTS, `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, COOP.
-- **Content Security Policy** on every page, built in `server/plugins/contentSecurityPolicy.ts` from the rendered HTML: each inline script is allowed by its SHA-256, so `script-src` has no `'unsafe-inline'`. Images: the site, Strapi and `NUXT_MEDIA_URL`; frames: YouTube and Vimeo only. To allow a new image or embed domain, add it to `contentSecurityPolicy()` and to the `sanitize-html` options in `useMarkdownRenderer.ts` together.
-- **Rich text** from Strapi is rendered with `marked` and always passed through `sanitize-html`; the three `v-html` lint warnings point at sanitized output.
+- **Content Security Policy** on every page, built in `server/plugins/contentSecurityPolicy.ts` from the rendered HTML: each inline script is allowed by its SHA-256, so `script-src` has no `'unsafe-inline'`. Images: the site, Strapi and `NUXT_MEDIA_URL`; frames: YouTube and Vimeo only. To allow a new image or embed domain, add it to `contentSecurityPolicy()` and to the `sanitize-html` options in `app/helpers/markdown.ts` together.
+- **Rich text** from Strapi is rendered on the server with `marked` and always passed through `sanitize-html` before it leaves the API (`app/helpers/markdown.ts`, used by the post, about and draft routes). If rendering fails, the text is escaped, never passed through. The three `v-html` lint warnings point at that sanitized `html`.
 - **Cookies**: only `bd_session`, and only after signing in.
 
 ## Dependencies

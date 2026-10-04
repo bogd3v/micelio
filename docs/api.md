@@ -23,6 +23,8 @@ Conventions:
 
 Types: `app/interfaces/strapi-post.ts` (`RawStrapiArticle`, `SearchPostResult`, `TagCount`), `strapi-response.ts`, `design.ts` (`CategoryCount`), `blog.ts` (`ReadingPath`), `strapi-about.ts`.
 
+**Rendered Markdown.** `/api/posts/:slug`, `/api/about` and `/api/drafts/:documentId` render Markdown on the server (`app/helpers/markdown.ts`, labels from `i18n/locales/` in the request's `locale`): every `shared.rich-text` and `shared.quote` block gets an `html` field, and every `about.open-source` guide item an `html` field, already sanitized. Article citations are numbered on the server from the article's `references`. `body` and `text` are still returned for the table of contents and the reference list. Components render `html` and never parse Markdown in the browser.
+
 ## Comments
 
 `relation` is required on every comment route and must be `api::article.article:<documentId or slug>`, or the answer is `400`.

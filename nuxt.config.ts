@@ -133,6 +133,16 @@ export default defineNuxtConfig({
       cache: { driver: 'memory' },
     },
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        experimental: {
+          // Merging pulled Mermaid's d3 chunk into every page; see docs/performance.md
+          chunkOptimization: { mergeCommonChunks: false },
+        },
+      },
+    },
+  },
   eslint: {
     config: {
       stylistic: {

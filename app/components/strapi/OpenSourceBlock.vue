@@ -7,8 +7,6 @@ defineProps<{
   block: StrapiOpenSource
 }>()
 
-const { renderInlineMarkdown } = useMarkdownRenderer()
-
 function onGuideClick(event: MouseEvent): void {
   const link = (event.target as Element).closest('a')
   if (link?.getAttribute('href') !== SEARCH_HREF) return
@@ -29,7 +27,7 @@ function onGuideClick(event: MouseEvent): void {
       <ul class="bd-guide-list" @click="onGuideClick">
         <li v-for="item in block.guide" :key="item.id">
           <span class="bd-guide-arrow" aria-hidden="true">→</span>
-          <span v-html="renderInlineMarkdown(item.text)" />
+          <span v-html="item.html ?? ''" />
         </li>
       </ul>
     </div>
