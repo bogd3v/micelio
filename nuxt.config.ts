@@ -8,7 +8,7 @@ const privatePageHeaders = {
 }
 
 export default defineNuxtConfig({
-  modules: ['@nuxt/ui', '@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
+  modules: ['@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
   ssr: true,
   devtools: { enabled: false },
   app: {
@@ -45,10 +45,6 @@ export default defineNuxtConfig({
     },
   },
   css: ['~/assets/css/main.css'],
-  ui: {
-    colorMode: false,
-    fonts: false,
-  },
   runtimeConfig: {
     strapiApiToken: '',
     smtpHost: '',
