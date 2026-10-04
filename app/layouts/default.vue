@@ -4,6 +4,7 @@ import { headerSection, isReadingPath } from '~/helpers/header'
 
 const route = useRoute()
 const section = useHeaderSection()
+const searchOn = useModule('search')
 
 const isSearchOpen = ref(false)
 const isMobileMenuOpen = ref(false)
@@ -12,7 +13,7 @@ const active = computed<HeaderSection | undefined>(() => headerSection(route.pat
 const reading = computed<boolean>(() => isReadingPath(route.path))
 
 useKeyboardShortcut('k', () => {
-  isSearchOpen.value = !isSearchOpen.value
+  if (searchOn.value) isSearchOpen.value = !isSearchOpen.value
 })
 
 onMounted(() => {
@@ -42,7 +43,7 @@ onMounted(() => {
       @close="isMobileMenuOpen = false"
     />
 
-    <BdSearchPalette :open="isSearchOpen" @close="isSearchOpen = false" />
+    <BdSearchPalette v-if="searchOn" :open="isSearchOpen" @close="isSearchOpen = false" />
 
     <main id="main-content" class="flex-1" role="main">
       <slot />

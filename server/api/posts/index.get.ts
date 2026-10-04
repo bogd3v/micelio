@@ -1,4 +1,5 @@
 import qs from 'qs'
+import { defaultLocale } from '~/interfaces'
 import type { RawStrapiArticle, StrapiPaginatedResponse } from '~/interfaces'
 import { MIN_SEARCH_LENGTH } from '~/helpers/search'
 import { postsQuerySchema } from '../../schemas/query'
@@ -36,7 +37,9 @@ function publishedTime(article: RawStrapiArticle): number {
 }
 
 export default defineEventHandler(async (event) => {
-  const { page, pageSize, locale, category, tag, search, sort, content } = validQuery(event, postsQuerySchema)
+  const { page, pageSize, locale, category, tag, search, sort: requestedSort, content } = validQuery(event, postsQuerySchema)
+  // The fediverse ranking needs the fediverse module; without it the list falls back to the newest first
+  const sort = requestedSort === 'fediverse' && !(await loadSiteCached(defaultLocale)).site.modules.fediverse ? undefined : requestedSort
   const validSearch = search && search.length >= MIN_SEARCH_LENGTH ? search : undefined
   const contentSearch = Boolean(validSearch) && content
 

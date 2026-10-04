@@ -19,6 +19,9 @@ const { locale, t } = useI18n()
 const { getMediaUrl } = useStrapi()
 const { localizePath } = useLocaleUtils()
 const config = useRuntimeConfig()
+const commentsOn = useModule('comments')
+const supportOn = useModule('support')
+const fediverseOn = useModule('fediverse')
 
 const prose = ref<HTMLElement | null>(null)
 
@@ -35,7 +38,7 @@ const headings = computed<TocHeading[]>(() => {
 })
 const mastodonUrl = computed<string>(() => mastodonShareUrl(props.post.title, props.shareUrl))
 const publishedDate = computed<string>(() => formatDotDate(props.post.publishedAt))
-const federated = computed<boolean>(() => !props.draft && locale.value === config.public.fediverseLocale && Boolean(props.post.documentId))
+const federated = computed<boolean>(() => fediverseOn.value && !props.draft && locale.value === config.public.fediverseLocale && Boolean(props.post.documentId))
 const readDocumentId = computed<string | undefined>(() => props.draft ? undefined : props.post.documentId)
 
 useMarkAsRead(prose, readDocumentId)
@@ -112,7 +115,7 @@ useMarkAsRead(prose, readDocumentId)
           </div>
           <BlogReadingPath v-if="!draft && category && post.documentId" :category="category" :current-document-id="post.documentId" />
           <BlogAuthorCard :author="post.author" />
-          <BlogBuyMeACoffee />
+          <BlogBuyMeACoffee v-if="supportOn" />
         </div>
       </article>
 
@@ -120,7 +123,7 @@ useMarkAsRead(prose, readDocumentId)
     </div>
 
     <template v-if="!draft">
-      <BlogCommentSection :slug="post.slug" :document-id="post.documentId" :federated="federated" />
+      <BlogCommentSection v-if="commentsOn" :slug="post.slug" :document-id="post.documentId" :federated="federated" />
       <BlogRelatedPosts :current-post-id="post.id" :category="post.category" />
     </template>
   </div>

@@ -16,6 +16,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
+const searchOn = useModule('search')
 </script>
 
 <template>
@@ -28,7 +29,7 @@ const { localizePath } = useLocaleUtils()
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M5 4 H19 V20 H5 Z M8 8 H16 M8 12 H16 M8 16 H13" /></svg>
       <span>{{ t('nav.blog') }}</span>
     </NuxtLink>
-    <button type="button" class="bd-tab" aria-haspopup="dialog" @click="emit('search')">
+    <button v-if="searchOn" type="button" class="bd-tab" aria-haspopup="dialog" @click="emit('search')">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6" /><path d="M15.5 15.5 L20 20" /></svg>
       <span>{{ t('bd.header.search') }}</span>
     </button>

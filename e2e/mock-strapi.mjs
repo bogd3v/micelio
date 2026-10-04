@@ -494,7 +494,8 @@ const server = createServer(async (req, res) => {
         privacyContactEmail: 'gx_alejandro@hotmail.com',
         privacyUpdatedAt: '2026-10-01T17:00:00.000Z',
         supportHandle: 'ale9420',
-        modules: { id: 1, newsletter: true, comments: true, accounts: true, drafts: true, fediverse: true, search: true, support: true },
+        // MOCK_MODULES_OFF=1 runs e2e/modules-off.spec.ts against a site with every module off
+        modules: { id: 1, ...Object.fromEntries(['newsletter', 'comments', 'accounts', 'drafts', 'fediverse', 'search', 'support'].map(module => [module, process.env.MOCK_MODULES_OFF !== '1'])) },
       },
     })
     return

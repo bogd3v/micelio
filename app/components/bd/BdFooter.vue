@@ -30,6 +30,9 @@ const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
 const site = useSite()
 const fediverseUser = useFediverseUser()
+const fediverseOn = useModule('fediverse')
+const newsletterOn = useModule('newsletter')
+const supportOn = useModule('support')
 
 const year = new Date().getFullYear()
 
@@ -54,15 +57,17 @@ const topics = computed<FooterLink[]>(() =>
 )
 const subscriptions = computed<FooterLink[]>(() => [
   { id: 'rss', label: t('bd.footer.rss'), to: '/feed.xml', external: true },
-  { id: 'fediverse', label: t('bd.footer.fediverse', { handle: fediverseUser }), to: `${localizePath('/')}#fediverso` },
-  { id: 'newsletter', label: t('bd.footer.newsletter'), to: `${localizePath('/')}#newsletter` },
-  {
-    id: 'coffee',
-    label: t('bd.footer.coffee'),
-    to: `https://www.buymeacoffee.com/${site.value.supportHandle}`,
-    external: true,
-    mobileOnly: true,
-  },
+  ...(fediverseOn.value ? [{ id: 'fediverse', label: t('bd.footer.fediverse', { handle: fediverseUser }), to: `${localizePath('/')}#fediverso` }] : []),
+  ...(newsletterOn.value ? [{ id: 'newsletter', label: t('bd.footer.newsletter'), to: `${localizePath('/')}#newsletter` }] : []),
+  ...(supportOn.value
+    ? [{
+        id: 'coffee',
+        label: t('bd.footer.coffee'),
+        to: `https://www.buymeacoffee.com/${site.value.supportHandle}`,
+        external: true,
+        mobileOnly: true,
+      }]
+    : []),
 ])
 const topicGroup = computed<FooterGroup>(() => ({
   id: 'topics',
@@ -81,7 +86,7 @@ const navigateGroup = computed<FooterGroup>(() => ({
 const subscribeGroup = computed<FooterGroup>(() => ({
   id: 'subscribe',
   label: t('bd.footer.subscribe'),
-  summary: t('bd.footer.subscribeSummary'),
+  summary: fediverseOn.value ? t('bd.footer.subscribeSummary') : t('bd.footer.subscribeSummaryRss'),
   open: false,
   links: subscriptions.value,
 }))

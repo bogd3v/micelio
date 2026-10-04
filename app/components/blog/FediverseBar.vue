@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
+const commentsOn = useModule('comments')
 const { copy, copied } = useClipboard({ copiedDuring: COPIED_MS, legacy: true })
 const { fediverseReplies, loaded } = useComments(props.slug, props.documentId)
 const { data: stats } = useFetch<FediverseStats>(() => `/api/fediverse/stats/${props.documentId}`, {
@@ -46,7 +47,7 @@ function copyArticleUrl(): void {
             <span class="bd-fedi-bar-count">{{ stats.boosts }}</span>
             {{ t('post.fediverse.boosts', stats.boosts) }}
           </span>
-          <a v-if="loaded" class="bd-fedi-bar-link" href="#comments">
+          <a v-if="loaded && commentsOn" class="bd-fedi-bar-link" href="#comments">
             <span class="bd-fedi-bar-count">{{ fediverseReplies }}</span>
             {{ t('post.fediverse.replies', fediverseReplies) }}
           </a>

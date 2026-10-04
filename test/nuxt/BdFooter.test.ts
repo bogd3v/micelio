@@ -50,6 +50,19 @@ describe('BdFooter', () => {
     ])
   })
 
+  it('lists only RSS under Subscribe when the fediverse, newsletter and support modules are off', async () => {
+    const site: Site = {
+      ...siteFromAppConfig(useAppConfig().site as AppSiteConfig),
+      modules: { newsletter: false, comments: false, accounts: false, drafts: false, fediverse: false, search: false, support: false },
+    }
+    unregister = registerEndpoint('/api/site', () => site)
+    const wrapper = await mountSuspended(BdFooter)
+    await vi.waitFor(() => expect(wrapper.findAll('nav.bd-foot-nav')[2]!.findAll('a').map(a => a.attributes('href'))).toEqual(['/feed.xml']))
+    const subscribe = wrapper.findAll('details.bd-acc')[2]!
+    expect(subscribe.get('.bd-acc-summary').text()).toBe('RSS')
+    expect(subscribe.findAll('a.bd-foot-row').map(a => a.attributes('href'))).toEqual(['/feed.xml'])
+  })
+
   it('folds the mobile groups with native details, topics open first', async () => {
     const wrapper = await mountSuspended(BdFooter)
     const groups = wrapper.findAll('details.bd-acc')

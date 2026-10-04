@@ -19,6 +19,9 @@ const { t } = useI18n()
 const route = useRoute()
 const { localizePath } = useLocaleUtils()
 const fediverseUser = useFediverseUser()
+const accountsOn = useModule('accounts')
+const draftsOn = useModule('drafts')
+const fediverseOn = useModule('fediverse')
 const { user, isEditor } = useAuth()
 
 const dialogRef = ref<HTMLElement>()
@@ -128,13 +131,14 @@ watch(() => route.fullPath, () => {
       </nav>
 
       <NuxtLink
+        v-if="accountsOn"
         :to="localizePath(user ? '/account' : '/account/sign-in')"
         class="bd-sheet-link bd-sheet-account bd-wide"
       >
         {{ user ? t('bd.header.account') : t('bd.header.signIn') }} <span aria-hidden="true" class="bd-sheet-arrow">→</span>
       </NuxtLink>
       <NuxtLink
-        v-if="isEditor"
+        v-if="draftsOn && isEditor"
         :to="localizePath('/drafts')"
         class="bd-sheet-link bd-sheet-drafts bd-wide"
       >
@@ -147,7 +151,7 @@ watch(() => route.fullPath, () => {
           <NuxtLink v-for="topic in topics" :key="topic.slug" :to="topic.to" class="bd-sheet-cat">
             <span class="bd-sheet-dot" :style="{ background: topic.color }" aria-hidden="true" />{{ topic.label }}
           </NuxtLink>
-          <NuxtLink :to="`${localizePath('/')}#fediverso`" class="bd-sheet-cat" :aria-label="t('bd.header.fediverse', { handle: fediverseUser })" @click="close">
+          <NuxtLink v-if="fediverseOn" :to="`${localizePath('/')}#fediverso`" class="bd-sheet-cat" :aria-label="t('bd.header.fediverse', { handle: fediverseUser })" @click="close">
             <span class="bd-hud-mark" aria-hidden="true">◆</span>{{ fediverseUser }}
           </NuxtLink>
         </div>

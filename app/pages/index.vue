@@ -9,6 +9,8 @@ const { siteUrl } = useSiteUrl()
 const site = useSite()
 const { canonicalUrl } = useCanonicalUrl('/')
 const toPostCard = usePostCard()
+const fediverseOn = useModule('fediverse')
+const newsletterOn = useModule('newsletter')
 
 const { data: postsResult } = fetchPosts({ pageSize: 1, locale: locale.value as Locale })
 const { data: categories } = fetchCategories(locale.value as Locale)
@@ -98,8 +100,8 @@ useHead({
 
     <HomeFieldGuide :topics="topics" />
 
-    <HomeFediverse />
+    <HomeFediverse v-if="fediverseOn" />
 
-    <HomeSubscribe />
+    <HomeSubscribe v-if="newsletterOn" />
   </div>
 </template>

@@ -17,6 +17,7 @@ const { searchPosts } = useStrapi()
 const { localizePath } = useLocaleUtils()
 const site = useSite()
 const fediverseUser = useFediverseUser()
+const fediverseOn = useModule('fediverse')
 const { theme, toggle } = useTheme()
 
 const dialogRef = ref<HTMLElement>()
@@ -59,7 +60,7 @@ const groups = computed<PaletteGroup[]>(() => {
     .filter(option => matchesQuery(option.label, trimmed.value))
   const actionOptions: PaletteOption[] = [
     { id: 'action-theme', kind: 'action', label: t(theme.value === 'noche' ? 'bd.search.toDia' : 'bd.search.toNoche'), action: 'theme' },
-    { id: 'action-fediverse', kind: 'action', label: t('bd.search.fediverse'), hint: fediverseUser, action: 'fediverse' },
+    ...(fediverseOn.value ? [{ id: 'action-fediverse', kind: 'action' as const, label: t('bd.search.fediverse'), hint: fediverseUser, action: 'fediverse' as const }] : []),
   ]
   return [
     { kind: 'article' as const, options: articleOptions },

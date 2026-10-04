@@ -525,6 +525,7 @@
       "topics": "Temas",
       "subscribe": "Suscribirse",
       "subscribeSummary": "RSS · Fediverso",
+      "subscribeSummaryRss": "RSS",
       "rss": "RSS feed",
       "fediverse": "Fediverso · {handle}",
       "newsletter": "Newsletter",
@@ -784,6 +785,7 @@
     "cookies": {
       "label": "Cookies",
       "title": "Una sola cookie, y solo si entras a tu cuenta",
+      "titleNone": "Ninguna cookie",
       "caption": "Cookies que usa {site}",
       "name": "Nombre",
       "purpose": "Para qué",
@@ -812,6 +814,7 @@
     "data": {
       "label": "Tus datos",
       "title": "Qué datos personales tenemos",
+      "none": "Ninguno: este sitio no tiene cuentas, newsletter ni comentarios, así que no guarda nada que te identifique.",
       "account": "Cuenta:",
       "accountText": "si creas una, tu correo, tu nombre de usuario y tu contraseña cifrada. Puedes eliminarla cuando quieras desde Mi cuenta; tus comentarios quedan como «Anónimo».",
       "newsletter": "Newsletter:",
