@@ -16,7 +16,17 @@ export default defineConfig({
       timeout: 15_000,
     },
     {
-      command: 'HOST=127.0.0.1 NUXT_PUBLIC_STRAPI_URL=http://127.0.0.1:4310 PORT=3210 npm run dev',
+      // BogDev's site values: the defaults in nuxt.config.ts are empty
+      command: [
+        'HOST=127.0.0.1 PORT=3210',
+        'NUXT_PUBLIC_STRAPI_URL=http://127.0.0.1:4310',
+        'NUXT_PUBLIC_SITE_URL=https://bogdev.com.co',
+        'NUXT_MEDIA_URL=https://resources.bogdev.com.co',
+        'NUXT_PUBLIC_FEDIVERSE_HANDLE=@bogdev@api.bogdev.com.co',
+        'NUXT_PUBLIC_FEDIVERSE_ACTOR_URL=https://api.bogdev.com.co/fediverse/user/devbog',
+        'NUXT_PUBLIC_FEDIVERSE_ARTICLES_URL=https://api.bogdev.com.co/fediverse/articles',
+        'npm run dev',
+      ].join(' '),
       port: 3210,
       reuseExistingServer: !process.env.CI,
       timeout: 240_000,

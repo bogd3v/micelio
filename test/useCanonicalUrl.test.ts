@@ -15,6 +15,8 @@ vi.stubGlobal('computed', computed)
 vi.stubGlobal('useSiteUrl', useSiteUrl)
 vi.stubGlobal('useLocaleUtils', useLocaleUtils)
 vi.stubGlobal('useRuntimeConfig', () => ({ public: publicConfig }))
+// Without NUXT_PUBLIC_SITE_URL, useSiteUrl falls back to the site's own URL
+vi.stubGlobal('useSite', () => computed(() => ({ url: 'https://bogdev.com.co' })))
 vi.stubGlobal('useI18n', () => ({
   locale: localeRef,
   locales: ref([{ code: 'en' }, { code: 'es' }]),
