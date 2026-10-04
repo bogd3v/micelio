@@ -13,10 +13,16 @@ const SiteName = defineComponent({
 })
 
 describe('useSite', () => {
-  afterEach(() => clearNuxtData())
+  let unregister: (() => void) | undefined
+
+  afterEach(() => {
+    unregister?.()
+    unregister = undefined
+    clearNuxtData()
+  })
 
   it('returns the site from /api/site for the current locale', async () => {
-    registerEndpoint('/api/site', (event) => {
+    unregister = registerEndpoint('/api/site', (event) => {
       const locale = new URL(event.path, 'http://localhost').searchParams.get('locale')
       return { name: `Micelio ${locale}`, modules: { comments: false } } as Partial<Site>
     })
@@ -26,7 +32,7 @@ describe('useSite', () => {
 
   it('falls back to app.config when /api/site fails', async () => {
     let failed = false
-    registerEndpoint('/api/site', () => {
+    unregister = registerEndpoint('/api/site', () => {
       failed = true
       throw createError({ statusCode: 500 })
     })

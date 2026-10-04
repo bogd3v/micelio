@@ -1,6 +1,6 @@
 import { defaultLocale } from '../interfaces/locale'
-import { SITE_MODULES, SOCIAL_NETWORKS } from '../interfaces/site'
-import type { Site, SiteModules, SiteSettings, SocialLink, SocialNetwork } from '../interfaces/site'
+import { SITE_MODULES } from '../interfaces/site'
+import type { Site, SiteImage, SiteModules, SiteSettings, SocialLink, SocialNetwork } from '../interfaces/site'
 
 /** The `site` block of app.config.ts: the fallback when Strapi has no value. */
 export interface AppSiteConfig {
@@ -8,7 +8,8 @@ export interface AppSiteConfig {
   description: string
   url: string
   author: { name: string, url: string }
-  social: Partial<Record<SocialNetwork, string>>
+  favicon?: SiteImage
+  socialLinks: SocialLink[]
   support: { buyMeACoffee: string }
   privacy: { contactEmail: string, updatedAt: string }
 }
@@ -18,9 +19,6 @@ export const ALL_MODULES_ON: Readonly<SiteModules> = Object.freeze(
 )
 
 export function siteFromAppConfig(config: AppSiteConfig): Site {
-  const socialLinks: SocialLink[] = SOCIAL_NETWORKS
-    .filter(network => config.social[network])
-    .map(network => ({ network, url: config.social[network] as string }))
   return {
     name: config.name,
     description: config.description,
@@ -28,9 +26,9 @@ export function siteFromAppConfig(config: AppSiteConfig): Site {
     defaultLocale,
     author: { ...config.author },
     logo: null,
-    favicon: null,
+    favicon: config.favicon ? { ...config.favicon } : null,
     defaultOgImage: null,
-    socialLinks,
+    socialLinks: config.socialLinks.map(link => ({ ...link })),
     contactEmail: config.privacy.contactEmail,
     privacyContactEmail: config.privacy.contactEmail,
     privacyUpdatedAt: config.privacy.updatedAt,
@@ -74,4 +72,28 @@ export function mergeSite(defaults: Site, settings: SiteSettings | null | undefi
       SITE_MODULES.map(module => [module, pick(settings.modules?.[module], defaults.modules[module])]),
     ) as SiteModules,
   }
+}
+
+/** `@user` from an X (or Twitter) profile link, for twitter:site. */
+export function xHandle(links: readonly SocialLink[]): string | null {
+  const link = links.find(item => item.network === 'x')
+  const match = link?.url.match(/^https?:\/\/(?:www\.)?(?:x|twitter)\.com\/@?([A-Za-z0-9_]{1,15})\/?$/)
+  return match ? `@${match[1]}` : null
+}
+
+/** The local part of a fediverse handle: `@bogdev@api.bogdev.com.co` → `@bogdev`. */
+export function fediverseUser(handle: string): string {
+  const user = handle.replace(/^@/, '').split('@')[0]
+  return user ? `@${user}` : ''
+}
+
+/** How the footer lists each network. X is left out: its link only feeds twitter:site. */
+export const FOOTER_SOCIALS: Readonly<Partial<Record<SocialNetwork, { label: string, abbr: string }>>> = {
+  linkedin: { label: 'LinkedIn', abbr: 'in' },
+  github: { label: 'GitHub', abbr: 'gh' },
+  gitlab: { label: 'GitLab', abbr: 'gl' },
+  codeberg: { label: 'Codeberg', abbr: 'cb' },
+  mastodon: { label: 'Mastodon', abbr: 'md' },
+  bluesky: { label: 'Bluesky', abbr: 'bs' },
+  website: { label: 'Website', abbr: 'www' },
 }

@@ -79,8 +79,8 @@
     "fediverse": {
       "eyebrow": "Fediverse · free social networks",
       "title": "Follow the blog from Mastodon",
-      "intro": "Mastodon is a social network like X or Threads, but nobody owns it: it is made of thousands of independent servers that talk to each other. BogDev has its own account there, and you can follow it to get every new article.",
-      "introShort": "Mastodon is a social network like X or Threads, but nobody owns it: it is made of thousands of servers that talk to each other. BogDev has its account there.",
+      "intro": "Mastodon is a social network like X or Threads, but nobody owns it: it is made of thousands of independent servers that talk to each other. {site} has its own account there, and you can follow it to get every new article.",
+      "introShort": "Mastodon is a social network like X or Threads, but nobody owns it: it is made of thousands of servers that talk to each other. {site} has its account there.",
       "logo": "Mastodon logo",
       "how": "How it works",
       "swipe": "Swipe →",
@@ -203,7 +203,7 @@
     "aside": "More from the blog",
     "recent": "Recent articles",
     "rss": "RSS · full feed",
-    "fediverse": "Follow {'@'}bogdev on the fediverse",
+    "fediverse": "Follow {handle} on the fediverse",
     "view": {
       "label": "View",
       "grid": "Grid",
@@ -450,7 +450,7 @@
       "tooMany": "✕ Too many attempts. Try again later."
     },
     "header": {
-      "home": "BogDev, home",
+      "home": "{site}, home",
       "nav": "Main",
       "breadcrumbs": "Breadcrumb",
       "search": "Search",
@@ -463,7 +463,7 @@
         "es": "Español",
         "en": "English"
       },
-      "fediverse": "{'@'}bogdev on the fediverse",
+      "fediverse": "{handle} on the fediverse",
       "read": "Read {percent} %",
       "hud": {
         "city": "Bogotá",
@@ -495,7 +495,7 @@
       "linux": "Linux"
     },
     "search": {
-      "dialog": "Search BogDev",
+      "dialog": "Search {site}",
       "placeholder": "Search articles, topics or actions",
       "content": "Also search the content",
       "close": "Close search",
@@ -526,7 +526,7 @@
       "subscribe": "Subscribe",
       "subscribeSummary": "RSS · Fediverse",
       "rss": "RSS feed",
-      "fediverse": "Fediverse · {'@'}bogdev",
+      "fediverse": "Fediverse · {handle}",
       "newsletter": "Newsletter",
       "coffee": "Buy me a coffee",
       "madeIn": "Made in Bogotá, Colombia",

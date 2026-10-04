@@ -14,23 +14,12 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      title: 'BogDev - Personal Blog',
       viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
       meta: [
-        { name: 'author', content: 'BogDev' },
-        { property: 'og:site_name', content: 'BogDev' },
         { property: 'og:type', content: 'website' },
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:site', content: '@devbog' },
       ],
       link: [
-        { rel: 'icon', type: 'image/x-icon', href: '/bogdev.svg' },
-        {
-          rel: 'alternate',
-          type: 'application/rss+xml',
-          title: 'BogDev RSS Feed',
-          href: '/feed.xml',
-        },
         {
           rel: 'preload',
           href: '/fonts/archivo-latin-var.woff2',

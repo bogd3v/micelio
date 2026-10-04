@@ -12,6 +12,7 @@ defineProps<{
 
 const { t, locale } = useI18n()
 const { localizePath } = useLocaleUtils()
+const fediverseUser = useFediverseUser()
 const { count: readCount, clear: clearRead } = useReadArticles()
 
 const cleared = ref(false)
@@ -64,7 +65,7 @@ function clearHistory(): void {
         </ul>
       </div>
       <NuxtLink :to="`${localizePath('/')}#fediverso`" class="bd-blog-aside-link">
-        <span class="bd-hero-diamond" aria-hidden="true">◆</span> {{ t('blog.fediverse') }}
+        <span class="bd-hero-diamond" aria-hidden="true">◆</span> {{ t('blog.fediverse', { handle: fediverseUser }) }}
       </NuxtLink>
     </section>
   </aside>

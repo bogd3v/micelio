@@ -12,6 +12,8 @@ const props = withDefaults(defineProps<{
   wordmark: false,
 })
 
+const site = useSite()
+
 const width = computed<number>(() => Math.round(props.size * 1.31))
 const wordStyle = computed<Record<string, string> | undefined>(() =>
   props.wordmark ? { fontSize: `${Math.round(props.size * 0.55)}px` } : undefined,
@@ -26,7 +28,7 @@ const wordStyle = computed<Record<string, string> | undefined>(() =>
       :width="width"
       :height="size"
       :role="wordmark ? undefined : 'img'"
-      :aria-label="wordmark ? undefined : 'BogDev'"
+      :aria-label="wordmark ? undefined : site.name"
       :aria-hidden="wordmark ? 'true' : undefined"
       focusable="false"
     >

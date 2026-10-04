@@ -1,8 +1,38 @@
-import { describe, it, expect } from 'vitest'
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
+import type { Site } from '~/interfaces'
+import { siteFromAppConfig } from '~/helpers/site'
+import type { AppSiteConfig } from '~/helpers/site'
 import BdFooter from '~/components/bd/BdFooter.vue'
 
 describe('BdFooter', () => {
+  let unregister: (() => void) | undefined
+
+  afterEach(() => {
+    unregister?.()
+    unregister = undefined
+    clearNuxtData()
+  })
+
+  it('takes the name, author, social links and support handle from the site', async () => {
+    const site: Site = {
+      ...siteFromAppConfig(useAppConfig().site as AppSiteConfig),
+      name: 'Micelio',
+      author: { name: 'Grace', url: 'https://micelio.test/about' },
+      socialLinks: [
+        { network: 'gitlab', url: 'https://gitlab.com/micelio' },
+        { network: 'x', url: 'https://x.com/micelio' },
+      ],
+      supportHandle: 'micelio',
+    }
+    unregister = registerEndpoint('/api/site', () => site)
+    const wrapper = await mountSuspended(BdFooter)
+    await vi.waitFor(() => expect(wrapper.get('.bd-foot-legal span').text()).toBe(`© ${new Date().getFullYear()} Micelio · Grace`))
+    expect(wrapper.get('a.bd-foot-brand').attributes('aria-label')).toBe('Micelio, home')
+    expect(wrapper.findAll('a.bd-foot-soc').map(a => a.attributes('href'))).toEqual(['https://gitlab.com/micelio'])
+    expect(wrapper.findAll('details.bd-acc')[2]!.findAll('a.bd-foot-row').at(-1)!.attributes('href')).toBe('https://www.buymeacoffee.com/micelio')
+  })
+
   it('renders the brand, social links and desktop groups', async () => {
     const wrapper = await mountSuspended(BdFooter)
     expect(wrapper.get('a.bd-foot-brand').attributes('aria-label')).toBe('BogDev, home')

@@ -18,6 +18,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const route = useRoute()
 const { localizePath } = useLocaleUtils()
+const fediverseUser = useFediverseUser()
 const { user, isEditor } = useAuth()
 
 const dialogRef = ref<HTMLElement>()
@@ -146,8 +147,8 @@ watch(() => route.fullPath, () => {
           <NuxtLink v-for="topic in topics" :key="topic.slug" :to="topic.to" class="bd-sheet-cat">
             <span class="bd-sheet-dot" :style="{ background: topic.color }" aria-hidden="true" />{{ topic.label }}
           </NuxtLink>
-          <NuxtLink :to="`${localizePath('/')}#fediverso`" class="bd-sheet-cat" :aria-label="t('bd.header.fediverse')" @click="close">
-            <span class="bd-hud-mark" aria-hidden="true">◆</span>@bogdev
+          <NuxtLink :to="`${localizePath('/')}#fediverso`" class="bd-sheet-cat" :aria-label="t('bd.header.fediverse', { handle: fediverseUser })" @click="close">
+            <span class="bd-hud-mark" aria-hidden="true">◆</span>{{ fediverseUser }}
           </NuxtLink>
         </div>
       </section>

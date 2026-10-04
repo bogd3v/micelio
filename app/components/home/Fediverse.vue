@@ -13,6 +13,7 @@ const GLOSSARY: string[] = ['fediverse', 'instance', 'follow', 'boost']
 
 const { t, locale } = useI18n()
 const config = useRuntimeConfig()
+const site = useSite()
 const { copy, copied } = useClipboard({ copiedDuring: COPIED_MS, legacy: true })
 const { instance, error, preview, open: follow } = useFediverseInstance(() => config.public.fediverseActorUrl)
 
@@ -53,8 +54,8 @@ function copyHandle(): void {
         <h2 id="fediverse-title" class="bd-home-title bd-stretch">{{ t('home.fediverse.title') }}</h2>
       </div>
       <p class="bd-fedi-intro">
-        <span class="bd-fedi-intro-short">{{ t('home.fediverse.introShort') }}</span>
-        <span class="bd-fedi-intro-long">{{ t('home.fediverse.intro') }}</span>
+        <span class="bd-fedi-intro-short">{{ t('home.fediverse.introShort', { site: site.name }) }}</span>
+        <span class="bd-fedi-intro-long">{{ t('home.fediverse.intro', { site: site.name }) }}</span>
       </p>
     </div>
 
