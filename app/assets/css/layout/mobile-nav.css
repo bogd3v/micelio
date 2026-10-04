@@ -55,7 +55,7 @@ body {
 
 .bd-tab[aria-current="page"],
 .bd-tab[aria-expanded="true"] {
-    border-top-color: var(--mirla);
+    border-top-color: var(--accent);
 }
 
 .bd-tab:focus-visible {
@@ -156,7 +156,7 @@ html:has(.bd-sheet[open]) {
 
 .bd-sheet-link[aria-current="page"] {
     padding-left: var(--space-4);
-    box-shadow: inset 3px 0 0 var(--mirla);
+    box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .bd-sheet-arrow {

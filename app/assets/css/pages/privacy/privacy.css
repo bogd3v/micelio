@@ -54,7 +54,7 @@
     font-size: 28px;
     line-height: 36px;
     font-weight: 300;
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-privacy-fact-label {
@@ -83,7 +83,7 @@
 
 .bd-privacy-label {
     margin: 0;
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-privacy-section h2 {

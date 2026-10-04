@@ -77,7 +77,7 @@
 
 .bd-log-row:hover .bd-log-link {
     text-decoration: underline;
-    text-decoration-color: var(--chillon);
+    text-decoration-color: var(--link);
     text-underline-offset: 4px;
 }
 

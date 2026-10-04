@@ -29,7 +29,7 @@
 }
 
 .bd-news-eyebrow {
-    color: var(--mirla);
+    color: var(--accent);
 }
 
 .bd-news-label {
@@ -73,9 +73,9 @@
 }
 
 .bd-news .bd-news-msg-success {
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-news .bd-news-msg-error {
-    color: var(--tingua);
+    color: var(--danger);
 }

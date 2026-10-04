@@ -21,23 +21,23 @@
 }
 
 .bd-tag-privacidad .bd-tag-dot {
-    background: var(--pinchaflor);
+    background: var(--category-1);
 }
 
 .bd-tag-diy .bd-tag-dot {
-    background: var(--golondrina);
+    background: var(--category-2);
 }
 
 .bd-tag-ia .bd-tag-dot {
-    background: var(--chillon);
+    background: var(--category-3);
 }
 
 .bd-tag-software .bd-tag-dot {
-    background: var(--mirla);
+    background: var(--category-4);
 }
 
 .bd-tag-linux .bd-tag-dot {
-    background: var(--monjita);
+    background: var(--category-5);
 }
 
 a.bd-tag:hover {

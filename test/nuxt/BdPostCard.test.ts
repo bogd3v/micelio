@@ -41,7 +41,7 @@ describe('BdPostCard', () => {
     const media = wrapper.get('.bd-card-media')
     expect(media.classes()).toContain('bd-card-media-empty')
     expect(media.attributes('aria-hidden')).toBe('true')
-    expect(wrapper.attributes('style')).toContain('--cat: var(--pinchaflor)')
+    expect(wrapper.attributes('style')).toContain('--cat: var(--category-1)')
   })
 
   it('loads images lazily unless the card has priority', async () => {

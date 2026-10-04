@@ -76,7 +76,7 @@ const flyers = computed<Flyer[]>(() =>
     <svg :width="width" :height="height" :viewBox="`0 0 ${width} ${height}`" class="bd-flight-map" aria-hidden="true" focusable="false">
       <g v-if="!compact" class="bd-flight-place" fill="var(--ink-muted)">
         <path d="M558 108 H574 M566 100 V116" stroke="var(--ink-muted)" stroke-width="1" />
-        <rect x="547" y="105" width="6" height="6" fill="var(--chillon)" />
+        <rect x="547" y="105" width="6" height="6" fill="var(--link)" />
         <text x="539" y="112" text-anchor="end">{{ t('home.hero.place') }}</text>
       </g>
       <path
@@ -85,7 +85,7 @@ const flyers = computed<Flyer[]>(() =>
         class="bd-flight-route"
         :d="route.d"
         fill="none"
-        stroke="var(--chillon)"
+        stroke="var(--link)"
         :stroke-opacity="route.opacity"
         stroke-width="1.2"
       />

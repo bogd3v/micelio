@@ -48,7 +48,7 @@
 }
 
 .bd-foot-brand-dev {
-    color: var(--mirla);
+    color: var(--accent);
 }
 
 .bd-foot-tagline {
@@ -86,7 +86,7 @@
 }
 
 .bd-foot-soc:hover {
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-foot-soc-abbr {
@@ -239,7 +239,7 @@
 }
 
 .bd-foot-diamond {
-    color: var(--mirla);
+    color: var(--accent);
 }
 
 .bd-foot-legal {

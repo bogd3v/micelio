@@ -48,15 +48,15 @@ useSeoMeta({
       <div v-if="status === 'loading'" class="card p-8">
         <UIcon
           name="i-heroicons-arrow-path"
-          class="w-12 h-12 mx-auto mb-4 text-[var(--primary)] animate-spin"
+          class="w-12 h-12 mx-auto mb-4 text-[var(--link)] animate-spin"
         />
-        <p class="text-[var(--muted)]">{{ t("common.loading") }}</p>
+        <p class="text-[var(--ink-muted)]">{{ t("common.loading") }}</p>
       </div>
 
       <div
         v-else-if="status === 'success'"
         class="card p-8"
-        style="background-color: var(--success-bg); border-color: var(--success)"
+        style="background-color: var(--success-soft); border-color: var(--success)"
       >
         <UIcon
           name="i-heroicons-check-circle"
@@ -66,7 +66,7 @@ useSeoMeta({
         <h1 class="font-display text-2xl font-semibold mb-2">
           {{ t("confirm.successTitle") }}
         </h1>
-        <p class="text-[var(--muted)] mb-6">{{ successMessage }}</p>
+        <p class="text-[var(--ink-muted)] mb-6">{{ successMessage }}</p>
         <BdButton href="/blog">
           {{ t("confirm.browseBlog") }}
         </BdButton>
@@ -75,17 +75,17 @@ useSeoMeta({
       <div
         v-else
         class="card p-8"
-        style="background-color: var(--error-bg); border-color: var(--error)"
+        style="background-color: var(--danger-soft); border-color: var(--danger)"
       >
         <UIcon
           name="i-heroicons-x-circle"
           class="w-16 h-16 mx-auto mb-4"
-          style="color: var(--error)"
+          style="color: var(--danger)"
         />
         <h1 class="font-display text-2xl font-semibold mb-2">
           {{ t("confirm.errorTitle") }}
         </h1>
-        <p class="text-[var(--muted)] mb-6">{{ errorMessage }}</p>
+        <p class="text-[var(--ink-muted)] mb-6">{{ errorMessage }}</p>
         <BdButton href="/" variant="secondary">
           {{ t("confirm.goHome") }}
         </BdButton>

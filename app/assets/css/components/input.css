@@ -19,7 +19,7 @@
     position: relative;
     z-index: 1;
     outline: none;
-    box-shadow: var(--glow-chillon);
+    box-shadow: var(--glow-link);
 }
 
 .bd-input:focus-visible {
@@ -28,5 +28,5 @@
 }
 
 .bd-input[aria-invalid="true"] {
-    border-color: var(--tingua);
+    border-color: var(--danger);
 }

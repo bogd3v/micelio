@@ -36,7 +36,7 @@
     position: relative;
     z-index: 1;
     outline: none;
-    box-shadow: var(--glow-chillon);
+    box-shadow: var(--glow-link);
 }
 
 .bd-field:focus-visible {
@@ -45,7 +45,7 @@
 }
 
 .bd-field[aria-invalid="true"] {
-    border-color: var(--tingua);
+    border-color: var(--danger);
 }
 
 .bd-field-group {
@@ -74,7 +74,7 @@
     gap: var(--space-2);
     align-items: flex-start;
     font: 400 14px/20px var(--font-sans);
-    color: var(--tingua);
+    color: var(--danger);
 }
 
 .bd-meter {
@@ -95,20 +95,20 @@
 }
 
 .bd-meter[data-level="1"] .bd-meter-bars span:nth-child(-n + 1) {
-    background: var(--tingua);
+    background: var(--danger);
 }
 
 .bd-meter[data-level="2"] .bd-meter-bars span:nth-child(-n + 2) {
-    background: var(--monjita);
+    background: var(--warning);
 }
 
 .bd-meter[data-level="3"] .bd-meter-bars span:nth-child(-n + 3),
 .bd-meter[data-level="4"] .bd-meter-bars span {
-    background: var(--chillon);
+    background: var(--success);
 }
 
 .bd-meter[data-level="1"] .bd-help {
-    color: var(--tingua);
+    color: var(--danger);
 }
 
 .bd-check {
@@ -125,7 +125,7 @@
     width: 20px;
     height: 20px;
     margin: 2px 0 0;
-    accent-color: var(--chillon);
+    accent-color: var(--link);
 }
 
 .bd-check a {

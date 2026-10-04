@@ -5,7 +5,7 @@
     --lay3: color-mix(in oklab, var(--ink) 4%, var(--surface));
     --lay4: var(--surface-sunken);
     --bld-edge: color-mix(in oklab, var(--ink) 10%, transparent);
-    --brick: color-mix(in oklab, var(--mirla) 14%, var(--surface-sunken));
+    --brick: color-mix(in oklab, var(--accent) 14%, var(--surface-sunken));
     --pano-wall: var(--ink);
     --pano-opening: var(--lay2);
     --pano-shade: var(--surface);
@@ -17,7 +17,7 @@
     --lay3: color-mix(in oklab, var(--ink) 17%, var(--surface));
     --lay4: color-mix(in oklab, var(--ink) 25%, var(--surface));
     --bld-edge: color-mix(in oklab, var(--ink) 30%, transparent);
-    --brick: color-mix(in oklab, var(--mirla) 38%, var(--surface));
+    --brick: color-mix(in oklab, var(--accent) 38%, var(--surface));
     --pano-wall: var(--surface-raised);
     --pano-opening: var(--line-strong);
     --pano-shade: var(--ink);

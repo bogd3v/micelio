@@ -32,13 +32,13 @@
     bottom: 0;
     left: -1px;
     width: 2px;
-    background: var(--chillon);
+    background: var(--link);
 }
 
 .bd-path-number {
     flex: none;
     font: 400 12px/22px var(--font-mono);
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-path-link {
@@ -52,7 +52,7 @@
 
 .bd-path-link:hover {
     text-decoration: underline;
-    text-decoration-color: var(--chillon);
+    text-decoration-color: var(--link);
     text-underline-offset: 4px;
 }
 
@@ -90,7 +90,7 @@
 }
 
 .bd-path-next:hover {
-    border-color: var(--chillon);
+    border-color: var(--link);
 }
 
 .bd-path-next-title {

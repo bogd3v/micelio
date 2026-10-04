@@ -30,13 +30,13 @@
 }
 
 .bd-guide-card:hover {
-    box-shadow: var(--glow-chillon);
+    box-shadow: var(--glow-link);
     border-color: transparent;
 }
 
 .bd-guide-card:hover .bd-card-arrow {
     transform: translateX(4px);
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-guide-head {

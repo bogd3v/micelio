@@ -12,7 +12,7 @@ function scrollToTop() {
   <Transition name="fade">
     <button
       v-if="isVisible"
-      class="fixed bottom-[calc(var(--bd-tabbar-h)+1.5rem)] right-6 z-50 w-12 h-12 rounded-full bg-[var(--primary)] text-[var(--on-primary)] shadow-lg hover:bg-[var(--primary-hover)] hover:scale-110 transition-all duration-200 flex items-center justify-center"
+      class="fixed bottom-[calc(var(--bd-tabbar-h)+1.5rem)] right-6 z-50 w-12 h-12 rounded-full bg-[var(--link)] text-[var(--on-ink)] shadow-lg hover:bg-[color-mix(in oklab, var(--link) 80%, var(--ink))] hover:scale-110 transition-all duration-200 flex items-center justify-center"
       :aria-label="t('common.backToTop')"
       @click="scrollToTop"
     >

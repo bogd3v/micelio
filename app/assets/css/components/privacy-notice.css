@@ -24,7 +24,7 @@
 
 .bd-privacy-notice-mark {
     font-family: var(--font-mono);
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-privacy-notice a {

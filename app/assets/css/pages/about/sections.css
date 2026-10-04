@@ -48,13 +48,13 @@
 }
 
 .bd-principle:hover {
-    border-top-color: var(--chillon);
+    border-top-color: var(--link);
 }
 
 .bd-principle-number {
     grid-row: span 2;
     font: 400 13px/1 var(--font-mono);
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-principle-title {
@@ -117,7 +117,7 @@
 
 .bd-guide-arrow {
     font-family: var(--font-mono);
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-guide-list a {
@@ -160,7 +160,7 @@
 }
 
 .bd-contact-fedi-label {
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-contact-fedi-handle {
@@ -206,11 +206,11 @@
 
 .bd-contact-row:hover .bd-contact-handle {
     font-stretch: 125%;
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-contact-row:hover .bd-contact-arrow {
-    color: var(--chillon);
+    color: var(--link);
     transform: translate(4px, -4px);
 }
 

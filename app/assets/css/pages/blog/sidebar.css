@@ -34,7 +34,7 @@
 }
 
 .bd-blog-recent:hover .bd-blog-recent-title {
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-blog-aside-link {
@@ -99,7 +99,7 @@
 }
 
 .bd-blog-feed-link:hover {
-    text-decoration-color: var(--chillon);
+    text-decoration-color: var(--link);
 }
 
 .bd-blog-feed-link:focus-visible {

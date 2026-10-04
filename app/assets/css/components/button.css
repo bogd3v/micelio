@@ -53,12 +53,12 @@
 }
 
 .bd-btn-accent {
-    background: var(--mirla);
-    color: var(--on-mirla);
+    background: var(--accent);
+    color: var(--on-accent);
 }
 
 .bd-btn-accent:hover {
-    box-shadow: var(--glow-mirla);
+    box-shadow: var(--glow-accent);
 }
 
 .bd-btn-text {
@@ -71,7 +71,7 @@
 }
 
 .bd-btn-text:hover {
-    border-bottom-color: var(--mirla);
+    border-bottom-color: var(--accent);
 }
 
 .bd-btn-arrow {
