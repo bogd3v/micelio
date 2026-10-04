@@ -32,6 +32,7 @@ beforeEach(() => {
   mock.requests.length = 0
   mock.failures.pathOrder = false
   mock.failures.about = false
+  mock.failures.site = false
   umami.requests.length = 0
 })
 
@@ -537,6 +538,49 @@ describe('/api/about', () => {
 
   it('rejects an unknown locale without calling Strapi', async () => {
     await expect($fetch('/api/about', { query: { locale: 'invalid' } })).rejects.toMatchObject({ response: { status: 400 } })
+    expect(mock.requests).toEqual([])
+  })
+})
+
+describe('/api/site', () => {
+  it('merges Strapi\'s site-setting over app.config, reading it with the API token', async () => {
+    const response = await fetch('/api/site?locale=es')
+    const site = await response.json()
+    expect(response.headers.get('cache-control')).toBe('public, s-maxage=300, stale-while-revalidate=600')
+    expect(site).toMatchObject({
+      name: 'Micelio',
+      description: 'Un motor de blogs',
+      url: 'https://micelio.test',
+      author: { name: 'Grace', url: 'https://bogdev.com.co/about' },
+      logo: { url: '/uploads/logo.svg', alternativeText: 'Micelio', width: 120, height: 40 },
+      socialLinks: [{ network: 'codeberg', url: 'https://codeberg.org/micelio' }],
+      contactEmail: 'hola@micelio.test',
+      privacyContactEmail: 'gx_alejandro@hotmail.com',
+      supportHandle: 'ale9420',
+      modules: { comments: false, newsletter: true },
+    })
+    expect(mock.requests).toEqual([expect.objectContaining({
+      path: '/api/site-setting',
+      query: { populate: '*', locale: 'es' },
+      authorization: 'Bearer test-api-token',
+    })])
+  })
+
+  it('falls back field by field when a value is empty', async () => {
+    const site = await $fetch<{ description: string }>('/api/site', { query: { locale: 'en' } })
+    expect(site.description).toBe('Personal blog about AI, Software, Linux and more')
+  })
+
+  it('answers with app.config\'s values, cached briefly, when Strapi fails', async () => {
+    mock.failures.site = true
+    const response = await fetch('/api/site')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('public, s-maxage=30, stale-while-revalidate=60')
+    expect(await response.json()).toMatchObject({ name: 'BogDev', url: 'https://bogdev.com.co', modules: { comments: true } })
+  })
+
+  it('rejects an unknown locale without calling Strapi', async () => {
+    await expect($fetch('/api/site', { query: { locale: 'fr' } })).rejects.toMatchObject({ response: { status: 400 } })
     expect(mock.requests).toEqual([])
   })
 })
