@@ -1,3 +1,5 @@
+import type { ModuleRequirements } from './modules'
+
 export const REQUIRED_RUNTIME_SETTINGS = {
   strapiApiToken: 'NUXT_STRAPI_API_TOKEN',
   smtpHost: 'NUXT_SMTP_HOST',
@@ -45,4 +47,14 @@ export function missingRuntimeSettings(config: CheckedRuntimeConfig): string[] {
 /** The NUXT_* names of optional settings that are empty, so the startup log can say what is off. */
 export function missingOptionalRuntimeSettings(config: CheckedRuntimeConfig): string[] {
   return [...missing(config, OPTIONAL_RUNTIME_SETTINGS), ...missing(config.public, OPTIONAL_PUBLIC_RUNTIME_SETTINGS)]
+}
+
+const SMTP_SETTINGS = ['smtpHost', 'smtpUser', 'smtpPass', 'newsletterFrom'] as const
+
+/** Whether the server has what the newsletter (SMTP) and fediverse modules need. */
+export function moduleRequirements(config: CheckedRuntimeConfig): ModuleRequirements {
+  return {
+    smtp: SMTP_SETTINGS.every(key => !empty(config[key])),
+    fediverse: missing(config.public, OPTIONAL_PUBLIC_RUNTIME_SETTINGS).length === 0,
+  }
 }

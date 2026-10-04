@@ -44,6 +44,8 @@ curl -s -o /dev/null -w '%{http_code}\n' https://api.bogdev.com.co/api/users    
 
 Every request body and query is validated with a zod schema (`server/schemas/`) or an equivalent check before any call to Strapi; unknown fields are dropped.
 
+The routes of a module switched off in `site-setting.modules`, or off for lack of configuration, answer 404 before any of these checks (`server/middleware/modules.ts`, docs/api.md "Modules"). Turning a module off is therefore also a way to close its endpoints.
+
 | Endpoint | Access | Protections |
 | --- | --- | --- |
 | `GET /api/posts`, `/api/posts/:slug`, `/api/search`, `/api/categories`, `/api/tags`, `/api/about`, `/api/reading-path`, `/api/site` | Public | Query schema: known locales only, `pageSize` ≤ 50, slugs, search ≤ 200 chars |
