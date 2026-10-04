@@ -169,6 +169,7 @@
   "blog": {
     "readMore": "Leer más",
     "readTime": "{minutes} min de lectura",
+    "listTitle": "Artículos",
     "noPosts": "No se encontraron artículos",
     "categories": "Categorías",
     "all": "Todos",
