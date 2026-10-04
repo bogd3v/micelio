@@ -169,6 +169,9 @@ export default defineNuxtConfig({
       useCookie: false,
       redirectOn: 'root',
     },
+    // Messages reach the client precompiled (modules/precompile-messages.ts)
+    bundle: { dropMessageCompiler: true },
+    experimental: { optimizeMessageBundling: false },
   },
   image: {
     quality: 80,
