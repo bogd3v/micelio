@@ -4,6 +4,7 @@
 @import "tailwindcss";
 
 @import "./settings/fonts.css" layer(bd.settings);
+@import "./settings/font-fallbacks.css" layer(bd.settings);
 @import "./settings/tokens.css" layer(bd.settings);
 @import "./settings/aliases.css" layer(bd.settings);
 

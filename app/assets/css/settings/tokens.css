@@ -76,9 +76,9 @@
   --container: 1200px;
   --measure: 68ch;
   --nav-height: 72px;
-  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --font-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --font-display: "Archivo", "Archivo Fallback", "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Archivo", "Archivo Fallback", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, Menlo, Consolas, monospace;
   --text-display-xl: 300 72px/76px var(--font-display);
   --text-display-l: 300 48px/54px var(--font-display);
   --text-heading-1: 500 32px/40px var(--font-display);
