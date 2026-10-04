@@ -25,7 +25,7 @@ test('serves self-hosted fonts without calling Google Fonts', async ({ page }) =
   expect(loaded.mono).toBeGreaterThan(0)
   expect(loaded.symbols).toBeGreaterThan(0)
   const families = await page.evaluate(() => [...new Set([...document.fonts].map(f => f.family))].sort())
-  expect(families).toEqual(['Archivo', 'JetBrains Mono'])
+  expect(families).toEqual(['Archivo', 'Archivo Fallback', 'JetBrains Mono', 'JetBrains Mono Fallback'])
 })
 
 test('renders the Archivo width axis', async ({ page }) => {
