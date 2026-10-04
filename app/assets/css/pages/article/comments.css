@@ -46,7 +46,7 @@
 }
 
 .bd-comments-moderation-check {
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-comments-empty {
@@ -61,8 +61,8 @@
     align-items: center;
     gap: var(--space-4);
     padding: var(--space-3) var(--space-4);
-    color: var(--tingua);
-    background: var(--tingua-soft);
+    color: var(--danger);
+    background: var(--danger-soft);
 }
 
 .bd-comments-error p {
@@ -104,7 +104,7 @@
 }
 
 .bd-comment-fediverse .bd-avatar {
-    border-color: var(--chillon);
+    border-color: var(--link);
 }
 
 .bd-comment-body {
@@ -138,13 +138,13 @@
 }
 
 .bd-comment-badge-fediverse {
-    color: var(--chillon);
-    background: var(--chillon-soft);
+    color: var(--link);
+    background: var(--link-soft);
 }
 
 .bd-comment-badge-author {
-    color: var(--mirla);
-    background: var(--mirla-soft);
+    color: var(--accent);
+    background: var(--accent-soft);
 }
 
 .bd-comment-date {
@@ -181,7 +181,7 @@
 }
 
 .bd-comment-instance-link:hover {
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-comment-form {
@@ -237,11 +237,11 @@
 
 .bd-comment-input:focus {
     outline: none;
-    box-shadow: var(--glow-chillon);
+    box-shadow: var(--glow-link);
 }
 
 .bd-comment-input[aria-invalid="true"] {
-    border-color: var(--tingua);
+    border-color: var(--danger);
 }
 
 .bd-comment-textarea {
@@ -255,7 +255,7 @@
 .bd-comment-error {
     margin: 0;
     font-size: 14px;
-    color: var(--tingua);
+    color: var(--danger);
 }
 
 .bd-comment-hint {
@@ -270,13 +270,13 @@
 }
 
 .bd-comment-status-success {
-    color: var(--chillon);
-    background: var(--chillon-soft);
+    color: var(--link);
+    background: var(--link-soft);
 }
 
 .bd-comment-status-error {
-    color: var(--tingua);
-    background: var(--tingua-soft);
+    color: var(--danger);
+    background: var(--danger-soft);
 }
 
 .bd-comment-submit {

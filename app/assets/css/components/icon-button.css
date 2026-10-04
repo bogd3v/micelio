@@ -13,7 +13,7 @@
 }
 
 .bd-iconbtn:hover {
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-iconbtn svg {

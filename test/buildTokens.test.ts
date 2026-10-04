@@ -104,7 +104,12 @@ describe('build-tokens', () => {
   it('defines every color token of the design system in both themes', () => {
     const data = JSON.parse(readFileSync('docs/design/tokens.json', 'utf8')) as { color: { tokens: { name: string }[] } }
     const generated = readFileSync('app/assets/css/settings/tokens.css', 'utf8')
-    expect(data.color.tokens).toHaveLength(25)
+    // Bogotá's primitives and base roles (25), plus the semantic roles of ADR 0005 (31)
+    expect(data.color.tokens).toHaveLength(56)
+    const names = data.color.tokens.map(token => token.name)
+    for (const role of ['accent', 'accent-hover', 'on-accent', 'link-soft', 'danger-soft', 'info', 'category-1', 'category-6-soft', 'code-keyword']) {
+      expect(names).toContain(role)
+    }
     for (const { name } of data.color.tokens) {
       expect(block(generated, '[data-theme="noche"]')).toContain(`--${name}:`)
       expect(block(generated, '[data-theme="dia"]')).toContain(`--${name}:`)

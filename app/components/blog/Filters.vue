@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { BlogFilters, Category, StrapiTagRef } from '~/interfaces'
-import { CATEGORIES, CATEGORY_INFO } from '~/helpers/categories'
+import { CATEGORIES, categoryColor } from '~/helpers/categories'
 import { hasActiveFilters } from '~/helpers/blog'
 import { tagLabel } from '~/helpers/tags'
 import { padCount } from '~/helpers/search'
@@ -35,7 +35,7 @@ const categoryChips = computed<{ id: Category | undefined, label: string, color:
   ...CATEGORIES.map(category => ({
     id: category,
     label: t(`bd.categoryShort.${category}`),
-    color: `var(--${CATEGORY_INFO[category].token})`,
+    color: categoryColor(category),
     count: padCount(props.counts[category] ?? 0),
   })),
 ])

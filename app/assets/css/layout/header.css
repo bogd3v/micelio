@@ -50,7 +50,7 @@ html {
 }
 
 .bd-brand-dev {
-    color: var(--mirla);
+    color: var(--accent);
 }
 
 .bd-nav-main,
@@ -90,7 +90,7 @@ html {
     right: 0;
     bottom: 0;
     height: 2px;
-    background: var(--mirla);
+    background: var(--accent);
 }
 
 .bd-nav-mobile {
@@ -121,7 +121,7 @@ html {
 }
 
 .bd-hud-mark {
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-hud-extra {
@@ -171,7 +171,7 @@ html {
 
 .bd-progress-bar {
     height: 100%;
-    background: var(--chillon);
+    background: var(--link);
     transform: scaleX(var(--bd-read, 0));
     transform-origin: left;
 }
@@ -187,7 +187,7 @@ html {
     left: -11px;
     bottom: 5px;
     display: block;
-    color: var(--chillon);
+    color: var(--link);
     overflow: visible;
 }
 

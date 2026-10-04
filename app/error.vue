@@ -30,7 +30,7 @@ useSeoMeta({
   <div class="min-h-screen flex items-center justify-center px-4">
     <div class="text-center max-w-md">
       <div class="w-32 h-32 mx-auto mb-8 rounded-full gradient-bogota-subtle flex items-center justify-center">
-        <span class="text-6xl font-display font-bold text-[var(--primary)]">
+        <span class="text-6xl font-display font-bold text-[var(--link)]">
           {{ error.statusCode || 404 }}
         </span>
       </div>
@@ -39,7 +39,7 @@ useSeoMeta({
         {{ error.statusCode === 404 ? t('error.pageNotFound') : t('error.somethingWentWrong') }}
       </h1>
 
-      <p class="text-[var(--muted)] mb-8">
+      <p class="text-[var(--ink-muted)] mb-8">
         {{ error.statusCode === 404
           ? t('error.notExist')
           : t('error.unexpected')
@@ -57,8 +57,8 @@ useSeoMeta({
         </BdButton>
       </div>
 
-      <div class="mt-12 p-4 rounded-lg bg-[var(--surface-elevated)]">
-        <p class="text-sm text-[var(--muted)]">
+      <div class="mt-12 p-4 rounded-lg bg-[var(--surface-sunken)]">
+        <p class="text-sm text-[var(--ink-muted)]">
           {{ t('error.contactSupport') }}
         </p>
       </div>

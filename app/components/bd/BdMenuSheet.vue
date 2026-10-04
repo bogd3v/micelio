@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HeaderSection } from '~/interfaces'
-import { CATEGORIES, CATEGORY_INFO } from '~/helpers/categories'
+import { CATEGORIES, categoryColor } from '~/helpers/categories'
 
 const SWIPE_CLOSE_DISTANCE = 80
 
@@ -40,7 +40,7 @@ const topics = computed<{ slug: string, label: string, color: string, to: string
   CATEGORIES.map(slug => ({
     slug,
     label: t(`bd.categoryShort.${slug}`),
-    color: `var(--${CATEGORY_INFO[slug].token})`,
+    color: categoryColor(slug),
     to: `${localizePath('/blog')}?category=${slug}`,
   })),
 )

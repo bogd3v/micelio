@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CATEGORIES, CATEGORY_INFO } from '~/helpers/categories'
+import { CATEGORIES, categoryColor } from '~/helpers/categories'
 import { FOOTER_SOCIALS } from '~/helpers/site'
 
 interface FooterLink {
@@ -52,7 +52,7 @@ const topics = computed<FooterLink[]>(() =>
     id: slug,
     label: t(`bd.categories.${slug}`),
     to: `${localizePath('/blog')}?category=${slug}`,
-    color: `var(--${CATEGORY_INFO[slug].token})`,
+    color: categoryColor(slug),
   })),
 )
 const subscriptions = computed<FooterLink[]>(() => [

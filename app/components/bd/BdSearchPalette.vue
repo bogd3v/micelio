@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CategoryCount, Locale, PaletteGroup, PaletteOption, SearchPostResult } from '~/interfaces'
-import { CATEGORIES, CATEGORY_INFO, isCategory } from '~/helpers/categories'
+import { CATEGORIES, isCategory, categoryColor } from '~/helpers/categories'
 import { formatDotDate } from '~/helpers/formatDate'
 import { MIN_SEARCH_LENGTH, cycleIndex, matchesQuery, padCount } from '~/helpers/search'
 
@@ -44,7 +44,7 @@ const groups = computed<PaletteGroup[]>(() => {
         label: post.title,
         snippet: post.matchedIn === 'title' ? undefined : post.snippet || undefined,
         hint: formatDotDate(post.publishedAt) || undefined,
-        color: isCategory(post.category?.slug) ? `var(--${CATEGORY_INFO[post.category.slug].token})` : 'var(--chillon)',
+        color: isCategory(post.category?.slug) ? categoryColor(post.category.slug) : 'var(--link)',
         to: `${localizePath('/blog')}/${post.slug}`,
       }))
     : []
@@ -54,7 +54,7 @@ const groups = computed<PaletteGroup[]>(() => {
       kind: 'topic' as const,
       label: t(`bd.categories.${slug}`),
       hint: slug in counts.value ? padCount(counts.value[slug]!) : undefined,
-      color: `var(--${CATEGORY_INFO[slug].token})`,
+      color: categoryColor(slug),
       to: `${localizePath('/blog')}?category=${slug}`,
     }))
     .filter(option => matchesQuery(option.label, trimmed.value))

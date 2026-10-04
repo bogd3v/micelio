@@ -1,6 +1,6 @@
 .bd-mark {
     padding: 0 2px;
     color: var(--ink);
-    background: var(--chillon-soft);
-    box-shadow: inset 0 -1px 0 var(--chillon);
+    background: var(--link-soft);
+    box-shadow: inset 0 -1px 0 var(--link);
 }

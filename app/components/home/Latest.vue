@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Category, Locale } from '~/interfaces'
-import { CATEGORIES, CATEGORY_INFO } from '~/helpers/categories'
+import { CATEGORIES, categoryColor } from '~/helpers/categories'
 import { padCount } from '~/helpers/search'
 
 interface TopicFilter {
@@ -35,14 +35,14 @@ const filters = computed<TopicFilter[]>(() => [
   ...CATEGORIES.map(category => ({
     id: category,
     label: t(`bd.categoryShort.${category}`),
-    color: `var(--${CATEGORY_INFO[category].token})`,
+    color: categoryColor(category),
     count: padCount(props.counts[category] ?? 0),
   })),
 ])
 const eyebrow = computed<string>(() => t('home.latest.eyebrow', { count: padCount(shownTotal.value) }, shownTotal.value))
 const emptyTitle = computed<string>(() => t(`home.latest.empty.${selected.value ?? 'all'}`))
 const emptyColor = computed<string>(() =>
-  selected.value ? `var(--${CATEGORY_INFO[selected.value].token})` : 'var(--ink-muted)',
+  selected.value ? categoryColor(selected.value) : 'var(--ink-muted)',
 )
 
 function select(id: TopicFilter['id']): void {

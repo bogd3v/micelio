@@ -70,5 +70,5 @@
 .bd-credit a:hover,
 .bd-prose .bd-credit a:hover {
     color: var(--ink);
-    text-decoration-color: var(--chillon);
+    text-decoration-color: var(--link);
 }

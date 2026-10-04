@@ -94,13 +94,13 @@
 }
 
 .bd-latest-archive:hover {
-    box-shadow: var(--glow-chillon);
+    box-shadow: var(--glow-link);
     border-color: transparent;
 }
 
 .bd-latest-archive:hover .bd-card-arrow {
     transform: translateX(4px);
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-latest-archive-title {

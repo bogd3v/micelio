@@ -118,7 +118,7 @@
 }
 
 .bd-fedi-join-eyebrow {
-    color: var(--mirla);
+    color: var(--accent);
 }
 
 .bd-fedi-join-steps {
@@ -141,7 +141,7 @@
     flex: none;
     width: 24px;
     font: 400 13px/24px var(--font-mono);
-    color: var(--mirla);
+    color: var(--accent);
 }
 
 .bd-fedi-join-link {
@@ -164,7 +164,7 @@
 }
 
 .bd-fedi-accent {
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-fedi-label {
@@ -197,7 +197,7 @@
 }
 
 .bd-fedi-hint-error {
-    color: var(--tingua);
+    color: var(--danger);
 }
 
 .bd-fedi-copy {

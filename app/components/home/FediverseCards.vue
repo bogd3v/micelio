@@ -24,11 +24,11 @@ const MONO_ADVANCE = 0.6
 const BRACKET_INSET = 3
 const SERVER_ROWS: number[] = [44, 62, 80]
 const APPS: AppNode[] = [
-  { name: 'MASTODON', color: 'var(--mirla)', x: 70, y: 18 },
-  { name: 'PIXELFED', color: 'var(--chillon)', x: 113.7, y: 49.8 },
-  { name: 'PEERTUBE', color: 'var(--monjita)', x: 97, y: 101.2 },
-  { name: 'MISSKEY', color: 'var(--pinchaflor)', x: 43, y: 101.2 },
-  { name: 'GOTOSOCIAL', color: 'var(--golondrina)', x: 26.3, y: 49.8 },
+  { name: 'MASTODON', color: 'var(--category-4)', x: 70, y: 18 },
+  { name: 'PIXELFED', color: 'var(--category-3)', x: 113.7, y: 49.8 },
+  { name: 'PEERTUBE', color: 'var(--category-5)', x: 97, y: 101.2 },
+  { name: 'MISSKEY', color: 'var(--category-1)', x: 43, y: 101.2 },
+  { name: 'GOTOSOCIAL', color: 'var(--category-2)', x: 26.3, y: 49.8 },
 ]
 
 const props = defineProps<{
@@ -72,11 +72,11 @@ function bracket(from: number, to: number, middle: number): string {
             <rect x="8" y="34" width="72" height="70" fill="var(--surface)" stroke="var(--line-strong)" />
             <g v-for="row in SERVER_ROWS" :key="row">
               <rect x="16" :y="row" width="56" height="12" fill="none" stroke="var(--line)" />
-              <circle cx="24" :cy="row + 6" r="2" fill="var(--chillon)" />
+              <circle cx="24" :cy="row + 6" r="2" fill="var(--link)" />
               <path :d="`M32 ${row + 6} H64`" stroke="var(--ink-muted)" stroke-width="1" />
             </g>
           </g>
-          <path class="bd-flight-route" d="M84 46 Q160 -4 236 46" fill="none" stroke="var(--chillon)" stroke-width="1.3" />
+          <path class="bd-flight-route" d="M84 46 Q160 -4 236 46" fill="none" stroke="var(--link)" stroke-width="1.3" />
           <path d="M152 18 Q156 12 160 17 Q164 12 168 18" fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-linecap="round" />
           <rect x="149" y="24" width="22" height="15" fill="var(--surface-raised)" stroke="var(--ink)" stroke-width="1.2" />
           <path d="M149 24 L160 33 L171 24" fill="none" stroke="var(--ink)" stroke-width="1.2" />
@@ -98,12 +98,12 @@ function bracket(from: number, to: number, middle: number): string {
               :textLength="address.width"
               lengthAdjust="spacingAndGlyphs"
               fill="var(--ink)"
-            >{{ user }}<tspan fill="var(--chillon)">{{ domain }}</tspan></text>
+            >{{ user }}<tspan fill="var(--link)">{{ domain }}</tspan></text>
             <text :x="userMiddle" y="110" font-size="10" letter-spacing=".08em" fill="var(--ink-muted)">{{ t('home.fediverse.cards.address.user').toUpperCase() }}</text>
-            <text :x="domainMiddle" y="110" font-size="10" letter-spacing=".08em" fill="var(--chillon)">{{ t('home.fediverse.cards.address.server').toUpperCase() }}</text>
+            <text :x="domainMiddle" y="110" font-size="10" letter-spacing=".08em" fill="var(--link)">{{ t('home.fediverse.cards.address.server').toUpperCase() }}</text>
           </g>
           <path :d="userBracket" fill="none" stroke="var(--ink-muted)" stroke-width="1" />
-          <path :d="domainBracket" fill="none" stroke="var(--chillon)" stroke-width="1" />
+          <path :d="domainBracket" fill="none" stroke="var(--link)" stroke-width="1" />
         </svg>
       </div>
       <h3 class="bd-fedi-card-title">{{ t('home.fediverse.cards.address.title') }}</h3>

@@ -25,7 +25,7 @@
 }
 
 .bd-blog-search:focus-within::before {
-    box-shadow: var(--glow-chillon);
+    box-shadow: var(--glow-link);
 }
 
 .bd-blog-search-prompt {
@@ -33,7 +33,7 @@
     grid-area: 1 / 1;
     padding: 0 var(--space-1) 0 var(--space-4);
     font-family: var(--font-mono);
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-blog-search-input {
@@ -89,7 +89,7 @@
     width: 18px;
     height: 18px;
     margin: 0;
-    accent-color: var(--chillon);
+    accent-color: var(--link);
 }
 
 .bd-blog-content-toggle input:focus-visible {

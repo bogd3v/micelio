@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { StrapiProject } from '~/interfaces'
-import { BirdToken } from '~/interfaces'
 
-const SWATCHES: readonly BirdToken[] = [BirdToken.Pinchaflor, BirdToken.Golondrina, BirdToken.Chillon, BirdToken.Mirla, BirdToken.Monjita]
+// One swatch per category role, in CATEGORIES order
+const SWATCHES: readonly string[] = [1, 2, 3, 4, 5].map(n => `var(--category-${n})`)
 
 defineProps<{
   project: StrapiProject
@@ -34,7 +34,7 @@ const { t } = useI18n()
         <li v-for="item in project.stack" :key="item.id" class="bd-stack-chip">{{ item.name }}</li>
       </ul>
       <div v-if="project.visual === 'palette'" class="bd-project-palette">
-        <span v-for="token in SWATCHES" :key="token" class="bd-swatch" :style="{ background: `var(--${token})` }" aria-hidden="true" />
+        <span v-for="token in SWATCHES" :key="token" class="bd-swatch" :style="{ background: token }" aria-hidden="true" />
         <span class="bd-meta bd-project-meta">{{ t('about.palette') }}</span>
       </div>
       <div v-if="project.links?.length" class="bd-project-links">

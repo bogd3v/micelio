@@ -38,13 +38,13 @@
 }
 
 .bd-callout-note {
-    --tone: var(--chillon);
+    --tone: var(--info);
 }
 
 .bd-callout-warning {
-    --tone: var(--monjita);
+    --tone: var(--warning);
 }
 
 .bd-callout-danger {
-    --tone: var(--tingua);
+    --tone: var(--danger);
 }

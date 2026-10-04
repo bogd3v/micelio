@@ -134,7 +134,7 @@ function copyHandle(): void {
       <h3 class="bd-eyebrow bd-home-eyebrow">{{ t('home.fediverse.after.title') }}</h3>
       <ol class="bd-fedi-after-steps">
         <li v-for="step in afterSteps" :key="step.id">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--chillon)" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false">
             <template v-if="step.id === 'follow'">
               <circle cx="9" cy="8" r="3.5" />
               <path d="M3 19 C3 14.5 6 12.5 9 12.5 C12 12.5 15 14.5 15 19" />

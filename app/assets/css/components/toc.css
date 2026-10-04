@@ -34,7 +34,7 @@
 .bd-toc-link[aria-current="true"] {
     padding-left: 15px;
     color: var(--ink);
-    border-left: 2px solid var(--chillon);
+    border-left: 2px solid var(--link);
 }
 
 .bd-toc-sub[aria-current="true"] {

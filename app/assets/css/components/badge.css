@@ -11,19 +11,19 @@
 
 .bd-badge-reader,
 .bd-badge-modified {
-    color: var(--chillon);
-    background: var(--chillon-soft);
+    color: var(--info);
+    background: var(--info-soft);
 }
 
 .bd-badge-editor,
 .bd-badge-never-published {
-    color: var(--monjita);
-    background: var(--monjita-soft);
+    color: var(--warning);
+    background: var(--warning-soft);
 }
 
 .bd-badge-draft {
     color: var(--surface);
-    background: var(--monjita);
+    background: var(--warning);
 }
 
 .bd-count {
@@ -36,5 +36,5 @@
     font: 500 11px/1 var(--font-mono);
     letter-spacing: 0;
     color: var(--surface);
-    background: var(--monjita);
+    background: var(--warning);
 }

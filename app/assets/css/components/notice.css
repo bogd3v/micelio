@@ -18,21 +18,21 @@
 }
 
 .bd-notice-info {
-    background: var(--chillon-soft);
-    border-color: var(--chillon);
+    background: var(--info-soft);
+    border-color: var(--info);
 }
 
 .bd-notice-info .bd-notice-mark {
-    color: var(--chillon);
+    color: var(--info);
 }
 
 .bd-notice-error {
-    background: var(--tingua-soft);
-    border-color: var(--tingua);
+    background: var(--danger-soft);
+    border-color: var(--danger);
 }
 
 .bd-notice-error .bd-notice-mark {
-    color: var(--tingua);
+    color: var(--danger);
 }
 
 .bd-notice a {

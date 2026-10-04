@@ -184,7 +184,7 @@
 }
 
 .bd-drafts-card-cta {
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-drafts-empty {
@@ -194,7 +194,7 @@
     gap: var(--space-3);
     padding: 48px 20px;
     text-align: center;
-    color: var(--chillon);
+    color: var(--link);
     border: 1px dashed var(--line-strong);
 }
 

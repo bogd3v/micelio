@@ -49,15 +49,15 @@
 }
 
 .bd-ref:target {
-    background: var(--chillon-soft);
-    box-shadow: -12px 0 0 var(--chillon-soft), 12px 0 0 var(--chillon-soft);
+    background: var(--link-soft);
+    box-shadow: -12px 0 0 var(--link-soft), 12px 0 0 var(--link-soft);
 }
 
 .bd-ref-n {
     font-family: var(--font-mono);
     font-size: 13px;
     line-height: 24px;
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-ref-body {
@@ -87,7 +87,7 @@
 }
 
 .bd-ref-text a:hover {
-    text-decoration-color: var(--chillon);
+    text-decoration-color: var(--link);
 }
 
 .bd-ref-meta {
@@ -113,7 +113,7 @@
 }
 
 .bd-ref-back:hover {
-    color: var(--chillon);
+    color: var(--link);
 }
 
 .bd-refs-note {

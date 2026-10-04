@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Category } from '~/interfaces'
-import { CATEGORY_INFO } from '~/helpers/categories'
+import { categoryColor } from '~/helpers/categories'
 
 const props = withDefaults(defineProps<{
   title: string
@@ -44,7 +44,7 @@ const eyebrowText = computed<string>(() => props.eyebrow ?? t('bd.card.featured'
 const moreText = computed<string>(() => props.moreLabel ?? t('bd.card.more'))
 const byline = computed<string>(() => [props.author, props.readTime].filter(Boolean).join(' · '))
 const categoryStyle = computed<Record<string, string> | undefined>(() =>
-  props.category ? { '--cat': `var(--${CATEGORY_INFO[props.category].token})` } : undefined,
+  props.category ? { '--cat': categoryColor(props.category) } : undefined,
 )
 const imageSize = computed<{ width: number, height: number }>(() =>
   props.featured ? { width: 960, height: 540 } : { width: 640, height: 360 },

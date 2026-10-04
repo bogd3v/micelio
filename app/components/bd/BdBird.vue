@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Category } from '~/interfaces'
-import { CATEGORY_INFO } from '~/helpers/categories'
+import { categoryColor } from '~/helpers/categories'
 
 const props = withDefaults(defineProps<{
   category: Category
@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<{
   size: 200,
 })
 
-const color = computed<string>(() => `var(--${CATEGORY_INFO[props.category].token})`)
+const color = computed<string>(() => categoryColor(props.category))
 const height = computed<number>(() => Math.round(props.size * 0.75))
 </script>
 

@@ -61,7 +61,7 @@ onBeforeUnmount(() => {
         </svg>
         <svg class="bd-lay bd-lay2" aria-hidden="true" focusable="false" viewBox="0 0 1440 440" preserveAspectRatio="xMidYMax slice">
           <path :d="PANORAMA_RIDGE_FILL" fill="var(--lay2)" />
-          <path :d="PANORAMA_RIDGE" fill="none" stroke="var(--chillon)" stroke-opacity=".55" stroke-width="1.2" />
+          <path :d="PANORAMA_RIDGE" fill="none" stroke="var(--link)" stroke-opacity=".55" stroke-width="1.2" />
           <g class="bd-monserrate">
             <title>{{ t('bd.footer.panorama.monserrateBasilica') }}</title>
             <path d="M490 125 H540 V133 L524 129 L506 127 L490 128 Z" fill="var(--lay2)" stroke="var(--ink-muted)" stroke-width=".8" />
@@ -132,7 +132,7 @@ onBeforeUnmount(() => {
           preserveAspectRatio="xMidYMax slice"
         >
           <path :d="PANORAMA_CITY" fill="var(--lay4)" />
-          <path class="bd-lights" :d="PANORAMA_CITY_LIGHTS" fill="var(--monjita)" fill-opacity=".6" />
+          <path class="bd-lights" :d="PANORAMA_CITY_LIGHTS" fill="var(--category-5)" fill-opacity=".6" />
           <path d="M296 440 V301 L305 290 V440 Z M325 440 V290 L334 301 V440 Z" fill="var(--lay4)" stroke="var(--bld-edge)" stroke-width="1">
             <title>{{ t('bd.footer.panorama.atrio') }}</title>
           </path>
@@ -145,12 +145,12 @@ onBeforeUnmount(() => {
           />
           <path d="M309 440 V279 H321 V440 Z" fill="var(--lay4)" stroke="var(--bld-edge)" stroke-width="1" />
           <path d="M309 440 V279 H321 V440 Z" fill="var(--pano-wall)" fill-opacity=".16" />
-          <path class="bd-atrio" :d="PANORAMA_ATRIO_PATTERN" stroke="var(--mirla)" stroke-opacity=".85" stroke-width="1" stroke-linejoin="round" fill="none" />
-          <path class="bd-atrio" d="M305 286 V440 M325 286 V440" stroke="var(--mirla)" stroke-opacity=".3" stroke-width=".6" fill="none" />
+          <path class="bd-atrio" :d="PANORAMA_ATRIO_PATTERN" stroke="var(--accent)" stroke-opacity=".85" stroke-width="1" stroke-linejoin="round" fill="none" />
+          <path class="bd-atrio" d="M305 286 V440 M325 286 V440" stroke="var(--accent)" stroke-opacity=".3" stroke-width=".6" fill="none" />
           <path
             class="bd-atrio"
             d="M309 279 V268 H321 V279 M309 268 L321 279 M321 268 L309 279 M309 273.5 H321"
-            stroke="var(--mirla)"
+            stroke="var(--accent)"
             stroke-opacity=".85"
             stroke-width="1"
             fill="none"
@@ -158,7 +158,7 @@ onBeforeUnmount(() => {
           <path d="M312 268 V259 M312 260 H320 M312 262 L316 260" stroke="var(--ink-muted)" stroke-width=".8" fill="none" />
           <path
             d="M285 440 L290 433 H296 V440 Z M334 440 V433 H340 L345 440 Z"
-            fill="var(--chillon)"
+            fill="var(--link)"
             fill-opacity=".22"
             stroke="var(--bld-edge)"
             stroke-width="1"
@@ -180,7 +180,7 @@ onBeforeUnmount(() => {
           <path class="bd-floors" :d="PANORAMA_CCI_PILASTERS" stroke="var(--ink-muted)" stroke-opacity=".35" stroke-width="2" fill="none" />
           <path class="bd-floors" :d="PANORAMA_FLOORS" stroke="var(--bld-edge)" stroke-width="1" fill="none" />
           <path class="bd-bld-line" :d="PANORAMA_BUILDING_LINES" stroke="var(--bld-edge)" stroke-width="1" fill="none" />
-          <path class="bd-crown" d="M452 285 L484 267" stroke="var(--chillon)" stroke-width="1.5" />
+          <path class="bd-crown" d="M452 285 L484 267" stroke="var(--link)" stroke-width="1.5" />
           <path d="M588 440 V290 L590 285 H594 V440 Z" fill="var(--pano-shade)" fill-opacity=".18" />
           <path d="M594.2 290 V440" stroke="var(--pano-shade)" stroke-opacity=".35" stroke-width="1.2" />
           <path class="bd-bld-line" :d="PANORAMA_COLPATRIA_MULLIONS" stroke="var(--bld-edge)" stroke-width=".8" fill="none" />
@@ -211,14 +211,14 @@ onBeforeUnmount(() => {
               <rect x="588" y="350" width="28" height="58" fill="#CE1126" />
             </g>
           </g>
-          <path class="bd-lights bd-colpatria-base" :d="PANORAMA_COLPATRIA_WINDOWS" fill="var(--monjita)" fill-opacity=".8" />
+          <path class="bd-lights bd-colpatria-base" :d="PANORAMA_COLPATRIA_WINDOWS" fill="var(--category-5)" fill-opacity=".8" />
           <g class="bd-lights" fill="#FFFFFF" fill-opacity=".85">
             <rect x="600" y="286.3" width="6" height="1.4" />
             <circle cx="590.6" cy="286.2" r=".7" />
             <circle cx="613.4" cy="286.2" r=".7" />
           </g>
-          <path class="bd-lights" :d="PANORAMA_TOWER_LIGHTS" fill="var(--monjita)" fill-opacity=".75" />
-          <g class="bd-lights" fill="var(--mirla)">
+          <path class="bd-lights" :d="PANORAMA_TOWER_LIGHTS" fill="var(--category-5)" fill-opacity=".75" />
+          <g class="bd-lights" fill="var(--accent)">
             <circle class="bd-beacon" cx="484" cy="269" r="1.8" />
             <circle class="bd-beacon bd-beacon-2" cx="602" cy="283" r="1.8" />
             <circle class="bd-beacon bd-beacon-3" cx="312" cy="258" r="1.8" />

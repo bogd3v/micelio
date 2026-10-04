@@ -25,14 +25,16 @@ Roles are CSS custom properties, named without a prefix like the current tokens.
 | Surfaces | `surface`, `surface-raised`, `surface-sunken` |
 | Lines | `line` (decorative), `line-strong` (control borders, ≥ 3:1 on every surface) |
 | Ink | `ink`, `ink-muted`, `on-ink` |
-| Accent | `accent`, `accent-soft`, `accent-hover`, `on-accent`, `link`, `focus` |
+| Accent | `accent`, `accent-soft`, `accent-hover`, `on-accent`, `link`, `focus`; optional: `link-soft` (tinted background for links, highlights and active items; core default: `link` mixed into `surface`) |
 | States | `success`, `warning`, `danger`, `info`, each with `-soft` |
 | Categories | `category-1` … `category-6`, each with `-soft` |
 | Code | `code-ink`, `code-muted`, `code-keyword`, `code-string`, `code-number`, `code-function` (on `surface-sunken`) |
 | Typography | `font-display`, `font-sans`, `font-mono`; the scale `display-xl`, `display-l`, `heading-1`…`heading-3`, `body-l`, `body`, `body-s`, `eyebrow`, `meta`, `code` (size, line height, weight, tracking) |
 | Space and layout | the scale `space-1`, `space-2`, `space-3`, `space-4`, `space-6`, `space-8`, `space-12`, `space-16`, `space-24`; `space-section` (between page sections), `space-gutter` (grid gap), `space-inline` (side margin, per breakpoint); `container` (max content width), `measure` (max prose width), `nav-height` |
-| Shape | `radius-control`, `radius-card`, `radius-full`; `shadow-raised`, `shadow-overlay`, `glow-accent` (may be `none`) |
+| Shape | `radius-control`, `radius-card`, `radius-full`; `shadow-raised`, `shadow-overlay`, `glow-accent` (may be `none`); optional: `glow-link` (glow on focused and hovered interactive surfaces; core default: `none`) |
 | Motion | `duration-fast`, `duration-base`, `duration-slow`, `ease-standard`, `ease-emphasized` |
+
+The two optional roles were added with #236, when Bogotá's components moved onto roles: chillón is both its link color and the background or glow of active items, and contract v1 had no role for those. Adding an optional role with a core default stays in v1 (section 6). Illustrations in the core draw from the category roles as the theme's palette.
 
 `link` and `focus` are separate roles because a theme may draw them from a color other than the accent. Bogotá does: `accent` is mirla, `link` and `focus` are chillón. Mermaid's `themeVariables` are derived by the core from roles (today's `mermaidThemeVariables` mapping, rewritten on roles); a theme may override individual variables under `mermaid` in `theme.json`, with values that are roles, not colors.
 

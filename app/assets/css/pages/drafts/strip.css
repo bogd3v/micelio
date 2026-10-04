@@ -2,8 +2,8 @@
     position: relative;
     z-index: 9;
     padding: 14px var(--bd-home-gutter);
-    background: var(--monjita-soft);
-    border-bottom: 1px solid var(--monjita);
+    background: var(--warning-soft);
+    border-bottom: 1px solid var(--warning);
 }
 
 .bd-draft-strip-inner {
