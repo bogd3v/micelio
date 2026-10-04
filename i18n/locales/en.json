@@ -525,6 +525,7 @@
       "topics": "Topics",
       "subscribe": "Subscribe",
       "subscribeSummary": "RSS · Fediverse",
+      "subscribeSummaryRss": "RSS",
       "rss": "RSS feed",
       "fediverse": "Fediverse · {handle}",
       "newsletter": "Newsletter",
@@ -784,6 +785,7 @@
     "cookies": {
       "label": "Cookies",
       "title": "A single cookie, and only if you sign in",
+      "titleNone": "No cookies",
       "caption": "Cookies used by {site}",
       "name": "Name",
       "purpose": "Purpose",
@@ -812,6 +814,7 @@
     "data": {
       "label": "Your data",
       "title": "What personal data we hold",
+      "none": "None: this site has no accounts, newsletter or comments, so it keeps nothing that identifies you.",
       "account": "Account:",
       "accountText": "if you create one, your email, your username and your hashed password. You can delete it whenever you want from My account; your comments remain as “Anonymous”.",
       "newsletter": "Newsletter:",

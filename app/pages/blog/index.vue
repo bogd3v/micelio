@@ -20,6 +20,7 @@ const { canonicalUrl } = useCanonicalUrl('/blog')
 const { siteUrl } = useSiteUrl()
 const site = useSite()
 const config = useRuntimeConfig()
+const fediverseOn = useModule('fediverse')
 const toPostCard = usePostCard()
 
 const filters = computed<BlogFilters>(() => parseBlogQuery(route.query))
@@ -61,7 +62,9 @@ const resultCount = computed<number | undefined>(() =>
   filters.value.search ? (results.value?.pagination.total ?? 0) : undefined,
 )
 const filtered = computed<boolean>(() => hasActiveFilters(filters.value))
-const federated = computed<boolean>(() => locale.value === config.public.fediverseLocale)
+const federated = computed<boolean>(() => fediverseOn.value && locale.value === config.public.fediverseLocale)
+// The fediverse ranking needs the fediverse module
+const sortOptions = computed<BlogSort[]>(() => BLOG_SORTS.filter(option => option !== 'fediverse' || fediverseOn.value))
 const eyebrow = computed<string>(() => t('blog.eyebrow', { count: padCount(total.value) }, total.value))
 
 const applySearch = useDebounceFn(() => {
@@ -170,7 +173,7 @@ useSeoMeta({
         <div class="bd-blog-sort">
           <label for="bd-blog-sort" class="bd-eyebrow bd-home-eyebrow">{{ t("blog.sort.label") }}</label>
           <select id="bd-blog-sort" class="bd-select" :value="sort" @change="selectSort">
-            <option v-for="option in BLOG_SORTS" :key="option" :value="option">{{ t(`blog.sort.${option}`) }}</option>
+            <option v-for="option in sortOptions" :key="option" :value="option">{{ t(`blog.sort.${option}`) }}</option>
           </select>
         </div>
       </div>

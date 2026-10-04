@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const searchOn = useModule('search')
 
 function skipToContent() {
   const main = document.querySelector('main')
@@ -31,6 +32,7 @@ function skipToSearch() {
         {{ t('common.skipToMain') }}
       </a>
       <a
+        v-if="searchOn"
         href="#search"
         class="text-sm font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-white rounded px-2 py-1"
         @click.prevent="skipToSearch"

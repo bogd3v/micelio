@@ -9,6 +9,7 @@ const props = defineProps<{
 const { locale, t } = useI18n()
 const { fetchPosts } = useStrapi()
 const categoryLabel = useCategoryLabel()
+const newsletterOn = useModule('newsletter')
 const toPostCard = usePostCard()
 
 const { data: related } = fetchPosts({
@@ -23,7 +24,7 @@ const post = computed<PostListItem | undefined>(() =>
 </script>
 
 <template>
-  <section class="bd-home-section bd-related bd-reveal" :aria-labelledby="post ? 'bd-related-title' : undefined">
+  <section v-if="post || newsletterOn" class="bd-home-section bd-related bd-reveal" :aria-labelledby="post ? 'bd-related-title' : undefined">
     <div v-if="post" class="bd-home-heading">
       <p class="bd-eyebrow bd-home-eyebrow">{{ t('post.keepReading') }}</p>
       <h2 id="bd-related-title" class="bd-home-title bd-stretch">
@@ -32,7 +33,7 @@ const post = computed<PostListItem | undefined>(() =>
     </div>
     <div :class="['bd-related-grid', { 'bd-related-solo': !post }]">
       <BdPostCard v-if="post" v-bind="toPostCard(post)" />
-      <BdNewsletterForm id="nl-article" class="bd-related-news" />
+      <BdNewsletterForm v-if="newsletterOn" id="nl-article" class="bd-related-news" />
     </div>
   </section>
 </template>

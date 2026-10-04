@@ -13,7 +13,9 @@ body {
     bottom: 0;
     z-index: 45;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    /* One equal column per tab: a site without search has three */
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     height: var(--bd-tabbar-h);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background: var(--surface-raised);

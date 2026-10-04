@@ -26,6 +26,9 @@ const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
 const site = useSite()
 const fediverseUser = useFediverseUser()
+const accountsOn = useModule('accounts')
+const searchOn = useModule('search')
+const fediverseOn = useModule('fediverse')
 
 const tracking = computed<boolean>(() => props.reading && props.progress === undefined)
 const scrolled = useReadingProgress(tracking)
@@ -70,8 +73,9 @@ onMounted(() => {
         </nav>
         <BdLangSwitch class="bd-nav-lang" @change="emit('lang', $event)" />
         <div class="bd-nav-mobile">
-          <BdAccountMenu compact />
+          <BdAccountMenu v-if="accountsOn" compact />
           <button
+            v-if="searchOn"
             type="button"
             class="bd-iconbtn"
             :aria-label="t('bd.header.search')"
@@ -120,10 +124,11 @@ onMounted(() => {
           <span class="bd-hud-extra">{{ t('bd.header.hud.altitude') }}</span>
         </p>
         <div class="bd-strip-actions">
-          <NuxtLink :to="`${localizePath('/')}#fediverso`" class="bd-chip" :aria-label="t('bd.header.fediverse', { handle: fediverseUser })">
+          <NuxtLink v-if="fediverseOn" :to="`${localizePath('/')}#fediverso`" class="bd-chip" :aria-label="t('bd.header.fediverse', { handle: fediverseUser })">
             <span class="bd-hud-mark" aria-hidden="true">◆</span> {{ fediverseUser }}
           </NuxtLink>
           <button
+            v-if="searchOn"
             type="button"
             class="bd-chip"
             aria-haspopup="dialog"
@@ -133,7 +138,7 @@ onMounted(() => {
             {{ t('bd.header.search') }} <kbd class="bd-kbd" aria-hidden="true">{{ shortcut }}</kbd>
           </button>
           <BdThemeSwitch @change="emit('theme', $event)" />
-          <BdAccountMenu />
+          <BdAccountMenu v-if="accountsOn" />
         </div>
       </div>
     </div>

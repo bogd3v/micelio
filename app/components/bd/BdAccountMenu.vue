@@ -12,6 +12,7 @@ const route = useRoute()
 const { localizePath } = useLocaleUtils()
 const { user, isEditor, logout } = useAuth()
 const { count: draftCount } = useDraftCount()
+const draftsOn = useModule('drafts')
 
 const rootRef = ref<HTMLElement>()
 const toggleRef = ref<HTMLButtonElement>()
@@ -74,7 +75,7 @@ watch(() => route.fullPath, () => close())
         <li>
           <NuxtLink :to="localizePath('/account')" class="bd-account-item">{{ t('bd.header.account') }}</NuxtLink>
         </li>
-        <li v-if="isEditor">
+        <li v-if="draftsOn && isEditor">
           <NuxtLink :to="localizePath('/drafts')" class="bd-account-item bd-account-item-drafts" :aria-label="draftsLabel">
             {{ t('bd.header.drafts') }}
             <span v-if="showDraftCount" class="bd-count" aria-hidden="true">{{ draftCount }}</span>

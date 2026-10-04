@@ -9,6 +9,9 @@ interface PrivacySection {
 
 const { t } = useI18n()
 const site = useSite()
+const accountsOn = useModule('accounts')
+const newsletterOn = useModule('newsletter')
+const commentsOn = useModule('comments')
 const { canonicalUrl } = useCanonicalUrl('/privacy')
 const { siteUrl } = useSiteUrl()
 
@@ -80,8 +83,8 @@ useHead({
 
       <section id="cookies" class="bd-privacy-section" aria-labelledby="cookies-title">
         <p class="bd-eyebrow bd-privacy-label">{{ t('privacy.cookies.label') }}</p>
-        <h2 id="cookies-title">{{ t('privacy.cookies.title') }}</h2>
-        <table class="bd-privacy-table">
+        <h2 id="cookies-title">{{ accountsOn ? t('privacy.cookies.title') : t('privacy.cookies.titleNone') }}</h2>
+        <table v-if="accountsOn" class="bd-privacy-table">
           <caption class="bd-sr">{{ t('privacy.cookies.caption', { site: site.name }) }}</caption>
           <thead>
             <tr>
@@ -120,9 +123,10 @@ useHead({
       <section id="data" class="bd-privacy-section" aria-labelledby="data-title">
         <p class="bd-eyebrow bd-privacy-label">{{ t('privacy.data.label') }}</p>
         <h2 id="data-title">{{ t('privacy.data.title') }}</h2>
-        <p><strong>{{ t('privacy.data.account') }}</strong> {{ t('privacy.data.accountText') }}</p>
-        <p><strong>{{ t('privacy.data.newsletter') }}</strong> {{ t('privacy.data.newsletterText') }}</p>
-        <p><strong>{{ t('privacy.data.comments') }}</strong> {{ t('privacy.data.commentsText') }}</p>
+        <p v-if="accountsOn"><strong>{{ t('privacy.data.account') }}</strong> {{ t('privacy.data.accountText') }}</p>
+        <p v-if="newsletterOn"><strong>{{ t('privacy.data.newsletter') }}</strong> {{ t('privacy.data.newsletterText') }}</p>
+        <p v-if="commentsOn"><strong>{{ t('privacy.data.comments') }}</strong> {{ t('privacy.data.commentsText') }}</p>
+        <p v-if="!accountsOn && !newsletterOn && !commentsOn">{{ t('privacy.data.none') }}</p>
       </section>
 
       <section id="rights" class="bd-privacy-section" aria-labelledby="rights-title">
