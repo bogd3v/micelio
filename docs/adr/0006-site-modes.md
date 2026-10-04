@@ -1,6 +1,6 @@
 # ADR-0006: Site modes, JS-free pages and heavy islands
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-04
 **Deciders:** BogDev maintainer
 
