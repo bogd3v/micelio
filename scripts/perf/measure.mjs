@@ -41,6 +41,10 @@ function startServers() {
     NUXT_PUBLIC_STRAPI_URL: `http://127.0.0.1:${MOCK_PORT}`,
     NUXT_PUBLIC_SITE_URL: base,
     NUXT_PUBLIC_UMAMI_WEBSITE_ID: '',
+    NUXT_MEDIA_URL: 'https://resources.bogdev.com.co',
+    NUXT_PUBLIC_FEDIVERSE_HANDLE: '@bogdev@api.bogdev.com.co',
+    NUXT_PUBLIC_FEDIVERSE_ACTOR_URL: 'https://api.bogdev.com.co/fediverse/user/devbog',
+    NUXT_PUBLIC_FEDIVERSE_ARTICLES_URL: 'https://api.bogdev.com.co/fediverse/articles',
   }
   return [
     spawn('node', ['e2e/mock-strapi.mjs'], { cwd: ROOT, env, stdio: 'ignore' }),

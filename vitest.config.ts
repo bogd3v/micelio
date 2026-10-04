@@ -43,6 +43,18 @@ export default defineConfig({
           environmentOptions: {
             nuxt: {
               domEnvironment: 'happy-dom',
+              // BogDev's site values: the defaults in nuxt.config.ts are empty
+              overrides: {
+                runtimeConfig: {
+                  public: {
+                    strapiUrl: 'https://api.bogdev.com.co',
+                    siteUrl: 'https://bogdev.com.co',
+                    fediverseHandle: '@bogdev@api.bogdev.com.co',
+                    fediverseActorUrl: 'https://api.bogdev.com.co/fediverse/user/devbog',
+                    fediverseArticlesUrl: 'https://api.bogdev.com.co/fediverse/articles',
+                  },
+                },
+              },
             },
           },
         },

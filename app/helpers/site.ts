@@ -81,7 +81,7 @@ export function xHandle(links: readonly SocialLink[]): string | null {
   return match ? `@${match[1]}` : null
 }
 
-/** The local part of a fediverse handle: `@bogdev@api.bogdev.com.co` → `@bogdev`. */
+/** The local part of a fediverse handle: `@blog@cms.example.org` → `@blog`. */
 export function fediverseUser(handle: string): string {
   const user = handle.replace(/^@/, '').split('@')[0]
   return user ? `@${user}` : ''
@@ -113,7 +113,7 @@ export function iconType(url: string): string | undefined {
   return ICON_TYPES[extension]
 }
 
-/** A page title with the site name after it: `Blog - BogDev`. */
+/** A page title with the site name after it: `Blog - Micelio`. */
 export function pageTitle(title: string, siteName: string): string {
   return `${title} - ${siteName}`
 }

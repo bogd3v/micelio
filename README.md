@@ -54,15 +54,18 @@ All variables are read when the server starts, so the same Docker image works in
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `NUXT_PUBLIC_STRAPI_URL` | URL of your Strapi instance (default: `https://api.bogdev.com.co`) | Yes |
+| `NUXT_PUBLIC_STRAPI_URL` | URL of your Strapi instance | Yes |
 | `NUXT_STRAPI_API_TOKEN` | API token from Strapi settings | Yes |
 | `NUXT_SMTP_HOST` | SMTP server hostname | Newsletter only |
 | `NUXT_SMTP_PORT` | SMTP server port (default: 587) | Newsletter only |
 | `NUXT_SMTP_USER` | SMTP username | Newsletter only |
 | `NUXT_SMTP_PASS` | SMTP password | Newsletter only |
 | `NUXT_NEWSLETTER_FROM` | Sender address for newsletter emails | Newsletter only |
-| `NUXT_PUBLIC_SITE_URL` | Public URL of your deployed site (default: `https://bogdev.com.co`) | Yes |
-| `NUXT_MEDIA_URL` | Host of the Strapi uploads, allowed in the images Content Security Policy (default: `https://resources.bogdev.com.co`) | No |
+| `NUXT_PUBLIC_SITE_URL` | Public URL of your deployed site. Without it, pages fall back to the `url` of Strapi's site settings, but feeds, the sitemap and emails need it | Yes |
+| `NUXT_MEDIA_URL` | Host of the Strapi uploads, allowed in the images Content Security Policy. Empty: only images from the site and Strapi load | When uploads live on another host |
+| `NUXT_PUBLIC_FEDIVERSE_HANDLE` | The site's fediverse account, e.g. `@blog@cms.example.org` | Fediverse only |
+| `NUXT_PUBLIC_FEDIVERSE_ACTOR_URL` | Its ActivityPub actor, e.g. `https://cms.example.org/fediverse/user/blog` | Fediverse only |
+| `NUXT_PUBLIC_FEDIVERSE_ARTICLES_URL` | Base URL of the federated articles, e.g. `https://cms.example.org/fediverse/articles` | Fediverse only |
 | `NUXT_PUBLIC_UMAMI_WEBSITE_ID` | Umami website ID. Empty: no tracker is loaded | Analytics only |
 | `NUXT_UMAMI_URL` | Internal Umami URL the proxy forwards to (e.g. `http://<umami-service>:3000`). Empty: no proxy | Analytics only |
 | `NUXT_PUBLIC_UMAMI_SCRIPT_PATH` | Tracker path, must match Umami's `TRACKER_SCRIPT_NAME` and stay at the root (default: `/bd.js`) | No |
@@ -119,7 +122,7 @@ The labels come from the PR title: the `PR labels` workflow reads its convention
 
 ### Environment variables in production
 
-Set the variables from `.env.example` in the production environment (Dokploy) with their `NUXT_*` names. The image is built in GitHub Actions without any of them, so a plain name like `STRAPI_API_TOKEN` leaves the token empty and every Strapi call goes out without it. The server logs a warning at startup for each required value that is missing.
+Set the variables from `.env.example` in the production environment (Dokploy) with their `NUXT_*` names. The image is built in GitHub Actions without any of them, so a plain name like `STRAPI_API_TOKEN` leaves the token empty and every Strapi call goes out without it. The server logs a warning at startup for each required value that is missing, and another one listing the optional values left empty (media host, fediverse).
 
 ## Project Structure
 
