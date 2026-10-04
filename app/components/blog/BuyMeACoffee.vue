@@ -1,8 +1,8 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const config = useAppConfig()
+const site = useSite()
 
-const username = computed<string>(() => config.site.support.buyMeACoffee)
+const username = computed<string>(() => site.value.supportHandle)
 const url = computed<string>(() => `https://www.buymeacoffee.com/${username.value}`)
 </script>
 

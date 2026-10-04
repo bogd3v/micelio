@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CATEGORIES, CATEGORY_INFO } from '~/helpers/categories'
+import { FOOTER_SOCIALS } from '~/helpers/site'
 
 interface FooterLink {
   id: string
@@ -27,16 +28,17 @@ interface SocialLink {
 
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
-const config = useAppConfig()
+const site = useSite()
+const fediverseUser = useFediverseUser()
 
 const year = new Date().getFullYear()
 
-const socials = computed<SocialLink[]>(() => [
-  { id: 'linkedin', label: 'LinkedIn', abbr: 'in', href: config.site.social.linkedin },
-  { id: 'github', label: 'GitHub', abbr: 'gh', href: config.site.social.github },
-  { id: 'codeberg', label: 'Codeberg', abbr: 'cb', href: config.site.social.codeberg },
-  { id: 'mastodon', label: 'Mastodon', abbr: 'md', href: config.site.social.mastodon },
-])
+const socials = computed<SocialLink[]>(() =>
+  site.value.socialLinks.flatMap((link) => {
+    const display = FOOTER_SOCIALS[link.network]
+    return display ? [{ id: link.network, ...display, href: link.url }] : []
+  }),
+)
 const sections = computed<FooterLink[]>(() => [
   { id: 'home', label: t('nav.home'), to: localizePath('/') },
   { id: 'blog', label: t('nav.blog'), to: localizePath('/blog') },
@@ -52,12 +54,12 @@ const topics = computed<FooterLink[]>(() =>
 )
 const subscriptions = computed<FooterLink[]>(() => [
   { id: 'rss', label: t('bd.footer.rss'), to: '/feed.xml', external: true },
-  { id: 'fediverse', label: t('bd.footer.fediverse'), to: `${localizePath('/')}#fediverso` },
+  { id: 'fediverse', label: t('bd.footer.fediverse', { handle: fediverseUser }), to: `${localizePath('/')}#fediverso` },
   { id: 'newsletter', label: t('bd.footer.newsletter'), to: `${localizePath('/')}#newsletter` },
   {
     id: 'coffee',
     label: t('bd.footer.coffee'),
-    to: `https://www.buymeacoffee.com/${config.site.support.buyMeACoffee}`,
+    to: `https://www.buymeacoffee.com/${site.value.supportHandle}`,
     external: true,
     mobileOnly: true,
   },
@@ -101,7 +103,7 @@ function scrollToTop(): void {
   <footer class="bd-foot">
     <div class="bd-foot-main">
       <div class="bd-foot-brand-col">
-        <NuxtLink :to="localizePath('/')" class="bd-foot-brand bd-wide" :aria-label="t('bd.header.home')">
+        <NuxtLink :to="localizePath('/')" class="bd-foot-brand bd-wide" :aria-label="t('bd.header.home', { site: site.name })">
           <BdLogo :size="56" />
           <span aria-hidden="true">Bog<span class="bd-foot-brand-dev">Dev</span></span>
         </NuxtLink>
@@ -175,7 +177,7 @@ function scrollToTop(): void {
 
     <div class="bd-meta bd-foot-credits">
       <span class="bd-foot-legal">
-        <span>© {{ year }} BogDev · Alejandro Ramírez</span>
+        <span>© {{ year }} {{ site.name }} · {{ site.author.name }}</span>
         <NuxtLink :to="localizePath('/privacy')" class="bd-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
       </span>
       <span>{{ t('bd.footer.madeIn') }} <span class="bd-foot-diamond" aria-hidden="true">◆</span> {{ t('bd.header.hud.coords') }}</span>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ALL_MODULES_ON, mergeSite, siteFromAppConfig } from '../app/helpers/site'
+import { ALL_MODULES_ON, fediverseUser, iconType, mergeSite, siteFromAppConfig, xHandle } from '../app/helpers/site'
 import type { AppSiteConfig } from '../app/helpers/site'
 import { parseSiteSettings } from '../server/schemas/site'
 import { Locale } from '../app/interfaces/locale'
@@ -9,7 +9,10 @@ const appSite: AppSiteConfig = {
   description: 'A blog',
   url: 'https://example.org',
   author: { name: 'Ada', url: 'https://example.org/about' },
-  social: { linkedin: 'https://linkedin.com/in/ada', github: 'https://github.com/ada' },
+  socialLinks: [
+    { network: 'linkedin', url: 'https://linkedin.com/in/ada' },
+    { network: 'github', url: 'https://github.com/ada' },
+  ],
   support: { buyMeACoffee: 'ada' },
   privacy: { contactEmail: 'ada@example.org', updatedAt: '2026-10-01T12:00:00-05:00' },
 }
@@ -28,8 +31,8 @@ describe('siteFromAppConfig', () => {
       favicon: null,
       defaultOgImage: null,
       socialLinks: [
-        { network: 'github', url: 'https://github.com/ada' },
         { network: 'linkedin', url: 'https://linkedin.com/in/ada' },
+        { network: 'github', url: 'https://github.com/ada' },
       ],
       contactEmail: 'ada@example.org',
       privacyContactEmail: 'ada@example.org',
@@ -37,6 +40,44 @@ describe('siteFromAppConfig', () => {
       supportHandle: 'ada',
       modules: ALL_MODULES_ON,
     })
+  })
+})
+
+describe('siteFromAppConfig favicon', () => {
+  it('keeps the favicon app.config declares', () => {
+    expect(siteFromAppConfig({ ...appSite, favicon: { url: '/icon.svg' } }).favicon).toEqual({ url: '/icon.svg' })
+  })
+})
+
+describe('xHandle', () => {
+  it('reads the user of an X or Twitter link', () => {
+    expect(xHandle([{ network: 'x', url: 'https://x.com/devbog' }])).toBe('@devbog')
+    expect(xHandle([{ network: 'x', url: 'https://twitter.com/@devbog/' }])).toBe('@devbog')
+  })
+
+  it('returns null without an X link or with one it cannot read', () => {
+    expect(xHandle([{ network: 'github', url: 'https://github.com/ada' }])).toBeNull()
+    expect(xHandle([{ network: 'x', url: 'https://x.com/devbog/status/1' }])).toBeNull()
+  })
+})
+
+describe('fediverseUser', () => {
+  it('keeps the local part of a handle', () => {
+    expect(fediverseUser('@bogdev@api.bogdev.com.co')).toBe('@bogdev')
+    expect(fediverseUser('bogdev@example.org')).toBe('@bogdev')
+    expect(fediverseUser('')).toBe('')
+  })
+})
+
+describe('iconType', () => {
+  it('reads the media type from the extension', () => {
+    expect(iconType('/bogdev.svg')).toBe('image/svg+xml')
+    expect(iconType('https://cdn.test/avatar.PNG?v=2')).toBe('image/png')
+    expect(iconType('/favicon.ico')).toBe('image/x-icon')
+  })
+
+  it('leaves an unknown extension to the browser', () => {
+    expect(iconType('/icon')).toBeUndefined()
   })
 })
 

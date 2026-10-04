@@ -24,6 +24,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
+const site = useSite()
+const fediverseUser = useFediverseUser()
 
 const tracking = computed<boolean>(() => props.reading && props.progress === undefined)
 const scrolled = useReadingProgress(tracking)
@@ -49,7 +51,7 @@ onMounted(() => {
   <header :class="['bd-header', { 'bd-header-reading': reading, 'bd-header-auto': tracking }]">
     <div class="bd-nav">
       <div class="bd-header-inner">
-        <NuxtLink :to="localizePath('/')" class="bd-brand" :aria-label="t('bd.header.home')">
+        <NuxtLink :to="localizePath('/')" class="bd-brand" :aria-label="t('bd.header.home', { site: site.name })">
           <BdLogo :size="30" />
           <span class="bd-brand-word" aria-hidden="true">Bog<span class="bd-brand-dev">Dev</span></span>
         </NuxtLink>
@@ -118,8 +120,8 @@ onMounted(() => {
           <span class="bd-hud-extra">{{ t('bd.header.hud.altitude') }}</span>
         </p>
         <div class="bd-strip-actions">
-          <NuxtLink :to="`${localizePath('/')}#fediverso`" class="bd-chip" :aria-label="t('bd.header.fediverse')">
-            <span class="bd-hud-mark" aria-hidden="true">◆</span> @bogdev
+          <NuxtLink :to="`${localizePath('/')}#fediverso`" class="bd-chip" :aria-label="t('bd.header.fediverse', { handle: fediverseUser })">
+            <span class="bd-hud-mark" aria-hidden="true">◆</span> {{ fediverseUser }}
           </NuxtLink>
           <button
             type="button"

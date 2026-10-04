@@ -79,8 +79,8 @@
     "fediverse": {
       "eyebrow": "Fediverso · redes sociales libres",
       "title": "Sigue el blog desde Mastodon",
-      "intro": "Mastodon es una red social parecida a X o Threads, pero no tiene dueño: la forman miles de servidores independientes que se hablan entre sí. BogDev tiene su propia cuenta ahí, y puedes seguirla para recibir cada artículo nuevo.",
-      "introShort": "Mastodon es una red social parecida a X o Threads, pero no tiene dueño: la forman miles de servidores que se hablan entre sí. BogDev tiene su cuenta ahí.",
+      "intro": "Mastodon es una red social parecida a X o Threads, pero no tiene dueño: la forman miles de servidores independientes que se hablan entre sí. {site} tiene su propia cuenta ahí, y puedes seguirla para recibir cada artículo nuevo.",
+      "introShort": "Mastodon es una red social parecida a X o Threads, pero no tiene dueño: la forman miles de servidores que se hablan entre sí. {site} tiene su cuenta ahí.",
       "logo": "Logo de Mastodon",
       "how": "Cómo funciona",
       "swipe": "Desliza →",
@@ -203,7 +203,7 @@
     "aside": "Más del blog",
     "recent": "Artículos recientes",
     "rss": "RSS · feed completo",
-    "fediverse": "Seguir {'@'}bogdev en el fediverso",
+    "fediverse": "Seguir {handle} en el fediverso",
     "view": {
       "label": "Vista",
       "grid": "Cuadrícula",
@@ -450,7 +450,7 @@
       "tooMany": "✕ Demasiados intentos. Intenta más tarde."
     },
     "header": {
-      "home": "BogDev, inicio",
+      "home": "{site}, inicio",
       "nav": "Principal",
       "breadcrumbs": "Migas de pan",
       "search": "Buscar",
@@ -463,7 +463,7 @@
         "es": "Español",
         "en": "English"
       },
-      "fediverse": "{'@'}bogdev en el fediverso",
+      "fediverse": "{handle} en el fediverso",
       "read": "Leído {percent} %",
       "hud": {
         "city": "Bogotá",
@@ -495,7 +495,7 @@
       "linux": "Linux"
     },
     "search": {
-      "dialog": "Buscar en BogDev",
+      "dialog": "Buscar en {site}",
       "placeholder": "Buscar artículos, temas o acciones",
       "content": "Buscar también en el contenido",
       "close": "Cerrar búsqueda",
@@ -526,7 +526,7 @@
       "subscribe": "Suscribirse",
       "subscribeSummary": "RSS · Fediverso",
       "rss": "RSS feed",
-      "fediverse": "Fediverso · {'@'}bogdev",
+      "fediverse": "Fediverso · {handle}",
       "newsletter": "Newsletter",
       "coffee": "Invitarme un café",
       "madeIn": "Hecho en Bogotá, Colombia",

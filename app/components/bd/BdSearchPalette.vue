@@ -15,6 +15,8 @@ const emit = defineEmits<{
 const { t, locale } = useI18n()
 const { searchPosts } = useStrapi()
 const { localizePath } = useLocaleUtils()
+const site = useSite()
+const fediverseUser = useFediverseUser()
 const { theme, toggle } = useTheme()
 
 const dialogRef = ref<HTMLElement>()
@@ -57,7 +59,7 @@ const groups = computed<PaletteGroup[]>(() => {
     .filter(option => matchesQuery(option.label, trimmed.value))
   const actionOptions: PaletteOption[] = [
     { id: 'action-theme', kind: 'action', label: t(theme.value === 'noche' ? 'bd.search.toDia' : 'bd.search.toNoche'), action: 'theme' },
-    { id: 'action-fediverse', kind: 'action', label: t('bd.search.fediverse'), hint: '@bogdev', action: 'fediverse' },
+    { id: 'action-fediverse', kind: 'action', label: t('bd.search.fediverse'), hint: fediverseUser, action: 'fediverse' },
   ]
   return [
     { kind: 'article' as const, options: articleOptions },
@@ -190,7 +192,7 @@ onBeforeUnmount(() => clearTimeout(debounceTimer))
   <dialog
     ref="dialogRef"
     class="bd-palette"
-    :aria-label="t('bd.search.dialog')"
+    :aria-label="t('bd.search.dialog', { site: site.name })"
     @cancel="onCancel"
     @close="open && close()"
     @click="onDialogClick"
@@ -227,7 +229,7 @@ onBeforeUnmount(() => clearTimeout(debounceTimer))
       <p v-else-if="loading" class="bd-meta bd-palette-note">{{ t('bd.search.loading') }}</p>
       <p v-else-if="empty" class="bd-meta bd-palette-note">{{ t('bd.search.empty', { query: trimmed }) }}</p>
 
-      <div id="bd-palette-list" class="bd-palette-list" role="listbox" :aria-label="t('bd.search.dialog')">
+      <div id="bd-palette-list" class="bd-palette-list" role="listbox" :aria-label="t('bd.search.dialog', { site: site.name })">
         <div
           v-for="group in groups"
           :key="group.kind"
