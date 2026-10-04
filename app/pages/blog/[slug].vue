@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Locale } from '~/interfaces'
 import { articlePaths } from '~/helpers/translations'
+import { pageTitle, siteLogoUrl } from '~/helpers/site'
 
 const { locale, t } = useI18n()
 const route = useRoute()
@@ -8,6 +9,7 @@ const slug = route.params.slug as string
 const { fetchPost, getMediaUrl } = useStrapi()
 const categoryLabel = useCategoryLabel()
 const { siteUrl } = useSiteUrl()
+const site = useSite()
 const { canonicalUrl } = useCanonicalUrl(`/blog/${slug}`)
 const headerSection = useHeaderSection()
 const { setAlternates } = useLocaleAlternates()
@@ -52,7 +54,7 @@ const shareImageAlt = computed(() => post.value?.cover?.alternativeText || post.
 const articleUrl = computed<string>(() => post.value?.seo?.canonicalURL || canonicalUrl.value)
 
 useSeoMeta({
-  title: () => post.value?.seo?.metaTitle || (post.value?.title ? `${post.value.title} - BogDev` : 'Post - BogDev'),
+  title: () => post.value?.seo?.metaTitle || pageTitle(post.value?.title || 'Post', site.value.name),
   ogTitle: () => post.value?.seo?.metaTitle || post.value?.title || 'Blog Post',
   description: () => post.value?.seo?.metaDescription || post.value?.description || '',
   ogDescription: () => post.value?.seo?.metaDescription || post.value?.description || '',
@@ -107,11 +109,11 @@ const structuredData = computed(() => {
         },
         'publisher': {
           '@type': 'Organization',
-          'name': 'BogDev',
+          'name': site.value.name,
           'url': siteUrl.value,
           'logo': {
             '@type': 'ImageObject',
-            'url': `${siteUrl.value}/logo.png`,
+            'url': siteLogoUrl(site.value, siteUrl.value),
           },
         },
         'mainEntityOfPage': {
@@ -150,8 +152,8 @@ const structuredData = computed(() => {
         '@type': 'WebSite',
         '@id': `${siteUrl.value}/#website`,
         'url': siteUrl.value,
-        'name': 'BogDev',
-        'description': 'Personal blog about AI, Software, Linux and more',
+        'name': site.value.name,
+        'description': site.value.description,
         'publisher': {
           '@type': 'Organization',
           '@id': `${siteUrl.value}/#organization`,

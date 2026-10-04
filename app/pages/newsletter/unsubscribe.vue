@@ -10,10 +10,10 @@ interface FocusTarget {
 const { t } = useI18n()
 const route = useRoute()
 const { localizePath } = useLocaleUtils()
-const config = useAppConfig()
+const site = useSite()
 
 const token = String(route.query.token ?? '')
-const contactEmail = config.site.privacy.contactEmail
+const contactEmail = computed<string>(() => site.value.privacyContactEmail)
 
 const status = ref<UnsubscribeStatus>(isNewsletterToken(token) ? 'ready' : 'invalid')
 const error = ref('')
@@ -40,7 +40,7 @@ async function unsubscribe(): Promise<void> {
 }
 
 useSeoMeta({
-  title: () => t('newsletter.unsubscribe.meta'),
+  title: () => t('newsletter.unsubscribe.meta', { site: site.value.name }),
   robots: 'noindex, nofollow',
 })
 </script>

@@ -468,6 +468,38 @@ const server = createServer(async (req, res) => {
     return
   }
 
+  if (method === 'GET' && url.pathname === '/api/site-setting') {
+    const locale = url.searchParams.get('locale') ?? 'en'
+    sendJson(res, 200, {
+      data: {
+        id: 1,
+        documentId: 'site',
+        locale,
+        name: 'BogDev',
+        description: 'Personal blog about AI, Software, Linux and more',
+        url: 'https://bogdev.com.co',
+        defaultLocale: 'en',
+        author: { id: 1, name: 'Alejandro Ramírez', url: 'https://bogdev.com.co/about' },
+        logo: null,
+        favicon: { id: 1, url: '/bogdev.svg', alternativeText: null, width: null, height: null },
+        defaultOgImage: null,
+        socialLinks: [
+          { id: 1, network: 'linkedin', url: 'https://www.linkedin.com/in/alejandro-ramirez-garcia-046713139' },
+          { id: 2, network: 'github', url: 'https://github.com/ale9420' },
+          { id: 3, network: 'codeberg', url: 'https://codeberg.org/alejo9420' },
+          { id: 4, network: 'mastodon', url: 'https://mastodon.social/@bogdev' },
+          { id: 5, network: 'x', url: 'https://x.com/devbog' },
+        ],
+        contactEmail: 'gx_alejandro@hotmail.com',
+        privacyContactEmail: 'gx_alejandro@hotmail.com',
+        privacyUpdatedAt: '2026-10-01T17:00:00.000Z',
+        supportHandle: 'ale9420',
+        modules: { id: 1, newsletter: true, comments: true, accounts: true, drafts: true, fediverse: true, search: true, support: true },
+      },
+    })
+    return
+  }
+
   if (method === 'GET' && url.pathname === '/api/about') {
     const locale = query.locale ?? 'en'
     sendJson(res, 200, {

@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { pageTitle } from '~/helpers/site'
+
 const { locale, t } = useI18n()
 const { localizePath } = useLocaleUtils()
+const site = useSite()
 
 const props = defineProps<{
   error: {
@@ -18,7 +21,7 @@ useHead({
 })
 
 useSeoMeta({
-  title: () => `${props.error.statusCode === 404 ? t('error.pageNotFound') : t('error.somethingWentWrong')} - BogDev`,
+  title: () => pageTitle(props.error.statusCode === 404 ? t('error.pageNotFound') : t('error.somethingWentWrong'), site.value.name),
   robots: 'noindex',
 })
 </script>

@@ -8,12 +8,12 @@ interface PrivacySection {
 }
 
 const { t } = useI18n()
-const config = useAppConfig()
+const site = useSite()
 const { canonicalUrl } = useCanonicalUrl('/privacy')
 const { siteUrl } = useSiteUrl()
 
-const contactEmail = config.site.privacy.contactEmail
-const updatedAt = formatDotDate(config.site.privacy.updatedAt)
+const contactEmail = computed<string>(() => site.value.privacyContactEmail)
+const updatedAt = computed<string>(() => formatDotDate(site.value.privacyUpdatedAt))
 
 const sections = computed<PrivacySection[]>(() => [
   { id: 'analytics', label: t('privacy.analytics.label') },
@@ -24,15 +24,15 @@ const sections = computed<PrivacySection[]>(() => [
 ])
 
 useSeoMeta({
-  title: () => t('privacy.meta.title'),
-  ogTitle: () => t('privacy.meta.title'),
-  description: () => t('privacy.meta.description'),
-  ogDescription: () => t('privacy.meta.description'),
+  title: () => t('privacy.meta.title', { site: site.value.name }),
+  ogTitle: () => t('privacy.meta.title', { site: site.value.name }),
+  description: () => t('privacy.meta.description', { site: site.value.name }),
+  ogDescription: () => t('privacy.meta.description', { site: site.value.name }),
   ogImage: () => `${siteUrl.value}/og-image.png`,
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary',
-  twitterTitle: () => t('privacy.meta.title'),
-  twitterDescription: () => t('privacy.meta.description'),
+  twitterTitle: () => t('privacy.meta.title', { site: site.value.name }),
+  twitterDescription: () => t('privacy.meta.description', { site: site.value.name }),
 })
 
 useHead({
@@ -45,7 +45,7 @@ useHead({
     <header class="bd-privacy-head">
       <p class="bd-eyebrow bd-privacy-updated">{{ t('privacy.eyebrow', { date: updatedAt }) }}</p>
       <h1 class="bd-wide bd-privacy-title">{{ t('privacy.title') }}</h1>
-      <p class="bd-privacy-lead">{{ t('privacy.lead') }}</p>
+      <p class="bd-privacy-lead">{{ t('privacy.lead', { site: site.name }) }}</p>
       <ul class="bd-privacy-facts" :aria-label="t('privacy.facts.label')">
         <li class="bd-privacy-fact">
           <span class="bd-wide bd-privacy-fact-value">0</span>
@@ -82,7 +82,7 @@ useHead({
         <p class="bd-eyebrow bd-privacy-label">{{ t('privacy.cookies.label') }}</p>
         <h2 id="cookies-title">{{ t('privacy.cookies.title') }}</h2>
         <table class="bd-privacy-table">
-          <caption class="bd-sr">{{ t('privacy.cookies.caption') }}</caption>
+          <caption class="bd-sr">{{ t('privacy.cookies.caption', { site: site.name }) }}</caption>
           <thead>
             <tr>
               <th scope="col">{{ t('privacy.cookies.name') }}</th>
