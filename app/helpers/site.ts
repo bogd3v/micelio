@@ -112,3 +112,19 @@ export function iconType(url: string): string | undefined {
   const extension = url.split(/[?#]/)[0]?.split('.').pop()?.toLowerCase() ?? ''
   return ICON_TYPES[extension]
 }
+
+/** A page title with the site name after it: `Blog - BogDev`. */
+export function pageTitle(title: string, siteName: string): string {
+  return `${title} - ${siteName}`
+}
+
+/** `url` as an absolute URL, prefixing `siteUrl` when it is a path. */
+export function absoluteUrl(url: string, siteUrl: string): string {
+  return /^https?:\/\//.test(url) ? url : `${siteUrl.replace(/\/+$/, '')}/${url.replace(/^\/+/, '')}`
+}
+
+/** The logo for structured data: the site's logo, else its favicon, as an absolute URL. */
+export function siteLogoUrl(site: Pick<Site, 'logo' | 'favicon'>, siteUrl: string): string | undefined {
+  const url = site.logo?.url ?? site.favicon?.url
+  return url ? absoluteUrl(url, siteUrl) : undefined
+}

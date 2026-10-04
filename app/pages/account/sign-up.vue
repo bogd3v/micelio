@@ -9,6 +9,7 @@ interface FocusTarget {
 
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
+const site = useSite()
 const { register, resendConfirmation } = useAuth()
 
 const username = ref('')
@@ -153,6 +154,7 @@ async function resend(): Promise<void> {
             :aria-describedby="errors.privacy ? 'bd-reg-terms-err' : undefined"
           >
           <i18n-t keypath="account.register.privacy" tag="span" scope="global">
+            <template #site>{{ site.name }}</template>
             <template #link><NuxtLink :to="localizePath('/privacy')">{{ t('account.register.privacyLink') }}</NuxtLink></template>
           </i18n-t>
         </label>

@@ -5,6 +5,7 @@ import { isCategory } from '~/helpers/categories'
 import { feedPath } from '~/helpers/feed'
 import { padCount } from '~/helpers/search'
 import { popularTags as pickPopularTags } from '~/helpers/tags'
+import { pageTitle } from '~/helpers/site'
 
 const RECENT_SIZE = 4
 const SEARCH_DEBOUNCE_MS = 300
@@ -17,6 +18,7 @@ const router = useRouter()
 const { fetchPosts, fetchCategories, fetchTags } = useStrapi()
 const { canonicalUrl } = useCanonicalUrl('/blog')
 const { siteUrl } = useSiteUrl()
+const site = useSite()
 const config = useRuntimeConfig()
 const toPostCard = usePostCard()
 
@@ -122,25 +124,25 @@ useHead(() => ({
     ? [{
         rel: 'alternate',
         type: 'application/rss+xml',
-        title: t('blog.feeds.title', { category: t(`bd.categories.${filters.value.category}`) }),
+        title: t('blog.feeds.title', { site: site.value.name, category: t(`bd.categories.${filters.value.category}`) }),
         href: `${siteUrl.value}${feedPath(locale.value, filters.value.category)}`,
       }]
     : [],
 }))
 
 useSeoMeta({
-  title: 'Blog - BogDev',
-  ogTitle: 'Blog - BogDev',
+  title: () => pageTitle('Blog', site.value.name),
+  ogTitle: () => pageTitle('Blog', site.value.name),
   description:
     'Browse all articles on AI, software development, Linux, DevOps, and more. Find tutorials, tips, and insights from my tech journey.',
   ogDescription:
     'Browse all articles on AI, software development, Linux, DevOps, and more. Find tutorials, tips, and insights from my tech journey.',
   ogUrl: () => canonicalUrl.value,
   ogImage: () => `${siteUrl.value}/og-image.png`,
-  ogImageAlt: 'BogDev — Blog',
+  ogImageAlt: () => `${site.value.name} — Blog`,
   twitterCard: 'summary_large_image',
   twitterImage: () => `${siteUrl.value}/og-image.png`,
-  twitterTitle: 'Blog - BogDev',
+  twitterTitle: () => pageTitle('Blog', site.value.name),
   twitterDescription:
     'Browse all articles on AI, software development, Linux, DevOps, and more.',
 })

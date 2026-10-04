@@ -233,7 +233,7 @@
     "feeds": {
       "label": "One feed per category:",
       "aria": "RSS feed for {category}",
-      "title": "BogDev RSS · {category}"
+      "title": "{site} RSS · {category}"
     }
   },
   "post": {
@@ -382,7 +382,7 @@
   "confirm": {
     "title": "Confirm Subscription",
     "successTitle": "Subscription Confirmed!",
-    "successMessage": "Welcome to BogDev! You're now subscribed to receive our latest posts.",
+    "successMessage": "Welcome to {site}! You're now subscribed to receive our latest posts.",
     "errorTitle": "Confirmation Failed",
     "alreadyConfirmed": "This subscription was already confirmed. Nothing else to do.",
     "invalidToken": "The confirmation link is invalid or has expired.",
@@ -580,7 +580,7 @@
       "profile": "Account · {role}"
     },
     "signIn": {
-      "title": "Sign in to BogDev",
+      "title": "Sign in to {site}",
       "lead": "With your email or your username.",
       "identifier": "Email or username",
       "password": "Password",
@@ -597,7 +597,7 @@
       "email": "Email",
       "password": "Password",
       "passwordHelp": "At least 10 characters. A long phrase is safer than an odd word.",
-      "privacy": "I read the {link}: BogDev only stores my email, my username and my encrypted password.",
+      "privacy": "I read the {link}: {site} only stores my email, my username and my encrypted password.",
       "privacyLink": "privacy notice",
       "submit": "Create account",
       "hasAccount": "Already have an account?",
@@ -696,7 +696,7 @@
       "trackersText": "No ads and no third-party analytics. Your session lives in a cookie that no script on the page can read.",
       "leaveTitle": "Leave whenever you want",
       "leaveText": "Delete your account and your data from My account, in one step.",
-      "editorTitle": "Do you write for BogDev?",
+      "editorTitle": "Do you write for {site}?",
       "editorText": "With the Editor role you see drafts with the real design before they are published. The administrator assigns the role.",
       "privacy": "Privacy and cookies"
     }
@@ -754,8 +754,8 @@
   },
   "privacy": {
     "meta": {
-      "title": "Privacy and cookies - BogDev",
-      "description": "BogDev does not track you: no ads, no tracking cookies and anonymous analytics. What data we keep and how to exercise your rights."
+      "title": "Privacy and cookies - {site}",
+      "description": "{site} does not track you: no ads, no tracking cookies and anonymous analytics. What data we keep and how to exercise your rights."
     },
     "notice": {
       "label": "Privacy notice",
@@ -765,7 +765,7 @@
     },
     "eyebrow": "Legal · updated {date}",
     "title": "Privacy and cookies",
-    "lead": "In short: BogDev does not track you. There are no ads, no tracking cookies and no third-party analytics building a profile of you.",
+    "lead": "In short: {site} does not track you. There are no ads, no tracking cookies and no third-party analytics building a profile of you.",
     "facts": {
       "label": "Summary",
       "tracking": "Tracking cookies",
@@ -784,7 +784,7 @@
     "cookies": {
       "label": "Cookies",
       "title": "A single cookie, and only if you sign in",
-      "caption": "Cookies used by BogDev",
+      "caption": "Cookies used by {site}",
       "name": "Name",
       "purpose": "Purpose",
       "when": "When",
@@ -827,7 +827,7 @@
   },
   "newsletter": {
     "unsubscribe": {
-      "meta": "Unsubscribe from the newsletter - BogDev",
+      "meta": "Unsubscribe from the newsletter - {site}",
       "eyebrow": "Newsletter",
       "title": "Unsubscribe",
       "lead": "You will stop receiving new articles by email and we will delete your address.",

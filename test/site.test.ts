@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ALL_MODULES_ON, fediverseUser, iconType, mergeSite, siteFromAppConfig, xHandle } from '../app/helpers/site'
+import { absoluteUrl, ALL_MODULES_ON, fediverseUser, iconType, mergeSite, pageTitle, siteFromAppConfig, siteLogoUrl, xHandle } from '../app/helpers/site'
 import type { AppSiteConfig } from '../app/helpers/site'
 import { parseSiteSettings } from '../server/schemas/site'
 import { Locale } from '../app/interfaces/locale'
@@ -78,6 +78,23 @@ describe('iconType', () => {
 
   it('leaves an unknown extension to the browser', () => {
     expect(iconType('/icon')).toBeUndefined()
+  })
+})
+
+describe('page helpers', () => {
+  it('puts the site name after the page title', () => {
+    expect(pageTitle('Blog', 'Micelio')).toBe('Blog - Micelio')
+  })
+
+  it('makes paths absolute and keeps absolute URLs', () => {
+    expect(absoluteUrl('/bogdev.svg', 'https://example.org/')).toBe('https://example.org/bogdev.svg')
+    expect(absoluteUrl('https://cdn.test/logo.png', 'https://example.org')).toBe('https://cdn.test/logo.png')
+  })
+
+  it('prefers the logo, then the favicon, for structured data', () => {
+    expect(siteLogoUrl({ logo: { url: 'https://cdn.test/logo.png' }, favicon: { url: '/icon.svg' } }, 'https://example.org')).toBe('https://cdn.test/logo.png')
+    expect(siteLogoUrl({ logo: null, favicon: { url: '/icon.svg' } }, 'https://example.org')).toBe('https://example.org/icon.svg')
+    expect(siteLogoUrl({ logo: null, favicon: null }, 'https://example.org')).toBeUndefined()
   })
 })
 

@@ -3,6 +3,7 @@ import type { Category, DraftFilter, DraftListResponse, DraftState } from '~/int
 import { DRAFT_FILTERS, countDrafts, draftStateKey, filterDrafts } from '~/helpers/drafts'
 import { isCategory } from '~/helpers/categories'
 import { formatDotDateTime } from '~/helpers/formatDate'
+import { pageTitle } from '~/helpers/site'
 
 interface DraftRow {
   key: string
@@ -21,6 +22,7 @@ definePageMeta({ middleware: 'editor' })
 
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
+const site = useSite()
 const { setAlternates } = useLocaleAlternates()
 const { count } = useDraftCount()
 const config = useRuntimeConfig()
@@ -66,7 +68,7 @@ function stateLabel(state: DraftState): string {
 setAlternates({})
 
 useSeoMeta({
-  title: () => `${t('drafts.meta.list')} - BogDev`,
+  title: () => pageTitle(t('drafts.meta.list'), site.value.name),
   robots: 'noindex, nofollow',
 })
 

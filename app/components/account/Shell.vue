@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
+const site = useSite()
 
 const points = computed<{ id: string, title: string, text: string, icon: string }[]>(() => [
   {
@@ -23,7 +24,7 @@ const points = computed<{ id: string, title: string, text: string, icon: string 
   },
   {
     id: 'editor',
-    title: t('account.aside.editorTitle'),
+    title: t('account.aside.editorTitle', { site: site.value.name }),
     text: t('account.aside.editorText'),
     icon: 'M6 3 H14 L19 8 V21 H6 Z M14 3 V8 H19 M9 13 H16 M9 17 H13',
   },

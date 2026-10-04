@@ -4,6 +4,7 @@ import type { ConfirmResponse } from '~/interfaces/newsletter'
 
 const { t } = useI18n()
 const route = useRoute()
+const site = useSite()
 const token = route.query.token as string
 
 const status = ref<'loading' | 'success' | 'error'>('loading')
@@ -22,7 +23,7 @@ async function confirmSubscription() {
       method: 'GET',
       params: { token },
     })
-    successMessage.value = t(response.alreadyConfirmed ? 'confirm.alreadyConfirmed' : 'confirm.successMessage')
+    successMessage.value = t(response.alreadyConfirmed ? 'confirm.alreadyConfirmed' : 'confirm.successMessage', { site: site.value.name })
     status.value = 'success'
   } catch (err) {
     const e = asApiError(err)

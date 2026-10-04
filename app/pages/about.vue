@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { Locale } from '~/interfaces'
+import { pageTitle } from '~/helpers/site'
 
 const { locale, t } = useI18n()
 const { fetchAbout, getMediaUrl } = useStrapi()
 const { canonicalUrl } = useCanonicalUrl('/about')
 const { siteUrl } = useSiteUrl()
+const site = useSite()
 
 const { data: about } = await fetchAbout(locale.value as Locale)
 
@@ -14,16 +16,16 @@ const shareImageUrl = computed(() => {
 })
 
 useSeoMeta({
-  title: () => about.value?.seo?.metaTitle || 'About - BogDev',
-  ogTitle: () => about.value?.seo?.metaTitle || 'About - BogDev',
+  title: () => about.value?.seo?.metaTitle || pageTitle('About', site.value.name),
+  ogTitle: () => about.value?.seo?.metaTitle || pageTitle('About', site.value.name),
   description: () => about.value?.seo?.metaDescription || '',
   ogDescription: () => about.value?.seo?.metaDescription || '',
   ogImage: () => shareImageUrl.value,
-  ogImageAlt: 'BogDev — About',
+  ogImageAlt: () => `${site.value.name} — About`,
   ogUrl: () => canonicalUrl.value,
   ogType: 'profile',
   twitterCard: 'summary',
-  twitterTitle: () => about.value?.seo?.metaTitle || 'About - BogDev',
+  twitterTitle: () => about.value?.seo?.metaTitle || pageTitle('About', site.value.name),
   twitterDescription: () => about.value?.seo?.metaDescription || '',
 })
 
@@ -39,8 +41,8 @@ useHead({
 const structuredData = computed(() => ({
   '@context': 'https://schema.org',
   '@type': 'Person',
-  'name': 'Alejandro Ramirez',
-  'url': `${siteUrl.value}/about`,
+  'name': site.value.author.name,
+  'url': site.value.author.url,
   'jobTitle': 'Software Developer',
   'description': 'Colombian software developer passionate about AI, Linux, and open source',
   'address': {
@@ -48,15 +50,10 @@ const structuredData = computed(() => ({
     'addressLocality': 'Bogotá',
     'addressCountry': 'CO',
   },
-  'sameAs': [
-    'https://github.com/ale9420',
-    'https://www.linkedin.com/in/alejandro-ramirez-garcia-046713139',
-    'https://codeberg.org/alejo9420',
-    'https://mastodon.social/@bogdev',
-  ],
+  'sameAs': site.value.socialLinks.map(link => link.url),
   'worksFor': {
     '@type': 'Organization',
-    'name': 'BogDev',
+    'name': site.value.name,
   },
 }))
 

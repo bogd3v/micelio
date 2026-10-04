@@ -4,10 +4,12 @@ import { draftViewState } from '~/helpers/drafts'
 import { isLocale } from '~/helpers/locale'
 import { toStrapiPost } from '~/helpers/post'
 import { articlePath } from '~/helpers/translations'
+import { pageTitle } from '~/helpers/site'
 
 definePageMeta({ middleware: 'editor' })
 
 const { locale, t } = useI18n()
+const site = useSite()
 const route = useRoute()
 const requestFetch = useRequestFetch()
 const categoryLabel = useCategoryLabel()
@@ -38,7 +40,7 @@ watch(() => categoryLabel(post.value?.category), (label) => {
 setAlternates({})
 
 useSeoMeta({
-  title: () => `${t('drafts.meta.article', { title: post.value?.title ?? '' })} - BogDev`,
+  title: () => pageTitle(t('drafts.meta.article', { title: post.value?.title ?? '' }), site.value.name),
   robots: 'noindex, nofollow',
 })
 

@@ -233,7 +233,7 @@
     "feeds": {
       "label": "Un feed por categoría:",
       "aria": "Feed RSS de {category}",
-      "title": "BogDev RSS · {category}"
+      "title": "{site} RSS · {category}"
     }
   },
   "post": {
@@ -382,7 +382,7 @@
   "confirm": {
     "title": "Confirmar Suscripción",
     "successTitle": "¡Suscripción Confirmada!",
-    "successMessage": "¡Bienvenido a BogDev! Ahora estás suscrito para recibir nuestros últimos artículos.",
+    "successMessage": "¡Bienvenido a {site}! Ahora estás suscrito para recibir nuestros últimos artículos.",
     "errorTitle": "Confirmación Fallida",
     "alreadyConfirmed": "Esta suscripción ya estaba confirmada. No tienes que hacer nada más.",
     "invalidToken": "El enlace de confirmación es inválido o ha expirado.",
@@ -580,7 +580,7 @@
       "profile": "Cuenta · {role}"
     },
     "signIn": {
-      "title": "Entra a BogDev",
+      "title": "Entra a {site}",
       "lead": "Con tu correo o tu nombre de usuario.",
       "identifier": "Correo o nombre de usuario",
       "password": "Contraseña",
@@ -597,7 +597,7 @@
       "email": "Correo",
       "password": "Contraseña",
       "passwordHelp": "Mínimo 10 caracteres. Una frase larga es más segura que una palabra rara.",
-      "privacy": "Leí el {link}: BogDev guarda solo mi correo, mi nombre de usuario y mi contraseña cifrada.",
+      "privacy": "Leí el {link}: {site} guarda solo mi correo, mi nombre de usuario y mi contraseña cifrada.",
       "privacyLink": "aviso de privacidad",
       "submit": "Crear cuenta",
       "hasAccount": "¿Ya tienes cuenta?",
@@ -696,7 +696,7 @@
       "trackersText": "Sin publicidad ni analítica de terceros. La sesión vive en una cookie que ningún script de la página puede leer.",
       "leaveTitle": "Te vas cuando quieras",
       "leaveText": "Eliminas tu cuenta y tus datos desde Mi cuenta, en un paso.",
-      "editorTitle": "¿Escribes en BogDev?",
+      "editorTitle": "¿Escribes en {site}?",
       "editorText": "Con el rol Editor ves los borradores con el diseño real antes de publicarlos. El rol lo asigna el administrador.",
       "privacy": "Privacidad y cookies"
     }
@@ -754,8 +754,8 @@
   },
   "privacy": {
     "meta": {
-      "title": "Privacidad y cookies - BogDev",
-      "description": "BogDev no te sigue: sin publicidad, sin cookies de seguimiento y con analítica anónima. Qué datos guardamos y cómo ejercer tus derechos."
+      "title": "Privacidad y cookies - {site}",
+      "description": "{site} no te sigue: sin publicidad, sin cookies de seguimiento y con analítica anónima. Qué datos guardamos y cómo ejercer tus derechos."
     },
     "notice": {
       "label": "Aviso de privacidad",
@@ -765,7 +765,7 @@
     },
     "eyebrow": "Legal · actualizado el {date}",
     "title": "Privacidad y cookies",
-    "lead": "En corto: BogDev no te sigue. No hay publicidad, ni cookies de seguimiento, ni analítica de terceros que arme un perfil tuyo.",
+    "lead": "En corto: {site} no te sigue. No hay publicidad, ni cookies de seguimiento, ni analítica de terceros que arme un perfil tuyo.",
     "facts": {
       "label": "Resumen",
       "tracking": "Cookies de seguimiento",
@@ -784,7 +784,7 @@
     "cookies": {
       "label": "Cookies",
       "title": "Una sola cookie, y solo si entras a tu cuenta",
-      "caption": "Cookies que usa BogDev",
+      "caption": "Cookies que usa {site}",
       "name": "Nombre",
       "purpose": "Para qué",
       "when": "Cuándo",
@@ -827,7 +827,7 @@
   },
   "newsletter": {
     "unsubscribe": {
-      "meta": "Darte de baja del newsletter - BogDev",
+      "meta": "Darte de baja del newsletter - {site}",
       "eyebrow": "Newsletter",
       "title": "Darte de baja",
       "lead": "Dejarás de recibir los artículos nuevos por correo y borraremos tu dirección.",

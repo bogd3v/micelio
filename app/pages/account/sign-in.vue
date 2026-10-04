@@ -4,6 +4,7 @@ import { authNotice, safeRedirect } from '~/helpers/auth'
 const { t } = useI18n()
 const route = useRoute()
 const { localizePath } = useLocaleUtils()
+const site = useSite()
 const { login, ensure } = useAuth()
 const { errorMessage } = useAccountPage(() => t('account.meta.signIn'))
 
@@ -49,7 +50,7 @@ onMounted(async () => {
 <template>
   <AccountShell>
     <form class="bd-account-view" novalidate @submit.prevent="submit">
-      <AccountHeading :eyebrow="t('account.eyebrow.signIn')" :title="t('account.signIn.title')">
+      <AccountHeading :eyebrow="t('account.eyebrow.signIn')" :title="t('account.signIn.title', { site: site.name })">
         {{ t('account.signIn.lead') }}
       </AccountHeading>
       <AccountNotice v-if="notice && !error">{{ t(`account.notices.${notice}`) }}</AccountNotice>

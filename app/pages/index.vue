@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { Category, FieldGuideTopic, Locale, PostListItem } from '~/interfaces'
 import { CATEGORIES, isCategory } from '~/helpers/categories'
+import { siteLogoUrl } from '~/helpers/site'
 
 const { locale, t } = useI18n()
 const { fetchPosts, fetchCategories } = useStrapi()
 const { siteUrl } = useSiteUrl()
+const site = useSite()
 const { canonicalUrl } = useCanonicalUrl('/')
 const toPostCard = usePostCard()
 
@@ -25,16 +27,16 @@ const topics = computed<FieldGuideTopic[]>(() =>
 )
 
 useSeoMeta({
-  title: 'BogDev - Personal Blog',
-  ogTitle: 'BogDev - Personal Blog',
+  title: () => `${site.value.name} - Personal Blog`,
+  ogTitle: () => `${site.value.name} - Personal Blog`,
   description: 'Explore articles on AI, software development, Linux, and modern tech. Join me on my journey through technology.',
   ogDescription: 'Explore articles on AI, software development, Linux, and modern tech. Join me on my journey through technology.',
   ogImage: () => `${siteUrl.value}/og-image.png`,
-  ogImageAlt: 'BogDev — Exploring AI, Software and Linux',
+  ogImageAlt: () => `${site.value.name} — Exploring AI, Software and Linux`,
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
   twitterImage: () => `${siteUrl.value}/og-image.png`,
-  twitterTitle: 'BogDev - Personal Blog',
+  twitterTitle: () => `${site.value.name} - Personal Blog`,
   twitterDescription: 'Explore articles on AI, software development, Linux, and modern tech.',
 })
 
@@ -45,8 +47,8 @@ const structuredData = computed(() => ({
       '@type': 'WebSite',
       '@id': `${siteUrl.value}/#website`,
       'url': siteUrl.value,
-      'name': 'BogDev',
-      'description': 'Personal blog about AI, Software, Linux and more',
+      'name': site.value.name,
+      'description': site.value.description,
       'publisher': {
         '@id': `${siteUrl.value}/#organization`,
       },
@@ -63,18 +65,13 @@ const structuredData = computed(() => ({
     {
       '@type': 'Organization',
       '@id': `${siteUrl.value}/#organization`,
-      'name': 'BogDev',
+      'name': site.value.name,
       'url': siteUrl.value,
       'logo': {
         '@type': 'ImageObject',
-        'url': `${siteUrl.value}/bogdev.svg`,
+        'url': siteLogoUrl(site.value, siteUrl.value),
       },
-      'sameAs': [
-        'https://github.com/ale9420',
-        'https://www.linkedin.com/in/alejandro-ramirez-garcia-046713139',
-        'https://codeberg.org/alejo9420',
-        'https://mastodon.social/@bogdev',
-      ],
+      'sameAs': site.value.socialLinks.map(link => link.url),
     },
   ],
 }))
