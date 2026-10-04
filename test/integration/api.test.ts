@@ -15,8 +15,15 @@ const mock = await startMockStrapi()
 const umami = await startMockUmami()
 process.env.NUXT_PUBLIC_STRAPI_URL = mock.url
 process.env.NUXT_SMTP_PORT = '1'
+// A full SMTP setting keeps the newsletter module on; port 1 makes every send fail fast
+process.env.NUXT_SMTP_HOST = '127.0.0.1'
+process.env.NUXT_SMTP_USER = 'test'
+process.env.NUXT_SMTP_PASS = 'test'
+process.env.NUXT_NEWSLETTER_FROM = 'BogDev <no-reply@bogdev.test>'
 process.env.NUXT_STRAPI_API_TOKEN = 'test-api-token'
 process.env.NUXT_PUBLIC_SITE_URL = SITE_URL
+// Module switches must take effect at once in these tests
+process.env.NUXT_SITE_CACHE_SECONDS = '0'
 process.env.NUXT_MEDIA_URL = 'https://resources.bogdev.com.co'
 process.env.NUXT_PUBLIC_FEDIVERSE_HANDLE = '@bogdev@api.bogdev.com.co'
 process.env.NUXT_PUBLIC_FEDIVERSE_ACTOR_URL = 'https://api.bogdev.com.co/fediverse/user/devbog'
@@ -34,9 +41,11 @@ await setup({
 
 beforeEach(() => {
   mock.requests.length = 0
+  mock.siteRequests.length = 0
   mock.failures.pathOrder = false
   mock.failures.about = false
   mock.failures.site = false
+  for (const module of Object.keys(mock.modules) as (keyof typeof mock.modules)[]) mock.modules[module] = true
   umami.requests.length = 0
 })
 
@@ -570,9 +579,9 @@ describe('/api/site', () => {
       contactEmail: 'hola@micelio.test',
       privacyContactEmail: 'gx_alejandro@hotmail.com',
       supportHandle: 'ale9420',
-      modules: { comments: false, newsletter: true },
+      modules: { comments: true, newsletter: true },
     })
-    expect(mock.requests).toEqual([expect.objectContaining({
+    expect(mock.siteRequests).toEqual([expect.objectContaining({
       path: '/api/site-setting',
       query: { populate: '*', locale: 'es' },
       authorization: 'Bearer test-api-token',
@@ -595,6 +604,39 @@ describe('/api/site', () => {
   it('rejects an unknown locale without calling Strapi', async () => {
     await expect($fetch('/api/site', { query: { locale: 'fr' } })).rejects.toMatchObject({ response: { status: 400 } })
     expect(mock.requests).toEqual([])
+  })
+})
+
+describe('site modules', () => {
+  const offRoutes: [keyof typeof mock.modules, string, string?][] = [
+    ['newsletter', '/api/newsletter/unsubscribe', 'POST'],
+    ['comments', '/api/comments?relation=api::article.article:doc-vue'],
+    ['accounts', '/api/auth/me'],
+    ['drafts', '/api/drafts'],
+    ['fediverse', '/api/fediverse/stats?documentIds=doc-vue'],
+    ['search', '/api/search?q=vue'],
+  ]
+
+  it.each(offRoutes)('answers 404 on the %s routes when the module is off, without calling Strapi', async (module, path, method = 'GET') => {
+    mock.modules[module] = false
+    const response = await fetch(path, { method })
+    expect(response.status).toBe(404)
+    expect(mock.requests).toEqual([])
+  })
+
+  it('answers 404 on the pages of a module that is off, in both locales', async () => {
+    mock.modules.accounts = false
+    mock.modules.newsletter = false
+    for (const path of ['/account/sign-in', '/es/account/sign-up', '/drafts', '/newsletter/unsubscribe', '/confirm']) {
+      expect((await fetch(path)).status, path).toBe(404)
+    }
+    expect((await fetch('/blog')).status).toBe(200)
+  })
+
+  it('turns drafts off with accounts, and reports the modules that work in /api/site', async () => {
+    mock.modules.accounts = false
+    const site = await $fetch<{ modules: Record<string, boolean> }>('/api/site')
+    expect(site.modules).toMatchObject({ accounts: false, drafts: false, comments: true })
   })
 })
 

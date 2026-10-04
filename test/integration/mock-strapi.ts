@@ -32,11 +32,17 @@ interface MockFailures {
   site: boolean
 }
 
+type MockModules = Record<'newsletter' | 'comments' | 'accounts' | 'drafts' | 'fediverse' | 'search' | 'support', boolean>
+
 interface MockStrapiResult {
   server: Server
   url: string
   requests: RecordedRequest[]
+  /** Reads of /api/site-setting, kept apart from `requests` */
+  siteRequests: RecordedRequest[]
   failures: MockFailures
+  /** The modules site-setting answers with; tests switch them off and back on */
+  modules: MockModules
   users: Array<{ id: number, username: string, email: string, password: string, confirmed: boolean, role: string }>
 }
 
@@ -425,7 +431,9 @@ function recordRequest(
 
 export async function startMockStrapi(): Promise<MockStrapiResult> {
   const requests: RecordedRequest[] = []
+  const siteRequests: RecordedRequest[] = []
   const failures: MockFailures = { pathOrder: false, about: false, site: false }
+  const modules: MockModules = { newsletter: true, comments: true, accounts: true, drafts: true, fediverse: true, search: true, support: true }
   const authMock = createAuthMock({ frontendUrl: 'https://bogdev.test' })
   const draftsMock = createDraftsMock({ userFromAuth: authMock.userFromAuth, publishedArticles: articles })
 
@@ -435,8 +443,10 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     const query = qs.parse(url.searchParams.toString(), { depth: 20 })
     const body = ['POST', 'PUT', 'DELETE'].includes(method) ? await readJsonBody(req) : undefined
 
-    recordRequest(requests, method, url.pathname, query, body)
-    if (req.headers.authorization) requests[requests.length - 1]!.authorization = req.headers.authorization
+    // site-setting is read before every module route, so it goes to its own list
+    const log = url.pathname === '/api/site-setting' ? siteRequests : requests
+    recordRequest(log, method, url.pathname, query, body)
+    if (req.headers.authorization) log[log.length - 1]!.authorization = req.headers.authorization
 
     const auth = authMock.handle(method, url.pathname, query, body, req.headers)
     if (auth) {
@@ -624,7 +634,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
           privacyContactEmail: null,
           privacyUpdatedAt: null,
           supportHandle: null,
-          modules: { id: 1, newsletter: true, comments: false, accounts: true, drafts: true, fediverse: true, search: true, support: true },
+          modules: { id: 1, ...modules },
         },
       })
       return
@@ -799,7 +809,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address()
       const port = typeof address === 'object' && address !== null ? address.port : 0
-      resolve({ server, url: `http://127.0.0.1:${port}`, requests, failures, users: authMock.users })
+      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, users: authMock.users })
     })
   })
 }

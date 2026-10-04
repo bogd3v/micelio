@@ -28,6 +28,22 @@ Types: `app/interfaces/strapi-post.ts` (`RawStrapiArticle`, `SearchPostResult`, 
 
 **Rendered Markdown.** `/api/posts/:slug`, `/api/about` and `/api/drafts/:documentId` render Markdown on the server (`app/helpers/markdown.ts`, labels from `i18n/locales/` in the request's `locale`): every `shared.rich-text` and `shared.quote` block gets an `html` field, and every `about.open-source` guide item an `html` field, already sanitized. Article citations are numbered on the server from the article's `references`. `body` and `text` are still returned for the table of contents and the reference list. Components render `html` and never parse Markdown in the browser.
 
+## Modules
+
+Each site turns features on and off in Strapi's `site-setting.modules` (all on by default). The server switches a module off by itself when it lacks what it needs, and logs it at startup: `newsletter` without the four SMTP settings, `fediverse` without the three `NUXT_PUBLIC_FEDIVERSE_*` values, and `drafts` whenever `accounts` is off. `/api/site` returns the result (`modules`), and pages read it with `useModule(module)`. All of it lives in `app/helpers/modules.ts`.
+
+| Module | Routes and pages that answer 404 when it is off |
+| --- | --- |
+| `newsletter` | `/api/newsletter/*`, `/confirm`, `/newsletter/*` |
+| `comments` | `/api/comments*` |
+| `accounts` | `/api/auth/*`, `/account*` |
+| `drafts` | `/api/drafts*`, `/drafts*` |
+| `fediverse` | `/api/fediverse/*` |
+| `search` | `/api/search` |
+| `support` | none (only the support button) |
+
+Pages match with or without the `/es` prefix. `server/middleware/modules.ts` answers before the route runs, so a switched-off module never reaches Strapi. It reads the modules through `loadSiteCached()`, which keeps the site for `NUXT_SITE_CACHE_SECONDS` (60 by default, at most 10 s after a Strapi failure; `0` turns the cache off). Client-side navigation is checked by `app/middleware/modules.global.ts`.
+
 ## Comments
 
 `relation` is required on every comment route and must be `api::article.article:<documentId or slug>`, or the answer is `400`.

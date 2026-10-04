@@ -1,4 +1,4 @@
-import { missingOptionalRuntimeSettings, missingRuntimeSettings } from '~/helpers/runtimeConfig'
+import { missingOptionalRuntimeSettings, missingRuntimeSettings, moduleRequirements } from '~/helpers/runtimeConfig'
 
 export default defineNitroPlugin(() => {
   if (import.meta.dev) return
@@ -10,5 +10,10 @@ export default defineNitroPlugin(() => {
   const optional = missingOptionalRuntimeSettings(config)
   if (optional.length) {
     console.warn(`Optional runtime settings not set: ${optional.join(', ')}. Without them, Strapi's media host is not allowed in the CSP and the fediverse features are off.`)
+  }
+  const requirements = moduleRequirements(config)
+  const off = [!requirements.smtp && 'newsletter (no SMTP)', !requirements.fediverse && 'fediverse (no fediverse settings)'].filter(Boolean)
+  if (off.length) {
+    console.warn(`Modules turned off by missing configuration: ${off.join(', ')}.`)
   }
 })

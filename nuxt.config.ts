@@ -60,6 +60,7 @@ export default defineNuxtConfig({
     mediaUrl: '',
     umamiUrl: '',
     umamiCollectPath: '/api/bd',
+    siteCacheSeconds: 60,
     public: {
       strapiUrl: '',
       siteUrl: '',
