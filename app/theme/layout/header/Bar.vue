@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { HeaderSection, Locale, ThemeMode } from '~/interfaces'
 
+defineOptions({ name: 'RegionHeaderBar' })
+
 const props = withDefaults(defineProps<{
   active?: HeaderSection
   reading?: boolean
@@ -35,11 +37,7 @@ const scrolled = useReadingProgress(tracking)
 const mounted = useMounted()
 const shortcut = ref('⌘K')
 
-const links = computed<{ id: HeaderSection, label: string, to: string }[]>(() => [
-  { id: 'home', label: t('nav.home'), to: localizePath('/') },
-  { id: 'blog', label: t('nav.blog'), to: localizePath('/blog') },
-  { id: 'about', label: t('nav.about'), to: localizePath('/about') },
-])
+const links = useNavLinks()
 const percent = computed<number>(() =>
   Math.round(Math.min(100, Math.max(0, props.progress ?? scrolled.value))),
 )
@@ -51,7 +49,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <header :class="['bd-header', { 'bd-header-reading': reading, 'bd-header-auto': tracking }]">
+  <header data-layout="bar" :class="['bd-header', { 'bd-header-reading': reading, 'bd-header-auto': tracking }]">
     <div class="bd-nav">
       <div class="bd-header-inner">
         <NuxtLink :to="localizePath('/')" class="bd-brand" :aria-label="t('bd.header.home', { site: site.name })">

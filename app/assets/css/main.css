@@ -44,10 +44,8 @@
 @import "./components/slider.css" layer(bd.components);
 
 @import "./layout/page.css" layer(bd.layout);
-@import "./layout/header.css" layer(bd.layout);
 @import "#build/micelio/layout-header.css" layer(bd.layout);
 @import "./layout/mobile-nav.css" layer(bd.layout);
-@import "./layout/footer.css" layer(bd.layout);
 @import "#build/micelio/layout-footer.css" layer(bd.layout);
 @import "./layout/skip-links.css" layer(bd.layout);
 @import "./layout/back-to-top.css" layer(bd.layout);

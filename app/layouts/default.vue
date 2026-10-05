@@ -28,7 +28,7 @@ onMounted(() => {
     <LayoutSkipLinks />
     <LayoutBackToTop />
 
-    <BdHeader
+    <RegionHeader
       :active="active"
       :reading="reading"
       :section="section || undefined"
@@ -49,7 +49,7 @@ onMounted(() => {
       <slot />
     </main>
 
-    <BdFooter />
+    <RegionFooter />
 
     <BdPrivacyNotice />
 
