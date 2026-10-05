@@ -1,7 +1,3 @@
-.bd-home-featured {
-    padding: 16px var(--bd-home-gutter) 80px;
-}
-
 .bd-home-section {
     display: flex;
     flex-direction: column;
@@ -163,10 +159,6 @@
 }
 
 @media (min-width: 768px) {
-    .bd-home-featured {
-        padding-bottom: var(--space-section);
-    }
-
     .bd-home-section {
         gap: var(--space-12);
         padding: var(--space-section) var(--bd-home-gutter);

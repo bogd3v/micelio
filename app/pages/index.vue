@@ -3,14 +3,11 @@ import type { Category, FieldGuideTopic, Locale, PostListItem } from '~/interfac
 import { CATEGORIES, isCategory } from '~/helpers/categories'
 import { siteLogoUrl } from '~/helpers/site'
 
-const { locale, t } = useI18n()
+const { locale } = useI18n()
 const { fetchPosts, fetchCategories } = useStrapi()
 const { siteUrl } = useSiteUrl()
 const site = useSite()
 const { canonicalUrl } = useCanonicalUrl('/')
-const toPostCard = usePostCard()
-const fediverseOn = useModule('fediverse')
-const newsletterOn = useModule('newsletter')
 
 const { data: postsResult } = fetchPosts({ pageSize: 1, locale: locale.value as Locale })
 const { data: categories } = fetchCategories(locale.value as Locale)
@@ -89,19 +86,5 @@ useHead({
 </script>
 
 <template>
-  <div class="bd-home">
-    <HomeHero :total="total" />
-
-    <section v-if="featuredPost" class="bd-home-featured bd-reveal" :aria-label="t('bd.card.featured')">
-      <BdPostCard v-bind="toPostCard(featuredPost)" featured priority />
-    </section>
-
-    <HomeLatest :total="total" :counts="counts" />
-
-    <HomeFieldGuide :topics="topics" />
-
-    <HomeFediverse v-if="fediverseOn" />
-
-    <HomeSubscribe v-if="newsletterOn" />
-  </div>
+  <RegionHome :featured-post="featuredPost" :total="total" :counts="counts" :topics="topics" />
 </template>
