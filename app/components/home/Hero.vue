@@ -7,6 +7,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
+const hud = useThemeHud()
 
 const eyebrow = computed<string>(() => t('home.hero.eyebrow', { count: padCount(props.total) }, props.total))
 </script>
@@ -16,9 +17,9 @@ const eyebrow = computed<string>(() => t('home.hero.eyebrow', { count: padCount(
     <ThemeHero class="bd-hero-art" />
     <div class="bd-hero-copy">
       <p class="bd-eyebrow bd-hero-eyebrow">{{ eyebrow }}</p>
-      <p class="bd-meta bd-hero-place">
+      <p v-if="hud.city" class="bd-meta bd-hero-place">
         <span class="bd-hero-diamond" aria-hidden="true">◆</span>
-        <span>{{ t('bd.header.hud.city') }} · {{ t('bd.header.hud.altitude') }}</span>
+        <span>{{ [hud.city, hud.altitude].filter(Boolean).join(' · ') }}</span>
       </p>
       <h1 class="bd-hero-title bd-wide">{{ t('home.hero.title') }}</h1>
       <p class="bd-hero-lead">{{ t('home.hero.subtitle') }}</p>

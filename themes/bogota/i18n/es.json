@@ -58,6 +58,15 @@
         "name": "Monjita bogotana",
         "scientific": "Chrysomus icterocephalus bogotensis"
       }
+    },
+    "hud": {
+      "city": "Bogotá",
+      "coords": "4.61°N 74.08°W",
+      "altitude": "2.640 m s.n.m.",
+      "madeIn": "Hecho en Bogotá, Colombia"
+    },
+    "progress": {
+      "marker": "M1 9 Q6 1 11 8 Q16 1 21 9"
     }
   }
 }

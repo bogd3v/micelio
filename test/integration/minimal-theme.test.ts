@@ -40,6 +40,12 @@ describe('a build with the minimal fixture theme', () => {
     expect(html).toMatch(/<a [^>]*class="[^"]*bd-brand"[^>]*><span aria-hidden="true">[^<]+<\/span><\/a>/)
   })
 
+  it('shows no place line or progress marker, which a theme provides through its messages', async () => {
+    const html = await (await fetch('/')).text()
+    for (const hook of ['bd-hud"', 'bd-hero-place', 'bd-progress-track', 'bd-progress-marker']) expect(html).not.toContain(hook)
+    expect(html).not.toContain('Bogot')
+  })
+
   it('serves the theme\'s roles and the core\'s optional-role defaults', async () => {
     const html = await (await fetch('/')).text()
     const href = html.match(/href="([^"]+\.css)"/)?.[1]

@@ -451,11 +451,6 @@
       },
       "fediverse": "{handle} en el fediverso",
       "read": "Leído {percent} %",
-      "hud": {
-        "city": "Bogotá",
-        "coords": "4.61°N 74.08°W",
-        "altitude": "2.640 m s.n.m."
-      },
       "signIn": "Entrar",
       "signInLabel": "Entrar a tu cuenta",
       "accountMenu": "Menú de tu cuenta, {username}",
@@ -515,7 +510,6 @@
       "fediverse": "Fediverso · {handle}",
       "newsletter": "Newsletter",
       "coffee": "Invitarme un café",
-      "madeIn": "Hecho en Bogotá, Colombia",
       "privacy": "Privacidad y cookies"
     }
   },
