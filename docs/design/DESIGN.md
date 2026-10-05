@@ -39,7 +39,7 @@ Cada requisito lleva un estado: **EXISTE** (ya está en producción, solo cambia
 | --- | --- |
 | Lienzo de diseño | 17 pantallas (incluye Privacidad escritorio y móvil y el Aviso): Inicio, Artículo, Blog, Acerca de, Cuenta, Borradores y Borrador de artículo (escritorio), Inicio, Blog, Acerca de, Cuenta y Borradores (móvil), Header y Footer compartidos |
 | Sistema de diseño BogDev | Tokens y 8 componentes React (Logo, Button, CategoryTag, NavBar, PostCard, NewsletterForm, CodeBlock, Callout); logos oficiales |
-| Frontend `bogd3v/micelio` | Nuxt 4, Vue 3, Nuxt UI, Tailwind 4, i18n es/en, Vitest, Playwright |
+| Frontend `bogd3v/micelio` | Nuxt 4, Vue 3, plain CSS, i18n es/en, Vitest, Playwright |
 | Backend `bogd3v/micelio-cms` | Strapi 5, plugin de comentarios, plugin de fediverso (Fedify), `docs/FEDIVERSE.md` |
 
 Convenciones para agentes:

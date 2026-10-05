@@ -81,11 +81,9 @@ describe('build-tokens', () => {
     expect(block(css, '.bd-eyebrow {')).toContain('letter-spacing: 0.16em;')
   })
 
-  it('exposes colors and shadows to Tailwind', () => {
-    const theme = block(css, '@theme inline')
-    expect(theme).toContain('--color-surface: var(--surface);')
-    expect(theme).toContain('--color-focus: var(--focus);')
-    expect(theme).toContain('--shadow-glow: var(--glow);')
+  it('does not write a Tailwind @theme block', () => {
+    expect(css).not.toContain('@theme')
+    expect(css).not.toContain('--color-surface')
   })
 
   it('is deterministic and --check fails on a stale file', () => {

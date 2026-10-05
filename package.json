@@ -25,9 +25,7 @@
   },
   "dependencies": {
     "@nuxt/image": "^2.0.0",
-    "@nuxt/ui": "^4.6.0",
     "@nuxtjs/i18n": "^10.6.0",
-    "@tailwindcss/typography": "^0.5.20",
     "@vueuse/nuxt": "^14.2.1",
     "marked": "^18.0.14",
     "mermaid": "^12.0.0",

@@ -7,8 +7,24 @@ const privatePageHeaders = {
   'x-robots-tag': 'noindex, nofollow',
 }
 
+// CSS browser targets, shared by the Lightning CSS transformer and the minifier (build.cssTarget)
+const CSS_TARGETS: Record<string, [major: number, minor?: number]> = {
+  chrome: [111],
+  edge: [111],
+  firefox: [114],
+  safari: [16, 4],
+  ios_saf: [16, 4],
+}
+// Lightning CSS encodes a version as (major << 16) | (minor << 8)
+const LIGHTNINGCSS_TARGETS = Object.fromEntries(
+  Object.entries(CSS_TARGETS).map(([browser, [major, minor = 0]]) => [browser, (major << 16) | (minor << 8)]),
+)
+const ESBUILD_TARGETS = Object.entries(CSS_TARGETS).map(
+  ([browser, [major, minor]]) => `${browser === 'ios_saf' ? 'ios' : browser}${major}${minor ? `.${minor}` : ''}`,
+)
+
 export default defineNuxtConfig({
-  modules: ['@nuxt/ui', '@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
+  modules: ['@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
   ssr: true,
   devtools: { enabled: false },
   app: {
@@ -45,10 +61,6 @@ export default defineNuxtConfig({
     },
   },
   css: ['~/assets/css/main.css'],
-  ui: {
-    colorMode: false,
-    fonts: false,
-  },
   runtimeConfig: {
     strapiApiToken: '',
     smtpHost: '',
@@ -125,7 +137,12 @@ export default defineNuxtConfig({
     },
   },
   vite: {
+    css: {
+      transformer: 'lightningcss',
+      lightningcss: { targets: LIGHTNINGCSS_TARGETS },
+    },
     build: {
+      cssTarget: ESBUILD_TARGETS,
       rollupOptions: {
         experimental: {
           // Merging pulled Mermaid's d3 chunk into every page; see docs/performance.md

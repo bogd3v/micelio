@@ -60,11 +60,6 @@ export function buildTokensCss(data, aliases = {}) {
     lines.push('}')
   }))
 
-  lines.push('@theme inline {')
-  data.color.tokens.forEach(t => lines.push(`  --color-${t.name}: var(--${t.name});`))
-  ;(data.shadow?.tokens ?? []).forEach(t => lines.push(`  --shadow-${t.name}: var(--${t.name});`))
-  lines.push('}')
-
   return lines.join('\n') + '\n'
 }
 

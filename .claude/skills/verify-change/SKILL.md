@@ -33,7 +33,7 @@ Scripts in this skill's `scripts/` folder; run them from the repo root with `nod
 
 | Change | Proof | Script |
 | --- | --- | --- |
-| CSS split or move, token rename | Computed styles of every element, before and after, at 375 / 800 / 1280 px | `compare-styles.mjs capture <url> before.json [paths]` → change → `capture … after.json` → `compare before.json after.json` |
+| CSS split or move, token rename | Computed styles of every element, before and after, at 375 / 800 / 1280 px | `compare-styles.mjs capture <url> before.json [paths]` → change → `capture … after.json` → `compare before.json after.json`. Options: `--theme noche\|dia`, `--scope all` (`html`, `body`, `body *` and rendered `::before`/`::after`/`::placeholder`; default `main *`), `--widths 375,768,1280`, `--states` (also after a Tab press and after scrolling to the bottom) |
 | Refactor, formatting, dependency update | Same HTML from `main` and the branch, both built and served against the mock Strapi | `compare-html.mjs <urlMain> <urlBranch> [paths]` |
 | Headers, CSP, new media or embed domain, new inline script | No `securitypolicyviolation` or page error on a production build | `csp-probe.mjs <url> [paths]` |
 

@@ -28,9 +28,9 @@
   "limits": {
     "home": {
       "error": {
-        "jsKb": 159.0,
+        "jsKb": 146.7,
         "lcpMs": 5950,
-        "cssKb": 23.0,
+        "cssKb": 19.9,
         "htmlKb": 113.9,
         "fontKb": 150.8,
         "thirdPartyRequests": 0,
@@ -44,9 +44,9 @@
     },
     "blog": {
       "error": {
-        "jsKb": 154.2,
+        "jsKb": 142.1,
         "lcpMs": 4700,
-        "cssKb": 23.0,
+        "cssKb": 19.9,
         "htmlKb": 80.4,
         "fontKb": 150.8,
         "thirdPartyRequests": 0,
@@ -60,9 +60,9 @@
     },
     "article": {
       "error": {
-        "jsKb": 170.6,
+        "jsKb": 158.6,
         "lcpMs": 5200,
-        "cssKb": 23.0,
+        "cssKb": 19.9,
         "htmlKb": 82.7,
         "fontKb": 150.8,
         "thirdPartyRequests": 0,
@@ -76,9 +76,9 @@
     },
     "about": {
       "error": {
-        "jsKb": 155.9,
+        "jsKb": 143.8,
         "lcpMs": 6600,
-        "cssKb": 23.0,
+        "cssKb": 19.9,
         "htmlKb": 95.3,
         "fontKb": 150.8,
         "thirdPartyRequests": 0,
@@ -92,9 +92,9 @@
     },
     "privacy": {
       "error": {
-        "jsKb": 142.5,
+        "jsKb": 130.4,
         "lcpMs": 4350,
-        "cssKb": 23.0,
+        "cssKb": 19.9,
         "htmlKb": 71.1,
         "fontKb": 150.8,
         "thirdPartyRequests": 0,
