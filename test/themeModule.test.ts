@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
+import { checkVariant } from '../modules/theme/layout/post-list-article'
 import { themeMismatch } from '../app/helpers/runtimeConfig'
 
 function theme(root: string, folder: string, manifest: object = { id: folder }): void {
@@ -84,5 +85,17 @@ describe('themeMismatch', () => {
   it('names both themes when they differ or the runtime has none', () => {
     expect(themeMismatch({ public: { theme: 'other' } }, 'bogota')).toMatch(/"other".*"bogota"/)
     expect(themeMismatch({}, 'bogota')).toMatch(/"undefined"/)
+  })
+})
+
+describe('checkVariant', () => {
+  it('throws on a variant the core does not implement', () => {
+    expect(() => checkVariant({ id: 'x', layout: { postList: 'masonry' } }, 'postList', ['grid']))
+      .toThrow('layout.postList "masonry" is not a known variant; expected one of: grid')
+  })
+
+  it('passes a known variant and an omitted region', () => {
+    expect(() => checkVariant({ id: 'x', layout: { postList: 'grid' } }, 'postList', ['grid'])).not.toThrow()
+    expect(() => checkVariant({ id: 'x' }, 'article', ['aside'])).not.toThrow()
   })
 })
