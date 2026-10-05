@@ -1,6 +1,6 @@
 // Fails when a template uses a class that is not a core class: `bd-*` or one of the core helpers below.
-// Keeps Tailwind-style utilities (p-4, text-sm, hover:…, [arbitrary]) out of app/ (ADR 0005, section 3). Run by `npm run lint`.
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+// Keeps Tailwind-style utilities (p-4, text-sm, hover:…, [arbitrary]) out of app/, modules/ and themes/ (ADR 0005, section 3). Run by `npm run lint`.
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -9,6 +9,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const ALLOWED = new Set(['card', 'font-display', 'font-mono', 'gradient-bogota-subtle', 'not-prose'])
 
 function files(dir) {
+  if (!existsSync(dir)) return []
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name)
     return statSync(path).isDirectory() ? files(path) : /\.(vue|ts)$/.test(name) ? [path] : []
@@ -31,7 +32,7 @@ function classNames(source, file) {
 }
 
 const problems = []
-for (const path of files(join(ROOT, 'app'))) {
+for (const path of ['app', 'modules', 'themes'].flatMap(dir => files(join(ROOT, dir)))) {
   const file = relative(ROOT, path)
   for (const name of classNames(readFileSync(path, 'utf8'), file)) {
     if (!name.startsWith('bd-') && !ALLOWED.has(name)) problems.push(`${file}  "${name}" is not a core class: add a bd-* class in its layer (AGENTS.md, CSS Architecture)`)

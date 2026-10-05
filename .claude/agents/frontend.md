@@ -8,7 +8,7 @@ Load the `ui-component` skill and read `docs/design/DESIGN.md` before writing ma
 
 - Reuse `Bd*` components (`BdButton`…) and `.bd-*` blocks; a new block gets its own file in the right `assets/css/` layer plus its `@import` in `main.css`. Never add rules to `main.css`.
 - Colors only from semantic roles (ADR 0005), never primitives; no utility classes in templates. `npm run lint` enforces both.
-- Never edit `settings/tokens.css` by hand (`npm run tokens`).
+- Role values live in `themes/<id>/theme.json`; the build generates the CSS (`npm run tokens` prints it). Nothing generated is checked in.
 - Accessibility: semantic HTML, `aria-label` on icon-only controls, focus ring, contrast, `prefers-reduced-motion`. SEO: `useSeoMeta()` on pages.
 - Every user-facing string in both `i18n/locales/` files.
 - Finish with `npm run lint`, `npm run typecheck`, `npm run test`; say how to check it visually.

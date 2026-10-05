@@ -41,7 +41,7 @@ The two optional roles were added with #236, when Bogotá's components moved ont
 
 `link` and `focus` are separate roles because a theme may draw them from a color other than the accent. Bogotá does: `accent` is mirla, `link` and `focus` are chillón. Mermaid's `themeVariables` are derived by the core from roles (today's `mermaidThemeVariables` mapping, rewritten on roles); a theme may override individual variables under `mermaid` in `theme.json`, with values that are roles, not colors.
 
-Contrast rules, checked per mode by #238 (WCAG 2 AA): `ink`, `ink-muted`, `link`, `accent`, states and categories as text ≥ 4.5:1 on the three surfaces and on their own `-soft`; `on-ink` on `ink` and `on-accent` on `accent` ≥ 4.5:1; `line-strong`, `focus` and `accent` as non-text ≥ 3:1. The `usage` notes in `tokens.json` become these assertions.
+Contrast rules, checked per mode by #238 (WCAG 2 AA): `ink`, `ink-muted`, `link`, `accent`, states and categories as text ≥ 4.5:1 on the three surfaces and on their own `-soft`; `on-ink` on `ink` and `on-accent` on `accent` ≥ 4.5:1; `line-strong`, `focus` and `accent` as non-text ≥ 3:1. The `usage` notes in `theme.json` (formerly `tokens.json`) become these assertions.
 
 ### 2. Modes
 
@@ -88,10 +88,10 @@ themes/bogota/
   templates/        og.vue (OG image), email.ts (newsletter email shell) (optional)
 ```
 
-- **`theme.json`** uses the `docs/design/tokens.json` format (which becomes Bogotá's `theme.json`), plus `$schema`, `contract`, `id` (the folder name), `modes` and `fonts`. Role values are colors or references to the theme's primitives (`{chillon}`), resolved by the theme module at build time.
+- **`theme.json`** uses the format of the former `docs/design/tokens.json` (now Bogotá's `theme.json`; its `layout` token group is renamed `size`, because `layout` names the variants; top-level `modes` replaces `color.themes`), plus `$schema`, `contract`, `id` (the folder name), `modes` and `fonts`. Role values are colors or references to the theme's primitives (`{chillon}`), resolved by the theme module at build time.
 - **Role CSS** is generated at build from `theme.json`, one block per mode, into `bd.settings`; no generated file is checked in.
 - **`theme.css`** is written by hand and imported into the layer `bd.theme`, after the core's components, layout and pages and before animations and utilities (section 3). It styles public hooks and its own slots (section 5); it may not `@import` remote URLs, use `url()` outside its own `fonts/` and `images/`, or use `!important`.
-- **Fonts** are self-hosted woff2, subset to the scripts the site uses, `font-display: swap`, with fallback faces whose metrics are adjusted (`size-adjust`, ascent and descent overrides) as in `settings/font-fallbacks.css`. `theme.json` lists them and marks which are preloaded; the core builds the preload links from that list instead of `nuxt.config.ts`. The active theme's `fonts/` is served at `/fonts/`.
+- **Fonts** are self-hosted woff2, subset to the scripts the site uses, `font-display: swap`, with fallback faces whose metrics are adjusted (`size-adjust`, ascent and descent overrides) as in `font-fallbacks.css` at the theme's root. `theme.json` lists them and marks which are preloaded; the core builds the preload links from that list instead of `nuxt.config.ts`. The active theme's `fonts/` is served at `/fonts/`.
 - **Images** in `images/` are served at `/theme/images/`; `theme.css` and slots reference them there.
 - **Messages** in `i18n/<locale>.json` live under the `theme.*` namespace and are merged into the site's i18n at build; a theme's user-facing text never lives in the core's locale files.
 - **Slots** are a closed list (amended 2026-10-04, #237, which added `ThemeIllustration`). The core renders them by name and ships neutral default implementations in `app/theme/defaults/`, so a theme that ships none still works. Adding a slot with a core default stays in contract v1 (section 6); removing a slot or changing its props is a contract change.

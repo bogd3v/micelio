@@ -69,6 +69,13 @@ Rate limits are in memory (`server/utils/rateLimit.ts`): they reset when the con
 - **Rich text** from Strapi is rendered on the server with `marked` and always passed through `sanitize-html` before it leaves the API (`app/helpers/markdown.ts`, used by the post, about and draft routes). If rendering fails, the text is escaped, never passed through. The three `v-html` lint warnings point at that sanitized `html`.
 - **Cookies**: only `bd_session`, and only after signing in.
 
+## Themes
+
+- **Build-time, operator-trusted.** `NUXT_PUBLIC_THEME` and `MICELIO_THEME_DIRS` are read by `modules/theme` at build. Whoever controls them controls the CSS and fonts that ship; they are not user input. Symlinks inside a theme directory are followed when its assets are copied, so keep themes you do not trust out of the repository.
+- **Startup check.** `runtimeConfigCheck` throws if the runtime `NUXT_PUBLIC_THEME` differs from the build, in production and in dev.
+- **`/fonts/`** is the active theme's `fonts/` served as static, same-origin files; the security headers are unchanged and no CSP source is added.
+- **Theme values are trusted repository content** until the contract validator (#237, PR 7). Meanwhile the build rejects theme ids that are not `[a-z0-9-]+` or differ from the folder, duplicate ids, font files that are not plain `.woff2` names, token names and mode ids outside `[\w-]`, and values containing `; { } < > @` a backtick or `url(`.
+
 ## Dependencies
 
 - CI fails on any **critical** `npm audit` finding. High stays allowed while the remaining ones (`node-forge` through the Nuxt dev server, `esbuild`) have no fixed release and do not reach the production image.
