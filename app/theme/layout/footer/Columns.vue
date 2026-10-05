@@ -2,6 +2,8 @@
 import { CATEGORIES, categoryColor } from '~/helpers/categories'
 import { FOOTER_SOCIALS } from '~/helpers/site'
 
+defineOptions({ name: 'RegionFooterColumns' })
+
 interface FooterLink {
   id: string
   label: string
@@ -42,11 +44,7 @@ const socials = computed<SocialLink[]>(() =>
     return display ? [{ id: link.network, ...display, href: link.url }] : []
   }),
 )
-const sections = computed<FooterLink[]>(() => [
-  { id: 'home', label: t('nav.home'), to: localizePath('/') },
-  { id: 'blog', label: t('nav.blog'), to: localizePath('/blog') },
-  { id: 'about', label: t('nav.about'), to: localizePath('/about') },
-])
+const sections = useNavLinks()
 const topics = computed<FooterLink[]>(() =>
   CATEGORIES.map(slug => ({
     id: slug,
@@ -105,7 +103,7 @@ function scrollToTop(): void {
 </script>
 
 <template>
-  <footer class="bd-foot">
+  <footer class="bd-foot" data-layout="columns">
     <div class="bd-foot-main">
       <div class="bd-foot-brand-col">
         <NuxtLink :to="localizePath('/')" class="bd-foot-brand bd-wide" :aria-label="t('bd.header.home', { site: site.name })">

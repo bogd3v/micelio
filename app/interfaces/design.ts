@@ -58,6 +58,12 @@ export interface PostCardProps {
 
 export type HeaderSection = 'home' | 'blog' | 'about'
 
+export interface NavLink {
+  id: HeaderSection
+  label: string
+  to: string
+}
+
 export type PaletteKind = 'article' | 'topic' | 'action'
 
 export type PaletteAction = 'theme' | 'fediverse'

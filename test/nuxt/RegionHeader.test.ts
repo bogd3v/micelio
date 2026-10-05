@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import BdHeader from '~/components/bd/BdHeader.vue'
+import RegionHeader from '~/theme/layout/header/Bar.vue'
 
-describe('BdHeader', () => {
+describe('RegionHeader', () => {
   it('marks the active link with aria-current', async () => {
-    const wrapper = await mountSuspended(BdHeader, { props: { active: 'blog' } })
+    const wrapper = await mountSuspended(RegionHeader, { props: { active: 'blog' } })
     const links = wrapper.findAll('.bd-nav-link')
     expect(links.map(link => link.text())).toEqual(['Home', 'Blog', 'About'])
     expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined])
@@ -13,7 +13,7 @@ describe('BdHeader', () => {
   })
 
   it('shows the HUD strip with the fediverse chip, search and theme control', async () => {
-    const wrapper = await mountSuspended(BdHeader, { props: { active: 'home' } })
+    const wrapper = await mountSuspended(RegionHeader, { props: { active: 'home' } })
     expect(wrapper.get('.bd-hud').text()).toContain('Bogotá')
     expect(wrapper.get('.bd-hud').text()).toContain('4.61°N 74.08°W')
     const chip = wrapper.get('a.bd-chip')
@@ -29,7 +29,7 @@ describe('BdHeader', () => {
   })
 
   it('emits search from both search buttons and menu from the menu button', async () => {
-    const wrapper = await mountSuspended(BdHeader, { props: { menuOpen: true } })
+    const wrapper = await mountSuspended(RegionHeader, { props: { menuOpen: true } })
     await wrapper.get('button.bd-chip').trigger('click')
     const [searchIcon, menu] = wrapper.findAll('.bd-nav-mobile button')
     expect(searchIcon!.attributes('aria-label')).toBe('Search')
@@ -42,7 +42,7 @@ describe('BdHeader', () => {
   })
 
   it('switches to the reading strip with breadcrumbs and progress', async () => {
-    const wrapper = await mountSuspended(BdHeader, {
+    const wrapper = await mountSuspended(RegionHeader, {
       props: { active: 'blog', reading: true, progress: 38.4, section: 'Linux and open source' },
     })
     expect(wrapper.find('.bd-hud').exists()).toBe(false)
@@ -59,7 +59,7 @@ describe('BdHeader', () => {
   })
 
   it('tracks the scroll itself when no progress is given', async () => {
-    const wrapper = await mountSuspended(BdHeader, { props: { reading: true } })
+    const wrapper = await mountSuspended(RegionHeader, { props: { reading: true } })
     expect(wrapper.classes()).toContain('bd-header-auto')
     expect(wrapper.get('.bd-strip-read').text()).toBe('Read 0 %')
     expect(wrapper.find('.bd-crumbs [aria-current]').exists()).toBe(false)

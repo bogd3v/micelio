@@ -3,9 +3,9 @@ import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import type { Site } from '~/interfaces'
 import { siteFromAppConfig } from '~/helpers/site'
 import type { AppSiteConfig } from '~/helpers/site'
-import BdFooter from '~/components/bd/BdFooter.vue'
+import RegionFooter from '~/theme/layout/footer/Columns.vue'
 
-describe('BdFooter', () => {
+describe('RegionFooter', () => {
   let unregister: (() => void) | undefined
 
   afterEach(() => {
@@ -26,7 +26,7 @@ describe('BdFooter', () => {
       supportHandle: 'micelio',
     }
     unregister = registerEndpoint('/api/site', () => site)
-    const wrapper = await mountSuspended(BdFooter)
+    const wrapper = await mountSuspended(RegionFooter)
     await vi.waitFor(() => expect(wrapper.get('.bd-foot-legal span').text()).toBe(`© ${new Date().getFullYear()} Micelio · Grace`))
     expect(wrapper.get('a.bd-foot-brand').attributes('aria-label')).toBe('Micelio, home')
     expect(wrapper.findAll('a.bd-foot-soc').map(a => a.attributes('href'))).toEqual(['https://gitlab.com/micelio'])
@@ -34,7 +34,7 @@ describe('BdFooter', () => {
   })
 
   it('renders the brand, social links and desktop groups', async () => {
-    const wrapper = await mountSuspended(BdFooter)
+    const wrapper = await mountSuspended(RegionFooter)
     expect(wrapper.get('a.bd-foot-brand').attributes('aria-label')).toBe('BogDev, home')
     const socials = wrapper.findAll('a.bd-foot-soc')
     expect(socials.map(a => a.text())).toEqual(['inLinkedIn↗', 'ghGitHub↗', 'cbCodeberg↗', 'mdMastodon↗'])
@@ -56,7 +56,7 @@ describe('BdFooter', () => {
       modules: { newsletter: false, comments: false, accounts: false, drafts: false, fediverse: false, search: false, support: false },
     }
     unregister = registerEndpoint('/api/site', () => site)
-    const wrapper = await mountSuspended(BdFooter)
+    const wrapper = await mountSuspended(RegionFooter)
     await vi.waitFor(() => expect(wrapper.findAll('nav.bd-foot-nav')[2]!.findAll('a').map(a => a.attributes('href'))).toEqual(['/feed.xml']))
     const subscribe = wrapper.findAll('details.bd-acc')[2]!
     expect(subscribe.get('.bd-acc-summary').text()).toBe('RSS')
@@ -64,7 +64,7 @@ describe('BdFooter', () => {
   })
 
   it('folds the mobile groups with native details, topics open first', async () => {
-    const wrapper = await mountSuspended(BdFooter)
+    const wrapper = await mountSuspended(RegionFooter)
     const groups = wrapper.findAll('details.bd-acc')
     expect(groups.map(group => group.get('.bd-acc-label').text())).toEqual(['Topics', 'Navigate', 'Subscribe'])
     expect(groups.map(group => group.attributes('open') !== undefined)).toEqual([true, false, false])
@@ -74,7 +74,7 @@ describe('BdFooter', () => {
   })
 
   it('keeps the panorama decorative', async () => {
-    const wrapper = await mountSuspended(BdFooter)
+    const wrapper = await mountSuspended(RegionFooter)
     const layers = wrapper.findAll('.bogota-land svg')
     expect(layers).toHaveLength(4)
     expect(layers.every(svg => svg.attributes('aria-hidden') === 'true')).toBe(true)
@@ -83,7 +83,7 @@ describe('BdFooter', () => {
   })
 
   it('links to the privacy page next to the copyright', async () => {
-    const wrapper = await mountSuspended(BdFooter)
+    const wrapper = await mountSuspended(RegionFooter)
     const link = wrapper.get('.bd-foot-legal a.bd-foot-privacy')
     expect(link.text()).toBe('Privacy and cookies')
     expect(link.attributes('href')).toBe('/privacy')

@@ -130,7 +130,7 @@ Set the variables from `.env.example` in the production environment (Dokploy) wi
 │   ├── app.config.ts          # Site name, author, social links, privacy contact
 │   ├── assets/css/            # Global styles by layer (see AGENTS.md, CSS Architecture)
 │   ├── components/            # Auto-imported, grouped by feature
-│   │   ├── bd/                # BogDev design system: BdButton, BdHeader, BdSearchPalette…
+│   │   ├── bd/                # BogDev design system: BdButton, BdSearchPalette…
 │   │   ├── blog/              # Article view, comments, filters, pagination
 │   │   ├── account/           # Account pages: shell, fields, notices
 │   │   ├── drafts/            # Draft list and preview
