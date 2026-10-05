@@ -35,7 +35,7 @@ function files(dir) {
 }
 
 const names = primitives()
-// var(--mirla), and Tailwind utilities generated from the tokens (text-mirla, bg-chillon-soft…)
+// var(--mirla), and utility-style names (text-mirla, bg-chillon-soft…) in case utilities come back
 const pattern = new RegExp(`(?:--|\\b[a-z]+-)(${names.map(n => n.replace(/[-]/g, '\\-')).join('|')})(?![\\w-])`, 'g')
 const problems = []
 for (const path of SCANNED.flatMap(dir => files(join(ROOT, dir)))) {

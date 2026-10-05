@@ -1,4 +1,5 @@
-/* Replaces Tailwind's preflight; values copied from Tailwind v4 (ADR 0005, section 3). */
+/* Replaces Tailwind's preflight; values copied from Tailwind v4 (ADR 0005, section 3).
+   Left out on purpose (no such elements): file inputs, date inputs, progress, abbr[title]. */
 *,
 ::before,
 ::after,
@@ -159,4 +160,8 @@ input:where([type="button"], [type="reset"], [type="submit"]) {
 
 [hidden]:where(:not([hidden="until-found"])) {
     display: none !important;
+}
+
+:-moz-ui-invalid {
+    box-shadow: none;
 }

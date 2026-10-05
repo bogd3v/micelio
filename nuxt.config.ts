@@ -7,15 +7,21 @@ const privatePageHeaders = {
   'x-robots-tag': 'noindex, nofollow',
 }
 
-// Lightning CSS encodes a version as (major << 16) | (minor << 8)
-const version = (major: number, minor = 0): number => (major << 16) | (minor << 8)
-const BROWSER_TARGETS = {
-  chrome: version(111),
-  edge: version(111),
-  firefox: version(114),
-  safari: version(16, 4),
-  ios_saf: version(16, 4),
+// CSS browser targets, shared by the Lightning CSS transformer and the minifier (build.cssTarget)
+const CSS_TARGETS: Record<string, [major: number, minor?: number]> = {
+  chrome: [111],
+  edge: [111],
+  firefox: [114],
+  safari: [16, 4],
+  ios_saf: [16, 4],
 }
+// Lightning CSS encodes a version as (major << 16) | (minor << 8)
+const LIGHTNINGCSS_TARGETS = Object.fromEntries(
+  Object.entries(CSS_TARGETS).map(([browser, [major, minor = 0]]) => [browser, (major << 16) | (minor << 8)]),
+)
+const ESBUILD_TARGETS = Object.entries(CSS_TARGETS).map(
+  ([browser, [major, minor]]) => `${browser === 'ios_saf' ? 'ios' : browser}${major}${minor ? `.${minor}` : ''}`,
+)
 
 export default defineNuxtConfig({
   modules: ['@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
@@ -133,10 +139,10 @@ export default defineNuxtConfig({
   vite: {
     css: {
       transformer: 'lightningcss',
-      lightningcss: { targets: BROWSER_TARGETS },
+      lightningcss: { targets: LIGHTNINGCSS_TARGETS },
     },
     build: {
-      cssTarget: ['chrome111', 'edge111', 'firefox114', 'safari16.4', 'ios16.4'],
+      cssTarget: ESBUILD_TARGETS,
       rollupOptions: {
         experimental: {
           // Merging pulled Mermaid's d3 chunk into every page; see docs/performance.md
