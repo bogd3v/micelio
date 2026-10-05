@@ -38,9 +38,6 @@ jobs:
       - name: Audit dependencies
         run: npm audit --audit-level=critical
 
-      - name: Check generated design tokens
-        run: npm run tokens:check
-
       - name: Run type check
         run: npm run typecheck
 

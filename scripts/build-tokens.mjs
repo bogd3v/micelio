@@ -1,103 +1,31 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+// Prints (or writes) the role CSS of a theme: node scripts/build-tokens.mjs [theme.json] [output.css] [--alias <mode>=<selector>]
+// The build does this through modules/theme; this is for inspecting a theme's output.
+import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { buildTokensCss } from '../modules/theme/tokens.mjs'
 
-const DEFAULT_INPUT = fileURLToPath(new URL('../docs/design/tokens.json', import.meta.url))
-const DEFAULT_OUTPUT = fileURLToPath(new URL('../app/assets/css/settings/tokens.css', import.meta.url))
+const DEFAULT_INPUT = fileURLToPath(new URL('../themes/bogota/theme.json', import.meta.url))
 
 function parseArgs(argv) {
-  const opts = { check: false, aliases: {}, files: [] }
+  const opts = { aliases: {}, files: [] }
   for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i]
-    if (arg === '--check') {
-      opts.check = true
-    } else if (arg === '--alias') {
-      const [theme, selector] = (argv[++i] ?? '').split('=')
-      if (!theme || !selector) throw new Error('--alias expects <theme>=<selector>')
-      ;(opts.aliases[theme] ??= []).push(selector)
+    if (argv[i] === '--alias') {
+      const [mode, selector] = (argv[++i] ?? '').split('=')
+      if (!mode || !selector) throw new Error('--alias expects <mode>=<selector>')
+      ;(opts.aliases[mode] ??= []).push(selector)
     } else {
-      opts.files.push(arg)
+      opts.files.push(argv[i])
     }
   }
   return opts
 }
 
-function resolveValue(value) {
-  return typeof value === 'string' ? value.replace(/\{([\w-]+)\}/g, 'var(--$1)') : value
-}
-
-function valueFor(token, theme) {
-  return resolveValue(typeof token.value === 'object' ? token.value[theme] : token.value)
-}
-
-export function buildTokensCss(data, aliases = {}) {
-  const themes = data.color.themes.map(t => t.id)
-  const unknown = Object.keys(aliases).filter(theme => !themes.includes(theme))
-  if (unknown.length) throw new Error(`Unknown theme in --alias: ${unknown.join(', ')}`)
-
-  const themed = [...data.color.tokens, ...(data.shadow?.tokens ?? [])]
-  const flat = [...(data.spacing?.tokens ?? []), ...(data.radius?.tokens ?? []), ...(data.layout?.tokens ?? []), ...(data.motion?.tokens ?? [])]
-
-  const lines = ['/* BogDev — generated from docs/design/tokens.json by scripts/build-tokens.mjs. Do not edit by hand. */']
-  themes.forEach((theme, i) => {
-    const selectors = [...(i === 0 ? [':root'] : []), `[data-theme="${theme}"]`, ...(aliases[theme] ?? [])]
-    lines.push(`${selectors.join(',\n')} {`)
-    themed.forEach(t => lines.push(`  --${t.name}: ${valueFor(t, theme)};`))
-    lines.push(`  color-scheme: ${theme === 'dia' ? 'light' : 'dark'};`, '}')
-  })
-
-  flat.forEach((t) => {
-    if (typeof t.value === 'object') throw new Error(`Token ${t.name} has per-mode values but is not in the color or shadow group`)
-  })
-  themed.forEach((t) => {
-    if (t.at) throw new Error(`Token ${t.name} uses "at", which only applies to single-value tokens`)
-  })
-
-  lines.push(':root {')
-  flat.forEach(t => lines.push(`  --${t.name}: ${resolveValue(t.value)};`))
-  Object.entries(data.type?.families ?? {}).forEach(([k, v]) => lines.push(`  --font-${k}: ${v};`))
-  ;(data.type?.groups ?? []).forEach(g => g.styles.forEach((s) => {
-    lines.push(`  --text-${s.name}: ${s.fontWeight} ${s.fontSize}/${s.lineHeight} var(--font-${g.family});`)
-    lines.push(`  --tracking-${s.name}: ${s.letterSpacing ?? 'normal'};`)
-  }))
-  lines.push('}')
-
-  // Roles that change with the viewport: { "at": { "<min-width>": "<value>" } }
-  const responsive = flat.filter(t => t.at)
-  const widths = [...new Set(responsive.flatMap(t => Object.keys(t.at)))].sort((a, b) => parseFloat(a) - parseFloat(b))
-  widths.forEach((width) => {
-    lines.push(`@media (min-width: ${width}) {`, '  :root {')
-    responsive.filter(t => t.at[width]).forEach(t => lines.push(`    --${t.name}: ${resolveValue(t.at[width])};`))
-    lines.push('  }', '}')
-  })
-
-  ;(data.type?.groups ?? []).forEach(g => g.styles.forEach((s) => {
-    lines.push(`.bd-${s.name} {`, `  font: var(--text-${s.name});`, `  letter-spacing: var(--tracking-${s.name});`, '}')
-  }))
-
-  return lines.join('\n') + '\n'
-}
-
-function main() {
-  const { check, aliases, files } = parseArgs(process.argv.slice(2))
-  const input = files[0] ?? DEFAULT_INPUT
-  const output = files[1] ?? DEFAULT_OUTPUT
-  const css = buildTokensCss(JSON.parse(readFileSync(input, 'utf8')), aliases)
-
-  if (check) {
-    const current = existsSync(output) ? readFileSync(output, 'utf8') : ''
-    if (current !== css) {
-      process.stderr.write(`${output} is out of date. Run: npm run tokens\n`)
-      process.exit(1)
-    }
-    process.stdout.write(`${output} is up to date\n`)
-    return
-  }
-
-  writeFileSync(output, css)
-  process.stdout.write(`${output} generated\n`)
-}
-
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  main()
+const { aliases, files } = parseArgs(process.argv.slice(2))
+const css = buildTokensCss(JSON.parse(readFileSync(files[0] ?? DEFAULT_INPUT, 'utf8')), aliases)
+if (files[1]) {
+  writeFileSync(files[1], css)
+  process.stdout.write(`${files[1]} generated\n`)
+} else {
+  process.stdout.write(css)
 }

@@ -1,17 +1,35 @@
 {
+ "$schema": "../theme.schema.json",
+ "contract": 1,
+ "id": "bogota",
  "name": "BogDev",
- "version": 1,
+ "modes": [
+  {
+   "id": "noche",
+   "scheme": "dark",
+   "name": "Noche"
+  },
+  {
+   "id": "dia",
+   "scheme": "light",
+   "name": "Día · Salmona"
+  }
+ ],
+ "fonts": [
+  {
+   "family": "Archivo",
+   "file": "archivo-latin-var.woff2",
+   "preload": true
+  },
+  {
+   "family": "JetBrains Mono",
+   "file": "jetbrains-mono-latin-var.woff2",
+   "preload": true
+  }
+ ],
+ "layout": {},
+ "slots": {},
  "color": {
-  "themes": [
-   {
-    "id": "noche",
-    "name": "Noche"
-   },
-   {
-    "id": "dia",
-    "name": "Día · Salmona"
-   }
-  ],
   "tokens": [
    {
     "name": "surface",
@@ -364,6 +382,198 @@
    }
   ]
  },
+ "shadow": {
+  "note": "No hay sombras de elevación: la profundidad es luz. El resplandor neón solo existe en el tema noche.",
+  "tokens": [
+   {
+    "name": "glow-chillon",
+    "value": {
+     "noche": "0 0 0 1px #2ee6b6, 0 0 24px rgba(46, 230, 182, 0.28)",
+     "dia": "0 0 0 1px #0a6656"
+    },
+    "usage": "Hover de tarjeta y foco de campo en noche; en día se reduce a un hairline."
+   },
+   {
+    "name": "glow-mirla",
+    "value": {
+     "noche": "0 0 0 1px #ff7a1a, 0 0 24px rgba(255, 122, 26, 0.3)",
+     "dia": "0 0 0 1px #a3410f"
+    },
+    "usage": "Hover del botón de acento (suscripción)."
+   },
+   {
+    "name": "glow-accent",
+    "value": "{glow-mirla}",
+    "usage": "Glow on the accent (primary button)"
+   },
+   {
+    "name": "glow-link",
+    "value": "{glow-chillon}",
+    "usage": "Optional role (ADR 0005): glow on focused and hovered interactive surfaces"
+   },
+   {
+    "name": "shadow-raised",
+    "value": {
+     "noche": "0 12px 40px -12px rgba(0, 0, 0, 0.4)",
+     "dia": "0 12px 40px -12px rgba(0, 0, 0, 0.15)"
+    },
+    "usage": "Role (ADR 0005): lifted card on hover."
+   },
+   {
+    "name": "shadow-overlay",
+    "value": "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+    "usage": "Role (ADR 0005): floating controls over content."
+   }
+  ]
+ },
+ "spacing": {
+  "note": "Base 4px. La composición respira como un catálogo: separaciones grandes entre secciones (space-24), compactas dentro de un componente.",
+  "tokens": [
+   {
+    "name": "space-1",
+    "value": "4px",
+    "usage": "Separación glifo–texto, punto de categoría."
+   },
+   {
+    "name": "space-2",
+    "value": "8px",
+    "usage": "Entre metadatos; gap interno de etiquetas."
+   },
+   {
+    "name": "space-3",
+    "value": "12px",
+    "usage": "Padding vertical de botones y campos."
+   },
+   {
+    "name": "space-4",
+    "value": "16px",
+    "usage": "Margen lateral móvil; gap de formularios."
+   },
+   {
+    "name": "space-6",
+    "value": "24px",
+    "usage": "Padding de tarjetas y callouts."
+   },
+   {
+    "name": "space-8",
+    "value": "32px",
+    "usage": "Gutter de la retícula de tarjetas; padding de la tarjeta destacada."
+   },
+   {
+    "name": "space-12",
+    "value": "48px",
+    "usage": "Entre encabezado de sección y su contenido."
+   },
+   {
+    "name": "space-16",
+    "value": "64px",
+    "usage": "Margen lateral de escritorio."
+   },
+   {
+    "name": "space-24",
+    "value": "96px",
+    "usage": "Entre secciones de página."
+   },
+   {
+    "name": "space-section",
+    "value": "{space-24}",
+    "usage": "Role (ADR 0005): padding between page sections."
+   },
+   {
+    "name": "space-gutter",
+    "value": "{space-8}",
+    "usage": "Role (ADR 0005): gap of card grids."
+   },
+   {
+    "name": "space-inline",
+    "value": "20px",
+    "at": {
+     "768px": "max(clamp(24px, 8vw, 120px), calc((100% - {container}) / 2))"
+    },
+    "usage": "Role (ADR 0005): side margin of the page. 20px on mobile; from 768px it grows with the viewport and centers the container."
+   }
+  ]
+ },
+ "radius": {
+  "note": "Esquinas rectas, como la carrocería: la precisión es el ornamento.",
+  "tokens": [
+   {
+    "name": "radius-none",
+    "value": "0",
+    "usage": "Por defecto: botones, tarjetas, campos, bloques de código."
+   },
+   {
+    "name": "radius-control",
+    "value": "{radius-none}",
+    "usage": "Role (ADR 0005): buttons, fields, chips."
+   },
+   {
+    "name": "radius-card",
+    "value": "{radius-none}",
+    "usage": "Role (ADR 0005): cards and panels."
+   },
+   {
+    "name": "radius-xs",
+    "value": "2px",
+    "usage": "Solo elementos diminutos: punto de categoría, marca de selección."
+   },
+   {
+    "name": "radius-full",
+    "value": "9999px",
+    "usage": "Avatar del autor. Nada más."
+   }
+  ]
+ },
+ "size": {
+  "note": "Retícula de 12 columnas, sin márgenes decorativos.",
+  "tokens": [
+   {
+    "name": "container",
+    "value": "1200px",
+    "usage": "Ancho máximo del contenido."
+   },
+   {
+    "name": "measure",
+    "value": "68ch",
+    "usage": "Ancho máximo del cuerpo del artículo."
+   },
+   {
+    "name": "nav-height",
+    "value": "72px",
+    "usage": "Alto de la barra de navegación."
+   }
+  ]
+ },
+ "motion": {
+  "note": "Motion roles (ADR 0005): the durations and curves the components use today.",
+  "tokens": [
+   {
+    "name": "duration-fast",
+    "value": "200ms",
+    "usage": "Palette entrance."
+   },
+   {
+    "name": "duration-base",
+    "value": "240ms",
+    "usage": "Hover, focus and color transitions."
+   },
+   {
+    "name": "duration-slow",
+    "value": "600ms",
+    "usage": "Font-stretch and opacity transitions."
+   },
+   {
+    "name": "ease-standard",
+    "value": "cubic-bezier(0.2, 0, 0, 1)",
+    "usage": "Default curve."
+   },
+   {
+    "name": "ease-emphasized",
+    "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "usage": "Slider and back-to-top. A symmetric ease-in-out, milder than ease-standard."
+   }
+  ]
+ },
  "type": {
   "fonts": [],
   "families": {
@@ -482,198 +692,6 @@
       "usage": "Código en bloque e inline."
      }
     ]
-   }
-  ]
- },
- "spacing": {
-  "note": "Base 4px. La composición respira como un catálogo: separaciones grandes entre secciones (space-24), compactas dentro de un componente.",
-  "tokens": [
-   {
-    "name": "space-1",
-    "value": "4px",
-    "usage": "Separación glifo–texto, punto de categoría."
-   },
-   {
-    "name": "space-2",
-    "value": "8px",
-    "usage": "Entre metadatos; gap interno de etiquetas."
-   },
-   {
-    "name": "space-3",
-    "value": "12px",
-    "usage": "Padding vertical de botones y campos."
-   },
-   {
-    "name": "space-4",
-    "value": "16px",
-    "usage": "Margen lateral móvil; gap de formularios."
-   },
-   {
-    "name": "space-6",
-    "value": "24px",
-    "usage": "Padding de tarjetas y callouts."
-   },
-   {
-    "name": "space-8",
-    "value": "32px",
-    "usage": "Gutter de la retícula de tarjetas; padding de la tarjeta destacada."
-   },
-   {
-    "name": "space-12",
-    "value": "48px",
-    "usage": "Entre encabezado de sección y su contenido."
-   },
-   {
-    "name": "space-16",
-    "value": "64px",
-    "usage": "Margen lateral de escritorio."
-   },
-   {
-    "name": "space-24",
-    "value": "96px",
-    "usage": "Entre secciones de página."
-   },
-   {
-    "name": "space-section",
-    "value": "{space-24}",
-    "usage": "Role (ADR 0005): padding between page sections."
-   },
-   {
-    "name": "space-gutter",
-    "value": "{space-8}",
-    "usage": "Role (ADR 0005): gap of card grids."
-   },
-   {
-    "name": "space-inline",
-    "value": "20px",
-    "at": {
-     "768px": "max(clamp(24px, 8vw, 120px), calc((100% - {container}) / 2))"
-    },
-    "usage": "Role (ADR 0005): side margin of the page. 20px on mobile; from 768px it grows with the viewport and centers the container."
-   }
-  ]
- },
- "radius": {
-  "note": "Esquinas rectas, como la carrocería: la precisión es el ornamento.",
-  "tokens": [
-   {
-    "name": "radius-none",
-    "value": "0",
-    "usage": "Por defecto: botones, tarjetas, campos, bloques de código."
-   },
-   {
-    "name": "radius-control",
-    "value": "{radius-none}",
-    "usage": "Role (ADR 0005): buttons, fields, chips."
-   },
-   {
-    "name": "radius-card",
-    "value": "{radius-none}",
-    "usage": "Role (ADR 0005): cards and panels."
-   },
-   {
-    "name": "radius-xs",
-    "value": "2px",
-    "usage": "Solo elementos diminutos: punto de categoría, marca de selección."
-   },
-   {
-    "name": "radius-full",
-    "value": "9999px",
-    "usage": "Avatar del autor. Nada más."
-   }
-  ]
- },
- "shadow": {
-  "note": "No hay sombras de elevación: la profundidad es luz. El resplandor neón solo existe en el tema noche.",
-  "tokens": [
-   {
-    "name": "glow-chillon",
-    "value": {
-     "noche": "0 0 0 1px #2ee6b6, 0 0 24px rgba(46, 230, 182, 0.28)",
-     "dia": "0 0 0 1px #0a6656"
-    },
-    "usage": "Hover de tarjeta y foco de campo en noche; en día se reduce a un hairline."
-   },
-   {
-    "name": "glow-mirla",
-    "value": {
-     "noche": "0 0 0 1px #ff7a1a, 0 0 24px rgba(255, 122, 26, 0.3)",
-     "dia": "0 0 0 1px #a3410f"
-    },
-    "usage": "Hover del botón de acento (suscripción)."
-   },
-   {
-    "name": "glow-accent",
-    "value": "{glow-mirla}",
-    "usage": "Glow on the accent (primary button)"
-   },
-   {
-    "name": "glow-link",
-    "value": "{glow-chillon}",
-    "usage": "Optional role (ADR 0005): glow on focused and hovered interactive surfaces"
-   },
-   {
-    "name": "shadow-raised",
-    "value": {
-     "noche": "0 12px 40px -12px rgba(0, 0, 0, 0.4)",
-     "dia": "0 12px 40px -12px rgba(0, 0, 0, 0.15)"
-    },
-    "usage": "Role (ADR 0005): lifted card on hover."
-   },
-   {
-    "name": "shadow-overlay",
-    "value": "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-    "usage": "Role (ADR 0005): floating controls over content."
-   }
-  ]
- },
- "layout": {
-  "note": "Retícula de 12 columnas, sin márgenes decorativos.",
-  "tokens": [
-   {
-    "name": "container",
-    "value": "1200px",
-    "usage": "Ancho máximo del contenido."
-   },
-   {
-    "name": "measure",
-    "value": "68ch",
-    "usage": "Ancho máximo del cuerpo del artículo."
-   },
-   {
-    "name": "nav-height",
-    "value": "72px",
-    "usage": "Alto de la barra de navegación."
-   }
-  ]
- },
- "motion": {
-  "note": "Motion roles (ADR 0005): the durations and curves the components use today.",
-  "tokens": [
-   {
-    "name": "duration-fast",
-    "value": "200ms",
-    "usage": "Palette entrance."
-   },
-   {
-    "name": "duration-base",
-    "value": "240ms",
-    "usage": "Hover, focus and color transitions."
-   },
-   {
-    "name": "duration-slow",
-    "value": "600ms",
-    "usage": "Font-stretch and opacity transitions."
-   },
-   {
-    "name": "ease-standard",
-    "value": "cubic-bezier(0.2, 0, 0, 1)",
-    "usage": "Default curve."
-   },
-   {
-    "name": "ease-emphasized",
-    "value": "cubic-bezier(0.4, 0, 0.2, 1)",
-    "usage": "Slider and back-to-top. A symmetric ease-in-out, milder than ease-standard."
    }
   ]
  }

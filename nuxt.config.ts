@@ -35,22 +35,6 @@ export default defineNuxtConfig({
         { property: 'og:type', content: 'website' },
         { name: 'twitter:card', content: 'summary_large_image' },
       ],
-      link: [
-        {
-          rel: 'preload',
-          href: '/fonts/archivo-latin-var.woff2',
-          as: 'font',
-          type: 'font/woff2',
-          crossorigin: '',
-        },
-        {
-          rel: 'preload',
-          href: '/fonts/jetbrains-mono-latin-var.woff2',
-          as: 'font',
-          type: 'font/woff2',
-          crossorigin: '',
-        },
-      ],
       script: [
         {
           innerHTML: themeInitScript,
@@ -150,6 +134,10 @@ export default defineNuxtConfig({
         },
       },
     },
+  },
+  // The theme packages' slots are checked with the app (ADR 0005, section 4)
+  typescript: {
+    tsConfig: { include: ['../themes/**/*'] },
   },
   eslint: {
     config: {

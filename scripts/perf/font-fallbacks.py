@@ -1,4 +1,4 @@
-"""Generates app/assets/css/settings/font-fallbacks.css: local fallback faces sized to the web fonts.
+"""Generates themes/bogota/font-fallbacks.css: local fallback faces sized to the web fonts.
 
 Each weight and width range gets its own face, sized against the variable font at that instance, so
 text keeps its line breaks when the web font swaps in. Method and numbers: docs/performance.md.
@@ -17,8 +17,8 @@ from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / 'app/assets/css/settings/font-fallbacks.css'
-FONTS = ROOT / 'public/fonts'
+OUT = ROOT / 'themes/bogota/font-fallbacks.css'
+FONTS = ROOT / 'themes/bogota/fonts'
 
 # English letter frequencies (%), the weighting capsize and fontaine use for average width
 FREQUENCIES = {

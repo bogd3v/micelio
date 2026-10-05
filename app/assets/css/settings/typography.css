@@ -1,0 +1,45 @@
+/* Typography classes: they read the theme's text-* and tracking-* roles (ADR 0005, section 1). */
+.bd-display-xl {
+  font: var(--text-display-xl);
+  letter-spacing: var(--tracking-display-xl);
+}
+.bd-display-l {
+  font: var(--text-display-l);
+  letter-spacing: var(--tracking-display-l);
+}
+.bd-heading-1 {
+  font: var(--text-heading-1);
+  letter-spacing: var(--tracking-heading-1);
+}
+.bd-heading-2 {
+  font: var(--text-heading-2);
+  letter-spacing: var(--tracking-heading-2);
+}
+.bd-heading-3 {
+  font: var(--text-heading-3);
+  letter-spacing: var(--tracking-heading-3);
+}
+.bd-body-l {
+  font: var(--text-body-l);
+  letter-spacing: var(--tracking-body-l);
+}
+.bd-body {
+  font: var(--text-body);
+  letter-spacing: var(--tracking-body);
+}
+.bd-body-s {
+  font: var(--text-body-s);
+  letter-spacing: var(--tracking-body-s);
+}
+.bd-eyebrow {
+  font: var(--text-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+}
+.bd-meta {
+  font: var(--text-meta);
+  letter-spacing: var(--tracking-meta);
+}
+.bd-code {
+  font: var(--text-code);
+  letter-spacing: var(--tracking-code);
+}

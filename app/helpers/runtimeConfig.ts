@@ -39,6 +39,13 @@ function missing(values: Record<string, unknown> | undefined, names: Record<stri
   return Object.entries(names).filter(([key]) => empty(values?.[key])).map(([, name]) => name)
 }
 
+/** The error message when the runtime theme is not the one the build used, or null when they agree. */
+export function themeMismatch(config: CheckedRuntimeConfig, buildTheme: string): string | null {
+  const runtime = config.public?.theme
+  if (runtime === buildTheme) return null
+  return `NUXT_PUBLIC_THEME is "${String(runtime)}" at runtime but the build used "${buildTheme}". The theme is chosen at build time: rebuild with the value you want.`
+}
+
 /** The NUXT_* names of required settings that are empty. */
 export function missingRuntimeSettings(config: CheckedRuntimeConfig): string[] {
   return [...missing(config, REQUIRED_RUNTIME_SETTINGS), ...missing(config.public, REQUIRED_PUBLIC_RUNTIME_SETTINGS)]

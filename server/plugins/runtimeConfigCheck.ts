@@ -1,8 +1,11 @@
-import { missingOptionalRuntimeSettings, missingRuntimeSettings, moduleRequirements } from '~/helpers/runtimeConfig'
+import { buildTheme } from '#micelio/build-theme'
+import { missingOptionalRuntimeSettings, missingRuntimeSettings, moduleRequirements, themeMismatch } from '~/helpers/runtimeConfig'
 
 export default defineNitroPlugin(() => {
-  if (import.meta.dev) return
   const config = useRuntimeConfig()
+  const mismatch = themeMismatch(config, buildTheme)
+  if (mismatch) throw new Error(mismatch)
+  if (import.meta.dev) return
   const missing = missingRuntimeSettings(config)
   if (missing.length) {
     console.warn(`Missing runtime settings: ${missing.join(', ')}. Set them with these NUXT_* names; plain names are ignored.`)
