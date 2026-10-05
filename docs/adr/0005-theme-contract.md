@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-03
-**Amended:** 2026-10-04 (#262, #237)
+**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237)
 **Deciders:** BogDev maintainer
 
 ## Context
