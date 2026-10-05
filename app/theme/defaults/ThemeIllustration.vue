@@ -9,5 +9,5 @@ defineProps<{
 </script>
 
 <template>
-  <span aria-hidden="true" />
+  <template v-if="false" />
 </template>

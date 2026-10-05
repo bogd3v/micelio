@@ -58,6 +58,12 @@ describe('slot validation', () => {
     expect(() => validateSlots(manifest({}), dir)).toThrow(/slots\/ThemeFooter\.vue is not a slot/)
   })
 
+  it('rejects slot options that are not a plain object', () => {
+    for (const options of [true, null, 'island', ['island']]) {
+      expect(() => validateSlots(manifest({ ThemeDivider: options }), tmp())).toThrow(/Theme "sample": slots\.ThemeDivider must be an object/)
+    }
+  })
+
   it('rejects an island that is not a boolean', () => {
     expect(() => validateSlots(manifest({ ThemeDivider: { island: 'yes' } }), tmp())).toThrow(/slots\.ThemeDivider\.island/)
   })

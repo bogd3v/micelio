@@ -27,8 +27,8 @@ const { t, locale } = useI18n()
 const PHOTO_SOURCE_URL = 'https://commons.wikimedia.org/wiki/File:Paisaje_Sumapaz,_Colombia.jpg'
 
 const PHOTOS: readonly HeroPhoto[] = [
-  { theme: 'night', src: '/images/hero/sumapaz-night.jpg' },
-  { theme: 'day', src: '/images/hero/sumapaz-day.jpg' },
+  { theme: 'night', src: '/theme/images/hero/sumapaz-night.jpg' },
+  { theme: 'day', src: '/theme/images/hero/sumapaz-day.jpg' },
 ]
 
 const ROUTES: readonly FlightRoute[] = [
@@ -60,12 +60,12 @@ const flyers = computed<Flyer[]>(() =>
 </script>
 
 <template>
-  <div :class="['bd-flight', { 'bd-flight-compact': compact }]">
+  <div :class="['bogota-flight', { 'bogota-flight-compact': compact }]">
     <NuxtImg
       v-for="photo in PHOTOS"
       :key="photo.theme"
       :src="photo.src"
-      :class="['bd-hero-photo', `bd-hero-photo-${photo.theme}`]"
+      :class="['bogota-hero-photo', `bogota-hero-photo-${photo.theme}`]"
       :sizes="`${width}px`"
       densities="x1 x2"
       format="webp"
@@ -73,11 +73,11 @@ const flyers = computed<Flyer[]>(() =>
       alt=""
       aria-hidden="true"
     />
-    <svg :width="width" :height="height" :viewBox="`0 0 ${width} ${height}`" class="bd-flight-map" aria-hidden="true" focusable="false">
-      <g v-if="!compact" class="bd-flight-place" fill="var(--ink-muted)">
+    <svg :width="width" :height="height" :viewBox="`0 0 ${width} ${height}`" class="bogota-flight-map" aria-hidden="true" focusable="false">
+      <g v-if="!compact" class="bogota-flight-place" fill="var(--ink-muted)">
         <path d="M558 108 H574 M566 100 V116" stroke="var(--ink-muted)" stroke-width="1" />
         <rect x="547" y="105" width="6" height="6" fill="var(--link)" />
-        <text x="539" y="112" text-anchor="end">{{ t('home.hero.place') }}</text>
+        <text x="539" y="112" text-anchor="end">{{ t('theme.hero.place') }}</text>
       </g>
       <path
         v-for="(route, index) in routes"
@@ -93,7 +93,7 @@ const flyers = computed<Flyer[]>(() =>
     <div
       v-for="flyer in flyers"
       :key="flyer.id"
-      :class="['bd-flyer', `bd-flyer-t${flyer.timing}`, `bd-flyer-w${flyer.wing}`]"
+      :class="['bogota-flyer', `bogota-flyer-t${flyer.timing}`, `bogota-flyer-w${flyer.wing}`]"
       :style="{ offsetPath: flyer.route }"
       aria-hidden="true"
     >
@@ -101,22 +101,22 @@ const flyers = computed<Flyer[]>(() =>
         <path d="M1 9 Q6 1 11 8 Q16 1 21 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
     </div>
-    <i18n-t keypath="home.hero.figure.caption" tag="p" class="bd-meta bd-flight-caption" scope="global">
+    <i18n-t keypath="theme.hero.figure.caption" tag="p" class="bd-meta bogota-flight-caption" scope="global">
       <template #author>
         <a
           :href="PHOTO_SOURCE_URL"
           target="_blank"
           rel="noopener noreferrer"
-          :aria-label="t('home.hero.figure.authorAria')"
-        >{{ t('home.hero.figure.author') }}</a>
+          :aria-label="t('theme.hero.figure.authorAria')"
+        >{{ t('theme.hero.figure.author') }}</a>
       </template>
       <template #license>
         <a
           :href="licenseUrl"
           target="_blank"
           rel="license noopener noreferrer"
-          :aria-label="t('home.hero.figure.licenseAria')"
-        >{{ t('home.hero.figure.license') }}</a>
+          :aria-label="t('theme.hero.figure.licenseAria')"
+        >{{ t('theme.hero.figure.license') }}</a>
       </template>
     </i18n-t>
   </div>

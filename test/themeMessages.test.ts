@@ -32,10 +32,9 @@ describe('Bogotá theme messages', () => {
     expect(() => compileMessages(es)).not.toThrow()
   })
 
-  it('copy the values of the core locales until the core drops them', () => {
-    const core = read('i18n/locales/en.json') as { home: { hero: { place: string } } }
-    const theme = en as { theme: { hero: { place: string } } }
-    expect(theme.theme.hero.place).toBe(core.home.hero.place)
+  it('name and scientific name every category illustration', () => {
+    const theme = en as { theme: { illustration: Record<string, { name: string, scientific: string }> } }
+    expect(Object.keys(theme.theme.illustration)).toEqual(['privacidad', 'diy', 'ia', 'software', 'linux'])
   })
 })
 

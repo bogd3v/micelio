@@ -42,15 +42,6 @@
     letter-spacing: 0.02em;
 }
 
-.bd-foot-brand .bd-logo-mark {
-    width: auto;
-    height: 1em;
-}
-
-.bd-foot-brand-dev {
-    color: var(--accent);
-}
-
 .bd-foot-tagline {
     margin: 0;
     color: var(--ink-muted);
@@ -268,12 +259,12 @@
     text-transform: none;
 }
 
-:where(.bd-foot-brand, .bd-foot-soc, .bd-foot-link, .bd-foot-privacy, .bd-foot-row, .bd-land-scroll, .bd-acc summary):focus-visible {
+:where(.bd-foot-brand, .bd-foot-soc, .bd-foot-link, .bd-foot-privacy, .bd-foot-row, .bd-acc summary):focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
-:where(.bd-foot-row, .bd-land-scroll, .bd-acc summary):focus-visible {
+:where(.bd-foot-row, .bd-acc summary):focus-visible {
     outline-offset: -2px;
 }
 

@@ -15,7 +15,7 @@ const height = computed<number>(() => Math.round(props.size * 0.75))
 
 <template>
   <svg
-    class="bd-bird-drawing"
+    class="bogota-bird"
     :width="size"
     :height="height"
     viewBox="0 0 160 120"

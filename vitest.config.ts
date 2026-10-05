@@ -6,7 +6,7 @@ export default defineConfig({
   test: {
     coverage: {
       provider: 'v8',
-      include: ['app/**/*.{ts,vue}'],
+      include: ['app/**/*.{ts,vue}', 'themes/**/*.{ts,vue}'],
       exclude: ['app/interfaces/**', 'app/**/*.d.ts'],
       reporter: ['text-summary', 'html', 'json-summary'],
       thresholds: {

@@ -12,6 +12,8 @@ const props = defineProps<{
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
 
+const caption = useIllustrationCaption()
+
 const pillar = computed<number | null>(() => CATEGORY_INFO[props.category].pillar)
 const label = computed<string>(() =>
   pillar.value
@@ -31,12 +33,12 @@ const countLabel = computed<string>(() => t('home.guide.count', { count: padCoun
       <span class="bd-meta bd-guide-label">{{ label }}</span>
     </div>
     <div class="bd-guide-art">
-      <BdBird :category="category" :size="200" />
+      <ThemeIllustration :category="category" :size="200" />
     </div>
     <h3 class="bd-guide-title">{{ t(`home.guide.topics.${category}.title`) }}</h3>
     <p v-if="pillar" class="bd-guide-description">{{ t(`home.guide.topics.${category}.description`) }}</p>
     <div class="bd-guide-species">
-      <p class="bd-guide-bird">{{ t(`home.guide.topics.${category}.bird`) }} · <i>{{ CATEGORY_INFO[category].scientificName }}</i></p>
+      <p v-if="caption(category)" class="bd-guide-bird">{{ caption(category)!.name }} · <i>{{ caption(category)!.scientific }}</i></p>
       <p v-if="pillar" class="bd-guide-note">{{ t(`home.guide.topics.${category}.note`) }}</p>
     </div>
     <div class="bd-meta bd-guide-foot">

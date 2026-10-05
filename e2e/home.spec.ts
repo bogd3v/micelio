@@ -39,7 +39,7 @@ test.describe('with reduced motion', () => {
 
   test('keeps the flock still', async ({ page }) => {
     await page.goto('/')
-    const animation = await page.locator('.bd-hero-art .bd-flyer').first().evaluate(node => getComputedStyle(node).animationName)
+    const animation = await page.locator('.bd-hero-art .bogota-flyer').first().evaluate(node => getComputedStyle(node).animationName)
     expect(animation).toBe('none')
   })
 })

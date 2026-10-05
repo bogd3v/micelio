@@ -55,8 +55,7 @@ onMounted(() => {
     <div class="bd-nav">
       <div class="bd-header-inner">
         <NuxtLink :to="localizePath('/')" class="bd-brand" :aria-label="t('bd.header.home', { site: site.name })">
-          <BdLogo :size="30" />
-          <span class="bd-brand-word" aria-hidden="true">Bog<span class="bd-brand-dev">Dev</span></span>
+          <ThemeMark :size="30" context="header" />
         </NuxtLink>
         <nav class="bd-nav-main" :aria-label="t('bd.header.nav')">
           <ul class="bd-nav-links">

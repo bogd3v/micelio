@@ -26,7 +26,7 @@ interface SocialLink {
   href: string
 }
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 const { localizePath } = useLocaleUtils()
 const site = useSite()
 const fediverseUser = useFediverseUser()
@@ -109,8 +109,7 @@ function scrollToTop(): void {
     <div class="bd-foot-main">
       <div class="bd-foot-brand-col">
         <NuxtLink :to="localizePath('/')" class="bd-foot-brand bd-wide" :aria-label="t('bd.header.home', { site: site.name })">
-          <BdLogo :size="56" />
-          <span aria-hidden="true">Bog<span class="bd-foot-brand-dev">Dev</span></span>
+          <ThemeMark :size="56" context="footer" />
         </NuxtLink>
         <p class="bd-foot-tagline">{{ t('bd.footer.tagline') }}</p>
         <ul class="bd-foot-socials" :aria-label="t('bd.footer.social')">
@@ -178,7 +177,7 @@ function scrollToTop(): void {
       </div>
     </div>
 
-    <BdPanorama />
+    <ThemeDivider placement="footer" />
 
     <div class="bd-meta bd-foot-credits">
       <span class="bd-foot-legal">
@@ -186,7 +185,7 @@ function scrollToTop(): void {
         <NuxtLink :to="localizePath('/privacy')" class="bd-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
       </span>
       <span>{{ t('bd.footer.madeIn') }} <span class="bd-foot-diamond" aria-hidden="true">◆</span> {{ t('bd.header.hud.coords') }}</span>
-      <span>{{ t('bd.footer.illustration') }}</span>
+      <span v-if="te('theme.divider.credit')">{{ t('theme.divider.credit') }}</span>
       <button type="button" class="bd-foot-row bd-foot-top" @click="scrollToTop">
         <span>{{ t('common.backToTop') }}</span>
         <span class="bd-foot-row-arrow" aria-hidden="true">↑</span>

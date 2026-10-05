@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { BirdToken, Category } from '~/interfaces/design'
+import { Category } from '~/interfaces/design'
 import { CATEGORIES, CATEGORY_INFO, categoryOrder, isCategory } from '~/helpers/categories'
 
 describe('categories', () => {
@@ -12,16 +12,6 @@ describe('categories', () => {
 
   it('keeps the enum values equal to the Strapi slugs', () => {
     expect(Object.values(Category)).toEqual(['privacidad', 'diy', 'ia', 'software', 'linux'])
-  })
-
-  it('maps each category to its bird token', () => {
-    expect(Object.fromEntries(CATEGORIES.map(c => [c, CATEGORY_INFO[c].token]))).toEqual({
-      [Category.Privacy]: BirdToken.Pinchaflor,
-      [Category.Diy]: BirdToken.Golondrina,
-      [Category.Ai]: BirdToken.Chillon,
-      [Category.Software]: BirdToken.Mirla,
-      [Category.Linux]: BirdToken.Monjita,
-    })
   })
 
   it('recognizes only known slugs', () => {

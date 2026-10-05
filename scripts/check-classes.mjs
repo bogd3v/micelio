@@ -1,4 +1,4 @@
-// Fails when a template uses a class that is not a core class: `bd-*` or one of the core helpers below.
+// Fails when a template uses a class that is not a core class: `bd-*` or one of the core helpers below (a theme may also use `<id>-*`).
 // Keeps Tailwind-style utilities (p-4, text-sm, hover:…, [arbitrary]) out of app/, modules/ and themes/ (ADR 0005, section 3). Run by `npm run lint`.
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -31,11 +31,18 @@ function classNames(source, file) {
   return found.filter(name => name && !name.includes('${') && !name.includes('{{'))
 }
 
+// A theme's own classes use its id as prefix (ADR 0005, section 5): themes/<id>/... may use `<id>-*`
+function themePrefix(file) {
+  const match = /^themes\/([^/]+)\//.exec(file)
+  return match ? `${match[1]}-` : null
+}
+
 const problems = []
 for (const path of ['app', 'modules', 'themes'].flatMap(dir => files(join(ROOT, dir)))) {
   const file = relative(ROOT, path)
   for (const name of classNames(readFileSync(path, 'utf8'), file)) {
-    if (!name.startsWith('bd-') && !ALLOWED.has(name)) problems.push(`${file}  "${name}" is not a core class: add a bd-* class in its layer (AGENTS.md, CSS Architecture)`)
+    const prefix = themePrefix(file)
+    if (!name.startsWith('bd-') && !ALLOWED.has(name) && !(prefix && name.startsWith(prefix))) problems.push(`${file}  "${name}" is not a core class: add a bd-* class in its layer (AGENTS.md, CSS Architecture)`)
   }
 }
 if (problems.length) {

@@ -9,15 +9,7 @@
       "eyebrow": "Field log · {count} article | Field log · {count} articles",
       "title": "Exploring privacy, DIY, AI, software and Linux.",
       "subtitle": "Technical notes written from Bogotá, 2,640 meters above sea level.",
-      "read": "Read articles",
-      "place": "Sumapaz NP · Frailejones",
-      "figure": {
-        "caption": "Fig. 01 — Sumapaz National Park · Photo: {author} · {license} · Cropped and color graded",
-        "author": "Danielfjio · Wikimedia Commons",
-        "authorAria": "Photo by Danielfjio · Wikimedia Commons (opens in a new tab)",
-        "license": "CC BY-SA 4.0",
-        "licenseAria": "License CC BY-SA 4.0 (opens in a new tab)"
-      }
+      "read": "Read articles"
     },
     "latest": {
       "eyebrow": "Index · {count} article | Index · {count} articles",
@@ -49,26 +41,21 @@
         "privacidad": {
           "title": "Privacy",
           "description": "Digital sovereignty, self-hosting and tools to look after your data.",
-          "bird": "Masked flowerpiercer",
           "note": "Black mask, blue plumage: sees without being seen."
         },
         "diy": {
           "title": "Do it yourself",
           "description": "Home labs, hardware and projects built at home.",
-          "bird": "Blue-and-white swallow",
           "note": "Builds its nest from whatever it finds on the city's eaves and walls."
         },
         "ia": {
-          "title": "Artificial intelligence",
-          "bird": "Sparkling violetear"
+          "title": "Artificial intelligence"
         },
         "software": {
-          "title": "Software development",
-          "bird": "Great thrush"
+          "title": "Software development"
         },
         "linux": {
-          "title": "Linux and open source",
-          "bird": "Yellow-hooded blackbird"
+          "title": "Linux and open source"
         }
       }
     },
@@ -332,6 +319,7 @@
     "contentNotAvailable": "About page content not available.",
     "mascotAlt": "Illustration of a rufous-collared sparrow, the blog's mascot bird",
     "alsoWrite": "I also write about",
+    "swipe": "Swipe →",
     "palette": "Pinchaflor · Golondrina · Chillón · Mirla · Monjita",
     "diagram": {
       "label": "Plugin flow: Strapi publishes articles to the fediverse and receives replies, likes and boosts",
@@ -528,29 +516,6 @@
       "newsletter": "Newsletter",
       "coffee": "Buy me a coffee",
       "madeIn": "Made in Bogotá, Colombia",
-      "illustration": "Illustration · rufous-collared sparrow, Zonotrichia capensis",
-      "panorama": {
-        "title": "Eastern hills",
-        "swipe": "Swipe",
-        "label": "Panorama of Bogotá's eastern hills, swipe to explore it",
-        "monserrate": "Monserrate · 3,152 m",
-        "guadalupe": "Guadalupe · 3,317 m",
-        "view": "Eastern hills · view from the west",
-        "cci": "International Trade Center · 192 m",
-        "atrio": "Atrio North Tower · 201 m · Rogers Stirk Harbour + El Equipo Mazzanti",
-        "parque": "Torres del Parque · Rogelio Salmona",
-        "colpatria": "Colpatria Tower · 196 m · LED façade with the flags of Palestine, Colombia and Bogotá",
-        "bacataSouth": "BD Bacatá · south tower 216 m",
-        "bacataNorth": "BD Bacatá · north tower 167 m",
-        "avianca": "Avianca Building · 161 m",
-        "monserrateBasilica": "Basilica of the Lord of Monserrate",
-        "guadalupeSanctuary": "Sanctuary and Virgin of Guadalupe",
-        "tequendama": "Hotel Tequendama · International Center",
-        "santamaria": "La Santamaría bullring",
-        "flagPalestine": "Palestine",
-        "flagColombia": "Colombia",
-        "flagBogota": "Bogotá"
-      },
       "privacy": "Privacy and cookies"
     }
   },

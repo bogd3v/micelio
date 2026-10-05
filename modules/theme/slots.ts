@@ -31,7 +31,8 @@ export function validateSlots(manifest: ThemeManifest, dir: string): void {
   const known: readonly string[] = SLOT_NAMES
   for (const [name, options] of Object.entries(manifest.slots ?? {})) {
     if (!known.includes(name)) throw new Error(`Theme "${manifest.id}": theme.json declares the slot "${name}", which is not one of ${SLOT_NAMES.join(', ')}`)
-    const island = (options as { island?: unknown } | null)?.island
+    if (options === null || typeof options !== 'object' || Array.isArray(options)) throw new Error(`Theme "${manifest.id}": slots.${name} must be an object such as { "island": true }`)
+    const island = (options as { island?: unknown }).island
     if (island !== undefined && typeof island !== 'boolean') throw new Error(`Theme "${manifest.id}": slots.${name}.island must be true or false`)
   }
   const slotsDir = join(dir, 'slots')

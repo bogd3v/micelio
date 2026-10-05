@@ -1,0 +1,38 @@
+@keyframes bogota-blink {
+    0%,
+    60% {
+        opacity: 1;
+    }
+
+    61%,
+    100% {
+        opacity: 0.15;
+    }
+}
+
+@keyframes bogota-par {
+    from {
+        translate: 0 var(--par, 0px);
+    }
+
+    to {
+        translate: 0 0;
+    }
+}
+
+@keyframes bogota-fly {
+    0% {
+        offset-distance: 0%;
+        opacity: 0;
+    }
+
+    8%,
+    92% {
+        opacity: 1;
+    }
+
+    100% {
+        offset-distance: 100%;
+        opacity: 0;
+    }
+}
