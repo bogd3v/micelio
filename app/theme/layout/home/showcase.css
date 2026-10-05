@@ -1,0 +1,9 @@
+.bd-home-featured {
+    padding: 16px var(--bd-home-gutter) 80px;
+}
+
+@media (min-width: 768px) {
+    .bd-home-featured {
+        padding-bottom: var(--space-section);
+    }
+}

@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
 import { checkVariant } from '../modules/theme/layout/post-list-article'
+import { setupHome } from '../modules/theme/layout/home'
+import type { ThemeContext } from '../modules/theme/context'
 import { themeMismatch } from '../app/helpers/runtimeConfig'
 
 function theme(root: string, folder: string, manifest: object = { id: folder }): void {
@@ -97,5 +99,33 @@ describe('checkVariant', () => {
   it('passes a known variant and an omitted region', () => {
     expect(() => checkVariant({ id: 'x', layout: { postList: 'grid' } }, 'postList', ['grid'])).not.toThrow()
     expect(() => checkVariant({ id: 'x' }, 'article', ['aside'])).not.toThrow()
+  })
+})
+
+describe('home layout region', () => {
+  function context(layout: object = {}): ThemeContext {
+    return {
+      nuxt: { options: { srcDir: '/app' } },
+      validators: [],
+      components: [],
+      layoutCss: { home: [] },
+      load: () => ({ manifest: { id: 'x', layout } }),
+    } as unknown as ThemeContext
+  }
+
+  it('registers the showcase component and CSS', () => {
+    const ctx = context()
+    setupHome(ctx)
+    expect(ctx.components).toEqual([{ name: 'RegionHome', filePath: '/app/theme/layout/home/Showcase.vue' }])
+    expect(ctx.layoutCss.home.map(css => css())).toEqual(['@import "/app/theme/layout/home/showcase.css";'])
+  })
+
+  it('registers a validator that rejects an unknown variant', () => {
+    const ctx = context()
+    setupHome(ctx)
+    expect(ctx.validators).toHaveLength(1)
+    expect(() => ctx.validators[0]!({ id: 'x', layout: { home: 'index' } } as never, ''))
+      .toThrow('layout.home "index" is not a known variant; expected one of: showcase')
+    expect(() => ctx.validators[0]!({ id: 'x', layout: { home: 'showcase' } } as never, '')).not.toThrow()
   })
 })
