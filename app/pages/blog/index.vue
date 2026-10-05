@@ -21,7 +21,6 @@ const { siteUrl } = useSiteUrl()
 const site = useSite()
 const config = useRuntimeConfig()
 const fediverseOn = useModule('fediverse')
-const toPostCard = usePostCard()
 
 const filters = computed<BlogFilters>(() => parseBlogQuery(route.query))
 const currentLocale = computed<Locale>(() => locale.value as Locale)
@@ -195,18 +194,7 @@ useSeoMeta({
 
     <div class="bd-blog-body">
       <div id="posts" class="bd-blog-main" :aria-busy="status === 'pending'">
-        <h2 v-if="posts.length && view !== 'log'" class="bd-sr">{{ t("blog.listTitle") }}</h2>
-        <BlogLog v-if="posts.length && view === 'log'" :posts="posts" :federated="federated" :highlight="filters.search" />
-
-        <div v-else-if="posts.length" class="bd-blog-grid">
-          <BdPostCard
-            v-for="(post, index) in posts"
-            :key="post.id"
-            v-bind="toPostCard(post)"
-            :highlight="filters.search"
-            :priority="index === 0"
-          />
-        </div>
+        <RegionPostList v-if="posts.length" :posts="posts" :view="view" :federated="federated" :highlight="filters.search" />
 
         <div v-else class="bd-latest-empty bd-blog-empty">
           <svg width="120" height="60" viewBox="0 0 120 60" aria-hidden="true" focusable="false">

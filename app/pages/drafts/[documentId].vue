@@ -57,6 +57,6 @@ onBeforeUnmount(() => {
       :author="post.author?.name ?? ''"
       :published-path="publishedPath"
     />
-    <BlogArticleView :post="post" draft />
+    <RegionArticle :post="post" draft />
   </div>
 </template>

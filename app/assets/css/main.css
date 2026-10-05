@@ -64,7 +64,6 @@
 @import "./pages/blog/sidebar.css" layer(bd.pages);
 @import "./pages/blog/log.css" layer(bd.pages);
 @import "#build/micelio/pages-post-list.css" layer(bd.pages);
-@import "./pages/article/layout.css" layer(bd.pages);
 @import "./pages/article/after.css" layer(bd.pages);
 @import "./pages/article/comments.css" layer(bd.pages);
 @import "./pages/article/fediverse-bar.css" layer(bd.pages);
