@@ -1,6 +1,6 @@
 .bd-about-empty {
     margin: 0;
-    padding: 96px var(--bd-home-gutter);
+    padding: var(--space-section) var(--bd-home-gutter);
 }
 
 .bd-profile {
@@ -135,7 +135,7 @@
         column-gap: var(--space-8);
         row-gap: var(--space-8);
         align-items: start;
-        padding: 112px var(--bd-home-gutter) 96px;
+        padding: 112px var(--bd-home-gutter) var(--space-section);
     }
 
     .bd-profile-copy,

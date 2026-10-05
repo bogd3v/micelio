@@ -16,7 +16,7 @@ const ROLES = new Set([
   ...['success', 'warning', 'danger', 'info'].flatMap(state => [state, `${state}-soft`]),
   ...[1, 2, 3, 4, 5, 6].flatMap(n => [`category-${n}`, `category-${n}-soft`]),
   'code-ink', 'code-muted', 'code-keyword', 'code-string', 'code-number', 'code-function',
-  'glow-accent', 'glow-link',
+  'glow-accent', 'glow-link', 'shadow-raised', 'shadow-overlay',
 ])
 
 // The logo is the ThemeMark slot; it moves into the theme package with #237 (F6)

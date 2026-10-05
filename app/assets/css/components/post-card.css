@@ -1,12 +1,12 @@
 .bd-card {
-    --e: cubic-bezier(0.2, 0, 0, 1);
+    --e: var(--ease-standard);
     position: relative;
     display: flex;
     flex-direction: column;
     min-width: 0;
     background: var(--surface-raised);
     border: 1px solid var(--line);
-    transition: box-shadow 240ms var(--e), border-color 240ms var(--e);
+    transition: box-shadow var(--duration-base) var(--e), border-color var(--duration-base) var(--e);
 }
 
 .bd-card:hover {
@@ -130,7 +130,7 @@
 
 .bd-card-arrow {
     display: inline-block;
-    transition: transform 240ms var(--e), color 240ms var(--e);
+    transition: transform var(--duration-base) var(--e), color var(--duration-base) var(--e);
 }
 
 .bd-card:hover .bd-card-arrow {

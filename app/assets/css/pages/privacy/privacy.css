@@ -205,7 +205,7 @@
         column-gap: var(--space-8);
         row-gap: 56px;
         align-items: start;
-        padding-block: 96px;
+        padding-block: var(--space-section);
     }
 
     .bd-privacy-head,

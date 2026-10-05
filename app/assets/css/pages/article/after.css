@@ -134,7 +134,7 @@
     background: transparent;
     border: 0;
     cursor: pointer;
-    transition: color 240ms var(--e);
+    transition: color var(--duration-base) var(--e);
 }
 
 .bd-share-link:hover {

@@ -12,7 +12,7 @@
     color: var(--on-ink);
     background-color: var(--link);
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s var(--ease-emphasized);
 }
 
 /* The old hover color never applied (a utility with spaces Tailwind could not parse); only the zoom did */

@@ -61,6 +61,8 @@
   --glow-mirla: 0 0 0 1px #ff7a1a, 0 0 24px rgba(255, 122, 26, 0.3);
   --glow-accent: var(--glow-mirla);
   --glow-link: var(--glow-chillon);
+  --shadow-raised: 0 12px 40px -12px rgba(0, 0, 0, 0.4);
+  --shadow-overlay: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   color-scheme: dark;
 }
 [data-theme="dia"] {
@@ -124,6 +126,8 @@
   --glow-mirla: 0 0 0 1px #a3410f;
   --glow-accent: var(--glow-mirla);
   --glow-link: var(--glow-chillon);
+  --shadow-raised: 0 12px 40px -12px rgba(0, 0, 0, 0.15);
+  --shadow-overlay: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   color-scheme: light;
 }
 :root {
@@ -136,62 +140,94 @@
   --space-12: 48px;
   --space-16: 64px;
   --space-24: 96px;
+  --space-section: var(--space-24);
+  --space-gutter: var(--space-8);
+  --space-inline: 20px;
   --radius-none: 0;
+  --radius-control: var(--radius-none);
+  --radius-card: var(--radius-none);
   --radius-xs: 2px;
   --radius-full: 9999px;
   --container: 1200px;
   --measure: 68ch;
   --nav-height: 72px;
+  --duration-fast: 200ms;
+  --duration-base: 240ms;
+  --duration-slow: 600ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.4, 0, 0.2, 1);
   --font-display: "Archivo", "Archivo Fallback", "Helvetica Neue", Arial, sans-serif;
   --font-sans: "Archivo", "Archivo Fallback", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, Menlo, Consolas, monospace;
   --text-display-xl: 300 72px/76px var(--font-display);
+  --tracking-display-xl: -0.02em;
   --text-display-l: 300 48px/54px var(--font-display);
+  --tracking-display-l: -0.015em;
   --text-heading-1: 500 32px/40px var(--font-display);
+  --tracking-heading-1: -0.01em;
   --text-heading-2: 500 24px/32px var(--font-display);
+  --tracking-heading-2: normal;
   --text-heading-3: 600 19px/26px var(--font-display);
+  --tracking-heading-3: normal;
   --text-body-l: 400 19px/32px var(--font-sans);
+  --tracking-body-l: normal;
   --text-body: 400 16px/26px var(--font-sans);
+  --tracking-body: normal;
   --text-body-s: 400 14px/22px var(--font-sans);
+  --tracking-body-s: normal;
   --text-eyebrow: 500 12px/16px var(--font-mono);
+  --tracking-eyebrow: 0.16em;
   --text-meta: 400 13px/20px var(--font-mono);
+  --tracking-meta: 0.02em;
   --text-code: 400 14px/22px var(--font-mono);
+  --tracking-code: normal;
+}
+@media (min-width: 768px) {
+  :root {
+    --space-inline: max(clamp(24px, 8vw, 120px), calc((100% - var(--container)) / 2));
+  }
 }
 .bd-display-xl {
   font: var(--text-display-xl);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--tracking-display-xl);
 }
 .bd-display-l {
   font: var(--text-display-l);
-  letter-spacing: -0.015em;
+  letter-spacing: var(--tracking-display-l);
 }
 .bd-heading-1 {
   font: var(--text-heading-1);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-heading-1);
 }
 .bd-heading-2 {
   font: var(--text-heading-2);
+  letter-spacing: var(--tracking-heading-2);
 }
 .bd-heading-3 {
   font: var(--text-heading-3);
+  letter-spacing: var(--tracking-heading-3);
 }
 .bd-body-l {
   font: var(--text-body-l);
+  letter-spacing: var(--tracking-body-l);
 }
 .bd-body {
   font: var(--text-body);
+  letter-spacing: var(--tracking-body);
 }
 .bd-body-s {
   font: var(--text-body-s);
+  letter-spacing: var(--tracking-body-s);
 }
 .bd-eyebrow {
   font: var(--text-eyebrow);
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-eyebrow);
 }
 .bd-meta {
   font: var(--text-meta);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--tracking-meta);
 }
 .bd-code {
   font: var(--text-code);
+  letter-spacing: var(--tracking-code);
 }

@@ -7,7 +7,7 @@ html {
 }
 
 .bd-header {
-    --e: cubic-bezier(0.2, 0, 0, 1);
+    --e: var(--ease-standard);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -75,7 +75,7 @@ html {
     font-size: 15px;
     color: var(--ink-muted);
     text-decoration: none;
-    transition: color 240ms var(--e);
+    transition: color var(--duration-base) var(--e);
 }
 
 .bd-nav-link:hover,
@@ -134,7 +134,7 @@ html {
     min-height: 44px;
     color: var(--ink-muted);
     text-decoration: none;
-    transition: color 240ms var(--e);
+    transition: color var(--duration-base) var(--e);
 }
 
 .bd-strip-link:hover,

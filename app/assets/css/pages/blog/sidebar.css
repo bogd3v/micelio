@@ -30,7 +30,7 @@
     font-size: 15px;
     line-height: 24px;
     color: var(--ink);
-    transition: color 240ms var(--e);
+    transition: color var(--duration-base) var(--e);
 }
 
 .bd-blog-recent:hover .bd-blog-recent-title {
@@ -44,7 +44,7 @@
     min-height: 44px;
     color: var(--ink-muted);
     text-decoration: none;
-    transition: color 240ms var(--e);
+    transition: color var(--duration-base) var(--e);
 }
 
 .bd-blog-aside-link:hover {

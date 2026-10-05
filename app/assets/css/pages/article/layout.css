@@ -129,7 +129,7 @@
         grid-template-columns: repeat(12, minmax(0, 1fr));
         column-gap: var(--space-8);
         row-gap: var(--space-6);
-        padding: 96px var(--bd-home-gutter) 64px;
+        padding: var(--space-section) var(--bd-home-gutter) 64px;
     }
 
     .bd-article-head > * {
@@ -141,7 +141,7 @@
         grid-template-columns: repeat(12, minmax(0, 1fr));
         column-gap: var(--space-8);
         align-items: start;
-        padding: 96px var(--bd-home-gutter);
+        padding: var(--space-section) var(--bd-home-gutter);
     }
 
     .bd-article-toc {

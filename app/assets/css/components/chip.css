@@ -10,10 +10,10 @@
     color: var(--ink-muted);
     background: transparent;
     border: 1px solid var(--line);
-    border-radius: var(--radius-none);
+    border-radius: var(--radius-control);
     text-decoration: none;
     cursor: pointer;
-    transition: border-color 240ms var(--e), color 240ms var(--e);
+    transition: border-color var(--duration-base) var(--e), color var(--duration-base) var(--e);
 }
 
 .bd-chip:hover {

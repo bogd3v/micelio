@@ -22,7 +22,7 @@
     inset: 0;
     z-index: 0;
     opacity: 0;
-    transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.7s var(--ease-emphasized);
 }
 
 .bd-slider-slide-active {
@@ -64,12 +64,12 @@
     border-radius: calc(infinity * 1px);
     color: var(--bd-slider-dark);
     background-color: color-mix(in oklab, var(--bd-slider-white) 90%, transparent);
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    box-shadow: var(--shadow-overlay);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     opacity: 0;
     translate: 0 -50%;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s var(--ease-emphasized);
 }
 
 .bd-slider-prev {
@@ -138,7 +138,7 @@
     height: 0.25rem;
     overflow: hidden;
     border-radius: calc(infinity * 1px);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s var(--ease-emphasized);
 }
 
 .bd-slider-dot-active {
@@ -176,7 +176,7 @@
 .bd-slider-dot-hover {
     background-color: color-mix(in oklab, var(--bd-slider-white) 60%, transparent);
     opacity: 0;
-    transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.15s var(--ease-emphasized);
 }
 
 @media (hover: hover) {
@@ -191,7 +191,7 @@
     right: 1rem;
     z-index: 30;
     opacity: 0;
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.3s var(--ease-emphasized);
 }
 
 @media (hover: hover) {

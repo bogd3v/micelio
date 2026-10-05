@@ -90,7 +90,7 @@
     background-color: var(--surface-sunken);
     background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--bd-scan) 3px 4px);
     border: 1px solid var(--line);
-    transition: box-shadow 240ms var(--e), border-color 240ms var(--e);
+    transition: box-shadow var(--duration-base) var(--e), border-color var(--duration-base) var(--e);
 }
 
 .bd-latest-archive:hover {
@@ -164,12 +164,12 @@
 
 @media (min-width: 768px) {
     .bd-home-featured {
-        padding-bottom: 96px;
+        padding-bottom: var(--space-section);
     }
 
     .bd-home-section {
         gap: var(--space-12);
-        padding: 96px var(--bd-home-gutter);
+        padding: var(--space-section) var(--bd-home-gutter);
     }
 
     .bd-home-head {

@@ -217,7 +217,7 @@
         column-gap: var(--space-8);
         align-content: center;
         min-height: 720px;
-        padding: 112px var(--bd-home-gutter) 96px;
+        padding: 112px var(--bd-home-gutter) var(--space-section);
     }
 
     .bd-hero-art {

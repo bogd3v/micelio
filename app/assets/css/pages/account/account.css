@@ -1,5 +1,5 @@
 .bd-account-page {
-    --e: cubic-bezier(0.2, 0, 0, 1);
+    --e: var(--ease-standard);
     display: flex;
     flex-direction: column;
     gap: 48px;
@@ -134,7 +134,7 @@
     color: var(--ink);
     text-decoration: none;
     border: 1px solid var(--line);
-    transition: border-color 240ms var(--e);
+    transition: border-color var(--duration-base) var(--e);
 }
 
 .bd-account-drafts:hover {
@@ -295,7 +295,7 @@
 
 @media (min-width: 768px) {
     .bd-account-page {
-        padding: 64px max(clamp(24px, 8vw, 120px), calc((100% - 1200px) / 2));
+        padding: 64px var(--space-inline);
     }
 
     .bd-account-card {
@@ -330,9 +330,9 @@
     .bd-account-page {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: 32px;
+        column-gap: var(--space-gutter);
         align-items: start;
-        padding-block: 96px;
+        padding-block: var(--space-section);
     }
 
     .bd-account-card {

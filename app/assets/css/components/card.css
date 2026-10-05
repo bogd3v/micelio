@@ -7,9 +7,5 @@
 
 .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.15);
-}
-
-:root:not([data-theme="dia"]) .card:hover {
-    box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-raised);
 }

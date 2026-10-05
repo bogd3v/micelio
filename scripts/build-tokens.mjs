@@ -36,7 +36,7 @@ export function buildTokensCss(data, aliases = {}) {
   if (unknown.length) throw new Error(`Unknown theme in --alias: ${unknown.join(', ')}`)
 
   const themed = [...data.color.tokens, ...(data.shadow?.tokens ?? [])]
-  const flat = [...(data.spacing?.tokens ?? []), ...(data.radius?.tokens ?? []), ...(data.layout?.tokens ?? [])]
+  const flat = [...(data.spacing?.tokens ?? []), ...(data.radius?.tokens ?? []), ...(data.layout?.tokens ?? []), ...(data.motion?.tokens ?? [])]
 
   const lines = ['/* BogDev — generated from docs/design/tokens.json by scripts/build-tokens.mjs. Do not edit by hand. */']
   themes.forEach((theme, i) => {
@@ -47,17 +47,25 @@ export function buildTokensCss(data, aliases = {}) {
   })
 
   lines.push(':root {')
-  flat.forEach(t => lines.push(`  --${t.name}: ${t.value};`))
+  flat.forEach(t => lines.push(`  --${t.name}: ${resolveValue(t.value)};`))
   Object.entries(data.type?.families ?? {}).forEach(([k, v]) => lines.push(`  --font-${k}: ${v};`))
   ;(data.type?.groups ?? []).forEach(g => g.styles.forEach((s) => {
     lines.push(`  --text-${s.name}: ${s.fontWeight} ${s.fontSize}/${s.lineHeight} var(--font-${g.family});`)
+    lines.push(`  --tracking-${s.name}: ${s.letterSpacing ?? 'normal'};`)
   }))
   lines.push('}')
 
+  // Roles that change with the viewport: { "at": { "<min-width>": "<value>" } }
+  const responsive = flat.filter(t => t.at)
+  const widths = [...new Set(responsive.flatMap(t => Object.keys(t.at)))].sort((a, b) => parseFloat(a) - parseFloat(b))
+  widths.forEach((width) => {
+    lines.push(`@media (min-width: ${width}) {`, '  :root {')
+    responsive.filter(t => t.at[width]).forEach(t => lines.push(`    --${t.name}: ${resolveValue(t.at[width])};`))
+    lines.push('  }', '}')
+  })
+
   ;(data.type?.groups ?? []).forEach(g => g.styles.forEach((s) => {
-    lines.push(`.bd-${s.name} {`, `  font: var(--text-${s.name});`)
-    if (s.letterSpacing) lines.push(`  letter-spacing: ${s.letterSpacing};`)
-    lines.push('}')
+    lines.push(`.bd-${s.name} {`, `  font: var(--text-${s.name});`, `  letter-spacing: var(--tracking-${s.name});`, '}')
   }))
 
   return lines.join('\n') + '\n'

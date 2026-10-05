@@ -73,7 +73,7 @@
 
 @media (min-width: 768px) {
     .bd-blog-head {
-        padding: 96px var(--bd-home-gutter) 48px;
+        padding: var(--space-section) var(--bd-home-gutter) 48px;
     }
 
     .bd-blog-title {
@@ -87,7 +87,7 @@
     }
 
     .bd-blog-body {
-        padding-bottom: 96px;
+        padding-bottom: var(--space-section);
     }
 
     .bd-blog-main {
