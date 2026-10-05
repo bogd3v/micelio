@@ -49,10 +49,10 @@ describe('migrateStoredMode', () => {
     vi.unstubAllGlobals()
   })
 
-  function migrate(initial: Record<string, string>): Map<string, string> {
+  function migrate(initial: Record<string, string>, modes = MODES): Map<string, string> {
     const storage = memoryStorage(initial)
     vi.stubGlobal('localStorage', storage)
-    migrateStoredMode(MODES)
+    migrateStoredMode(modes)
     return storage.data
   }
 
@@ -70,6 +70,14 @@ describe('migrateStoredMode', () => {
 
   it('keeps a stored value that is not a mode, without touching the legacy keys', () => {
     expect(Object.fromEntries(migrate({ 'bd-theme': 'sepia', 'devbog-theme': 'dia' }))).toEqual({ 'bd-theme': 'sepia', 'devbog-theme': 'dia' })
+  })
+
+  it('maps the legacy color mode with three modes and with a light-first theme', () => {
+    const three = [{ id: 'dusk', scheme: 'dark' as const }, { id: 'sand', scheme: 'light' as const }, { id: 'dawn', scheme: 'light' as const }]
+    expect(Object.fromEntries(migrate({ 'devbog-color-mode': 'light' }, three))).toEqual({ 'bd-theme': 'sand' })
+    const lightFirst = [{ id: 'paper', scheme: 'light' as const }, { id: 'ink', scheme: 'dark' as const }]
+    expect(Object.fromEntries(migrate({ 'devbog-color-mode': 'light' }, lightFirst))).toEqual({ 'bd-theme': 'paper' })
+    expect(Object.fromEntries(migrate({ 'devbog-color-mode': 'dark' }, lightFirst))).toEqual({ 'bd-theme': 'ink' })
   })
 
   it('drops invalid legacy values without storing a theme', () => {

@@ -23,6 +23,16 @@ describe('segmented control rules', () => {
     expect(css).not.toContain(':root:not([data-theme]) .bd-seg[data-mode="dia"]')
   })
 
+  it('lists every mode with three modes, the fallback following the first', () => {
+    const three = buildSegmentedCss([{ id: 'a', scheme: 'dark' }, { id: 'b', scheme: 'light' }, { id: 'c', scheme: 'light' }])
+    for (const id of ['a', 'b', 'c']) {
+      expect(three).toContain(`[data-theme="${id}"] .bd-seg[data-mode="${id}"]`)
+      expect(three).toContain(`[data-theme="${id}"] .bd-seg[data-mode]:not([data-mode="${id}"]):hover`)
+    }
+    expect(three).toContain(':root:not([data-theme]) .bd-seg[data-mode="a"]')
+    expect(three).not.toContain(':root:not([data-theme]) .bd-seg[data-mode="b"]')
+  })
+
   it('has no idle rules for a single mode', () => {
     expect(buildSegmentedCss([BOGOTA[1]!])).not.toContain(':not([data-mode=')
   })
@@ -39,6 +49,13 @@ describe('mode validation', () => {
 
   it('rejects a repeated mode id', () => {
     expect(() => validateModes(manifest([{ id: 'a', scheme: 'dark' }, { id: 'a', scheme: 'light' }]))).toThrow('declared twice')
+  })
+
+  it('rejects no modes and ids outside [\\w-]', () => {
+    expect(() => validateModes(manifest([]))).toThrow('no modes')
+    for (const bad of ['a b', 'a"]{', 'a<b', '']) {
+      expect(() => validateModes(manifest([{ id: bad, scheme: 'dark' }]))).toThrow('must match')
+    }
   })
 
   it('rejects more modes than the init script budget allows', () => {

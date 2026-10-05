@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import type { ThemeMode, ThemeModeDefinition } from '~/interfaces'
+import type { ThemeMode } from '~/interfaces'
 
 const emit = defineEmits<{
   change: [theme: ThemeMode]
 }>()
 
-const { t, te } = useI18n()
-const { modes, theme, setTheme } = useTheme()
-
-function label(mode: ThemeModeDefinition): string {
-  const key = `theme.modes.${mode.id}`
-  return te(key) ? t(key) : (mode.name ?? mode.id)
-}
+const { t } = useI18n()
+const { modes, theme, setTheme, modeLabel } = useTheme()
 
 function select(next: ThemeMode, event: MouseEvent): void {
   if (next === theme.value) return
@@ -31,7 +26,7 @@ function select(next: ThemeMode, event: MouseEvent): void {
       :aria-pressed="theme === mode.id ? 'true' : 'false'"
       @click="select(mode.id, $event)"
     >
-      {{ label(mode) }}
+      {{ modeLabel(mode.id) }}
     </button>
   </div>
 </template>

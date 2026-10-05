@@ -11,9 +11,12 @@ export interface UseTheme {
   setTheme: (next: ThemeMode, origin?: EventTarget | null) => void
   toggle: (origin?: EventTarget | null) => void
   sync: (next: ThemeMode) => void
+  /** theme.modes.<id> from the messages, else the mode's name, else its id. */
+  modeLabel: (id: ThemeMode) => string
 }
 
 export function useTheme(): UseTheme {
+  const { t, te } = useNuxtApp().$i18n
   const state = useState<ThemeMode>('bd-theme', () => modes[0]?.id ?? '')
 
   const theme = computed<ThemeMode>(() => state.value)
@@ -49,9 +52,14 @@ export function useTheme(): UseTheme {
     transition.finished.finally(() => root.classList.remove('bd-vt-theme'))
   }
 
+  function modeLabel(id: ThemeMode): string {
+    const key = `theme.modes.${id}`
+    return te(key) ? t(key) : (modes.find(mode => mode.id === id)?.name ?? id)
+  }
+
   function toggle(origin?: EventTarget | null): void {
     setTheme(nextTheme.value, origin)
   }
 
-  return { modes, theme, nextTheme, isDark, setTheme, toggle, sync }
+  return { modes, theme, nextTheme, isDark, setTheme, toggle, sync, modeLabel }
 }

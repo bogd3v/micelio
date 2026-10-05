@@ -12,13 +12,13 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const { t, te, locale } = useI18n()
+const { t, locale } = useI18n()
 const { searchPosts } = useStrapi()
 const { localizePath } = useLocaleUtils()
 const site = useSite()
 const fediverseUser = useFediverseUser()
 const fediverseOn = useModule('fediverse')
-const { modes, nextTheme, toggle } = useTheme()
+const { modes, nextTheme, toggle, modeLabel } = useTheme()
 
 const dialogRef = ref<HTMLElement>()
 const inputRef = ref<HTMLInputElement>()
@@ -94,11 +94,6 @@ function onDialogClick(event: MouseEvent): void {
 
 function indexOf(option: PaletteOption): number {
   return options.value.findIndex(item => item.id === option.id)
-}
-
-function modeLabel(id: string): string {
-  const key = `theme.modes.${id}`
-  return te(key) ? t(key) : (modes.find(mode => mode.id === id)?.name ?? id)
 }
 
 async function run(option: PaletteOption): Promise<void> {
