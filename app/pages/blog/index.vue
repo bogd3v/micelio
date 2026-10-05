@@ -18,6 +18,7 @@ const router = useRouter()
 const { fetchPosts, fetchCategories, fetchTags } = useStrapi()
 const { canonicalUrl } = useCanonicalUrl('/blog')
 const { siteUrl } = useSiteUrl()
+const defaultOgImage = useDefaultOgImage()
 const site = useSite()
 const config = useRuntimeConfig()
 const fediverseOn = useModule('fediverse')
@@ -140,10 +141,10 @@ useSeoMeta({
   ogDescription:
     'Browse all articles on AI, software development, Linux, DevOps, and more. Find tutorials, tips, and insights from my tech journey.',
   ogUrl: () => canonicalUrl.value,
-  ogImage: () => `${siteUrl.value}/og-image.png`,
+  ogImage: () => defaultOgImage.value,
   ogImageAlt: () => `${site.value.name} — Blog`,
   twitterCard: 'summary_large_image',
-  twitterImage: () => `${siteUrl.value}/og-image.png`,
+  twitterImage: () => defaultOgImage.value,
   twitterTitle: () => pageTitle('Blog', site.value.name),
   twitterDescription:
     'Browse all articles on AI, software development, Linux, DevOps, and more.',

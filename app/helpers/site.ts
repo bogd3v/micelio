@@ -18,7 +18,8 @@ export const ALL_MODULES_ON: Readonly<SiteModules> = Object.freeze(
   Object.fromEntries(SITE_MODULES.map(module => [module, true])) as SiteModules,
 )
 
-export function siteFromAppConfig(config: AppSiteConfig): Site {
+/** The site's own values, with the active theme's favicon when app.config.ts has none (ADR 0005, section 4). */
+export function siteFromAppConfig(config: AppSiteConfig, themeFavicon?: string): Site {
   return {
     name: config.name,
     description: config.description,
@@ -26,7 +27,7 @@ export function siteFromAppConfig(config: AppSiteConfig): Site {
     defaultLocale,
     author: { ...config.author },
     logo: null,
-    favicon: config.favicon ? { ...config.favicon } : null,
+    favicon: config.favicon ? { ...config.favicon } : themeFavicon ? { url: themeFavicon } : null,
     defaultOgImage: null,
     socialLinks: config.socialLinks.map(link => ({ ...link })),
     contactEmail: config.privacy.contactEmail,

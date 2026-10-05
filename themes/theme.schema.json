@@ -73,6 +73,28 @@
         ]
       }
     },
+    "images": {
+      "description": "Files of images/ the core uses as defaults; they are served at /theme/images/.",
+      "type": "object",
+      "properties": {
+        "favicon": {
+          "description": "Default favicon, when the site settings have none.",
+          "type": "string",
+          "pattern": "^[\\w.-]+\\.(png|jpe?g|webp|avif|gif|svg)$"
+        },
+        "ogImage": {
+          "description": "Default share image of pages that have no cover.",
+          "type": "string",
+          "pattern": "^[\\w.-]+\\.(png|jpe?g|webp|avif|gif|svg)$"
+        },
+        "profile": {
+          "description": "Picture of the about profile block when the content has no photo.",
+          "type": "string",
+          "pattern": "^[\\w.-]+\\.(png|jpe?g|webp|avif|gif|svg)$"
+        }
+      },
+      "additionalProperties": false
+    },
     "layout": {
       "description": "Variant of each region; an omitted region uses the core default (the first variant).",
       "type": "object",

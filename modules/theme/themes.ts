@@ -16,6 +16,7 @@ export interface ThemeManifest extends ThemeData {
   id: string
   contract: number
   fonts?: ThemeFont[]
+  images?: Partial<Record<'favicon' | 'ogImage' | 'profile', string>>
   layout?: Partial<Record<LayoutRegion, string>>
   slots?: Partial<Record<SlotName, SlotOptions>>
 }

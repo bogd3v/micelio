@@ -146,6 +146,12 @@ describe('contract validation', () => {
     expect(problems).toContain('misses the type step "display-xl" in "type.groups"')
   })
 
+  it('rejects an image role whose file is not in images/, and a name that is not an image', () => {
+    expect(problemsOf(install('noimage', m => (m.images = { ogImage: 'og.png' })))).toContain('images.ogImage: "og.png" is not in images/')
+    expect(problemsOf(install('badimage', m => (m.images = { favicon: '../x.svg' }))).join('\n')).toMatch(/images\.favicon: image "..\/x.svg" must be/)
+    expect(problemsOf(install('goodimage', m => (m.images = { favicon: 'f.svg' }), { 'images/f.svg': '<svg />' }))).toEqual([])
+  })
+
   it('accepts the reserved sections key and optional roles', () => {
     expect(problemsOf(install('reserved', m => (m.sections = { hero: {} })))).toEqual([])
   })

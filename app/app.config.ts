@@ -7,7 +7,6 @@ export default defineAppConfig({
       name: 'Alejandro Ramírez',
       url: 'https://bogdev.com.co/about',
     },
-    favicon: { url: '/bogdev.svg' },
     // In footer order; the X link only feeds twitter:site
     socialLinks: [
       { network: 'linkedin', url: 'https://www.linkedin.com/in/alejandro-ramirez-garcia-046713139' },

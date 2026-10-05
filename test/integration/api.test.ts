@@ -1428,7 +1428,7 @@ describe('theme fonts', () => {
 
   it('serves /fonts/ like other static assets', async () => {
     const font = await fetch('/fonts/archivo-latin-var.woff2')
-    const asset = await fetch('/bogdev.svg')
+    const asset = await fetch('/theme/images/bogdev.svg')
     expect(font.status).toBe(200)
     expect(font.headers.get('content-type')).toBe('font/woff2')
     for (const header of ['strict-transport-security', 'x-content-type-options', 'x-frame-options', 'referrer-policy', 'permissions-policy', 'cross-origin-opener-policy']) {

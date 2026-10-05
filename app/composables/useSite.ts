@@ -1,4 +1,5 @@
 import type { ComputedRef } from 'vue'
+import { images } from '#micelio/theme'
 import type { Site } from '~/interfaces'
 import { siteFromAppConfig } from '~/helpers/site'
 import type { AppSiteConfig } from '~/helpers/site'
@@ -7,7 +8,7 @@ import type { AppSiteConfig } from '~/helpers/site'
 export function useSite(): ComputedRef<Site> {
   const { locale } = useI18n()
   const appConfig = useAppConfig()
-  const defaults = siteFromAppConfig(appConfig.site as AppSiteConfig)
+  const defaults = siteFromAppConfig(appConfig.site as AppSiteConfig, images.favicon)
 
   const { data } = useAsyncData(
     () => `site-${locale.value}`,

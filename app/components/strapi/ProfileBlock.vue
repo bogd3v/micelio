@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { images } from '#micelio/theme'
 import type { StrapiProfile } from '~/interfaces'
 
 const props = defineProps<{
@@ -44,8 +45,8 @@ function isFediverseHandle(value: string): boolean {
           fetchpriority="high"
         />
         <img
-          v-else
-          src="/copeton.png"
+          v-else-if="images.profile"
+          :src="images.profile"
           :alt="t('about.mascotAlt')"
           class="bd-plate-mascot"
           width="586"

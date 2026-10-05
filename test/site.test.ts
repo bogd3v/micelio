@@ -45,7 +45,12 @@ describe('siteFromAppConfig', () => {
 
 describe('siteFromAppConfig favicon', () => {
   it('keeps the favicon app.config declares', () => {
-    expect(siteFromAppConfig({ ...appSite, favicon: { url: '/icon.svg' } }).favicon).toEqual({ url: '/icon.svg' })
+    expect(siteFromAppConfig({ ...appSite, favicon: { url: '/icon.svg' } }, '/theme/images/f.svg').favicon).toEqual({ url: '/icon.svg' })
+  })
+
+  it('falls back to the theme\'s favicon, and to none', () => {
+    expect(siteFromAppConfig({ ...appSite, favicon: undefined }, '/theme/images/f.svg').favicon).toEqual({ url: '/theme/images/f.svg' })
+    expect(siteFromAppConfig({ ...appSite, favicon: undefined }).favicon).toBeNull()
   })
 })
 

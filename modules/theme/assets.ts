@@ -3,9 +3,7 @@ import { basename, join, relative } from 'node:path'
 import { useLogger } from 'nuxt/kit'
 import { isThemePath } from './context'
 import type { ThemeContext } from './context'
-
-/** Where the theme's images are served: /theme/images/<file> (docs/adr/0005-theme-contract.md). */
-const IMAGES_URL = 'theme/images'
+import { IMAGES_URL } from './data'
 
 /** Files copied from a theme's images/; anything else is skipped with a warning. */
 const IMAGE_FILE = /\.(png|jpe?g|webp|avif|gif|svg)$/i
