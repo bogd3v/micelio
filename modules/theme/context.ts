@@ -2,7 +2,7 @@ import { resolve, sep } from 'node:path'
 import type { Nuxt } from '@nuxt/schema'
 import { updateTemplates } from 'nuxt/kit'
 import { DEFAULT_THEME, discoverThemes, selectTheme, themeRoots } from './themes'
-import type { InstalledTheme } from './themes'
+import type { InstalledTheme, ThemeValidator } from './themes'
 import { LAYOUT_REGIONS } from './data'
 import type { LayoutRegion } from './data'
 
@@ -36,16 +36,24 @@ export interface ThemeContext {
   slotCss: CssSource[]
   /** Rules for each region's template, at the position of the file it replaces. */
   layoutCss: Record<LayoutRegion, CssSource[]>
-  /** Components the theme registered (slots and layout variants). */
+  /** Components to register (slots and layout variants); data.ts adds them with addComponent. */
   components: ThemeComponent[]
+  /** Checks of the active theme's manifest; registered by modes.ts, slots.ts and layout/*, run by validateTheme(). */
+  validators: ThemeValidator[]
 }
 
 export function createContext(nuxt: Nuxt): ThemeContext {
   const id = process.env.NUXT_PUBLIC_THEME || nuxt.options.runtimeConfig.public.theme || DEFAULT_THEME
   const roots = themeRoots(nuxt.options.rootDir)
   // Discovery runs again on every regeneration, so editing a theme in dev needs no restart
-  const load = (): InstalledTheme => selectTheme(discoverThemes(roots), id)
-  const active = load()
+  const validators: ThemeValidator[] = []
+  const discover = (): InstalledTheme => selectTheme(discoverThemes(roots), id)
+  const load = (): InstalledTheme => {
+    const theme = discover()
+    for (const validate of validators) validate(theme.manifest, theme.dir)
+    return theme
+  }
+  const active = discover()
   return {
     nuxt,
     id: active.id,
@@ -56,7 +64,13 @@ export function createContext(nuxt: Nuxt): ThemeContext {
     slotCss: [],
     layoutCss: Object.fromEntries(LAYOUT_REGIONS.map(region => [region, []])) as unknown as Record<LayoutRegion, CssSource[]>,
     components: [],
+    validators,
   }
+}
+
+/** Validates the active theme once every setup file has registered its checks; load() repeats it on each regeneration. */
+export function validateTheme(ctx: ThemeContext): void {
+  ctx.load()
 }
 
 /** True when `path` (absolute, or relative to srcDir or rootDir) is inside a theme root. */

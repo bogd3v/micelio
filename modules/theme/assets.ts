@@ -1,10 +1,19 @@
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs'
-import { basename, join } from 'node:path'
+import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, rmSync } from 'node:fs'
+import { basename, join, relative } from 'node:path'
+import { useLogger } from 'nuxt/kit'
 import { isThemePath } from './context'
 import type { ThemeContext } from './context'
 
 /** Where the theme's images are served: /theme/images/<file> (docs/adr/0005-theme-contract.md). */
 const IMAGES_URL = 'theme/images'
+
+/** Files copied from a theme's images/; anything else is skipped with a warning. */
+const IMAGE_FILE = /\.(png|jpe?g|webp|avif|gif|svg)$/i
+
+/** The static files get no capabilities: an SVG opened directly cannot run scripts or load anything. */
+const IMAGES_CSP = 'default-src \'none\'; style-src \'unsafe-inline\'; sandbox'
+
+const logger = useLogger('micelio-theme')
 
 /** The theme's fonts/ is served at /fonts/; its preloaded files get a <link rel="preload">. */
 function setupFonts(ctx: ThemeContext): void {
@@ -31,23 +40,42 @@ function setupImages(ctx: ThemeContext): void {
   const publicRoot = join(nuxt.options.buildDir, 'micelio/public')
   const target = join(publicRoot, IMAGES_URL)
 
+  // A symlink is an error (it could point outside the theme); an unexpected file type is skipped with a warning
+  function allowed(path: string): boolean {
+    const stats = lstatSync(path)
+    const shown = `${ctx.id}/images/${relative(source, path)}`
+    if (stats.isSymbolicLink()) throw new Error(`Theme "${ctx.id}": ${shown} is a symlink; copy the file instead`)
+    if (stats.isDirectory() || IMAGE_FILE.test(path)) return true
+    logger.warn(`Theme "${ctx.id}": ${shown} is not an image (png, jpg, webp, avif, gif, svg) and is not served`)
+    return false
+  }
+
   function copyImages(): void {
     rmSync(target, { recursive: true, force: true })
+    if (!existsSync(source)) return
     mkdirSync(join(target, '..'), { recursive: true })
-    cpSync(source, target, { recursive: true })
+    cpSync(source, target, { recursive: true, filter: allowed })
   }
   copyImages()
 
-  // Listed before @nuxt/image in nuxt.config.ts, which reads image.dirs when it is set up and serves them as public assets
+  // @nuxt/image reads image.dirs when it is set up, so this module has to be set up first
+  const installed = (nuxt.options._installedModules ?? []).some(({ meta }) => meta?.name === '@nuxt/image')
+  if (installed) throw new Error('micelio-theme must be listed before @nuxt/image in nuxt.config.ts: image.dirs is read when @nuxt/image is set up')
   const image = (nuxt.options as { image?: { dirs?: string[] } }).image ||= {}
   image.dirs = [...(image.dirs ?? []), publicRoot]
+  ;(nuxt.options.routeRules ||= {})[`/${IMAGES_URL}/**`] = { headers: { 'Content-Security-Policy': IMAGES_CSP } }
 
   // The build empties buildDir after the modules are set up, so the copy is made again once the templates are written
   nuxt.hook('app:templatesGenerated', () => {
     if (!existsSync(target)) copyImages()
   })
   nuxt.hook('builder:watch', (_event, path) => {
-    if (isThemePath(ctx, path)) copyImages()
+    if (!isThemePath(ctx, path)) return
+    try {
+      copyImages()
+    } catch (error) {
+      logger.error((error as Error).message)
+    }
   })
 }
 

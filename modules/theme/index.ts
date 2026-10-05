@@ -1,8 +1,8 @@
 import { defineNuxtModule } from 'nuxt/kit'
 import { setupAssets } from './assets'
-import { createContext, setupWatch } from './context'
+import { createContext, setupWatch, validateTheme } from './context'
 import { setupCss } from './css'
-import { setupData } from './data'
+import { setupComponents, setupData } from './data'
 import { setupLayout } from './layout'
 import { setupModes } from './modes'
 import { setupSlots } from './slots'
@@ -18,7 +18,9 @@ export default defineNuxtModule({
     setupModes(ctx)
     setupSlots(ctx)
     setupLayout(ctx)
+    setupComponents(ctx)
     setupCss(ctx)
     setupWatch(ctx)
+    validateTheme(ctx)
   },
 })

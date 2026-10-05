@@ -1,5 +1,5 @@
 import { join } from 'node:path'
-import { addTemplate, addTypeTemplate } from 'nuxt/kit'
+import { addComponent, addTemplate, addTypeTemplate } from 'nuxt/kit'
 import type { ThemeContext } from './context'
 
 // Active theme's id at build time; the server plugin compares it with the runtime value
@@ -95,4 +95,9 @@ declare module '${BUILD_THEME_MODULE}' {
     config.virtual ||= {}
     config.virtual[BUILD_THEME_MODULE] = `export const buildTheme = ${JSON.stringify(ctx.id)}`
   })
+}
+
+/** Registers what modes.ts, slots.ts and layout/* pushed to ctx.components (call it after them). */
+export function setupComponents(ctx: ThemeContext): void {
+  for (const component of ctx.components) addComponent(component)
 }

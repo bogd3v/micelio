@@ -19,6 +19,9 @@ export interface ThemeManifest extends ThemeData {
   slots?: Partial<Record<SlotName, SlotOptions>>
 }
 
+/** A check one setup file registers (modes.ts, slots.ts, layout/*); it throws an Error that names the file and the problem. */
+export type ThemeValidator = (manifest: ThemeManifest, dir: string) => void
+
 export interface InstalledTheme {
   id: string
   dir: string
