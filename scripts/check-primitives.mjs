@@ -3,6 +3,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { delimiter, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { COLOR_ROLES } from '../modules/theme/roles.mjs'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const SCANNED = ['app', 'modules', 'themes']
@@ -11,15 +12,8 @@ const SETTINGS = 'app/assets/css/settings/'
 // A theme package is where primitives belong (ADR 0005, section 1)
 const THEMES = 'themes/'
 
-// Contract v1 roles, plus the optional ones (link-soft, glow-link)
-const ROLES = new Set([
-  'surface', 'surface-raised', 'surface-sunken', 'line', 'line-strong', 'ink', 'ink-muted', 'on-ink',
-  'accent', 'accent-soft', 'accent-hover', 'on-accent', 'link', 'link-soft', 'focus',
-  ...['success', 'warning', 'danger', 'info'].flatMap(state => [state, `${state}-soft`]),
-  ...[1, 2, 3, 4, 5, 6].flatMap(n => [`category-${n}`, `category-${n}-soft`]),
-  'code-ink', 'code-muted', 'code-keyword', 'code-string', 'code-number', 'code-function',
-  'glow-accent', 'glow-link', 'shadow-raised', 'shadow-overlay',
-])
+// Contract v1 roles, plus the optional ones (modules/theme/roles.mjs)
+const ROLES = new Set(COLOR_ROLES)
 
 function primitives() {
   const names = themeFiles().flatMap((file) => {

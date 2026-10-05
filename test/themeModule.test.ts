@@ -3,9 +3,9 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
-import { checkVariant } from '../modules/theme/layout/post-list-article'
-import { setupHome } from '../modules/theme/layout/home'
-import { setupHeaderFooter } from '../modules/theme/layout/header-footer'
+import { REGION_VARIANTS, registerVariants } from '../modules/theme/layout/variants'
+import { LAYOUT_REGIONS } from '../modules/theme/data'
+import type { LayoutRegion } from '../modules/theme/data'
 import type { ThemeContext } from '../modules/theme/context'
 import { themeMismatch } from '../app/helpers/runtimeConfig'
 
@@ -91,74 +91,41 @@ describe('themeMismatch', () => {
   })
 })
 
-describe('checkVariant', () => {
-  it('throws on a variant the core does not implement', () => {
-    expect(() => checkVariant({ id: 'x', layout: { postList: 'masonry' } }, 'postList', ['grid']))
-      .toThrow('layout.postList "masonry" is not a known variant; expected one of: grid')
-  })
-
-  it('passes a known variant and an omitted region', () => {
-    expect(() => checkVariant({ id: 'x', layout: { postList: 'grid' } }, 'postList', ['grid'])).not.toThrow()
-    expect(() => checkVariant({ id: 'x' }, 'article', ['aside'])).not.toThrow()
-  })
-})
-
-describe('home layout region', () => {
-  function context(layout: object = {}): ThemeContext {
-    return {
-      nuxt: { options: { srcDir: '/app' } },
-      validators: [],
-      components: [],
-      layoutCss: { home: [] },
-      load: () => ({ manifest: { id: 'x', layout } }),
-    } as unknown as ThemeContext
-  }
-
-  it('registers the showcase component and CSS', () => {
-    const ctx = context()
-    setupHome(ctx)
-    expect(ctx.components).toEqual([{ name: 'RegionHome', filePath: '/app/theme/layout/home/Showcase.vue' }])
-    expect(ctx.layoutCss.home.map(css => css())).toEqual(['@import "/app/theme/layout/home/showcase.css";'])
-  })
-
-  it('registers a validator that rejects an unknown variant', () => {
-    const ctx = context()
-    setupHome(ctx)
-    expect(ctx.validators).toHaveLength(1)
-    expect(() => ctx.validators[0]!({ id: 'x', layout: { home: 'index' } } as never, ''))
-      .toThrow('layout.home "index" is not a known variant; expected one of: showcase')
-    expect(() => ctx.validators[0]!({ id: 'x', layout: { home: 'showcase' } } as never, '')).not.toThrow()
-  })
-})
-
-describe('setupHeaderFooter', () => {
-  function setup(layout: Record<string, string> = {}): ThemeContext {
+describe('registerVariants', () => {
+  function setup(layout: Record<string, string> | undefined, regions?: LayoutRegion[]): ThemeContext {
     const ctx = {
       nuxt: { options: { srcDir: '/app' } },
       load: () => ({ manifest: { id: 'x', layout } }),
-      layoutCss: { header: [], footer: [] },
+      layoutCss: Object.fromEntries(LAYOUT_REGIONS.map(region => [region, []])),
       components: [],
-      validators: [],
     } as unknown as ThemeContext
-    setupHeaderFooter(ctx)
+    registerVariants(ctx, regions)
     return ctx
   }
 
-  it('registers the bar header and the columns footer', () => {
-    const { components, layoutCss } = setup()
+  it('registers the component and CSS of each region\'s first variant when the theme names none', () => {
+    const { components, layoutCss } = setup(undefined)
     expect(components).toEqual([
       { name: 'RegionHeader', filePath: join('/app', 'theme/layout/header/Bar.vue') },
+      { name: 'RegionHome', filePath: join('/app', 'theme/layout/home/Showcase.vue') },
+      { name: 'RegionPostList', filePath: join('/app', 'theme/layout/postList/Grid.vue') },
+      { name: 'RegionArticle', filePath: join('/app', 'theme/layout/article/Aside.vue') },
       { name: 'RegionFooter', filePath: join('/app', 'theme/layout/footer/Columns.vue') },
     ])
     expect(layoutCss.header[0]!()).toBe(`@import "${join('/app', 'theme/layout/header/bar.css')}";`)
     expect(layoutCss.footer[0]!()).toBe(`@import "${join('/app', 'theme/layout/footer/columns.css')}";`)
+    expect(layoutCss.home[0]!()).toBe(`@import "${join('/app', 'theme/layout/home/showcase.css')}";`)
   })
 
-  it('rejects variants the core does not implement', () => {
-    const { validators } = setup()
-    const run = (layout: Record<string, string>): void => validators.forEach(check => check({ id: 'x', layout } as never, ''))
-    expect(() => run({ footer: 'minimal' })).toThrow('layout.footer "minimal" is not a known variant; expected one of: columns')
-    expect(() => run({ header: 'centered' })).toThrow('layout.header "centered" is not a known variant; expected one of: bar')
-    expect(() => run({ header: 'bar', footer: 'columns' })).not.toThrow()
+  it('registers only the regions it is given, with the variant the theme chose', () => {
+    const { components } = setup({ home: 'showcase' }, ['home'])
+    expect(components).toEqual([{ name: 'RegionHome', filePath: join('/app', 'theme/layout/home/Showcase.vue') }])
+  })
+
+  it('has a component name and at least one variant for every region', () => {
+    for (const region of LAYOUT_REGIONS) {
+      expect(REGION_VARIANTS[region].component).toMatch(/^Region[A-Z]/)
+      expect(REGION_VARIANTS[region].variants.length).toBeGreaterThan(0)
+    }
   })
 })

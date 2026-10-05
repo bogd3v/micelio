@@ -1,6 +1,6 @@
 import { defineNuxtModule } from 'nuxt/kit'
 import { setupAssets } from './assets'
-import { createContext, setupWatch, validateTheme } from './context'
+import { createContext, setupWatch } from './context'
 import { setupCss } from './css'
 import { setupComponents, setupData } from './data'
 import { setupLayout } from './layout'
@@ -21,6 +21,5 @@ export default defineNuxtModule({
     setupComponents(ctx)
     setupCss(ctx)
     setupWatch(ctx)
-    validateTheme(ctx)
   },
 })

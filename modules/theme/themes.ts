@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, delimiter, join, resolve } from 'node:path'
 import type { ThemeData } from './tokens.mjs'
+import { FONT_FILE, THEME_ID } from './contract'
 import type { LayoutRegion, SlotName, SlotOptions } from './data'
 
 export const DEFAULT_THEME = 'bogota'
@@ -18,9 +19,6 @@ export interface ThemeManifest extends ThemeData {
   layout?: Partial<Record<LayoutRegion, string>>
   slots?: Partial<Record<SlotName, SlotOptions>>
 }
-
-/** A check one setup file registers (modes.ts, slots.ts, layout/*); it throws an Error that names the file and the problem. */
-export type ThemeValidator = (manifest: ThemeManifest, dir: string) => void
 
 export interface InstalledTheme {
   id: string
@@ -53,9 +51,6 @@ export function discoverThemes(roots: string[]): InstalledTheme[] {
   }
   return themes
 }
-
-const THEME_ID = /^[a-z0-9-]+$/
-const FONT_FILE = /^[\w.-]+\.woff2$/
 
 function loadTheme(dir: string): InstalledTheme {
   const file = join(dir, 'theme.json')

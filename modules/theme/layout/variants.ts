@@ -1,31 +1,30 @@
 import { join } from 'node:path'
 import type { ThemeContext } from '../context'
 import type { LayoutRegion } from '../data'
-import { checkVariant } from './post-list-article'
+import { LAYOUT_REGIONS } from '../data'
 
-type HeaderFooterRegion = Extract<LayoutRegion, 'header' | 'footer'>
-
-interface RegionVariants {
+export interface RegionVariants {
+  /** Name the component is registered under. */
   component: string
   /** Variants the core implements, by file name (the first is the default). */
   variants: string[]
 }
 
 // Components live in app/theme/layout/<region>/<Variant>.vue with <variant>.css beside them (ADR 0005, section 5)
-const REGIONS: Record<HeaderFooterRegion, RegionVariants> = {
+export const REGION_VARIANTS: Record<LayoutRegion, RegionVariants> = {
   header: { component: 'RegionHeader', variants: ['bar'] },
+  home: { component: 'RegionHome', variants: ['showcase'] },
+  postList: { component: 'RegionPostList', variants: ['grid'] },
+  article: { component: 'RegionArticle', variants: ['aside'] },
   footer: { component: 'RegionFooter', variants: ['columns'] },
 }
 
-export function setupHeaderFooter(ctx: ThemeContext): void {
+/** Registers the component and CSS of the variant the theme uses in each region; the others are never bundled. */
+export function registerVariants(ctx: ThemeContext, regions: readonly LayoutRegion[] = LAYOUT_REGIONS): void {
   const base = join(ctx.nuxt.options.srcDir, 'theme/layout')
-  const entries = Object.entries(REGIONS) as Array<[HeaderFooterRegion, RegionVariants]>
-  for (const [region, { variants }] of entries) {
-    ctx.validators.push(manifest => checkVariant(manifest, region, variants))
-  }
   const { layout } = ctx.load().manifest
-  for (const [region, { component, variants }] of entries) {
-    // Only the variant the theme uses is bundled
+  for (const region of regions) {
+    const { component, variants } = REGION_VARIANTS[region]
     const variant = layout?.[region] ?? variants[0]!
     const name = variant[0]!.toUpperCase() + variant.slice(1)
     ctx.components.push({ name: component, filePath: join(base, region, `${name}.vue`) })
