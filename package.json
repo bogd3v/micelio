@@ -11,7 +11,6 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "tokens": "node scripts/build-tokens.mjs",
-    "tokens:check": "node scripts/build-tokens.mjs --check",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxi typecheck",
     "lint": "eslint . && npm run lint:primitives && npm run lint:classes",

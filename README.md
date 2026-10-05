@@ -98,8 +98,7 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 | `npm run test:coverage` | The same tests with v8 coverage of `app/`; fails under the thresholds in `vitest.config.ts` (report in `coverage/`) |
 | `npm run test:integration` | API and page tests against a production build and a mock Strapi (`test/integration/`) |
 | `npm run test:e2e` | Playwright end-to-end tests; starts a mock Strapi and the dev server (`e2e/`) |
-| `npm run tokens` | Regenerate `app/assets/css/settings/tokens.css` from `docs/design/tokens.json` |
-| `npm run tokens:check` | Fail if the generated tokens are out of date (runs in CI) |
+| `npm run tokens` | Print the role CSS the build generates from `themes/bogota/theme.json` (or pass another `theme.json`) |
 
 ## Deployment
 
@@ -177,7 +176,7 @@ Translations are in `i18n/locales/`. The project uses `prefix_except_default` st
 
 ### Theming
 
-Colors are CSS custom properties generated from `docs/design/tokens.json` into `app/assets/css/settings/tokens.css` (`npm run tokens`). The `data-theme="noche" | "dia"` attribute on `<html>` switches between the night and day values.
+The active theme is a package in `themes/<id>/` (default `bogota`, chosen at build time with `NUXT_PUBLIC_THEME`; extra theme directories with `MICELIO_THEME_DIRS`). Its colors, type, space and motion are CSS custom properties the build generates from `theme.json` (nothing generated is checked in). The `data-theme="noche" | "dia"` attribute on `<html>` switches between the night and day values. Contract: [ADR 0005](docs/adr/0005-theme-contract.md).
 
 ## License
 

@@ -1,8 +1,7 @@
-@layer bd.reset, bd.settings, bd.base, bd.components, bd.layout, bd.pages, bd.animations, bd.utilities;
+@layer bd.reset, bd.settings, bd.base, bd.components, bd.layout, bd.pages, bd.theme, bd.animations, bd.utilities;
 
-@import "./settings/fonts.css" layer(bd.settings);
-@import "./settings/font-fallbacks.css" layer(bd.settings);
-@import "./settings/tokens.css" layer(bd.settings);
+@import "#build/micelio/settings.css" layer(bd.settings);
+@import "./settings/typography.css" layer(bd.settings);
 
 @import "./base/reset.css" layer(bd.reset);
 @import "./base/base.css" layer(bd.reset);
@@ -75,6 +74,8 @@
 @import "./pages/newsletter/unsubscribe.css" layer(bd.pages);
 @import "./pages/error/error.css" layer(bd.pages);
 @import "./pages/confirm/confirm.css" layer(bd.pages);
+
+@import "#build/micelio/theme.css" layer(bd.theme);
 
 @import "./animations/keyframes.css" layer(bd.animations);
 

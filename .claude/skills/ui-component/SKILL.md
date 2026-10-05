@@ -10,7 +10,7 @@ Read `AGENTS.md` (code style, CSS architecture) and `docs/design/DESIGN.md` (Bog
 ## Design system
 
 - Reuse `app/components/bd/` (`BdButton`, `BdCategoryTag`, `BdCallout`, `BdCodeBlock`…) before writing a new element; buttons and button-like links are always `<BdButton>`.
-- Colors, spacing and type come from the tokens (`var(--…)`) generated into `app/assets/css/settings/tokens.css` from `docs/design/tokens.json` by `npm run tokens`. Never edit `tokens.css`; CI fails on `tokens:check`.
+- Colors, spacing and type come from the tokens (`var(--…)`) declared in the active theme's `theme.json` (`themes/bogota/theme.json`); the build generates the CSS from it, so no generated file is checked in. `npm run tokens` prints it.
 - Themes are `data-theme="noche" | "dia"` on `<html>`; check both.
 
 ## CSS

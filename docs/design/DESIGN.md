@@ -7,9 +7,7 @@
 | Archivo | Qué es | Cómo se usa |
 | --- | --- | --- |
 | `DESIGN.md` | Esta especificación | Leer completa la sección que cita tu issue, más las secciones 1 y 3 |
-| `tokens.json` | Tokens del sistema de diseño (colores por tema, tipo, espacio, radios, sombras) | Única fuente de valores. Nunca escribir un hex a mano |
-| `tokens.css` | Variables CSS generadas desde `tokens.json` | Referencia; el issue de tokens lo genera en `app/assets/css/tokens.css` |
-| `build-tokens.mjs` | Generador de `tokens.css` | Se mueve a `scripts/build-tokens.mjs` |
+| `themes/bogota/theme.json` | Tokens del sistema de diseño (colores por modo, tipo, espacio, radios, sombras), antes `tokens.json` | Única fuente de valores. Nunca escribir un hex a mano. El build genera el CSS (`modules/theme`); `npm run tokens` lo imprime |
 | `reference/canvas/*.dc.html` | Fuente HTML de cada pantalla del lienzo de diseño | Leer como especificación: estilos en línea = medidas, textos literales = copy final. **No copiar el markup**: es un prototipo con plantillas `{{…}}`, `<sc-if>`, `<sc-for>` y `<dc-import>` |
 | `reference/canvas/bogdev-site.css` | Hoja compartida del lienzo (bandada, parallax, hoja inferior, acordeones, etc.) | Referencia de animaciones y keyframes |
 | `assets/` | Fotos del hero (PNN Sumapaz, versiones Día y Noche) y el script que las prepara | Copiar a `public/images/` o `app/assets/` |
@@ -46,7 +44,7 @@ Convenciones para agentes:
 
 - Seguir `AGENTS.md` del repo (script setup ordenado, tipos explícitos, sin comentarios, i18n para todo texto visible).
 - Los componentes del sistema de diseño están en React; el frontend es Vue. Se portan a componentes Vue con el mismo nombre (`Bd*`), las mismas props y las mismas clases CSS `bd-*`. No montar React dentro de Nuxt.
-- Colores, tipo y espacio salen de `tokens.json` vía variables CSS. Nunca un hex en un componente.
+- Colores, tipo y espacio salen de `theme.json` vía variables CSS. Nunca un hex en un componente.
 - Textos: español de Colombia, tuteo, títulos en tipo oración, sin emoji ni signos de exclamación. Glifos permitidos: → ↗ ◆ ▲ ✕ ✓ ·. Cada texto nuevo va en `i18n/locales/es.json` y `en.json`.
 - Un issue = un PR pequeño. Si el issue depende de otro abierto, trabajar sobre `main` con lo que exista y dejar la integración detrás de una bandera o un dato opcional; nunca inventar campos de API.
 
@@ -88,7 +86,7 @@ Todo color sale de variables CSS con el nombre del token. El tema se aplica con 
 | tingua | #ff5a4e | #a21d2c | Solo errores |
 | logo-agua / logo-ladrillo | #ffffff / #ffffff | #0D6B6F / #D4743F | Solo el logo |
 
-Cada acento tiene su `*-soft` para fondos detrás de su propio texto. Un solo acento dominante por vista; el color nunca comunica solo (siempre palabra o glifo). Valores completos en `tokens.json`.
+Cada acento tiene su `*-soft` para fondos detrás de su propio texto. Un solo acento dominante por vista; el color nunca comunica solo (siempre palabra o glifo). Valores completos en `theme.json`.
 
 Categorías y aves:
 
@@ -119,7 +117,7 @@ El rediseño vive en una capa de tokens y componentes `Bd*` sobre la app actual;
 
 ```mermaid
 flowchart LR
-    T[tokens.json] --> C[app/assets/css/tokens.css]
+    T[themes/bogota/theme.json] --> C[#build/micelio/settings.css]
     C --> K[Componentes Bd*<br/>app/components/bd/]
     C --> M[Tema Mermaid<br/>useMermaidTheme]
     K --> P[Páginas<br/>index, blog, blog/slug, about]
@@ -130,10 +128,10 @@ flowchart LR
 
 ### Base
 
-- **Tokens.** `scripts/build-tokens.mjs` genera `app/assets/css/tokens.css` desde `tokens.json` (se copian desde esta carpeta). Mapear las variables actuales de `main.css` (`--foreground`, `--primary`, `--muted`, `--border`, `--surface-elevated`…) y la paleta de Nuxt UI a estas variables para no duplicar colores.
+- **Tokens.** `modules/theme` genera el CSS de roles en el build desde `themes/bogota/theme.json` (antes `tokens.json`). Mapear las variables actuales de `main.css` (`--foreground`, `--primary`, `--muted`, `--border`, `--surface-elevated`…) y la paleta de Nuxt UI a estas variables para no duplicar colores.
 - **Tema.** Hoy `useTheme` envuelve `useColorMode` con valores light/dark. Configurar color mode con `dataValue: 'theme'` y mapear `dark → noche`, `light → dia`, o ampliar `useTheme` para exponer `tema: 'noche' | 'dia'`, `setTema()`, `toggle()`. La preferencia persiste y se aplica antes del primer pintado (sin parpadeo).
 - **Cambio de tema con View Transitions.** `document.startViewTransition` con barrido circular desde el botón (`--vt-x`, `--vt-y`; keyframe `bd-wipe` en `bogdev-site.css`). Sin soporte o con movimiento reducido, cambio directo.
-- **Fuentes.** Archivo (ejes wdth, wght) y JetBrains Mono autoalojadas en `public/fonts/` (preferible por privacidad) con `font-display: swap`.
+- **Fuentes.** Archivo (ejes wdth, wght) y JetBrains Mono autoalojadas en `themes/bogota/fonts/` (servidas en `/fonts/`) (preferible por privacidad) con `font-display: swap`.
 - **Componentes** Vue en `app/components/bd/`: `BdLogo`, `BdButton`, `BdCategoryTag`, `BdNavBar`, `BdHeader`, `BdPostCard`, `BdNewsletterForm`, `BdCodeBlock`, `BdCallout`, `BdFooter`, `BdMermaid`. Props iguales a `reference/ds/index.d.ts.txt`.
 - **Logo.** `BdLogo` dibuja los trazos exactos de `public/bogdev.svg` (ver `LOGO` en `reference/ds/bundle.js`, `viewBox="10 70 506 386"`) con `fill: var(--logo-agua)` y `var(--logo-ladrillo)`; props `size`, `variant` (`auto | color | blanco | negro`) y `wordmark`.
 

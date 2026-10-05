@@ -1405,3 +1405,22 @@ describe('Strapi API token', () => {
     expect(anonymous.every(request => request.authorization === undefined)).toBe(true)
   })
 })
+
+describe('theme fonts', () => {
+  it('preloads each font of the theme exactly once', async () => {
+    const html = await $fetch<string>('/')
+    for (const file of ['archivo-latin-var.woff2', 'jetbrains-mono-latin-var.woff2']) {
+      expect(html.split(`<link rel="preload" href="/fonts/${file}"`)).toHaveLength(2)
+    }
+  })
+
+  it('serves /fonts/ like other static assets', async () => {
+    const font = await fetch('/fonts/archivo-latin-var.woff2')
+    const asset = await fetch('/bogdev.svg')
+    expect(font.status).toBe(200)
+    expect(font.headers.get('content-type')).toBe('font/woff2')
+    for (const header of ['strict-transport-security', 'x-content-type-options', 'x-frame-options', 'referrer-policy', 'permissions-policy', 'cross-origin-opener-policy']) {
+      expect(font.headers.get(header)).toBe(asset.headers.get(header))
+    }
+  })
+})
