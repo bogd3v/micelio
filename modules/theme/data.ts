@@ -11,7 +11,7 @@ const BUILD_THEME_MODULE = '#micelio/build-theme'
 export const LAYOUT_REGIONS = ['header', 'home', 'postList', 'article', 'footer'] as const
 export type LayoutRegion = typeof LAYOUT_REGIONS[number]
 
-export const SLOT_NAMES = ['ThemeMark', 'ThemeHero', 'ThemeDivider', 'ThemeEmptyState', 'ThemeIllustration'] as const
+export const SLOT_NAMES = ['ThemeMark', 'ThemeHero', 'ThemeDivider', 'ThemeEmptyState', 'ThemeIllustration', 'ThemeProgressMarker', 'ThemeSupportArt'] as const
 export type SlotName = typeof SLOT_NAMES[number]
 
 export interface SlotOptions {

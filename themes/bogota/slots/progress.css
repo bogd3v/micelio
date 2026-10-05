@@ -1,5 +1,4 @@
-/* The marker that travels along the header's reading progress (hooks: .bd-progress-track, .bd-progress-marker) */
-.bd-progress-marker {
+.bogota-progress-bird {
     position: absolute;
     left: -11px;
     bottom: 5px;
@@ -8,6 +7,6 @@
     overflow: visible;
 }
 
-.bd-progress-marker path {
+.bogota-wing {
     animation: bogota-flap 0.9s ease-in-out infinite;
 }

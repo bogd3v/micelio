@@ -40,10 +40,17 @@ describe('a build with the minimal fixture theme', () => {
     expect(html).toMatch(/<a [^>]*class="[^"]*bd-brand"[^>]*><span aria-hidden="true">[^<]+<\/span><\/a>/)
   })
 
-  it('shows no place line or progress marker, which a theme provides through its messages', async () => {
+  it('shows no place line, which a theme provides through its messages', async () => {
     const html = await (await fetch('/')).text()
-    for (const hook of ['bd-hud"', 'bd-hero-place', 'bd-progress-track', 'bd-progress-marker']) expect(html).not.toContain(hook)
+    for (const hook of ['bd-hud"', 'bd-hero-place']) expect(html).not.toContain(hook)
     for (const place of ['4.61°N', 'Made in Bogot', '2,640 m a.s.l.']) expect(html).not.toContain(place)
+  })
+
+  it('draws no progress marker and no bird on the coffee cup on an article', async () => {
+    const html = await (await fetch('/blog/understanding-vue-composables')).text()
+    expect(html).toContain('class="bd-progress-bar"')
+    expect(html).toContain('bd-coffee-cup')
+    for (const art of ['bd-progress-track', 'bogota-', 'bd-perch']) expect(html).not.toContain(art)
   })
 
   it('uses the core\'s neutral texts where Bogota brings its own', async () => {

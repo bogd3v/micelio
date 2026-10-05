@@ -129,10 +129,6 @@
     text-transform: uppercase;
 }
 
-.bd-perch {
-    animation: bd-hop 7s var(--e) infinite;
-}
-
 .bd-subscribe {
     display: flex;
     flex-direction: column;
@@ -236,10 +232,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-perch {
-        animation: none;
-    }
-
     .bd-latest-archive {
         transition: none;
     }

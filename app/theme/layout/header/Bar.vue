@@ -24,7 +24,7 @@ const emit = defineEmits<{
   lang: [locale: Locale]
 }>()
 
-const { t, te } = useI18n()
+const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
 const site = useSite()
 const fediverseUser = useFediverseUser()
@@ -39,8 +39,6 @@ const shortcut = ref('⌘K')
 
 const links = useNavLinks()
 const hud = useThemeHud()
-// The progress marker is drawn by the theme: its path comes from the theme's messages, and the track is hidden without it
-const marker = computed<string>(() => te('theme.progress.marker') ? t('theme.progress.marker') : '')
 const percent = computed<number>(() =>
   Math.round(Math.min(100, Math.max(0, props.progress ?? scrolled.value))),
 )
@@ -145,11 +143,7 @@ onMounted(() => {
 
     <div v-if="reading" class="bd-progress" :style="progressStyle" aria-hidden="true">
       <div class="bd-progress-bar" />
-      <div v-if="marker" class="bd-progress-track">
-        <svg class="bd-progress-marker" width="22" height="14" viewBox="0 0 22 14" focusable="false">
-          <path :d="marker" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </div>
+      <ThemeProgressMarker :progress="percent" />
     </div>
   </header>
 </template>

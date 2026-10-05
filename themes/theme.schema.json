@@ -185,6 +185,26 @@
             }
           },
           "additionalProperties": false
+        },
+        "ThemeProgressMarker": {
+          "type": "object",
+          "properties": {
+            "island": {
+              "description": "True when the slot needs JavaScript (ADR 0005, section 12).",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ThemeSupportArt": {
+          "type": "object",
+          "properties": {
+            "island": {
+              "description": "True when the slot needs JavaScript (ADR 0005, section 12).",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

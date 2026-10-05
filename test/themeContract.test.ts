@@ -286,7 +286,7 @@ describe('slots and layout', () => {
   })
 
   it('rejects a slots/ file that is not a slot', () => {
-    expect(problemsOf(install('slotfile', () => {}, { 'slots/ThemeFooter.vue': '<template><p /></template>' }))).toContain('slots/ThemeFooter.vue is not a slot; the slots are ThemeMark, ThemeHero, ThemeDivider, ThemeEmptyState, ThemeIllustration')
+    expect(problemsOf(install('slotfile', () => {}, { 'slots/ThemeFooter.vue': '<template><p /></template>' }))).toContain('slots/ThemeFooter.vue is not a slot; the slots are ThemeMark, ThemeHero, ThemeDivider, ThemeEmptyState, ThemeIllustration, ThemeProgressMarker, ThemeSupportArt')
   })
 
   it('rejects a variant the core does not implement and a region that does not exist', () => {
