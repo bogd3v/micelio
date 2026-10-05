@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { HeaderSection } from '~/interfaces'
+import { modes } from '#micelio/theme'
 import { CATEGORIES, categoryColor } from '~/helpers/categories'
 
 const SWIPE_CLOSE_DISTANCE = 80
@@ -158,7 +159,7 @@ watch(() => route.fullPath, () => {
       </section>
 
       <div class="bd-sheet-settings">
-        <div class="bd-sheet-row">
+        <div v-if="modes.length > 1" class="bd-sheet-row">
           <span>{{ t('bd.mobile.theme') }}</span>
           <BdThemeSwitch />
         </div>

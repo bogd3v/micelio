@@ -80,7 +80,7 @@
     right: 1rem;
 }
 
-:root:not([data-theme="dia"]) .bd-slider-arrow {
+:root:not([data-scheme="light"]) .bd-slider-arrow {
     color: var(--bd-slider-white);
     background-color: color-mix(in oklab, var(--bd-slider-dark) 90%, transparent);
 }

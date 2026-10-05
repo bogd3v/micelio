@@ -80,7 +80,7 @@
     opacity: 0.92;
 }
 
-[data-theme="dia"] .bd-plate-mascot {
+[data-scheme="light"] .bd-plate-mascot {
     filter: none;
     mix-blend-mode: multiply;
     opacity: 1;

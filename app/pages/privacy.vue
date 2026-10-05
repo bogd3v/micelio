@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { BROWSER_STORAGE_KEYS, SITE_COOKIES } from '~/helpers/privacy'
+import { modes } from '#micelio/theme'
 import { formatDotDate } from '~/helpers/formatDate'
+import { formatModeList } from '~/helpers/theme'
 
 interface PrivacySection {
   id: string
   label: string
 }
 
-const { t } = useI18n()
+const { t, te, locale } = useI18n()
 const site = useSite()
 const accountsOn = useModule('accounts')
 const newsletterOn = useModule('newsletter')
@@ -17,6 +19,11 @@ const { siteUrl } = useSiteUrl()
 
 const contactEmail = computed<string>(() => site.value.privacyContactEmail)
 const updatedAt = computed<string>(() => formatDotDate(site.value.privacyUpdatedAt))
+
+const modeNames = computed<string>(() => formatModeList(
+  modes.map(mode => (te(`theme.modes.${mode.id}`) ? t(`theme.modes.${mode.id}`) : (mode.name ?? mode.id))),
+  locale.value,
+))
 
 const sections = computed<PrivacySection[]>(() => [
   { id: 'analytics', label: t('privacy.analytics.label') },
@@ -115,7 +122,7 @@ useHead({
         <dl class="bd-privacy-keys">
           <div v-for="key in BROWSER_STORAGE_KEYS" :key="key" class="bd-privacy-kv">
             <dt class="bd-privacy-key">{{ key }}</dt>
-            <dd>{{ t(`privacy.browser.items.${key}`) }}</dd>
+            <dd>{{ t(`privacy.browser.items.${key}`, { modes: modeNames }) }}</dd>
           </div>
         </dl>
       </section>

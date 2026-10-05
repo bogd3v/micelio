@@ -1,57 +1,74 @@
-import type { ThemeMode } from '../interfaces/theme'
+import type { ThemeMode, ThemeModeDefinition } from '../interfaces/theme'
+import { LEGACY_THEME_STORAGE_KEY, PREVIOUS_THEME_STORAGE_KEY, THEME_STORAGE_KEY } from '../../modules/theme/init-script.mjs'
 
-export const THEME_STORAGE_KEY = 'bd-theme'
-export const PREVIOUS_THEME_STORAGE_KEY = 'devbog-theme'
-export const LEGACY_THEME_STORAGE_KEY = 'devbog-color-mode'
+export { LEGACY_THEME_STORAGE_KEY, PREVIOUS_THEME_STORAGE_KEY, THEME_STORAGE_KEY }
 
-const COLOR_MODE_THEMES: Record<string, ThemeMode> = { dark: 'noche', light: 'dia' }
-
-export const themeInitScript = `(function(){var d=document.documentElement,t;try{var s=localStorage.getItem('${THEME_STORAGE_KEY}');if(s!=='noche'&&s!=='dia'){s=localStorage.getItem('${PREVIOUS_THEME_STORAGE_KEY}')}if(s!=='noche'&&s!=='dia'){s={dark:'noche',light:'dia'}[localStorage.getItem('${LEGACY_THEME_STORAGE_KEY}')]}t=s||(matchMedia('(prefers-color-scheme: light)').matches?'dia':'noche')}catch(e){t='noche'}d.setAttribute('data-theme',t)})()`
-
-export function isTheme(value: unknown): value is ThemeMode {
-  return value === 'noche' || value === 'dia'
+export function isThemeMode(modes: ThemeModeDefinition[], value: unknown): value is ThemeMode {
+  return modes.some(mode => mode.id === value)
 }
 
-export function readStoredTheme(): ThemeMode | null {
+/** The first mode with the scheme (the legacy `dark` | `light` color modes map through it). */
+export function modeForScheme(modes: ThemeModeDefinition[], scheme: string | null): ThemeMode | null {
+  return modes.find(mode => mode.scheme === scheme)?.id ?? null
+}
+
+export function schemeOf(modes: ThemeModeDefinition[], id: ThemeMode): 'dark' | 'light' {
+  return modes.find(mode => mode.id === id)?.scheme ?? modes[0]?.scheme ?? 'dark'
+}
+
+export function nextMode(modes: ThemeModeDefinition[], current: ThemeMode): ThemeMode {
+  const index = modes.findIndex(mode => mode.id === current)
+  return modes[(index + 1) % modes.length]?.id ?? current
+}
+
+export function readStoredMode(modes: ThemeModeDefinition[]): ThemeMode | null {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY)
-    return isTheme(stored) ? stored : null
+    return isThemeMode(modes, stored) ? stored : null
   } catch {
     return null
   }
 }
 
-function removeLegacyThemes(): void {
+function removeLegacyKeys(): void {
   localStorage.removeItem(PREVIOUS_THEME_STORAGE_KEY)
   localStorage.removeItem(LEGACY_THEME_STORAGE_KEY)
 }
 
-export function storeTheme(theme: ThemeMode): boolean {
+export function storeMode(mode: ThemeMode): boolean {
   try {
-    localStorage.setItem(THEME_STORAGE_KEY, theme)
-    removeLegacyThemes()
+    localStorage.setItem(THEME_STORAGE_KEY, mode)
+    removeLegacyKeys()
     return true
   } catch {
     return false
   }
 }
 
-export function migrateStoredTheme(): void {
+/** Moves the previous keys into `bd-theme`, only while it is absent: a stored value that is not a mode is the user's, not ours to overwrite. */
+export function migrateStoredMode(modes: ThemeModeDefinition[]): void {
   try {
-    if (readStoredTheme()) {
-      removeLegacyThemes()
+    const stored = localStorage.getItem(THEME_STORAGE_KEY)
+    if (stored !== null) {
+      if (isThemeMode(modes, stored)) removeLegacyKeys()
       return
     }
     const previous = localStorage.getItem(PREVIOUS_THEME_STORAGE_KEY)
-    const legacy = COLOR_MODE_THEMES[localStorage.getItem(LEGACY_THEME_STORAGE_KEY) ?? '']
-    const theme = isTheme(previous) ? previous : legacy
-    if (theme) storeTheme(theme)
-    else removeLegacyThemes()
+    const mode = isThemeMode(modes, previous) ? previous : modeForScheme(modes, localStorage.getItem(LEGACY_THEME_STORAGE_KEY))
+    if (mode) storeMode(mode)
+    else removeLegacyKeys()
   } catch {
     return
   }
 }
 
-export function systemTheme(): ThemeMode {
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'dia' : 'noche'
+/** First mode whose scheme matches the system preference, else the first mode. */
+export function systemMode(modes: ThemeModeDefinition[]): ThemeMode {
+  const scheme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+  return modeForScheme(modes, scheme) ?? modes[0]?.id ?? ''
+}
+
+/** Mode names as a sentence ("Night or Day"), for the privacy inventory. */
+export function formatModeList(labels: string[], locale: string): string {
+  return new Intl.ListFormat(locale, { type: 'disjunction' }).format(labels)
 }

@@ -1,9 +1,12 @@
 import type { ComputedRef } from 'vue'
-import type { ThemeMode } from '~/interfaces'
-import { storeTheme } from '~/helpers/theme'
+import { modes } from '#micelio/theme'
+import type { ThemeMode, ThemeModeDefinition } from '~/interfaces'
+import { nextMode, schemeOf, storeMode } from '~/helpers/theme'
 
 export interface UseTheme {
+  modes: ThemeModeDefinition[]
   theme: ComputedRef<ThemeMode>
+  nextTheme: ComputedRef<ThemeMode>
   isDark: ComputedRef<boolean>
   setTheme: (next: ThemeMode, origin?: EventTarget | null) => void
   toggle: (origin?: EventTarget | null) => void
@@ -11,19 +14,22 @@ export interface UseTheme {
 }
 
 export function useTheme(): UseTheme {
-  const state = useState<ThemeMode>('bd-theme', () => 'noche')
+  const state = useState<ThemeMode>('bd-theme', () => modes[0]?.id ?? '')
 
   const theme = computed<ThemeMode>(() => state.value)
-  const isDark = computed<boolean>(() => state.value === 'noche')
+  const nextTheme = computed<ThemeMode>(() => nextMode(modes, state.value))
+  const isDark = computed<boolean>(() => schemeOf(modes, state.value) === 'dark')
 
   function sync(next: ThemeMode): void {
-    document.documentElement.setAttribute('data-theme', next)
+    const root = document.documentElement
+    root.setAttribute('data-theme', next)
+    root.setAttribute('data-scheme', schemeOf(modes, next))
     state.value = next
   }
 
   function setTheme(next: ThemeMode, origin?: EventTarget | null): void {
     if (import.meta.server) return
-    storeTheme(next)
+    storeMode(next)
 
     const root = document.documentElement
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -44,8 +50,8 @@ export function useTheme(): UseTheme {
   }
 
   function toggle(origin?: EventTarget | null): void {
-    setTheme(isDark.value ? 'dia' : 'noche', origin)
+    setTheme(nextTheme.value, origin)
   }
 
-  return { theme, isDark, setTheme, toggle, sync }
+  return { modes, theme, nextTheme, isDark, setTheme, toggle, sync }
 }

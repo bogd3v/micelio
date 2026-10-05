@@ -1,5 +1,5 @@
-:root:not([data-theme="dia"]) .bd-solo-dia,
-[data-theme="dia"] .bd-solo-noche {
+:root:not([data-scheme="light"]) .bd-solo-dia,
+[data-scheme="light"] .bd-solo-noche {
     display: none;
 }
 

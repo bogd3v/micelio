@@ -1348,6 +1348,18 @@ describe('security headers', () => {
     }
   })
 
+  it('serves one theme init script, with the same hash on every page, and the first mode on <html>', async () => {
+    const hashes = new Set<string>()
+    for (const path of ['/', '/es/blog', '/account/sign-in', '/this-page-does-not-exist']) {
+      const html = await (await fetch(path)).text()
+      expect(html).toMatch(/<html[^>]* data-theme="noche" data-scheme="dark"/)
+      const init = inlineScripts(html).filter(script => script.includes('data-scheme'))
+      expect(init).toHaveLength(1)
+      hashes.add(sha256(init[0]!))
+    }
+    expect(hashes.size).toBe(1)
+  })
+
   it('allows images from Strapi and the media host', async () => {
     const policy = (await fetch('/blog')).headers.get('content-security-policy') ?? ''
     const images = policy.split('; ').find(directive => directive.startsWith('img-src ')) ?? ''

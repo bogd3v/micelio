@@ -12,13 +12,13 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const { t, locale } = useI18n()
+const { t, te, locale } = useI18n()
 const { searchPosts } = useStrapi()
 const { localizePath } = useLocaleUtils()
 const site = useSite()
 const fediverseUser = useFediverseUser()
 const fediverseOn = useModule('fediverse')
-const { theme, toggle } = useTheme()
+const { modes, nextTheme, toggle } = useTheme()
 
 const dialogRef = ref<HTMLElement>()
 const inputRef = ref<HTMLInputElement>()
@@ -59,7 +59,7 @@ const groups = computed<PaletteGroup[]>(() => {
     }))
     .filter(option => matchesQuery(option.label, trimmed.value))
   const actionOptions: PaletteOption[] = [
-    { id: 'action-theme', kind: 'action', label: t(theme.value === 'noche' ? 'bd.search.toDia' : 'bd.search.toNoche'), action: 'theme' },
+    ...(modes.length > 1 ? [{ id: 'action-theme', kind: 'action' as const, label: t('bd.search.toMode', { mode: modeLabel(nextTheme.value) }), action: 'theme' as const }] : []),
     ...(fediverseOn.value ? [{ id: 'action-fediverse', kind: 'action' as const, label: t('bd.search.fediverse'), hint: fediverseUser, action: 'fediverse' as const }] : []),
   ]
   return [
@@ -94,6 +94,11 @@ function onDialogClick(event: MouseEvent): void {
 
 function indexOf(option: PaletteOption): number {
   return options.value.findIndex(item => item.id === option.id)
+}
+
+function modeLabel(id: string): string {
+  const key = `theme.modes.${id}`
+  return te(key) ? t(key) : (modes.find(mode => mode.id === id)?.name ?? id)
 }
 
 async function run(option: PaletteOption): Promise<void> {

@@ -27,23 +27,12 @@
     color: var(--ink);
 }
 
-.bd-seg[aria-pressed="true"],
-:root:not([data-theme="dia"]) .bd-seg-noche,
-[data-theme="dia"] .bd-seg-dia {
+.bd-seg[aria-pressed="true"] {
     background: var(--ink);
     color: var(--on-ink);
 }
 
-:root:not([data-theme="dia"]) .bd-seg-dia,
-[data-theme="dia"] .bd-seg-noche {
-    background: transparent;
-    color: var(--ink-muted);
-}
-
-:root:not([data-theme="dia"]) .bd-seg-dia:hover,
-[data-theme="dia"] .bd-seg-noche:hover {
-    color: var(--ink);
-}
+/* Per-mode switch rules before hydration: generated from the theme's modes (micelio/components.css) */
 
 @media (prefers-reduced-motion: reduce) {
     .bd-seg {
