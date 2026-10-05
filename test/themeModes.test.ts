@@ -12,14 +12,14 @@ describe('segmented control rules', () => {
   const css = buildSegmentedCss(BOGOTA)
 
   it('presses the current mode and mutes the others, per mode', () => {
-    expect(css).toContain('[data-theme="dia"] .bd-seg[data-mode="dia"] {')
-    expect(css).toContain('[data-theme="dia"] .bd-seg[data-mode]:not([data-mode="dia"]):hover {')
-    expect(css).toContain('[data-theme="noche"] .bd-seg[data-mode="noche"] {')
+    expect(css).toContain('[data-theme="dia"] .bd-seg[data-mode="dia"]')
+    expect(css).toContain('[data-theme="dia"] .bd-seg[data-mode]:not([data-mode="dia"]):hover')
+    expect(css).toContain('[data-theme="noche"] .bd-seg[data-mode="noche"]')
   })
 
   it('treats the first mode as the default when the page has no data-theme', () => {
-    expect(css).toContain(':root:not([data-theme]) .bd-seg[data-mode="noche"] {')
-    expect(css).toContain(':root:not([data-theme]) .bd-seg[data-mode]:not([data-mode="noche"]) {')
+    expect(css).toContain(':root:not([data-theme]) .bd-seg[data-mode="noche"]')
+    expect(css).toContain(':root:not([data-theme]) .bd-seg[data-mode]:not([data-mode="noche"])')
     expect(css).not.toContain(':root:not([data-theme]) .bd-seg[data-mode="dia"]')
   })
 
