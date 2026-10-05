@@ -106,7 +106,7 @@ themes/bogota/
 
   A slot that needs JavaScript (today only Bogotá's `ThemeDivider`) declares itself an island in `theme.json` (section 12). `site.logo` from Strapi is used for structured data only and never replaces a theme's `ThemeMark`. Only the active theme's slots are registered, so unused ones are not bundled.
 
-  Until the theme validator lands (#237, PR 7), slots are registered as plain components: `island` is validated and recorded in `#micelio/theme` but not enforced, so every slot still hydrates.
+  Slots are registered as plain components, so every slot still hydrates. The island rule (section 12) is enforced by the validator, not at runtime: see section 12.
 - **Templates** for the OG image and the newsletter email shell are optional; the core has neutral defaults. They read roles and the site identity, never hardcoded site values.
 - The active theme is chosen at build time with `NUXT_PUBLIC_THEME` (default `bogota`); only installed themes can be selected, and only the active theme's CSS and fonts reach the page.
 - **Module** (amended 2026-10-04, #237): a local Nuxt module in `modules/theme/` (not a Nuxt layer; see option C) discovers themes in `themes/` at the repository root, plus the directories in `MICELIO_THEME_DIRS` (used by test fixtures), validates them, fails the build if `NUXT_PUBLIC_THEME` is not installed, generates the CSS above and exposes `#micelio/theme` (id, modes, fonts, layout, slots) with types. As with `NUXT_PUBLIC_SITE_MODE` ([ADR-0006](0006-site-modes.md)), startup fails if the runtime value disagrees with the build.
@@ -186,7 +186,9 @@ Every theme styles every section of the `page` collection and every variant (bog
 
 ### 12. Zero JavaScript in themes
 
-A theme ships no JavaScript outside its slots. Slots render on the server without hydration; a slot that needs interactivity declares itself an island in `theme.json` and counts against the page's JS budget. Themes cannot register plugins, middleware, routes or modules.
+A theme ships no JavaScript outside its slots. Slots render on the server without hydration; a slot that needs interactivity declares itself an island in `theme.json` and counts against the page's JS budget.
+
+**Amendment (2026-10-05, #237):** the rule is enforced by static analysis in the contract validator (`modules/theme/island.ts`): the SFC of a slot that does not declare `"island": true` is parsed with `@vue/compiler-sfc`, and the build fails, naming the theme and the file, on an event handler (`@x`, `v-on`), `v-model`, a lifecycle hook (`onMounted`, `onBeforeMount`, `onUpdated`, `onBeforeUpdate`, `onUnmounted`, `onBeforeUnmount`, `onActivated`, `onDeactivated`, `onErrorCaptured`) or `useState`. It is a heuristic over the slot's own file (not what it imports), and the slot is still hydrated like any component; skipping hydration for non-island slots (lazy hydration) is a later step that changes no theme. Themes cannot register plugins, middleware, routes or modules.
 
 ## Options considered
 

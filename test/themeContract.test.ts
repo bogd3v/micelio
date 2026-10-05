@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { MAX_MODES, contractProblems, themeJsonSchema, validateContract } from '../modules/theme/contract'
@@ -176,6 +176,87 @@ describe('modes', () => {
   it('rejects more modes than the init script budget allows', () => {
     const many = Array.from({ length: MAX_MODES + 1 }, (_, i) => ({ id: `m${i}`, scheme: 'dark' }))
     expect(withModes(many).join('\n')).toContain(`at most ${MAX_MODES}`)
+  })
+})
+
+describe('the island rule', () => {
+  const slot = (template: string, script = ''): Record<string, string> => ({
+    'slots/ThemeMark.vue': `${script ? `<script setup lang="ts">\n${script}\n</script>\n` : ''}<template>${template}</template>`,
+  })
+  const problems = (files: Record<string, string>, change: (m: Manifest) => void = () => {}): string => problemsOf(install('isle', change, files)).join('\n')
+
+  it('accepts a static slot', () => {
+    expect(problems(slot('<span :title="site.name">{{ site.name }}</span>', 'const site = useSite()'))).toBe('')
+  })
+
+  it.each([
+    ['an event handler', '<button @click="go">x</button>', '', '@click'],
+    ['v-on', '<button v-on="handlers">x</button>', '', 'v-on'],
+    ['v-model', '<input v-model="value">', 'const value = ref(\'\')', 'v-model'],
+    ['onMounted', '<i />', 'onMounted(() => {})', 'onMounted'],
+    ['onBeforeMount', '<i />', 'onBeforeMount(() => {})', 'onBeforeMount'],
+    ['onUpdated', '<i />', 'onUpdated(() => {})', 'onUpdated'],
+    ['onUnmounted', '<i />', 'onUnmounted(() => {})', 'onUnmounted'],
+    ['useState', '<i />', 'const open = useState(\'open\')', 'useState'],
+  ])('rejects %s in a slot that is not an island', (_name, template, script, what) => {
+    expect(problems(slot(template, script))).toBe(`slots/ThemeMark.vue: uses ${what}, which is interactive; a slot that needs JavaScript declares "island": true in theme.json (ADR 0005, section 12)`)
+  })
+
+  it.each([
+    [':onClick', '<button :onClick="go">x</button>', '', ':onClick'],
+    ['v-bind:onX', '<button v-bind:onFocus="go">x</button>', '', ':onFocus'],
+    ['an object v-bind', '<button v-bind="handlers">x</button>', '', 'v-bind with an object'],
+    ['a dynamic v-bind argument', '<button :[name]="go">x</button>', '', 'v-bind with a dynamic argument'],
+    ['an inline handler attribute', '<button onclick="go()">x</button>', '', 'onclick'],
+    ['Options API mounted()', '<i />', 'export default { mounted() {} }', 'mounted()'],
+    ['Options API beforeMount as a function value', '<i />', 'export default { beforeMount: () => {} }', 'beforeMount()'],
+    ['watch', '<i />', 'watch(() => 1, () => {})', 'watch'],
+    ['watchEffect', '<i />', 'watchEffect(() => {})', 'watchEffect'],
+    ['setInterval', '<i />', 'setInterval(() => {}, 1000)', 'setInterval'],
+    ['setTimeout through window', '<i />', 'window.setTimeout(() => {}, 1000)', 'setTimeout'],
+    ['addEventListener', '<i />', 'document.addEventListener(\'click\', () => {})', 'addEventListener'],
+    ['a hook after a // inside a string', '<i />', 'const url = \'https://example.org\'\nonMounted(() => {})', 'onMounted'],
+    ['a hook in TypeScript', '<i />', 'const n: number = 1\nonMounted((): void => {})', 'onMounted'],
+  ])('rejects %s', (_name, template, script, what) => {
+    expect(problems(slot(template, script))).toContain(`slots/ThemeMark.vue: uses ${what}, which is interactive`)
+  })
+
+  it('does not take a plain property named mounted for a hook', () => {
+    expect(problems(slot('<i />', 'const state = { mounted: true, updated: 1 }'))).toBe('')
+  })
+
+  it('rejects a <style> block in every slot, island or not, because it would bypass the bd.theme layer', () => {
+    const files = { 'slots/ThemeMark.vue': '<template><i /></template><style>i { top: 0 }</style>' }
+    expect(problems(files)).toMatch(/slots\/ThemeMark\.vue: has a <style> block/)
+    expect(problems(files, (m) => {
+      m.slots = { ThemeMark: { island: true } }
+    })).toMatch(/has a <style> block/)
+  })
+
+  it('rejects a symlinked slot component', () => {
+    const root = install('linked', () => {}, { 'real/ThemeMark.vue': '<template><i /></template>' })
+    mkdirSync(join(root, 'linked', 'slots'))
+    symlinkSync(join(root, 'linked', 'real', 'ThemeMark.vue'), join(root, 'linked', 'slots', 'ThemeMark.vue'))
+    expect(problemsOf(root)).toContain('slots/ThemeMark.vue is a symlink; copy the file instead')
+  })
+
+  it('finds a handler nested in v-if and v-for', () => {
+    expect(problems(slot('<ul v-if="ok"><li v-for="n in 3" :key="n" @mouseenter="x">{{ n }}</li></ul>'))).toContain('uses @mouseenter')
+  })
+
+  it('ignores a hook named in a comment', () => {
+    expect(problems(slot('<i />', '// onMounted is not used here\n/* useState either */'))).toBe('')
+  })
+
+  it('lets a declared island use all of them', () => {
+    const island = (m: Manifest): void => {
+      m.slots = { ThemeMark: { island: true } }
+    }
+    expect(problems(slot('<button @click="go">x</button>', 'onMounted(() => {})'), island)).toBe('')
+  })
+
+  it('reports a component that does not parse', () => {
+    expect(problems({ 'slots/ThemeMark.vue': '<template><div></template>' })).toMatch(/cannot parse the component/)
   })
 })
 

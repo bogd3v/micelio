@@ -4,6 +4,8 @@ import { contractProblems } from './contract'
 import { checkCss, checkThemeCss } from './css-rules'
 import { buildTokensCss } from './tokens.mjs'
 import { SLOT_NAMES } from './data'
+import { readThemeFile } from './files'
+import { slotProblems } from './island'
 import type { Hooks } from './hooks'
 import type { InstalledTheme } from './themes'
 
@@ -28,8 +30,14 @@ function packageProblems(theme: InstalledTheme, hooks: Hooks): string[] {
   const slots: readonly string[] = SLOT_NAMES
   const slotsDir = join(dir, 'slots')
   if (existsSync(slotsDir)) {
+    const options: Record<string, { island?: boolean } | undefined> = manifest.slots ?? {}
     for (const file of readdirSync(slotsDir).filter(file => file.endsWith('.vue'))) {
-      if (!slots.includes(file.slice(0, -4))) problems.push(`slots/${file} is not a slot; the slots are ${SLOT_NAMES.join(', ')}`)
+      const name = file.slice(0, -4)
+      if (!slots.includes(name)) problems.push(`slots/${file} is not a slot; the slots are ${SLOT_NAMES.join(', ')}`)
+      else {
+        const source = readThemeFile(dir, join(slotsDir, file))
+        problems.push(...('problem' in source ? [source.problem] : slotProblems(source.text, `slots/${file}`, Boolean(options[name]?.island))))
+      }
     }
   }
   problems.push(...checkThemeCss({ themeId: manifest.id, themeDir: dir, hooks }))
