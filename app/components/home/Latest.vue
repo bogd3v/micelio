@@ -18,6 +18,7 @@ const props = defineProps<{
 }>()
 
 const { locale, t } = useI18n()
+const themeMessage = useThemeMessage()
 const { fetchPosts } = useStrapi()
 const { localizePath } = useLocaleUtils()
 const toPostCard = usePostCard()
@@ -80,7 +81,7 @@ function select(id: TopicFilter['id']): void {
       </NuxtLink>
       <ThemeEmptyState v-if="!posts.length" class="bd-latest-empty" :style="{ '--empty-accent': emptyColor }">
         <h3 class="bd-latest-empty-title">{{ emptyTitle }}</h3>
-        <p class="bd-meta bd-home-eyebrow bd-latest-empty-note">{{ t('home.latest.emptyNote') }}</p>
+        <p class="bd-meta bd-home-eyebrow bd-latest-empty-note">{{ themeMessage('latest.emptyNote', 'home.latest.emptyNote') }}</p>
         <button v-if="selected" type="button" class="bd-chip" @click="select('all')">
           {{ t('home.latest.showAll') }} <span aria-hidden="true">→</span>
         </button>

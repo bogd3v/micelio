@@ -67,6 +67,24 @@
     },
     "progress": {
       "marker": "M1 9 Q6 1 11 8 Q16 1 21 9"
+    },
+    "guide": {
+      "eyebrow": "Field guide",
+      "title": "Five topics, five birds of the savanna",
+      "description": "Each blog category takes its color from the plumage of a bird from Bogotá. Privacy and DIY are the pillars.",
+      "note": {
+        "privacidad": "Black mask, blue plumage: sees without being seen.",
+        "diy": "Builds its nest from whatever it finds on the city's eaves and walls."
+      }
+    },
+    "latest": {
+      "emptyNote": "The nest is ready · Check back soon"
+    },
+    "profile": {
+      "alt": "Illustration of a rufous-collared sparrow, the blog's mascot bird"
+    },
+    "palette": {
+      "names": "Pinchaflor · Golondrina · Chillón · Mirla · Monjita"
     }
   }
 }

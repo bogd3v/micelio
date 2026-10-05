@@ -6,7 +6,7 @@ const props = defineProps<{
   block: StrapiProfile
 }>()
 
-const { t } = useI18n()
+const themeMessage = useThemeMessage()
 const { getMediaUrl } = useStrapi()
 const { localizePath } = useLocaleUtils()
 const config = useRuntimeConfig()
@@ -47,7 +47,7 @@ function isFediverseHandle(value: string): boolean {
         <img
           v-else-if="images.profile"
           :src="images.profile"
-          :alt="t('about.mascotAlt')"
+          :alt="themeMessage('profile.alt')"
           class="bd-plate-mascot"
           width="586"
           height="433"

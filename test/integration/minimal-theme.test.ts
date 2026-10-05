@@ -46,6 +46,12 @@ describe('a build with the minimal fixture theme', () => {
     expect(html).not.toContain('Bogot')
   })
 
+  it('uses the core\'s neutral texts where Bogota brings its own', async () => {
+    const html = await (await fetch('/')).text()
+    expect(html).toContain('Browse by topic')
+    for (const flavour of ['savanna', 'Field guide', 'Pinchaflor']) expect(html).not.toContain(flavour)
+  })
+
   it('serves the theme\'s roles and the core\'s optional-role defaults', async () => {
     const html = await (await fetch('/')).text()
     const href = html.match(/href="([^"]+\.css)"/)?.[1]

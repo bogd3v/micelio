@@ -27,26 +27,21 @@
         "software": "Aún no hay artículos en desarrollo de software",
         "linux": "Aún no hay artículos en Linux"
       },
-      "emptyNote": "El nido está listo · Vuelve pronto",
-      "showAll": "Ver todos"
+      "showAll": "Ver todos",
+      "emptyNote": "Vuelve pronto"
     },
     "guide": {
-      "eyebrow": "Guía de campo",
-      "title": "Cinco temas, cinco aves de la sabana",
-      "description": "Cada categoría del blog toma su color del plumaje de un ave de Bogotá. Privacidad y DIY son los pilares.",
       "pillar": "Pilar {number}",
       "figure": "Fig. {number}",
       "count": "Sin artículos aún | {count} artículo | {count} artículos",
       "topics": {
         "privacidad": {
           "title": "Privacidad",
-          "description": "Soberanía digital, autoalojamiento y herramientas para cuidar tus datos.",
-          "note": "Antifaz negro, plumaje azul: ve sin dejarse ver."
+          "description": "Soberanía digital, autoalojamiento y herramientas para cuidar tus datos."
         },
         "diy": {
           "title": "Hazlo tú mismo",
-          "description": "Laboratorios locales, hardware y proyectos construidos en casa.",
-          "note": "Arma su nido con lo que encuentra en aleros y muros de la ciudad."
+          "description": "Laboratorios locales, hardware y proyectos construidos en casa."
         },
         "ia": {
           "title": "Inteligencia artificial"
@@ -57,7 +52,10 @@
         "linux": {
           "title": "Linux y código abierto"
         }
-      }
+      },
+      "eyebrow": "Temas",
+      "title": "Explora por tema",
+      "description": "Todos los artículos del blog, agrupados por tema."
     },
     "rss": {
       "title": "¿Prefieres RSS?",
@@ -317,10 +315,8 @@
   },
   "about": {
     "contentNotAvailable": "El contenido de la página Acerca de no está disponible.",
-    "mascotAlt": "Ilustración de un copetón, el ave mascota del blog",
     "alsoWrite": "También escribo sobre",
     "swipe": "Desliza →",
-    "palette": "Pinchaflor · Golondrina · Chillón · Mirla · Monjita",
     "diagram": {
       "label": "Flujo del plugin: Strapi publica artículos hacia el fediverso y recibe respuestas, me gusta e impulsos",
       "source": "STRAPI 5",

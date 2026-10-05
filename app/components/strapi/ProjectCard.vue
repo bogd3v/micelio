@@ -8,7 +8,7 @@ defineProps<{
   project: StrapiProject
 }>()
 
-const { t } = useI18n()
+const themeMessage = useThemeMessage()
 </script>
 
 <template>
@@ -35,7 +35,7 @@ const { t } = useI18n()
       </ul>
       <div v-if="project.visual === 'palette'" class="bd-project-palette">
         <span v-for="token in SWATCHES" :key="token" class="bd-swatch" :style="{ background: token }" aria-hidden="true" />
-        <span class="bd-meta bd-project-meta">{{ t('about.palette') }}</span>
+        <span v-if="themeMessage('palette.names')" class="bd-meta bd-project-meta">{{ themeMessage('palette.names') }}</span>
       </div>
       <div v-if="project.links?.length" class="bd-project-links">
         <StrapiLinkButton v-for="link in project.links" :key="link.id" :link="link" />
