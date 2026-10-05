@@ -24,7 +24,7 @@ function setupFonts(ctx: ThemeContext): void {
     publicAssets.push({ dir: fontsDir, baseURL: '/fonts' })
   }
   const links = (nuxt.options.app.head.link ||= [])
-  for (const font of ctx.load().manifest.fonts.filter(font => font.preload)) {
+  for (const font of (ctx.load().manifest.fonts ?? []).filter(font => font.preload)) {
     links.push({ rel: 'preload', href: `/fonts/${font.file}`, as: 'font', type: 'font/woff2', crossorigin: '' })
   }
 }

@@ -40,7 +40,7 @@ export function setupData(ctx: ThemeContext): void {
     return {
       id,
       modes: modes.map(({ id, scheme, name }: ModeDefinition) => ({ id, scheme, name })),
-      fonts,
+      fonts: fonts ?? [],
       layout: { ...DEFAULT_LAYOUT, ...layout },
       slots: slots ?? {},
     }

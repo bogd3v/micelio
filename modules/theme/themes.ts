@@ -15,7 +15,7 @@ export interface ThemeFont {
 export interface ThemeManifest extends ThemeData {
   id: string
   contract: number
-  fonts: ThemeFont[]
+  fonts?: ThemeFont[]
   layout?: Partial<Record<LayoutRegion, string>>
   slots?: Partial<Record<SlotName, SlotOptions>>
 }
