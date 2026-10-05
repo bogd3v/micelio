@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
 import { checkVariant } from '../modules/theme/layout/post-list-article'
 import { setupHome } from '../modules/theme/layout/home'
+import { setupHeaderFooter } from '../modules/theme/layout/header-footer'
 import type { ThemeContext } from '../modules/theme/context'
 import { themeMismatch } from '../app/helpers/runtimeConfig'
 
@@ -127,5 +128,37 @@ describe('home layout region', () => {
     expect(() => ctx.validators[0]!({ id: 'x', layout: { home: 'index' } } as never, ''))
       .toThrow('layout.home "index" is not a known variant; expected one of: showcase')
     expect(() => ctx.validators[0]!({ id: 'x', layout: { home: 'showcase' } } as never, '')).not.toThrow()
+  })
+})
+
+describe('setupHeaderFooter', () => {
+  function setup(layout: Record<string, string> = {}): ThemeContext {
+    const ctx = {
+      nuxt: { options: { srcDir: '/app' } },
+      load: () => ({ manifest: { id: 'x', layout } }),
+      layoutCss: { header: [], footer: [] },
+      components: [],
+      validators: [],
+    } as unknown as ThemeContext
+    setupHeaderFooter(ctx)
+    return ctx
+  }
+
+  it('registers the bar header and the columns footer', () => {
+    const { components, layoutCss } = setup()
+    expect(components).toEqual([
+      { name: 'RegionHeader', filePath: join('/app', 'theme/layout/header/Bar.vue') },
+      { name: 'RegionFooter', filePath: join('/app', 'theme/layout/footer/Columns.vue') },
+    ])
+    expect(layoutCss.header[0]!()).toBe(`@import "${join('/app', 'theme/layout/header/bar.css')}";`)
+    expect(layoutCss.footer[0]!()).toBe(`@import "${join('/app', 'theme/layout/footer/columns.css')}";`)
+  })
+
+  it('rejects variants the core does not implement', () => {
+    const { validators } = setup()
+    const run = (layout: Record<string, string>): void => validators.forEach(check => check({ id: 'x', layout } as never, ''))
+    expect(() => run({ footer: 'minimal' })).toThrow('layout.footer "minimal" is not a known variant; expected one of: columns')
+    expect(() => run({ header: 'centered' })).toThrow('layout.header "centered" is not a known variant; expected one of: bar')
+    expect(() => run({ header: 'bar', footer: 'columns' })).not.toThrow()
   })
 })
