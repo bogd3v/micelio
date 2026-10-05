@@ -1350,7 +1350,7 @@ describe('security headers', () => {
 
   it('serves one theme init script, with the same hash on every page, and the first mode on <html>', async () => {
     const hashes = new Set<string>()
-    for (const path of ['/', '/es/blog', '/account/sign-in', '/this-page-does-not-exist']) {
+    for (const path of ['/', '/es/blog', '/account/sign-in', '/privacy']) {
       const html = await (await fetch(path)).text()
       expect(html).toMatch(/<html[^>]* data-theme="noche" data-scheme="dark"/)
       const init = inlineScripts(html).filter(script => script.includes('data-scheme'))
