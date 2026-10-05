@@ -39,6 +39,8 @@ The two optional roles were added with #236, when Bogotá's components moved ont
 
 **Amendment (2026-10-04, #237):** Typography roles are `text-*` and `tracking-*`, one of each per step of the scale. The typography classes (`.bd-heading-1`, `.bd-eyebrow`…) stay in the core, in `bd.settings`, and read those roles, so a theme changes type by setting roles, not by restyling the classes.
 
+**Amendment (2026-10-04, #237):** A role may vary with the viewport only through the core's breakpoints, `768` and `1024` (`min-width`, px): `theme.json` gives a base value and an `at` map keyed by those widths, and the validator rejects any other key. Today only `space-inline` uses it. `space-inline` may contain `100%`, which resolves where the role is used, so it is valid only as the inline padding of a full-width region; values reference other roles as `{container}`, never a raw `var()`.
+
 `link` and `focus` are separate roles because a theme may draw them from a color other than the accent. Bogotá does: `accent` is mirla, `link` and `focus` are chillón. Mermaid's `themeVariables` are derived by the core from roles (today's `mermaidThemeVariables` mapping, rewritten on roles); a theme may override individual variables under `mermaid` in `theme.json`, with values that are roles, not colors.
 
 Contrast rules, checked per mode by #238 (WCAG 2 AA): `ink`, `ink-muted`, `link`, `accent`, states and categories as text ≥ 4.5:1 on the three surfaces and on their own `-soft`; `on-ink` on `ink` and `on-accent` on `accent` ≥ 4.5:1; `line-strong`, `focus` and `accent` as non-text ≥ 3:1. The `usage` notes in `tokens.json` become these assertions.
