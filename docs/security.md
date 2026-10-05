@@ -71,7 +71,9 @@ Rate limits are in memory (`server/utils/rateLimit.ts`): they reset when the con
 
 ## Themes
 
-- **Build-time, operator-trusted.** `NUXT_PUBLIC_THEME` and `MICELIO_THEME_DIRS` are read by `modules/theme` at build. Whoever controls them controls the CSS and fonts that ship; they are not user input. Symlinks inside a theme directory are followed when its assets are copied, so keep themes you do not trust out of the repository.
+- **Build-time, operator-trusted.** `NUXT_PUBLIC_THEME` and `MICELIO_THEME_DIRS` are read by `modules/theme` at build. Whoever controls them controls the CSS and fonts that ship; they are not user input. Even so, the theme's `images/` is filtered when it is copied (below).
+- **`/theme/images/`** is the active theme's `images/` copied into the build (`<buildDir>/micelio/public/theme/images/`) and served same-origin as static files; `/_ipx` (`<NuxtImg>`) reads the same copy. Only `png`, `jpg`, `jpeg`, `webp`, `avif`, `gif` and `svg` files are copied (others are skipped with a warning) and a symlink fails the build, so nothing outside the theme directory can be published. The static files carry `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; sandbox`, so an SVG opened directly runs no script and loads nothing; as an `<img>` or through `/_ipx` it renders as usual.
+- **Theme messages** (`themes/<id>/i18n/*.json`) are trusted text from the repository. They are compiled at build like the core locales and rendered escaped by `t()` and `<i18n-t>`, never through `v-html`.
 - **Startup check.** `runtimeConfigCheck` throws if the runtime `NUXT_PUBLIC_THEME` differs from the build, in production and in dev.
 - **`/fonts/`** is the active theme's `fonts/` served as static, same-origin files; the security headers are unchanged and no CSP source is added.
 - **Theme values are trusted repository content** until the contract validator (#237, PR 7). Meanwhile the build rejects theme ids that are not `[a-z0-9-]+` or differ from the folder, duplicate ids, font files that are not plain `.woff2` names, token names and mode ids outside `[\w-]`, and values containing `; { } < > @` a backtick or `url(`.

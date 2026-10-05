@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, delimiter, join, resolve } from 'node:path'
 import type { ThemeData } from './tokens.mjs'
+import type { LayoutRegion, SlotName, SlotOptions } from './data'
 
 export const DEFAULT_THEME = 'bogota'
 
@@ -14,9 +15,12 @@ export interface ThemeManifest extends ThemeData {
   id: string
   contract: number
   fonts: ThemeFont[]
-  layout: Record<string, string>
-  slots: Record<string, unknown>
+  layout?: Partial<Record<LayoutRegion, string>>
+  slots?: Partial<Record<SlotName, SlotOptions>>
 }
+
+/** A check one setup file registers (modes.ts, slots.ts, layout/*); it throws an Error that names the file and the problem. */
+export type ThemeValidator = (manifest: ThemeManifest, dir: string) => void
 
 export interface InstalledTheme {
   id: string

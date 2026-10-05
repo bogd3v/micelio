@@ -1,27 +1,27 @@
 import type { ComputedRef } from 'vue'
-import type { Theme } from '~/interfaces'
+import type { ThemeMode } from '~/interfaces'
 import { storeTheme } from '~/helpers/theme'
 
 export interface UseTheme {
-  theme: ComputedRef<Theme>
+  theme: ComputedRef<ThemeMode>
   isDark: ComputedRef<boolean>
-  setTheme: (next: Theme, origin?: EventTarget | null) => void
+  setTheme: (next: ThemeMode, origin?: EventTarget | null) => void
   toggle: (origin?: EventTarget | null) => void
-  sync: (next: Theme) => void
+  sync: (next: ThemeMode) => void
 }
 
 export function useTheme(): UseTheme {
-  const state = useState<Theme>('bd-theme', () => 'noche')
+  const state = useState<ThemeMode>('bd-theme', () => 'noche')
 
-  const theme = computed<Theme>(() => state.value)
+  const theme = computed<ThemeMode>(() => state.value)
   const isDark = computed<boolean>(() => state.value === 'noche')
 
-  function sync(next: Theme): void {
+  function sync(next: ThemeMode): void {
     document.documentElement.setAttribute('data-theme', next)
     state.value = next
   }
 
-  function setTheme(next: Theme, origin?: EventTarget | null): void {
+  function setTheme(next: ThemeMode, origin?: EventTarget | null): void {
     if (import.meta.server) return
     storeTheme(next)
 

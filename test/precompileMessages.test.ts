@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { compile, createCoreContext, translate } from '@intlify/core-base'
-import { compileMessages } from '../modules/precompile-messages'
+import { compileMessages, isMessageFile } from '../modules/precompile-messages'
 
 type Messages = { [key: string]: string | Messages }
 
@@ -37,5 +37,23 @@ describe('compileMessages', () => {
         expect(render(compiled, key, count), `${key} (${count})`).toBe(render(source, key, count))
       }
     }
+  })
+})
+
+describe('isMessageFile', () => {
+  const dirs = ['/app/i18n/locales', '/app/themes']
+
+  it('accepts JSON files inside the message directories', () => {
+    expect(isMessageFile('/app/i18n/locales/en.json', dirs)).toBe(true)
+    expect(isMessageFile('/app/themes/bogota/i18n/es.json', dirs)).toBe(true)
+  })
+
+  it('rejects a sibling folder that only shares the prefix', () => {
+    expect(isMessageFile('/app/themes-foo/en.json', dirs)).toBe(false)
+    expect(isMessageFile('/app/i18n/locales-old/en.json', dirs)).toBe(false)
+  })
+
+  it('rejects files that are not JSON', () => {
+    expect(isMessageFile('/app/themes/bogota/theme.css', dirs)).toBe(false)
   })
 })

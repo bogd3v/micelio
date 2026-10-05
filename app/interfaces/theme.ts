@@ -1,1 +1,1 @@
-export type Theme = 'noche' | 'dia'
+export type ThemeMode = 'noche' | 'dia'

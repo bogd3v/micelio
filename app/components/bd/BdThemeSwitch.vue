@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { Theme } from '~/interfaces'
+import type { ThemeMode } from '~/interfaces'
 
 const emit = defineEmits<{
-  change: [theme: Theme]
+  change: [theme: ThemeMode]
 }>()
 
 const { t } = useI18n()
 const { theme, setTheme } = useTheme()
 
-const options: Theme[] = ['noche', 'dia']
+const options: ThemeMode[] = ['noche', 'dia']
 
-function select(next: Theme, event: MouseEvent): void {
+function select(next: ThemeMode, event: MouseEvent): void {
   if (next === theme.value) return
   setTheme(next, event.currentTarget)
   emit('change', next)
