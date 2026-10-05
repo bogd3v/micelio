@@ -183,7 +183,7 @@ function scrollToTop(): void {
         <span>© {{ year }} {{ site.name }} · {{ site.author.name }}</span>
         <NuxtLink :to="localizePath('/privacy')" class="bd-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
       </span>
-      <span v-if="hud.madeIn">{{ hud.madeIn }} <template v-if="hud.coords"><span class="bd-foot-diamond" aria-hidden="true">◆</span> {{ hud.coords }}</template></span>
+      <span v-if="hud.madeIn">{{ hud.madeIn }} <span v-if="hud.coords" class="bd-foot-diamond" aria-hidden="true">◆</span> {{ hud.coords }}</span>
       <span v-if="te('theme.divider.credit')">{{ t('theme.divider.credit') }}</span>
       <button type="button" class="bd-foot-row bd-foot-top" @click="scrollToTop">
         <span>{{ t('common.backToTop') }}</span>
