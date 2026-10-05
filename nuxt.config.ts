@@ -24,7 +24,8 @@ const ESBUILD_TARGETS = Object.entries(CSS_TARGETS).map(
 )
 
 export default defineNuxtConfig({
-  modules: ['@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
+  // The theme goes first: @nuxt/image reads image.dirs when it is set up (modules/theme/assets.ts)
+  modules: ['./modules/theme', '@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
   ssr: true,
   devtools: { enabled: false },
   app: {

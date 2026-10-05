@@ -27,8 +27,18 @@
    "preload": true
   }
  ],
- "layout": {},
- "slots": {},
+ "layout": {
+  "header": "bar",
+  "home": "showcase",
+  "postList": "grid",
+  "article": "aside",
+  "footer": "columns"
+ },
+ "slots": {
+  "ThemeDivider": {
+   "island": true
+  }
+ },
  "color": {
   "tokens": [
    {

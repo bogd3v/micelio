@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { baseCompile } from '@intlify/message-compiler'
 import { defineNuxtModule } from 'nuxt/kit'
+import { themeRoots } from './theme/themes'
 
 interface Messages {
   [key: string]: string | Messages
@@ -51,14 +52,15 @@ function compileMessage(message: string, key: string): unknown {
 export default defineNuxtModule({
   meta: { name: 'precompile-messages' },
   setup(_options, nuxt): void {
-    const localesDir = resolve(nuxt.options.rootDir, 'i18n/locales')
+    // The core locales and the messages the themes register (modules/theme/assets.ts)
+    const messageDirs = [resolve(nuxt.options.rootDir, 'i18n/locales'), ...themeRoots(nuxt.options.rootDir)]
     const plugin: MessagesPlugin = {
       name: 'micelio:precompile-messages',
       async resolveId(this: ResolveContext, source: string, importer?: string): Promise<string | null> {
         if (!source.startsWith(I18N_IMPORT_PREFIX)) return null
         const resolved = await this.resolve(source, importer, { skipSelf: true })
         const path = resolved?.id.split('?')[0]
-        return path?.startsWith(localesDir) && path.endsWith('.json') ? `${VIRTUAL_PREFIX}${path}` : null
+        return path && path.endsWith('.json') && messageDirs.some(dir => path.startsWith(dir)) ? `${VIRTUAL_PREFIX}${path}` : null
       },
       load(id: string): string | null {
         if (!id.startsWith(VIRTUAL_PREFIX)) return null
