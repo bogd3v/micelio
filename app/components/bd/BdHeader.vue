@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { HeaderSection, Locale, Theme } from '~/interfaces'
+import type { HeaderSection, Locale, ThemeMode } from '~/interfaces'
 
 const props = withDefaults(defineProps<{
   active?: HeaderSection
@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   search: []
   menu: []
-  theme: [theme: Theme]
+  theme: [theme: ThemeMode]
   lang: [locale: Locale]
 }>()
 
