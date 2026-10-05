@@ -32,11 +32,7 @@ let dragStart: number | null = null
 
 useFocusTrap(dialogRef, isOpen)
 
-const sections = computed<{ id: HeaderSection, label: string, to: string }[]>(() => [
-  { id: 'home', label: t('nav.home'), to: localizePath('/') },
-  { id: 'blog', label: t('nav.blog'), to: localizePath('/blog') },
-  { id: 'about', label: t('nav.about'), to: localizePath('/about') },
-])
+const sections = useNavLinks()
 const topics = computed<{ slug: string, label: string, color: string, to: string }[]>(() =>
   CATEGORIES.map(slug => ({
     slug,
