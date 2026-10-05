@@ -9,15 +9,7 @@
       "eyebrow": "Bitácora técnica · {count} artículo | Bitácora técnica · {count} artículos",
       "title": "Explorando privacidad, DIY, IA, software y Linux.",
       "subtitle": "Notas técnicas escritas desde Bogotá, a 2.640 metros sobre el nivel del mar.",
-      "read": "Leer artículos",
-      "place": "PNN Sumapaz · Frailejones",
-      "figure": {
-        "caption": "Fig. 01 — PNN Sumapaz · Foto: {author} · {license} · Recortada y etalonada",
-        "author": "Danielfjio · Wikimedia Commons",
-        "authorAria": "Foto de Danielfjio · Wikimedia Commons (se abre en una pestaña nueva)",
-        "license": "CC BY-SA 4.0",
-        "licenseAria": "Licencia CC BY-SA 4.0 (se abre en una pestaña nueva)"
-      }
+      "read": "Leer artículos"
     },
     "latest": {
       "eyebrow": "Índice · {count} artículo | Índice · {count} artículos",
@@ -49,26 +41,21 @@
         "privacidad": {
           "title": "Privacidad",
           "description": "Soberanía digital, autoalojamiento y herramientas para cuidar tus datos.",
-          "bird": "Pinchaflor enmascarado",
           "note": "Antifaz negro, plumaje azul: ve sin dejarse ver."
         },
         "diy": {
           "title": "Hazlo tú mismo",
           "description": "Laboratorios locales, hardware y proyectos construidos en casa.",
-          "bird": "Golondrina azul y blanca",
           "note": "Arma su nido con lo que encuentra en aleros y muros de la ciudad."
         },
         "ia": {
-          "title": "Inteligencia artificial",
-          "bird": "Colibrí chillón"
+          "title": "Inteligencia artificial"
         },
         "software": {
-          "title": "Desarrollo de software",
-          "bird": "Mirla patinaranja"
+          "title": "Desarrollo de software"
         },
         "linux": {
-          "title": "Linux y código abierto",
-          "bird": "Monjita bogotana"
+          "title": "Linux y código abierto"
         }
       }
     },
@@ -332,6 +319,7 @@
     "contentNotAvailable": "El contenido de la página Acerca de no está disponible.",
     "mascotAlt": "Ilustración de un copetón, el ave mascota del blog",
     "alsoWrite": "También escribo sobre",
+    "swipe": "Desliza →",
     "palette": "Pinchaflor · Golondrina · Chillón · Mirla · Monjita",
     "diagram": {
       "label": "Flujo del plugin: Strapi publica artículos hacia el fediverso y recibe respuestas, me gusta e impulsos",
@@ -528,29 +516,6 @@
       "newsletter": "Newsletter",
       "coffee": "Invitarme un café",
       "madeIn": "Hecho en Bogotá, Colombia",
-      "illustration": "Ilustración · copetón, Zonotrichia capensis",
-      "panorama": {
-        "title": "Cerros orientales",
-        "swipe": "Desliza",
-        "label": "Panorama de los cerros orientales de Bogotá, desliza para recorrerlo",
-        "monserrate": "Monserrate · 3.152 m",
-        "guadalupe": "Guadalupe · 3.317 m",
-        "view": "Cerros orientales · vista desde el occidente",
-        "cci": "Centro de Comercio Internacional · 192 m",
-        "atrio": "Torre Atrio Norte · 201 m · Rogers Stirk Harbour + El Equipo Mazzanti",
-        "parque": "Torres del Parque · Rogelio Salmona",
-        "colpatria": "Torre Colpatria · 196 m · fachada LED con las banderas de Palestina, Colombia y Bogotá",
-        "bacataSouth": "BD Bacatá · torre sur 216 m",
-        "bacataNorth": "BD Bacatá · torre norte 167 m",
-        "avianca": "Edificio Avianca · 161 m",
-        "monserrateBasilica": "Basílica del Señor de Monserrate",
-        "guadalupeSanctuary": "Santuario y Virgen de Guadalupe",
-        "tequendama": "Hotel Tequendama · Centro Internacional",
-        "santamaria": "Plaza de toros La Santamaría",
-        "flagPalestine": "Palestina",
-        "flagColombia": "Colombia",
-        "flagBogota": "Bogotá"
-      },
       "privacy": "Privacidad y cookies"
     }
   },

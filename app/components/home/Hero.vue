@@ -13,7 +13,7 @@ const eyebrow = computed<string>(() => t('home.hero.eyebrow', { count: padCount(
 
 <template>
   <section class="bd-hero">
-    <HomeHeroArt class="bd-hero-art" />
+    <ThemeHero class="bd-hero-art" />
     <div class="bd-hero-copy">
       <p class="bd-eyebrow bd-hero-eyebrow">{{ eyebrow }}</p>
       <p class="bd-meta bd-hero-place">
@@ -27,6 +27,6 @@ const eyebrow = computed<string>(() => t('home.hero.eyebrow', { count: padCount(
         <BdButton :href="localizePath('/about')" variant="text" class="bd-hero-about">{{ t('nav.about') }}</BdButton>
       </div>
     </div>
-    <HomeHeroArt class="bd-hero-art-compact" compact />
+    <ThemeHero class="bd-hero-art-compact" compact />
   </section>
 </template>

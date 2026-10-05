@@ -1,4 +1,4 @@
-import { BirdToken, Category } from '../interfaces/design'
+import { Category } from '../interfaces/design'
 import type { CategoryInfo } from '../interfaces/design'
 
 export const CATEGORIES: readonly Category[] = [
@@ -10,11 +10,11 @@ export const CATEGORIES: readonly Category[] = [
 ]
 
 export const CATEGORY_INFO: Readonly<Record<Category, CategoryInfo>> = {
-  [Category.Privacy]: { token: BirdToken.Pinchaflor, scientificName: 'Diglossa cyanea', pillar: 1 },
-  [Category.Diy]: { token: BirdToken.Golondrina, scientificName: 'Pygochelidon cyanoleuca', pillar: 2 },
-  [Category.Ai]: { token: BirdToken.Chillon, scientificName: 'Colibri coruscans', pillar: null },
-  [Category.Software]: { token: BirdToken.Mirla, scientificName: 'Turdus fuscater', pillar: null },
-  [Category.Linux]: { token: BirdToken.Monjita, scientificName: 'Chrysomus icterocephalus bogotensis', pillar: null },
+  [Category.Privacy]: { pillar: 1 },
+  [Category.Diy]: { pillar: 2 },
+  [Category.Ai]: { pillar: null },
+  [Category.Software]: { pillar: null },
+  [Category.Linux]: { pillar: null },
 }
 
 export function isCategory(value: unknown): value is Category {

@@ -6,19 +6,9 @@ export enum Category {
   Linux = 'linux',
 }
 
-export enum BirdToken {
-  Pinchaflor = 'pinchaflor',
-  Golondrina = 'golondrina',
-  Chillon = 'chillon',
-  Mirla = 'mirla',
-  Monjita = 'monjita',
-}
-
 export type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'text'
 
 export type ButtonSize = 'md' | 'sm'
-
-export type LogoVariant = 'auto' | 'color' | 'white' | 'black'
 
 export type CalloutTone = 'note' | 'warning' | 'danger'
 
@@ -27,14 +17,7 @@ export interface CodeLine {
   text: string
 }
 
-export interface LogoPath {
-  part: 'a' | 'b'
-  d: string
-}
-
 export interface CategoryInfo {
-  token: BirdToken
-  scientificName: string
   pillar: 1 | 2 | null
 }
 

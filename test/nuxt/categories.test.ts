@@ -1,16 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, h } from 'vue'
-import BdBird from '~/components/bd/BdBird.vue'
+import ThemeIllustration from '~~/themes/bogota/slots/ThemeIllustration.vue'
+import DefaultIllustration from '~/theme/defaults/ThemeIllustration.vue'
+import { useIllustrationCaption } from '~/composables/useIllustrationCaption'
 import { useCategoryLabel } from '~/composables/useCategoryLabel'
 import { CATEGORIES } from '~/helpers/categories'
 import { Category } from '~/interfaces/design'
 
-describe('BdBird', () => {
+describe('ThemeIllustration (Bogotá)', () => {
   it('draws a distinct bird for each category in its color', async () => {
     const drawings = new Set<string>()
     for (const category of CATEGORIES) {
-      const wrapper = await mountSuspended(BdBird, { props: { category, size: 160 } })
+      const wrapper = await mountSuspended(ThemeIllustration, { props: { category, size: 160 } })
       const svg = wrapper.get('svg')
       expect(svg.attributes('aria-hidden')).toBe('true')
       expect(svg.attributes('width')).toBe('160')
@@ -20,6 +22,34 @@ describe('BdBird', () => {
       drawings.add(svg.html())
     }
     expect(drawings.size).toBe(5)
+  })
+})
+
+describe('ThemeIllustration (core default)', () => {
+  it('draws nothing', async () => {
+    const wrapper = await mountSuspended(DefaultIllustration, { props: { category: Category.Diy, size: 160 } })
+    expect(wrapper.find('svg').exists()).toBe(false)
+    expect(wrapper.text()).toBe('')
+  })
+})
+
+describe('useIllustrationCaption', () => {
+  it('reads the theme messages of each category', async () => {
+    let caption: ReturnType<typeof useIllustrationCaption> = () => null
+    await mountSuspended(defineComponent({
+      setup() {
+        caption = useIllustrationCaption()
+        return () => h('div')
+      },
+    }))
+    expect(CATEGORIES.map(category => caption(category))).toEqual([
+      { name: 'Masked flowerpiercer', scientific: 'Diglossa cyanea' },
+      { name: 'Blue-and-white swallow', scientific: 'Pygochelidon cyanoleuca' },
+      { name: 'Sparkling violetear', scientific: 'Colibri coruscans' },
+      { name: 'Great thrush', scientific: 'Turdus fuscater' },
+      { name: 'Yellow-hooded blackbird', scientific: 'Chrysomus icterocephalus bogotensis' },
+    ])
+    expect(caption('unknown' as Category)).toBeNull()
   })
 })
 

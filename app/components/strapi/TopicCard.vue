@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { StrapiTopic } from '~/interfaces'
-import { CATEGORY_INFO } from '~/helpers/categories'
 
 defineProps<{
   topic: StrapiTopic
@@ -8,7 +7,7 @@ defineProps<{
   pillar?: boolean
 }>()
 
-const { t } = useI18n()
+const caption = useIllustrationCaption()
 </script>
 
 <template>
@@ -17,11 +16,11 @@ const { t } = useI18n()
       <BdCategoryTag :category="topic.category" />
       <span class="bd-meta bd-topic-label">{{ label }}</span>
     </div>
-    <div class="bd-topic-art"><BdBird :category="topic.category" :size="200" /></div>
+    <div class="bd-topic-art"><ThemeIllustration :category="topic.category" :size="200" /></div>
     <h3 class="bd-topic-title bd-wide">{{ topic.title }}</h3>
     <p v-if="topic.description" class="bd-topic-text">{{ topic.description }}</p>
-    <p class="bd-topic-bird">
-      {{ t(`home.guide.topics.${topic.category}.bird`) }} · <i>{{ CATEGORY_INFO[topic.category].scientificName }}</i>
+    <p v-if="caption(topic.category)" class="bd-topic-bird">
+      {{ caption(topic.category)!.name }} · <i>{{ caption(topic.category)!.scientific }}</i>
     </p>
   </article>
 </template>

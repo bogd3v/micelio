@@ -38,7 +38,7 @@ function label(topic: StrapiTopic): string {
 
       <p v-if="others.length" class="bd-meta bd-topic-more">
         <span>{{ t('about.alsoWrite') }}</span>
-        <span aria-hidden="true">{{ t('bd.footer.panorama.swipe') }} →</span>
+        <span aria-hidden="true">{{ t('about.swipe') }}</span>
       </p>
       <div v-if="others.length" class="bd-topic-others">
         <StrapiTopicCard v-for="topic in others" :key="topic.id" :topic="topic" :label="label(topic)" />

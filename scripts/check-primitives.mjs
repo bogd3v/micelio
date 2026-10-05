@@ -21,9 +21,6 @@ const ROLES = new Set([
   'glow-accent', 'glow-link', 'shadow-raised', 'shadow-overlay',
 ])
 
-// The logo is the ThemeMark slot; it moves into the theme package with #237 (F6)
-const ALLOWED = { 'app/assets/css/components/logo.css': new Set(['logo-agua', 'logo-ladrillo']) }
-
 function primitives() {
   const names = themeFiles().flatMap((file) => {
     const tokens = JSON.parse(readFileSync(file, 'utf8'))
@@ -59,7 +56,7 @@ for (const path of SCANNED.flatMap(dir => files(join(ROOT, dir)))) {
   if (file.startsWith(SETTINGS) || file.startsWith(THEMES)) continue
   readFileSync(path, 'utf8').split('\n').forEach((line, index) => {
     for (const match of line.matchAll(pattern)) {
-      if (!ALLOWED[file]?.has(match[1])) problems.push(`${file}:${index + 1}  ${match[1]} is a theme primitive: use a semantic role (ADR 0005)`)
+      problems.push(`${file}:${index + 1}  ${match[1]} is a theme primitive: use a semantic role (ADR 0005)`)
     }
   })
 }

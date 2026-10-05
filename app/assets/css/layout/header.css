@@ -44,15 +44,6 @@ html {
     text-decoration: none;
 }
 
-.bd-brand .bd-logo-mark {
-    width: auto;
-    height: 28px;
-}
-
-.bd-brand-dev {
-    color: var(--accent);
-}
-
 .bd-nav-main,
 .bd-nav .bd-nav-lang,
 .bd-strip {
@@ -218,10 +209,6 @@ html {
 
     .bd-nav {
         height: var(--nav-height);
-    }
-
-    .bd-brand .bd-logo-mark {
-        height: 30px;
     }
 
     .bd-nav-main {

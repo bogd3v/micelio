@@ -1,18 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import BdPanorama from '~/components/bd/BdPanorama.vue'
+import ThemeDivider from '~~/themes/bogota/slots/ThemeDivider.vue'
 
-describe('BdPanorama', () => {
+describe('ThemeDivider', () => {
   it('draws the hill landmarks without the cable car', async () => {
-    const wrapper = await mountSuspended(BdPanorama)
-    expect(wrapper.get('.bd-monserrate title').text()).toBe('Basilica of the Lord of Monserrate')
-    expect(wrapper.get('.bd-guadalupe title').text()).toBe('Sanctuary and Virgin of Guadalupe')
+    const wrapper = await mountSuspended(ThemeDivider)
+    expect(wrapper.get('.bogota-monserrate title').text()).toBe('Basilica of the Lord of Monserrate')
+    expect(wrapper.get('.bogota-guadalupe title').text()).toBe('Sanctuary and Virgin of Guadalupe')
     expect(wrapper.find('animateMotion').exists()).toBe(false)
   })
 
   it('names the skyline buildings from west to east', async () => {
-    const wrapper = await mountSuspended(BdPanorama)
-    const titles = wrapper.findAll('.bd-lay4 path > title').map(title => title.text())
+    const wrapper = await mountSuspended(ThemeDivider)
+    const titles = wrapper.findAll('.bogota-lay4 path > title').map(title => title.text())
     expect(titles).toEqual([
       'Atrio North Tower · 201 m · Rogers Stirk Harbour + El Equipo Mazzanti',
       'International Trade Center · 192 m',
@@ -27,8 +27,8 @@ describe('BdPanorama', () => {
   })
 
   it('clips the Colpatria flags to the LED strips', async () => {
-    const wrapper = await mountSuspended(BdPanorama)
-    const led = wrapper.get('g.bd-colpatria')
+    const wrapper = await mountSuspended(ThemeDivider)
+    const led = wrapper.get('g.bogota-colpatria')
     const clipId = led.attributes('clip-path')!.match(/^url\(#(.+)\)$/)![1]
     const clip = wrapper.get(`clipPath[id="${clipId}"]`)
     expect(clip.findAll('rect')).toHaveLength(11)

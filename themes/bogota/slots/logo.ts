@@ -1,4 +1,7 @@
-import type { LogoPath } from '../interfaces/design'
+interface LogoPath {
+  part: 'a' | 'b'
+  d: string
+}
 
 export const LOGO_TRANSFORM = 'matrix(2.0019738,0,0,2.0019738,-128.36075,-162.58342)'
 

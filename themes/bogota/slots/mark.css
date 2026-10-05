@@ -1,0 +1,44 @@
+.bogota-lockup {
+    display: contents;
+}
+
+.bogota-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    color: var(--ink);
+    line-height: 1;
+}
+
+.bogota-mark-svg {
+    display: block;
+    flex: none;
+}
+
+.bogota-mark-header .bogota-mark-svg {
+    width: auto;
+    height: 28px;
+}
+
+.bogota-mark-footer .bogota-mark-svg {
+    width: auto;
+    height: 1em;
+}
+
+.bogota-mark-a {
+    fill: var(--logo-agua);
+}
+
+.bogota-mark-b {
+    fill: var(--logo-ladrillo);
+}
+
+.bogota-word-dev {
+    color: var(--accent);
+}
+
+@media (min-width: 768px) {
+    .bogota-mark-header .bogota-mark-svg {
+        height: 30px;
+    }
+}

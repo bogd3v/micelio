@@ -98,13 +98,15 @@ themes/bogota/
 
   | Slot | Props | Bogotá | Core default |
   | --- | --- | --- | --- |
-  | `ThemeMark` | `size`, `context: 'header' \| 'footer'` | its mark and the `Bog<span>Dev</span>` wordmark | `site.name` as text |
-  | `ThemeHero` | `compact` | `HomeHeroArt` | neutral |
-  | `ThemeDivider` | `placement: 'section' \| 'footer'` | the footer panorama (`BdPanorama`), an island | neutral |
+  | `ThemeMark` | `size`, `context: 'header' \| 'footer'` | its logo and the `Bog<span>Dev</span>` wordmark | `site.name` as text |
+  | `ThemeHero` | `compact` | the hero photo and flight art | neutral |
+  | `ThemeDivider` | `placement: 'section' \| 'footer'` | the footer panorama of the eastern hills, declared an island | neutral |
   | `ThemeEmptyState` | none | uses the default | neutral |
-  | `ThemeIllustration` | `category`, `size` | the category birds (`BdBird`) | neutral |
+  | `ThemeIllustration` | `category`, `size` | the category birds | neutral |
 
   A slot that needs JavaScript (today only Bogotá's `ThemeDivider`) declares itself an island in `theme.json` (section 12). `site.logo` from Strapi is used for structured data only and never replaces a theme's `ThemeMark`. Only the active theme's slots are registered, so unused ones are not bundled.
+
+  Until the theme validator lands (#237, PR 7), slots are registered as plain components: `island` is validated and recorded in `#micelio/theme` but not enforced, so every slot still hydrates.
 - **Templates** for the OG image and the newsletter email shell are optional; the core has neutral defaults. They read roles and the site identity, never hardcoded site values.
 - The active theme is chosen at build time with `NUXT_PUBLIC_THEME` (default `bogota`); only installed themes can be selected, and only the active theme's CSS and fonts reach the page.
 - **Module** (amended 2026-10-04, #237): a local Nuxt module in `modules/theme/` (not a Nuxt layer; see option C) discovers themes in `themes/` at the repository root, plus the directories in `MICELIO_THEME_DIRS` (used by test fixtures), validates them, fails the build if `NUXT_PUBLIC_THEME` is not installed, generates the CSS above and exposes `#micelio/theme` (id, modes, fonts, layout, slots) with types. As with `NUXT_PUBLIC_SITE_MODE` ([ADR-0006](0006-site-modes.md)), startup fails if the runtime value disagrees with the build.

@@ -11,7 +11,6 @@
 @import "./components/icon.css" layer(bd.components);
 @import "./components/button.css" layer(bd.components);
 @import "./components/tag.css" layer(bd.components);
-@import "./components/logo.css" layer(bd.components);
 @import "./components/icon-button.css" layer(bd.components);
 @import "./components/segmented.css" layer(bd.components);
 @import "#build/micelio/components.css" layer(bd.components);
@@ -24,7 +23,6 @@
 @import "./components/newsletter.css" layer(bd.components);
 @import "./components/code-block.css" layer(bd.components);
 @import "./components/callout.css" layer(bd.components);
-@import "./components/panorama.css" layer(bd.components);
 @import "./components/pagination.css" layer(bd.components);
 @import "./components/select.css" layer(bd.components);
 @import "./components/learning-path.css" layer(bd.components);

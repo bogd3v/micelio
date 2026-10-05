@@ -23,11 +23,11 @@
     --pano-shade: var(--ink);
 }
 
-.bd-panorama {
+.bogota-panorama {
     position: relative;
 }
 
-.bd-panorama-hint {
+.bogota-panorama-hint {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -37,7 +37,7 @@
     color: var(--ink-muted);
 }
 
-.bd-land-scroll {
+.bogota-land-scroll {
     display: flex;
     overflow-x: auto;
     overscroll-behavior-x: contain;
@@ -45,11 +45,11 @@
     scrollbar-width: none;
 }
 
-.bd-land-scroll::-webkit-scrollbar {
+.bogota-land-scroll::-webkit-scrollbar {
     display: none;
 }
 
-.bd-land {
+.bogota-land {
     position: relative;
     flex: none;
     width: 1152px;
@@ -60,7 +60,7 @@
     contain-intrinsic-size: 1152px 352px;
 }
 
-.bd-lay {
+.bogota-lay {
     position: absolute;
     left: 0;
     top: 0;
@@ -69,30 +69,30 @@
     height: 100%;
 }
 
-.bd-lay1 {
+.bogota-lay1 {
     z-index: 1;
 }
 
-.bd-lay2 {
+.bogota-lay2 {
     z-index: 2;
 }
 
-.bd-lay3 {
+.bogota-lay3 {
     z-index: 3;
 }
 
-.bd-lay4 {
+.bogota-lay4 {
     z-index: 6;
 }
 
-.bd-land-labels {
+.bogota-land-labels {
     font-family: var(--font-mono);
     font-size: 16px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
-.bd-copeton {
+.bogota-copeton {
     left: 8px;
     top: auto;
     bottom: 0;
@@ -107,87 +107,87 @@
     transition: opacity var(--duration-slow) var(--ease-standard);
 }
 
-.bd-foot:hover .bd-copeton {
+.bd-foot:hover .bogota-copeton {
     opacity: 0.42;
 }
 
-[data-theme="dia"] .bd-copeton {
+[data-theme="dia"] .bogota-copeton {
     filter: none;
     mix-blend-mode: multiply;
     opacity: 0.45;
 }
 
-[data-theme="dia"] .bd-foot:hover .bd-copeton {
+[data-theme="dia"] .bd-foot:hover .bogota-copeton {
     opacity: 0.6;
 }
 
-[data-theme="dia"] :is(.bd-lights, .bd-colpatria, .bd-crown) {
+[data-theme="dia"] :is(.bogota-lights, .bogota-colpatria, .bogota-crown) {
     display: none;
 }
 
-:root:not([data-theme="dia"]) :is(.bd-floors, .bd-bld-line) {
+:root:not([data-theme="dia"]) :is(.bogota-floors, .bogota-bld-line) {
     opacity: 0.5;
 }
 
-.bd-colpatria {
+.bogota-colpatria {
     opacity: 0.95;
 }
 
-.bd-beacon {
-    animation: bd-blink 2.4s steps(1) infinite;
+.bogota-beacon {
+    animation: bogota-blink 2.4s steps(1) infinite;
 }
 
-.bd-beacon-2 {
+.bogota-beacon-2 {
     animation-delay: -0.8s;
 }
 
-.bd-beacon-3 {
+.bogota-beacon-3 {
     animation-delay: -1.6s;
 }
 
 @supports (animation-timeline: view()) {
-    .bd-panorama {
-        view-timeline: --bd-land block;
+    .bogota-panorama {
+        view-timeline: --bogota-land block;
     }
 
-    .bd-lay {
-        animation: bd-par linear both;
-        animation-timeline: --bd-land;
+    .bogota-lay {
+        animation: bogota-par linear both;
+        animation-timeline: --bogota-land;
         animation-range: entry 0% entry 100%;
     }
 
-    .bd-lay1 {
+    .bogota-lay1 {
         --par: 90px;
     }
 
-    .bd-lay2 {
+    .bogota-lay2 {
         --par: 60px;
     }
 
-    .bd-lay3 {
+    .bogota-lay3 {
         --par: 34px;
     }
 
-    .bd-lay4 {
+    .bogota-lay4 {
         --par: 12px;
     }
 
-    .bd-lay-bird {
+    .bogota-lay-bird {
         --par: 40px;
     }
 }
 
 @media (min-width: 768px) {
-    .bd-panorama-hint {
+    .bogota-panorama-hint {
         display: none;
     }
 
-    .bd-land-scroll {
+    .bogota-land-scroll {
         display: block;
         overflow: visible;
     }
 
-    .bd-land {
+    .bogota-land {
         width: 100%;
         height: auto;
         min-height: 440px;
@@ -195,23 +195,28 @@
         contain-intrinsic-size: auto 440px;
     }
 
-    .bd-land-labels {
+    .bogota-land-labels {
         font-size: 12px;
     }
 
-    .bd-copeton {
+    .bogota-copeton {
         left: 24px;
         height: calc(100% * 400 / 440);
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-lay,
-    .bd-beacon {
+    .bogota-lay,
+    .bogota-beacon {
         animation: none;
     }
 
-    .bd-copeton {
+    .bogota-copeton {
         transition: none;
     }
+}
+
+.bogota-land-scroll:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
 }

@@ -6,7 +6,9 @@
 }
 
 .bd-hero-art {
+    position: relative;
     display: none;
+    overflow: hidden;
 }
 
 .bd-hero-copy {
@@ -65,149 +67,18 @@
     display: none;
 }
 
-.bd-flight {
-    position: relative;
-    overflow: hidden;
-}
-
-.bd-flight-map {
-    position: absolute;
-    inset: 0;
-    display: block;
-}
-
-.bd-hero-photo {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: right top;
-}
-
-.bd-flight-compact .bd-hero-photo {
-    object-position: 80% 58%;
-}
-
-:root:not([data-theme="dia"]) .bd-hero-photo-day,
-[data-theme="dia"] .bd-hero-photo-night {
-    display: none;
-}
-
-.bd-hero-art-compact {
-    flex: none;
-    width: 390px;
-    height: 300px;
-    margin: 8px calc(50% - 195px) 0;
-}
-
 .bd-flight-route {
     stroke-dasharray: 2 7;
     animation: bd-dash 40s linear infinite;
 }
 
-.bd-flight-place {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.bd-flight-caption {
-    position: absolute;
-    left: 20px;
-    right: 20px;
-    bottom: 12px;
-    margin: 0;
-    padding: 6px 10px;
-    font-size: 11px;
-    line-height: 16px;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-    background: var(--surface);
-    border: 1px solid var(--line);
-}
-
-.bd-flight-caption a {
-    color: inherit;
-    white-space: nowrap;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-}
-
-.bd-flight-caption a:hover {
-    color: var(--ink);
-}
-
-.bd-flight-caption a:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
-}
-
-.bd-flyer {
-    position: absolute;
-    left: 0;
-    top: 0;
-    color: var(--ink);
-    offset-rotate: auto;
-    offset-distance: var(--rest);
-    animation: bd-fly var(--dur) linear var(--delay) infinite;
-    will-change: offset-distance;
-}
-
-.bd-flyer svg {
-    display: block;
-    overflow: visible;
-}
-
-.bd-flyer path {
-    animation: bd-flap var(--flap, 0.9s) ease-in-out var(--flap-delay, -0.1s) infinite;
-}
-
-.bd-flyer-t0 {
-    --dur: 26s;
-    --delay: -2s;
-    --rest: 22%;
-}
-
-.bd-flyer-t1 {
-    --dur: 31s;
-    --delay: -11s;
-    --rest: 48%;
-}
-
-.bd-flyer-t2 {
-    --dur: 23s;
-    --delay: -17s;
-    --rest: 74%;
-}
-
-.bd-flyer-t3 {
-    --dur: 28s;
-    --delay: -6s;
-    --rest: 30%;
-}
-
-.bd-flyer-t4 {
-    --dur: 34s;
-    --delay: -21s;
-    --rest: 58%;
-}
-
-.bd-flyer-t5 {
-    --dur: 25s;
-    --delay: -14s;
-    --rest: 84%;
-}
-
-.bd-flyer-w1 {
-    --flap: 0.8s;
-    --flap-delay: -0.4s;
-}
-
-.bd-flyer-w2 {
-    --flap: 1.05s;
-    --flap-delay: -0.7s;
+.bd-hero-art-compact {
+    position: relative;
+    flex: none;
+    overflow: hidden;
+    width: 390px;
+    height: 300px;
+    margin: 8px calc(50% - 195px) 0;
 }
 
 @media (min-width: 1024px) {
@@ -228,16 +99,6 @@
         display: block;
         width: 760px;
         height: 720px;
-    }
-
-    .bd-hero-art .bd-flight-caption {
-        left: auto;
-        right: 120px;
-        bottom: 32px;
-        max-width: 520px;
-        font-size: 12px;
-        line-height: 18px;
-        text-align: right;
     }
 
     .bd-hero-art-compact,
@@ -271,8 +132,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-flyer,
-    .bd-flyer path,
     .bd-flight-route {
         animation: none;
     }
