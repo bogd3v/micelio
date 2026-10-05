@@ -185,5 +185,5 @@ useHead({
 </script>
 
 <template>
-  <BlogArticleView v-if="post" :post="post" :share-url="articleUrl" />
+  <RegionArticle v-if="post" :post="post" :share-url="articleUrl" />
 </template>

@@ -6,6 +6,8 @@ import { formatDotDate } from '~/helpers/formatDate'
 import { mastodonShareUrl } from '~/helpers/share'
 import { extractHeadings } from '~/helpers/toc'
 
+defineOptions({ name: 'RegionArticleAside' })
+
 const props = withDefaults(defineProps<{
   post: StrapiPost
   shareUrl?: string
@@ -45,7 +47,7 @@ useMarkAsRead(prose, readDocumentId)
 </script>
 
 <template>
-  <div class="bd-article-page">
+  <div class="bd-article-page" data-layout="aside">
     <header class="bd-article-head">
       <div class="bd-article-kicker">
         <BdCategoryTag v-if="category" :category="category" />
