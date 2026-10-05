@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { absoluteUrl, ALL_MODULES_ON, fediverseUser, iconType, mergeSite, pageTitle, siteFromAppConfig, siteLogoUrl, xHandle } from '../app/helpers/site'
+import { absoluteUrl, ALL_MODULES_ON, defaultOgImageUrl, fediverseUser, iconType, mergeSite, pageTitle, siteFromAppConfig, siteLogoUrl, xHandle } from '../app/helpers/site'
 import type { AppSiteConfig } from '../app/helpers/site'
 import { parseSiteSettings } from '../server/schemas/site'
 import { Locale } from '../app/interfaces/locale'
@@ -51,6 +51,19 @@ describe('siteFromAppConfig favicon', () => {
   it('falls back to the theme\'s favicon, and to none', () => {
     expect(siteFromAppConfig({ ...appSite, favicon: undefined }, '/theme/images/f.svg').favicon).toEqual({ url: '/theme/images/f.svg' })
     expect(siteFromAppConfig({ ...appSite, favicon: undefined }).favicon).toBeNull()
+  })
+})
+
+describe('defaultOgImageUrl', () => {
+  const media = (url: string): string => `https://cms.example${url}`
+
+  it('prefers the site\'s default image over the theme\'s', () => {
+    expect(defaultOgImageUrl({ defaultOgImage: { url: '/uploads/og.png' } }, '/theme/images/og.png', 'https://example.org', media)).toBe('https://cms.example/uploads/og.png')
+  })
+
+  it('falls back to the theme\'s image as an absolute URL, and to none', () => {
+    expect(defaultOgImageUrl({ defaultOgImage: null }, '/theme/images/og.png', 'https://example.org/', media)).toBe('https://example.org/theme/images/og.png')
+    expect(defaultOgImageUrl({ defaultOgImage: null }, undefined, 'https://example.org', media)).toBeUndefined()
   })
 })
 

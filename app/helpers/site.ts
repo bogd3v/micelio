@@ -124,6 +124,20 @@ export function absoluteUrl(url: string, siteUrl: string): string {
   return /^https?:\/\//.test(url) ? url : `${siteUrl.replace(/\/+$/, '')}/${url.replace(/^\/+/, '')}`
 }
 
+/**
+ * The share image of a page without a cover: the site's `defaultOgImage` from Strapi first, then the theme's
+ * `images.ogImage`, as an absolute URL; undefined when neither exists. `media` turns a Strapi media path into a URL.
+ */
+export function defaultOgImageUrl(
+  site: Pick<Site, 'defaultOgImage'>,
+  themeImage: string | undefined,
+  siteUrl: string,
+  media: (url: string) => string,
+): string | undefined {
+  if (site.defaultOgImage?.url) return media(site.defaultOgImage.url)
+  return themeImage ? absoluteUrl(themeImage, siteUrl) : undefined
+}
+
 /** The logo for structured data: the site's logo, else its favicon, as an absolute URL. */
 export function siteLogoUrl(site: Pick<Site, 'logo' | 'favicon'>, siteUrl: string): string | undefined {
   const url = site.logo?.url ?? site.favicon?.url
