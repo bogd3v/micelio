@@ -1,0 +1,634 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "contract": {
+      "type": "number",
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The folder name."
+    },
+    "name": {
+      "type": "string"
+    },
+    "modes": {
+      "minItems": 1,
+      "maxItems": 6,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[\\w-]+$",
+            "description": "Goes into data-theme, CSS selectors and the bd-theme storage key."
+          },
+          "scheme": {
+            "type": "string",
+            "enum": [
+              "dark",
+              "light"
+            ],
+            "description": "Lightness of the mode; core CSS selects on data-scheme."
+          },
+          "name": {
+            "description": "Label of the mode in the switch.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "scheme"
+        ]
+      },
+      "description": "The first mode is the theme default."
+    },
+    "fonts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "family": {
+            "type": "string",
+            "minLength": 1
+          },
+          "file": {
+            "type": "string",
+            "pattern": "^[\\w.-]+\\.woff2$",
+            "description": "A woff2 file in the theme's fonts/ folder."
+          },
+          "preload": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "family",
+          "file"
+        ]
+      }
+    },
+    "layout": {
+      "description": "Variant of each region; an omitted region uses the core default (the first variant).",
+      "type": "object",
+      "properties": {
+        "header": {
+          "type": "string",
+          "enum": [
+            "bar"
+          ]
+        },
+        "home": {
+          "type": "string",
+          "enum": [
+            "showcase"
+          ]
+        },
+        "postList": {
+          "type": "string",
+          "enum": [
+            "grid"
+          ]
+        },
+        "article": {
+          "type": "string",
+          "enum": [
+            "aside"
+          ]
+        },
+        "footer": {
+          "type": "string",
+          "enum": [
+            "columns"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "slots": {
+      "description": "Options of the closed list of slots; the component itself is slots/<Name>.vue.",
+      "type": "object",
+      "properties": {
+        "ThemeMark": {
+          "type": "object",
+          "properties": {
+            "island": {
+              "description": "True when the slot needs JavaScript (ADR 0005, section 12).",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ThemeHero": {
+          "type": "object",
+          "properties": {
+            "island": {
+              "description": "True when the slot needs JavaScript (ADR 0005, section 12).",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ThemeDivider": {
+          "type": "object",
+          "properties": {
+            "island": {
+              "description": "True when the slot needs JavaScript (ADR 0005, section 12).",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ThemeEmptyState": {
+          "type": "object",
+          "properties": {
+            "island": {
+              "description": "True when the slot needs JavaScript (ADR 0005, section 12).",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ThemeIllustration": {
+          "type": "object",
+          "properties": {
+            "island": {
+              "description": "True when the slot needs JavaScript (ADR 0005, section 12).",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "color": {
+      "type": "object",
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[\\w-]+$"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "A value, or one value per mode id (color and shadow groups only). `{name}` references another token."
+              },
+              "at": {
+                "description": "Values from a min-width on (single-value tokens only).",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "usage": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "tokens"
+      ],
+      "additionalProperties": false
+    },
+    "shadow": {
+      "type": "object",
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[\\w-]+$"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "A value, or one value per mode id (color and shadow groups only). `{name}` references another token."
+              },
+              "at": {
+                "description": "Values from a min-width on (single-value tokens only).",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "usage": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "tokens"
+      ],
+      "additionalProperties": false
+    },
+    "spacing": {
+      "type": "object",
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[\\w-]+$"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "A value, or one value per mode id (color and shadow groups only). `{name}` references another token."
+              },
+              "at": {
+                "description": "Values from a min-width on (single-value tokens only).",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "usage": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "tokens"
+      ],
+      "additionalProperties": false
+    },
+    "radius": {
+      "type": "object",
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[\\w-]+$"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "A value, or one value per mode id (color and shadow groups only). `{name}` references another token."
+              },
+              "at": {
+                "description": "Values from a min-width on (single-value tokens only).",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "usage": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "tokens"
+      ],
+      "additionalProperties": false
+    },
+    "size": {
+      "type": "object",
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[\\w-]+$"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "A value, or one value per mode id (color and shadow groups only). `{name}` references another token."
+              },
+              "at": {
+                "description": "Values from a min-width on (single-value tokens only).",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "usage": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "tokens"
+      ],
+      "additionalProperties": false
+    },
+    "motion": {
+      "type": "object",
+      "properties": {
+        "note": {
+          "type": "string"
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[\\w-]+$"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "A value, or one value per mode id (color and shadow groups only). `{name}` references another token."
+              },
+              "at": {
+                "description": "Values from a min-width on (single-value tokens only).",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "usage": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "tokens"
+      ],
+      "additionalProperties": false
+    },
+    "type": {
+      "type": "object",
+      "properties": {
+        "families": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Font stacks: display, sans, mono."
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string"
+              },
+              "styles": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "pattern": "^[\\w-]+$"
+                    },
+                    "fontSize": {
+                      "type": "string"
+                    },
+                    "lineHeight": {
+                      "type": "string"
+                    },
+                    "fontWeight": {
+                      "type": "number"
+                    },
+                    "letterSpacing": {
+                      "type": "string"
+                    },
+                    "usage": {
+                      "type": "string"
+                    },
+                    "sample": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "fontSize",
+                    "lineHeight",
+                    "fontWeight"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "family",
+              "styles"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "families",
+        "groups"
+      ],
+      "additionalProperties": false
+    },
+    "mermaid": {
+      "description": "Overrides of Mermaid themeVariables, as roles.",
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "sections": {
+      "description": "Reserved for the section catalog (ADR 0005, section 11).",
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "contract",
+    "id",
+    "modes",
+    "color",
+    "shadow",
+    "spacing",
+    "radius",
+    "size",
+    "motion",
+    "type"
+  ],
+  "additionalProperties": false,
+  "$id": "https://github.com/bogd3v/micelio/blob/main/themes/theme.schema.json",
+  "title": "Micelio theme.json (contract v1)"
+}
