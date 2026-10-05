@@ -46,6 +46,13 @@ export function buildTokensCss(data, aliases = {}) {
     lines.push(`  color-scheme: ${theme === 'dia' ? 'light' : 'dark'};`, '}')
   })
 
+  flat.forEach((t) => {
+    if (typeof t.value === 'object') throw new Error(`Token ${t.name} has per-mode values but is not in the color or shadow group`)
+  })
+  themed.forEach((t) => {
+    if (t.at) throw new Error(`Token ${t.name} uses "at", which only applies to single-value tokens`)
+  })
+
   lines.push(':root {')
   flat.forEach(t => lines.push(`  --${t.name}: ${resolveValue(t.value)};`))
   Object.entries(data.type?.families ?? {}).forEach(([k, v]) => lines.push(`  --font-${k}: ${v};`))

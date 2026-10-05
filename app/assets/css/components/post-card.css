@@ -1,4 +1,5 @@
 .bd-card {
+    border-radius: var(--radius-card);
     --e: var(--ease-standard);
     position: relative;
     display: flex;

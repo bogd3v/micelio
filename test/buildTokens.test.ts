@@ -112,6 +112,25 @@ describe('build-tokens', () => {
     expect(() => run(['--check', input, output])).toThrow()
   })
 
+  it('rejects a single-value token with per-mode values', () => {
+    const bad = join(dir, 'bad-flat.json')
+    writeFileSync(bad, JSON.stringify({ ...fixture, spacing: { tokens: [{ name: 'space-x', value: { noche: '1px', dia: '2px' } }] } }))
+    expect(() => run([bad, join(dir, 'x.css')])).toThrow(/space-x/)
+  })
+
+  it('rejects "at" on a per-mode token', () => {
+    const bad = join(dir, 'bad-at.json')
+    writeFileSync(bad, JSON.stringify({ ...fixture, shadow: { tokens: [{ name: 'glow', value: { noche: 'a', dia: 'b' }, at: { '768px': 'c' } }] } }))
+    expect(() => run([bad, join(dir, 'x.css')])).toThrow(/glow/)
+  })
+
+  it('resolves references inside "at" values', () => {
+    const ref = join(dir, 'ref.json')
+    writeFileSync(ref, JSON.stringify({ ...fixture, spacing: { tokens: [{ name: 'space-inline', value: '1px', at: { '768px': 'calc(100% - {measure})' } }] } }))
+    run([ref, join(dir, 'ref.css')])
+    expect(readFileSync(join(dir, 'ref.css'), 'utf8')).toContain('--space-inline: calc(100% - var(--measure));')
+  })
+
   it('rejects an alias for an unknown theme', () => {
     expect(() => run(['--alias', 'tarde=.x', input, join(dir, 'x.css')])).toThrow()
   })

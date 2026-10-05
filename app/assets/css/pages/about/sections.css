@@ -232,7 +232,7 @@
 
     .bd-principle {
         grid-template-columns: 80px minmax(0, 5fr) minmax(0, 6fr);
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         padding: var(--space-8) 0;
     }
 
@@ -274,7 +274,7 @@
     .bd-about-split {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
     }
 
     .bd-about-split-label {
@@ -288,7 +288,7 @@
     .bd-open-source {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         align-items: start;
     }
 
@@ -303,7 +303,7 @@
     .bd-contact-section {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         align-items: start;
     }
 

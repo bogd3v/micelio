@@ -215,7 +215,7 @@
     .bd-subscribe {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         align-items: start;
     }
 

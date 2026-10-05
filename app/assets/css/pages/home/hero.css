@@ -214,7 +214,7 @@
     .bd-hero {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         align-content: center;
         min-height: 720px;
         padding: 112px var(--bd-home-gutter) var(--space-section);

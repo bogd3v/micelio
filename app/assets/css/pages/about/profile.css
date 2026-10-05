@@ -132,7 +132,7 @@
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         grid-template-rows: auto auto 1fr;
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         row-gap: var(--space-8);
         align-items: start;
         padding: 112px var(--bd-home-gutter) var(--space-section);

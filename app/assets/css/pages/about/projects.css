@@ -133,7 +133,7 @@
     .bd-project-featured {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         padding: 40px;
     }
 

@@ -285,7 +285,7 @@
     .bd-foot-main {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        gap: var(--space-12) var(--space-8);
+        gap: var(--space-12) var(--space-gutter);
         padding: var(--space-section) var(--bd-foot-gutter) 64px;
     }
 
