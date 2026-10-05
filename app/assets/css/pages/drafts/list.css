@@ -1,7 +1,7 @@
 .bd-drafts-page {
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: var(--space-gutter);
     padding: 40px var(--bd-home-gutter) 64px;
 }
 
@@ -214,24 +214,24 @@
 
 @media (min-width: 768px) {
     .bd-drafts-page {
-        padding-block: 64px 96px;
+        padding-block: 64px var(--space-section);
     }
 
     .bd-drafts-empty {
-        padding: 96px 32px;
+        padding: var(--space-section) 32px;
     }
 }
 
 @media (min-width: 1024px) {
     .bd-drafts-page {
         gap: 48px;
-        padding-block: 96px;
+        padding-block: var(--space-section);
     }
 
     .bd-drafts-head {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: 32px;
+        column-gap: var(--space-gutter);
         align-items: end;
     }
 

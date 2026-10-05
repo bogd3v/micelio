@@ -3,7 +3,7 @@ html.bd-vt-theme::view-transition-old(root) {
 }
 
 html.bd-vt-theme::view-transition-new(root) {
-    animation: bd-wipe 720ms cubic-bezier(0.2, 0, 0, 1);
+    animation: bd-wipe 720ms var(--ease-standard);
 }
 
 @media (prefers-reduced-motion: reduce) {

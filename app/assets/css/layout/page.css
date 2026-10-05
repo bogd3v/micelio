@@ -5,22 +5,10 @@
 .bd-drafts-page,
 .bd-draft-strip,
 .bd-privacy {
-    --e: cubic-bezier(0.2, 0, 0, 1);
-    --bd-home-gutter: 20px;
+    --e: var(--ease-standard);
+    --bd-home-gutter: var(--space-inline);
     --bd-scan: color-mix(in oklab, var(--ink-muted) 7%, transparent);
     overflow-x: clip;
-}
-
-@media (min-width: 768px) {
-    .bd-home,
-    .bd-blog,
-    .bd-article-page,
-    .bd-about,
-    .bd-drafts-page,
-    .bd-draft-strip,
-    .bd-privacy {
-        --bd-home-gutter: max(clamp(24px, 8vw, 120px), calc((100% - 1200px) / 2));
-    }
 }
 
 /* App shell: the footer stays at the bottom of short pages */

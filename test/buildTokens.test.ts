@@ -16,9 +16,14 @@ const fixture = {
     ],
   },
   shadow: { tokens: [{ name: 'glow', value: { noche: '0 0 1px red', dia: 'none' } }] },
-  spacing: { tokens: [{ name: 'space-1', value: '4px' }] },
+  spacing: { tokens: [
+    { name: 'space-1', value: '4px' },
+    { name: 'space-section', value: '{space-1}' },
+    { name: 'space-inline', value: '20px', at: { '768px': 'max(24px, 5vw)' } },
+  ] },
   radius: { tokens: [{ name: 'radius-none', value: '0' }] },
   layout: { tokens: [{ name: 'measure', value: '68ch' }] },
+  motion: { tokens: [{ name: 'duration-base', value: '240ms' }, { name: 'ease-standard', value: 'cubic-bezier(0.2, 0, 0, 1)' }] },
   type: {
     families: { mono: '"JetBrains Mono", monospace' },
     groups: [{ family: 'mono', styles: [
@@ -75,10 +80,26 @@ describe('build-tokens', () => {
     expect(css).toContain('--text-meta: 400 13px/20px var(--font-mono);')
   })
 
-  it('writes a class per type style with its letter spacing', () => {
+  it('writes a class per type style that reads its text and tracking roles', () => {
     expect(block(css, '.bd-meta {')).toContain('font: var(--text-meta);')
-    expect(block(css, '.bd-meta {')).not.toContain('letter-spacing')
-    expect(block(css, '.bd-eyebrow {')).toContain('letter-spacing: 0.16em;')
+    expect(block(css, '.bd-meta {')).toContain('letter-spacing: var(--tracking-meta);')
+    expect(block(css, '.bd-eyebrow {')).toContain('letter-spacing: var(--tracking-eyebrow);')
+  })
+
+  it('writes a tracking role per type style, normal when the style has none', () => {
+    expect(css).toContain('--tracking-meta: normal;')
+    expect(css).toContain('--tracking-eyebrow: 0.16em;')
+  })
+
+  it('writes motion roles and resolves aliases in single-value tokens', () => {
+    expect(css).toContain('--duration-base: 240ms;')
+    expect(css).toContain('--ease-standard: cubic-bezier(0.2, 0, 0, 1);')
+    expect(css).toContain('--space-section: var(--space-1);')
+  })
+
+  it('writes viewport-dependent roles in a min-width media query', () => {
+    expect(css).toContain('--space-inline: 20px;')
+    expect(css).toContain('@media (min-width: 768px) {\n  :root {\n    --space-inline: max(24px, 5vw);\n  }\n}')
   })
 
   it('does not write a Tailwind @theme block', () => {
@@ -91,12 +112,43 @@ describe('build-tokens', () => {
     expect(() => run(['--check', input, output])).toThrow()
   })
 
+  it('rejects a single-value token with per-mode values', () => {
+    const bad = join(dir, 'bad-flat.json')
+    writeFileSync(bad, JSON.stringify({ ...fixture, spacing: { tokens: [{ name: 'space-x', value: { noche: '1px', dia: '2px' } }] } }))
+    expect(() => run([bad, join(dir, 'x.css')])).toThrow(/space-x/)
+  })
+
+  it('rejects "at" on a per-mode token', () => {
+    const bad = join(dir, 'bad-at.json')
+    writeFileSync(bad, JSON.stringify({ ...fixture, shadow: { tokens: [{ name: 'glow', value: { noche: 'a', dia: 'b' }, at: { '768px': 'c' } }] } }))
+    expect(() => run([bad, join(dir, 'x.css')])).toThrow(/glow/)
+  })
+
+  it('resolves references inside "at" values', () => {
+    const ref = join(dir, 'ref.json')
+    writeFileSync(ref, JSON.stringify({ ...fixture, spacing: { tokens: [{ name: 'space-inline', value: '1px', at: { '768px': 'calc(100% - {measure})' } }] } }))
+    run([ref, join(dir, 'ref.css')])
+    expect(readFileSync(join(dir, 'ref.css'), 'utf8')).toContain('--space-inline: calc(100% - var(--measure));')
+  })
+
   it('rejects an alias for an unknown theme', () => {
     expect(() => run(['--alias', 'tarde=.x', input, join(dir, 'x.css')])).toThrow()
   })
 
   it('keeps app/assets/css/settings/tokens.css in sync with docs/design/tokens.json', () => {
     expect(() => execFileSync('npm', ['run', '-s', 'tokens:check'], { stdio: 'pipe' })).not.toThrow()
+  })
+
+  it('declares every contract v1 role that is not a color', () => {
+    const generated = readFileSync('app/assets/css/settings/tokens.css', 'utf8')
+    const roles = [
+      'radius-control', 'radius-card', 'radius-full', 'shadow-raised', 'shadow-overlay', 'glow-accent',
+      'space-section', 'space-gutter', 'space-inline', 'container', 'measure', 'nav-height',
+      'duration-fast', 'duration-base', 'duration-slow', 'ease-standard', 'ease-emphasized',
+      ...['display-xl', 'display-l', 'heading-1', 'heading-2', 'heading-3', 'body-l', 'body', 'body-s', 'eyebrow', 'meta', 'code']
+        .flatMap(style => [`text-${style}`, `tracking-${style}`]),
+    ]
+    for (const role of roles) expect(generated).toContain(`--${role}:`)
   })
 
   it('defines every color token of the design system in both themes', () => {

@@ -9,7 +9,7 @@
     border: 0;
     color: var(--ink);
     cursor: pointer;
-    transition: color 240ms var(--e);
+    transition: color var(--duration-base) var(--e);
 }
 
 .bd-iconbtn:hover {

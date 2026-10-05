@@ -9,7 +9,7 @@
     background-size: 5px 5px;
     background-repeat: no-repeat;
     border: 1px solid var(--line-strong);
-    border-radius: var(--radius-none);
+    border-radius: var(--radius-control);
     appearance: none;
     cursor: pointer;
 }

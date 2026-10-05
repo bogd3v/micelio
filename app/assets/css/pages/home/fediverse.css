@@ -365,7 +365,7 @@
     .bd-fedi {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         row-gap: var(--space-12);
         align-items: start;
     }
@@ -374,7 +374,7 @@
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         grid-column: 1 / -1;
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         align-items: end;
     }
 

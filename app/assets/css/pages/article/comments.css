@@ -227,8 +227,8 @@
     color: var(--ink);
     background: var(--surface);
     border: 1px solid var(--line-strong);
-    border-radius: var(--radius-none);
-    transition: box-shadow 240ms var(--e);
+    border-radius: var(--radius-control);
+    transition: box-shadow var(--duration-base) var(--e);
 }
 
 .bd-comment-input::placeholder {
@@ -314,9 +314,9 @@
     .bd-comments {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         align-items: start;
-        padding: 96px var(--bd-home-gutter);
+        padding: var(--space-section) var(--bd-home-gutter);
     }
 
     .bd-comments-main {

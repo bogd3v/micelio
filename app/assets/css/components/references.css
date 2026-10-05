@@ -41,7 +41,7 @@
     padding: 20px 0;
     border-bottom: 1px solid var(--line);
     scroll-margin-top: calc(var(--bd-header-h) + var(--space-6));
-    transition: background-color 240ms cubic-bezier(0.2, 0, 0, 1);
+    transition: background-color var(--duration-base) var(--ease-standard);
 }
 
 .bd-ref:first-child {

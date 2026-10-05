@@ -44,7 +44,7 @@
     align-items: baseline;
     padding: var(--space-6) 0;
     border-top: 1px solid var(--line);
-    transition: border-color 240ms var(--e);
+    transition: border-color var(--duration-base) var(--e);
 }
 
 .bd-principle:hover {
@@ -63,7 +63,7 @@
     line-height: 32px;
     font-weight: 300;
     font-stretch: 100%;
-    transition: font-stretch 600ms var(--e);
+    transition: font-stretch var(--duration-slow) var(--e);
 }
 
 .bd-principle:hover .bd-principle-title {
@@ -195,13 +195,13 @@
     line-height: 28px;
     font-weight: 300;
     overflow-wrap: anywhere;
-    transition: font-stretch 600ms var(--e), color 240ms var(--e);
+    transition: font-stretch var(--duration-slow) var(--e), color var(--duration-base) var(--e);
 }
 
 .bd-contact-arrow {
     font: 400 19px/1 var(--font-mono);
     text-align: right;
-    transition: transform 240ms var(--e), color 240ms var(--e);
+    transition: transform var(--duration-base) var(--e), color var(--duration-base) var(--e);
 }
 
 .bd-contact-row:hover .bd-contact-handle {
@@ -232,7 +232,7 @@
 
     .bd-principle {
         grid-template-columns: 80px minmax(0, 5fr) minmax(0, 6fr);
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         padding: var(--space-8) 0;
     }
 
@@ -274,7 +274,7 @@
     .bd-about-split {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
     }
 
     .bd-about-split-label {
@@ -288,7 +288,7 @@
     .bd-open-source {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         align-items: start;
     }
 
@@ -303,7 +303,7 @@
     .bd-contact-section {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         align-items: start;
     }
 

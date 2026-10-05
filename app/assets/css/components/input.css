@@ -8,7 +8,7 @@
     background: var(--surface);
     border: 1px solid var(--line-strong);
     border-right: 0;
-    border-radius: var(--radius-none);
+    border-radius: var(--radius-control);
 }
 
 .bd-input::placeholder {

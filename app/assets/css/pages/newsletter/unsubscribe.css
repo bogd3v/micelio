@@ -8,7 +8,7 @@
 
 @media (min-width: 768px) {
     .bd-unsubscribe {
-        padding-block: 96px;
+        padding-block: var(--space-section);
     }
 
     .bd-unsubscribe .bd-account-card {

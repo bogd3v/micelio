@@ -202,10 +202,10 @@
     .bd-privacy {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        column-gap: var(--space-8);
+        column-gap: var(--space-gutter);
         row-gap: 56px;
         align-items: start;
-        padding-block: 96px;
+        padding-block: var(--space-section);
     }
 
     .bd-privacy-head,

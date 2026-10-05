@@ -1,5 +1,5 @@
 .bd-btn {
-    --e: cubic-bezier(0.2, 0, 0, 1);
+    --e: var(--ease-standard);
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -8,12 +8,12 @@
     height: 48px;
     padding: 0 var(--space-6);
     border: 1px solid transparent;
-    border-radius: var(--radius-none);
+    border-radius: var(--radius-control);
     font: 500 15px/1 var(--font-sans);
     letter-spacing: 0.01em;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 240ms var(--e), color 240ms var(--e), box-shadow 240ms var(--e), border-color 240ms var(--e);
+    transition: background-color var(--duration-base) var(--e), color var(--duration-base) var(--e), box-shadow var(--duration-base) var(--e), border-color var(--duration-base) var(--e);
 }
 
 .bd-btn-sm {
@@ -76,7 +76,7 @@
 
 .bd-btn-arrow {
     display: inline-block;
-    transition: transform 240ms var(--e);
+    transition: transform var(--duration-base) var(--e);
 }
 
 .bd-btn:hover .bd-btn-arrow {
