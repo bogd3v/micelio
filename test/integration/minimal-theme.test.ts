@@ -43,7 +43,7 @@ describe('a build with the minimal fixture theme', () => {
   it('shows no place line or progress marker, which a theme provides through its messages', async () => {
     const html = await (await fetch('/')).text()
     for (const hook of ['bd-hud"', 'bd-hero-place', 'bd-progress-track', 'bd-progress-marker']) expect(html).not.toContain(hook)
-    expect(html).not.toContain('Bogot')
+    for (const place of ['4.61°N', 'Made in Bogot', '2,640 m a.s.l.']) expect(html).not.toContain(place)
   })
 
   it('uses the core\'s neutral texts where Bogota brings its own', async () => {
