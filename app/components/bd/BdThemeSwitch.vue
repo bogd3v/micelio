@@ -6,9 +6,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { theme, setTheme } = useTheme()
-
-const options: ThemeMode[] = ['noche', 'dia']
+const { modes, theme, setTheme, modeLabel } = useTheme()
 
 function select(next: ThemeMode, event: MouseEvent): void {
   if (next === theme.value) return
@@ -18,16 +16,17 @@ function select(next: ThemeMode, event: MouseEvent): void {
 </script>
 
 <template>
-  <div class="bd-seg-group" role="group" :aria-label="t('bd.header.theme')">
+  <div v-if="modes.length > 1" class="bd-seg-group" role="group" :aria-label="t('bd.header.theme')">
     <button
-      v-for="option in options"
-      :key="option"
+      v-for="mode in modes"
+      :key="mode.id"
       type="button"
-      :class="['bd-seg', `bd-seg-${option}`]"
-      :aria-pressed="theme === option ? 'true' : 'false'"
-      @click="select(option, $event)"
+      class="bd-seg"
+      :data-mode="mode.id"
+      :aria-pressed="theme === mode.id ? 'true' : 'false'"
+      @click="select(mode.id, $event)"
     >
-      {{ t(`bd.header.${option}`) }}
+      {{ modeLabel(mode.id) }}
     </button>
   </div>
 </template>

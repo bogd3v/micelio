@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { BROWSER_STORAGE_KEYS, SITE_COOKIES } from '~/helpers/privacy'
+import { modes } from '#micelio/theme'
 import { formatDotDate } from '~/helpers/formatDate'
+import { THEME_STORAGE_KEY, formatModeList } from '~/helpers/theme'
 
 interface PrivacySection {
   id: string
   label: string
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const { modeLabel } = useTheme()
 const site = useSite()
 const accountsOn = useModule('accounts')
 const newsletterOn = useModule('newsletter')
@@ -17,6 +20,14 @@ const { siteUrl } = useSiteUrl()
 
 const contactEmail = computed<string>(() => site.value.privacyContactEmail)
 const updatedAt = computed<string>(() => formatDotDate(site.value.privacyUpdatedAt))
+
+const modeNames = computed<string>(() => formatModeList(
+  modes.map(mode => modeLabel(mode.id)),
+  locale.value,
+))
+
+// With one mode nothing ever writes bd-theme
+const storageKeys = BROWSER_STORAGE_KEYS.filter(key => key !== THEME_STORAGE_KEY || modes.length > 1)
 
 const sections = computed<PrivacySection[]>(() => [
   { id: 'analytics', label: t('privacy.analytics.label') },
@@ -113,9 +124,9 @@ useHead({
           <template #local><strong>{{ t('privacy.browser.local') }}</strong></template>
         </i18n-t>
         <dl class="bd-privacy-keys">
-          <div v-for="key in BROWSER_STORAGE_KEYS" :key="key" class="bd-privacy-kv">
+          <div v-for="key in storageKeys" :key="key" class="bd-privacy-kv">
             <dt class="bd-privacy-key">{{ key }}</dt>
-            <dd>{{ t(`privacy.browser.items.${key}`) }}</dd>
+            <dd>{{ t(`privacy.browser.items.${key}`, { modes: modeNames }) }}</dd>
           </div>
         </dl>
       </section>

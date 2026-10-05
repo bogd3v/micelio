@@ -456,8 +456,6 @@
       "search": "Buscar",
       "menu": "Abrir menú",
       "theme": "Tema de color",
-      "noche": "Noche",
-      "dia": "Día",
       "language": "Idioma",
       "languages": {
         "es": "Español",
@@ -504,8 +502,7 @@
       "empty": "Sin resultados para «{query}»",
       "results": "Sin resultados | 1 resultado | {count} resultados",
       "help": "↑↓ navegar · ↵ abrir · esc cerrar",
-      "toDia": "Cambiar al tema Día",
-      "toNoche": "Cambiar al tema Noche",
+      "toMode": "Cambiar al tema {mode}",
       "fediverse": "Seguir en el fediverso",
       "groups": {
         "article": "Artículos",
@@ -806,7 +803,7 @@
       "body": "Algunas preferencias se guardan en el almacenamiento local de tu navegador. {local} y puedes borrarlas desde la configuración del navegador.",
       "local": "Nunca salen de tu dispositivo",
       "items": {
-        "bd-theme": "Tema Noche o Día que elegiste.",
+        "bd-theme": "Tema {modes} que elegiste.",
         "bd-privacy-notice": "Que ya cerraste el aviso de privacidad.",
         "bd-read-articles": "Los artículos que ya leíste, para la marca «✓ Leído»."
       }

@@ -456,8 +456,6 @@
       "search": "Search",
       "menu": "Open menu",
       "theme": "Color theme",
-      "noche": "Night",
-      "dia": "Day",
       "language": "Language",
       "languages": {
         "es": "Español",
@@ -504,8 +502,7 @@
       "empty": "No results for “{query}”",
       "results": "No results | 1 result | {count} results",
       "help": "↑↓ navigate · ↵ open · esc close",
-      "toDia": "Switch to the Day theme",
-      "toNoche": "Switch to the Night theme",
+      "toMode": "Switch to the {mode} theme",
       "fediverse": "Follow on the fediverse",
       "groups": {
         "article": "Articles",
@@ -806,7 +803,7 @@
       "body": "Some preferences are kept in your browser’s local storage. {local} and you can delete them from your browser settings.",
       "local": "They never leave your device",
       "items": {
-        "bd-theme": "The Night or Day theme you chose.",
+        "bd-theme": "The {modes} theme you chose.",
         "bd-privacy-notice": "That you already closed the privacy notice.",
         "bd-read-articles": "The articles you already read, for the “✓ Read” mark."
       }

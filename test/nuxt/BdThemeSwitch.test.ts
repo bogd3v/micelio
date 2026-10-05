@@ -14,12 +14,14 @@ describe('BdThemeSwitch', () => {
     const buttons = wrapper.findAll('button')
     expect(buttons.map(b => b.text())).toEqual(['Night', 'Day'])
     expect(buttons.map(b => b.attributes('aria-pressed'))).toEqual(['true', 'false'])
+    expect(buttons.map(b => b.attributes('data-mode'))).toEqual(['noche', 'dia'])
   })
 
   it('applies and emits the chosen theme', async () => {
     const wrapper = await mountSuspended(BdThemeSwitch)
     await wrapper.findAll('button')[1]!.trigger('click')
     expect(document.documentElement.getAttribute('data-theme')).toBe('dia')
+    expect(document.documentElement.getAttribute('data-scheme')).toBe('light')
     expect(wrapper.emitted('change')).toEqual([['dia']])
     expect(wrapper.findAll('button').map(b => b.attributes('aria-pressed'))).toEqual(['false', 'true'])
 

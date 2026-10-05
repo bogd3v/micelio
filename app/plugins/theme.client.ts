@@ -1,15 +1,16 @@
-import { isTheme, migrateStoredTheme, readStoredTheme, systemTheme } from '~/helpers/theme'
+import { modes } from '#micelio/theme'
+import { isThemeMode, migrateStoredMode, readStoredMode, systemMode } from '~/helpers/theme'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const { sync } = useTheme()
 
   nuxtApp.hooks.hookOnce('app:suspense:resolve', () => {
-    migrateStoredTheme()
+    migrateStoredMode(modes)
     const current = document.documentElement.getAttribute('data-theme')
-    sync(isTheme(current) ? current : systemTheme())
+    sync(isThemeMode(modes, current) ? current : systemMode(modes))
 
     window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
-      if (!readStoredTheme()) sync(systemTheme())
+      if (!readStoredMode(modes)) sync(systemMode(modes))
     })
   })
 })

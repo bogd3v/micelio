@@ -1,29 +1,38 @@
 import type { ComputedRef } from 'vue'
-import type { ThemeMode } from '~/interfaces'
-import { storeTheme } from '~/helpers/theme'
+import { modes } from '#micelio/theme'
+import type { ThemeMode, ThemeModeDefinition } from '~/interfaces'
+import { nextMode, schemeOf, storeMode } from '~/helpers/theme'
 
 export interface UseTheme {
+  modes: ThemeModeDefinition[]
   theme: ComputedRef<ThemeMode>
+  nextTheme: ComputedRef<ThemeMode>
   isDark: ComputedRef<boolean>
   setTheme: (next: ThemeMode, origin?: EventTarget | null) => void
   toggle: (origin?: EventTarget | null) => void
   sync: (next: ThemeMode) => void
+  /** theme.modes.<id> from the messages, else the mode's name, else its id. */
+  modeLabel: (id: ThemeMode) => string
 }
 
 export function useTheme(): UseTheme {
-  const state = useState<ThemeMode>('bd-theme', () => 'noche')
+  const { t, te } = useNuxtApp().$i18n
+  const state = useState<ThemeMode>('bd-theme', () => modes[0]?.id ?? '')
 
   const theme = computed<ThemeMode>(() => state.value)
-  const isDark = computed<boolean>(() => state.value === 'noche')
+  const nextTheme = computed<ThemeMode>(() => nextMode(modes, state.value))
+  const isDark = computed<boolean>(() => schemeOf(modes, state.value) === 'dark')
 
   function sync(next: ThemeMode): void {
-    document.documentElement.setAttribute('data-theme', next)
+    const root = document.documentElement
+    root.setAttribute('data-theme', next)
+    root.setAttribute('data-scheme', schemeOf(modes, next))
     state.value = next
   }
 
   function setTheme(next: ThemeMode, origin?: EventTarget | null): void {
     if (import.meta.server) return
-    storeTheme(next)
+    storeMode(next)
 
     const root = document.documentElement
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -43,9 +52,14 @@ export function useTheme(): UseTheme {
     transition.finished.finally(() => root.classList.remove('bd-vt-theme'))
   }
 
-  function toggle(origin?: EventTarget | null): void {
-    setTheme(isDark.value ? 'dia' : 'noche', origin)
+  function modeLabel(id: ThemeMode): string {
+    const key = `theme.modes.${id}`
+    return te(key) ? t(key) : (modes.find(mode => mode.id === id)?.name ?? id)
   }
 
-  return { theme, isDark, setTheme, toggle, sync }
+  function toggle(origin?: EventTarget | null): void {
+    setTheme(nextTheme.value, origin)
+  }
+
+  return { modes, theme, nextTheme, isDark, setTheme, toggle, sync, modeLabel }
 }

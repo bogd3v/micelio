@@ -33,9 +33,8 @@ describe('Bogotá theme messages', () => {
   })
 
   it('copy the values of the core locales until the core drops them', () => {
-    const core = read('i18n/locales/en.json') as { bd: { header: { noche: string } }, home: { hero: { place: string } } }
-    const theme = en as { theme: { modes: { noche: string }, hero: { place: string } } }
-    expect(theme.theme.modes.noche).toBe(core.bd.header.noche)
+    const core = read('i18n/locales/en.json') as { home: { hero: { place: string } } }
+    const theme = en as { theme: { hero: { place: string } } }
     expect(theme.theme.hero.place).toBe(core.home.hero.place)
   })
 })

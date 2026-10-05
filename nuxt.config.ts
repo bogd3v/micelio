@@ -1,5 +1,4 @@
 import { Locale } from './app/interfaces/locale'
-import { themeInitScript } from './app/helpers/theme'
 import { SECURITY_HEADERS } from './app/helpers/securityHeaders'
 
 const privatePageHeaders = {
@@ -35,13 +34,6 @@ export default defineNuxtConfig({
       meta: [
         { property: 'og:type', content: 'website' },
         { name: 'twitter:card', content: 'summary_large_image' },
-      ],
-      script: [
-        {
-          innerHTML: themeInitScript,
-          tagPosition: 'head',
-          tagPriority: 'critical',
-        },
       ],
     },
   },
