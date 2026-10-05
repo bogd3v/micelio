@@ -47,3 +47,19 @@
         opacity: 0;
     }
 }
+
+@keyframes bogota-hop {
+    0%,
+    84%,
+    100% {
+        transform: translateY(0);
+    }
+
+    88% {
+        transform: translateY(-7px);
+    }
+
+    92% {
+        transform: translateY(0);
+    }
+}
