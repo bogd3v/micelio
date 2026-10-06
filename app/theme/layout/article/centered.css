@@ -139,6 +139,12 @@
     min-width: 0;
 }
 
+:where(.bd-article-page[data-layout="centered"]) .bd-coffee {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-6);
+}
+
 @media (min-width: 768px) {
     :where(.bd-article-page[data-layout="centered"]) .bd-article-title {
         font: var(--text-display-l);
