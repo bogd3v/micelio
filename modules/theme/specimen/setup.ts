@@ -1,7 +1,8 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { addTemplate, extendPages } from 'nuxt/kit'
+import { addTemplate, addTypeTemplate, extendPages } from 'nuxt/kit'
 import type { ThemeContext } from '../context'
+import { alternateVariants } from '../layout/variants'
 
 const DIR = dirname(fileURLToPath(import.meta.url))
 
@@ -26,6 +27,26 @@ export function setupSpecimen(ctx: ThemeContext): void {
   const langDir = join(DIR, 'locales')
   ctx.nuxt.hook('i18n:registerModule', (register) => {
     register({ langDir, locales: ['en', 'es'].map(code => ({ code, file: `${code}.json` })) })
+  })
+  // Not part of #micelio/theme: the active theme's data never lists the alternates
+  ctx.nuxt.options.alias['#micelio/specimen-variants'] = join(ctx.nuxt.options.buildDir, 'micelio/specimen-variants.mjs')
+  addTemplate({
+    filename: 'micelio/specimen-variants.mjs',
+    write: true,
+    getContents: () => `export const variants = ${JSON.stringify(alternateVariants(ctx), null, 2)}\nexport default variants\n`,
+  })
+  addTypeTemplate({
+    filename: 'types/micelio-specimen-variants.d.ts',
+    getContents: () => `declare module '#micelio/specimen-variants' {
+  export interface SpecimenVariant {
+    region: string
+    variant: string
+    component: string
+  }
+  export const variants: SpecimenVariant[]
+  export default variants
+}
+`,
   })
   extendPages((pages) => {
     pages.push({ name: 'theme-specimen', path: '/_theme', file: join(DIR, 'page.vue') })

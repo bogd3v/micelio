@@ -1,11 +1,26 @@
 <script setup lang="ts">
 import { layout } from '#micelio/theme'
+import { variants as alternates } from '#micelio/specimen-variants'
 import type { Category, FieldGuideTopic } from '~/interfaces'
 import { CATEGORIES } from '~/helpers/categories'
 import { ARTICLE, FEATURED_POST, POSTS } from '../fixtures'
 
 const { t } = useI18n()
 
+// Headers and footers the theme does not use; the specimen registers them under their own names
+const chrome = alternates
+  .filter(({ region }) => region === 'header' || region === 'footer')
+  .map(({ region, variant, component }) => ({
+    region,
+    variant,
+    component,
+    view: resolveComponent(component),
+    // A distinct label keeps the copy's navigation apart from the page's own (the columns footer labels its groups by heading)
+    props: {
+      ...(region === 'header' ? { active: 'blog', reading: false } : {}),
+      ...(region === 'header' || variant === 'minimal' ? { label: t('specimen.regions.navLabel', { variant: t(`specimen.regions.variantNames.${variant}`) }) } : {}),
+    },
+  }))
 const regions: Array<[string, string]> = Object.entries(layout)
 const counts = Object.fromEntries(CATEGORIES.map((category, index) => [category, index + 1])) as Partial<Record<Category, number>>
 const topics: FieldGuideTopic[] = CATEGORIES.map((category, index) => ({ category, count: index + 1 }))
@@ -22,6 +37,13 @@ const topics: FieldGuideTopic[] = CATEGORIES.map((category, index) => ({ categor
         </template>
       </dl>
       <p class="bd-body-s">{{ t('specimen.regions.chrome') }}</p>
+    </div>
+
+    <div v-for="{ region, variant, component, view, props } in chrome" :key="component">
+      <h3 class="bd-specimen-label">{{ t(`specimen.regions.${region}Variant`, { variant: t(`specimen.regions.variantNames.${variant}`) }) }}</h3>
+      <div class="bd-specimen-frame">
+        <component :is="view" v-bind="props" />
+      </div>
     </div>
 
     <div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { HeaderSection, Locale, ThemeMode } from '~/interfaces'
 
-defineOptions({ name: 'RegionHeaderBar' })
+defineOptions({ name: 'RegionHeaderCentered' })
 
 const props = withDefaults(defineProps<{
   active?: HeaderSection
@@ -34,7 +34,7 @@ const { accountsOn, searchOn, fediverseOn, tracking, mounted, shortcut, links, h
 </script>
 
 <template>
-  <header data-layout="bar" :class="['bd-header', { 'bd-header-reading': reading, 'bd-header-auto': tracking }]">
+  <header data-layout="centered" :class="['bd-header', { 'bd-header-reading': reading, 'bd-header-auto': tracking }]">
     <div class="bd-nav">
       <div class="bd-header-inner">
         <NuxtLink :to="localizePath('/')" class="bd-brand" :aria-label="t('bd.header.home', { site: site.name })">

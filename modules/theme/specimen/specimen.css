@@ -122,3 +122,8 @@
     overflow: clip;
     contain: layout;
 }
+
+/* A header shown inside the page is not sticky */
+.bd-specimen-frame .bd-header {
+    position: relative;
+}

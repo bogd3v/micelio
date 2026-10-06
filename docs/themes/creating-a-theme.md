@@ -5,7 +5,7 @@ A theme is a package of **roles, CSS and optional slots**, validated against con
 What a theme can change, in order of preference (ADR 0005, section 5):
 
 1. **Roles** in `theme.json`: colors per mode, shadows, space, radius, sizes, motion and the type scale.
-2. **Layout variants**: structure chosen per region from a closed list. In v1 the core implements one variant per region, so there is nothing to choose yet (see "Layout").
+2. **Layout variants**: structure chosen per region from a closed list. The core implements two for `header` (`bar`, `centered`) and `footer` (`columns`, `minimal`), and one for the other regions so far (see "Layout").
 3. **Public hooks**: `bd-*` classes and `data-*` attributes listed in `app/theme/hooks.json`, styled from `theme.css`.
 4. **Slots**: Vue components for what CSS cannot express (logo, hero, divider and so on). They are optional; the core has defaults.
 
@@ -133,7 +133,7 @@ Primitives may be used in the theme's own CSS and slots, never in the core.
 "layout": { "header": "bar", "home": "showcase", "postList": "grid", "article": "aside", "footer": "columns" }
 ```
 
-The regions are `header`, `home`, `postList`, `article` and `footer`. In v1 the core implements **one variant per region** (`modules/theme/layout/variants.ts`): `bar`, `showcase`, `grid`, `aside` and `columns`. Naming any other variant (`centered`, `index`, `list`, `minimal`) fails validation with the list of known ones. ADR 0005, section 5, plans the second variant of each region; until then `layout` can be left out, and an omitted region uses the first variant.
+The regions are `header`, `home`, `postList`, `article` and `footer`. The core implements these variants (`modules/theme/layout/variants.ts`): `header` `bar` or `centered`, `home` `showcase`, `postList` `grid`, `article` `aside`, `footer` `columns` or `minimal`. Naming any other variant (`index`, `list`, a typo) fails validation with the list of known ones; ADR 0005, section 5, plans the second variant of the other regions. An omitted region uses the first variant. Every installed theme styles every variant, because `/_theme` shows both: with `MICELIO_SPECIMEN=1` it renders the variants your theme does not use next to the active one. The core scopes each variant's CSS by `data-layout`. `header: centered` sets `--bd-header-h` to 152px on desktop (64px on mobile), which the sticky offsets and anchor scrolling read; the starter theme (#263, PR 3) will exercise it. `footer: minimal` is a single row and leaves out the support link, the `ThemeDivider` slot and the "made in" line of `columns`. In `theme.css` select the hook together with the variant (`.bd-header[data-layout="centered"] .bd-nav-link`) when a rule is meant for one of them.
 
 ### Fonts
 

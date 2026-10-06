@@ -102,7 +102,8 @@
         "header": {
           "type": "string",
           "enum": [
-            "bar"
+            "bar",
+            "centered"
           ]
         },
         "home": {
@@ -126,7 +127,8 @@
         "footer": {
           "type": "string",
           "enum": [
-            "columns"
+            "columns",
+            "minimal"
           ]
         }
       },

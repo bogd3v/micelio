@@ -193,6 +193,10 @@ html:has(.bd-sheet[open]) {
     border-color: var(--line-strong);
 }
 
+.bd-sheet-mark {
+    color: var(--link);
+}
+
 .bd-sheet-dot {
     flex: none;
     width: 8px;

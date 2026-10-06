@@ -149,7 +149,7 @@ watch(() => route.fullPath, () => {
             <span class="bd-sheet-dot" :style="{ background: topic.color }" aria-hidden="true" />{{ topic.label }}
           </NuxtLink>
           <NuxtLink v-if="fediverseOn" :to="`${localizePath('/')}#fediverso`" class="bd-sheet-cat" :aria-label="t('bd.header.fediverse', { handle: fediverseUser })" @click="close">
-            <span class="bd-hud-mark" aria-hidden="true">◆</span>{{ fediverseUser }}
+            <span class="bd-sheet-mark" aria-hidden="true">◆</span>{{ fediverseUser }}
           </NuxtLink>
         </div>
       </section>

@@ -20,6 +20,8 @@ export type CssSource = () => string
 export interface ThemeComponent {
   name: string
   filePath: string
+  /** Registered globally, for `resolveComponent` (the specimen's alternate variants). */
+  global?: boolean
 }
 
 /** What the setup files share: the active theme, and the lists that css.ts turns into templates. */

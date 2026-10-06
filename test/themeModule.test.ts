@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
-import { REGION_VARIANTS, registerVariants } from '../modules/theme/layout/variants'
+import { REGION_VARIANTS, alternateVariants, registerAlternates, registerVariants } from '../modules/theme/layout/variants'
 import { LAYOUT_REGIONS } from '../modules/theme/data'
 import type { LayoutRegion } from '../modules/theme/data'
 import type { ThemeContext } from '../modules/theme/context'
@@ -126,6 +126,80 @@ describe('registerVariants', () => {
     for (const region of LAYOUT_REGIONS) {
       expect(REGION_VARIANTS[region].component).toMatch(/^Region[A-Z]/)
       expect(REGION_VARIANTS[region].variants.length).toBeGreaterThan(0)
+    }
+  })
+})
+
+describe('registerAlternates', () => {
+  function setup(layout: Record<string, string> | undefined): ThemeContext {
+    const ctx = {
+      nuxt: { options: { srcDir: '/app' } },
+      load: () => ({ manifest: { id: 'x', layout } }),
+      layoutCss: Object.fromEntries(LAYOUT_REGIONS.map(region => [region, []])),
+      components: [],
+    } as unknown as ThemeContext
+    registerVariants(ctx)
+    registerAlternates(ctx)
+    return ctx
+  }
+
+  it('registers every variant the theme does not use as a global component under its own name', () => {
+    const { components } = setup(undefined)
+    expect(components.filter(component => component.global)).toEqual([
+      { name: 'RegionHeaderCentered', filePath: join('/app', 'theme/layout/header/Centered.vue'), global: true },
+      { name: 'RegionFooterMinimal', filePath: join('/app', 'theme/layout/footer/Minimal.vue'), global: true },
+    ])
+    expect(components.filter(component => !component.global).map(component => component.name)).toEqual(['RegionHeader', 'RegionHome', 'RegionPostList', 'RegionArticle', 'RegionFooter'])
+  })
+
+  it('registers the default variant as the alternate when the theme uses the other one', () => {
+    const { components } = setup({ header: 'centered', footer: 'minimal' })
+    expect(components.filter(component => component.global).map(component => component.name)).toEqual(['RegionHeaderBar', 'RegionFooterColumns'])
+    expect(components.find(component => component.name === 'RegionHeader')!.filePath).toBe(join('/app', 'theme/layout/header/Centered.vue'))
+  })
+
+  it('imports the alternates before the active variant, so the active :root and html rules win', () => {
+    const { layoutCss } = setup(undefined)
+    expect(layoutCss.header.map(source => source())).toEqual([
+      `@import "${join('/app', 'theme/layout/header/centered.css')}";`,
+      `@import "${join('/app', 'theme/layout/header/bar.css')}";`,
+    ])
+    expect(layoutCss.footer.map(source => source())).toEqual([
+      `@import "${join('/app', 'theme/layout/footer/minimal.css')}";`,
+      `@import "${join('/app', 'theme/layout/footer/columns.css')}";`,
+    ])
+  })
+
+  it('lists the alternates for the specimen', () => {
+    const ctx = { load: () => ({ manifest: { id: 'x', layout: { header: 'centered' } } }) } as unknown as ThemeContext
+    expect(alternateVariants(ctx)).toEqual([
+      { region: 'header', variant: 'bar', component: 'RegionHeaderBar' },
+      { region: 'footer', variant: 'minimal', component: 'RegionFooterMinimal' },
+    ])
+  })
+
+  it('registers nothing without the specimen flag (setupLayout)', async () => {
+    const { setupLayout } = await import('../modules/theme/layout')
+    const make = (dev: boolean): ThemeContext => ({
+      nuxt: { options: { srcDir: '/app', dev } },
+      load: () => ({ manifest: { id: 'x' } }),
+      layoutCss: Object.fromEntries(LAYOUT_REGIONS.map(region => [region, []])),
+      components: [],
+    }) as unknown as ThemeContext
+    const previous = process.env.MICELIO_SPECIMEN
+    delete process.env.MICELIO_SPECIMEN
+    try {
+      const plain = make(false)
+      setupLayout(plain)
+      expect(plain.components.some(component => component.global)).toBe(false)
+      expect(plain.layoutCss.header).toHaveLength(1)
+      process.env.MICELIO_SPECIMEN = '1'
+      const specimen = make(false)
+      setupLayout(specimen)
+      expect(specimen.components.filter(component => component.global)).toHaveLength(2)
+    } finally {
+      if (previous === undefined) delete process.env.MICELIO_SPECIMEN
+      else process.env.MICELIO_SPECIMEN = previous
     }
   })
 })
