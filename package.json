@@ -24,7 +24,7 @@
     "test:integration": "vitest run -c vitest.config.integration.ts",
     "test:e2e": "playwright test && playwright test -c playwright.modules-off.config.ts",
     "test:theme": "playwright test -c playwright.theme.config.ts",
-    "test:theme:update": "playwright test -c playwright.theme.config.ts --update-snapshots",
+    "test:theme:update": "playwright test -c playwright.theme.config.ts --update-snapshots=changed",
     "perf": "node scripts/perf/measure.mjs --serve"
   },
   "dependencies": {
