@@ -75,6 +75,7 @@
 @import "./pages/newsletter/unsubscribe.css" layer(bd.pages);
 @import "./pages/error/error.css" layer(bd.pages);
 @import "./pages/confirm/confirm.css" layer(bd.pages);
+@import "#build/micelio/specimen.css" layer(bd.pages);
 
 @import "#build/micelio/theme.css" layer(bd.theme);
 

@@ -1,0 +1,120 @@
+{
+  "specimen": {
+    "eyebrow": "Muestrario del tema",
+    "title": "Muestrario del tema",
+    "lead": "Cada componente, estado y región de layout del tema activo, con contenido estático. Cambia el modo de color en el encabezado para revisar cada uno.",
+    "indexLabel": "Grupos",
+    "sections": {
+      "foundations": "Tipografía y colores",
+      "controls": "Controles",
+      "labels": "Etiquetas, chips y marcas",
+      "cards": "Tarjetas",
+      "prose": "Prosa, avisos y código",
+      "forms": "Formularios",
+      "states": "Avisos, estados vacíos y de error",
+      "regions": "Regiones de layout",
+      "pageSections": "Secciones de página"
+    },
+    "foundations": {
+      "type": "Escala tipográfica",
+      "colors": "Roles de color",
+      "display": "Fuente display: el veloz murciélago hindú",
+      "mono": "Fuente mono: const veloz = 'murciélago'",
+      "steps": {
+        "displayXl": "Display XL",
+        "displayL": "Display L",
+        "heading1": "Título 1",
+        "heading2": "Título 2",
+        "heading3": "Título 3",
+        "bodyL": "Cuerpo grande: un párrafo que marca el tono.",
+        "body": "Cuerpo: el texto con el que se hace casi todo el sitio.",
+        "bodyS": "Cuerpo pequeño: pies de foto y texto secundario.",
+        "eyebrow": "Antetítulo",
+        "meta": "Meta · 14.03.2026 · 6 min"
+      }
+    },
+    "controls": {
+      "buttons": "Botones ({size})",
+      "arrow": "Con flecha",
+      "link": "Como enlace",
+      "disabled": "Botones deshabilitados",
+      "interactive": "Pasa el cursor y enfoca (Tab) cualquier control de esta página para ver esos estados.",
+      "switches": "Selectores y menús",
+      "chrome": "El encabezado, la barra de pestañas móvil, el pie y el aviso de privacidad alrededor de esta página son los reales; la paleta de búsqueda y la hoja del menú se abren desde el encabezado y la barra.",
+      "variants": {
+        "primary": "Primario",
+        "secondary": "Secundario",
+        "accent": "Acento",
+        "text": "Texto"
+      }
+    },
+    "labels": {
+      "categories": "Etiquetas de categoría (estáticas y enlaces)",
+      "chips": "Chips, teclas e insignias",
+      "chip": "Chip",
+      "pressed": "Presionado",
+      "disabled": "Deshabilitado",
+      "reader": "Lector",
+      "editor": "Editor",
+      "draft": "Borrador",
+      "text": "Resaltado y crédito de figura",
+      "highlightText": "Una frase con una palabra resaltada dentro de ella.",
+      "highlightQuery": "resaltada"
+    },
+    "cards": {
+      "featured": "Tarjeta destacada",
+      "default": "Una tarjeta por categoría",
+      "variants": "Leída, resultado de búsqueda y mínima",
+      "query": "modelos",
+      "minimal": "Una tarjeta solo con título",
+      "snippet": "…los modelos pequeños hacen trabajo real…"
+    },
+    "prose": {
+      "article": "Prosa de artículo y diagramas Mermaid",
+      "note": "La renderizan los mismos bloques que un artículo: títulos, listas, una tabla, avisos, código, dos diagramas Mermaid y una cita.",
+      "callouts": "Avisos",
+      "calloutBody": "El cuerpo de un aviso, en un párrafo corto.",
+      "customTitle": "Un título propio",
+      "code": "Bloques de código"
+    },
+    "forms": {
+      "fields": "Campos",
+      "email": "Correo",
+      "help": "Nunca compartimos tu dirección.",
+      "invalid": "Escribe un correo válido.",
+      "password": "Contraseña",
+      "weak": "La contraseña es demasiado corta.",
+      "select": "Selector",
+      "optionOne": "Primera opción",
+      "optionTwo": "Segunda opción",
+      "disabled": "Campo deshabilitado",
+      "disabledValue": "No se puede editar",
+      "submit": "Enviar",
+      "newsletter": "Formulario del boletín: reposo, error y éxito",
+      "newsletterError": "Escribe un correo válido.",
+      "newsletterSuccess": "Revisa tu bandeja para confirmar."
+    },
+    "states": {
+      "notices": "Avisos",
+      "info": "Un aviso informativo.",
+      "error": "Un aviso de error.",
+      "loading": "Cargando",
+      "loadingLabel": "Cargando…",
+      "empty": "Estado vacío",
+      "emptyTitle": "Aún no hay artículos",
+      "emptyNote": "Vuelve pronto",
+      "showAll": "Ver todos",
+      "errorPage": "Página de error"
+    },
+    "regions": {
+      "active": "Variante de cada región en el tema activo",
+      "chrome": "El encabezado y el pie son los que rodean esta página.",
+      "postList": "Lista de artículos: vistas en cuadrícula y en bitácora",
+      "home": "Inicio (el bloque de últimos artículos lee el CMS)",
+      "article": "Artículo (modo borrador, sin comentarios ni relacionados)"
+    },
+    "pageSections": {
+      "empty": "Aún no hay secciones."
+    }
+  }
+}

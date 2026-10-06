@@ -99,6 +99,9 @@ jobs:
       # The built server answers at once; nuxt dev compiled each route on demand and timed out
       - name: Build
         run: npm run build
+        env:
+          # /_theme is registered at build time only with this flag (modules/theme/specimen/setup.ts)
+          MICELIO_SPECIMEN: 1
       - name: Run e2e tests
         run: npm run test:e2e
         env:

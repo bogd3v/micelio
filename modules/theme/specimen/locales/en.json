@@ -1,0 +1,120 @@
+{
+  "specimen": {
+    "eyebrow": "Theme specimen",
+    "title": "Theme specimen",
+    "lead": "Every component, state and layout region of the active theme, with static content. Switch the color mode in the header to check each one.",
+    "indexLabel": "Groups",
+    "sections": {
+      "foundations": "Typography and colors",
+      "controls": "Controls",
+      "labels": "Tags, chips and labels",
+      "cards": "Cards",
+      "prose": "Prose, callouts and code",
+      "forms": "Forms",
+      "states": "Notices, empty and error states",
+      "regions": "Layout regions",
+      "pageSections": "Page sections"
+    },
+    "foundations": {
+      "type": "Type scale",
+      "colors": "Color roles",
+      "display": "Display font: the quick brown fox",
+      "mono": "Mono font: const quick = 'brown fox'",
+      "steps": {
+        "displayXl": "Display XL",
+        "displayL": "Display L",
+        "heading1": "Heading 1",
+        "heading2": "Heading 2",
+        "heading3": "Heading 3",
+        "bodyL": "Body large: a paragraph that sets the tone.",
+        "body": "Body: the text most of the site is made of.",
+        "bodyS": "Body small: captions and secondary text.",
+        "eyebrow": "Eyebrow",
+        "meta": "Meta · 14.03.2026 · 6 min"
+      }
+    },
+    "controls": {
+      "buttons": "Buttons ({size})",
+      "arrow": "With arrow",
+      "link": "As a link",
+      "disabled": "Disabled buttons",
+      "interactive": "Hover and focus (Tab) any control on this page to see those states.",
+      "switches": "Switches and menus",
+      "chrome": "The header, the mobile tab bar, the footer and the privacy notice around this page are live; the search palette and the menu sheet open from the header and the tab bar.",
+      "variants": {
+        "primary": "Primary",
+        "secondary": "Secondary",
+        "accent": "Accent",
+        "text": "Text"
+      }
+    },
+    "labels": {
+      "categories": "Category tags (static and links)",
+      "chips": "Chips, keys and badges",
+      "chip": "Chip",
+      "pressed": "Pressed",
+      "disabled": "Disabled",
+      "reader": "Reader",
+      "editor": "Editor",
+      "draft": "Draft",
+      "text": "Highlight and figure credit",
+      "highlightText": "A sentence with a highlighted word inside it.",
+      "highlightQuery": "highlighted"
+    },
+    "cards": {
+      "featured": "Featured card",
+      "default": "One card per category",
+      "variants": "Read, search result and minimal",
+      "query": "models",
+      "minimal": "A card with only a title",
+      "snippet": "…small models do real work…"
+    },
+    "prose": {
+      "article": "Article prose and Mermaid diagrams",
+      "note": "Rendered by the same blocks as an article: headings, lists, a table, callouts, code, two Mermaid diagrams and a quote.",
+      "callouts": "Callouts",
+      "calloutBody": "The body of a callout, as a short paragraph.",
+      "customTitle": "A custom title",
+      "code": "Code blocks"
+    },
+    "forms": {
+      "fields": "Fields",
+      "email": "Email",
+      "help": "We never share your address.",
+      "invalid": "Enter a valid email address.",
+      "password": "Password",
+      "weak": "The password is too short.",
+      "select": "Select",
+      "optionOne": "First option",
+      "optionTwo": "Second option",
+      "disabled": "Disabled field",
+      "disabledValue": "Cannot be edited",
+      "submit": "Submit",
+      "newsletter": "Newsletter form: idle, error and success",
+      "newsletterError": "Enter a valid email address.",
+      "newsletterSuccess": "Check your inbox to confirm."
+    },
+    "states": {
+      "notices": "Notices",
+      "info": "An informational notice.",
+      "error": "An error notice.",
+      "loading": "Loading",
+      "loadingLabel": "Loading…",
+      "empty": "Empty state",
+      "emptyTitle": "No articles yet",
+      "emptyNote": "Check back soon",
+      "showAll": "Show all",
+      "errorPage": "Error page"
+    },
+    "regions": {
+      "active": "Variant of each region in the active theme",
+      "chrome": "The header and the footer are the ones around this page.",
+      "postList": "Post list: grid and log views",
+      "home": "Home (the latest-articles block reads the CMS)",
+      "article": "Article (draft mode, no comments or related posts)"
+    },
+    "pageSections": {
+      "empty": "No sections yet."
+    }
+  }
+}
