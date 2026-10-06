@@ -2,6 +2,12 @@ import { test, expect } from '@playwright/test'
 import { PAGES, openPage, volatile } from './support'
 
 // Baselines live in e2e/theme/__screenshots__/<theme>/<mode>/<viewport>/ (docs/theme-testing.md)
+
+// The fixed privacy notice would cover content in every shot; axe still checks it (a11y.spec.ts)
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('bd-privacy-notice', '1'))
+})
+
 for (const entry of PAGES.filter(page => page.name !== 'specimen')) {
   test(entry.name, async ({ page }) => {
     await openPage(page, entry)
