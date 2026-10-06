@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-03
-**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice)
+**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice), 2026-10-06 (#238)
 **Deciders:** BogDev maintainer
 
 ## Context
@@ -42,6 +42,8 @@ The two optional roles were added with #236, when Bogotá's components moved ont
 `link` and `focus` are separate roles because a theme may draw them from a color other than the accent. Bogotá does: `accent` is mirla, `link` and `focus` are chillón. Mermaid's `themeVariables` are derived by the core from roles (today's `mermaidThemeVariables` mapping, rewritten on roles); a theme may override individual variables under `mermaid` in `theme.json`, with values that are roles, not colors.
 
 Contrast rules, checked per mode by #238 (WCAG 2 AA): `ink`, `ink-muted`, `link`, `accent`, states and categories as text ≥ 4.5:1 on the three surfaces and on their own `-soft`; `on-ink` on `ink` and `on-accent` on `accent` ≥ 4.5:1; `line-strong`, `focus` and `accent` as non-text ≥ 3:1. The `usage` notes in `theme.json` (formerly `tokens.json`) become these assertions.
+
+**Amendment (2026-10-06, #238):** The rule table also holds `code-ink`, `code-muted`, `code-keyword`, `code-string`, `code-number` and `code-function` on `surface-sunken` ≥ 4.5:1, `on-accent` on `accent-hover` ≥ 4.5:1, and `link` on `link-soft` ≥ 4.5:1. Text is 4.5:1; a role gets 3:1 only where the table says so (`line-strong`, `focus`). Optional roles are checked too: one the theme omits is checked with the core default it renders. A token may declare more in `theme.json`: `contrast: [{ "on": "<role or token>", "min": <ratio> }]`, asserted in every mode; this is where the ratios that `usage` notes used to claim live, and `usage` stays descriptive. Contrast runs in `npm run theme:check`, in Vitest (`test/themeContrast.test.ts`, every installed theme × mode) and in the lint job of CI, **not** in the Nuxt build, so a theme in progress does not stop `nuxt dev`. Color math is in-repo (`modules/theme/color.ts`, no color library): Lightning CSS, already a dependency, lowers any CSS color (`color-mix`, `oklch`, `lab`…) to sRGB, translucent colors are composited over the mode's surface, and the nearest passing value of an error, and the accent adjustment of section 8, come from the same OKLCH lightness search. `theme:check` also reports the static budgets of section 9 (theme CSS gzip, font families); the font total is a warning above 100 KB and an error above 150.8 KB, Bogotá's recorded exception (143.6 KB today; KB are KiB, as in the perf budgets).
 
 ### 2. Modes
 

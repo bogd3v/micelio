@@ -1,5 +1,5 @@
 export interface ThemeTokenGroup {
-  tokens: Array<{ name: string, value: string | Record<string, string>, at?: Record<string, string> }>
+  tokens: Array<{ name: string, value: string | Record<string, string>, at?: Record<string, string>, usage?: string, contrast?: Array<{ on: string, min: number }> }>
 }
 
 export interface ThemeData {

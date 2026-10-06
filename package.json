@@ -11,6 +11,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "theme:schema": "jiti scripts/theme-schema.ts",
+    "theme:check": "jiti scripts/theme-check.ts",
     "tokens": "node scripts/build-tokens.mjs",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxi typecheck",

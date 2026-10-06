@@ -59,6 +59,10 @@ const Token = z.strictObject({
   value: z.union([RoleValue, z.record(z.string(), RoleValue)]).describe('A value, or one value per mode id (color and shadow groups only). `{name}` references another token.'),
   at: z.record(z.string(), RoleValue).optional().describe('Values from a min-width on (single-value tokens only).'),
   usage: z.string().optional(),
+  contrast: z.array(z.strictObject({
+    on: z.string().regex(NAME, { error: iss => `contrast "on" "${String(iss.input)}" must be a color role or token name` }).describe('A color role or token this one sits on.'),
+    min: z.number().min(1).max(21).describe('Minimum WCAG contrast ratio on it, in every mode.'),
+  })).optional().describe('Extra contrast assertions, checked by `npm run theme:check` on top of the contract\'s rule table.'),
 })
 
 const TokenGroup = z.strictObject({ note: z.string().optional(), tokens: z.array(Token) })
@@ -132,6 +136,7 @@ export const ThemeSchema = z.strictObject({
       if (!names.has(role)) problem(`misses the role "${role}" in "${group}"`)
     }
     for (const token of tokens) {
+      if (token.contrast && group !== 'color') problem(`${group} role "${token.name}" declares "contrast", which only color tokens allow`)
       const perMode = typeof token.value === 'object'
       if (THEMED_GROUPS.includes(group)) {
         if (token.at) problem(`${group} role "${token.name}" uses "at", which only applies to single-value roles`)

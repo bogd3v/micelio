@@ -44,6 +44,9 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      - name: Check themes (contrast and budgets)
+        run: npm run theme:check
+
       - name: Run unit tests with coverage
         run: npm run test:coverage
 
