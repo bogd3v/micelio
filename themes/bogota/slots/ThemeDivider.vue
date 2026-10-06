@@ -18,7 +18,7 @@ import {
 } from './panorama'
 
 defineProps<{
-  placement?: 'section' | 'footer'
+  placement?: 'footer'
 }>()
 
 const SWIPE_QUERY = '(max-width: 767px)'

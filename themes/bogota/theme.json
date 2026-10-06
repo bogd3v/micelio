@@ -478,16 +478,6 @@
     "usage": "Category 5 background"
    },
    {
-    "name": "category-6",
-    "value": "{tingua}",
-    "usage": "Category 6 (CATEGORIES order); illustrations use the category roles as the theme palette"
-   },
-   {
-    "name": "category-6-soft",
-    "value": "{tingua-soft}",
-    "usage": "Category 6 background"
-   },
-   {
     "name": "code-ink",
     "value": "{ink}",
     "usage": "Code text, on surface-sunken"
@@ -564,7 +554,7 @@
   ]
  },
  "spacing": {
-  "note": "Base 4px. La composición respira como un catálogo: separaciones grandes entre secciones (space-24), compactas dentro de un componente.",
+  "note": "Base 4px. La composición respira como un catálogo: separaciones grandes entre secciones (space-section), compactas dentro de un componente.",
   "tokens": [
    {
     "name": "space-1",
@@ -602,18 +592,8 @@
     "usage": "Entre encabezado de sección y su contenido."
    },
    {
-    "name": "space-16",
-    "value": "64px",
-    "usage": "Margen lateral de escritorio."
-   },
-   {
-    "name": "space-24",
-    "value": "96px",
-    "usage": "Entre secciones de página."
-   },
-   {
     "name": "space-section",
-    "value": "{space-24}",
+    "value": "96px",
     "usage": "Role (ADR 0005): padding between page sections."
    },
    {

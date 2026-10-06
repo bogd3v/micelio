@@ -6,6 +6,7 @@ import { MAX_MODES, contractProblems, themeJsonSchema, validateContract } from '
 import { loadHooks } from '../modules/theme/hooks'
 import { discoverThemes, themeRoots } from '../modules/theme/themes'
 import { themeProblems, validateThemes } from '../modules/theme/validate'
+import { CONTRAST_RULES } from '../modules/theme/contrast'
 
 const FIXTURES = join(process.cwd(), 'test/fixtures/themes')
 const hooks = loadHooks(join(process.cwd(), 'app'))
@@ -83,6 +84,15 @@ describe('contract validation', () => {
     const root = install('first', m => (m.contract = 2))
     const other = install('second', m => (m.modes = []))
     expect(() => validateThemes(discoverThemes([root, other]), hooks)).toThrow(/Theme "first".*\n.*Theme "second"/)
+  })
+
+  it('accepts roles dropped from v1 as theme primitives (ADR 0005, section 6, #324)', () => {
+    const problems = problemsOf(install('legacy', (m) => {
+      m.color.tokens.push({ name: 'category-6', value: '#555555' }, { name: 'category-6-soft', value: '#eeeeee' })
+      ;(m.spacing as Group).tokens.push({ name: 'space-16', value: '64px' }, { name: 'space-24', value: '96px' })
+    }))
+    expect(problems).toEqual([])
+    expect(CONTRAST_RULES.flatMap(rule => [rule.role, ...rule.surfaces])).not.toContain('category-6')
   })
 
   it('rejects a missing role, naming it', () => {

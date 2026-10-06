@@ -28,10 +28,10 @@ Roles are CSS custom properties, named without a prefix like the current tokens.
 | Ink | `ink`, `ink-muted`, `on-ink` |
 | Accent | `accent`, `accent-soft`, `accent-hover`, `on-accent`, `link`, `focus`; optional: `link-soft` (tinted background for links, highlights and active items; core default: `link` mixed into `surface`) |
 | States | `success`, `warning`, `danger`, `info`, each with `-soft` |
-| Categories | `category-1` … `category-6`, each with `-soft` |
+| Categories | `category-1` … `category-5`, each with `-soft` |
 | Code | `code-ink`, `code-muted`, `code-keyword`, `code-string`, `code-number`, `code-function` (on `surface-sunken`) |
 | Typography | `font-display`, `font-sans`, `font-mono`; the scale `display-xl`, `display-l`, `heading-1`…`heading-3`, `body-l`, `body`, `body-s`, `eyebrow`, `meta`, `code`, each as `text-<step>` (a `font` shorthand: weight, size, line height, family) and `tracking-<step>` (letter spacing) |
-| Space and layout | the scale `space-1`, `space-2`, `space-3`, `space-4`, `space-6`, `space-8`, `space-12`, `space-16`, `space-24`; `space-section` (between page sections), `space-gutter` (grid gap), `space-inline` (side margin, per breakpoint); `container` (max content width), `measure` (max prose width), `nav-height` |
+| Space and layout | the scale `space-1`, `space-2`, `space-3`, `space-4`, `space-6`, `space-8`, `space-12`; `space-section` (between page sections), `space-gutter` (grid gap), `space-inline` (side margin, per breakpoint); `container` (max content width), `measure` (max prose width), `nav-height` |
 | Shape | `radius-control`, `radius-card`, `radius-full`; `shadow-raised`, `shadow-overlay`, `glow-accent` (may be `none`); optional: `glow-link` (glow on focused and hovered interactive surfaces; core default: `none`) |
 | Motion | `duration-fast`, `duration-base`, `duration-slow`, `ease-standard`, `ease-emphasized` |
 
@@ -102,7 +102,7 @@ themes/bogota/
   | --- | --- | --- | --- |
   | `ThemeMark` | `size`, `context: 'header' \| 'footer'` | its logo and the `Bog<span>Dev</span>` wordmark | `site.name` as text |
   | `ThemeHero` | `compact` | the hero photo and flight art | neutral |
-  | `ThemeDivider` | `placement: 'section' \| 'footer'` | the footer panorama of the eastern hills, declared an island | neutral |
+  | `ThemeDivider` | `placement: 'footer'` | the footer panorama of the eastern hills, declared an island | neutral |
   | `ThemeEmptyState` | none (wraps the content) | the perched bird | neutral |
   | `ThemeIllustration` | `category`, `size` | the category birds | neutral |
   | `ThemeProgressMarker` | `progress` (0 to 100) | a bird that flies along the reading-progress bar of articles | none (the bar alone) |
@@ -151,6 +151,8 @@ A theme's own classes, inside its slots, use its id as prefix (`bogota-`). The v
 ### 6. Versioning and validation
 
 `theme.json` declares `"contract": 1`. The contract is defined once, with zod, in the theme module (section 4). A build module validates every installed theme before Nuxt builds, and the build fails, naming the theme and the problem, when a theme declares an unknown contract version, misses a role in any mode, declares an invalid or duplicate mode, references a missing font or primitive, ships a slot outside the list, names an unknown layout region or variant, selects something that is not a public hook, or breaks a rule of `theme.css` above. A breaking change to roles, modes, layout variants, hooks, slots or package layout is `contract: 2` with a migration note; adding an optional role, layout variant, hook or slot with a core default stays in v1.
+
+**Amendment (2026-10-06, #324):** removing a requirement that no installed theme can depend on stays in v1. `space-16`, `space-24`, `category-6` and `category-6-soft` are no longer required roles: the core never read them (it has five categories, `Category` in `app/interfaces/design.ts`), and a theme that still declares them keeps validating, because an extra name in a group is a theme primitive. `ThemeDivider`'s `placement` narrows to `'footer'`: the core is the only caller and only ever passed `footer`, so a slot that still accepts `'section'` keeps working. Reintroducing a sixth category or a larger space step is an optional role with a core default, also in v1.
 
 ### 7. Theme authoring
 

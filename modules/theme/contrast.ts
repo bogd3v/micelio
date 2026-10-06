@@ -18,7 +18,7 @@ export interface ContrastRule {
 
 const SURFACES = ['surface', 'surface-raised', 'surface-sunken']
 const STATES = ['success', 'warning', 'danger', 'info']
-const CATEGORIES = [1, 2, 3, 4, 5, 6].map(n => `category-${n}`)
+const CATEGORIES = [1, 2, 3, 4, 5].map(n => `category-${n}`)
 
 /** Text roles: on the three surfaces and on their own `-soft` (when it exists). */
 const SOFT_TEXT = ['accent', 'link', ...STATES, ...CATEGORIES]

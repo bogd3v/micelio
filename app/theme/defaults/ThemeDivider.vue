@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Core default: no divider
 defineProps<{
-  placement?: 'section' | 'footer'
+  placement?: 'footer'
 }>()
 </script>
 
