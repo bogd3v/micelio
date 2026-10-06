@@ -27,6 +27,7 @@ npm run typecheck    # Run Nuxt type checking
 npm run lint         # Run ESLint (flat config, @nuxt/eslint), the primitives and class checks, and the theme schema and reference drift checks
 npm run theme:schema # Regenerate themes/theme.schema.json from modules/theme/contract.ts (run it after changing the contract)
 npm run theme:reference # Regenerate docs/themes/reference/ from the contract (run it after changing roles, layout variants, hooks or slots)
+npm run theme:new -- <id> # New theme: copies themes/starter/ to themes/<id>/ and renames it ([--name "Name"])
 npm run theme:check  # Contract, hooks, contrast matrix and static budgets of the installed themes ([id] and --json; errors exit 1)
 npm run test         # Run unit tests with Vitest (test/*.test.ts)
 npm run test:coverage     # Same tests with coverage of app/ and themes/; fails under the thresholds in vitest.config.ts
@@ -58,6 +59,7 @@ Project skills live in `.claude/skills/`; load the one that matches the task bef
 | `server-route` | Add or change a route in `server/api` or `server/routes`, or any call to Strapi |
 | `strapi-block` | Render a new or changed Strapi dynamic-zone block |
 | `ui-component` | Build or change a component, page or styles |
+| `create-theme` | Create, adapt or restyle a theme in `themes/` (roles, modes, hooks, slots) and validate it with `theme:check` |
 | `verify-change` | Run the checks and prove a change did not alter behaviour (scripts for computed styles, HTML and CSP) |
 | `ship-pr` | Branch, commit, open or rebase a PR, and cut a release |
 | `dependency-update` | Triage Dependabot, fix `npm audit` findings, upgrade a major |
@@ -169,6 +171,10 @@ Global styles live in `app/assets/css/`, split by responsibility (ITCSS-style, p
 - New `.bd-*` block: create its own file in the matching folder and add the `@import` with its layer to `main.css`, in the same folder group
 - Keep a block's `@media`, `@container` and `prefers-reduced-motion` rules in the block's own file
 - Keep files under ~500 lines; split by sub-block when they grow
+
+### Themes
+
+A theme (`themes/<id>/`) is a package of roles per mode, CSS for public hooks and optional slots, validated against contract v1 (ADR 0005). Start with `npm run theme:new -- <id>` (copies `themes/starter/`) and the `create-theme` skill; the guide is `docs/themes/creating-a-theme.md` and the generated reference `docs/themes/reference/`. `NUXT_PUBLIC_THEME=<id>` selects the theme at build or dev time (default `bogota`).
 
 ### i18n Guidelines
 

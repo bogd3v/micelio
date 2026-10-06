@@ -13,6 +13,7 @@
     "theme:schema": "jiti scripts/theme-schema.ts",
     "theme:reference": "jiti scripts/theme-reference.ts",
     "theme:check": "jiti scripts/theme-check.ts",
+    "theme:new": "jiti scripts/theme-new.ts",
     "tokens": "node scripts/build-tokens.mjs",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxi typecheck",
