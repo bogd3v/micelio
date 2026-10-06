@@ -1,0 +1,29 @@
+/* ThemeMark: monogram in a ring, then the site name */
+.starter-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--ink);
+    line-height: 1;
+}
+
+.starter-mark-glyph {
+    display: block;
+    flex: none;
+}
+
+.starter-mark-ring {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+}
+
+.starter-mark-letter {
+    fill: var(--ink);
+    font: 600 17px/1 var(--font-display);
+}
+
+.starter-mark-name {
+    font: var(--text-heading-3);
+    letter-spacing: var(--tracking-heading-3);
+}

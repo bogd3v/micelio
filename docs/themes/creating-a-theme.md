@@ -13,7 +13,13 @@ Components read roles only. Primitive colors (`--mirla`, `--chillon`) belong to 
 
 ## 1. Start a theme
 
-There is no starter folder. Copy the minimal fixture, which is the smallest valid theme (one mode, system fonts, no files to serve):
+Copy the starter theme, `themes/starter/`: a complete, commented example (two modes, the five second layout variants, one serif web font with its fallback, a neutral `ThemeMark`, messages, and a `theme.css` that styles a few hooks). The `usage` of each token and the `note` of each group explain the choices.
+
+```bash
+cp -r themes/starter themes/my-theme
+```
+
+Set `id` to the folder name and rename the `starter-*` classes of `slots/` to your id (own attributes are `data-<id>-*`; the starter has none). If you change the font, regenerate or hand-tune `font-fallbacks.css`. The smallest valid theme is the minimal fixture (one mode, system fonts, no files to serve), if you would rather build up than trim down:
 
 ```bash
 cp -r test/fixtures/themes/minimal themes/my-theme
@@ -26,7 +32,7 @@ Then edit `themes/my-theme/theme.json`:
 - `"contract": 1` is required; any other value fails.
 - `name` is optional.
 
-To start from Bogotá instead (`cp -r themes/bogota themes/my-theme`), rename its own classes and attributes: slots and CSS use the `bogota-*` classes and `data-bogota-*` attributes, and a theme may only use `data-<its id>-*` for attributes of its own (see "theme.css").
+To start from Bogotá instead (`cp -r themes/bogota themes/my-theme`), which is the opposite of the starter (square, neon, bar and grid layouts, two web fonts: Archivo for display and sans, JetBrains Mono), rename its own classes and attributes: slots and CSS use the `bogota-*` classes and `data-bogota-*` attributes, and a theme may only use `data-<its id>-*` for attributes of its own (see "theme.css").
 
 Select the theme at build time; only installed themes can be selected:
 
@@ -133,7 +139,7 @@ Primitives may be used in the theme's own CSS and slots, never in the core.
 "layout": { "header": "bar", "home": "showcase", "postList": "grid", "article": "aside", "footer": "columns" }
 ```
 
-The regions are `header`, `home`, `postList`, `article` and `footer`. The core implements these variants (`modules/theme/layout/variants.ts`): `header` `bar` or `centered`, `home` `showcase` or `index`, `postList` `grid` or `list`, `article` `aside` or `centered`, `footer` `columns` or `minimal`. Naming any other variant (a typo) fails validation with the list of known ones. An omitted region uses the first variant. Every installed theme styles every variant, because `/_theme` shows both: with `MICELIO_SPECIMEN=1` it renders the variants your theme does not use next to the active one. The core scopes each variant's CSS by `data-layout`. `header: centered` sets `--bd-header-h` to 152px on desktop (64px on mobile), which the sticky offsets and anchor scrolling read; the starter theme (#263, PR 3) will exercise it. `home: index` replaces the hero with the site name, its description and a link to the about page, then lists the latest articles. `postList: list` always renders rows (date, title, excerpt) and hides the blog's `grid | log` switch. `article: centered` is one column with the table of contents collapsed in a `<details>` above the text; the share buttons, comments and related articles follow it. `footer: minimal` is a single row and leaves out the support link, the `ThemeDivider` slot and the "made in" line of `columns`. In `theme.css` select the hook together with the variant (`.bd-header[data-layout="centered"] .bd-nav-link`) when a rule is meant for one of them.
+The regions are `header`, `home`, `postList`, `article` and `footer`. The core implements these variants (`modules/theme/layout/variants.ts`): `header` `bar` or `centered`, `home` `showcase` or `index`, `postList` `grid` or `list`, `article` `aside` or `centered`, `footer` `columns` or `minimal`. Naming any other variant (a typo) fails validation with the list of known ones. An omitted region uses the first variant. Every installed theme styles every variant, because `/_theme` shows both: with `MICELIO_SPECIMEN=1` it renders the variants your theme does not use next to the active one. The core scopes each variant's CSS by `data-layout`. `header: centered` sets `--bd-header-h` to 152px on desktop (64px on mobile), which the sticky offsets and anchor scrolling read; the starter theme uses it. `home: index` replaces the hero with the site name, its description and a link to the about page, then lists the latest articles. `postList: list` always renders rows (date, title, excerpt) and hides the blog's `grid | log` switch. `article: centered` is one column with the table of contents collapsed in a `<details>` above the text; the share buttons, comments and related articles follow it. `footer: minimal` is a single row and leaves out the support link, the `ThemeDivider` slot and the "made in" line of `columns`. In `theme.css` select the hook together with the variant (`.bd-header[data-layout="centered"] .bd-nav-link`) when a rule is meant for one of them.
 
 ### Fonts
 
@@ -146,7 +152,7 @@ The regions are `header`, `home`, `postList`, `article` and `footer`. The core i
 `theme.json` only lists the files and marks the ones to preload (`<link rel="preload">` is generated from `preload: true`). It does not declare the faces. For that:
 
 - **`fonts.css`** holds the `@font-face` rules. `src` must be `url("/fonts/<file>")`: the theme's `fonts/` is served at `/fonts/` (woff, woff2 and txt files only). Use `font-display: swap`.
-- **`font-fallbacks.css`** holds a `"<Family> Fallback"` face per family, with `size-adjust`, built from a local system font. Bogotá's is generated by `scripts/perf/font-fallbacks.py`.
+- **`font-fallbacks.css`** holds a `"<Family> Fallback"` face per family, with `size-adjust`, built from a local system font. Both themes' are generated by `scripts/perf/font-fallbacks.py` (`--theme bogota|starter`).
 - The production check `scripts/perf/fouc.mjs` fails a page when a preloaded font has no `@font-face`, or no `"<family> Fallback"` face with `size-adjust`, or when the init script is not inline in `<head>` before the first stylesheet.
 - Files must match `.woff2` in `theme.json`; subset to the scripts the site uses. A change in `fonts/` needs a dev server restart.
 
@@ -221,7 +227,7 @@ bogota: ok, 1 warning(s)
   warning: theme "bogota": fonts total 143.6 KB, over the 100.0 KB target (allowed up to 150.8 KB)
 
 $ npm run theme:check -- --list
-["bogota"]
+["bogota","starter"]
 
 $ npm run theme:check -- bogota --json
 {
