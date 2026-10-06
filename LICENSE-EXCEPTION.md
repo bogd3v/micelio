@@ -2,7 +2,7 @@
 
 SPDX identifier: `LicenseRef-Micelio-Theme-exception`
 
-> **Draft.** This text must be reviewed by a lawyer before it is merged (#306).
+> This text has not been reviewed by a lawyer yet. A review is planned (#306); until then, its intent is explained in [ADR 0007](docs/adr/0007-license.md), section 3.
 
 This is an additional permission under section 7 of the GNU Affero General Public License, version 3 (the "AGPL"), granted by the copyright holders of Micelio. It applies to the Micelio frontend, licensed under the AGPL in [LICENSE](LICENSE).
 

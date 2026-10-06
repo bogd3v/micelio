@@ -10,7 +10,7 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0004](0004-hash-based-csp.md) | Build the Content Security Policy from hashes of the rendered HTML | Accepted | 2026-10-02 |
 | [0005](0005-theme-contract.md) | Theme contract v1: plain CSS, semantic roles, layout variants, public hooks, theme-declared modes and bounded overrides | Accepted | 2026-10-03 |
 | [0006](0006-site-modes.md) | Site modes (dynamic, static, landing), pages without the Vue runtime and heavy islands | Accepted | 2026-10-04 |
-| [0007](0007-license.md) | License under AGPL-3.0-only, with a theme exception, third-party material outside it, and DCO | Proposed | 2026-10-06 |
+| [0007](0007-license.md) | License under AGPL-3.0-only, with a theme exception, third-party material outside it, and DCO | Accepted | 2026-10-06 |
 
 ## Writing a new record
 
