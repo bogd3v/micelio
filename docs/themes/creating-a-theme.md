@@ -9,6 +9,8 @@ What a theme can change, in order of preference (ADR 0005, section 5):
 3. **Public hooks**: `bd-*` classes and `data-*` attributes listed in `app/theme/hooks.json`, styled from `theme.css`.
 4. **Slots**: Vue components for what CSS cannot express (logo, hero, divider and so on). They are optional; the core has defaults.
 
+The reference of roles, layout variants, hooks and slots is generated from the contract: [reference/](reference/README.md).
+
 Components read roles only. Primitive colors (`--mirla`, `--chillon`) belong to a theme package and to `app/assets/css/settings/`; `npm run lint` fails on them anywhere else.
 
 ## 1. Start a theme
@@ -74,14 +76,7 @@ Between 1 and 6 modes (the inline init script must stay under 2 KB). The first i
 
 `color`, `shadow`, `spacing`, `radius`, `size`, `motion` and `type` are all required, each with every role of `REQUIRED_ROLES` (`modules/theme/roles.mjs`). Only `link-soft` (color) and `glow-link` (shadow) are optional, with core defaults. A missing role fails with `misses the role "<name>" in "<group>"`.
 
-| Group | Required roles |
-| --- | --- |
-| `color` | `surface`, `surface-raised`, `surface-sunken`, `line`, `line-strong`, `ink`, `ink-muted`, `on-ink`, `accent`, `accent-soft`, `accent-hover`, `on-accent`, `link`, `focus`, `success`, `warning`, `danger`, `info` (each with `-soft`), `category-1` to `category-6` (each with `-soft`), `code-ink`, `code-muted`, `code-keyword`, `code-string`, `code-number`, `code-function` |
-| `shadow` | `shadow-raised`, `shadow-overlay`, `glow-accent` |
-| `spacing` | `space-1`, `-2`, `-3`, `-4`, `-6`, `-8`, `-12`, `-16`, `-24`, `space-section`, `space-gutter`, `space-inline` |
-| `radius` | `radius-control`, `radius-card`, `radius-full` |
-| `size` | `container`, `measure`, `nav-height` |
-| `motion` | `duration-fast`, `duration-base`, `duration-slow`, `ease-standard`, `ease-emphasized` |
+Every role, its purpose, its core default (when optional) and its contrast rules are in [reference/roles.md](reference/roles.md), generated from the contract.
 
 Each group has the shape `{ "tokens": [ { "name": "...", "value": ... } ] }`; `note` is also accepted on the group, and `usage` on a token.
 
@@ -131,7 +126,7 @@ Primitives may be used in the theme's own CSS and slots, never in the core.
 }
 ```
 
-`families` needs `display`, `sans` and `mono`. The scale needs every step: `display-xl`, `display-l`, `heading-1`, `heading-2`, `heading-3`, `body-l`, `body`, `body-s`, `eyebrow`, `meta`, `code`. Each step generates `--text-<step>` (a `font` shorthand) and `--tracking-<step>`. A group's `family` must be one of `families`.
+`families` needs `display`, `sans` and `mono`. The scale needs every step, and each generates `--text-<step>` (a `font` shorthand) and `--tracking-<step>`; the steps are in [reference/roles.md](reference/roles.md). A group's `family` must be one of `families`.
 
 ### Layout
 
@@ -139,7 +134,9 @@ Primitives may be used in the theme's own CSS and slots, never in the core.
 "layout": { "header": "bar", "home": "showcase", "postList": "grid", "article": "aside", "footer": "columns" }
 ```
 
-The regions are `header`, `home`, `postList`, `article` and `footer`. The core implements these variants (`modules/theme/layout/variants.ts`): `header` `bar` or `centered`, `home` `showcase` or `index`, `postList` `grid` or `list`, `article` `aside` or `centered`, `footer` `columns` or `minimal`. Naming any other variant (a typo) fails validation with the list of known ones. An omitted region uses the first variant. Every installed theme styles every variant, because `/_theme` shows both: with `MICELIO_SPECIMEN=1` it renders the variants your theme does not use next to the active one. The core scopes each variant's CSS by `data-layout`. `header: centered` sets `--bd-header-h` to 152px on desktop (64px on mobile), which the sticky offsets and anchor scrolling read; the starter theme uses it. `home: index` replaces the hero with the site name, its description and a link to the about page, then lists the latest articles. `postList: list` always renders rows (date, title, excerpt) and hides the blog's `grid | log` switch. `article: centered` is one column with the table of contents collapsed in a `<details>` above the text; the share buttons, comments and related articles follow it. `footer: minimal` is a single row and leaves out the support link, the `ThemeDivider` slot and the "made in" line of `columns`. In `theme.css` select the hook together with the variant (`.bd-header[data-layout="centered"] .bd-nav-link`) when a rule is meant for one of them.
+The regions and the variants the core implements for each, with what each one renders and the hooks that exist only in it, are in [reference/layout.md](reference/layout.md). Naming any other variant (a typo) fails validation with the list of known ones. An omitted region uses the first variant (the default).
+
+Every installed theme styles every variant, because `/_theme` shows both: with `MICELIO_SPECIMEN=1` it renders the variants your theme does not use next to the active one. The core scopes each variant's CSS by `data-layout`. In `theme.css` select the hook together with the variant (`.bd-header[data-layout="centered"] .bd-nav-link`) when a rule is meant for one of them. Some variants remove features of the page, not only restyle it; the descriptions in [reference/layout.md](reference/layout.md) say which.
 
 ### Fonts
 
@@ -172,7 +169,7 @@ All three are optional files of `images/` (png, jpg, webp, avif, gif or svg). Th
 "slots": { "ThemeDivider": { "island": true } }
 ```
 
-The slots are a closed list: `ThemeMark`, `ThemeHero`, `ThemeDivider`, `ThemeEmptyState`, `ThemeIllustration`, `ThemeProgressMarker`, `ThemeSupportArt`. Ship one as `slots/<Name>.vue`; without the file the core default in `app/theme/defaults/` renders. Props are in the table of ADR 0005, section 4. A `.vue` file in `slots/` with another name fails validation.
+The slots are a closed list; each one's purpose, props and core default are in [reference/slots.md](reference/slots.md). Ship one as `slots/<Name>.vue`; without the file the core default in `app/theme/defaults/` renders. A `.vue` file in `slots/` with another name fails validation.
 
 Rules (`modules/theme/island.ts`, `slots.ts`):
 
@@ -184,7 +181,7 @@ Rules (`modules/theme/island.ts`, `slots.ts`):
 
 Plain CSS, imported into the layer `bd.theme`: after the core's components, layout and pages and before animations and utilities (`app/assets/css/main.css`). A theme rule restyles a hook without raising specificity. The same rules apply to `theme.css`, `fonts.css`, `font-fallbacks.css` and `slots/*.css`, following local `@import`s (`modules/theme/css-rules.ts`):
 
-- Select only public hooks: a `bd-*` class or a `data-*` attribute that is not in `app/theme/hooks.json` fails, and so does an attribute selector on `class` that matches `bd-`. Every other `bd-*` class is internal and may change in any release.
+- Select only public hooks, listed with their states and layout variants in [reference/hooks.md](reference/hooks.md): a `bd-*` class or a `data-*` attribute that is not in `app/theme/hooks.json` fails, and so does an attribute selector on `class` that matches `bd-`. Every other `bd-*` class is internal and may change in any release.
 - A theme's own attributes start with `data-<id>-`; its own classes should carry the id as prefix (`my-theme-mark`).
 - No `!important`.
 - No remote `@import`, and no `@import` that leaves the theme folder or points to a missing file.
@@ -262,7 +259,7 @@ Each contrast error names the mode, role, surface, measured ratio, required rati
 NUXT_PUBLIC_THEME=my-theme npm run dev
 ```
 
-Open `http://localhost:3000/_theme`: the catalog of components, states and sections in every mode. The page exists in dev and in a build made with `MICELIO_SPECIMEN=1`; a plain production build does not have it. `npm run lint` checks template classes, primitive colors and that `themes/theme.schema.json` has not drifted from the contract; it does not check your theme.
+Open `http://localhost:3000/_theme`: the catalog of components, states and sections in every mode. The page exists in dev and in a build made with `MICELIO_SPECIMEN=1`; a plain production build does not have it. `npm run lint` checks template classes, primitive colors and that `themes/theme.schema.json` and `docs/themes/reference/` have not drifted from the contract (`npm run theme:schema` and `npm run theme:reference` regenerate them); it does not check your theme.
 
 ## 9. What CI runs
 

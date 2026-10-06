@@ -24,8 +24,9 @@ npm run preview      # Preview production build locally
 
 # Type checking and linting
 npm run typecheck    # Run Nuxt type checking
-npm run lint         # Run ESLint (flat config, @nuxt/eslint), the primitives and class checks, and the theme schema drift check
+npm run lint         # Run ESLint (flat config, @nuxt/eslint), the primitives and class checks, and the theme schema and reference drift checks
 npm run theme:schema # Regenerate themes/theme.schema.json from modules/theme/contract.ts (run it after changing the contract)
+npm run theme:reference # Regenerate docs/themes/reference/ from the contract (run it after changing roles, layout variants, hooks or slots)
 npm run theme:check  # Contract, hooks, contrast matrix and static budgets of the installed themes ([id] and --json; errors exit 1)
 npm run test         # Run unit tests with Vitest (test/*.test.ts)
 npm run test:coverage     # Same tests with coverage of app/ and themes/; fails under the thresholds in vitest.config.ts
