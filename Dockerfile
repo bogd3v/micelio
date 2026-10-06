@@ -6,10 +6,12 @@ ARG GIT_COMMIT_DATE=unknown
 WORKDIR /build
 
 COPY package*.json ./
-RUN npm ci
+# The root postinstall (nuxt prepare) needs nuxt.config.ts: without it Nuxt
+# loads its defaults, devtools included. Dependency scripts run in npm rebuild.
+RUN npm ci --ignore-scripts
 
 COPY . .
-RUN npm run build
+RUN npm rebuild && npm run build
 
 FROM gcr.io/distroless/nodejs22-debian12
 
