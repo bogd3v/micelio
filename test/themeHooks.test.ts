@@ -181,8 +181,7 @@ describe('hooks.json', () => {
 describe('layout variant CSS', () => {
   // Every variant sits in the same layer on the page; only the one in use may style it (ADR 0005, section 5)
   const base = join(process.cwd(), 'app/theme/layout')
-  // The other regions are scoped when their second variant lands (#263, PR 2)
-  const scoped = ['header', 'footer'] as const
+  const scoped = ['header', 'home', 'postList', 'article', 'footer'] as const
   const files = scoped.flatMap(region => REGION_VARIANTS[region].variants.map(variant => ({ region, variant, file: join(base, region, `${variant}.css`) })))
 
   it.each(files)('$region/$variant.css scopes every selector by its data-layout, except :root and html', ({ variant, file }) => {

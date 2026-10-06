@@ -290,14 +290,16 @@ describe('slots and layout', () => {
   })
 
   it('rejects a variant the core does not implement and a region that does not exist', () => {
-    expect(problemsOf(install('variant', m => (m.layout = { postList: 'masonry' })))).toContain('layout.postList: "masonry" is not a known variant; expected one of: grid')
+    expect(problemsOf(install('variant', m => (m.layout = { postList: 'masonry' })))).toContain('layout.postList: "masonry" is not a known variant; expected one of: grid, list')
     expect(problemsOf(install('variant2', m => (m.layout = { header: 'sidebar' })))).toContain('layout.header: "sidebar" is not a known variant; expected one of: bar, centered')
+    expect(problemsOf(install('variant4', m => (m.layout = { home: 'hero' })))).toContain('layout.home: "hero" is not a known variant; expected one of: showcase, index')
+    expect(problemsOf(install('variant5', m => (m.layout = { article: 'wide' })))).toContain('layout.article: "wide" is not a known variant; expected one of: aside, centered')
     expect(problemsOf(install('variant3', m => (m.layout = { footer: 'mega' })))).toContain('layout.footer: "mega" is not a known variant; expected one of: columns, minimal')
     expect(problemsOf(install('region', m => (m.layout = { sidebar: 'left' }))).join('\n')).toMatch(/layout: names the region "sidebar"/)
   })
 
-  it('accepts the second variant of the header and the footer', () => {
-    expect(problemsOf(install('variantalt', m => (m.layout = { header: 'centered', footer: 'minimal' })))).toEqual([])
+  it('accepts the second variant of every region', () => {
+    expect(problemsOf(install('variantalt', m => (m.layout = { header: 'centered', home: 'index', postList: 'list', article: 'centered', footer: 'minimal' })))).toEqual([])
   })
 
   it('accepts every variant the core implements', () => {

@@ -1,0 +1,170 @@
+/* One column, table of contents collapsed at the top (ADR 0005, section 5) */
+:where(.bd-article-page[data-layout="centered"]) .bd-article-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    max-width: var(--measure);
+    margin: 0 auto;
+    padding: 40px var(--bd-home-gutter) 32px;
+    text-align: center;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2) var(--space-4);
+    color: var(--ink-muted);
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-title {
+    margin: 0;
+    font-size: 34px;
+    line-height: 40px;
+    font-weight: 300;
+    text-wrap: balance;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-lead {
+    margin: 0;
+    font-size: 17px;
+    line-height: 28px;
+    color: var(--ink-muted);
+    text-wrap: pretty;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-byline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    padding-top: var(--space-6);
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-author {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    text-align: left;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-author-text {
+    display: flex;
+    flex-direction: column;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-author-name {
+    font-weight: 500;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-place {
+    text-transform: uppercase;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2) var(--space-4);
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-figure {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 var(--bd-home-gutter);
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-cover-credit {
+    padding-left: var(--space-3);
+    border-left: 2px solid var(--line-strong);
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-cover {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--surface-sunken);
+    border: 1px solid var(--line);
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-cover-empty {
+    max-width: 960px;
+    margin: 0 auto;
+    background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--bd-scan) 3px 4px);
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    max-width: var(--measure);
+    margin: 0 auto;
+    padding: var(--space-8) var(--bd-home-gutter) 64px;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-toc {
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-toc-summary {
+    padding: var(--space-4) 20px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-toc .bd-toc {
+    padding: 0 20px 20px;
+    background: transparent;
+    border: 0;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-toc .bd-toc-title {
+    display: none;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-article-content {
+    min-width: 0;
+}
+
+:where(.bd-article-page[data-layout="centered"]) .bd-coffee {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-6);
+}
+
+@media (min-width: 768px) {
+    :where(.bd-article-page[data-layout="centered"]) .bd-article-title {
+        font: var(--text-display-l);
+        font-stretch: 125%;
+    }
+
+    :where(.bd-article-page[data-layout="centered"]) .bd-article-lead {
+        font: var(--text-body-l);
+    }
+
+    :where(.bd-article-page[data-layout="centered"]) .bd-article-byline {
+        flex-direction: row;
+        gap: var(--space-8);
+    }
+
+    :where(.bd-article-page[data-layout="centered"]) .bd-article-head {
+        padding-top: var(--space-section);
+    }
+
+    :where(.bd-article-page[data-layout="centered"]) .bd-article-body {
+        padding-top: var(--space-12);
+    }
+}

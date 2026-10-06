@@ -109,7 +109,10 @@
     "regions": {
       "headerVariant": "Header, {variant} variant",
       "footerVariant": "Footer, {variant} variant",
-      "variantNames": {"bar": "bar", "centered": "centered", "columns": "columns", "minimal": "minimal"},
+      "homeVariant": "Home, {variant} variant",
+      "postListVariant": "Post list, {variant} variant",
+      "articleVariant": "Article, {variant} variant (draft mode)",
+      "variantNames": {"bar": "bar", "centered": "centered", "columns": "columns", "minimal": "minimal", "showcase": "showcase", "index": "index", "grid": "grid", "list": "list", "aside": "aside"},
       "navLabel": "Navigation, {variant}",
       "active": "Variant of each region in the active theme",
       "chrome": "The header and the footer are the ones around this page.",

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { layout } from '#micelio/theme'
 import type { BlogFilters, BlogSort, BlogView, Category, Locale, PostListItem, TagCount } from '~/interfaces'
 import { BLOG_SORTS, blogPageSize, blogQuery, hasActiveFilters, parseBlogQuery, parseSort, searchTerm } from '~/helpers/blog'
 import { isCategory } from '~/helpers/categories'
@@ -11,6 +12,8 @@ const RECENT_SIZE = 4
 const SEARCH_DEBOUNCE_MS = 300
 const POPULAR_TAGS = 8
 const VIEWS: BlogView[] = ['grid', 'log']
+// The list variant always renders rows: it ignores the view and hides its switch (ADR 0005, section 5)
+const viewSwitch = layout.postList !== 'list'
 
 const { locale, t } = useI18n()
 const route = useRoute()
@@ -25,8 +28,8 @@ const fediverseOn = useModule('fediverse')
 
 const filters = computed<BlogFilters>(() => parseBlogQuery(route.query))
 const currentLocale = computed<Locale>(() => locale.value as Locale)
-const view = computed<BlogView>(() => filters.value.view ?? 'grid')
-const pageSize = computed<number>(() => blogPageSize(filters.value.view))
+const view = computed<BlogView>(() => viewSwitch ? (filters.value.view ?? 'grid') : 'grid')
+const pageSize = computed<number>(() => blogPageSize(view.value))
 const sort = computed<BlogSort>(() => filters.value.sort ?? 'recent')
 
 const { data: postsResult, status } = fetchPosts({
@@ -73,7 +76,8 @@ const applySearch = useDebounceFn(() => {
 }, SEARCH_DEBOUNCE_MS)
 
 function navigate(patch: Partial<BlogFilters>, replace = false): void {
-  const query = blogQuery({ ...filters.value, ...patch })
+  // Without the switch the view is not part of the URL
+  const query = blogQuery({ ...filters.value, ...patch, ...(viewSwitch ? {} : { view: undefined }) })
   if (replace) router.replace({ query })
   else router.push({ query })
 }
@@ -158,7 +162,7 @@ useSeoMeta({
       <h1 class="bd-blog-title bd-wide">{{ t("nav.blog") }}</h1>
       <p class="bd-blog-lead">{{ t("blog.exploreArticles") }}</p>
       <div class="bd-blog-controls">
-        <div class="bd-seg-group bd-blog-views" role="group" :aria-label="t('blog.view.label')">
+        <div v-if="viewSwitch" class="bd-seg-group bd-blog-views" role="group" :aria-label="t('blog.view.label')">
           <button
             v-for="option in VIEWS"
             :key="option"

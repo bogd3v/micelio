@@ -15,9 +15,13 @@ for (const entry of PAGES.filter(page => page.name !== 'specimen')) {
   })
 }
 
+// The page's fixed chrome lands on a group wherever the scroll leaves it; the full-page shots cover it
+const FIXED_CHROME = '.bd-app > .bd-header, .bd-tabbar, .bd-back-to-top { visibility: hidden !important; }'
+
 // One screenshot per group: a change shows in the group it touches, not in a page-long diff
 test('specimen groups', async ({ page }) => {
   await openPage(page, PAGES.find(entry => entry.name === 'specimen')!)
+  await page.addStyleTag({ content: FIXED_CHROME })
   const ids = await page.locator('[data-section]').evaluateAll(sections => sections.map(section => section.getAttribute('data-section') ?? ''))
   expect(ids.length).toBeGreaterThan(0)
   for (const id of ids) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Category, FediverseStats, PostListItem, PostMonth } from '~/interfaces'
+import type { Category, PostListItem, PostMonth } from '~/interfaces'
 import { groupPostsByMonth } from '~/helpers/blog'
 import { isCategory } from '~/helpers/categories'
 import { formatDotDate } from '~/helpers/formatDate'
@@ -15,23 +15,9 @@ const { t, locale } = useI18n()
 const { localizePath } = useLocaleUtils()
 const { isRead } = useReadArticles()
 
-const documentIds = computed<string>(() =>
-  props.posts.map(post => post.documentId).filter(Boolean).join(','),
-)
-const { data: stats } = useFetch<Record<string, FediverseStats>>('/api/fediverse/stats', {
-  query: { documentIds },
-  server: false,
-  lazy: true,
-  immediate: Boolean(props.federated && documentIds.value),
-  watch: props.federated ? [documentIds] : false,
-})
+const postStats = usePostStats(toRef(props, 'posts'), toRef(props, 'federated'))
 
 const months = computed<PostMonth[]>(() => groupPostsByMonth(props.posts, locale.value))
-
-function postStats(post: PostListItem): FediverseStats | undefined {
-  if (!props.federated || !post.documentId) return undefined
-  return stats.value?.[post.documentId]
-}
 
 function countLabel(month: PostMonth): string {
   return t('blog.log.count', { count: padCount(month.posts.length) }, month.posts.length)

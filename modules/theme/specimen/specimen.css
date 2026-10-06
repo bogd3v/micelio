@@ -20,6 +20,7 @@
 
 .bd-specimen-group {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-6);
     padding-top: var(--space-8);
     border-top: 1px solid var(--line);
@@ -32,6 +33,7 @@
 
 .bd-specimen-stack {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-6);
 }
 

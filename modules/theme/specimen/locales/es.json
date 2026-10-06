@@ -109,7 +109,10 @@
     "regions": {
       "headerVariant": "Encabezado, variante {variant}",
       "footerVariant": "Pie de página, variante {variant}",
-      "variantNames": {"bar": "barra", "centered": "centrado", "columns": "columnas", "minimal": "mínimo"},
+      "homeVariant": "Inicio, variante {variant}",
+      "postListVariant": "Lista de artículos, variante {variant}",
+      "articleVariant": "Artículo, variante {variant} (modo borrador)",
+      "variantNames": {"bar": "barra", "centered": "centrado", "columns": "columnas", "minimal": "mínimo", "showcase": "vitrina", "index": "índice", "grid": "cuadrícula", "list": "lista", "aside": "lateral"},
       "navLabel": "Navegación, {variant}",
       "active": "Variante de cada región en el tema activo",
       "chrome": "El encabezado y el pie son los que rodean esta página.",
