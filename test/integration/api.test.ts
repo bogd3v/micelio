@@ -1428,11 +1428,23 @@ describe('theme fonts', () => {
 
   it('serves /fonts/ like other static assets', async () => {
     const font = await fetch('/fonts/archivo-latin-var.woff2')
-    const asset = await fetch('/bogdev.svg')
+    const asset = await fetch('/theme/images/bogdev.svg')
     expect(font.status).toBe(200)
     expect(font.headers.get('content-type')).toBe('font/woff2')
     for (const header of ['strict-transport-security', 'x-content-type-options', 'x-frame-options', 'referrer-policy', 'permissions-policy', 'cross-origin-opener-policy']) {
       expect(font.headers.get(header)).toBe(asset.headers.get(header))
     }
+  })
+
+  it('serves fonts and their licenses from fonts/, with the sandbox CSP of the theme\'s static assets', async () => {
+    const csp = 'default-src \'none\'; style-src \'unsafe-inline\'; sandbox'
+    expect((await fetch('/fonts/archivo-latin-var.woff2')).headers.get('content-security-policy')).toBe(csp)
+    for (const license of ['OFL-Archivo.txt', 'OFL-JetBrainsMono.txt']) {
+      const response = await fetch(`/fonts/${license}`)
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8')
+      expect(response.headers.get('content-security-policy')).toBe(csp)
+    }
+    expect((await fetch('/fonts/archivo-latin-var.woff2.map')).status).toBe(404)
   })
 })

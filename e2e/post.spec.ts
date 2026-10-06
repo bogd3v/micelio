@@ -13,7 +13,7 @@ test('server-renders SEO meta with the article cover as share image', async ({ r
   expect(html).toContain('<title>Vue Composables</title>')
   expect(html).toMatch(/<meta property="og:image" content="[^"]*\/uploads\/cover-vue\.png">/)
   expect(html).toMatch(/<meta name="twitter:image" content="[^"]*\/uploads\/cover-vue\.png">/)
-  expect(html).not.toContain('/og-image.png')
+  expect(html).not.toContain('/theme/images/og-image.png')
 })
 
 test('renders markdown code as a design system code block that copies without prompts', async ({ page, context }) => {

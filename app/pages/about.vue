@@ -5,14 +5,14 @@ import { pageTitle } from '~/helpers/site'
 const { locale, t } = useI18n()
 const { fetchAbout, getMediaUrl } = useStrapi()
 const { canonicalUrl } = useCanonicalUrl('/about')
-const { siteUrl } = useSiteUrl()
+const defaultOgImage = useDefaultOgImage()
 const site = useSite()
 
 const { data: about } = await fetchAbout(locale.value as Locale)
 
 const shareImageUrl = computed(() => {
   const metaImage = about.value?.seo?.metaImage
-  return getMediaUrl(metaImage?.url || metaImage?.data?.attributes?.url) || `${siteUrl.value}/og-image.png`
+  return getMediaUrl(metaImage?.url || metaImage?.data?.attributes?.url) || defaultOgImage.value
 })
 
 useSeoMeta({

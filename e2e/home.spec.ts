@@ -37,10 +37,12 @@ test('links every field guide topic to its blog filter', async ({ page }) => {
 test.describe('with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' })
 
-  test('keeps the flock still', async ({ page }) => {
+  test('keeps the hero art still', async ({ page }) => {
     await page.goto('/')
-    const animation = await page.locator('.bd-hero-art .bogota-flyer').first().evaluate(node => getComputedStyle(node).animationName)
-    expect(animation).toBe('none')
+    const art = page.locator('.bd-hero-art').first()
+    await expect(art).toBeAttached()
+    const running = await art.evaluate(node => node.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').length)
+    expect(running).toBe(0)
   })
 })
 

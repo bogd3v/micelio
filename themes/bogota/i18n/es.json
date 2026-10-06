@@ -58,6 +58,30 @@
         "name": "Monjita bogotana",
         "scientific": "Chrysomus icterocephalus bogotensis"
       }
+    },
+    "hud": {
+      "city": "Bogotá",
+      "coords": "4.61°N 74.08°W",
+      "altitude": "2.640 m s.n.m.",
+      "madeIn": "Hecho en Bogotá, Colombia"
+    },
+    "guide": {
+      "eyebrow": "Guía de campo",
+      "title": "Cinco temas, cinco aves de la sabana",
+      "description": "Cada categoría del blog toma su color del plumaje de un ave de Bogotá. Privacidad y DIY son los pilares.",
+      "note": {
+        "privacidad": "Antifaz negro, plumaje azul: ve sin dejarse ver.",
+        "diy": "Arma su nido con lo que encuentra en aleros y muros de la ciudad."
+      }
+    },
+    "latest": {
+      "emptyNote": "El nido está listo · Vuelve pronto"
+    },
+    "profile": {
+      "alt": "Ilustración de un copetón, el ave mascota del blog"
+    },
+    "palette": {
+      "names": "Pinchaflor · Golondrina · Chillón · Mirla · Monjita"
     }
   }
 }

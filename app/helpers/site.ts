@@ -18,7 +18,8 @@ export const ALL_MODULES_ON: Readonly<SiteModules> = Object.freeze(
   Object.fromEntries(SITE_MODULES.map(module => [module, true])) as SiteModules,
 )
 
-export function siteFromAppConfig(config: AppSiteConfig): Site {
+/** The site's own values, with the active theme's favicon when app.config.ts has none (ADR 0005, section 4). */
+export function siteFromAppConfig(config: AppSiteConfig, themeFavicon?: string): Site {
   return {
     name: config.name,
     description: config.description,
@@ -26,7 +27,7 @@ export function siteFromAppConfig(config: AppSiteConfig): Site {
     defaultLocale,
     author: { ...config.author },
     logo: null,
-    favicon: config.favicon ? { ...config.favicon } : null,
+    favicon: config.favicon ? { ...config.favicon } : themeFavicon ? { url: themeFavicon } : null,
     defaultOgImage: null,
     socialLinks: config.socialLinks.map(link => ({ ...link })),
     contactEmail: config.privacy.contactEmail,
@@ -121,6 +122,20 @@ export function pageTitle(title: string, siteName: string): string {
 /** `url` as an absolute URL, prefixing `siteUrl` when it is a path. */
 export function absoluteUrl(url: string, siteUrl: string): string {
   return /^https?:\/\//.test(url) ? url : `${siteUrl.replace(/\/+$/, '')}/${url.replace(/^\/+/, '')}`
+}
+
+/**
+ * The share image of a page without a cover: the site's `defaultOgImage` from Strapi first, then the theme's
+ * `images.ogImage`, as an absolute URL; undefined when neither exists. `media` turns a Strapi media path into a URL.
+ */
+export function defaultOgImageUrl(
+  site: Pick<Site, 'defaultOgImage'>,
+  themeImage: string | undefined,
+  siteUrl: string,
+  media: (url: string) => string,
+): string | undefined {
+  if (site.defaultOgImage?.url) return media(site.defaultOgImage.url)
+  return themeImage ? absoluteUrl(themeImage, siteUrl) : undefined
 }
 
 /** The logo for structured data: the site's logo, else its favicon, as an absolute URL. */

@@ -118,10 +118,6 @@
     border: 1px solid var(--line);
 }
 
-.bd-latest-empty svg {
-    display: block;
-}
-
 .bd-latest-empty-title {
     margin: 0;
     font-size: 19px;
@@ -131,10 +127,6 @@
 
 .bd-latest-empty-note {
     text-transform: uppercase;
-}
-
-.bd-perch {
-    animation: bd-hop 7s var(--e) infinite;
 }
 
 .bd-subscribe {
@@ -240,10 +232,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-perch {
-        animation: none;
-    }
-
     .bd-latest-archive {
         transition: none;
     }

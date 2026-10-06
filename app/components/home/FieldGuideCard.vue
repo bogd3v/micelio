@@ -13,6 +13,7 @@ const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
 
 const caption = useIllustrationCaption()
+const themeMessage = useThemeMessage()
 
 const pillar = computed<number | null>(() => CATEGORY_INFO[props.category].pillar)
 const label = computed<string>(() =>
@@ -20,6 +21,7 @@ const label = computed<string>(() =>
     ? t('home.guide.pillar', { number: padCount(pillar.value) })
     : t('home.guide.figure', { number: padCount(props.figure) }),
 )
+const note = computed<string>(() => themeMessage(`guide.note.${props.category}`))
 const countLabel = computed<string>(() => t('home.guide.count', { count: padCount(props.count) }, props.count))
 </script>
 
@@ -39,7 +41,7 @@ const countLabel = computed<string>(() => t('home.guide.count', { count: padCoun
     <p v-if="pillar" class="bd-guide-description">{{ t(`home.guide.topics.${category}.description`) }}</p>
     <div class="bd-guide-species">
       <p v-if="caption(category)" class="bd-guide-bird">{{ caption(category)!.name }} · <i>{{ caption(category)!.scientific }}</i></p>
-      <p v-if="pillar" class="bd-guide-note">{{ t(`home.guide.topics.${category}.note`) }}</p>
+      <p v-if="pillar && note" class="bd-guide-note">{{ note }}</p>
     </div>
     <div class="bd-meta bd-guide-foot">
       <span><span v-if="pillar" class="bd-guide-foot-pillar">{{ label }} · </span>{{ countLabel }}</span>

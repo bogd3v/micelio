@@ -27,6 +27,11 @@
    "preload": true
   }
  ],
+ "images": {
+  "favicon": "bogdev.svg",
+  "ogImage": "og-image.png",
+  "profile": "copeton.png"
+ },
  "layout": {
   "header": "bar",
   "home": "showcase",

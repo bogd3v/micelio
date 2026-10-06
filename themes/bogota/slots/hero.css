@@ -77,7 +77,7 @@
 }
 
 .bogota-flyer path {
-    animation: bd-flap var(--flap, 0.9s) ease-in-out var(--flap-delay, -0.1s) infinite;
+    animation: bogota-flap var(--flap, 0.9s) ease-in-out var(--flap-delay, -0.1s) infinite;
 }
 
 .bogota-flyer-t0 {

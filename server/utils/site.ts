@@ -1,3 +1,4 @@
+import { images } from '#micelio/theme'
 import type { Locale, Site } from '~/interfaces'
 import { effectiveModules } from '~/helpers/modules'
 import { moduleRequirements } from '~/helpers/runtimeConfig'
@@ -18,7 +19,7 @@ export interface LoadedSite {
 
 /** The site identity: Strapi's site-setting over app.config.ts, field by field, with the modules that actually work. */
 export async function loadSite(locale: Locale): Promise<LoadedSite> {
-  const defaults = siteFromAppConfig(useAppConfig().site as AppSiteConfig)
+  const defaults = siteFromAppConfig(useAppConfig().site as AppSiteConfig, images.favicon)
   const requirements = moduleRequirements(useRuntimeConfig())
   let loaded: LoadedSite
   try {

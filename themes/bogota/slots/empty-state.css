@@ -1,0 +1,13 @@
+.bd-latest-empty svg {
+    display: block;
+}
+
+.bogota-perch {
+    animation: bogota-hop 7s var(--ease-standard) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bogota-perch {
+        animation: none;
+    }
+}

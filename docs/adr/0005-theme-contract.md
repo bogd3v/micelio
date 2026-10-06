@@ -84,7 +84,7 @@ themes/bogota/
   fonts/            woff2 files and their licenses
   images/           images used by theme.css and slots (optional)
   i18n/             <locale>.json, messages under the theme.* namespace (optional)
-  slots/            ThemeMark.vue, ThemeHero.vue, ThemeDivider.vue, ThemeEmptyState.vue, ThemeIllustration.vue (all optional)
+  slots/            ThemeMark.vue, ThemeHero.vue, ThemeDivider.vue, ThemeEmptyState.vue, ThemeIllustration.vue, ThemeProgressMarker.vue, ThemeSupportArt.vue (all optional)
   templates/        og.vue (OG image), email.ts (newsletter email shell) (optional)
 ```
 
@@ -94,7 +94,7 @@ themes/bogota/
 - **Fonts** are self-hosted woff2, subset to the scripts the site uses, `font-display: swap`, with fallback faces whose metrics are adjusted (`size-adjust`, ascent and descent overrides) as in `font-fallbacks.css` at the theme's root. `theme.json` lists them and marks which are preloaded; the core builds the preload links from that list instead of `nuxt.config.ts`. The active theme's `fonts/` is served at `/fonts/`.
 - **Images** in `images/` are served at `/theme/images/`; `theme.css` and slots reference them there.
 - **Messages** in `i18n/<locale>.json` live under the `theme.*` namespace and are merged into the site's i18n at build; a theme's user-facing text never lives in the core's locale files.
-- **Slots** are a closed list (amended 2026-10-04, #237, which added `ThemeIllustration`). The core renders them by name and ships neutral default implementations in `app/theme/defaults/`, so a theme that ships none still works. Adding a slot with a core default stays in contract v1 (section 6); removing a slot or changing its props is a contract change.
+- **Slots** are a closed list (amended 2026-10-04, #237, which added `ThemeIllustration`, and 2026-10-05, which added `ThemeProgressMarker` and `ThemeSupportArt`). The core renders them by name and ships neutral default implementations in `app/theme/defaults/`, so a theme that ships none still works. Adding a slot with a core default stays in contract v1 (section 6); removing a slot or changing its props is a contract change.
 
   | Slot | Props | Bogotá | Core default |
   | --- | --- | --- | --- |
@@ -103,6 +103,8 @@ themes/bogota/
   | `ThemeDivider` | `placement: 'section' \| 'footer'` | the footer panorama of the eastern hills, declared an island | neutral |
   | `ThemeEmptyState` | none (wraps the content) | the perched bird | neutral |
   | `ThemeIllustration` | `category`, `size` | the category birds | neutral |
+  | `ThemeProgressMarker` | `progress` (0 to 100) | a bird that flies along the reading-progress bar of articles | none (the bar alone) |
+  | `ThemeSupportArt` | none | a bird perched on the coffee cup of the support section | none |
 
   A slot that needs JavaScript (today only Bogotá's `ThemeDivider`) declares itself an island in `theme.json` (section 12). `site.logo` from Strapi is used for structured data only and never replaces a theme's `ThemeMark`. Only the active theme's slots are registered, so unused ones are not bundled.
 
@@ -113,7 +115,7 @@ themes/bogota/
 
   **Amendment (2026-10-05, #237):** the module is split by concern, and `index.ts` only calls the pieces: `context.ts` (the active theme and the lists the other files fill), `assets.ts` (fonts, images, messages), `css.ts` (every `#build/micelio/*.css` template), `data.ts` (`#micelio/theme` and its types) and `modes.ts`, `slots.ts`, `layout.ts`. The theme's `images/` is copied to `<buildDir>/micelio/public/theme/images/` and that root is added to `image.dirs`: `@nuxt/image` serves its dirs as public assets and IPX reads them in dev and in production, whereas a `publicAssets` entry alone is invisible to IPX in dev and a symlink is rejected by IPX. For that, `modules/theme` is listed before `@nuxt/image` in `nuxt.config.ts`, which reads `image.dirs` when it is set up. The theme's `i18n/<locale>.json` files are registered with `i18n:registerModule` and go through the same precompiler as the core locales (`modules/precompile-messages.ts`), so they reach the client compiled.
 
-  **Amendment (2026-10-05, #237, PR 7):** the validator, the hooks list and the schema are implemented. `modules/theme/contract.ts` (with `roles.mjs`, which also holds the optional-role defaults the generated CSS falls back to) is the contract; `themes/theme.schema.json` is generated from it (`npm run theme:schema`) and `npm run lint` fails when it drifts. `validate.ts` checks every installed theme, and `css-rules.ts` checks theme CSS against `app/theme/hooks.json` (a theme's own `data-*` attributes start with `data-<id>-`; `url()` may only point at `/fonts/` and `/theme/images/`).
+  **Amendment (2026-10-05, #237, PR 7):** the validator, the hooks list and the schema are implemented. `modules/theme/contract.ts` (with `roles.mjs`, which also holds the optional-role defaults the generated CSS falls back to) is the contract; `themes/theme.schema.json` is generated from it (`npm run theme:schema`) and `npm run lint` fails when it drifts. `validate.ts` checks every installed theme, and `css-rules.ts` checks theme CSS against `app/theme/hooks.json` (a theme's own `data-*` attributes start with `data-<id>-`; `url()` may only point at `/fonts/` and `/theme/images/`). Additions that keep contract v1 (optional, with a core default): `images` in `theme.json` (`favicon`, `ogImage`, `profile`: files of `images/` the core uses when the site settings or the content have none; Strapi's `site-setting.defaultOgImage` and `favicon` take precedence over the theme's), the slots `ThemeProgressMarker` (inside `.bd-progress`; the slot renders its own `.bd-progress-track` lane, the core default renders nothing, and the header's bar remains) and `ThemeSupportArt` (an SVG `<g>` inside the cup of the support section; default nothing), and messages the core reads when a theme provides them: `theme.hud.{city,coords,altitude,madeIn}` (the place line of the header, hero, footer and article byline; absent, nothing renders), `theme.guide.*`, `theme.latest.emptyNote`, `theme.palette.names` and `theme.profile.alt` (each with a neutral core text or none). `ThemeEmptyState` wraps its content (the core default is a `div`; Bogotá adds the perched bird) and receives the accent of its picture as the `--empty-accent` custom property.
 
 ### 5. Customization levels: roles, layout variants, hooks and slots
 

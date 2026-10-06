@@ -11,22 +11,6 @@
     font-family: var(--font-mono);
 }
 
-.gradient-bogota {
-    background: linear-gradient(
-        135deg,
-        var(--link) 0%,
-        color-mix(in oklab, var(--link) 80%, var(--ink)) 100%
-    );
-}
-
-.gradient-bogota-subtle {
-    background: linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--link) 5%, transparent) 0%,
-        color-mix(in srgb, var(--link) 12%, transparent) 100%
-    );
-}
-
 .glass {
     background: color-mix(in srgb, var(--surface) 80%, transparent);
     backdrop-filter: blur(12px);

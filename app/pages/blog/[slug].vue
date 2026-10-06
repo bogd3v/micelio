@@ -9,6 +9,7 @@ const slug = route.params.slug as string
 const { fetchPost, getMediaUrl } = useStrapi()
 const categoryLabel = useCategoryLabel()
 const { siteUrl } = useSiteUrl()
+const defaultOgImage = useDefaultOgImage()
 const site = useSite()
 const { canonicalUrl } = useCanonicalUrl(`/blog/${slug}`)
 const headerSection = useHeaderSection()
@@ -47,7 +48,7 @@ const seoImageUrl = computed(() => {
   return getMediaUrl(metaImage?.url || metaImage?.data?.attributes?.url)
 })
 
-const shareImageUrl = computed(() => seoImageUrl.value || coverUrl.value || `${siteUrl.value}/og-image.png`)
+const shareImageUrl = computed(() => seoImageUrl.value || coverUrl.value || defaultOgImage.value)
 
 const shareImageAlt = computed(() => post.value?.cover?.alternativeText || post.value?.title || 'Blog post cover image')
 

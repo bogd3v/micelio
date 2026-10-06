@@ -16,7 +16,7 @@ const accountsOn = useModule('accounts')
 const newsletterOn = useModule('newsletter')
 const commentsOn = useModule('comments')
 const { canonicalUrl } = useCanonicalUrl('/privacy')
-const { siteUrl } = useSiteUrl()
+const defaultOgImage = useDefaultOgImage()
 
 const contactEmail = computed<string>(() => site.value.privacyContactEmail)
 const updatedAt = computed<string>(() => formatDotDate(site.value.privacyUpdatedAt))
@@ -42,7 +42,7 @@ useSeoMeta({
   ogTitle: () => t('privacy.meta.title', { site: site.value.name }),
   description: () => t('privacy.meta.description', { site: site.value.name }),
   ogDescription: () => t('privacy.meta.description', { site: site.value.name }),
-  ogImage: () => `${siteUrl.value}/og-image.png`,
+  ogImage: () => defaultOgImage.value,
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary',
   twitterTitle: () => t('privacy.meta.title', { site: site.value.name }),

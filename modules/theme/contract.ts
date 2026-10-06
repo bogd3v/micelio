@@ -78,6 +78,14 @@ const Type = z.strictObject({
   groups: z.array(z.strictObject({ name: z.string().optional(), family: z.string(), styles: z.array(TypeStyle) })),
 })
 
+const ImageFile = z.string().regex(/^[\w.-]+\.(png|jpe?g|webp|avif|gif|svg)$/i, { error: iss => `image "${String(iss.input)}" must be a png, jpg, webp, avif, gif or svg file name` })
+
+const Images = z.strictObject({
+  favicon: ImageFile.optional().describe('Default favicon, when the site settings have none.'),
+  ogImage: ImageFile.optional().describe('Default share image of pages that have no cover.'),
+  profile: ImageFile.optional().describe('Picture of the about profile block when the content has no photo.'),
+})
+
 const Slot = z.strictObject({ island: z.boolean({ error: 'must be true or false' }).optional().describe('True when the slot needs JavaScript (ADR 0005, section 12).') }, { error: 'must be an object such as { "island": true }' })
 
 const Slots = z.strictObject(
@@ -101,6 +109,7 @@ export const ThemeSchema = z.strictObject({
   name: z.string().optional(),
   modes: Modes,
   fonts: z.array(Font).optional(),
+  images: Images.optional().describe('Files of images/ the core uses as defaults; they are served at /theme/images/.'),
   layout: Layout.optional().describe('Variant of each region; an omitted region uses the core default (the first variant).'),
   slots: Slots.optional().describe('Options of the closed list of slots; the component itself is slots/<Name>.vue.'),
   color: TokenGroup,

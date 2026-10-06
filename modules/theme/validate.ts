@@ -27,6 +27,9 @@ function packageProblems(theme: InstalledTheme, hooks: Hooks): string[] {
   for (const font of manifest.fonts ?? []) {
     if (!existsSync(join(dir, 'fonts', font.file))) problems.push(`font file "${font.file}" is not in fonts/`)
   }
+  for (const [role, file] of Object.entries(manifest.images ?? {})) {
+    if (!existsSync(join(dir, 'images', file))) problems.push(`images.${role}: "${file}" is not in images/`)
+  }
   const slots: readonly string[] = SLOT_NAMES
   const slotsDir = join(dir, 'slots')
   if (existsSync(slotsDir)) {

@@ -5,7 +5,7 @@ import BdMenuSheet from '~/components/bd/BdMenuSheet.vue'
 
 vi.mock('#micelio/theme', () => {
   const modes = [{ id: 'paper', scheme: 'light', name: 'Paper' }]
-  return { modes, default: { id: 'minimal', modes } }
+  return { modes, images: {}, default: { id: 'minimal', modes, images: {} } }
 })
 
 describe('BdThemeSwitch with a single-mode theme', () => {

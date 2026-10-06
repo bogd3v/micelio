@@ -29,7 +29,7 @@ useSeoMeta({
 <template>
   <div class="bd-error-page">
     <div class="bd-error-body">
-      <div class="bd-error-code gradient-bogota-subtle">
+      <div class="bd-error-code">
         <span class="bd-error-code-text font-display">
           {{ error.statusCode || 404 }}
         </span>

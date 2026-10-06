@@ -6,6 +6,7 @@ import { siteLogoUrl } from '~/helpers/site'
 const { locale } = useI18n()
 const { fetchPosts, fetchCategories } = useStrapi()
 const { siteUrl } = useSiteUrl()
+const defaultOgImage = useDefaultOgImage()
 const site = useSite()
 const { canonicalUrl } = useCanonicalUrl('/')
 
@@ -30,11 +31,11 @@ useSeoMeta({
   ogTitle: () => `${site.value.name} - Personal Blog`,
   description: 'Explore articles on AI, software development, Linux, and modern tech. Join me on my journey through technology.',
   ogDescription: 'Explore articles on AI, software development, Linux, and modern tech. Join me on my journey through technology.',
-  ogImage: () => `${siteUrl.value}/og-image.png`,
+  ogImage: () => defaultOgImage.value,
   ogImageAlt: () => `${site.value.name} — Exploring AI, Software and Linux`,
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
-  twitterImage: () => `${siteUrl.value}/og-image.png`,
+  twitterImage: () => defaultOgImage.value,
   twitterTitle: () => `${site.value.name} - Personal Blog`,
   twitterDescription: 'Explore articles on AI, software development, Linux, and modern tech.',
 })

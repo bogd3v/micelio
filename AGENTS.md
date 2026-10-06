@@ -138,7 +138,7 @@ function handleClick() {
 ### CSS/Styling Conventions
 
 - Colors, shadows and glows come from the semantic roles of ADR 0005 (`var(--ink)`, `var(--ink-muted)`, `var(--surface)`, `var(--link)`, `var(--accent)`, `var(--danger)`, `var(--category-3)`…), never from the theme's primitives (`--mirla`, `--chillon`, `--tingua`…). Primitives live only in `assets/css/settings/`; `npm run lint` fails otherwise (`scripts/check-primitives.mjs`). A category's color is `categoryColor(slug)` from `app/helpers/categories.ts`
-- No utility classes in templates: every class is a `bd-*` class in its layer, or one of the core helpers (`card`, `font-display`, `font-mono`, `gradient-bogota-subtle`, `not-prose`). `npm run lint` fails otherwise (`scripts/check-classes.mjs`; ADR 0005, section 3)
+- No utility classes in templates: every class is a `bd-*` class in its layer, or one of the core helpers (`card`, `font-display`, `font-mono`, `not-prose`). `npm run lint` fails otherwise (`scripts/check-classes.mjs`; ADR 0005, section 3)
 - Icons are inline SVG components in `app/components/icons/` (`<IconsHome />`), sized by the parent's CSS
 - Use `.card` class for card components with hover effects
 - Use `<BdButton>` (`app/components/bd/`) for buttons and button-styled links; the `Bd*` components mirror the BogDev design system (see `docs/design/DESIGN.md`)

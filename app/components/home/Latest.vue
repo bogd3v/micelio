@@ -18,6 +18,7 @@ const props = defineProps<{
 }>()
 
 const { locale, t } = useI18n()
+const themeMessage = useThemeMessage()
 const { fetchPosts } = useStrapi()
 const { localizePath } = useLocaleUtils()
 const toPostCard = usePostCard()
@@ -78,22 +79,13 @@ function select(id: TopicFilter['id']): void {
         <span class="bd-latest-archive-title bd-wide">{{ t('home.latest.archiveTitle') }} <span class="bd-card-arrow" aria-hidden="true">→</span></span>
         <span class="bd-meta bd-home-eyebrow">{{ t('home.latest.archiveMeta') }}</span>
       </NuxtLink>
-      <div v-if="!posts.length" class="bd-latest-empty">
-        <svg width="120" height="60" viewBox="0 0 120 60" aria-hidden="true" focusable="false">
-          <path d="M0 44 Q60 58 120 44" fill="none" stroke="var(--line-strong)" stroke-width="1" />
-          <g transform="translate(60 51)">
-            <g class="bd-perch">
-              <path d="M-8 -4 Q-9 -11 -2 -12 Q1 -17 6 -15 L7 -14 Q8 -6 2 -2 L-3 -1 L-11 4 Z" fill="var(--ink-muted)" />
-              <path d="M6 -15 L12 -13.5 L7 -12.5 Z" :fill="emptyColor" />
-            </g>
-          </g>
-        </svg>
+      <ThemeEmptyState v-if="!posts.length" class="bd-latest-empty" :style="{ '--empty-accent': emptyColor }">
         <h3 class="bd-latest-empty-title">{{ emptyTitle }}</h3>
-        <p class="bd-meta bd-home-eyebrow bd-latest-empty-note">{{ t('home.latest.emptyNote') }}</p>
+        <p class="bd-meta bd-home-eyebrow bd-latest-empty-note">{{ themeMessage('latest.emptyNote', 'home.latest.emptyNote') }}</p>
         <button v-if="selected" type="button" class="bd-chip" @click="select('all')">
           {{ t('home.latest.showAll') }} <span aria-hidden="true">→</span>
         </button>
-      </div>
+      </ThemeEmptyState>
     </div>
   </section>
 </template>

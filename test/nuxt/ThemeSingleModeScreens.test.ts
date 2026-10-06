@@ -5,7 +5,7 @@ import PrivacyPage from '~/pages/privacy.vue'
 
 vi.mock('#micelio/theme', () => {
   const modes = [{ id: 'paper', scheme: 'light', name: 'Paper' }]
-  return { modes, default: { id: 'minimal', modes } }
+  return { modes, images: {}, default: { id: 'minimal', modes, images: {} } }
 })
 
 registerEndpoint('/api/search', () => [])

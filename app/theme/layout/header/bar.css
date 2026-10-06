@@ -144,6 +144,11 @@ html {
     gap: var(--space-3);
 }
 
+/* A theme without a place line leaves the actions alone in the strip */
+.bd-strip-actions:only-child {
+    margin-left: auto;
+}
+
 .bd-strip-read {
     color: var(--ink-muted);
     font-variant-numeric: tabular-nums;
@@ -171,19 +176,6 @@ html {
     position: absolute;
     inset: 0;
     transform: translateX(calc(var(--bd-read, 0) * 100%));
-}
-
-.bd-progress-bird {
-    position: absolute;
-    left: -11px;
-    bottom: 5px;
-    display: block;
-    color: var(--link);
-    overflow: visible;
-}
-
-.bd-wing {
-    animation: bd-flap 0.9s ease-in-out infinite;
 }
 
 @supports (animation-timeline: scroll()) {

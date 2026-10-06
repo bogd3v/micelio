@@ -18,6 +18,7 @@ const props = withDefaults(defineProps<{
 })
 
 const { locale, t } = useI18n()
+const hud = useThemeHud()
 const { getMediaUrl } = useStrapi()
 const { localizePath } = useLocaleUtils()
 const config = useRuntimeConfig()
@@ -61,7 +62,7 @@ useMarkAsRead(prose, readDocumentId)
           <BlogAuthorBadge :author="post.author" />
           <div class="bd-article-author-text">
             <span class="bd-article-author-name">{{ post.author?.name || t("post.anonymous") }}</span>
-            <span class="bd-meta bd-home-eyebrow bd-article-place">{{ t("bd.header.hud.city") }} · {{ t("bd.header.hud.coords") }}</span>
+            <span v-if="hud.city" class="bd-meta bd-home-eyebrow bd-article-place">{{ [hud.city, hud.coords].filter(Boolean).join(" · ") }}</span>
           </div>
         </div>
         <div v-if="!draft" class="bd-article-actions">

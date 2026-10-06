@@ -38,6 +38,7 @@ const mounted = useMounted()
 const shortcut = ref('⌘K')
 
 const links = useNavLinks()
+const hud = useThemeHud()
 const percent = computed<number>(() =>
   Math.round(Math.min(100, Math.max(0, props.progress ?? scrolled.value))),
 )
@@ -114,11 +115,11 @@ onMounted(() => {
     </div>
     <div v-else class="bd-strip">
       <div class="bd-header-inner">
-        <p class="bd-meta bd-hud">
+        <p v-if="hud.city" class="bd-meta bd-hud">
           <span class="bd-hud-mark" aria-hidden="true">◆</span>
-          <span>{{ t('bd.header.hud.city') }}</span>
-          <span class="bd-hud-extra">{{ t('bd.header.hud.coords') }}</span>
-          <span class="bd-hud-extra">{{ t('bd.header.hud.altitude') }}</span>
+          <span>{{ hud.city }}</span>
+          <span v-if="hud.coords" class="bd-hud-extra">{{ hud.coords }}</span>
+          <span v-if="hud.altitude" class="bd-hud-extra">{{ hud.altitude }}</span>
         </p>
         <div class="bd-strip-actions">
           <NuxtLink v-if="fediverseOn" :to="`${localizePath('/')}#fediverso`" class="bd-chip" :aria-label="t('bd.header.fediverse', { handle: fediverseUser })">
@@ -142,11 +143,7 @@ onMounted(() => {
 
     <div v-if="reading" class="bd-progress" :style="progressStyle" aria-hidden="true">
       <div class="bd-progress-bar" />
-      <div class="bd-progress-track">
-        <svg class="bd-progress-bird" width="22" height="14" viewBox="0 0 22 14" focusable="false">
-          <path class="bd-wing" d="M1 9 Q6 1 11 8 Q16 1 21 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </div>
+      <ThemeProgressMarker :progress="percent" />
     </div>
   </header>
 </template>

@@ -1,0 +1,12 @@
+.bogota-progress-bird {
+    position: absolute;
+    left: -11px;
+    bottom: 5px;
+    display: block;
+    color: var(--link);
+    overflow: visible;
+}
+
+.bogota-wing {
+    animation: bogota-flap 0.9s ease-in-out infinite;
+}

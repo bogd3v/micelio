@@ -19,6 +19,11 @@
     height: 8rem;
     margin: 0 auto 2rem;
     border-radius: calc(infinity * 1px);
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--link) 5%, transparent) 0%,
+        color-mix(in srgb, var(--link) 12%, transparent) 100%
+    );
 }
 
 .bd-error-code-text {

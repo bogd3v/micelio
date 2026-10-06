@@ -119,7 +119,7 @@ onBeforeUnmount(() => {
           <path :d="PANORAMA_FOOTHILLS" fill="var(--lay3)" />
         </svg>
         <img
-          src="/copeton.png"
+          src="/theme/images/copeton.png"
           alt=""
           class="bogota-copeton bogota-lay bogota-lay-bird"
           width="586"

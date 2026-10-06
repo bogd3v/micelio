@@ -10,7 +10,7 @@
 | `themes/bogota/theme.json` | Tokens del sistema de diseño (colores por modo, tipo, espacio, radios, sombras), antes `tokens.json` | Única fuente de valores. Nunca escribir un hex a mano. El build genera el CSS (`modules/theme`); `npm run tokens` lo imprime |
 | `reference/canvas/*.dc.html` | Fuente HTML de cada pantalla del lienzo de diseño | Leer como especificación: estilos en línea = medidas, textos literales = copy final. **No copiar el markup**: es un prototipo con plantillas `{{…}}`, `<sc-if>`, `<sc-for>` y `<dc-import>` |
 | `reference/canvas/bogdev-site.css` | Hoja compartida del lienzo (bandada, parallax, hoja inferior, acordeones, etc.) | Referencia de animaciones y keyframes |
-| `assets/` | Fotos del hero (PNN Sumapaz, versiones Día y Noche) y el script que las prepara | Copiar a `public/images/` o `app/assets/` |
+| `assets/` | Fotos del hero (PNN Sumapaz, versiones Día y Noche) y el script que las prepara | Ya en `themes/bogota/images/hero/` |
 | `reference/ds/bundle.js`, `bundle.css`, `index.d.ts.txt` | Componentes React del sistema de diseño | Referencia de props, clases `bd-*` y comportamiento para portarlos a Vue |
 
 Pantallas del lienzo:
@@ -53,7 +53,7 @@ Convenciones para agentes:
 | Área | Hoy en producción | Objetivo | Estado |
 | --- | --- | --- | --- |
 | Tema visual | Tailwind + Nuxt UI, claro/oscuro genérico (`useColorMode`) | Temas Noche y Día · Salmona con tokens BogDev | NUEVO |
-| Logo | `public/bogdev.svg` en header y footer | Componente `BdLogo`: color en Día, blanco en Noche | EXISTE (cambia uso) |
+| Logo | `themes/bogota/images/bogdev.svg` en header y footer | Componente `BdLogo`: color en Día, blanco en Noche | EXISTE (cambia uso) |
 | Categorías | IA, Software, Linux | + Privacidad y DIY como pilares, cada una con su ave | NUEVO (requiere backend) |
 | Header | `LayoutHeader` + `MobileMenu` lateral | `BdHeader` compartido (escritorio, móvil, lectura) + tab bar + hoja inferior | NUEVO |
 | Inicio | Hero, destacado, últimos, newsletter | Hero con bandada, guía de campo, sección fediverso | NUEVO |
@@ -133,7 +133,7 @@ flowchart LR
 - **Cambio de tema con View Transitions.** `document.startViewTransition` con barrido circular desde el botón (`--vt-x`, `--vt-y`; keyframe `bd-wipe` en `bogdev-site.css`). Sin soporte o con movimiento reducido, cambio directo.
 - **Fuentes.** Archivo (ejes wdth, wght) y JetBrains Mono autoalojadas en `themes/bogota/fonts/` (servidas en `/fonts/`) (preferible por privacidad) con `font-display: swap`.
 - **Componentes** Vue en `app/components/bd/`: `BdLogo`, `BdButton`, `BdCategoryTag`, `BdNavBar`, `BdHeader`, `BdPostCard`, `BdNewsletterForm`, `BdCodeBlock`, `BdCallout`, `BdFooter`, `BdMermaid`. Props iguales a `reference/ds/index.d.ts.txt`.
-- **Logo.** `BdLogo` dibuja los trazos exactos de `public/bogdev.svg` (ver `LOGO` en `reference/ds/bundle.js`, `viewBox="10 70 506 386"`) con `fill: var(--logo-agua)` y `var(--logo-ladrillo)`; props `size`, `variant` (`auto | color | blanco | negro`) y `wordmark`.
+- **Logo.** `BdLogo` dibuja los trazos exactos de `themes/bogota/images/bogdev.svg` (ver `LOGO` en `reference/ds/bundle.js`, `viewBox="10 70 506 386"`) con `fill: var(--logo-agua)` y `var(--logo-ladrillo)`; props `size`, `variant` (`auto | color | blanco | negro`) y `wordmark`.
 
 ### CSS moderno requerido
 
@@ -203,7 +203,7 @@ Ficha de campo: «Hola, soy Alejandro.», datos (nombre, hábitat, especialidad,
 
 - Un solo `BdFooter` en `layouts/default.vue`; variante móvil por breakpoint (< 768 px).
 - Contenido: logo + marca, tagline, redes (LinkedIn, GitHub, Codeberg, Mastodon con `rel="me"`), Navegar, Temas (5 con punto de color), Suscribirse (RSS, Newsletter, Fediverso, Invitarme un café), panorama de los cerros orientales y créditos.
-- Panorama en capas SVG: páramo, cerros con Monserrate (3.152 m, basílica blanca con torre central de cúpula y cruz, alas del convento con tejas de barro sobre una terraza) y Guadalupe (3.317 m, santuario blanco con espadaña, techo de teja y la estatua de la Virgen de brazos abiertos sobre su pedestal), faldas, copetón (`public/copeton.png`) al 30–45 % de opacidad a la izquierda y skyline del Centro Internacional a escala (0,8 px por metro): Torre Atrio Norte vista de frente (espina central de paneles plateados, dos ranuras oscuras con riostras naranjas en chevrón cada ~30 m apuntando a la espina, alas de vidrio con remate en chaflán, marco naranja de coronación con grúa y pabellones de vidrio en la base), Centro de Comercio Internacional, Hotel Tequendama, BD Bacatá (dos torres de coronación inclinada), Edificio Avianca, Torre Colpatria (planta cuadrada con esquinas achaflanadas, cara lateral en sombra, pilastras verticales y corona oscura con el aviso y dos luces en las esquinas) cuya fachada LED, en tiras verticales entre pilastras sobre el 80 % superior (recorte con `clipPath`) y algunas ventanas encendidas en la parte baja, muestra en Noche, una tras otra, las banderas de Palestina (en vertical: franjas negra, blanca y verde de izquierda a derecha y el triángulo rojo de 26 px bajando desde arriba), Colombia y Bogotá (6 s cada una, cambio seco como un LED, ciclo de 18 s; en Día apagada; colores oficiales de cada bandera, única excepción a la regla de tokens), Torres del Parque de Salmona y la Plaza de toros La Santamaría. En Día sin luces.
+- Panorama en capas SVG: páramo, cerros con Monserrate (3.152 m, basílica blanca con torre central de cúpula y cruz, alas del convento con tejas de barro sobre una terraza) y Guadalupe (3.317 m, santuario blanco con espadaña, techo de teja y la estatua de la Virgen de brazos abiertos sobre su pedestal), faldas, copetón (`themes/bogota/images/copeton.png`) al 30–45 % de opacidad a la izquierda y skyline del Centro Internacional a escala (0,8 px por metro): Torre Atrio Norte vista de frente (espina central de paneles plateados, dos ranuras oscuras con riostras naranjas en chevrón cada ~30 m apuntando a la espina, alas de vidrio con remate en chaflán, marco naranja de coronación con grúa y pabellones de vidrio en la base), Centro de Comercio Internacional, Hotel Tequendama, BD Bacatá (dos torres de coronación inclinada), Edificio Avianca, Torre Colpatria (planta cuadrada con esquinas achaflanadas, cara lateral en sombra, pilastras verticales y corona oscura con el aviso y dos luces en las esquinas) cuya fachada LED, en tiras verticales entre pilastras sobre el 80 % superior (recorte con `clipPath`) y algunas ventanas encendidas en la parte baja, muestra en Noche, una tras otra, las banderas de Palestina (en vertical: franjas negra, blanca y verde de izquierda a derecha y el triángulo rojo de 26 px bajando desde arriba), Colombia y Bogotá (6 s cada una, cambio seco como un LED, ciclo de 18 s; en Día apagada; colores oficiales de cada bandera, única excepción a la regla de tokens), Torres del Parque de Salmona y la Plaza de toros La Santamaría. En Día sin luces.
 - Parallax: `animation-range: entry 0% entry 100%` para que la posición final sea igual en todas las páginas.
 - Móvil: redes en rejilla de 4, grupos plegables con `<details>`, panorama deslizable de 1152 × 352 px.
 - Recursos: extraer los SVG del panorama de `Footer.dc.html` a `app/assets/footer/` o a un componente `BdPanorama.vue`.
@@ -327,7 +327,7 @@ Un issue está terminado cuando pasan `npm run lint`, `npm run typecheck`, `npm 
 | Newsletter móvil | A 350 px, campo y botón de 56 px apilados, sin desbordar |
 | Mermaid | Artículo de prueba con `flowchart` y `sequenceDiagram` se dibuja, cambia de colores al alternar tema y muestra el `<pre>` sin JavaScript |
 | Fediverso | Con `e2e/mock-strapi.mjs` y `test/integration/mock-strapi.ts`: barra oculta si stats da 404; comentario con `fediverseActorHandle` muestra la etiqueta; texto sin HTML |
-| Logo | Color en Día, blanco en Noche; trazos idénticos a `public/bogdev.svg` |
+| Logo | Color en Día, blanco en Noche; trazos idénticos a `themes/bogota/images/bogdev.svg` |
 
 Checklist de cada PR:
 

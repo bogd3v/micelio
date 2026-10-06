@@ -27,26 +27,21 @@
         "software": "No articles on software development yet",
         "linux": "No articles on Linux yet"
       },
-      "emptyNote": "The nest is ready · Check back soon",
-      "showAll": "Show all"
+      "showAll": "Show all",
+      "emptyNote": "Check back soon"
     },
     "guide": {
-      "eyebrow": "Field guide",
-      "title": "Five topics, five birds of the savanna",
-      "description": "Each blog category takes its color from the plumage of a bird from Bogotá. Privacy and DIY are the pillars.",
       "pillar": "Pillar {number}",
       "figure": "Fig. {number}",
       "count": "No articles yet | {count} article | {count} articles",
       "topics": {
         "privacidad": {
           "title": "Privacy",
-          "description": "Digital sovereignty, self-hosting and tools to look after your data.",
-          "note": "Black mask, blue plumage: sees without being seen."
+          "description": "Digital sovereignty, self-hosting and tools to look after your data."
         },
         "diy": {
           "title": "Do it yourself",
-          "description": "Home labs, hardware and projects built at home.",
-          "note": "Builds its nest from whatever it finds on the city's eaves and walls."
+          "description": "Home labs, hardware and projects built at home."
         },
         "ia": {
           "title": "Artificial intelligence"
@@ -57,7 +52,10 @@
         "linux": {
           "title": "Linux and open source"
         }
-      }
+      },
+      "eyebrow": "Topics",
+      "title": "Browse by topic",
+      "description": "Every article on the blog, grouped by subject."
     },
     "rss": {
       "title": "Prefer RSS?",
@@ -317,10 +315,8 @@
   },
   "about": {
     "contentNotAvailable": "About page content not available.",
-    "mascotAlt": "Illustration of a rufous-collared sparrow, the blog's mascot bird",
     "alsoWrite": "I also write about",
     "swipe": "Swipe →",
-    "palette": "Pinchaflor · Golondrina · Chillón · Mirla · Monjita",
     "diagram": {
       "label": "Plugin flow: Strapi publishes articles to the fediverse and receives replies, likes and boosts",
       "source": "STRAPI 5",
@@ -451,11 +447,6 @@
       },
       "fediverse": "{handle} on the fediverse",
       "read": "Read {percent} %",
-      "hud": {
-        "city": "Bogotá",
-        "coords": "4.61°N 74.08°W",
-        "altitude": "2,640 m a.s.l."
-      },
       "signIn": "Sign in",
       "signInLabel": "Sign in to your account",
       "accountMenu": "Your account menu, {username}",
@@ -515,7 +506,6 @@
       "fediverse": "Fediverse · {handle}",
       "newsletter": "Newsletter",
       "coffee": "Buy me a coffee",
-      "madeIn": "Made in Bogotá, Colombia",
       "privacy": "Privacy and cookies"
     }
   },
