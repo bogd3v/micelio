@@ -12,8 +12,8 @@ export const TS_SAMPLE = `export function slugify(text: string): string {
   return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-')
 }`
 
-export const MERMAID_SAMPLE = `accTitle: Request flow
-flowchart LR
+export const MERMAID_SAMPLE = `flowchart LR
+  accTitle: Request flow
   Visitor --> Nitro
   Nitro --> Strapi
   Nitro --> Cache[(ISR cache)]`
