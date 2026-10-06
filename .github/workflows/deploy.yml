@@ -114,12 +114,15 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  # Installed themes and the site modes with budgets, as the matrix of the performance job
-  perf-matrix:
-    name: Performance Matrix
+  # Installed themes and the site modes with budgets, as the matrix of the performance job;
+  # the theme list and the Playwright version also feed theme-quality
+  matrix:
+    name: Matrix
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
+      themes: ${{ steps.matrix.outputs.themes }}
+      playwright: ${{ steps.playwright.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -136,14 +139,22 @@ jobs:
           themes="$(npx jiti scripts/theme-check.ts --list)"
           modes="$(node -p "JSON.stringify([require('./scripts/perf/budgets.json').mode])")"
           echo "matrix={\"theme\":${themes},\"mode\":${modes}}" >> "$GITHUB_OUTPUT"
+          echo "themes=${themes}" >> "$GITHUB_OUTPUT"
+      # The lockfile decides the browser build, so the Docker image follows a Dependabot bump of @playwright/test
+      - name: Read the Playwright version
+        id: playwright
+        run: |
+          version="$(node -p "require('./package-lock.json').packages['node_modules/playwright-core'].version")"
+          echo "${version}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
 
   performance:
     name: Performance Budgets (${{ matrix.theme }}, ${{ matrix.mode }})
-    needs: perf-matrix
+    needs: matrix
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.perf-matrix.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
     env:
       NUXT_PUBLIC_THEME: ${{ matrix.theme }}
       # Read once the site modes of ADR 0006 land; ignored until then
@@ -184,6 +195,73 @@ jobs:
           RESULT: ${{ needs.performance.result }}
         run: |
           echo "performance matrix: ${RESULT}"
+          test "${RESULT}" = "success"
+
+  # Visual regression and axe per installed theme (modes and viewports are projects of playwright.theme.config.ts).
+  # Baselines are rendered in the Playwright image: a human commits them from the theme-snapshots-<theme> artifact (docs/theme-testing.md)
+  theme-quality:
+    name: Theme Quality (${{ matrix.theme }})
+    needs: matrix
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.matrix.outputs.playwright }}-noble
+      options: --ipc=host
+    strategy:
+      fail-fast: false
+      matrix:
+        theme: ${{ fromJSON(needs.matrix.outputs.themes) }}
+    env:
+      NUXT_PUBLIC_THEME: ${{ matrix.theme }}
+      MICELIO_SPECIMEN: 1
+      E2E_BUILD: 1
+      HOME: /root
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Run visual regression and axe
+        run: npm run test:theme
+      - name: Upload report and diffs
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: theme-report-${{ matrix.theme }}
+          path: |
+            playwright-report-theme/
+            test-results-theme/
+          retention-days: 7
+      # Never committed by CI: a human reviews the images and commits them (new theme, missing baselines or an intended change)
+      - name: Render the baselines as they stand now
+        if: failure()
+        run: npm run test:theme:update -- e2e/theme/visual.spec.ts
+      - name: Upload baselines
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: theme-snapshots-${{ matrix.theme }}
+          path: e2e/theme/__screenshots__/${{ matrix.theme }}/
+          retention-days: 7
+
+  # One stable check name for branch protection and deploy, like performance-gate
+  theme-quality-gate:
+    name: Theme Quality
+    needs: theme-quality
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every theme to pass
+        env:
+          RESULT: ${{ needs.theme-quality.result }}
+        run: |
+          echo "theme quality matrix: ${RESULT}"
           test "${RESULT}" = "success"
 
   # Built while the tests run; only the commit tag is pushed, and deploy promotes it to latest
@@ -233,7 +311,7 @@ jobs:
   deploy:
     name: Deploy to Dokploy
     runs-on: ubuntu-latest
-    needs: [lint-and-typecheck, integration-tests, e2e-tests, performance-gate, build-and-push]
+    needs: [lint-and-typecheck, integration-tests, e2e-tests, performance-gate, theme-quality-gate, build-and-push]
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     concurrency:
       group: production-deploy

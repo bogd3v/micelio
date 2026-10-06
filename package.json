@@ -23,6 +23,8 @@
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run -c vitest.config.integration.ts",
     "test:e2e": "playwright test && playwright test -c playwright.modules-off.config.ts",
+    "test:theme": "playwright test -c playwright.theme.config.ts",
+    "test:theme:update": "playwright test -c playwright.theme.config.ts --update-snapshots=changed",
     "perf": "node scripts/perf/measure.mjs --serve"
   },
   "dependencies": {
@@ -40,6 +42,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@intlify/message-compiler": "^11.4.12",
     "@nuxt/eslint": "^1.17.0",
     "@nuxt/test-utils": "^4.3.2",

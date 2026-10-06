@@ -31,6 +31,8 @@ npm run test         # Run unit tests with Vitest (test/*.test.ts)
 npm run test:coverage     # Same tests with coverage of app/ and themes/; fails under the thresholds in vitest.config.ts
 npm run test:integration  # Run API-route integration tests (test/integration/, needs a Nuxt build)
 npm run test:e2e          # Run Playwright e2e tests (e2e/, starts mock Strapi + dev server)
+npm run test:theme        # Theme visual regression and axe (e2e/theme/, needs a build with MICELIO_SPECIMEN=1; docs/theme-testing.md)
+npm run test:theme:update # Same with --update-snapshots=changed (baselines are committed from the CI artifact, not made locally)
 npm run perf              # Performance budgets on a production build (run npm run build first; see docs/performance.md)
 
 # Generate static site

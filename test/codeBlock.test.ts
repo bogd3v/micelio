@@ -21,6 +21,10 @@ describe('copyableCode', () => {
 })
 
 describe('renderCodeBlockHtml', () => {
+  it('makes the block focusable so a scrolling one can be read by keyboard', () => {
+    expect(renderCodeBlockHtml('x', 'js')).toContain('<pre tabindex="0">')
+  })
+
   it('renders the design system markup with an inactive copy button', () => {
     const html = renderCodeBlockHtml('$ echo "<hola>"', 'bash')
     expect(html).toContain('<figure class="bd-code not-prose">')

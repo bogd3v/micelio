@@ -35,3 +35,7 @@ coverage/
 
 # Claude Code agent worktrees
 .claude/worktrees/
+
+# Theme visual regression (playwright.theme.config.ts)
+playwright-report-theme/
+test-results-theme/
