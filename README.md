@@ -177,7 +177,7 @@ Translations are in `i18n/locales/`. The project uses `prefix_except_default` st
 
 ### Theming
 
-The active theme is a package in `themes/<id>/` (default `bogota`, chosen at build time with `NUXT_PUBLIC_THEME`; extra theme directories with `MICELIO_THEME_DIRS`). Its colors, type, space and motion are CSS custom properties the build generates from `theme.json` (nothing generated is checked in). The `data-theme="noche" | "dia"` attribute on `<html>` switches between the night and day values. Contract: [ADR 0005](docs/adr/0005-theme-contract.md).
+The active theme is a package in `themes/<id>/` (default `bogota`, chosen at build time with `NUXT_PUBLIC_THEME`; extra theme directories with `MICELIO_THEME_DIRS`). Its colors, type, space and motion are CSS custom properties the build generates from `theme.json` (nothing generated is checked in). The `data-theme="noche" | "dia"` attribute on `<html>` switches between the night and day values. Contract: [ADR 0005](docs/adr/0005-theme-contract.md). Getting started: [How to create a theme](docs/themes/creating-a-theme.md).
 
 ## License
 

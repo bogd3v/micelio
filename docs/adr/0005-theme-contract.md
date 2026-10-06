@@ -156,7 +156,7 @@ Writing a theme must not require reading the core. The contract ships with:
 - **A starter theme** (`themes/starter/`): every role in two modes (one light, one dark), commented, passing every check. It is deliberately the opposite of Bogotá (light first, serif display, rounded shapes, generous spacing, the second variant of every layout region), so it proves the contract allows a different site and not only a different palette, and gives authors the second example of every variant. It is the template to copy, and stays in CI so it never rots. A single-mode test theme lives in the fixtures (#237).
 - **`npm run theme:check [id]`**: the same validation as the build plus the contrast matrix and the hooks check (#238), runnable on its own. Errors name the theme, mode, role, surface, measured ratio and the nearest value that passes; `--json` prints the same as data for agents and editors.
 - **`/_theme`** (#238) with hot reload: the whole catalog, every component state and every section variant in every mode, to design against.
-- **Reference docs generated from the contract** in `docs/themes/`: roles, hooks and slots from the schema and `hooks.json`, so they cannot drift, plus the "How to create a theme" guide (#238).
+- **Reference docs generated from the contract** in `docs/themes/`: roles, hooks and slots from the schema and `hooks.json`, so they cannot drift, plus the [How to create a theme](../themes/creating-a-theme.md) guide (#238).
 - **For agents**: a `create-theme` skill in `.claude/skills/` and a themes section in `AGENTS.md` with the loop: copy the starter → edit `theme.json` and `theme.css` → `theme:check` → review `/_theme` in every mode.
 
 ### 8. Overrides from Strapi
