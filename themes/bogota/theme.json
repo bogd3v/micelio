@@ -84,7 +84,7 @@
      "noche": "#6c7380",
      "dia": "#8f6f5d"
     },
-    "usage": "Borde de controles (inputs, botón secundario). ≥3:1 sobre todas las superficies en ambos temas (en día, 3.28:1 sobre surface-sunken)."
+    "usage": "Borde de controles (inputs, botón secundario). Legible sobre todas las superficies en ambos temas (en día, 3.28:1 sobre surface-sunken, la más baja)."
    },
    {
     "name": "ink",
@@ -100,7 +100,21 @@
      "noche": "#9ba1ac",
      "dia": "#6a4f42"
     },
-    "usage": "Texto secundario: extractos, metadatos, fechas, ayudas. Sobre las tres superficies (≥5.3:1). En día, tierra."
+    "usage": "Texto secundario: extractos, metadatos, fechas, ayudas. Sobre las tres superficies. En día, tierra.",
+    "contrast": [
+     {
+      "on": "surface",
+      "min": 5.3
+     },
+     {
+      "on": "surface-raised",
+      "min": 5.3
+     },
+     {
+      "on": "surface-sunken",
+      "min": 5.3
+     }
+    ]
    },
    {
     "name": "on-ink",
@@ -116,7 +130,25 @@
      "noche": "#ff7a1a",
      "dia": "#a3410f"
     },
-    "usage": "Mirla patinaranja (Turdus fuscater), el pico naranja. Acento de marca: CTA de acento, categoría Software, subrayado activo. En día se tuesta hacia el ladrillo de Salmona. Como texto sobre las tres superficies (en día, 4.54:1 sobre surface-sunken)."
+    "usage": "Mirla patinaranja (Turdus fuscater), el pico naranja. Acento de marca: CTA de acento, categoría Software, subrayado activo. En día se tuesta hacia el ladrillo de Salmona. Como texto sobre las tres superficies (en día, 4.54:1 sobre surface-sunken, la más baja).",
+    "contrast": [
+     {
+      "on": "surface",
+      "min": 4.5
+     },
+     {
+      "on": "surface-raised",
+      "min": 4.5
+     },
+     {
+      "on": "surface-sunken",
+      "min": 4.5
+     },
+     {
+      "on": "mirla-soft",
+      "min": 4.5
+     }
+    ]
    },
    {
     "name": "mirla-soft",
@@ -140,7 +172,25 @@
      "noche": "#2ee6b6",
      "dia": "#0a6656"
     },
-    "usage": "Colibrí chillón (Colibri coruscans), el verde iridiscente. Enlaces, foco, éxito y categoría IA. En día, el verde del agua en los canales de Salmona. Como texto sobre las tres superficies y chillon-soft."
+    "usage": "Colibrí chillón (Colibri coruscans), el verde iridiscente. Enlaces, foco, éxito y categoría IA. En día, el verde del agua en los canales de Salmona. Como texto sobre las tres superficies y chillon-soft.",
+    "contrast": [
+     {
+      "on": "surface",
+      "min": 4.5
+     },
+     {
+      "on": "surface-raised",
+      "min": 4.5
+     },
+     {
+      "on": "surface-sunken",
+      "min": 4.5
+     },
+     {
+      "on": "chillon-soft",
+      "min": 4.5
+     }
+    ]
    },
    {
     "name": "chillon-soft",
@@ -156,7 +206,25 @@
      "noche": "#ffd21f",
      "dia": "#6f5200"
     },
-    "usage": "Monjita bogotana (Chrysomus icterocephalus bogotensis), la capucha amarilla. Resaltado, advertencias y categoría Linux. En día, ocre de tierra. Como texto sobre las tres superficies y monjita-soft."
+    "usage": "Monjita bogotana (Chrysomus icterocephalus bogotensis), la capucha amarilla. Resaltado, advertencias y categoría Linux. En día, ocre de tierra. Como texto sobre las tres superficies y monjita-soft.",
+    "contrast": [
+     {
+      "on": "surface",
+      "min": 4.5
+     },
+     {
+      "on": "surface-raised",
+      "min": 4.5
+     },
+     {
+      "on": "surface-sunken",
+      "min": 4.5
+     },
+     {
+      "on": "monjita-soft",
+      "min": 4.5
+     }
+    ]
    },
    {
     "name": "monjita-soft",
@@ -172,7 +240,25 @@
      "noche": "#a08cff",
      "dia": "#4f36c2"
     },
-    "usage": "Pinchaflor enmascarado (Diglossa cyanea), azul profundo con antifaz negro: ve sin dejarse ver. Categoría Privacidad (pilar del blog). Como texto sobre las tres superficies y pinchaflor-soft."
+    "usage": "Pinchaflor enmascarado (Diglossa cyanea), azul profundo con antifaz negro: ve sin dejarse ver. Categoría Privacidad (pilar del blog). Como texto sobre las tres superficies y pinchaflor-soft.",
+    "contrast": [
+     {
+      "on": "surface",
+      "min": 4.5
+     },
+     {
+      "on": "surface-raised",
+      "min": 4.5
+     },
+     {
+      "on": "surface-sunken",
+      "min": 4.5
+     },
+     {
+      "on": "pinchaflor-soft",
+      "min": 4.5
+     }
+    ]
    },
    {
     "name": "pinchaflor-soft",
@@ -188,7 +274,25 @@
      "noche": "#5cb8ff",
      "dia": "#0b5a9c"
     },
-    "usage": "Golondrina azul y blanca (Pygochelidon cyanoleuca), que arma su nido con lo que encuentra en aleros y muros. Categoría DIY (pilar del blog). Como texto sobre las tres superficies y golondrina-soft."
+    "usage": "Golondrina azul y blanca (Pygochelidon cyanoleuca), que arma su nido con lo que encuentra en aleros y muros. Categoría DIY (pilar del blog). Como texto sobre las tres superficies y golondrina-soft.",
+    "contrast": [
+     {
+      "on": "surface",
+      "min": 4.5
+     },
+     {
+      "on": "surface-raised",
+      "min": 4.5
+     },
+     {
+      "on": "surface-sunken",
+      "min": 4.5
+     },
+     {
+      "on": "golondrina-soft",
+      "min": 4.5
+     }
+    ]
    },
    {
     "name": "golondrina-soft",
@@ -204,7 +308,25 @@
      "noche": "#ff5a4e",
      "dia": "#a21d2c"
     },
-    "usage": "Tingua bogotana (Rallus semiplumbeus), el pico rojo. Solo errores y acciones destructivas; siempre con palabra o glifo. En día se aleja hacia el carmín para no confundirse con el ladrillo de mirla. Como texto sobre las tres superficies y tingua-soft."
+    "usage": "Tingua bogotana (Rallus semiplumbeus), el pico rojo. Solo errores y acciones destructivas; siempre con palabra o glifo. En día se aleja hacia el carmín para no confundirse con el ladrillo de mirla. Como texto sobre las tres superficies y tingua-soft.",
+    "contrast": [
+     {
+      "on": "surface",
+      "min": 4.5
+     },
+     {
+      "on": "surface-raised",
+      "min": 4.5
+     },
+     {
+      "on": "surface-sunken",
+      "min": 4.5
+     },
+     {
+      "on": "tingua-soft",
+      "min": 4.5
+     }
+    ]
    },
    {
     "name": "tingua-soft",

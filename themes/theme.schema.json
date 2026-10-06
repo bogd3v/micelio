@@ -253,6 +253,31 @@
               },
               "usage": {
                 "type": "string"
+              },
+              "contrast": {
+                "description": "Extra contrast assertions, checked by `npm run theme:check` on top of the contract's rule table.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "on": {
+                      "type": "string",
+                      "pattern": "^[\\w-]+$",
+                      "description": "A color role or token this one sits on."
+                    },
+                    "min": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 21,
+                      "description": "Minimum WCAG contrast ratio on it, in every mode."
+                    }
+                  },
+                  "required": [
+                    "on",
+                    "min"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -312,6 +337,31 @@
               },
               "usage": {
                 "type": "string"
+              },
+              "contrast": {
+                "description": "Extra contrast assertions, checked by `npm run theme:check` on top of the contract's rule table.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "on": {
+                      "type": "string",
+                      "pattern": "^[\\w-]+$",
+                      "description": "A color role or token this one sits on."
+                    },
+                    "min": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 21,
+                      "description": "Minimum WCAG contrast ratio on it, in every mode."
+                    }
+                  },
+                  "required": [
+                    "on",
+                    "min"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -371,6 +421,31 @@
               },
               "usage": {
                 "type": "string"
+              },
+              "contrast": {
+                "description": "Extra contrast assertions, checked by `npm run theme:check` on top of the contract's rule table.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "on": {
+                      "type": "string",
+                      "pattern": "^[\\w-]+$",
+                      "description": "A color role or token this one sits on."
+                    },
+                    "min": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 21,
+                      "description": "Minimum WCAG contrast ratio on it, in every mode."
+                    }
+                  },
+                  "required": [
+                    "on",
+                    "min"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -430,6 +505,31 @@
               },
               "usage": {
                 "type": "string"
+              },
+              "contrast": {
+                "description": "Extra contrast assertions, checked by `npm run theme:check` on top of the contract's rule table.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "on": {
+                      "type": "string",
+                      "pattern": "^[\\w-]+$",
+                      "description": "A color role or token this one sits on."
+                    },
+                    "min": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 21,
+                      "description": "Minimum WCAG contrast ratio on it, in every mode."
+                    }
+                  },
+                  "required": [
+                    "on",
+                    "min"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -489,6 +589,31 @@
               },
               "usage": {
                 "type": "string"
+              },
+              "contrast": {
+                "description": "Extra contrast assertions, checked by `npm run theme:check` on top of the contract's rule table.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "on": {
+                      "type": "string",
+                      "pattern": "^[\\w-]+$",
+                      "description": "A color role or token this one sits on."
+                    },
+                    "min": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 21,
+                      "description": "Minimum WCAG contrast ratio on it, in every mode."
+                    }
+                  },
+                  "required": [
+                    "on",
+                    "min"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -548,6 +673,31 @@
               },
               "usage": {
                 "type": "string"
+              },
+              "contrast": {
+                "description": "Extra contrast assertions, checked by `npm run theme:check` on top of the contract's rule table.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "on": {
+                      "type": "string",
+                      "pattern": "^[\\w-]+$",
+                      "description": "A color role or token this one sits on."
+                    },
+                    "min": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 21,
+                      "description": "Minimum WCAG contrast ratio on it, in every mode."
+                    }
+                  },
+                  "required": [
+                    "on",
+                    "min"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
