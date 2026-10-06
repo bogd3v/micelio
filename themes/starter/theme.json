@@ -1,0 +1,623 @@
+{
+  "$schema": "../theme.schema.json",
+  "contract": 1,
+  "id": "starter",
+  "name": "Starter",
+  "modes": [
+    {
+      "id": "light",
+      "scheme": "light",
+      "name": "Light"
+    },
+    {
+      "id": "dark",
+      "scheme": "dark",
+      "name": "Dark"
+    }
+  ],
+  "fonts": [
+    {
+      "family": "Fraunces",
+      "file": "fraunces-latin-var.woff2",
+      "preload": true
+    }
+  ],
+  "images": {
+    "favicon": "favicon.svg"
+  },
+  "layout": {
+    "header": "centered",
+    "home": "index",
+    "postList": "list",
+    "article": "centered",
+    "footer": "minimal"
+  },
+  "color": {
+    "note": "Warm, calm and bookish: paper, ink, sage and clay. Primitives are neutral names; roles point at them. Roles point at primitives; the contrast rules live in the tokens that need them.",
+    "tokens": [
+      {
+        "name": "paper",
+        "value": {
+          "light": "#f6f1e7",
+          "dark": "#1d1a16"
+        },
+        "usage": "Primitive: the page itself. Warm off-white in light, warm charcoal in dark (never pure black)."
+      },
+      {
+        "name": "linen",
+        "value": {
+          "light": "#fffdf8",
+          "dark": "#26221d"
+        },
+        "usage": "Primitive: one step above paper."
+      },
+      {
+        "name": "parchment",
+        "value": {
+          "light": "#ebe3d3",
+          "dark": "#15130f"
+        },
+        "usage": "Primitive: one step below paper, deeper than the page."
+      },
+      {
+        "name": "sage",
+        "value": {
+          "light": "#2f5d4a",
+          "dark": "#9cc7aa"
+        },
+        "usage": "Primitive: the calm green of links and focus. Darkened in light and lightened in dark, so it reads as text on every surface."
+      },
+      {
+        "name": "clay",
+        "value": {
+          "light": "#9c4a2f",
+          "dark": "#e8946c"
+        },
+        "usage": "Primitive: the terracotta accent."
+      },
+      {
+        "name": "ochre",
+        "value": {
+          "light": "#7a5a10",
+          "dark": "#e0b95a"
+        },
+        "usage": "Primitive: warm yellow-brown for warnings."
+      },
+      {
+        "name": "plum",
+        "value": {
+          "light": "#7a3f66",
+          "dark": "#d6a0c4"
+        },
+        "usage": "Primitive: muted purple."
+      },
+      {
+        "name": "slate",
+        "value": {
+          "light": "#2f5f8a",
+          "dark": "#8fb8de"
+        },
+        "usage": "Primitive: dusty blue."
+      },
+      {
+        "name": "rose",
+        "value": {
+          "light": "#a03348",
+          "dark": "#ee9aa8"
+        },
+        "usage": "Primitive: soft red for errors."
+      },
+      {
+        "name": "surface",
+        "value": "{paper}",
+        "usage": "Page background. Paper-like, warm, easy for long reading."
+      },
+      {
+        "name": "surface-raised",
+        "value": "{linen}",
+        "usage": "Cards, menus, fields and the sticky header. Slightly lighter than the page in light; lighter charcoal in dark."
+      },
+      {
+        "name": "surface-sunken",
+        "value": "{parchment}",
+        "usage": "Code blocks and empty image areas."
+      },
+      {
+        "name": "line",
+        "value": {
+          "light": "#ddd2bd",
+          "dark": "#3a342c"
+        },
+        "usage": "Hairlines and card borders. Decorative; they do not delimit controls."
+      },
+      {
+        "name": "line-strong",
+        "value": {
+          "light": "#80755f",
+          "dark": "#8a8070"
+        },
+        "usage": "Control borders (fields, secondary button): firmer than line, visible on all three surfaces."
+      },
+      {
+        "name": "ink",
+        "value": {
+          "light": "#2a2620",
+          "dark": "#f0e9db"
+        },
+        "usage": "Main text and the primary button fill. Warm near-black in light, cream in dark."
+      },
+      {
+        "name": "ink-muted",
+        "value": {
+          "light": "#5c5446",
+          "dark": "#b8ae9c"
+        },
+        "usage": "Secondary text: excerpts, dates, hints. Muted but still body text on every surface.",
+        "contrast": [
+          {
+            "on": "surface",
+            "min": 4.5
+          },
+          {
+            "on": "surface-raised",
+            "min": 4.5
+          },
+          {
+            "on": "surface-sunken",
+            "min": 4.5
+          }
+        ]
+      },
+      {
+        "name": "on-ink",
+        "value": {
+          "light": "#f6f1e7",
+          "dark": "#1d1a16"
+        },
+        "usage": "Text on an ink fill (primary button label)."
+      },
+      {
+        "name": "accent",
+        "value": "{clay}",
+        "usage": "Brand accent: calls to action and active underlines."
+      },
+      {
+        "name": "accent-soft",
+        "value": {
+          "light": "#f3ddd0",
+          "dark": "#3b2a21"
+        },
+        "usage": "Tint behind accent; also the hover wash of chips and nav links."
+      },
+      {
+        "name": "accent-hover",
+        "value": "color-mix(in oklab, var(--accent) 82%, var(--ink))",
+        "usage": "Accent on hover, a step toward ink."
+      },
+      {
+        "name": "on-accent",
+        "value": {
+          "light": "#ffffff",
+          "dark": "#1d1a16"
+        },
+        "usage": "Text on an accent fill."
+      },
+      {
+        "name": "link",
+        "value": "{sage}",
+        "usage": "Links. Green on purpose: the accent stays for actions, not for reading."
+      },
+      {
+        "name": "focus",
+        "value": "{sage}",
+        "usage": "Focus ring: the same sage as links, visible on every surface."
+      },
+      {
+        "name": "success",
+        "value": "{sage}",
+        "usage": "Success state."
+      },
+      {
+        "name": "success-soft",
+        "value": {
+          "light": "#dce9de",
+          "dark": "#25332a"
+        },
+        "usage": "Tint behind success."
+      },
+      {
+        "name": "warning",
+        "value": "{ochre}",
+        "usage": "Warning state."
+      },
+      {
+        "name": "warning-soft",
+        "value": {
+          "light": "#f1e4bd",
+          "dark": "#392f16"
+        },
+        "usage": "Tint behind warning."
+      },
+      {
+        "name": "danger",
+        "value": "{rose}",
+        "usage": "Error state."
+      },
+      {
+        "name": "danger-soft",
+        "value": {
+          "light": "#f6dadb",
+          "dark": "#3d242a"
+        },
+        "usage": "Tint behind danger."
+      },
+      {
+        "name": "info",
+        "value": "{slate}",
+        "usage": "Informational state."
+      },
+      {
+        "name": "info-soft",
+        "value": {
+          "light": "#dbe6f1",
+          "dark": "#1f2c39"
+        },
+        "usage": "Tint behind info."
+      },
+      {
+        "name": "category-1",
+        "value": "{plum}",
+        "usage": "Plum."
+      },
+      {
+        "name": "category-1-soft",
+        "value": {
+          "light": "#eadbe5",
+          "dark": "#36263a"
+        },
+        "usage": "Tint behind category 1."
+      },
+      {
+        "name": "category-2",
+        "value": "{slate}",
+        "usage": "Dusty blue."
+      },
+      {
+        "name": "category-2-soft",
+        "value": {
+          "light": "#dbe6f1",
+          "dark": "#1f2c39"
+        },
+        "usage": "Tint behind category 2."
+      },
+      {
+        "name": "category-3",
+        "value": "{sage}",
+        "usage": "Sage green."
+      },
+      {
+        "name": "category-3-soft",
+        "value": {
+          "light": "#dce9de",
+          "dark": "#25332a"
+        },
+        "usage": "Tint behind category 3."
+      },
+      {
+        "name": "category-4",
+        "value": "{clay}",
+        "usage": "Clay."
+      },
+      {
+        "name": "category-4-soft",
+        "value": {
+          "light": "#f3ddd0",
+          "dark": "#3b2a21"
+        },
+        "usage": "Tint behind category 4."
+      },
+      {
+        "name": "category-5",
+        "value": "{ochre}",
+        "usage": "Ochre."
+      },
+      {
+        "name": "category-5-soft",
+        "value": {
+          "light": "#f1e4bd",
+          "dark": "#392f16"
+        },
+        "usage": "Tint behind category 5."
+      },
+      {
+        "name": "category-6",
+        "value": "{rose}",
+        "usage": "Rose."
+      },
+      {
+        "name": "category-6-soft",
+        "value": {
+          "light": "#f6dadb",
+          "dark": "#3d242a"
+        },
+        "usage": "Tint behind category 6."
+      },
+      {
+        "name": "code-ink",
+        "value": "{ink}",
+        "usage": "Code text."
+      },
+      {
+        "name": "code-muted",
+        "value": "{ink-muted}",
+        "usage": "Code comments and punctuation."
+      },
+      {
+        "name": "code-keyword",
+        "value": "{clay}",
+        "usage": "Code keywords."
+      },
+      {
+        "name": "code-string",
+        "value": "{sage}",
+        "usage": "Code strings."
+      },
+      {
+        "name": "code-number",
+        "value": "{ochre}",
+        "usage": "Code numbers."
+      },
+      {
+        "name": "code-function",
+        "value": "{slate}",
+        "usage": "Code function names."
+      }
+    ]
+  },
+  "shadow": {
+    "note": "Soft real shadows; nothing glows.",
+    "tokens": [
+      {
+        "name": "glow-accent",
+        "value": {
+          "light": "0 0 0 3px rgba(156, 74, 47, 0.22)",
+          "dark": "0 0 0 3px rgba(232, 148, 108, 0.32)"
+        },
+        "usage": "A soft halo around the accent button on hover, not a neon glow."
+      },
+      {
+        "name": "shadow-raised",
+        "value": {
+          "light": "0 1px 2px rgba(60, 40, 20, 0.06), 0 10px 28px -10px rgba(60, 40, 20, 0.18)",
+          "dark": "0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -10px rgba(0, 0, 0, 0.55)"
+        },
+        "usage": "Cards and the sticky header: a real two-layer shadow, warm-tinted in light."
+      },
+      {
+        "name": "shadow-overlay",
+        "value": "0 24px 48px -16px rgba(40, 28, 14, 0.28), 0 6px 14px -6px rgba(40, 28, 14, 0.14)",
+        "usage": "Menus and dialogs."
+      }
+    ]
+  },
+  "spacing": {
+    "note": "Same 4px base as other themes, with larger section and gutter spacing.",
+    "tokens": [
+      {
+        "name": "space-1",
+        "value": "4px",
+        "usage": "Base 4px, same scale as any theme."
+      },
+      {
+        "name": "space-2",
+        "value": "8px"
+      },
+      {
+        "name": "space-3",
+        "value": "12px"
+      },
+      {
+        "name": "space-4",
+        "value": "16px"
+      },
+      {
+        "name": "space-6",
+        "value": "24px"
+      },
+      {
+        "name": "space-8",
+        "value": "32px"
+      },
+      {
+        "name": "space-12",
+        "value": "48px"
+      },
+      {
+        "name": "space-16",
+        "value": "64px"
+      },
+      {
+        "name": "space-24",
+        "value": "96px"
+      },
+      {
+        "name": "space-section",
+        "value": "128px",
+        "usage": "Generous air between sections: a third larger than a catalog would use."
+      },
+      {
+        "name": "space-gutter",
+        "value": "40px",
+        "usage": "Gap between cards and columns."
+      },
+      {
+        "name": "space-inline",
+        "value": "20px",
+        "usage": "Page side padding; centers a container at desktop.",
+        "at": {
+          "768px": "max(clamp(24px, 8vw, 120px), calc((100% - {container}) / 2))"
+        }
+      }
+    ]
+  },
+  "radius": {
+    "note": "Rounded: the opposite of square corners.",
+    "tokens": [
+      {
+        "name": "radius-control",
+        "value": "10px",
+        "usage": "Buttons and fields: clearly rounded."
+      },
+      {
+        "name": "radius-card",
+        "value": "20px",
+        "usage": "Cards and panels."
+      },
+      {
+        "name": "radius-full",
+        "value": "9999px",
+        "usage": "Pills and avatars."
+      }
+    ]
+  },
+  "size": {
+    "tokens": [
+      {
+        "name": "container",
+        "value": "1120px",
+        "usage": "Page width; a little narrower than the default so lines stay short."
+      },
+      {
+        "name": "measure",
+        "value": "72ch",
+        "usage": "A longer line than Bogotá's 68ch, for a larger body with more leading."
+      },
+      {
+        "name": "nav-height",
+        "value": "72px",
+        "usage": "Row height of the bar header; the centered header uses --bd-header-h instead."
+      }
+    ]
+  },
+  "motion": {
+    "note": "Slow and soft. Theme animations live under prefers-reduced-motion: no-preference.",
+    "tokens": [
+      {
+        "name": "duration-fast",
+        "value": "180ms"
+      },
+      {
+        "name": "duration-base",
+        "value": "280ms"
+      },
+      {
+        "name": "duration-slow",
+        "value": "520ms",
+        "usage": "Slower, gentler than the default."
+      },
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+      },
+      {
+        "name": "ease-emphasized",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "usage": "Eases out softly."
+      }
+    ]
+  },
+  "type": {
+    "families": {
+      "display": "\"Fraunces\", \"Fraunces Fallback\", \"Iowan Old Style\", \"Palatino Linotype\", Georgia, serif",
+      "sans": "system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", sans-serif",
+      "mono": "ui-monospace, \"SF Mono\", Menlo, Consolas, \"Liberation Mono\", monospace"
+    },
+    "groups": [
+      {
+        "family": "display",
+        "styles": [
+          {
+            "name": "display-xl",
+            "fontSize": "64px",
+            "lineHeight": "72px",
+            "fontWeight": 400,
+            "letterSpacing": "-0.02em"
+          },
+          {
+            "name": "display-l",
+            "fontSize": "44px",
+            "lineHeight": "52px",
+            "fontWeight": 400,
+            "letterSpacing": "-0.015em"
+          },
+          {
+            "name": "heading-1",
+            "fontSize": "32px",
+            "lineHeight": "40px",
+            "fontWeight": 500,
+            "letterSpacing": "-0.01em"
+          },
+          {
+            "name": "heading-2",
+            "fontSize": "24px",
+            "lineHeight": "32px",
+            "fontWeight": 500
+          },
+          {
+            "name": "heading-3",
+            "fontSize": "20px",
+            "lineHeight": "28px",
+            "fontWeight": 600
+          }
+        ]
+      },
+      {
+        "family": "sans",
+        "styles": [
+          {
+            "name": "body-l",
+            "fontSize": "20px",
+            "lineHeight": "34px",
+            "fontWeight": 400
+          },
+          {
+            "name": "body",
+            "fontSize": "17px",
+            "lineHeight": "28px",
+            "fontWeight": 400
+          },
+          {
+            "name": "body-s",
+            "fontSize": "15px",
+            "lineHeight": "24px",
+            "fontWeight": 400
+          },
+          {
+            "name": "eyebrow",
+            "fontSize": "13px",
+            "lineHeight": "18px",
+            "fontWeight": 600,
+            "letterSpacing": "0.04em"
+          },
+          {
+            "name": "meta",
+            "fontSize": "14px",
+            "lineHeight": "20px",
+            "fontWeight": 400
+          }
+        ]
+      },
+      {
+        "family": "mono",
+        "styles": [
+          {
+            "name": "code",
+            "fontSize": "14px",
+            "lineHeight": "22px",
+            "fontWeight": 400
+          }
+        ]
+      }
+    ]
+  }
+}

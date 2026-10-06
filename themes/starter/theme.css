@@ -1,0 +1,67 @@
+/* Starter: examples of styling public hooks (docs/themes/creating-a-theme.md, section 4).
+   Keep what you want, delete the rest; the core styles everything else. */
+
+/* Eyebrows read as quiet sentence-case labels, not uppercase caps */
+.bd-eyebrow {
+    text-transform: none;
+}
+
+/* A hook shared by several variants is paired with data-layout when the rule is for one of them */
+.bd-header[data-layout="centered"] .bd-nav-link {
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-full);
+}
+
+.bd-header[data-layout="centered"] .bd-nav-link:hover {
+    background: var(--accent-soft);
+}
+
+/* The index home opens with the site name set as a calm serif title */
+.bd-home-lede-title {
+    font-weight: 400;
+    text-wrap: balance;
+}
+
+/* The core sets chips, segmented buttons and tags in uppercase mono; here they are plain sans */
+.bd-chip,
+.bd-seg,
+.bd-tag {
+    font-family: var(--font-sans);
+    letter-spacing: 0.01em;
+    text-transform: none;
+}
+
+.bd-chip {
+    border-radius: var(--radius-full);
+}
+
+.bd-seg-group {
+    overflow: hidden;
+    border-radius: var(--radius-control);
+}
+
+.bd-chip:hover {
+    background: var(--accent-soft);
+}
+
+/* List rows: the title takes the accent on hover */
+.bd-post-row:hover .bd-post-row-link {
+    color: var(--accent);
+}
+
+.bd-foot[data-layout="minimal"] {
+    background: var(--surface-sunken);
+    border-top: 1px solid var(--line);
+}
+
+/* Motion only for people who have not asked for less (ADR 0005, section 10) */
+@media (prefers-reduced-motion: no-preference) {
+    .bd-header[data-layout="centered"] .bd-nav-link,
+    .bd-chip {
+        transition: background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .bd-post-row-link {
+        transition: color var(--duration-base) var(--ease-standard);
+    }
+}

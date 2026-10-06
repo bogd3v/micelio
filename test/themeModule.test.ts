@@ -61,7 +61,7 @@ describe('theme discovery', () => {
     const extra = mkdtempSync(join(tmpdir(), 'bd-themes-'))
     theme(extra, 'minimal')
     const ids = discoverThemes(themeRoots(process.cwd(), extra)).map(found => found.id)
-    expect(ids).toEqual(['bogota', 'minimal'])
+    expect(ids).toEqual(['bogota', 'starter', 'minimal'])
   })
 
   it('accepts a directory that is itself a theme, and skips missing ones', () => {
