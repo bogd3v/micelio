@@ -15,13 +15,11 @@ Components read roles only. Primitive colors (`--mirla`, `--chillon`) belong to 
 
 ## 1. Start a theme
 
-Copy the starter theme, `themes/starter/`: a complete, commented example (two modes, the five second layout variants, one serif web font with its fallback, a neutral `ThemeMark`, messages, and a `theme.css` that styles a few hooks). The `usage` of each token and the `note` of each group explain the choices.
+The quickest start is `npm run theme:new -- my-theme [--name "My theme"]`: it copies the starter theme (below) to `themes/my-theme/` and renames its id, name and `starter-*` classes. The `create-theme` skill (`.claude/skills/create-theme/`) is the short version of this guide for agents.
 
-```bash
-cp -r themes/starter themes/my-theme
-```
+The starter theme, `themes/starter/`, is a complete, commented example (two modes, the five second layout variants, one serif web font with its fallback, a neutral `ThemeMark`, messages, and a `theme.css` that styles a few hooks). The `usage` of each token and the `note` of each group explain the choices.
 
-Set `id` to the folder name and rename the `starter-*` classes of `slots/` to your id (own attributes are `data-<id>-*`; the starter has none). If you change the font, regenerate or hand-tune `font-fallbacks.css`. The smallest valid theme is the minimal fixture (one mode, system fonts, no files to serve), if you would rather build up than trim down:
+By hand, `cp -r themes/starter themes/my-theme`, then set `id` to the folder name and rename the `starter-*` classes of `slots/` to your id (own attributes are `data-<id>-*`; the starter has none). If you change the font, regenerate or hand-tune `font-fallbacks.css`. The smallest valid theme is the minimal fixture (one mode, system fonts, no files to serve), if you would rather build up than trim down:
 
 ```bash
 cp -r test/fixtures/themes/minimal themes/my-theme
@@ -136,7 +134,7 @@ Primitives may be used in the theme's own CSS and slots, never in the core.
 
 The regions and the variants the core implements for each, with what each one renders and the hooks that exist only in it, are in [reference/layout.md](reference/layout.md). Naming any other variant (a typo) fails validation with the list of known ones. An omitted region uses the first variant (the default).
 
-Every installed theme styles every variant, because `/_theme` shows both: with `MICELIO_SPECIMEN=1` it renders the variants your theme does not use next to the active one. The core scopes each variant's CSS by `data-layout`. In `theme.css` select the hook together with the variant (`.bd-header[data-layout="centered"] .bd-nav-link`) when a rule is meant for one of them. Some variants remove features of the page, not only restyle it; the descriptions in [reference/layout.md](reference/layout.md) say which.
+The core styles every variant from your roles, and your own rules for variants you do not use are optional. But `/_theme` shows every variant and CI captures them, so review them. With `MICELIO_SPECIMEN=1` the page renders the variants your theme does not use next to the active one. The core scopes each variant's CSS by `data-layout`. In `theme.css` select the hook together with the variant (`.bd-header[data-layout="centered"] .bd-nav-link`) when a rule is meant for one of them. Some variants remove features of the page, not only restyle it; the descriptions in [reference/layout.md](reference/layout.md) say which.
 
 ### Fonts
 
@@ -259,7 +257,7 @@ Each contrast error names the mode, role, surface, measured ratio, required rati
 NUXT_PUBLIC_THEME=my-theme npm run dev
 ```
 
-Open `http://localhost:3000/_theme`: the catalog of components, states and sections in every mode. The page exists in dev and in a build made with `MICELIO_SPECIMEN=1`; a plain production build does not have it. `npm run lint` checks template classes, primitive colors and that `themes/theme.schema.json` and `docs/themes/reference/` have not drifted from the contract (`npm run theme:schema` and `npm run theme:reference` regenerate them); it does not check your theme.
+Open `http://localhost:3000/_theme`: the catalog of components, states and sections in every mode. The page exists in dev and in a build made with `MICELIO_SPECIMEN=1`; a plain production build does not have it. `npm run lint` checks template classes, primitive colors and that `themes/theme.schema.json` and `docs/themes/reference/` have not drifted from the contract (`npm run theme:schema` and `npm run theme:reference` regenerate them); it does not check your theme. On a fresh clone, if `npm run lint` fails with `Cannot find module '.nuxt/eslint.config.mjs'`, run `npx nuxt prepare` once.
 
 ## 9. What CI runs
 
