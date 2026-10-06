@@ -506,7 +506,8 @@
       "fediverse": "Fediverso · {handle}",
       "newsletter": "Newsletter",
       "coffee": "Invitarme un café",
-      "privacy": "Privacidad y cookies"
+      "privacy": "Privacidad y cookies",
+      "source": "Código fuente"
     }
   },
   "feed": {

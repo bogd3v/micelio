@@ -2,6 +2,7 @@
   "name": "micelio",
   "type": "module",
   "private": true,
+  "license": "AGPL-3.0-only",
   "engines": {
     "node": ">=22.12"
   },
@@ -17,7 +18,8 @@
     "tokens": "node scripts/build-tokens.mjs",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxi typecheck",
-    "lint": "eslint . && npm run lint:primitives && npm run lint:classes && npm run lint:schema && npm run lint:reference",
+    "lint": "eslint . && npm run lint:primitives && npm run lint:classes && npm run lint:schema && npm run lint:reference && npm run lint:licenses",
+    "lint:licenses": "node scripts/check-licenses.mjs",
     "lint:schema": "jiti scripts/theme-schema.ts --check",
     "lint:reference": "jiti scripts/theme-reference.ts --check",
     "lint:classes": "node scripts/check-classes.mjs",

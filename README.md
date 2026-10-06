@@ -181,4 +181,10 @@ The active theme is a package in `themes/<id>/` (default `bogota`, chosen at bui
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Micelio is free software under the [GNU AGPL-3.0-only](LICENSE). If you run a modified Micelio as a service, you must offer its source to your users: set `NUXT_PUBLIC_SOURCE_URL` to your version's repository, and the footer links to it.
+
+- **Themes** that use only the public theme contract may have any license, including a proprietary one: see the [theme exception](LICENSE-EXCEPTION.md).
+- **Third-party material** (dependencies, fonts, images, logos) and the content your site publishes are not covered by Micelio's license and keep their own: see [THIRD-PARTY.md](THIRD-PARTY.md).
+- **Contributing**: under the same license, with a DCO sign-off on every commit; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+The reasons are in [ADR 0007](docs/adr/0007-license.md).

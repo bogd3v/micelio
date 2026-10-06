@@ -54,7 +54,8 @@
     "bd-acc": { "describes": "An accordion (details).", "layouts": { "footer": ["columns"] }, "states": ["[open]"] },
     "bd-foot-row": { "describes": "A link row inside an accordion.", "layouts": { "footer": ["columns"] } },
     "bd-foot-credits": { "describes": "Legal line at the bottom of the footer.", "layouts": { "footer": ["columns", "minimal"] } },
-    "bd-foot-legal": { "describes": "Copyright and privacy link.", "layouts": { "footer": ["columns", "minimal"] } },
+    "bd-foot-legal": { "describes": "Copyright, privacy link and source link.", "layouts": { "footer": ["columns", "minimal"] } },
+    "bd-foot-source": { "describes": "Link to the source code of the site, required by the AGPL (section 13): restyle it, do not hide it.", "layouts": { "footer": ["columns", "minimal"] } },
 
     "bd-home": { "describes": "Home page content.", "layouts": { "home": ["showcase", "index"] } },
     "bd-home-section": "A home page section (also used by the about page blocks).",
