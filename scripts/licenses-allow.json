@@ -1,0 +1,5 @@
+{
+  "khroma": { "reason": "MIT (license file in the package, no license field in package.json); mermaid dependency" },
+  "tosource": { "reason": "zlib-style permissive license (LICENSE file, no license field); build-time dependency of @nuxtjs/i18n" },
+  "elkjs": { "reason": "EPL-2.0, unmodified, loaded as a separate mermaid chunk, not combined with AGPL code; pending maintainer decision on issue #306" }
+}

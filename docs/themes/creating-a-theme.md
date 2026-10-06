@@ -192,6 +192,14 @@ Hooks are validated by the build and by `theme:check`. `npm run lint` does not c
 
 `i18n/<locale>.json` files (the file name is the locale code, and must be one of the site's locales, `en` or `es`: another name adds a new locale to the site, with no core messages) are merged into the site's messages under the `theme.*` namespace. User-facing text of a theme lives here, never in the core's locale files. The core reads these keys when present (ADR 0005, section 4): `theme.hud.{city,coords,altitude,madeIn}`, `theme.guide.*`, `theme.latest.emptyNote`, `theme.palette.names` and `theme.profile.alt`. Without them the place line renders nothing and the others fall back to a neutral text or nothing. Your slots may add their own keys under `theme.*`.
 
+### The source link
+
+The footer shows a link to the site's source code (`bd-foot-source`, from `runtimeConfig.public.sourceUrl`). The AGPL (section 13) requires it: a theme may restyle it but must keep it visible in every footer layout and mode.
+
+### What slots may use, and the license of a theme
+
+A slot may call or import only the **slot APIs**: `useSite()`, `useAnimations()`, the helpers of `~/helpers/categories`, the types of `~/interfaces`, and Vue, Nuxt (`<NuxtLink>`, `<NuxtImg>`, `useId()`, `useRuntimeConfig()`) and `useI18n()`. A theme that keeps to them, to the public hooks and to the slot list may use any license, including a proprietary one ([theme exception](../../LICENSE-EXCEPTION.md)). `themes/starter/` is MIT-0, so a theme made with `npm run theme:new` can take any license (replace its `LICENSE`); a theme that copies `themes/bogota/` or core code is AGPL-3.0. Fonts and images keep their own licenses ([THIRD-PARTY.md](../../THIRD-PARTY.md)).
+
 ## 6. Accessibility handled by the core
 
 A theme gets these without doing anything, and cannot override most of them:
