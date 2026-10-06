@@ -31,7 +31,7 @@ Decoration inside the `columns` footer, between the link columns and the credits
 
 | Prop | Type | Required | Description |
 | --- | --- | --- | --- |
-| `placement` | `'section' \| 'footer'` | no | Where it renders; the core passes `footer`. `section` is reserved. |
+| `placement` | `'footer'` | no | Where it renders; the core only renders it in the footer. |
 
 - Core default: Nothing.
 

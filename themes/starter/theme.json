@@ -330,19 +330,6 @@
         "usage": "Tint behind category 5."
       },
       {
-        "name": "category-6",
-        "value": "{rose}",
-        "usage": "Rose."
-      },
-      {
-        "name": "category-6-soft",
-        "value": {
-          "light": "#f6dadb",
-          "dark": "#3d242a"
-        },
-        "usage": "Tint behind category 6."
-      },
-      {
         "name": "code-ink",
         "value": "{ink}",
         "usage": "Code text."
@@ -431,14 +418,6 @@
       {
         "name": "space-12",
         "value": "48px"
-      },
-      {
-        "name": "space-16",
-        "value": "64px"
-      },
-      {
-        "name": "space-24",
-        "value": "96px"
       },
       {
         "name": "space-section",

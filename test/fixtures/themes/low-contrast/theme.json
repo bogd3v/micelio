@@ -147,14 +147,6 @@
         "value": "#f4e5b8"
       },
       {
-        "name": "category-6",
-        "value": "#a21d2c"
-      },
-      {
-        "name": "category-6-soft",
-        "value": "#f8dad6"
-      },
-      {
         "name": "code-ink",
         "value": "#2b1a13"
       },
@@ -225,14 +217,6 @@
       {
         "name": "space-12",
         "value": "48px"
-      },
-      {
-        "name": "space-16",
-        "value": "64px"
-      },
-      {
-        "name": "space-24",
-        "value": "96px"
       },
       {
         "name": "space-section",

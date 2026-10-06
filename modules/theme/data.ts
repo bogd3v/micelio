@@ -46,7 +46,7 @@ export const SLOT_SPECS: Record<SlotName, SlotSpec> = {
   },
   ThemeDivider: {
     purpose: 'Decoration inside the `columns` footer, between the link columns and the credits.',
-    props: [{ name: 'placement', type: '\'section\' | \'footer\'', optional: true, description: 'Where it renders; the core passes `footer`. `section` is reserved.' }],
+    props: [{ name: 'placement', type: '\'footer\'', optional: true, description: 'Where it renders; the core only renders it in the footer.' }],
     defaultRenders: 'Nothing.',
   },
   ThemeEmptyState: {

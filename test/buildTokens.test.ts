@@ -206,10 +206,10 @@ describe('Bogotá\'s theme.json', () => {
   })
 
   it('defines every color token of the design system in both modes', () => {
-    // Bogotá's primitives and base roles (25), plus the semantic roles of ADR 0005 (31)
-    expect(data.color.tokens).toHaveLength(56)
+    // Bogotá's primitives and base roles (25), plus the semantic roles of ADR 0005 (29)
+    expect(data.color.tokens).toHaveLength(54)
     const names = data.color.tokens.map(token => token.name)
-    for (const role of ['accent', 'accent-hover', 'on-accent', 'link-soft', 'danger-soft', 'info', 'category-1', 'category-6-soft', 'code-keyword']) {
+    for (const role of ['accent', 'accent-hover', 'on-accent', 'link-soft', 'danger-soft', 'info', 'category-1', 'category-5-soft', 'code-keyword']) {
       expect(names).toContain(role)
     }
     for (const { name } of data.color.tokens) {

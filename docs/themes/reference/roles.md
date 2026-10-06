@@ -10,9 +10,9 @@ Color roles. A `value` is one string or one value per mode id; contrast is check
 
 | Role | Required | Purpose | As text or control on | As background for |
 | --- | --- | --- | --- | --- |
-| `surface` | required | Page background. | none | `ink`, `ink-muted`, `accent`, `link`, `success`, `warning`, `danger`, `info`, `category-1`, `category-2`, `category-3`, `category-4`, `category-5`, `category-6` ≥ 4.5:1; `line-strong`, `focus` ≥ 3:1 |
-| `surface-raised` | required | Cards, menus, form fields and the mobile tab bar. | none | `ink`, `ink-muted`, `accent`, `link`, `success`, `warning`, `danger`, `info`, `category-1`, `category-2`, `category-3`, `category-4`, `category-5`, `category-6` ≥ 4.5:1; `line-strong`, `focus` ≥ 3:1 |
-| `surface-sunken` | required | Code blocks and inset areas such as figures and card covers. | none | `ink`, `ink-muted`, `accent`, `link`, `success`, `warning`, `danger`, `info`, `category-1`, `category-2`, `category-3`, `category-4`, `category-5`, `category-6`, `code-ink`, `code-muted`, `code-keyword`, `code-string`, `code-number`, `code-function` ≥ 4.5:1; `line-strong`, `focus` ≥ 3:1 |
+| `surface` | required | Page background. | none | `ink`, `ink-muted`, `accent`, `link`, `success`, `warning`, `danger`, `info`, `category-1`, `category-2`, `category-3`, `category-4`, `category-5` ≥ 4.5:1; `line-strong`, `focus` ≥ 3:1 |
+| `surface-raised` | required | Cards, menus, form fields and the mobile tab bar. | none | `ink`, `ink-muted`, `accent`, `link`, `success`, `warning`, `danger`, `info`, `category-1`, `category-2`, `category-3`, `category-4`, `category-5` ≥ 4.5:1; `line-strong`, `focus` ≥ 3:1 |
+| `surface-sunken` | required | Code blocks and inset areas such as figures and card covers. | none | `ink`, `ink-muted`, `accent`, `link`, `success`, `warning`, `danger`, `info`, `category-1`, `category-2`, `category-3`, `category-4`, `category-5`, `code-ink`, `code-muted`, `code-keyword`, `code-string`, `code-number`, `code-function` ≥ 4.5:1; `line-strong`, `focus` ≥ 3:1 |
 | `line` | required | Decorative hairlines: separators and card borders. | none | none |
 | `line-strong` | required | Control borders (inputs, secondary button). | `surface`, `surface-raised`, `surface-sunken` ≥ 3:1 | none |
 | `ink` | required | Main text and the fill of the primary button. | `surface`, `surface-raised`, `surface-sunken` ≥ 4.5:1 | `on-ink` ≥ 4.5:1 |
@@ -42,8 +42,6 @@ Color roles. A `value` is one string or one value per mode id; contrast is check
 | `category-4-soft` | required | Tinted background behind category 4 text. | none | `category-4` ≥ 4.5:1 |
 | `category-5` | required | Color of category 5: categories take the roles in order (`categoryColor()`). | `surface`, `surface-raised`, `surface-sunken`, `category-5-soft` ≥ 4.5:1 | none |
 | `category-5-soft` | required | Tinted background behind category 5 text. | none | `category-5` ≥ 4.5:1 |
-| `category-6` | required | Category 6. Not read by the core today (it has 5 categories); reserved. | `surface`, `surface-raised`, `surface-sunken`, `category-6-soft` ≥ 4.5:1 | none |
-| `category-6-soft` | required | Tinted background of category 6. Not read by the core today; reserved. | none | `category-6` ≥ 4.5:1 |
 | `code-ink` | required | Code text. | `surface-sunken` ≥ 4.5:1 | none |
 | `code-muted` | required | Comments and punctuation in code. | `surface-sunken` ≥ 4.5:1 | none |
 | `code-keyword` | required | Keywords in code. | `surface-sunken` ≥ 4.5:1 | none |
@@ -76,8 +74,6 @@ Space scale and page rhythm. `at` gives responsive values.
 | `space-6` | required | Step 6 of the space scale. | none | none |
 | `space-8` | required | Step 8 of the space scale. | none | none |
 | `space-12` | required | Step 12 of the space scale. | none | none |
-| `space-16` | required | Step 16 of the space scale. Not read by the core today; reserved. | none | none |
-| `space-24` | required | Step 24 of the space scale. Not read by the core today; reserved. | none | none |
 | `space-section` | required | Padding between page sections. | none | none |
 | `space-gutter` | required | Gap of card grids. | none | none |
 | `space-inline` | required | Side margin of the page, per breakpoint. | none | none |
