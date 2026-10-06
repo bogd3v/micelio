@@ -6,6 +6,7 @@ import { setupComponents, setupData } from './data'
 import { setupLayout } from './layout'
 import { setupModes } from './modes'
 import { setupSlots } from './slots'
+import { setupSpecimen } from './specimen/setup'
 
 // ADR 0005, section 4: themes live in themes/<id>/ and reach the page through generated files.
 // No logic here: each concern has its own file.
@@ -20,6 +21,7 @@ export default defineNuxtModule({
     setupLayout(ctx)
     setupComponents(ctx)
     setupCss(ctx)
+    setupSpecimen(ctx)
     setupWatch(ctx)
   },
 })

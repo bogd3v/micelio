@@ -20,6 +20,8 @@ export function webServers({ mockPort, appPort, modulesOff = false }: Servers): 
       // The defaults in nuxt.config.ts are empty
       command: [
         `HOST=127.0.0.1 PORT=${appPort}`,
+        // /_theme exists in dev; a build needs it at build time too (modules/theme/specimen/setup.ts)
+        'MICELIO_SPECIMEN=1',
         `NUXT_PUBLIC_STRAPI_URL=http://127.0.0.1:${mockPort}`,
         'NUXT_PUBLIC_SITE_URL=https://bogdev.com.co',
         'NUXT_MEDIA_URL=https://resources.bogdev.com.co',

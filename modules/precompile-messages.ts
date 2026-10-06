@@ -57,8 +57,12 @@ function compileMessage(message: string, key: string): unknown {
 export default defineNuxtModule({
   meta: { name: 'precompile-messages' },
   setup(_options, nuxt): void {
-    // The core locales and the messages the themes register (modules/theme/assets.ts)
-    const messageDirs = [resolve(nuxt.options.rootDir, 'i18n/locales'), ...themeRoots(nuxt.options.rootDir)]
+    // The core locales, the /_theme messages (modules/theme/specimen/setup.ts) and the themes' (modules/theme/assets.ts)
+    const messageDirs = [
+      resolve(nuxt.options.rootDir, 'i18n/locales'),
+      resolve(nuxt.options.rootDir, 'modules/theme/specimen/locales'),
+      ...themeRoots(nuxt.options.rootDir),
+    ]
     const plugin: MessagesPlugin = {
       name: 'micelio:precompile-messages',
       async resolveId(this: ResolveContext, source: string, importer?: string): Promise<string | null> {

@@ -90,6 +90,8 @@ export default defineNuxtConfig({
     '/es/drafts/**': { headers: privatePageHeaders },
     '/newsletter/**': { headers: privatePageHeaders },
     '/es/newsletter/**': { headers: privatePageHeaders },
+    '/_theme': { headers: privatePageHeaders },
+    '/es/_theme': { headers: privatePageHeaders },
     '/api/auth/**': { headers: { 'cache-control': 'private, no-store' } },
     '/api/newsletter/**': { headers: { 'cache-control': 'private, no-store' } },
     '/api/drafts': { headers: { 'cache-control': 'private, no-store' } },

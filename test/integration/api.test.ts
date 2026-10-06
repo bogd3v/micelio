@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { $fetch, fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
 import type { RawStrapiArticle } from '~/interfaces/strapi-post'
 import type { StrapiRichText } from '~/interfaces/strapi-blocks'
 import { Category } from '~/interfaces/design'
@@ -1446,5 +1448,23 @@ describe('theme fonts', () => {
       expect(response.headers.get('content-security-policy')).toBe(csp)
     }
     expect((await fetch('/fonts/archivo-latin-var.woff2.map')).status).toBe(404)
+  })
+})
+
+describe('theme specimen (built only with MICELIO_SPECIMEN=1)', () => {
+  it('has no /_theme route', async () => {
+    for (const path of ['/_theme', '/es/_theme']) expect((await fetch(path)).status, path).toBe(404)
+  })
+
+  it('ships none of its markup, name or messages', () => {
+    const dir = join(useTestContext().nuxt!.options.nitro.output!.dir!, 'public/_nuxt')
+    const files = readdirSync(dir).filter(file => /\.(js|css)$/.test(file))
+    expect(files.length).toBeGreaterThan(0)
+    for (const file of files) {
+      const source = readFileSync(join(dir, file), 'utf8')
+      for (const needle of ['bd-specimen', 'ThemeSpecimenPage', 'Every component, state and layout region']) {
+        expect(source.includes(needle), `${file} contains ${needle}`).toBe(false)
+      }
+    }
   })
 })
