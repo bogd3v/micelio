@@ -1,6 +1,6 @@
 # ADR-0007: License Micelio under AGPL-3.0-only, with a theme exception and DCO
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-06
 **Deciders:** BogDev maintainer
 
@@ -33,7 +33,7 @@ Every running site links to its source in the footer, in both footer layout vari
 
 An additional permission under AGPL section 7, in `LICENSE-EXCEPTION.md` (`LicenseRef-Micelio-Theme-exception`), referenced from `LICENSE` and the README. A theme that interacts with Micelio only through the theme contract is not covered by the AGPL and may be distributed under any license, including a proprietary one, also when it is built into a site together with Micelio. Changes to Micelio itself, including to the contract, stay under the AGPL, and a theme that reaches Micelio outside the contract (internal components, composables, non-public classes) is not covered by the exception.
 
-The exception is added now, not later, because with DCO every contributor keeps their copyright: adding it after the first outside contribution would need everyone's agreement. It must be reviewed by a lawyer before this record is accepted.
+The exception is added now, not later, because with DCO every contributor keeps their copyright: adding it after the first outside contribution would need everyone's agreement. It was accepted without legal review, which was not available; a review is planned (#306) and may refine the wording without changing its intent.
 
 The contract becomes a license boundary, so it must match what the tooling produces. Two consequences:
 
@@ -50,7 +50,7 @@ The AGPL and the theme exception cover only the work of Micelio's contributors. 
 
 `npm run lint:licenses` (`scripts/check-licenses.mjs`, part of `npm run lint`, which CI runs on every PR) reads `package-lock.json` and fails when a production dependency's license is not on an allowlist of AGPL-3.0-compatible licenses (MIT, MIT-0, ISC, BSD, 0BSD, Apache-2.0, MPL-2.0, CC0, CC-BY, Unlicense, BlueOak, Python-2.0, Zlib, OFL-1.1, LGPL, GPL-3.0, AGPL-3.0). SPDX expressions are evaluated (`OR` passes if one side is allowed, `AND` needs all). Dev-only dependencies are not distributed and only warn. Per-package exceptions, each with a reason, live in `scripts/licenses-allow.json`.
 
-Known exception: `elkjs` (EPL-2.0), pulled in by `mermaid` and loaded only on articles with diagrams, as a separate, unmodified file sent to the browser. It stays under the EPL-2.0 (section 4), and `THIRD-PARTY.md` says where its source is, as EPL section 3.2 asks; the legal review should confirm this is enough.
+Known exception: `elkjs` (EPL-2.0), pulled in by `mermaid` and loaded only on articles with diagrams, as a separate, unmodified file sent to the browser. It stays under the EPL-2.0 (section 4), and `THIRD-PARTY.md` says where its source is, as EPL section 3.2 asks; a future legal review should confirm this is enough.
 
 ### 6. Contributions under DCO
 
@@ -89,7 +89,7 @@ Clear, but it closes the door to paid or proprietary themes (#320) and leaves th
 ## Trade-offs
 
 - Some companies avoid AGPL software altogether, so adoption by them is less likely than under MIT.
-- The theme exception is a custom text. It needs legal review and may need wording changes; the contract (ADR 0005) becomes a legal boundary as well as a technical one, so widening or narrowing it changes what the exception covers.
+- The theme exception is a custom text that has not had legal review yet and may need wording changes; the contract (ADR 0005) becomes a legal boundary as well as a technical one, so widening or narrowing it changes what the exception covers.
 - DCO adds a step (`-s`) to every commit, also for the maintainer and for commits made by agents on their behalf.
 - The license check trusts the `license` field of the lockfile; packages without one need a manual exception after reading their license file.
 
