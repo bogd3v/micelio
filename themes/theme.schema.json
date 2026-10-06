@@ -109,19 +109,22 @@
         "home": {
           "type": "string",
           "enum": [
-            "showcase"
+            "showcase",
+            "index"
           ]
         },
         "postList": {
           "type": "string",
           "enum": [
-            "grid"
+            "grid",
+            "list"
           ]
         },
         "article": {
           "type": "string",
           "enum": [
-            "aside"
+            "aside",
+            "centered"
           ]
         },
         "footer": {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { StrapiPost } from '~/interfaces'
 
-defineOptions({ name: 'RegionArticleAside' })
+defineOptions({ name: 'RegionArticleCentered' })
 
 const props = withDefaults(defineProps<{
   post: StrapiPost
@@ -25,7 +25,7 @@ useMarkAsRead(prose, readDocumentId)
 </script>
 
 <template>
-  <div class="bd-article-page" data-layout="aside">
+  <div class="bd-article-page" data-layout="centered">
     <header class="bd-article-head">
       <div class="bd-article-kicker">
         <BdCategoryTag v-if="category" :category="category" />
@@ -72,7 +72,10 @@ useMarkAsRead(prose, readDocumentId)
     <div v-else class="bd-article-cover bd-article-cover-empty" aria-hidden="true" />
 
     <div class="bd-article-body">
-      <BlogTableOfContents class="bd-article-toc" :headings="headings" />
+      <details v-if="headings.length" class="bd-article-toc">
+        <summary class="bd-article-toc-summary">{{ t("post.toc") }}</summary>
+        <BlogTableOfContents :headings="headings" />
+      </details>
 
       <article class="bd-article-content">
         <div ref="prose" class="bd-prose">

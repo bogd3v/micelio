@@ -1,0 +1,41 @@
+/* Introduction and the post list, no hero (ADR 0005, section 5) */
+:where(.bd-home[data-layout="index"]) .bd-home-lede {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding: 48px var(--bd-home-gutter) 56px;
+}
+
+:where(.bd-home[data-layout="index"]) .bd-home-lede-title {
+    margin: 0;
+    font-size: 40px;
+    line-height: 48px;
+    font-weight: 300;
+    text-wrap: balance;
+}
+
+:where(.bd-home[data-layout="index"]) .bd-home-lede-text {
+    margin: 0;
+    max-width: 560px;
+    font-size: 16px;
+    line-height: 26px;
+    color: var(--ink-muted);
+    text-wrap: pretty;
+}
+
+@media (min-width: 768px) {
+    :where(.bd-home[data-layout="index"]) .bd-home-lede {
+        padding: var(--space-section) var(--bd-home-gutter) 64px;
+    }
+
+    :where(.bd-home[data-layout="index"]) .bd-home-lede-title {
+        font-size: 56px;
+        line-height: 62px;
+    }
+
+    :where(.bd-home[data-layout="index"]) .bd-home-lede-text {
+        font-size: 19px;
+        line-height: 32px;
+    }
+}

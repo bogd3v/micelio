@@ -147,6 +147,9 @@ describe('registerAlternates', () => {
     const { components } = setup(undefined)
     expect(components.filter(component => component.global)).toEqual([
       { name: 'RegionHeaderCentered', filePath: join('/app', 'theme/layout/header/Centered.vue'), global: true },
+      { name: 'RegionHomeIndex', filePath: join('/app', 'theme/layout/home/Index.vue'), global: true },
+      { name: 'RegionPostListList', filePath: join('/app', 'theme/layout/postList/List.vue'), global: true },
+      { name: 'RegionArticleCentered', filePath: join('/app', 'theme/layout/article/Centered.vue'), global: true },
       { name: 'RegionFooterMinimal', filePath: join('/app', 'theme/layout/footer/Minimal.vue'), global: true },
     ])
     expect(components.filter(component => !component.global).map(component => component.name)).toEqual(['RegionHeader', 'RegionHome', 'RegionPostList', 'RegionArticle', 'RegionFooter'])
@@ -154,7 +157,7 @@ describe('registerAlternates', () => {
 
   it('registers the default variant as the alternate when the theme uses the other one', () => {
     const { components } = setup({ header: 'centered', footer: 'minimal' })
-    expect(components.filter(component => component.global).map(component => component.name)).toEqual(['RegionHeaderBar', 'RegionFooterColumns'])
+    expect(components.filter(component => component.global).map(component => component.name)).toEqual(['RegionHeaderBar', 'RegionHomeIndex', 'RegionPostListList', 'RegionArticleCentered', 'RegionFooterColumns'])
     expect(components.find(component => component.name === 'RegionHeader')!.filePath).toBe(join('/app', 'theme/layout/header/Centered.vue'))
   })
 
@@ -174,6 +177,9 @@ describe('registerAlternates', () => {
     const ctx = { load: () => ({ manifest: { id: 'x', layout: { header: 'centered' } } }) } as unknown as ThemeContext
     expect(alternateVariants(ctx)).toEqual([
       { region: 'header', variant: 'bar', component: 'RegionHeaderBar' },
+      { region: 'home', variant: 'index', component: 'RegionHomeIndex' },
+      { region: 'postList', variant: 'list', component: 'RegionPostListList' },
+      { region: 'article', variant: 'centered', component: 'RegionArticleCentered' },
       { region: 'footer', variant: 'minimal', component: 'RegionFooterMinimal' },
     ])
   })
@@ -196,7 +202,7 @@ describe('registerAlternates', () => {
       process.env.MICELIO_SPECIMEN = '1'
       const specimen = make(false)
       setupLayout(specimen)
-      expect(specimen.components.filter(component => component.global)).toHaveLength(2)
+      expect(specimen.components.filter(component => component.global)).toHaveLength(5)
     } finally {
       if (previous === undefined) delete process.env.MICELIO_SPECIMEN
       else process.env.MICELIO_SPECIMEN = previous

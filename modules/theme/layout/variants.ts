@@ -13,9 +13,9 @@ export interface RegionVariants {
 // Components live in app/theme/layout/<region>/<Variant>.vue with <variant>.css beside them (ADR 0005, section 5)
 export const REGION_VARIANTS: Record<LayoutRegion, RegionVariants> = {
   header: { component: 'RegionHeader', variants: ['bar', 'centered'] },
-  home: { component: 'RegionHome', variants: ['showcase'] },
-  postList: { component: 'RegionPostList', variants: ['grid'] },
-  article: { component: 'RegionArticle', variants: ['aside'] },
+  home: { component: 'RegionHome', variants: ['showcase', 'index'] },
+  postList: { component: 'RegionPostList', variants: ['grid', 'list'] },
+  article: { component: 'RegionArticle', variants: ['aside', 'centered'] },
   footer: { component: 'RegionFooter', variants: ['columns', 'minimal'] },
 }
 
