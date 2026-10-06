@@ -107,6 +107,10 @@
       "errorPage": "Error page"
     },
     "regions": {
+      "headerVariant": "Header, {variant} variant",
+      "footerVariant": "Footer, {variant} variant",
+      "variantNames": {"bar": "bar", "centered": "centered", "columns": "columns", "minimal": "minimal"},
+      "navLabel": "Navigation, {variant}",
       "active": "Variant of each region in the active theme",
       "chrome": "The header and the footer are the ones around this page.",
       "postList": "Post list: grid and log views",

@@ -107,6 +107,10 @@
       "errorPage": "Página de error"
     },
     "regions": {
+      "headerVariant": "Encabezado, variante {variant}",
+      "footerVariant": "Pie de página, variante {variant}",
+      "variantNames": {"bar": "barra", "centered": "centrado", "columns": "columnas", "minimal": "mínimo"},
+      "navLabel": "Navegación, {variant}",
       "active": "Variante de cada región en el tema activo",
       "chrome": "El encabezado y el pie son los que rodean esta página.",
       "postList": "Lista de artículos: vistas en cuadrícula y en bitácora",

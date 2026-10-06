@@ -1,0 +1,261 @@
+/* Logo centered above the navigation (ADR 0005, section 5); sticky like the bar */
+:root {
+    --bd-header-h: 64px;
+}
+
+html {
+    scroll-padding-top: calc(var(--bd-header-h) + var(--space-4));
+}
+
+.bd-header:where([data-layout="centered"]) {
+    --e: var(--ease-standard);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--surface);
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-header-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    width: 100%;
+    max-width: 80rem;
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-nav {
+    height: 64px;
+    border-bottom: 1px solid var(--line);
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-nav .bd-header-inner {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0 var(--space-4);
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-brand {
+    grid-column: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-nav-main,
+:where(.bd-header[data-layout="centered"]) .bd-nav .bd-nav-lang,
+:where(.bd-header[data-layout="centered"]) .bd-strip {
+    display: none;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-nav-links {
+    display: flex;
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 15px;
+    color: var(--ink-muted);
+    text-decoration: none;
+    transition: color var(--duration-base) var(--e);
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-nav-link:hover,
+:where(.bd-header[data-layout="centered"]) .bd-nav-link[aria-current="page"] {
+    color: var(--ink);
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-nav-link[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--accent);
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-nav-mobile {
+    display: flex;
+    align-items: center;
+    grid-column: 3;
+    justify-self: end;
+    margin-right: calc(-1 * var(--space-3));
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-strip {
+    height: 48px;
+    border-bottom: 1px solid var(--line);
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-strip .bd-header-inner {
+    justify-content: space-between;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-hud,
+:where(.bd-header[data-layout="centered"]) .bd-crumbs {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin: 0;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-hud-mark {
+    color: var(--link);
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-hud-extra {
+    display: none;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-strip-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink-muted);
+    text-decoration: none;
+    transition: color var(--duration-base) var(--e);
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-strip-link:hover,
+:where(.bd-header[data-layout="centered"]) .bd-crumbs-current {
+    color: var(--ink);
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-crumbs-current {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-strip-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* A theme without a place line leaves the actions alone in the strip */
+:where(.bd-header[data-layout="centered"]) .bd-strip-actions:only-child {
+    margin-left: auto;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-strip-read {
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    overflow-x: clip;
+    pointer-events: none;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-progress-bar {
+    height: 100%;
+    background: var(--link);
+    transform: scaleX(var(--bd-read, 0));
+    transform-origin: left;
+}
+
+:where(.bd-header[data-layout="centered"]) .bd-progress-track {
+    position: absolute;
+    inset: 0;
+    transform: translateX(calc(var(--bd-read, 0) * 100%));
+}
+
+@supports (animation-timeline: scroll()) {
+    .bd-header-auto:where([data-layout="centered"]) .bd-progress-bar {
+        animation: bd-read-bar linear both;
+        animation-timeline: scroll(root);
+    }
+
+    .bd-header-auto:where([data-layout="centered"]) .bd-progress-track {
+        animation: bd-read-track linear both;
+        animation-timeline: scroll(root);
+    }
+}
+
+@media (min-width: 768px) {
+    :root {
+        --bd-header-h: 152px;
+    }
+
+    :where(.bd-header[data-layout="centered"]) .bd-header-inner {
+        padding: 0 var(--space-6);
+    }
+
+    :where(.bd-header[data-layout="centered"]) .bd-nav {
+        height: 104px;
+    }
+
+    :where(.bd-header[data-layout="centered"]) .bd-nav .bd-header-inner {
+        grid-template-rows: 56px 48px;
+    }
+
+    :where(.bd-header[data-layout="centered"]) .bd-nav-main {
+        display: block;
+        grid-row: 2;
+        grid-column: 2;
+        justify-self: center;
+    }
+
+    :where(.bd-header[data-layout="centered"]) .bd-nav .bd-nav-lang {
+        display: inline-flex;
+        grid-row: 2;
+        grid-column: 3;
+        justify-self: end;
+    }
+
+    :where(.bd-header[data-layout="centered"]) .bd-strip {
+        display: block;
+    }
+
+    :where(.bd-header[data-layout="centered"]) .bd-nav-mobile {
+        display: none;
+    }
+}
+
+@media (min-width: 1024px) {
+    :where(.bd-header[data-layout="centered"]) .bd-header-inner {
+        padding: 0 var(--space-8);
+    }
+
+    :where(.bd-header[data-layout="centered"]) .bd-hud-extra {
+        display: inline;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :where(.bd-header[data-layout="centered"]) .bd-progress {
+        display: none;
+    }
+
+    :where(.bd-header[data-layout="centered"]) .bd-nav-link,
+    :where(.bd-header[data-layout="centered"]) .bd-strip-link {
+        transition: none;
+    }
+}

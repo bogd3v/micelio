@@ -3,7 +3,9 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync, symlinkSyn
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { checkCss, checkThemeCss } from '../modules/theme/css-rules'
+import { transform } from 'lightningcss'
 import { loadHooks, parseHooks } from '../modules/theme/hooks'
+import { REGION_VARIANTS } from '../modules/theme/layout/variants'
 
 const hooks = loadHooks(join(process.cwd(), 'app'))
 
@@ -155,6 +157,56 @@ describe('hooks.json', () => {
     const text = sources.map(dir => readTree(join(process.cwd(), dir))).join('\n')
     const unused = [...hooks.classes].filter(name => !new RegExp(`${name}(?![\\w-])`).test(text))
     expect(unused).toEqual([])
+  })
+
+  it('names only variants the core implements in every layouts entry and in data-layout', () => {
+    const raw = JSON.parse(readFileSync(join(process.cwd(), 'app/theme/hooks.json'), 'utf8')) as {
+      attributes: Record<string, { values?: string[] }>
+      classes: Record<string, string | { layouts?: Record<string, string[]> }>
+    }
+    const unknown: string[] = []
+    for (const [name, hook] of Object.entries(raw.classes)) {
+      if (typeof hook === 'string') continue
+      for (const [region, variants] of Object.entries(hook.layouts ?? {})) {
+        const implemented = (REGION_VARIANTS as Record<string, { variants: string[] }>)[region]?.variants
+        for (const variant of variants) if (!implemented?.includes(variant)) unknown.push(`${name}: ${region}/${variant}`)
+      }
+    }
+    expect(unknown).toEqual([])
+    const implemented = Object.values(REGION_VARIANTS).flatMap(entry => entry.variants)
+    expect([...raw.attributes['data-layout']!.values!].sort()).toEqual([...new Set(implemented)].sort())
+  })
+})
+
+describe('layout variant CSS', () => {
+  // Every variant sits in the same layer on the page; only the one in use may style it (ADR 0005, section 5)
+  const base = join(process.cwd(), 'app/theme/layout')
+  // The other regions are scoped when their second variant lands (#263, PR 2)
+  const scoped = ['header', 'footer'] as const
+  const files = scoped.flatMap(region => REGION_VARIANTS[region].variants.map(variant => ({ region, variant, file: join(base, region, `${variant}.css`) })))
+
+  it.each(files)('$region/$variant.css scopes every selector by its data-layout, except :root and html', ({ variant, file }) => {
+    const css = readFileSync(file, 'utf8')
+    const unscoped: string[] = []
+    transform({
+      filename: file,
+      code: Buffer.from(css),
+      visitor: {
+        Rule: {
+          style(rule) {
+            for (const selector of rule.value.selectors) {
+              const text = JSON.stringify(selector)
+              const rootOnly = selector.every(part => part.type === 'pseudo-class' && part.kind === 'root') || (selector[0]?.type === 'type' && selector[0].name === 'html')
+              const scoped = text.includes(`"name":"data-layout"`) && text.includes(`"value":"${variant}"`)
+              if (!rootOnly && !scoped) unscoped.push(text.slice(0, 80))
+            }
+            return undefined
+          },
+        },
+      },
+    })
+    expect(unscoped).toEqual([])
+    expect(css.length).toBeGreaterThan(0)
   })
 })
 
