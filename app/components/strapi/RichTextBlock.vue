@@ -12,5 +12,6 @@ useMermaid(root)
 </script>
 
 <template>
+  <!-- eslint-disable-next-line vue/no-v-html -- sanitized on the server (app/helpers/markdown.ts) -->
   <div ref="root" v-html="block.html ?? ''" />
 </template>

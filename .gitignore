@@ -32,3 +32,6 @@ test-results/
 
 # Test coverage
 coverage/
+
+# Claude Code agent worktrees
+.claude/worktrees/
