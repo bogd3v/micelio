@@ -21,9 +21,10 @@ const FIXED_CHROME = '.bd-app > .bd-header, .bd-tabbar, .bd-back-to-top { visibi
 // One screenshot per group: a change shows in the group it touches, not in a page-long diff
 test('specimen groups', async ({ page }) => {
   await openPage(page, PAGES.find(entry => entry.name === 'specimen')!)
+  await page.addStyleTag({ content: FIXED_CHROME })
   const ids = await page.locator('[data-section]').evaluateAll(sections => sections.map(section => section.getAttribute('data-section') ?? ''))
   expect(ids.length).toBeGreaterThan(0)
   for (const id of ids) {
-    await expect(page.locator(`[data-section="${id}"]`)).toHaveScreenshot(`specimen/${id}.png`, { mask: volatile(page), style: FIXED_CHROME })
+    await expect(page.locator(`[data-section="${id}"]`)).toHaveScreenshot(`specimen/${id}.png`, { mask: volatile(page) })
   }
 })
