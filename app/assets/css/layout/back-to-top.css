@@ -26,3 +26,13 @@
     width: 1.5rem;
     height: 1.5rem;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .bd-back-to-top {
+        transition: none;
+    }
+
+    .bd-back-to-top:hover {
+        scale: none;
+    }
+}

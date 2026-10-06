@@ -12,6 +12,12 @@ describe('segmented control rules', () => {
     expect(css).toContain('[data-theme="noche"] .bd-seg[data-mode="noche"]')
   })
 
+  it('keeps the pressed mode visible in forced colors', () => {
+    const forced = css.slice(css.indexOf('@media (forced-colors: active)'))
+    expect(forced).toContain('[data-theme="noche"] .bd-seg[data-mode="noche"]')
+    expect(forced).toContain('background: Highlight')
+  })
+
   it('treats the first mode as the default when the page has no data-theme', () => {
     expect(css).toContain(':root:not([data-theme]) .bd-seg[data-mode="noche"]')
     expect(css).toContain(':root:not([data-theme]) .bd-seg[data-mode]:not([data-mode="noche"])')

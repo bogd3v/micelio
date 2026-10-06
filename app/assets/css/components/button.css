@@ -99,3 +99,19 @@
         transform: none;
     }
 }
+
+@media (forced-colors: active) {
+    .bd-btn:not(.bd-btn-text) {
+        border-color: ButtonText;
+    }
+
+    .bd-btn:not(.bd-btn-text):hover {
+        border-color: Highlight;
+    }
+
+    .bd-btn:disabled,
+    .bd-btn[aria-disabled="true"] {
+        border-color: GrayText;
+        color: GrayText;
+    }
+}

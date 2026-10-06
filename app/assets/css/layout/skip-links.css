@@ -52,3 +52,10 @@
     outline: none;
     box-shadow: 0 0 0 2px #fff;
 }
+
+@media (forced-colors: active) {
+    .bd-skip-link:focus {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+}

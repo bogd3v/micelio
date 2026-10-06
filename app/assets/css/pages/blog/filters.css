@@ -217,3 +217,10 @@
         transition: none;
     }
 }
+
+@media (forced-colors: active) {
+    .bd-blog-search:focus-within {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+}

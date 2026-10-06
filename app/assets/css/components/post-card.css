@@ -212,3 +212,13 @@
         transform: none;
     }
 }
+
+@media (forced-colors: active) {
+    .bd-card {
+        border-color: CanvasText;
+    }
+
+    .bd-card:hover {
+        border-color: Highlight;
+    }
+}

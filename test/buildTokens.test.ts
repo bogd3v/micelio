@@ -53,6 +53,15 @@ describe('buildTokensCss', () => {
     expect(block(css, '[data-theme="dia"]')).toContain('color-scheme: light;')
   })
 
+  it('remaps muted ink and lines under prefers-contrast: more for every mode, after the mode blocks', () => {
+    const start = css.indexOf('@media (prefers-contrast: more)')
+    expect(start).toBeGreaterThan(css.lastIndexOf('color-scheme:'))
+    const media = css.slice(start, css.indexOf('\n}\n', start))
+    for (const selector of [':root', '[data-theme="noche"]', '.dark', '[data-theme="dia"]', '.light']) expect(media).toContain(selector)
+    expect(media).toContain('--ink-muted: var(--ink);')
+    expect(media).toContain('--line: var(--line-strong);')
+  })
+
   it('takes color-scheme from the mode, not from its id', () => {
     const out = buildTokensCss({ ...fixture, modes: [{ id: 'tarde', scheme: 'light' }, { id: 'noche', scheme: 'dark' }] })
     expect(block(out, '[data-theme="tarde"]')).toContain('color-scheme: light;')

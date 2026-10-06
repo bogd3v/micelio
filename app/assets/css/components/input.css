@@ -30,3 +30,14 @@
 .bd-input[aria-invalid="true"] {
     border-color: var(--danger);
 }
+
+@media (forced-colors: active) {
+    .bd-input {
+        border-color: FieldText;
+    }
+
+    .bd-input:focus {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+}

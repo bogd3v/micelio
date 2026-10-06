@@ -44,3 +44,9 @@
 .bd-confirm-status {
     color: var(--ink-muted);
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .bd-confirm-loading {
+        animation-duration: 4s;
+    }
+}
