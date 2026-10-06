@@ -19,6 +19,30 @@ export const REGION_VARIANTS: Record<LayoutRegion, RegionVariants> = {
   footer: { component: 'RegionFooter', variants: ['columns', 'minimal'] },
 }
 
+/** What each variant is (ADR 0005, section 5); the theme reference is generated from it. */
+export const VARIANT_DESCRIPTIONS: Record<LayoutRegion, Record<string, string>> = {
+  header: {
+    bar: 'Logo, navigation and actions in one sticky row.',
+    centered: 'Logo centered above the navigation; sets `--bd-header-h` to 152px on desktop (64px on mobile).',
+  },
+  home: {
+    showcase: 'Hero, featured article, latest articles and topic guide.',
+    index: 'Site name, description and a link to the about page, then the latest articles; no hero.',
+  },
+  postList: {
+    grid: 'Cards in a grid, with the grid and log view switch.',
+    list: 'Rows with date, title and excerpt; hides the view switch.',
+  },
+  article: {
+    aside: 'Table of contents and share buttons in side columns.',
+    centered: 'One column, with the table of contents collapsed in a `<details>` above the text; the share buttons, comments and related articles follow the text.',
+  },
+  footer: {
+    columns: 'Brand column and link columns (accordions on small screens), the support link, the `ThemeDivider` slot and the "made in" line.',
+    minimal: 'A single row; leaves out the support link, the `ThemeDivider` slot and the "made in" line.',
+  },
+}
+
 function pascal(variant: string): string {
   return variant[0]!.toUpperCase() + variant.slice(1)
 }
