@@ -39,7 +39,7 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
     'iframe': ['src', 'width', 'height', 'frameborder', 'allowfullscreen', 'allow', 'title', 'referrerpolicy'],
     'img': ['src', 'alt', 'title', 'width', 'height', 'loading', 'decoding'],
     'code': ['class'],
-    'pre': ['class'],
+    'pre': ['class', 'tabindex'],
     'button': ['type', 'class', 'data-bd-copy', 'hidden'],
     'aside': ['role'],
     '*': ['id', 'class'],
@@ -47,6 +47,8 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
   allowedIframeDomains: ['youtube.com', 'www.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com', 'vimeo.com', 'player.vimeo.com'],
   transformTags: {
     a: sanitizeHtml.simpleTransform('a', { rel: 'noopener noreferrer' }),
+    // A scrollable block must be reachable by keyboard (WCAG 2.1.1)
+    pre: sanitizeHtml.simpleTransform('pre', { tabindex: '0' }),
   },
 }
 

@@ -75,6 +75,7 @@
     margin: 0 auto;
 }
 
+.bd-code pre:focus-visible,
 .bd-mermaid-diagram:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;

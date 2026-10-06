@@ -4,7 +4,8 @@ import { webServers } from './e2e/servers'
 export default defineConfig({
   testDir: 'e2e',
   // Needs its own servers with every module off: playwright.modules-off.config.ts
-  testIgnore: 'modules-off.spec.ts',
+  // e2e/theme runs in playwright.theme.config.ts (per theme and mode, in the Playwright image)
+  testIgnore: ['modules-off.spec.ts', 'theme/**'],
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,

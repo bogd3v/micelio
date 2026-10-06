@@ -29,5 +29,5 @@ export function renderCodeBlockHtml(code: string, lang: string): string {
     .join('\n')
   const langLabel = safeLang ? `<span class="bd-code-lang">${safeLang}</span>` : ''
   const codeClass = safeLang ? ` class="language-${safeLang}"` : ''
-  return `<figure class="bd-code not-prose"><div class="bd-code-head">${langLabel}<button type="button" class="bd-code-copy" data-bd-copy hidden></button></div><pre><code${codeClass}>${body}</code></pre></figure>\n`
+  return `<figure class="bd-code not-prose"><div class="bd-code-head">${langLabel}<button type="button" class="bd-code-copy" data-bd-copy hidden></button></div><pre tabindex="0"><code${codeClass}>${body}</code></pre></figure>\n`
 }

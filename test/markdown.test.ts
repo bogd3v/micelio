@@ -12,6 +12,12 @@ function richText(body: string, id = 1): StrapiRichText {
 }
 
 describe('renderMarkdown', () => {
+  it('forces tabindex="0" on pre and strips it elsewhere', () => {
+    const html = renderer.renderMarkdown('<pre TABINDEX="-1" tabindex="5">a</pre><div tabindex="3"><p tabindex="-1">x</p></div>')
+    expect(html).toContain('<pre tabindex="0">')
+    expect(html.match(/tabindex/gi)).toHaveLength(1)
+  })
+
   it('renders GitHub alerts as design system callouts', () => {
     const html = renderer.renderMarkdown('> [!NOTE] Analogy\n> A **recipe**.\n\n> [!WARNING]\n> Careful.\n\n> Plain quote.')
     expect(html.match(/<aside class="bd-callout[^"]*" role="note"/g)).toHaveLength(2)

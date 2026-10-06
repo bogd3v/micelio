@@ -1,0 +1,81 @@
+name: Theme Snapshots
+
+# Renders the visual baselines of e2e/theme in the Playwright image and uploads them; CI never commits them.
+# Run it on the branch that changes a theme, unzip theme-snapshots-<theme> into e2e/theme/__screenshots__/<theme>/ and commit (docs/theme-testing.md)
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or SHA to render
+        required: true
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    name: Themes
+    runs-on: ubuntu-latest
+    outputs:
+      themes: ${{ steps.read.outputs.themes }}
+      playwright: ${{ steps.read.outputs.playwright }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Read the installed themes and the Playwright version
+        id: read
+        run: |
+          echo "themes=$(npx jiti scripts/theme-check.ts --list)" >> "$GITHUB_OUTPUT"
+          version="$(node -p "require('./package-lock.json').packages['node_modules/playwright-core'].version")"
+          echo "${version}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+          echo "playwright=${version}" >> "$GITHUB_OUTPUT"
+
+  update:
+    name: Snapshots (${{ matrix.theme }})
+    needs: discover
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.discover.outputs.playwright }}-noble
+      options: --ipc=host
+    strategy:
+      fail-fast: false
+      matrix:
+        theme: ${{ fromJSON(needs.discover.outputs.themes) }}
+    env:
+      NUXT_PUBLIC_THEME: ${{ matrix.theme }}
+      MICELIO_SPECIMEN: 1
+      E2E_BUILD: 1
+      HOME: /root
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Render the baselines
+        run: npm run test:theme:update -- e2e/theme/visual.spec.ts
+      - name: Upload baselines
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: theme-snapshots-${{ matrix.theme }}
+          path: e2e/theme/__screenshots__/${{ matrix.theme }}/
+          retention-days: 14

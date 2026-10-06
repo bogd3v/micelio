@@ -8,12 +8,25 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const alsoWriteId = useId()
 
 const topics = computed<StrapiTopic[]>(() =>
   [...(props.block.topics ?? [])].sort((a, b) => CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category)),
 )
 const pillars = computed<StrapiTopic[]>(() => topics.value.filter(topic => CATEGORY_INFO[topic.category].pillar))
 const others = computed<StrapiTopic[]>(() => topics.value.filter(topic => !CATEGORY_INFO[topic.category].pillar))
+
+// Focusable only where it scrolls (mobile); `display: contents` from 768px leaves nothing to focus
+const othersRef = useTemplateRef<HTMLElement>('othersRef')
+const scrolls = ref(false)
+
+function measure(): void {
+  const element = othersRef.value
+  scrolls.value = !!element && element.scrollWidth > element.clientWidth
+}
+
+onMounted(measure)
+useResizeObserver(othersRef, measure)
 
 function label(topic: StrapiTopic): string {
   const pillar = CATEGORY_INFO[topic.category].pillar
@@ -37,10 +50,17 @@ function label(topic: StrapiTopic): string {
       <StrapiTopicCard v-for="topic in pillars" :key="topic.id" :topic="topic" :label="label(topic)" pillar />
 
       <p v-if="others.length" class="bd-meta bd-topic-more">
-        <span>{{ t('about.alsoWrite') }}</span>
+        <span :id="alsoWriteId">{{ t('about.alsoWrite') }}</span>
         <span aria-hidden="true">{{ t('about.swipe') }}</span>
       </p>
-      <div v-if="others.length" class="bd-topic-others">
+      <div
+        v-if="others.length"
+        ref="othersRef"
+        class="bd-topic-others"
+        :role="scrolls ? 'group' : undefined"
+        :tabindex="scrolls ? 0 : undefined"
+        :aria-labelledby="scrolls ? alsoWriteId : undefined"
+      >
         <StrapiTopicCard v-for="topic in others" :key="topic.id" :topic="topic" :label="label(topic)" />
       </div>
     </div>

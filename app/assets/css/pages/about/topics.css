@@ -82,6 +82,11 @@
     scrollbar-width: none;
 }
 
+.bd-topic-others:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+}
+
 .bd-topic-others::-webkit-scrollbar {
     display: none;
 }
