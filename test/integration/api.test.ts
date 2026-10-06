@@ -1435,4 +1435,16 @@ describe('theme fonts', () => {
       expect(font.headers.get(header)).toBe(asset.headers.get(header))
     }
   })
+
+  it('serves fonts and their licenses from fonts/, with the sandbox CSP of the theme\'s static assets', async () => {
+    const csp = 'default-src \'none\'; style-src \'unsafe-inline\'; sandbox'
+    expect((await fetch('/fonts/archivo-latin-var.woff2')).headers.get('content-security-policy')).toBe(csp)
+    for (const license of ['OFL-Archivo.txt', 'OFL-JetBrainsMono.txt']) {
+      const response = await fetch(`/fonts/${license}`)
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8')
+      expect(response.headers.get('content-security-policy')).toBe(csp)
+    }
+    expect((await fetch('/fonts/archivo-latin-var.woff2.map')).status).toBe(404)
+  })
 })
