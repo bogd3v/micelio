@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { CATEGORIES, categoryColor } from '~/helpers/categories'
 import { FOOTER_SOCIALS } from '~/helpers/site'
+import { resolveSourceUrl } from '~/helpers/source'
 
 defineOptions({ name: 'RegionFooterColumns' })
 
@@ -38,6 +39,7 @@ const newsletterOn = useModule('newsletter')
 const supportOn = useModule('support')
 
 const year = new Date().getFullYear()
+const sourceUrl = resolveSourceUrl(useRuntimeConfig().public.sourceUrl)
 
 const socials = computed<SocialLink[]>(() =>
   site.value.socialLinks.flatMap((link) => {
@@ -182,6 +184,7 @@ function scrollToTop(): void {
       <span class="bd-foot-legal">
         <span>© {{ year }} {{ site.name }} · {{ site.author.name }}</span>
         <NuxtLink :to="localizePath('/privacy')" class="bd-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
+        <a :href="sourceUrl" class="bd-foot-privacy bd-foot-source" target="_blank" rel="noopener noreferrer">{{ t('bd.footer.source') }}<span aria-hidden="true">↗</span></a>
       </span>
       <span v-if="hud.madeIn">{{ hud.madeIn }} <span v-if="hud.coords" class="bd-foot-diamond" aria-hidden="true">◆</span> {{ hud.coords }}</span>
       <span v-if="te('theme.divider.credit')">{{ t('theme.divider.credit') }}</span>

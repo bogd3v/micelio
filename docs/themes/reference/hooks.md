@@ -113,7 +113,8 @@ Public styling hooks of contract v1, from `app/theme/hooks.json`. A theme's `the
 | `bd-acc` | An accordion (details). | `[open]` | `columns` |
 | `bd-foot-row` | A link row inside an accordion. |  | `columns` |
 | `bd-foot-credits` | Legal line at the bottom of the footer. |  | every variant |
-| `bd-foot-legal` | Copyright and privacy link. |  | every variant |
+| `bd-foot-legal` | Copyright, privacy link and source link. |  | every variant |
+| `bd-foot-source` | Link to the source code of the site, required by the AGPL (section 13): restyle it, do not hide it. |  | every variant |
 
 ## General classes
 

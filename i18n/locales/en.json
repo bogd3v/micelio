@@ -506,7 +506,8 @@
       "fediverse": "Fediverse · {handle}",
       "newsletter": "Newsletter",
       "coffee": "Buy me a coffee",
-      "privacy": "Privacy and cookies"
+      "privacy": "Privacy and cookies",
+      "source": "Source code"
     }
   },
   "feed": {

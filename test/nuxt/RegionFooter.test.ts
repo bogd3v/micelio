@@ -1,9 +1,11 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
+import type { Component } from 'vue'
 import type { Site } from '~/interfaces'
 import { siteFromAppConfig } from '~/helpers/site'
 import type { AppSiteConfig } from '~/helpers/site'
 import RegionFooter from '~/theme/layout/footer/Columns.vue'
+import RegionFooterMinimal from '~/theme/layout/footer/Minimal.vue'
 
 describe('RegionFooter', () => {
   let unregister: (() => void) | undefined
@@ -87,5 +89,39 @@ describe('RegionFooter', () => {
     const link = wrapper.get('.bd-foot-legal a.bd-foot-privacy')
     expect(link.text()).toBe('Privacy and cookies')
     expect(link.attributes('href')).toBe('/privacy')
+  })
+
+  describe.each<[string, Component]>([['columns', RegionFooter], ['minimal', RegionFooterMinimal]])('source link (%s)', (_name, Footer) => {
+    it('links to the upstream repository by default, next to the privacy link', async () => {
+      const wrapper = await mountSuspended(Footer)
+      const link = wrapper.get('.bd-foot-legal a.bd-foot-source')
+      expect(link.text()).toBe('Source code↗')
+      expect(link.attributes('href')).toBe('https://github.com/bogd3v/micelio')
+      expect(link.attributes('rel')).toBe('noopener noreferrer')
+    })
+
+    it('uses the configured sourceUrl', async () => {
+      const config = useRuntimeConfig().public
+      const original = config.sourceUrl
+      config.sourceUrl = 'https://git.example.com/me/micelio'
+      try {
+        const wrapper = await mountSuspended(Footer)
+        expect(wrapper.get('a.bd-foot-source').attributes('href')).toBe('https://git.example.com/me/micelio')
+      } finally {
+        config.sourceUrl = original
+      }
+    })
+
+    it.each(['', 'javascript:alert(1)'])('falls back to upstream when sourceUrl is %j', async (value) => {
+      const config = useRuntimeConfig().public
+      const original = config.sourceUrl
+      config.sourceUrl = value
+      try {
+        const wrapper = await mountSuspended(Footer)
+        expect(wrapper.get('a.bd-foot-source').attributes('href')).toBe('https://github.com/bogd3v/micelio')
+      } finally {
+        config.sourceUrl = original
+      }
+    })
   })
 })

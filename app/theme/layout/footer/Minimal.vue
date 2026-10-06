@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { FOOTER_SOCIALS } from '~/helpers/site'
+import { resolveSourceUrl } from '~/helpers/source'
 
 defineOptions({ name: 'RegionFooterMinimal' })
 
@@ -28,6 +29,7 @@ const fediverseOn = useModule('fediverse')
 const newsletterOn = useModule('newsletter')
 
 const year = new Date().getFullYear()
+const sourceUrl = resolveSourceUrl(useRuntimeConfig().public.sourceUrl)
 
 const sections = useNavLinks()
 const socials = computed<SocialLink[]>(() =>
@@ -66,6 +68,7 @@ const subscriptions = computed<FooterLink[]>(() => [
       <span class="bd-foot-legal">
         <span>© {{ year }} {{ site.name }} · {{ site.author.name }}</span>
         <NuxtLink :to="localizePath('/privacy')" class="bd-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
+        <a :href="sourceUrl" class="bd-foot-privacy bd-foot-source" target="_blank" rel="noopener noreferrer">{{ t('bd.footer.source') }}<span aria-hidden="true">↗</span></a>
       </span>
       <template v-for="link in subscriptions" :key="link.id">
         <a v-if="link.external" :href="link.to" class="bd-foot-link" target="_blank" rel="noopener noreferrer">{{ link.label }}<span aria-hidden="true">↗</span></a>

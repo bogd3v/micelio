@@ -1,5 +1,6 @@
 import { Locale } from './app/interfaces/locale'
 import { SECURITY_HEADERS } from './app/helpers/securityHeaders'
+import { UPSTREAM_SOURCE_URL } from './app/helpers/source'
 
 const privatePageHeaders = {
   'cache-control': 'private, no-store',
@@ -58,6 +59,7 @@ export default defineNuxtConfig({
       fediverseHandle: '',
       fediverseActorUrl: '',
       fediverseArticlesUrl: '',
+      sourceUrl: UPSTREAM_SOURCE_URL,
       fediverseLocale: Locale.SpanishColombia as string,
     },
   },
