@@ -27,6 +27,7 @@ function onGuideClick(event: MouseEvent): void {
       <ul class="bd-guide-list" @click="onGuideClick">
         <li v-for="item in block.guide" :key="item.id">
           <span class="bd-guide-arrow" aria-hidden="true">→</span>
+          <!-- eslint-disable-next-line vue/no-v-html -- sanitized on the server (app/helpers/markdown.ts) -->
           <span v-html="item.html ?? ''" />
         </li>
       </ul>

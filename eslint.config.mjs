@@ -17,6 +17,6 @@ export default withNuxt(
     },
   },
   {
-    ignores: ['docs/**'],
+    ignores: ['docs/**', '.claude/worktrees/**'],
   },
 )
