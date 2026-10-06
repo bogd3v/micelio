@@ -213,3 +213,19 @@
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .bd-slider *,
+    .bd-slider *::before,
+    .bd-slider *::after {
+        transition: none;
+    }
+}
+
+@media (forced-colors: active) {
+    .bd-slider-arrow:focus-visible,
+    .bd-slider-dot:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+}

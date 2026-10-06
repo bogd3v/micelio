@@ -32,3 +32,19 @@
         transition: none;
     }
 }
+
+@media (forced-colors: active) {
+    .bd-chip {
+        border-color: ButtonText;
+    }
+
+    .bd-chip:hover {
+        border-color: Highlight;
+    }
+
+    .bd-chip[aria-pressed="true"] {
+        background: Highlight;
+        color: HighlightText;
+        border-color: Highlight;
+    }
+}

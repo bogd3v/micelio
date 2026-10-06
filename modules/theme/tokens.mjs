@@ -61,12 +61,17 @@ export function buildTokensCss(data, aliases = {}) {
   }))
 
   const lines = [`/* ${String(data.name ?? data.id).replace(/[^\w .-]/g, '')} — generated from the theme's theme.json by modules/theme. Do not edit by hand. */`]
+  const allSelectors = []
   modes.forEach((mode, i) => {
     const selectors = [...(i === 0 ? [':root'] : []), `[data-theme="${mode.id}"]`, ...(aliases[mode.id] ?? [])]
+    allSelectors.push(...selectors)
     lines.push(`${selectors.join(',\n')} {`)
     themed.forEach(t => lines.push(`  --${t.name}: ${valueFor(t, mode.id)};`))
     lines.push(`  color-scheme: ${mode.scheme};`, '}')
   })
+
+  // Core remap for prefers-contrast: more, the same in every mode; themes cannot override it (ADR 0005)
+  lines.push('@media (prefers-contrast: more) {', `  ${allSelectors.join(',\n  ')} {`, '    --ink-muted: var(--ink);', '    --line: var(--line-strong);', '  }', '}')
 
   flat.forEach((t) => {
     if (typeof t.value === 'object') throw new Error(`Token ${t.name} has per-mode values but is not in the color or shadow group`)

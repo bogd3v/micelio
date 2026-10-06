@@ -7,6 +7,8 @@
     overflow: visible;
 }
 
-.bogota-wing {
-    animation: bogota-flap 0.9s ease-in-out infinite;
+@media (prefers-reduced-motion: no-preference) {
+    .bogota-wing {
+        animation: bogota-flap 0.9s ease-in-out infinite;
+    }
 }

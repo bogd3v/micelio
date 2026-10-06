@@ -45,3 +45,9 @@ p {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--ink-muted);
 }
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}

@@ -24,3 +24,10 @@
 .animate-slide-in-right {
     animation: slideInRight 0.3s ease-out forwards;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-slide-up,
+    .animate-slide-in-right {
+        animation: none;
+    }
+}

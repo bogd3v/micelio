@@ -135,3 +135,18 @@
 .bd-check a:hover {
     color: var(--ink);
 }
+
+@media (forced-colors: active) {
+    .bd-field {
+        border-color: FieldText;
+    }
+
+    .bd-field:focus {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+
+    .bd-field[aria-invalid="true"] {
+        border-style: dashed;
+    }
+}

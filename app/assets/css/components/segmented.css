@@ -39,3 +39,14 @@
         transition: none;
     }
 }
+
+@media (forced-colors: active) {
+    .bd-seg-group {
+        border-color: ButtonText;
+    }
+
+    .bd-seg[aria-pressed="true"] {
+        background: Highlight;
+        color: HighlightText;
+    }
+}

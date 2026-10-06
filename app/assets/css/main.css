@@ -85,3 +85,4 @@
 @import "./utilities/helpers.css" layer(bd.utilities);
 @import "./utilities/a11y.css" layer(bd.utilities);
 @import "./utilities/reveal.css" layer(bd.utilities);
+@import "./utilities/print.css" layer(bd.utilities);

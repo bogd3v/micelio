@@ -1,0 +1,114 @@
+/* Deliberate cross-cutting print sheet: the exception to keeping a block's @media in its own file. */
+/* Print: the article alone, dark on white. Roles are remapped to system colors so every theme and mode prints legibly. */
+@media print {
+    :root,
+    [data-theme] {
+        color-scheme: light;
+        --surface: Canvas;
+        --surface-raised: Canvas;
+        --surface-sunken: Canvas;
+        --line: GrayText;
+        --line-strong: CanvasText;
+        --ink: CanvasText;
+        --ink-muted: CanvasText;
+        --on-ink: Canvas;
+        --link: LinkText;
+        --accent: CanvasText;
+        --code-ink: CanvasText;
+        --code-muted: GrayText;
+        --code-keyword: CanvasText;
+        --code-string: CanvasText;
+        --code-number: CanvasText;
+        --code-function: CanvasText;
+        --focus: CanvasText;
+        --accent-hover: CanvasText;
+        --on-accent: Canvas;
+        --accent-soft: Canvas;
+        --link-soft: Canvas;
+        --success: CanvasText;
+        --success-soft: Canvas;
+        --warning: CanvasText;
+        --warning-soft: Canvas;
+        --danger: CanvasText;
+        --danger-soft: Canvas;
+        --info: CanvasText;
+        --info-soft: Canvas;
+        --category-1: CanvasText;
+        --category-1-soft: Canvas;
+        --category-2: CanvasText;
+        --category-2-soft: Canvas;
+        --category-3: CanvasText;
+        --category-3-soft: Canvas;
+        --category-4: CanvasText;
+        --category-4-soft: Canvas;
+        --category-5: CanvasText;
+        --category-5-soft: Canvas;
+        --category-6: CanvasText;
+        --category-6-soft: Canvas;
+        --shadow-raised: none;
+        --shadow-overlay: none;
+        --glow-accent: none;
+        --glow-link: none;
+    }
+
+    .bd-header,
+    .bd-tabbar,
+    .bd-sheet,
+    .bd-palette,
+    .bd-foot,
+    .bd-skip-links,
+    .bd-back-to-top,
+    .bd-privacy-notice,
+    .bd-comments,
+    .bd-news,
+    .bd-share,
+    .bd-article-share,
+    .bd-article-actions,
+    .bd-article-toc,
+    .bd-fedi-bar,
+    .bd-coffee,
+    .bd-related,
+    .bd-code-copy,
+    .bd-progress {
+        display: none !important;
+    }
+
+    .bd-reveal {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+
+    .bd-prose a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: 0.85em;
+        word-break: break-all;
+        color: var(--ink-muted);
+    }
+
+    .bd-prose h1,
+    .bd-prose h2,
+    .bd-prose h3,
+    .bd-prose h4,
+    .bd-prose h5,
+    .bd-prose h6 {
+        break-after: avoid;
+    }
+
+    .bd-code,
+    .bd-prose pre,
+    .bd-prose figure,
+    .bd-fig,
+    .bd-callout,
+    .bd-mermaid-diagram,
+    .bd-quote,
+    .bd-prose blockquote {
+        break-inside: avoid;
+    }
+
+    .bd-prose pre,
+    .bd-code pre {
+        white-space: pre-wrap;
+        overflow: visible;
+    }
+}

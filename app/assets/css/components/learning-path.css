@@ -106,3 +106,9 @@
 .bd-path-article .bd-path-next {
     background: var(--surface);
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .bd-path-next {
+        transition: none;
+    }
+}

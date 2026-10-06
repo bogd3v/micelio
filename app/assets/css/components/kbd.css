@@ -8,3 +8,9 @@
     color: var(--ink-muted);
     border: 1px solid var(--line-strong);
 }
+
+@media (forced-colors: active) {
+    .bd-kbd {
+        border-color: CanvasText;
+    }
+}

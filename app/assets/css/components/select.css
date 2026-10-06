@@ -18,3 +18,11 @@
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
+
+@media (forced-colors: active) {
+    .bd-select {
+        border-color: FieldText;
+        appearance: auto;
+        background-image: none;
+    }
+}
