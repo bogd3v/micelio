@@ -1,4 +1,4 @@
-// `npm run theme:check [id] [--json]`: contract, hooks, contrast matrix and static budgets of the installed themes
+// `npm run theme:check [id] [--json]` (`--list` prints the installed ids as JSON, for the CI matrix): contract, hooks, contrast matrix and static budgets of the installed themes
 // (ADR 0005, sections 7 and 9). Exit 1 when a theme has errors; warnings do not fail.
 import { fileURLToPath } from 'node:url'
 import { checkTheme, formatIssue } from '../modules/theme/check'
@@ -8,10 +8,15 @@ import { discoverThemes, themeRoots } from '../modules/theme/themes'
 const root = fileURLToPath(new URL('..', import.meta.url))
 const args = process.argv.slice(2)
 const json = args.includes('--json')
+const list = args.includes('--list')
 const id = args.find(arg => !arg.startsWith('--'))
 
 try {
   const installed = discoverThemes(themeRoots(root))
+  if (list) {
+    process.stdout.write(`${JSON.stringify(installed.map(theme => theme.id))}\n`)
+    process.exit(0)
+  }
   const themes = id ? installed.filter(theme => theme.id === id) : installed
   if (id && !themes.length) throw new Error(`Theme "${id}" is not installed (installed: ${installed.map(theme => theme.id).join(', ') || 'none'})`)
   const hooks = loadHooks(fileURLToPath(new URL('../app', import.meta.url)))

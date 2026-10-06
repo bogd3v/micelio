@@ -2,23 +2,36 @@
 // Measures page weight and Lighthouse metrics against the budgets in budgets.json.
 // See docs/performance.md for what each number means and how budgets change.
 import { spawn } from 'node:child_process'
-import { appendFileSync, readFileSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { request as httpRequest } from 'node:http'
 import { request as httpsRequest } from 'node:https'
 import { brotliDecompressSync, gunzipSync, gzipSync } from 'node:zlib'
 import { chromium } from '@playwright/test'
 import lighthouse from 'lighthouse'
+import { checkFouc } from './fouc.mjs'
 
 const ROOT = new URL('../../', import.meta.url).pathname
 const MOCK_PORT = 4310
 const SERVER_PORT = 3211
 const DEBUG_PORT = 9223
+// Mirrors DEFAULT_THEME in modules/theme/themes.ts (a .ts file this script cannot import)
+const DEFAULT_THEME = 'bogota'
 const FONT_URL = /url\(\s*['"]?([^'")]+\.(?:woff2?|ttf|otf))/g
 
 const args = parseArgs(process.argv.slice(2))
 const budgets = JSON.parse(readFileSync(new URL('./budgets.json', import.meta.url), 'utf8'))
 const base = args.base ?? `http://127.0.0.1:${SERVER_PORT}`
 const runs = Number(args.runs ?? 3)
+// The build under test: --theme and --mode label the report; the server gets the theme it was built with
+const theme = typeof args.theme === 'string' ? args.theme : process.env.NUXT_PUBLIC_THEME || DEFAULT_THEME
+const mode = typeof args.mode === 'string' ? args.mode : budgets.mode
+const label = `theme ${theme}, ${mode} mode`
+if (mode !== budgets.mode) throw new Error(`budgets.json has budgets for the "${budgets.mode}" mode only, not "${mode}" (${label})`)
+const exception = budgets.themes?.[theme]
+for (const [id, entry] of Object.entries(budgets.themes ?? {})) {
+  if (!entry?.reason) throw new Error(`budgets.json: the exception for theme "${id}" needs a "reason"`)
+  if (!existsSync(new URL(`../../themes/${id}/theme.json`, import.meta.url))) console.warn(`warn  budgets.json: "themes.${id}" is not an installed theme in themes/`)
+}
 
 function parseArgs(list) {
   const parsed = {}
@@ -38,6 +51,7 @@ function startServers() {
     ...process.env,
     HOST: '127.0.0.1',
     PORT: String(SERVER_PORT),
+    ...({ NUXT_PUBLIC_THEME: theme }),
     NUXT_PUBLIC_STRAPI_URL: `http://127.0.0.1:${MOCK_PORT}`,
     NUXT_PUBLIC_SITE_URL: base,
     NUXT_PUBLIC_UMAMI_WEBSITE_ID: '',
@@ -125,6 +139,7 @@ async function measureWeight(url) {
   return {
     jsKb: kb(js.sent), cssKb: kb(css.sent), htmlKb: kb(page.sent), fontKb: kb(font.sent),
     jsGzipKb: kb(js.gzip), cssGzipKb: kb(css.gzip), htmlGzipKb: kb(page.gzip),
+    html: page.text, stylesheets: new Map([...stylesheets].map((href, i) => [href, css.texts[i]])),
   }
 }
 
@@ -170,6 +185,12 @@ async function measureLighthouse(url) {
 
 const HIGHER_IS_BETTER = new Set(['performance', 'accessibility'])
 
+/** The limits of a page and level; a recorded exception for the theme overrides single metrics */
+function limitsFor(page, level) {
+  const global = budgets.limits[page]?.[level] ?? {}
+  return { ...global, ...(exception?.limits?.[page]?.[level] ?? {}) }
+}
+
 function compare(page, metrics, limits, level) {
   return Object.entries(limits ?? {}).flatMap(([metric, limit]) => {
     const value = metrics[metric]
@@ -198,23 +219,26 @@ try {
   for (const { name, path } of budgets.pages) {
     const url = new URL(path, base).href
     await fetch(url)
-    const metrics = { ...(await measureWeight(url)), ...(await countThirdParty(browser, url)), ...(await measureLighthouse(url)) }
-    const limits = budgets.limits[name] ?? {}
-    problems.push(...compare(name, metrics, limits.error, 'error'), ...compare(name, metrics, limits.warn, 'warn'))
+    const { html, stylesheets, ...weight } = await measureWeight(url)
+    const metrics = { ...weight, ...(await countThirdParty(browser, url)), ...(await measureLighthouse(url)) }
+    problems.push(...compare(name, metrics, limitsFor(name, 'error'), 'error'), ...compare(name, metrics, limitsFor(name, 'warn'), 'warn'))
+    for (const message of checkFouc(html, url, stylesheets)) problems.push({ level: 'error', page: name, message })
     report.push({ page: name, path, metrics })
     const { thirdPartyUrls, ...printable } = metrics
     console.log(`${name.padEnd(10)} ${JSON.stringify(printable)}`)
     if (thirdPartyUrls.length) console.log(`           third party: ${thirdPartyUrls.join(', ')}`)
   }
 
-  if (args.out) writeFileSync(args.out, JSON.stringify(report, null, 2) + '\n')
+  if (args.out) writeFileSync(args.out, JSON.stringify({ theme, mode, pages: report }, null, 2) + '\n')
   const lines = problems.map((p) => {
+    const prefix = `${p.level === 'error' ? 'ERROR' : 'warn '} [${label}] ${p.page}:`
+    if (p.message) return `${prefix} FOUC: ${p.message}`
     const verb = HIGHER_IS_BETTER.has(p.metric) ? 'is below' : 'exceeds'
-    return `${p.level === 'error' ? 'ERROR' : 'warn '} ${p.page}: ${p.metric} ${p.value} ${verb} the budget of ${p.limit}`
+    return `${prefix} ${p.metric} ${p.value} ${verb} the budget of ${p.limit}`
   })
   if (lines.length) console.log('\n' + lines.join('\n'))
   if (process.env.GITHUB_STEP_SUMMARY) {
-    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Performance (${budgets.mode} mode)\n\n${summaryTable(report)}\n\n${lines.map(l => `- ${l}`).join('\n')}\n`)
+    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Performance (${label})\n\n${exception ? `Recorded exception: ${exception.reason}\n\n` : ''}${summaryTable(report)}\n\n${lines.map(l => `- ${l}`).join('\n')}\n`)
   }
   if (args.check && problems.some(p => p.level === 'error')) process.exitCode = 1
 } finally {

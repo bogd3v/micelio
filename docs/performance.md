@@ -18,9 +18,10 @@ npm run build
 npm run perf                      # measure and print
 npm run perf -- --check           # also exit 1 when an error budget is exceeded
 npm run perf -- --out report.json # save the full report
+npm run perf -- --theme <id>      # label the run with the theme the build used (--mode likewise)
 ```
 
-`--serve` (included in `npm run perf`) starts the mock and the built server on ports 4310 and 3211. Pass `--base <url>` without `--serve` to measure a server that is already running. The CI job **Performance Budgets** runs `npm run perf -- --check` on every push and pull request, and writes the table to the job summary.
+`--serve` (included in `npm run perf`) starts the mock and the built server on ports 4310 and 3211. Pass `--base <url>` without `--serve` to measure a server that is already running. The CI job **Performance Budgets** runs `npm run perf -- --check` on every push and pull request for every installed theme and site mode (next section), and writes the table to the job summary.
 
 Sizes come from what the HTML declares, not from what a browser happens to download, because a browser measurement is not repeatable: depending on CPU speed, Nuxt's idle prefetch of linked pages and lazy chunks like Mermaid land before or after the cut. Lazy chunks are left out of the initial budget on purpose; they get their own heavy island budget (ADR 0006).
 
@@ -32,6 +33,25 @@ Each page has two groups of limits in `scripts/perf/budgets.json`:
 - `warn`: TBT and the performance score. They depend on the machine running Lighthouse, so going over them is reported but does not fail CI.
 
 The first limits are the baseline plus 5 % for sizes, plus 0.02 for CLS, and the baseline accessibility score. When a change makes a page lighter, lower its limits in the same PR. Raising a limit needs a reason in the PR description.
+
+### Per theme and site mode
+
+The limits above apply to **every installed theme** in every site mode that has budgets (ADR 0005, section 9; ADR 0006). The `perf-matrix` job lists the installed themes (`npx jiti scripts/theme-check.ts --list`, which reads `themes/` and `MICELIO_THEME_DIRS`) and the mode of `budgets.json`; the **Performance Budgets** job then runs once per theme × mode, building with `NUXT_PUBLIC_THEME` set to that theme, and uploads `perf-report-<theme>-<mode>`. Every failure line and the job summary carry `[theme <id>, <mode> mode]`. Only `dynamic` has budgets today; `measure.mjs` fails on a `--mode` that `budgets.json` does not cover, so a new mode needs its own budgets before it joins the matrix. The `Performance Budgets` check (job `performance-gate`) aggregates the matrix and fails if any entry failed, was skipped or was cancelled; it is the one to mark as required in branch protection, and `deploy` depends on it. A theme that goes over fails CI, and the other entries still finish (`fail-fast: false`).
+
+The same run asserts that the page does not flash (`scripts/perf/fouc.mjs`, tested in `test/foucCheck.test.ts`), as an error on every page: the theme init script is an inline script in `<head>` before the first stylesheet, and every preloaded font has a `"<family> Fallback"` `@font-face` with `size-adjust`. It lives here and not in Playwright because it needs the production build (the dev server orders `<head>` differently and ships no built CSS) and has to run for every theme, which this matrix already does. The CLS side is the existing `cls` budget.
+
+A theme that cannot meet a limit gets a recorded exception in `budgets.json`, never a looser global limit:
+
+```json
+"themes": {
+  "<id>": {
+    "reason": "Variable serif with italics: 190 KB of fonts",
+    "limits": { "home": { "error": { "fontKb": 200 } } }
+  }
+}
+```
+
+`limits` has the shape of the top-level `limits`; each metric listed replaces the global one for that theme only, and the job summary prints the `reason`. Add the exception in the PR that adds the theme, with the same justification the PR description needs for raising a limit. The static checks of `npm run theme:check` (theme CSS gzip, font families and weight) have their own limits in `modules/theme/check.ts`. Bogotá has no exception here: its 143.6 KB of fonts fit the global `fontKb` of 150.8, which is the same limit `theme:check` records as its font exception.
 
 ### LCP and TBT on GitHub runners
 
@@ -81,6 +101,7 @@ Dynamic mode, production build of `main` at `9aa9c3f`, against the e2e mock:
 | 2026-10-03 | LCP budgets block CI (see "LCP and TBT on GitHub runners"). Lazy hydration (`hydrate-on-visible`) was tried and dropped: Nuxt 4.5 still `modulepreload`s the components, and the async chunks added 4–10 KB of JS per page | No change in what pages send. LCP limits now 5950 ms (home), 4700 (blog), 5200 (article), 6600 (about), 4350 (privacy) |
 | 2026-10-04 | Utility classes out of the templates (#262, first step): slider, quote, skip links, back to top, error and confirm pages move to `bd-*` classes in their layers, and the six `<UIcon>` become inline SVG components, so `@nuxt/icon`'s client component leaves every page (the back-to-top button in the layout was the only `<UIcon>` there). `npm run lint` fails on a class that is not `bd-*` or a core helper. Tailwind itself is still installed | JS sent −5.2 KB on the home page (156.6 → 151.4) and −5.3 to −5.9 KB elsewhere; CSS 22.9–23.2 → 21.9 KB. Budgets lowered to the new values + 5 % |
 | 2026-10-04 | Tailwind, `@tailwindcss/typography` and `@nuxt/ui` removed (#262, step 2); reset and element defaults in `bd.reset` below role-valued classes in `bd.settings`; Lightning CSS transformer with explicit browser targets (chrome 111, edge 111, firefox 114, safari 16.4, ios 16.4). Entry CSS: 154,527 raw → 132,438 raw (−13 %), 26,198 gzip → 22,748 gzip (−13 %). Home JS sent 151.4 → 139.7 KB, CSS 21.9 → 19.0 KB (gzip 25.9 → 22.5 KB). Budgets: CSS 23.0 → 19.9 KB; JS (home / blog / article / about / privacy): 159.0 / 154.2 / 170.6 / 155.9 / 142.5 → 146.7 / 142.1 / 158.6 / 143.8 / 130.4 KB |
+| 2026-10-06 | Budgets per installed theme × site mode (#238): `perf-matrix` job lists themes, the performance job is a matrix, `measure.mjs` takes `--theme` and `--mode` and labels failures, `budgets.json` accepts `themes.<id>` exceptions (none recorded), and every page is checked for FOUC (init script before stylesheets, size-adjusted fallbacks for preloaded fonts) | No change in what pages send; the existing limits apply to Bogotá unchanged |
 
 The HTML is rendered per request, so Nitro does not compress it (108.5 KB on the home page here). In production Traefik compresses it, together with Strapi's JSON (bogd3v/bogdev-infra#10): the home page HTML goes from 141.8 KB to 27.7 KB with brotli. This measurement serves the Nitro build directly, so it still reports the uncompressed HTML.
 
