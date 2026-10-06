@@ -1,11 +1,7 @@
 import type { ThemeContext } from './context'
-import { setupHeaderFooter } from './layout/header-footer'
-import { setupHome } from './layout/home'
-import { setupPostListArticle } from './layout/post-list-article'
+import { registerVariants } from './layout/variants'
 
-// One file per PR (6a, 6c, 6b) so they never edit the same lines; this file is not edited again
+// The variant check itself is part of the contract (contract.ts)
 export function setupLayout(ctx: ThemeContext): void {
-  setupHeaderFooter(ctx)
-  setupHome(ctx)
-  setupPostListArticle(ctx)
+  registerVariants(ctx)
 }

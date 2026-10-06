@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-03
-**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237)
+**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice)
 **Deciders:** BogDev maintainer
 
 ## Context
@@ -101,17 +101,19 @@ themes/bogota/
   | `ThemeMark` | `size`, `context: 'header' \| 'footer'` | its logo and the `Bog<span>Dev</span>` wordmark | `site.name` as text |
   | `ThemeHero` | `compact` | the hero photo and flight art | neutral |
   | `ThemeDivider` | `placement: 'section' \| 'footer'` | the footer panorama of the eastern hills, declared an island | neutral |
-  | `ThemeEmptyState` | none | uses the default | neutral |
+  | `ThemeEmptyState` | none (wraps the content) | the perched bird | neutral |
   | `ThemeIllustration` | `category`, `size` | the category birds | neutral |
 
   A slot that needs JavaScript (today only Bogotá's `ThemeDivider`) declares itself an island in `theme.json` (section 12). `site.logo` from Strapi is used for structured data only and never replaces a theme's `ThemeMark`. Only the active theme's slots are registered, so unused ones are not bundled.
 
-  Until the theme validator lands (#237, PR 7), slots are registered as plain components: `island` is validated and recorded in `#micelio/theme` but not enforced, so every slot still hydrates.
+  Slots are registered as plain components, so every slot still hydrates. The island rule (section 12) is enforced by the validator, not at runtime: see section 12.
 - **Templates** for the OG image and the newsletter email shell are optional; the core has neutral defaults. They read roles and the site identity, never hardcoded site values.
 - The active theme is chosen at build time with `NUXT_PUBLIC_THEME` (default `bogota`); only installed themes can be selected, and only the active theme's CSS and fonts reach the page.
 - **Module** (amended 2026-10-04, #237): a local Nuxt module in `modules/theme/` (not a Nuxt layer; see option C) discovers themes in `themes/` at the repository root, plus the directories in `MICELIO_THEME_DIRS` (used by test fixtures), validates them, fails the build if `NUXT_PUBLIC_THEME` is not installed, generates the CSS above and exposes `#micelio/theme` (id, modes, fonts, layout, slots) with types. As with `NUXT_PUBLIC_SITE_MODE` ([ADR-0006](0006-site-modes.md)), startup fails if the runtime value disagrees with the build.
 
   **Amendment (2026-10-05, #237):** the module is split by concern, and `index.ts` only calls the pieces: `context.ts` (the active theme and the lists the other files fill), `assets.ts` (fonts, images, messages), `css.ts` (every `#build/micelio/*.css` template), `data.ts` (`#micelio/theme` and its types) and `modes.ts`, `slots.ts`, `layout.ts`. The theme's `images/` is copied to `<buildDir>/micelio/public/theme/images/` and that root is added to `image.dirs`: `@nuxt/image` serves its dirs as public assets and IPX reads them in dev and in production, whereas a `publicAssets` entry alone is invisible to IPX in dev and a symlink is rejected by IPX. For that, `modules/theme` is listed before `@nuxt/image` in `nuxt.config.ts`, which reads `image.dirs` when it is set up. The theme's `i18n/<locale>.json` files are registered with `i18n:registerModule` and go through the same precompiler as the core locales (`modules/precompile-messages.ts`), so they reach the client compiled.
+
+  **Amendment (2026-10-05, #237, PR 7):** the validator, the hooks list and the schema are implemented. `modules/theme/contract.ts` (with `roles.mjs`, which also holds the optional-role defaults the generated CSS falls back to) is the contract; `themes/theme.schema.json` is generated from it (`npm run theme:schema`) and `npm run lint` fails when it drifts. `validate.ts` checks every installed theme, and `css-rules.ts` checks theme CSS against `app/theme/hooks.json` (a theme's own `data-*` attributes start with `data-<id>-`; `url()` may only point at `/fonts/` and `/theme/images/`).
 
 ### 5. Customization levels: roles, layout variants, hooks and slots
 
@@ -186,7 +188,9 @@ Every theme styles every section of the `page` collection and every variant (bog
 
 ### 12. Zero JavaScript in themes
 
-A theme ships no JavaScript outside its slots. Slots render on the server without hydration; a slot that needs interactivity declares itself an island in `theme.json` and counts against the page's JS budget. Themes cannot register plugins, middleware, routes or modules.
+A theme ships no JavaScript outside its slots. Slots render on the server without hydration; a slot that needs interactivity declares itself an island in `theme.json` and counts against the page's JS budget.
+
+**Amendment (2026-10-05, #237):** the rule is enforced by static analysis in the contract validator (`modules/theme/island.ts`): the SFC of a slot that does not declare `"island": true` is parsed with `@vue/compiler-sfc`, and the build fails, naming the theme and the file, on an event handler (`@x`, `v-on`), `v-model`, a lifecycle hook (`onMounted`, `onBeforeMount`, `onUpdated`, `onBeforeUpdate`, `onUnmounted`, `onBeforeUnmount`, `onActivated`, `onDeactivated`, `onErrorCaptured`) or `useState`, an `onX` prop or an object or dynamic `v-bind`, an Options API hook (`mounted()`…), `watch*`, timers and `addEventListener`, and on any `<style>` block in a slot. The script is parsed with Babel, so comments and strings do not fool it. It is a contract lint over the slot's own file (not what it imports), not a sandbox: a theme is installed by the operator, its slots run at build time and during SSR, and the CSP is the boundary in the browser, and the slot is still hydrated like any component; skipping hydration for non-island slots (lazy hydration) is a later step that changes no theme. Themes cannot register plugins, middleware, routes or modules.
 
 ## Options considered
 

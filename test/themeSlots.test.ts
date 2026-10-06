@@ -3,8 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { SLOT_NAMES } from '../modules/theme/data'
-import { resolveSlots, slotStyles, validateSlots } from '../modules/theme/slots'
-import type { ThemeManifest } from '../modules/theme/themes'
+import { resolveSlots, slotStyles } from '../modules/theme/slots'
 
 function tmp(): string {
   return mkdtempSync(join(tmpdir(), 'bd-slots-'))
@@ -13,10 +12,6 @@ function tmp(): string {
 function slotsDir(dir: string, files: string[]): void {
   mkdirSync(join(dir, 'slots'), { recursive: true })
   for (const file of files) writeFileSync(join(dir, 'slots', file), '')
-}
-
-function manifest(slots: object): ThemeManifest {
-  return { id: 'sample', contract: 1, fonts: [], modes: [], slots } as unknown as ThemeManifest
 }
 
 describe('slot resolution', () => {
@@ -41,30 +36,5 @@ describe('slot resolution', () => {
     expect(slotStyles(dir)).toBe('')
     slotsDir(dir, ['mark.css', 'divider.css', 'ThemeMark.vue', 'logo.ts'])
     expect(slotStyles(dir)).toBe(`@import "${join(dir, 'slots', 'divider.css')}";\n@import "${join(dir, 'slots', 'mark.css')}";`)
-  })
-})
-
-describe('slot validation', () => {
-  it('accepts the known slots with a boolean island', () => {
-    const dir = tmp()
-    slotsDir(dir, ['ThemeMark.vue'])
-    expect(() => validateSlots(manifest({ ThemeDivider: { island: true }, ThemeMark: {} }), dir)).not.toThrow()
-  })
-
-  it('rejects a slot outside the list, in theme.json or in slots/', () => {
-    const dir = tmp()
-    expect(() => validateSlots(manifest({ ThemeFooter: {} }), dir)).toThrow(/"ThemeFooter".*not one of/)
-    slotsDir(dir, ['ThemeFooter.vue'])
-    expect(() => validateSlots(manifest({}), dir)).toThrow(/slots\/ThemeFooter\.vue is not a slot/)
-  })
-
-  it('rejects slot options that are not a plain object', () => {
-    for (const options of [true, null, 'island', ['island']]) {
-      expect(() => validateSlots(manifest({ ThemeDivider: options }), tmp())).toThrow(/Theme "sample": slots\.ThemeDivider must be an object/)
-    }
-  })
-
-  it('rejects an island that is not a boolean', () => {
-    expect(() => validateSlots(manifest({ ThemeDivider: { island: 'yes' } }), tmp())).toThrow(/slots\.ThemeDivider\.island/)
   })
 })

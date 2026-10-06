@@ -1,8 +1,9 @@
 // Role CSS from a theme's theme.json. Plain ESM so the module, the CLI (scripts/build-tokens.mjs) and the tests share it.
 
+import { OPTIONAL_ROLES, UNSAFE_VALUE } from './roles.mjs'
+
 const NAME = /^[\w-]+$/
-// Defense in depth until the contract validator (#237, PR 7): a value cannot open a rule, a tag or a URL
-const UNSAFE = /[;{}<>@`]|url\(/i
+// Defense in depth: the contract validator (contract.ts) rejects the same values before the build gets here
 
 function checkName(theme, kind, name) {
   if (typeof name !== 'string' || !NAME.test(name)) throw new Error(`Theme "${theme}": ${kind} "${name}" must match ^[\\w-]+$`)
@@ -11,7 +12,7 @@ function checkName(theme, kind, name) {
 function checkValue(theme, token, mode, value) {
   if (typeof value !== 'string') return
   // {name} references are resolved to var(--name) afterwards
-  if (UNSAFE.test(value.replace(/\{[\w-]+\}/g, ''))) {
+  if (UNSAFE_VALUE.test(value.replace(/\{[\w-]+\}/g, ''))) {
     throw new Error(`Theme "${theme}": token "${token}"${mode ? ` in mode "${mode}"` : ''} has an unsafe value "${value}" (none of ; { } < > @ \` url( allowed)`)
   }
 }
@@ -76,6 +77,11 @@ export function buildTokensCss(data, aliases = {}) {
 
   lines.push(':root {')
   flat.forEach(t => lines.push(`  --${t.name}: ${resolveValue(t.value)};`))
+  // Optional roles a theme omits take the core default (ADR 0005, section 1)
+  const declared = new Set(themed.map(t => t.name))
+  Object.entries({ ...OPTIONAL_ROLES.color, ...OPTIONAL_ROLES.shadow }).forEach(([name, value]) => {
+    if (!declared.has(name)) lines.push(`  --${name}: ${value};`)
+  })
   Object.entries(data.type?.families ?? {}).forEach(([k, v]) => lines.push(`  --font-${k}: ${v};`))
   ;(data.type?.groups ?? []).forEach(g => g.styles.forEach((s) => {
     lines.push(`  --text-${s.name}: ${s.fontWeight} ${s.fontSize}/${s.lineHeight} var(--font-${g.family});`)

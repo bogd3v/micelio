@@ -2,7 +2,9 @@ import { resolve, sep } from 'node:path'
 import type { Nuxt } from '@nuxt/schema'
 import { updateTemplates } from 'nuxt/kit'
 import { DEFAULT_THEME, discoverThemes, selectTheme, themeRoots } from './themes'
-import type { InstalledTheme, ThemeValidator } from './themes'
+import type { InstalledTheme } from './themes'
+import { loadHooks } from './hooks'
+import { validateThemes } from './validate'
 import { LAYOUT_REGIONS } from './data'
 import type { LayoutRegion } from './data'
 
@@ -38,22 +40,20 @@ export interface ThemeContext {
   layoutCss: Record<LayoutRegion, CssSource[]>
   /** Components to register (slots and layout variants); data.ts adds them with addComponent. */
   components: ThemeComponent[]
-  /** Checks of the active theme's manifest; registered by modes.ts, slots.ts and layout/*, run by validateTheme(). */
-  validators: ThemeValidator[]
 }
 
 export function createContext(nuxt: Nuxt): ThemeContext {
   const id = process.env.NUXT_PUBLIC_THEME || nuxt.options.runtimeConfig.public.theme || DEFAULT_THEME
   const roots = themeRoots(nuxt.options.rootDir)
   // Discovery runs again on every regeneration, so editing a theme in dev needs no restart
-  const validators: ThemeValidator[] = []
-  const discover = (): InstalledTheme => selectTheme(discoverThemes(roots), id)
+  const hooks = loadHooks(nuxt.options.srcDir)
+  // Every installed theme is validated, not only the active one (ADR 0005, section 6)
   const load = (): InstalledTheme => {
-    const theme = discover()
-    for (const validate of validators) validate(theme.manifest, theme.dir)
-    return theme
+    const themes = discoverThemes(roots)
+    validateThemes(themes, hooks)
+    return selectTheme(themes, id)
   }
-  const active = discover()
+  const active = load()
   return {
     nuxt,
     id: active.id,
@@ -64,13 +64,7 @@ export function createContext(nuxt: Nuxt): ThemeContext {
     slotCss: [],
     layoutCss: Object.fromEntries(LAYOUT_REGIONS.map(region => [region, []])) as unknown as Record<LayoutRegion, CssSource[]>,
     components: [],
-    validators,
   }
-}
-
-/** Validates the active theme once every setup file has registered its checks; load() repeats it on each regeneration. */
-export function validateTheme(ctx: ThemeContext): void {
-  ctx.load()
 }
 
 /** True when `path` (absolute, or relative to srcDir or rootDir) is inside a theme root. */
