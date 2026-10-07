@@ -1,0 +1,99 @@
+# Hosting a static or landing site
+
+How to build and publish a Micelio site with `NUXT_PUBLIC_SITE_MODE=static` or `landing` ([ADR 0006](adr/0006-site-modes.md), section 7). Cloudflare Pages is the reference host.
+
+## When to choose it
+
+- Choose `static` for a blog or documentation site whose content changes with publishing, not per visitor: no comments, accounts, drafts or fediverse, search through a static index, newsletter through an external provider.
+- Choose `landing` for a few pages that rarely change.
+- Keep `dynamic` (a Node server) when you need comments, accounts, drafts, the fediverse or the newsletter stored in Strapi. BogDev stays dynamic.
+
+## How it works
+
+1. An editor publishes, unpublishes or deletes an article or page, or saves the site settings, in Strapi.
+2. micelio-cms calls `REBUILD_HOOK_URL` (debounced 60 s) with a GitHub `repository_dispatch` of type `micelio-content`.
+3. `.github/workflows/static-site.yml` runs `npm run generate` against Strapi, then `wrangler pages deploy .output/public`. A newer run cancels one in progress.
+
+The workflow runs only when the repository variable `STATIC_SITE_ENABLED` is `true`, so forks and dynamic sites never run it. You can also start it by hand from the Actions tab (`workflow_dispatch`).
+
+## Repository variables and secrets
+
+Settings, Secrets and variables, Actions.
+
+| Name | Kind | Required | Purpose |
+| --- | --- | --- | --- |
+| `STATIC_SITE_ENABLED` | variable | yes | `true` turns the workflow on |
+| `NUXT_PUBLIC_SITE_MODE` | variable | no | `static` (default) or `landing` |
+| `NUXT_PUBLIC_STRAPI_URL` | variable | yes | Strapi URL reachable from the runner |
+| `NUXT_PUBLIC_SITE_URL` | variable | yes | Public URL of the site (canonical links, feed, sitemap) |
+| `NUXT_MEDIA_URL` | variable | if media is on another origin | Media origin, as in `.env.example` |
+| `NUXT_PUBLIC_THEME` | variable | no | Theme id (default `bogota`) |
+| `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION` | variable | no | Provider form endpoint; the newsletter is off when empty |
+| `CLOUDFLARE_PAGES_PROJECT` | variable | yes | Pages project name |
+| `STRAPI_BUILD_TOKEN` | secret | yes | The CMS `build` token, mapped to `NUXT_STRAPI_API_TOKEN` in the generate step only |
+| `CLOUDFLARE_API_TOKEN` | secret | yes | Token with Cloudflare Pages: Edit and nothing else |
+| `CLOUDFLARE_ACCOUNT_ID` | secret | yes | Account that owns the project |
+
+## The build token
+
+The static build must use the `build` token (`BUILD_API_TOKEN` in micelio-cms): custom, find-only, content types needed to render and nothing else. Never give the build the frontend token, which can read and delete subscribers. See [security.md](security.md) (credentials towards Strapi, and the rebuild and deploy tokens).
+
+## Strapi reachable from the runner
+
+GitHub-hosted runners have no fixed IP, so Strapi must answer on the internet, with its admin panel and every write route closed (proxy rules or firewall), and the `build` token as the only credential the build holds. If Strapi must stay private, build on a machine that can reach it (see below).
+
+The build fails on any Strapi error, so a broken CMS never publishes a half-empty site; the previous deployment stays live.
+
+## The CMS side
+
+Set these in micelio-cms (its environment, not GitHub):
+
+| Variable | Value |
+| --- | --- |
+| `REBUILD_HOOK_URL` | `https://api.github.com/repos/<owner>/<repo>/dispatches` |
+| `REBUILD_HOOK_TOKEN` | A GitHub token allowed to create a repository dispatch (below) |
+
+`POST /repos/{owner}/{repo}/dispatches` needs write access to the repository. Use a fine-grained personal access token limited to this one repository with **Contents: Read and write** (the only permission that endpoint requires; Metadata read is added automatically). A classic token would need the broad `repo` scope, so avoid it. Fine-grained tokens expire (at most one year): note the date and rotate it. A machine user or GitHub App installation token works the same way.
+
+Optional: `REBUILD_HOOK_DEBOUNCE_MS`, `REBUILD_HOOK_RETRIES`, `REBUILD_HOOK_RETRY_DELAY_MS`. The payload is `{ event_type: "micelio-content", client_payload: { changes, count } }`; the run's summary lists the changes (no secrets).
+
+## Cloudflare Pages
+
+1. Create a Pages project with **Direct Upload** (no Git integration: GitHub builds, Cloudflare only serves). The project and its domain are created in bogdev-infra (Terraform) for the reference deployment.
+2. Create an API token with the permission *Account, Cloudflare Pages, Edit* only, and note the account id.
+3. Set the variables and secrets above and run the workflow once by hand.
+
+## Headers, 404 and analytics
+
+- Security headers and CSP come from the `_headers` file the build writes into `.output/public`. Cloudflare Pages and Netlify read it. A host without `_headers` support gets the CSP from the `<meta>` fallback only (no framing, HSTS or other header-only protections); configure the same headers at the host.
+- GitHub Pages is not supported: it cannot send security headers.
+- The host must serve `404.html` for unknown paths, not `200.html`. Cloudflare Pages does this when `404.html` exists.
+- Analytics are off on Cloudflare Pages: the Umami proxy needs a server, and Pages only rewrites within the site. Add a Worker for the two Umami paths if you need it; never load Umami from its own domain (zero third-party requests).
+
+## Building on a private machine
+
+When Strapi is not reachable from GitHub, build where it is:
+
+```bash
+NUXT_PUBLIC_SITE_MODE=static \
+NUXT_PUBLIC_STRAPI_URL=http://strapi.internal:1337 \
+NUXT_PUBLIC_SITE_URL=https://example.com \
+NUXT_STRAPI_API_TOKEN=<build token> \
+npm run generate
+
+CLOUDFLARE_API_TOKEN=<pages token> CLOUDFLARE_ACCOUNT_ID=<id> \
+npx wrangler pages deploy .output/public --project-name=<project> --branch=main
+```
+
+Trigger it from the CMS host with a cron job or a small receiver of the same hook.
+
+## Preview locally
+
+```bash
+NUXT_PUBLIC_SITE_MODE=static npm run generate
+node scripts/static-serve.mjs
+```
+
+## Roll back
+
+Cloudflare Pages keeps every deployment: promote an earlier one in the dashboard (Deployments, Rollback), or re-run the workflow after fixing the content. To stop automatic builds, set `STATIC_SITE_ENABLED` to anything but `true`.

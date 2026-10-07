@@ -118,6 +118,10 @@ The pipeline can also be started by hand from the Actions tab (`workflow_dispatc
 
 The server, DNS and reverse proxy (Traefik on Dokploy) are managed with Terraform in the private `bogdev-infra` repository.
 
+### Static sites
+
+A `static` or `landing` site is built by `.github/workflows/static-site.yml` on every publish in Strapi and deployed to Cloudflare Pages; it only runs where `STATIC_SITE_ENABLED` is `true`. Setup, variables, tokens and rollback: [docs/static-mode.md](docs/static-mode.md).
+
 ### Releases
 
 Every merge to `main` is deployed; a release is a dated snapshot of what is live. Run the **Release** workflow from the Actions tab on `main`: it tags the current commit `vYYYY.MM.DD` (`.2`, `.3`… for more than one a day) and publishes a GitHub release whose notes list the PRs merged since the previous one, grouped by label (security, features, fixes, quality, docs, dependencies).

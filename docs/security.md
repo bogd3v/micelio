@@ -91,3 +91,11 @@ Rate limits are in memory (`server/utils/rateLimit.ts`): they reset when the con
 - CI fails on any **critical** `npm audit` finding. High stays allowed while the remaining ones (`node-forge` through the Nuxt dev server, `esbuild`) have no fixed release and do not reach the production image.
 - Dependabot alerts and security updates are on; weekly update PRs come grouped. Major updates of Node and `@types/node` are ignored on purpose: the runtime is distroless Node 22, and moving to a new major is done by hand in both Docker stages and the CI.
 - GitHub Actions are pinned by commit SHA.
+
+## Static site publishing tokens
+
+The workflow `.github/workflows/static-site.yml` ([static-mode.md](static-mode.md)) and the CMS rebuild hook hold two more credentials, none of them in the generated site:
+
+- **Dispatch token** (`REBUILD_HOOK_TOKEN`, stored in the CMS environment): a fine-grained personal access token limited to the site's repository with **Contents: Read and write**, the minimum `POST /repos/{owner}/{repo}/dispatches` accepts. It can push code, so keep it only in the CMS, rotate it before it expires and never reuse it elsewhere. The payload carries content identifiers only.
+- **Cloudflare token** (`CLOUDFLARE_API_TOKEN`, a GitHub secret): *Account, Cloudflare Pages, Edit* and nothing else (no DNS, no Workers, no zone permissions).
+- **Build token** (`STRAPI_BUILD_TOKEN`, a GitHub secret): the CMS `build` token above, exposed as `NUXT_STRAPI_API_TOKEN` only in the generate step. The workflow has `contents: read` permissions and does not run for forks or when `STATIC_SITE_ENABLED` is not `true`.

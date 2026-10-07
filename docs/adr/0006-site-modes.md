@@ -138,5 +138,6 @@ Static sites lose comments, accounts, drafts and the fediverse, and depend on a 
 - #243 implements sections 1–5 and 7 for `static`: the build module, `noScripts`, Pagefind, the `_headers` file, the workflow and the e2e that fails if a page loads Nuxt's entry; #244 adds the `landing` profile; #234 makes `isModuleEnabled` read the mode.
 - #245 rewrites the mode switch, mobile navigation, search palette and newsletter form as native HTML and custom elements for every mode.
 - #241's script and `budgets.json` get budgets per mode and an `islands` section; Mermaid moves under it first, then #246 and #247 follow section 6.
+- The workflow and the hosting guide are `.github/workflows/static-site.yml` and [`docs/static-mode.md`](../static-mode.md).
 - bogd3v/micelio-cms#75 adds the rebuild lifecycle hook and `REBUILD_HOOK_URL`; its `SECURITY.md` and this repo's `docs/security.md` document the read-only build token.
 - ADR-0001 stays for `dynamic`; its option D (static generation) is now a supported mode for sites without server modules. ADR-0002 and ADR-0004 apply as described in section 7.
