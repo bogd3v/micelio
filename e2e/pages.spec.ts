@@ -28,7 +28,7 @@ for (const entry of PAGES) {
 
 test('the locale switcher goes to the translated slug', async ({ page }) => {
   await page.goto('/showcase', { waitUntil: 'networkidle' })
-  await page.getByRole('button', { name: /español/i }).or(page.getByRole('link', { name: /español/i })).first().click()
+  await page.getByRole('group', { name: 'Language' }).getByRole('button', { name: 'Español' }).click()
   await expect(page).toHaveURL(/\/es\/muestra$/)
 })
 

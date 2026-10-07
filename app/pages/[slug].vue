@@ -2,6 +2,10 @@
 import type { Locale, Page } from '~/interfaces'
 import { pagePaths } from '~/helpers/translations'
 import { pageTitle } from '~/helpers/site'
+import { heroLeadsPage, PAGE_SLUG_PATTERN } from '~/helpers/pages'
+
+// A slug the API would reject (400, e.g. "Showcase") is a page that does not exist: 404 without the call
+definePageMeta({ validate: route => PAGE_SLUG_PATTERN.test(String(route.params.slug)) })
 
 const { locale } = useI18n()
 const route = useRoute()
@@ -16,10 +20,9 @@ const { data: page, error } = await useAsyncData<Page>(`page-${slug}-${locale.va
   $fetch<Page>(`/api/pages/${encodeURIComponent(slug)}`, { query: { locale: locale.value } }),
 )
 
-// A slug the API rejects (400, e.g. "About") is a page that does not exist
 if (error.value || !page.value) {
-  const status = error.value?.statusCode
-  const notFound = !status || status === 404 || status === 400
+  const status = error.value?.statusCode ?? 500
+  const notFound = status === 404 || status === 400
   throw createError({
     statusCode: notFound ? 404 : status,
     statusMessage: notFound ? 'Page not found' : 'Failed to load page',
@@ -32,7 +35,7 @@ watch(page, (value) => {
 }, { immediate: true })
 
 // A hero that opens the page carries the h1; otherwise the page title does
-const heroLeads = computed<boolean>(() => page.value?.sections[0]?.__component === 'section.hero')
+const heroLeads = computed<boolean>(() => heroLeadsPage(page.value?.sections))
 
 const shareImageUrl = computed<string | undefined>(() => getMediaUrl(page.value?.seo?.metaImage?.url) || defaultOgImage.value)
 const seoTitle = computed<string>(() => page.value?.seo?.metaTitle || pageTitle(page.value?.title || '', site.value.name))

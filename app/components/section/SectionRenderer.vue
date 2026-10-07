@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import type { PageSection } from '~/interfaces'
+import { knownSections as filterKnown } from '~/helpers/pages'
 import SectionHero from '~/components/section/SectionHero.vue'
 import SectionFeatureGrid from '~/components/section/SectionFeatureGrid.vue'
 import SectionMediaShowcase from '~/components/section/SectionMediaShowcase.vue'
@@ -39,9 +40,7 @@ const componentMap: Readonly<Record<PageSection['__component'], Component>> = {
   'section.scene': SectionScene,
 }
 
-const knownSections = computed<PageSection[]>(() =>
-  (props.sections ?? []).filter(section => section.__component in componentMap),
-)
+const knownSections = computed<PageSection[]>(() => filterKnown(props.sections))
 </script>
 
 <template>
