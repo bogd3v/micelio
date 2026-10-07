@@ -9,6 +9,7 @@ import { Category } from '~/interfaces/design'
 import { startMockStrapi } from './mock-strapi'
 import { MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
 import { resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
+import { contrastRatio, parseHex } from '~/helpers/color'
 import { inlineScripts } from '~/helpers/securityHeaders'
 
 const SITE_URL = 'https://bogdev.test'
@@ -47,6 +48,7 @@ beforeEach(() => {
   mock.failures.pathOrder = false
   mock.failures.about = false
   mock.failures.site = false
+  mock.theme.value = null
   for (const module of Object.keys(mock.modules) as (keyof typeof mock.modules)[]) mock.modules[module] = true
   umami.requests.length = 0
 })
@@ -585,7 +587,7 @@ describe('/api/site', () => {
     })
     expect(mock.siteRequests).toEqual([expect.objectContaining({
       path: '/api/site-setting',
-      query: { populate: '*', locale: 'es' },
+      query: { populate: { author: 'true', logo: 'true', favicon: 'true', defaultOgImage: 'true', socialLinks: 'true', modules: 'true', theme: { populate: '*' } }, locale: 'es' },
       authorization: 'Bearer test-api-token',
     })])
   })
@@ -606,6 +608,66 @@ describe('/api/site', () => {
   it('rejects an unknown locale without calling Strapi', async () => {
     await expect($fetch('/api/site', { query: { locale: 'fr' } })).rejects.toMatchObject({ response: { status: 400 } })
     expect(mock.requests).toEqual([])
+  })
+})
+
+describe('theme from Strapi', () => {
+  // Pages that are not ISR, so every request renders
+  const PAGE = '/account/sign-in'
+  const SURFACE_RAISED = '#fbf6f0'
+  const savedTheme = {
+    id: 1,
+    themeId: 'bogota',
+    defaultMode: 'dia',
+    displayFont: null,
+    accentOverrides: [{ id: 1, mode: 'dia', color: '#FFFF00' }, { id: 2, mode: 'sepia', color: '#112233' }],
+  }
+
+  async function page(path: string): Promise<{ html: string, csp: string }> {
+    const response = await fetch(path)
+    return { html: await response.text(), csp: response.headers.get('content-security-policy') ?? '' }
+  }
+
+  it('without a theme renders the first mode and no overrides', async () => {
+    const { html } = await page(PAGE)
+    expect(html).toMatch(/<html[^>]* data-theme="noche" data-scheme="dark"/)
+    expect(html).not.toMatch(/<html[^>]*data-mode-default/)
+    expect(html).not.toContain('theme-overrides')
+    const site = await $fetch<{ theme?: unknown }>('/api/site')
+    expect(site.theme).toBeUndefined()
+  })
+
+  it('writes the default mode and a corrected accent, and the CSP stays the same', async () => {
+    const without = await page(PAGE)
+    mock.theme.value = savedTheme
+    const { html, csp } = await page(PAGE)
+    expect(html).toMatch(/<html[^>]* data-theme="dia" data-scheme="light" data-mode-default="dia"/)
+    const style = /<style id="theme-overrides">(\[data-theme="dia"\]\{--accent:(#[\da-f]{6});--accent-soft:#[\da-f]{6};--accent-hover:#[\da-f]{6};--on-accent:#[\da-f]{6}\})<\/style>/.exec(html)
+    expect(style, 'one rule, for dia only').not.toBeNull()
+    expect(style![2]).not.toBe('#ffff00')
+    expect(contrastRatio(parseHex(style![2]!)!, parseHex(SURFACE_RAISED)!)).toBeGreaterThanOrEqual(4.5)
+    expect(html).not.toContain('sepia')
+    expect(csp).toBe(without.csp)
+    const site = await $fetch<{ theme?: { id: string, defaultMode: string, accents: Record<string, { accent: string }> } }>('/api/site')
+    expect(site.theme).toMatchObject({ id: 'bogota', defaultMode: 'dia', accents: { dia: { accent: style![2] } } })
+    expect(Object.keys(site.theme!.accents)).toEqual(['dia'])
+  })
+
+  it('uses the request locale for the page and ignores another theme id', async () => {
+    mock.theme.value = { themeId: 'other', defaultMode: 'noche', accentOverrides: [] }
+    const { html } = await page(`/es${PAGE}`)
+    expect(html).toMatch(/<html[^>]* data-theme="noche" data-scheme="dark" data-mode-default="noche"/)
+    expect(html).not.toContain('theme-overrides')
+    expect(mock.siteRequests.at(-1)?.query).toMatchObject({ locale: 'es' })
+  })
+
+  it('renders as before when Strapi fails', async () => {
+    mock.theme.value = savedTheme
+    mock.failures.site = true
+    const { html } = await page(PAGE)
+    expect(html).toMatch(/<html[^>]* data-theme="noche" data-scheme="dark"/)
+    expect(html).not.toMatch(/<html[^>]*data-mode-default/)
+    expect(html).not.toContain('theme-overrides')
   })
 })
 

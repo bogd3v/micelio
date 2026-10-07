@@ -58,6 +58,17 @@ describe('buildPalette', () => {
     expect(noche!.focusIsAccent).toBe(true)
   })
 
+  it('flags link-soft as accent-soft or as the core default', () => {
+    const manifest = structuredClone(installed.find(theme => theme.id === 'bogota')!.manifest)
+    expect(buildPalette(manifest).modes.noche).toMatchObject({ linkSoftIsAccentSoft: false, linkSoftIsDefault: false })
+    for (const token of manifest.color.tokens) {
+      if (token.name === 'link-soft') token.value = '{accent-soft}'
+    }
+    expect(buildPalette(manifest).modes.noche).toMatchObject({ linkSoftIsAccentSoft: true, linkSoftIsDefault: false })
+    manifest.color.tokens = manifest.color.tokens.filter(token => token.name !== 'link-soft')
+    expect(buildPalette(manifest).modes.noche).toMatchObject({ linkSoftIsAccentSoft: false, linkSoftIsDefault: true })
+  })
+
   it('takes the accent rules from CONTRAST_RULES', () => {
     const { rules } = palette('bogota')
     expect(rules.map(rule => rule.role).sort()).toEqual(['accent', 'focus', 'link', 'on-accent'])

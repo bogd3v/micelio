@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { isValidEmail } from '~/helpers/auth'
 import { Locale } from '~/interfaces/locale'
-import { SITE_MODULES, SOCIAL_NETWORKS } from '~/interfaces/site'
+import { DISPLAY_FONTS, SITE_MODULES, SOCIAL_NETWORKS } from '~/interfaces/site'
 import type { SiteModules, SiteSettings } from '~/interfaces/site'
 
 // Every field is optional and drops itself when invalid, so one bad value falls back alone (docs/api.md)
@@ -26,6 +26,27 @@ const modules = z.object(
   Object.fromEntries(SITE_MODULES.map(module => [module, lenient(z.boolean())])) as Record<keyof SiteModules, ReturnType<typeof lenient<z.ZodBoolean>>>,
 )
 
+const slug = z.string().regex(/^[a-z][a-z0-9-]*$/)
+const accentOverride = z.object({ mode: slug, color: z.string().regex(/^#[\da-f]{6}$/i) })
+
+/** Strapi sends null for what was never set; each field drops itself when invalid. */
+const theme = z.object({
+  themeId: lenient(slug.nullish().transform(value => value ?? undefined)),
+  defaultMode: lenient(slug.nullish().transform(value => value ?? undefined)),
+  displayFont: lenient(z.enum(DISPLAY_FONTS).nullish().transform(value => value ?? undefined)),
+  // Item by item: an invalid one is dropped, and the first valid one of a mode wins
+  // At most 16 (a theme has at most 6 modes); a longer list is dropped whole
+  accentOverrides: lenient(z.array(z.unknown()).max(16).transform((items) => {
+    const seen = new Set<string>()
+    return items.flatMap((item) => {
+      const parsed = accentOverride.safeParse(item)
+      if (!parsed.success || seen.has(parsed.data.mode)) return []
+      seen.add(parsed.data.mode)
+      return [parsed.data]
+    })
+  })),
+})
+
 export const siteSettingsSchema = z.object({
   name: lenient(text),
   description: lenient(text),
@@ -46,6 +67,7 @@ export const siteSettingsSchema = z.object({
   privacyUpdatedAt: lenient(z.iso.datetime({ offset: true })),
   supportHandle: lenient(text.regex(/^[A-Za-z0-9_-]+$/)),
   modules: lenient(modules),
+  theme: lenient(theme),
 })
 
 export function parseSiteSettings(data: unknown): SiteSettings | null {

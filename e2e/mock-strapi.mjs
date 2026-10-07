@@ -499,6 +499,10 @@ const server = createServer(async (req, res) => {
         supportHandle: 'ale9420',
         // MOCK_MODULES_OFF=1 runs e2e/modules-off.spec.ts against a site with every module off
         modules: { id: 1, ...Object.fromEntries(['newsletter', 'comments', 'accounts', 'drafts', 'fediverse', 'search', 'support'].map(module => [module, process.env.MOCK_MODULES_OFF !== '1'])) },
+        // MOCK_THEME=1 runs e2e/theme-overrides.spec.ts against a site with a default mode and a low-contrast accent; unset, there is no `theme` key
+        ...(process.env.MOCK_THEME === '1' && {
+          theme: { id: 1, themeId: 'bogota', defaultMode: 'dia', displayFont: null, accentOverrides: [{ id: 1, mode: 'noche', color: '#202020' }] },
+        }),
       },
     })
     return

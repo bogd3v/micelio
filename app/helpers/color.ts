@@ -67,22 +67,29 @@ export function toHex(color: Rgb): string {
   return `#${[color.r, color.g, color.b].map(channel => Math.round(clamp01(channel) * 255).toString(16).padStart(2, '0')).join('')}`
 }
 
-/** sRGB to OKLCH (Ottosson); `h` in degrees. */
-export function srgbToOklch(color: Rgb): Oklch {
+export interface Oklab { l: number, a: number, b: number }
+
+/** sRGB to OKLab (Ottosson). */
+export function srgbToOklab(color: Rgb): Oklab {
   const [r, g, b] = [linear(color.r), linear(color.g), linear(color.b)] as [number, number, number]
   const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
   const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
   const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
-  const lightness = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s
-  const a = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s
-  const bb = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s
-  return { l: lightness, c: Math.hypot(a, bb), h: ((Math.atan2(bb, a) * 180) / Math.PI + 360) % 360 }
+  return {
+    l: 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    a: 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    b: 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  }
 }
 
-/** OKLCH to unclamped sRGB; channels outside 0..1 mean out of gamut. */
-function oklchToRawSrgb({ l: lightness, c, h }: Oklch): Rgb {
-  const a = c * Math.cos((h * Math.PI) / 180)
-  const b = c * Math.sin((h * Math.PI) / 180)
+/** sRGB to OKLCH; `h` in degrees. */
+export function srgbToOklch(color: Rgb): Oklch {
+  const { l, a, b } = srgbToOklab(color)
+  return { l, c: Math.hypot(a, b), h: ((Math.atan2(b, a) * 180) / Math.PI + 360) % 360 }
+}
+
+/** OKLab to unclamped sRGB; channels outside 0..1 mean out of gamut. */
+function oklabToRawSrgb({ l: lightness, a, b }: Oklab): Rgb {
   const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3
   const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3
   const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3
@@ -91,6 +98,18 @@ function oklchToRawSrgb({ l: lightness, c, h }: Oklch): Rgb {
     g: gamma(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
     b: gamma(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s),
   }
+}
+
+/** OKLCH to unclamped sRGB. */
+function oklchToRawSrgb({ l, c, h }: Oklch): Rgb {
+  return oklabToRawSrgb({ l, a: c * Math.cos((h * Math.PI) / 180), b: c * Math.sin((h * Math.PI) / 180) })
+}
+
+/** `weight` (0..1) of `a` mixed with the rest of `b` in OKLab, as CSS `color-mix(in oklab, a weight, b)` does. */
+export function mixOklab(a: Rgb, b: Rgb, weight: number): Rgb {
+  const [x, y] = [srgbToOklab(a), srgbToOklab(b)]
+  const raw = oklabToRawSrgb({ l: x.l * weight + y.l * (1 - weight), a: x.a * weight + y.a * (1 - weight), b: x.b * weight + y.b * (1 - weight) })
+  return { r: clamp01(raw.r), g: clamp01(raw.g), b: clamp01(raw.b) }
 }
 
 const EPSILON = 1e-6
