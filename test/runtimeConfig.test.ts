@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { missingOptionalRuntimeSettings, missingRuntimeSettings } from '../app/helpers/runtimeConfig'
+import { missingOptionalRuntimeSettings, missingRuntimeSettings, modeMismatch } from '../app/helpers/runtimeConfig'
 
 const complete = {
   strapiApiToken: 'token',
@@ -49,5 +49,35 @@ describe('missingOptionalRuntimeSettings', () => {
       'NUXT_MEDIA_URL',
       'NUXT_PUBLIC_FEDIVERSE_HANDLE',
     ])
+  })
+})
+
+describe('modeMismatch', () => {
+  it('is null when the runtime mode is the build\'s, ignoring blanks and spaces', () => {
+    expect(modeMismatch({ public: { siteMode: 'static' } }, 'static')).toBeNull()
+    expect(modeMismatch({ public: { siteMode: ' static ' } }, 'static')).toBeNull()
+  })
+
+  it('counts an unset or blank runtime mode as dynamic', () => {
+    expect(modeMismatch({}, 'dynamic')).toBeNull()
+    expect(modeMismatch({ public: { siteMode: '' } }, 'dynamic')).toBeNull()
+    expect(modeMismatch({ public: { siteMode: '  ' } }, 'dynamic')).toBeNull()
+    expect(modeMismatch({ public: { siteMode: '' } }, 'static')).toMatch(/"".*"static"/)
+  })
+
+  it('names both modes when they differ, and keeps an invalid value as written', () => {
+    expect(modeMismatch({ public: { siteMode: 'dynamic' } }, 'static')).toMatch(/"dynamic".*"static"/)
+    expect(modeMismatch({ public: { siteMode: 'hybrid' } }, 'dynamic')).toMatch(/"hybrid".*"dynamic"/)
+  })
+})
+
+describe('static modes', () => {
+  it('do not require SMTP or the fediverse settings', () => {
+    const config = { strapiApiToken: 't', public: { strapiUrl: 'u', siteUrl: 's' } }
+    expect(missingRuntimeSettings(config)).toContain('NUXT_SMTP_HOST')
+    expect(missingRuntimeSettings(config, 'static')).toEqual([])
+    expect(missingRuntimeSettings({ public: {} }, 'landing')).toEqual(['NUXT_STRAPI_API_TOKEN', 'NUXT_PUBLIC_STRAPI_URL', 'NUXT_PUBLIC_SITE_URL'])
+    expect(missingOptionalRuntimeSettings(config)).toContain('NUXT_PUBLIC_FEDIVERSE_HANDLE')
+    expect(missingOptionalRuntimeSettings(config, 'static')).toEqual(['NUXT_MEDIA_URL'])
   })
 })

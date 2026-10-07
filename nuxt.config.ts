@@ -1,5 +1,6 @@
 import { Locale } from './app/interfaces/locale'
 import { SECURITY_HEADERS } from './app/helpers/securityHeaders'
+import { parseSiteMode } from './app/helpers/siteMode'
 import { UPSTREAM_SOURCE_URL } from './app/helpers/source'
 
 const privatePageHeaders = {
@@ -23,9 +24,12 @@ const ESBUILD_TARGETS = Object.entries(CSS_TARGETS).map(
   ([browser, [major, minor]]) => `${browser === 'ios_saf' ? 'ios' : browser}${major}${minor ? `.${minor}` : ''}`,
 )
 
+// Read at build time: it changes what is built (ADR 0006); an invalid value fails the build
+const siteMode = parseSiteMode(process.env.NUXT_PUBLIC_SITE_MODE)
+
 export default defineNuxtConfig({
   // The theme goes first: @nuxt/image reads image.dirs when it is set up (modules/theme/assets.ts)
-  modules: ['./modules/theme', '@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
+  modules: ['./modules/theme', './modules/site-mode', '@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
   ssr: true,
   devtools: { enabled: false },
   app: {
@@ -54,6 +58,9 @@ export default defineNuxtConfig({
     public: {
       strapiUrl: '',
       siteUrl: '',
+      siteMode,
+      newsletterFormAction: '',
+      newsletterFormField: 'email',
       umamiWebsiteId: '',
       umamiScriptPath: '/bd.js',
       fediverseHandle: '',
