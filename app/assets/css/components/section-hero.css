@@ -76,5 +76,11 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, color-mix(in oklab, var(--surface) 92%, transparent), color-mix(in oklab, var(--surface) 55%, transparent));
+    background: linear-gradient(to top, color-mix(in oklab, var(--surface) 70%, transparent), color-mix(in oklab, var(--surface) 30%, transparent));
+}
+
+/* The text sits on a mostly solid panel of the surface, so its contrast does not depend on the image */
+[data-section="hero"][data-variant="full-bleed"] .bd-section-inner {
+    padding-block: var(--space-8);
+    background: color-mix(in oklab, var(--surface) 88%, transparent);
 }

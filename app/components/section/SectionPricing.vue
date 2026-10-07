@@ -6,6 +6,8 @@ const props = defineProps<{ section: PricingSection }>()
 const { t } = useI18n()
 const titleId = useId()
 
+// Items are h3 under the section's h2; without a title they are the h2s
+const itemLevel = computed<string>(() => props.section.title ? 'h3' : 'h2')
 const hasActions = computed<boolean>(() => props.section.plans.some(plan => plan.link))
 </script>
 
@@ -49,7 +51,7 @@ const hasActions = computed<boolean>(() => props.section.plans.some(plan => plan
       <ul v-else class="bd-section-items">
         <li v-for="(plan, index) in section.plans" :key="index" :class="['bd-section-item', 'bd-section-plan', { 'bd-section-plan-recommended': plan.recommended }]">
           <p v-if="plan.recommended" class="bd-eyebrow">{{ t('sections.recommended') }}</p>
-          <h3 class="bd-section-item-title">{{ plan.name }}</h3>
+          <component :is="itemLevel" class="bd-section-item-title">{{ plan.name }}</component>
           <p class="bd-section-plan-price">
             <strong>{{ plan.price }}</strong>
             <span v-if="plan.period"> {{ plan.period }}</span>

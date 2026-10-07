@@ -26,6 +26,12 @@ const props = withDefaults(defineProps<{
 const { t } = useI18n()
 const { getMediaUrl } = useStrapi()
 
+// Strapi uploads on the site, or an absolute http(s) URL (the CSP limits the origins); the server applies the same rule
+function isUsable(url: string | undefined): boolean {
+  if (!url) return false
+  return (url.startsWith('/uploads/') && !url.includes('..')) || /^https?:\/\//i.test(url)
+}
+
 const kind = computed<'video' | 'svg' | 'image'>(() => {
   const mime = props.media?.mime ?? ''
   if (mime.startsWith('video/')) return 'video'
@@ -33,7 +39,7 @@ const kind = computed<'video' | 'svg' | 'image'>(() => {
   return 'image'
 })
 const src = computed<string>(() => getMediaUrl(props.media?.url))
-const posterSrc = computed<string | undefined>(() => props.poster ? getMediaUrl(props.poster.url) : undefined)
+const posterSrc = computed<string | undefined>(() => props.poster && isUsable(props.poster.url) ? getMediaUrl(props.poster.url) : undefined)
 const alt = computed<string>(() => props.decorative ? '' : (props.media?.alternativeText || props.fallbackAlt))
 const width = computed<number | undefined>(() => props.media?.width || undefined)
 const height = computed<number | undefined>(() => props.media?.height || undefined)
@@ -41,7 +47,7 @@ const ratio = computed<string | undefined>(() => width.value && height.value ? `
 </script>
 
 <template>
-  <div v-if="media" :class="rootClass" :style="ratio ? { aspectRatio: ratio } : undefined">
+  <div v-if="media && isUsable(media.url)" :class="rootClass" :style="ratio ? { aspectRatio: ratio } : undefined">
     <video
       v-if="kind === 'video'"
       controls

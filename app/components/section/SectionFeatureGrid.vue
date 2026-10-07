@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { FeatureGridSection } from '~/interfaces'
 
-defineProps<{ section: FeatureGridSection }>()
+const props = defineProps<{ section: FeatureGridSection }>()
 
 const titleId = useId()
+// Items are h3 under the section's h2; without a title they are the h2s
+const itemLevel = computed<string>(() => props.section.title ? 'h3' : 'h2')
 </script>
 
 <template>
@@ -13,7 +15,7 @@ const titleId = useId()
       <ul class="bd-section-items">
         <li v-for="(item, index) in section.items" :key="index" class="bd-section-item">
           <SectionMedia v-if="item.icon" :media="item.icon" root-class="bd-section-icon" sizes="64px" decorative />
-          <h3 class="bd-section-item-title">{{ item.title }}</h3>
+          <component :is="itemLevel" class="bd-section-item-title">{{ item.title }}</component>
           <p v-if="item.text" class="bd-section-item-text">{{ item.text }}</p>
         </li>
       </ul>

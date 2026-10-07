@@ -192,6 +192,15 @@ describe('hero', () => {
     expect(img.attributes('srcset')).toBeTruthy()
   })
 
+  it('keeps a video playable except as a full-bleed background, where it is left out', async () => {
+    const video = (variant: 'centered' | 'full-bleed'): PageSection => ({ ...sections.hero(variant), media: image('clip.mp4', { mime: 'video/mp4' }) } as PageSection)
+    expect((await render(video('centered'))).find('video[controls]').exists()).toBe(true)
+    const background = await render(video('full-bleed'))
+    expect(background.find('video').exists()).toBe(false)
+    expect(background.find('.bd-section-media').exists()).toBe(false)
+    expect(background.get('h2').text()).toBe('Grow food where you live')
+  })
+
   it('puts the full-bleed image behind the text', async () => {
     const wrapper = await render(sections.hero('full-bleed'))
     expect(root(wrapper).element.firstElementChild?.classList.contains('bd-section-media')).toBe(true)
@@ -232,6 +241,32 @@ describe('hero', () => {
     const wrapper = await render(section)
     expect(wrapper.find('.bd-section-media').exists()).toBe(false)
     expect(wrapper.find('.bd-section-actions').exists()).toBe(false)
+  })
+})
+
+describe('media paths', () => {
+  it('renders media from Strapi uploads and absolute URLs only', async () => {
+    const hero = (url: string): PageSection => ({ ...sections.hero('split'), media: image('x.png', { url }) } as PageSection)
+    for (const url of ['/uploads/x.png', 'https://api.bogdev.com.co/uploads/x.png']) {
+      expect((await render(hero(url))).find('.bd-section-media img').exists(), url).toBe(true)
+    }
+    for (const url of ['/theme/images/x.png', '/uploads/../x.png', '//evil.example.com/x.png', 'javascript:alert(1)', 'data:image/png;base64,AA']) {
+      expect((await render(hero(url))).find('.bd-section-media').exists(), url).toBe(false)
+    }
+  })
+})
+
+describe('item headings', () => {
+  it('uses h3 under a section title and h2 without one', async () => {
+    const without = <T extends PageSection>(section: T): T => ({ ...section, title: undefined })
+    for (const make of [sections.featureGrid('grid'), sections.pricing('cards'), sections.postList('list'), sections.postList('cards')]) {
+      const titled = await render(make)
+      expect(titled.findAll('h2'), make.__component).toHaveLength(1)
+      expect(titled.findAll('h3').length, make.__component).toBeGreaterThan(0)
+      const untitled = await render(without(make))
+      expect(untitled.findAll('h3'), make.__component).toHaveLength(0)
+      expect(untitled.findAll('h2').length, make.__component).toBeGreaterThan(0)
+    }
   })
 })
 
@@ -314,6 +349,14 @@ describe('logo cloud', () => {
     expect(wrapper.findAll('.bd-section-item')[1]!.find('a').exists()).toBe(false)
   })
 
+  it('links logos to http(s) URLs only', async () => {
+    const section = sections.logoCloud('row') as Extract<PageSection, { __component: 'section.logo-cloud' }>
+    section.logos[0]!.url = 'javascript:alert(1)'
+    section.logos[1]!.url = '/blog'
+    const wrapper = await render(section)
+    expect(wrapper.find('a').exists()).toBe(false)
+  })
+
   it('falls back to the logo name as alt text', async () => {
     const section = sections.logoCloud('row') as Extract<PageSection, { __component: 'section.logo-cloud' }>
     section.logos[1]!.image = { ...svg('x.svg'), alternativeText: undefined }
@@ -339,11 +382,11 @@ describe('testimonials', () => {
     const wrapper = await render(sections.testimonials(variant))
     expect(root(wrapper).attributes('data-variant')).toBe(variant)
     const figures = wrapper.findAll('li.bd-section-item > figure')
-    expect(figures).toHaveLength(2)
+    expect(figures).toHaveLength(variant === 'single' ? 1 : 2)
     expect(figures[0]!.get('blockquote.bd-section-quote').text()).toBe('The basil smells all the way to the street.')
     expect(figures[0]!.get('figcaption.bd-section-author').text()).toContain('Sam · Neighbor')
     expect(figures[0]!.get('figcaption img').attributes('alt')).toBe('')
-    expect(figures[1]!.get('figcaption').text()).toBe('Robin')
+    if (variant === 'grid') expect(figures[1]!.get('figcaption').text()).toBe('Robin')
   })
 })
 
@@ -449,6 +492,9 @@ describe('newsletter', () => {
     expect(wrapper.find('input[type="email"]').exists()).toBe(true)
     expect(wrapper.get('form button[type="submit"]').text()).toContain('Subscribe me')
     expect(wrapper.get('form p').text()).toBe('One email per season.')
+    // One heading: the section's h2, not the form's own eyebrow and h3
+    expect(wrapper.findAll('h2, h3')).toHaveLength(1)
+    expect(wrapper.find('.bd-news-eyebrow').exists()).toBe(false)
   })
 
   it('renders nothing when the newsletter module is off', async () => {

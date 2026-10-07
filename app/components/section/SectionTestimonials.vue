@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { TestimonialsSection } from '~/interfaces'
 
-defineProps<{ section: TestimonialsSection }>()
+const props = defineProps<{ section: TestimonialsSection }>()
 
 const titleId = useId()
+// single shows the first quotation only
+const items = computed(() => props.section.variant === 'single' ? props.section.items.slice(0, 1) : props.section.items)
 </script>
 
 <template>
@@ -11,7 +13,7 @@ const titleId = useId()
     <div class="bd-section-inner">
       <SectionHead :title="section.title" :title-id="titleId" />
       <ul class="bd-section-items">
-        <li v-for="(item, index) in section.items" :key="index" class="bd-section-item">
+        <li v-for="(item, index) in items" :key="index" class="bd-section-item">
           <figure>
             <blockquote class="bd-section-quote">
               <p>{{ item.quote }}</p>

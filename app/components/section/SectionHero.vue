@@ -8,7 +8,8 @@ const titleId = useId()
 
 <template>
   <section class="bd-section" data-section="hero" :data-variant="section.variant" :aria-labelledby="titleId">
-    <SectionMedia v-if="section.variant === 'full-bleed'" :media="section.media" sizes="100vw" eager />
+    <!-- A background cannot hold controls: a video has no place here (it has no poster either), so the text sits on the surface -->
+    <SectionMedia v-if="section.variant === 'full-bleed' && !section.media?.mime?.startsWith('video/')" :media="section.media" sizes="100vw" eager />
     <div class="bd-section-inner">
       <SectionHead :title="section.title" :text="section.text" :title-id="titleId" />
       <div v-if="section.primaryLink || section.secondaryLink" class="bd-section-actions">

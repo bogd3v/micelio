@@ -1,4 +1,4 @@
-/* Logo cloud: a wrapped row, or a CSS-only marquee while motion is welcome */
+/* Logo cloud: a wrapped row, or a CSS-only marquee while motion is welcome and no logo is a link (a moving link is hard to hit and to focus) */
 .bd-section-logo-track {
     display: flex;
     flex-wrap: wrap;
@@ -36,26 +36,26 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    .bd-section-logo-track[data-variant="marquee"] {
+    .bd-section-logo-track[data-variant="marquee"]:not(:has(a)) {
         flex-wrap: nowrap;
         gap: 0;
         width: max-content;
         animation: bd-section-marquee 40s linear infinite;
     }
 
-    .bd-section-logo-track[data-variant="marquee"] > .bd-section-items {
+    .bd-section-logo-track[data-variant="marquee"]:not(:has(a)) > .bd-section-items {
         flex-wrap: nowrap;
         flex: none;
         gap: var(--space-8);
         padding-inline-end: var(--space-8);
     }
 
-    .bd-section-logo-track[data-variant="marquee"] > .bd-section-items + .bd-section-items {
+    .bd-section-logo-track[data-variant="marquee"]:not(:has(a)) > .bd-section-items + .bd-section-items {
         display: flex;
     }
 
     /* Pointing at a logo or tabbing to its link stops the lane */
-    [data-section="logo-cloud"]:is(:hover, :focus-within) .bd-section-logo-track[data-variant="marquee"] {
+    [data-section="logo-cloud"]:is(:hover, :focus-within) .bd-section-logo-track[data-variant="marquee"]:not(:has(a)) {
         animation-play-state: paused;
     }
 }

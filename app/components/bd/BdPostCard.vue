@@ -20,6 +20,8 @@ const props = withDefaults(defineProps<{
   eyebrow?: string
   moreLabel?: string
   priority?: boolean
+  /** Heading of a non-featured card */
+  headingLevel?: 'h2' | 'h3'
 }>(), {
   excerpt: undefined,
   snippet: undefined,
@@ -36,6 +38,7 @@ const props = withDefaults(defineProps<{
   eyebrow: undefined,
   moreLabel: undefined,
   priority: false,
+  headingLevel: 'h3',
 })
 
 const { t } = useI18n()
@@ -75,7 +78,7 @@ const imageSize = computed<{ width: number, height: number }>(() =>
           <time v-if="date" class="bd-meta" :datetime="dateTime">{{ date }}</time>
         </span>
       </div>
-      <component :is="featured ? 'h2' : 'h3'" class="bd-card-title">
+      <component :is="featured ? 'h2' : headingLevel" class="bd-card-title">
         <NuxtLink :to="href" class="bd-card-link">{{ title }}</NuxtLink>
       </component>
       <p v-if="snippet" class="bd-card-excerpt bd-card-snippet"><BdHighlight :text="snippet" :query="highlight" /></p>

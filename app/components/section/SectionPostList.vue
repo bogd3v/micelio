@@ -8,6 +8,8 @@ const { localizePath } = useLocaleUtils()
 const toPostCard = usePostCard()
 const titleId = useId()
 
+// Items are h3 under the section's h2; without a title they are the h2s
+const itemLevel = computed<'h2' | 'h3'>(() => props.section.title ? 'h3' : 'h2')
 const posts = computed(() => props.section.posts ?? [])
 </script>
 
@@ -18,15 +20,15 @@ const posts = computed(() => props.section.posts ?? [])
       <ul v-if="section.variant === 'list'" class="bd-section-items">
         <li v-for="post in posts" :key="post.id" class="bd-section-item">
           <time v-if="post.publishedAt" class="bd-meta" :datetime="post.publishedAt">{{ formatDotDate(post.publishedAt) }}</time>
-          <h3 class="bd-section-item-title">
+          <component :is="itemLevel" class="bd-section-item-title">
             <NuxtLink :to="`${localizePath('/blog')}/${post.slug}`">{{ post.title }}</NuxtLink>
-          </h3>
+          </component>
           <p v-if="post.description" class="bd-section-item-text">{{ post.description }}</p>
         </li>
       </ul>
       <ul v-else class="bd-section-items">
         <li v-for="post in posts" :key="post.id" class="bd-section-item">
-          <BdPostCard v-bind="toPostCard(post)" />
+          <BdPostCard v-bind="toPostCard(post)" :heading-level="itemLevel" />
         </li>
       </ul>
     </div>

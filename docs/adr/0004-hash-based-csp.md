@@ -40,3 +40,5 @@ Inline styles stay allowed: blocking them would break Vue bindings and Mermaid d
 - A new image, embed or script domain must be added in `contentSecurityPolicy()` and, for embeds, in the `sanitize-html` options together ([security.md](../security.md)).
 - Integration tests check that the hashes in the header match the inline scripts of each page, also when the page is served from the ISR cache.
 - Verify a change to the policy in a production build in a browser, listening for `securitypolicyviolation`.
+
+**Amendment (2026-10-07, #244):** `media-src` is `'self'` plus the origins of `img-src` (Strapi and the media host), so the `<video>` of a page section can play uploaded files; videos never autoplay. Page media is limited to `/uploads/` paths and those origins on both the server schema and the frontend.

@@ -12,7 +12,7 @@ const formId = useId()
   <section v-if="enabled" class="bd-section" data-section="newsletter" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
     <div class="bd-section-inner">
       <SectionHead :title="section.title" :title-id="titleId" />
-      <BdNewsletterForm :id="`nl-${formId}`" :description="section.text ?? undefined" :button-label="section.buttonLabel ?? undefined" />
+      <BdNewsletterForm :id="`nl-${formId}`" hide-heading :description="section.text ?? undefined" :button-label="section.buttonLabel ?? undefined" />
     </div>
   </section>
 </template>

@@ -12,7 +12,7 @@ const props = defineProps<{
 const { getLocalePrefix, localizePath } = useLocaleUtils()
 
 const target = computed(() => props.link ? resolveSectionLink(props.link.url, getLocalePrefix(), localizePath) : null)
-// mailto: and in-page links need no rel; a site path or another site gets noopener
+// Another site gets noopener; mailto: and site paths need none
 const rel = computed<string | undefined>(() => target.value?.external && !target.value.href.toLowerCase().startsWith('mailto:') ? 'noopener' : undefined)
 </script>
 
