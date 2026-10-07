@@ -66,6 +66,9 @@ All variables are read when the server starts, so the same Docker image works in
 | `NUXT_PUBLIC_FEDIVERSE_HANDLE` | The site's fediverse account, e.g. `@blog@cms.example.org` | Fediverse only |
 | `NUXT_PUBLIC_FEDIVERSE_ACTOR_URL` | Its ActivityPub actor, e.g. `https://cms.example.org/fediverse/user/blog` | Fediverse only |
 | `NUXT_PUBLIC_FEDIVERSE_ARTICLES_URL` | Base URL of the federated articles, e.g. `https://cms.example.org/fediverse/articles` | Fediverse only |
+| `NUXT_PUBLIC_SITE_MODE` | `dynamic` (default), `static` or `landing`, read at build time ([ADR 0006](docs/adr/0006-site-modes.md)). Static and landing turn off comments, accounts, drafts and the fediverse; a different value at runtime stops the server | No |
+| `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION` | URL of the newsletter provider's form endpoint. In `static` and `landing` the newsletter is on only when it is set | Static modes, newsletter only |
+| `NUXT_PUBLIC_NEWSLETTER_FORM_FIELD` | The provider's name for the email field (default: `email`) | Static modes, newsletter only |
 | `NUXT_PUBLIC_UMAMI_WEBSITE_ID` | Umami website ID. Empty: no tracker is loaded | Analytics only |
 | `NUXT_UMAMI_URL` | Internal Umami URL the proxy forwards to (e.g. `http://<umami-service>:3000`). Empty: no proxy | Analytics only |
 | `NUXT_PUBLIC_UMAMI_SCRIPT_PATH` | Tracker path, must match Umami's `TRACKER_SCRIPT_NAME` and stay at the root (default: `/bd.js`) | No |

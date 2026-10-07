@@ -1,13 +1,17 @@
 import type { ComputedRef } from 'vue'
 import { images } from '#micelio/theme'
 import type { Site } from '~/interfaces'
+import { fallbackModules } from '~/helpers/modules'
+import { parseSiteMode } from '~/helpers/siteMode'
 import { siteFromAppConfig } from '~/helpers/site'
 import type { AppSiteConfig } from '~/helpers/site'
 
 function fetchSite(): { defaults: Site, request: ReturnType<typeof useAsyncData<Site>> } {
   const { locale } = useI18n()
   const appConfig = useAppConfig()
-  const defaults = siteFromAppConfig(appConfig.site as AppSiteConfig, images.favicon)
+  const { siteMode, newsletterFormAction } = useRuntimeConfig().public
+  const base = siteFromAppConfig(appConfig.site as AppSiteConfig, images.favicon)
+  const defaults: Site = { ...base, modules: fallbackModules(base.modules, parseSiteMode(siteMode), newsletterFormAction) }
   const request = useAsyncData(
     () => `site-${locale.value}`,
     () => $fetch<Site>('/api/site', { query: { locale: locale.value } }),

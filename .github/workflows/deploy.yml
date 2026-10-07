@@ -157,7 +157,7 @@ jobs:
       matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
     env:
       NUXT_PUBLIC_THEME: ${{ matrix.theme }}
-      # Read once the site modes of ADR 0006 land; ignored until then
+      # Site mode of ADR 0006, read at build time
       NUXT_PUBLIC_SITE_MODE: ${{ matrix.mode }}
     steps:
       - name: Checkout repository

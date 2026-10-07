@@ -1,4 +1,5 @@
 import qs from 'qs'
+import { buildSiteMode } from '#micelio/build-site-mode'
 import { buildTheme } from '#micelio/build-theme'
 import { modes as paletteModes, rules as paletteRules } from '#micelio/theme-palette'
 import { images } from '#micelio/theme'
@@ -49,7 +50,7 @@ export async function loadSite(locale: Locale): Promise<LoadedSite> {
     console.error('Strapi fetch site-setting error:', asUpstreamError(error).data || error)
     loaded = { site: defaults, fromStrapi: false }
   }
-  return { ...loaded, site: { ...loaded.site, modules: effectiveModules(loaded.site.modules, requirements) } }
+  return { ...loaded, site: { ...loaded.site, modules: effectiveModules(loaded.site.modules, requirements, buildSiteMode) } }
 }
 
 const cache = new Map<Locale, { expires: number, value: Promise<LoadedSite> }>()

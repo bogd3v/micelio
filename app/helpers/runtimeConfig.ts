@@ -1,4 +1,6 @@
 import type { ModuleRequirements } from './modules'
+import { isStaticMode, parseSiteMode } from './siteMode'
+import type { SiteMode } from './siteMode'
 
 export const REQUIRED_RUNTIME_SETTINGS = {
   strapiApiToken: 'NUXT_STRAPI_API_TOKEN',
@@ -39,29 +41,50 @@ function missing(values: Record<string, unknown> | undefined, names: Record<stri
   return Object.entries(names).filter(([key]) => empty(values?.[key])).map(([, name]) => name)
 }
 
+/** A runtime string with blanks as unset. */
+function trimmed(value: unknown): unknown {
+  if (typeof value !== 'string') return value
+  return value.trim() || undefined
+}
+
 /** The error message when the runtime theme is not the one the build used, or null when they agree. */
 export function themeMismatch(config: CheckedRuntimeConfig, buildTheme: string): string | null {
-  const runtime = config.public?.theme
+  const runtime = trimmed(config.public?.theme)
   if (runtime === buildTheme) return null
   return `NUXT_PUBLIC_THEME is "${String(runtime)}" at runtime but the build used "${buildTheme}". The theme is chosen at build time: rebuild with the value you want.`
 }
 
-/** The NUXT_* names of required settings that are empty. */
-export function missingRuntimeSettings(config: CheckedRuntimeConfig): string[] {
-  return [...missing(config, REQUIRED_RUNTIME_SETTINGS), ...missing(config.public, REQUIRED_PUBLIC_RUNTIME_SETTINGS)]
+/** The error message when the runtime site mode is not the one the build used, or null when they agree. */
+export function modeMismatch(config: CheckedRuntimeConfig, buildMode: SiteMode): string | null {
+  const runtime = config.public?.siteMode
+  try {
+    // Blank is unset, which is the dynamic mode
+    if (parseSiteMode(runtime) === buildMode) return null
+  } catch {
+    // Unknown value: reported below
+  }
+  return `NUXT_PUBLIC_SITE_MODE is "${String(runtime)}" at runtime but the build used "${buildMode}". The mode is chosen at build time: rebuild with the value you want.`
 }
 
-/** The NUXT_* names of optional settings that are empty, so the startup log can say what is off. */
-export function missingOptionalRuntimeSettings(config: CheckedRuntimeConfig): string[] {
-  return [...missing(config, OPTIONAL_RUNTIME_SETTINGS), ...missing(config.public, OPTIONAL_PUBLIC_RUNTIME_SETTINGS)]
+/** The NUXT_* names of required settings that are empty; SMTP is not needed in static modes. */
+export function missingRuntimeSettings(config: CheckedRuntimeConfig, mode: SiteMode = 'dynamic'): string[] {
+  const { strapiApiToken } = REQUIRED_RUNTIME_SETTINGS
+  const names = isStaticMode(mode) ? { strapiApiToken } : REQUIRED_RUNTIME_SETTINGS
+  return [...missing(config, names), ...missing(config.public, REQUIRED_PUBLIC_RUNTIME_SETTINGS)]
+}
+
+/** The NUXT_* names of optional settings that are empty, so the startup log can say what is off; the fediverse ones are not needed in static modes. */
+export function missingOptionalRuntimeSettings(config: CheckedRuntimeConfig, mode: SiteMode = 'dynamic'): string[] {
+  return [...missing(config, OPTIONAL_RUNTIME_SETTINGS), ...(isStaticMode(mode) ? [] : missing(config.public, OPTIONAL_PUBLIC_RUNTIME_SETTINGS))]
 }
 
 const SMTP_SETTINGS = ['smtpHost', 'smtpUser', 'smtpPass', 'newsletterFrom'] as const
 
-/** Whether the server has what the newsletter (SMTP) and fediverse modules need. */
+/** Whether the server has what the newsletter (SMTP or external form) and fediverse modules need. */
 export function moduleRequirements(config: CheckedRuntimeConfig): ModuleRequirements {
   return {
     smtp: SMTP_SETTINGS.every(key => !empty(config[key])),
     fediverse: missing(config.public, OPTIONAL_PUBLIC_RUNTIME_SETTINGS).length === 0,
+    formAction: !empty(config.public?.newsletterFormAction),
   }
 }

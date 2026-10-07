@@ -88,6 +88,8 @@ describe('themeMismatch', () => {
   it('names both themes when they differ or the runtime has none', () => {
     expect(themeMismatch({ public: { theme: 'other' } }, 'bogota')).toMatch(/"other".*"bogota"/)
     expect(themeMismatch({}, 'bogota')).toMatch(/"undefined"/)
+    expect(themeMismatch({ public: { theme: '  ' } }, 'bogota')).toMatch(/"undefined"/)
+    expect(themeMismatch({ public: { theme: ' bogota ' } }, 'bogota')).toBeNull()
   })
 })
 
