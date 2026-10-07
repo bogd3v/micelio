@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PageMedia } from '~/interfaces'
+import { TRUSTED_MEDIA_PREFIX, isTrustedMedia } from '~/helpers/trustedMedia'
 
 const props = withDefaults(defineProps<{
   media?: PageMedia | null
@@ -25,10 +26,12 @@ const props = withDefaults(defineProps<{
 
 const { t } = useI18n()
 const { getMediaUrl } = useStrapi()
+const trustedPrefix = inject(TRUSTED_MEDIA_PREFIX, undefined)
 
 // Strapi uploads on the site, or an absolute http(s) URL (the CSP limits the origins); the server applies the same rule
 function isUsable(url: string | undefined): boolean {
   if (!url) return false
+  if (isTrustedMedia(url, trustedPrefix)) return true
   return (url.startsWith('/uploads/') && !url.includes('..')) || /^https?:\/\//i.test(url)
 }
 
@@ -38,8 +41,13 @@ const kind = computed<'video' | 'svg' | 'image'>(() => {
   if (mime === 'image/svg+xml' || props.media?.url.toLowerCase().split('?')[0]?.endsWith('.svg')) return 'svg'
   return 'image'
 })
-const src = computed<string>(() => getMediaUrl(props.media?.url))
-const posterSrc = computed<string | undefined>(() => props.poster && isUsable(props.poster.url) ? getMediaUrl(props.poster.url) : undefined)
+// A trusted path is the site's own: no Strapi origin in front
+function resolve(url: string | undefined): string {
+  return isTrustedMedia(url, trustedPrefix) ? url! : getMediaUrl(url)
+}
+
+const src = computed<string>(() => resolve(props.media?.url))
+const posterSrc = computed<string | undefined>(() => props.poster && isUsable(props.poster.url) ? resolve(props.poster.url) : undefined)
 const alt = computed<string>(() => props.decorative ? '' : (props.media?.alternativeText || props.fallbackAlt))
 const width = computed<number | undefined>(() => props.media?.width || undefined)
 const height = computed<number | undefined>(() => props.media?.height || undefined)

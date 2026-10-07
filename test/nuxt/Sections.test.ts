@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
+import { defineComponent, h, provide } from 'vue'
+import { TRUSTED_MEDIA_PREFIX } from '~/helpers/trustedMedia'
 import SectionRenderer from '~/components/section/SectionRenderer.vue'
 import type { PageLink, PageMedia, PageSection, PostListItem } from '~/interfaces'
 
@@ -533,5 +535,25 @@ describe('scene', () => {
     expect(wrapper.get('h2').text()).toBe('A scene')
     expect(wrapper.get('.bd-section-text').text()).toBe('Static preview.')
     expect(wrapper.find('canvas').exists()).toBe(false)
+  })
+})
+
+describe('trusted media prefix', () => {
+  const hero = (url: string): PageSection => ({ __component: 'section.hero', variant: 'centered', title: 'Hi', media: { url, alternativeText: 'a', width: 10, height: 10, mime: 'image/svg+xml' } })
+
+  it('does not render /_theme/media/ in a page (nothing provides the prefix)', async () => {
+    const wrapper = await mountSuspended(SectionRenderer, { props: { sections: [hero('/_theme/media/hero.svg')] } })
+    expect(wrapper.find('img').exists()).toBe(false)
+  })
+
+  it('renders it as a same-origin path when an ancestor provides the prefix', async () => {
+    const Host = defineComponent({
+      setup() {
+        provide(TRUSTED_MEDIA_PREFIX, '/_theme/media/')
+        return () => h(SectionRenderer, { sections: [hero('/_theme/media/hero.svg')] })
+      },
+    })
+    const wrapper = await mountSuspended(Host)
+    expect(wrapper.find('img').attributes('src')).toBe('/_theme/media/hero.svg')
   })
 })

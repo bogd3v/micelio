@@ -28,6 +28,8 @@ export function setupSpecimen(ctx: ThemeContext): void {
   ctx.nuxt.hook('i18n:registerModule', (register) => {
     register({ langDir, locales: ['en', 'es'].map(code => ({ code, file: `${code}.json` })) })
   })
+  // The specimen's own images, same-origin at /_theme/media/ (only when the page exists)
+  ;(ctx.nuxt.options.nitro.publicAssets ||= []).push({ dir: join(DIR, 'media'), baseURL: '/_theme/media' })
   // Not part of #micelio/theme: the active theme's data never lists the alternates
   ctx.nuxt.options.alias['#micelio/specimen-variants'] = join(ctx.nuxt.options.buildDir, 'micelio/specimen-variants.mjs')
   addTemplate({

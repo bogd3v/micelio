@@ -114,7 +114,7 @@ describe('parseSection', () => {
       return (parseSection(section('section.hero', { media: { ...image, url } }), context) as { media?: unknown }).media
     }
     for (const url of ['/uploads/a.png', 'https://media.test/a.png', 'http://127.0.0.1:1337/uploads/a.png']) expect(heroMedia(url), url).toBeDefined()
-    for (const url of ['https://evil.test/a.png', 'https://media.test.evil.test/a.png', 'http://media.test/a.png', '//media.test/a.png', '/\\evil.test/a.png', '/theme/images/a.png', '/uploads/../x.png', '/other.png', 'data:image/png;base64,AA', 'javascript:alert(1)']) {
+    for (const url of ['https://evil.test/a.png', 'https://media.test.evil.test/a.png', 'http://media.test/a.png', '//media.test/a.png', '/\\evil.test/a.png', '/theme/images/a.png', '/_theme/media/a.svg', '/uploads/../x.png', '/other.png', 'data:image/png;base64,AA', 'javascript:alert(1)']) {
       expect(heroMedia(url), url).toBeUndefined()
     }
   })
