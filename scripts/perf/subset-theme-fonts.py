@@ -35,7 +35,7 @@ SOURCES = ROOT / 'scripts/perf/bogota-font-sources.json'
 # Marks and locl need characters outside the set; JetBrains Mono's calt (code ligatures) alone costs 14 KB, so it is left out
 FEATURES = ['rvrn', 'liga', 'tnum', 'kern']
 # ASCII, the Spanish letters (accents, ñ, ü, ¡ ¿), « » · © ×, nbsp, dashes, quotes, bullet, ellipsis, euro, trademark, arrows, minus
-LATIN = ('U+0020-007E,U+00A0-00A1,U+00A9,U+00AB,U+00B7,U+00BB,U+00BF,U+00C1,U+00C9,U+00CD,U+00D1,U+00D3,U+00DA,U+00DC,'
+LATIN = ('U+0020-007E,U+00A0-00A1,U+00A9,U+00AA,U+00B0,U+00BA,U+00AB,U+00B7,U+00BB,U+00BF,U+00C1,U+00C9,U+00CD,U+00D1,U+00D3,U+00DA,U+00DC,'
          'U+00D7,U+00E1,U+00E9,U+00ED,U+00F1,U+00F3,U+00FA,U+00FC,U+2013-2014,U+2018-2019,U+201C-201D,U+2022,U+2026,'
          'U+20AC,U+2122,U+2190-2193,U+2212')
 # JetBrains Mono also carries the diagonal arrows, command key, triangle, diamond and check marks
