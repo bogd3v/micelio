@@ -18,7 +18,8 @@ export default defineNuxtModule({
     const sourceDir = join(nuxt.options.srcDir, 'islands')
     const manifest: Record<string, string> = {}
 
-    if (isStaticMode(mode) && existsSync(sourceDir)) {
+    // `nuxt prepare` (npm ci's postinstall) builds nothing, and .nuxt/tsconfig.app.json does not exist yet for Vite
+    if (isStaticMode(mode) && !nuxt.options._prepare && existsSync(sourceDir)) {
       // Not buildDir (Nuxt empties it before it builds); one folder per process, so two builds never write the same files
       const outDir = join(nuxt.options.rootDir, 'node_modules', '.cache', 'micelio', `islands-${process.pid}`)
       nuxt.hook('close', () => rm(outDir, { recursive: true, force: true }))
