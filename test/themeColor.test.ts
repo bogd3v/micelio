@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LIGHTNESS_STEP, atLightness, composite, contrastRatio, nearestPassing, oklchToSrgb, parseColor, resolveRefs, srgbToOklch, toHex } from '../modules/theme/color'
+import { LIGHTNESS_STEP, atLightness, composite, contrastRatio, nearestPassing, nearestWhere, oklchToSrgb, parseColor, resolveRefs, srgbToOklch, toHex } from '../modules/theme/color'
 import type { Rgb, Rgba } from '../modules/theme/color'
 
 function rgb(css: string): Rgb {
@@ -105,5 +105,38 @@ describe('nearestPassing', () => {
 
   it('returns null when no lightness reaches the ratio', () => {
     expect(nearestPassing(rgb('#808080'), rgb('#808080'), 22)).toBeNull()
+  })
+})
+
+describe('nearestWhere', () => {
+  it('returns the color itself when it already passes', () => {
+    const fg = { r: 0, g: 0, b: 0 }
+    expect(nearestWhere(fg, () => true)).toBe(fg)
+  })
+
+  it.each([
+    ['#9a8a7a', '#f3e9df'],
+    ['#777777', '#ffffff'],
+    ['#3366cc', '#0a0c10'],
+    ['#ff0000', '#ffffff'],
+    // Mid-gray on mid-gray: both directions pass on the same step
+    ['#808080', '#808080'],
+  ])('matches nearestPassing for %s on %s', (fgHex, bgHex) => {
+    const fg = parseColor(fgHex)!
+    const bg = parseColor(bgHex)!
+    for (const min of [3, 4.5, 7]) {
+      expect(nearestWhere(fg, color => contrastRatio(color, bg) >= min, bg)).toEqual(nearestPassing(fg, bg, min))
+    }
+  })
+
+  it('walks lightness until the predicate holds, keeping the hue', () => {
+    const fg = parseColor('#3366cc')!
+    const found = nearestWhere(fg, color => srgbToOklch(color).l >= srgbToOklch(fg).l + 0.1)!
+    expect(srgbToOklch(found).l).toBeGreaterThanOrEqual(srgbToOklch(fg).l + 0.1)
+    expect(Math.abs(srgbToOklch(found).h - srgbToOklch(fg).h)).toBeLessThan(5)
+  })
+
+  it('returns null when nothing passes', () => {
+    expect(nearestWhere({ r: 0.5, g: 0.5, b: 0.5 }, () => false)).toBeNull()
   })
 })

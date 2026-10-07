@@ -1,12 +1,15 @@
 import { join } from 'node:path'
-import { addComponent, addTemplate, addTypeTemplate } from 'nuxt/kit'
+import { addComponent, addTemplate, addTypeTemplate, useLogger } from 'nuxt/kit'
 import type { ThemeContext } from './context'
+import { buildPalette } from './palette'
 
 /** Where the theme's images are served: /theme/images/<file> (docs/adr/0005-theme-contract.md). */
 export const IMAGES_URL = 'theme/images'
 
 // Active theme's id at build time; the server plugin compares it with the runtime value
 const BUILD_THEME_MODULE = '#micelio/build-theme'
+// Nitro only: the active theme's resolved palette, for the server's contrast math
+const PALETTE_MODULE = '#micelio/theme-palette'
 
 export const LAYOUT_REGIONS = ['header', 'home', 'postList', 'article', 'footer'] as const
 export type LayoutRegion = typeof LAYOUT_REGIONS[number]
@@ -96,6 +99,8 @@ export const DEFAULT_LAYOUT: Record<LayoutRegion, string> = {
 
 export function setupData(ctx: ThemeContext): void {
   const { nuxt } = ctx
+  const logger = useLogger('micelio-theme')
+  const paletteSource = join(nuxt.options.rootDir, 'modules/theme/palette')
   nuxt.options.runtimeConfig.public.theme = ctx.id
 
   function themeData(): object {
@@ -156,6 +161,13 @@ export function setupData(ctx: ThemeContext): void {
   export default theme
 }
 
+declare module '${PALETTE_MODULE}' {
+  export type { ContrastRule } from '${paletteSource}'
+  export type { ModePalette } from '${paletteSource}'
+  export const modes: Record<string, import('${paletteSource}').ModePalette>
+  export const rules: import('${paletteSource}').ContrastRule[]
+}
+
 declare module '${BUILD_THEME_MODULE}' {
   export const buildTheme: string
 }
@@ -165,6 +177,10 @@ declare module '${BUILD_THEME_MODULE}' {
   nuxt.hook('nitro:config', (config) => {
     config.virtual ||= {}
     config.virtual[BUILD_THEME_MODULE] = `export const buildTheme = ${JSON.stringify(ctx.id)}`
+    // Built once, here: theme.json edits in dev need a restart. A mode that does not resolve is left out (contrast stays out of the build).
+    const { modes, rules, skipped } = buildPalette(ctx.load().manifest)
+    for (const { mode, reason } of skipped) logger.warn(`Theme "${ctx.id}", mode "${mode}": left out of the palette (${reason})`)
+    config.virtual[PALETTE_MODULE] = `export const modes = ${JSON.stringify(modes)}\nexport const rules = ${JSON.stringify(rules)}\n`
   })
 }
 
