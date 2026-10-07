@@ -152,7 +152,7 @@ The core styles every variant from your roles, and your own rules for variants y
 - The production check `scripts/perf/fouc.mjs` fails a page when a preloaded font has no `@font-face`, or no `"<family> Fallback"` face with `size-adjust`, or when the init script is not inline in `<head>` before the first stylesheet.
 - Files must match `.woff2` in `theme.json`; subset to the scripts the site uses. A change in `fonts/` needs a dev server restart.
 
-`theme:check` budgets apply to every theme: more than 2 font families is an error; font files over 100 KB in total warn; over 150.8 KB is an error. Bogotá is 143.6 KB.
+`theme:check` budgets apply to every theme: more than 2 font families is an error; font files over 100 KB in total warn; over 150.8 KB is an error. Bogotá is 34.5 KB (subset to the glyphs English and Spanish need and to the weights it uses: `scripts/perf/subset-theme-fonts.py`).
 
 ### Images
 
@@ -231,8 +231,7 @@ Real output from this repository:
 
 ```
 $ npm run theme:check -- bogota
-bogota: ok, 1 warning(s)
-  warning: theme "bogota": fonts total 143.6 KB, over the 100.0 KB target (allowed up to 150.8 KB)
+bogota: ok
 
 $ npm run theme:check -- --list
 ["bogota","starter"]
@@ -244,12 +243,7 @@ $ npm run theme:check -- bogota --json
     {
       "theme": "bogota",
       "errors": [],
-      "warnings": [
-        {
-          "kind": "budget",
-          "message": "fonts total 143.6 KB, over the 100.0 KB target (allowed up to 150.8 KB)"
-        }
-      ]
+      "warnings": []
     }
   ]
 }

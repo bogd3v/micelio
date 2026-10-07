@@ -1,0 +1,17 @@
+{
+  "repo": "https://github.com/google/fonts",
+  "commit": "7085eb89a950e85db5b166b7a58d414544b4140c",
+  "fonts": {
+    "archivo": {
+      "path": "ofl/archivo/Archivo[wdth,wght].ttf",
+      "ttfSha256": "0e094a7d3c7c4c25cf1310c4b30014f1dae9332220b1c2c88f4fa996f0b05053",
+      "woff2Sha256": "b20482b14f534383a6bc4adc4b1d522e2edb9fa42531afe4ddbcaba5c50f50bc"
+    },
+    "jetbrains-mono": {
+      "path": "ofl/jetbrainsmono/JetBrainsMono[wght].ttf",
+      "ttfSha256": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda",
+      "woff2Sha256": "f7a9e435fb707a3995d4bf545eaa77e965aad5b7365bc36b3ea4dc8d4c30c4e7"
+    }
+  },
+  "fontTools": "4.66.1"
+}

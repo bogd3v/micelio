@@ -11,42 +11,36 @@
         "static",
         "landing"
       ],
-      "reason": "Archivo and JetBrains Mono are preloaded (143.6 KB of fonts against the 100 KB target) and the home page leads with a hero image: LCP is 1.9 to 2.6 s against 1.5 s, and performance 97 to 99. With the fonts blocked the article measures 1.35 s. The limits are the measured values plus 15 % (LCP) or 5 % (fonts); lower them as the fonts and the hero get lighter (#350)",
+      "reason": "Fonts are 34.5 KB (limit 100) since #350. LCP: blog, article and privacy measure 1.35 or 1.43 s and sometimes 1.503 s (the simulated throttling lands on one of two values 150 ms apart from run to run, one round trip of the simulated 4G), so they get 3 % of headroom over the 1.5 s target. The home and the about page lead with an image (the hero photo at 390 px, 19 KB, lazy so that the other three copies stay out of the page: 1.73 s; the mascot, a 54 KB PNG that does not get smaller without changing the art: 1.80 s), so their limits are the measured value plus 15 %. Lower them as the images get lighter (#350)",
       "limits": {
         "home": {
           "error": {
-            "lcpMs": 3050,
-            "fontKb": 150.8
+            "lcpMs": 2000
           }
         },
         "blog": {
           "error": {
-            "lcpMs": 2350,
-            "fontKb": 150.8
+            "lcpMs": 1550
           }
         },
         "article": {
           "error": {
-            "lcpMs": 2250,
-            "fontKb": 150.8
+            "lcpMs": 1550
           }
         },
         "about": {
           "error": {
-            "lcpMs": 2700,
-            "fontKb": 150.8
+            "lcpMs": 2080
           }
         },
         "privacy": {
           "error": {
-            "lcpMs": 2250,
-            "fontKb": 150.8
+            "lcpMs": 1550
           }
         },
         "home-es": {
           "error": {
-            "lcpMs": 3050,
-            "fontKb": 150.8
+            "lcpMs": 2000
           }
         }
       }

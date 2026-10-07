@@ -12,7 +12,7 @@ npm packages (`package.json`, `package-lock.json`) are distributed under their o
 
 ## Fonts
 
-Under the SIL Open Font License 1.1; the license text ships next to each file.
+Under the SIL Open Font License 1.1; the license text ships next to each file. The Bogotá files are subsets of the upstream variable fonts (fewer glyphs and a narrower axis range, `scripts/perf/subset-theme-fonts.py`, sources pinned in `scripts/perf/bogota-font-sources.json`); the licenses declare no Reserved Font Name.
 
 | Font | Files | License |
 | --- | --- | --- |

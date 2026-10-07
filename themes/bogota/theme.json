@@ -24,7 +24,7 @@
   {
    "family": "JetBrains Mono",
    "file": "jetbrains-mono-latin-var.woff2",
-   "preload": true
+   "preload": false
   }
  ],
  "images": {

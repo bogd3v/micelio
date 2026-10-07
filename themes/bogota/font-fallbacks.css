@@ -15,8 +15,8 @@
     font-family: "Archivo Fallback";
     font-weight: 350 449;
     src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo");
-    size-adjust: 98.08%;
-    ascent-override: 89.52%;
+    size-adjust: 98.07%;
+    ascent-override: 89.53%;
     descent-override: 21.41%;
     line-gap-override: 0%;
 }
@@ -45,9 +45,9 @@
     font-family: "Archivo Fallback";
     font-weight: 650 900;
     src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("Arimo Bold");
-    size-adjust: 97.44%;
-    ascent-override: 90.11%;
-    descent-override: 21.55%;
+    size-adjust: 94.14%;
+    ascent-override: 93.26%;
+    descent-override: 22.31%;
     line-gap-override: 0%;
 }
 
@@ -56,8 +56,8 @@
     font-weight: 100 349;
     font-stretch: 106% 118%;
     src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo");
-    size-adjust: 109.27%;
-    ascent-override: 80.35%;
+    size-adjust: 109.28%;
+    ascent-override: 80.34%;
     descent-override: 19.22%;
     line-gap-override: 0%;
 }
@@ -67,9 +67,9 @@
     font-weight: 350 449;
     font-stretch: 106% 118%;
     src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo");
-    size-adjust: 111.51%;
-    ascent-override: 78.74%;
-    descent-override: 18.83%;
+    size-adjust: 111.49%;
+    ascent-override: 78.75%;
+    descent-override: 18.84%;
     line-gap-override: 0%;
 }
 
@@ -78,9 +78,9 @@
     font-weight: 450 549;
     font-stretch: 106% 118%;
     src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo");
-    size-adjust: 113.74%;
+    size-adjust: 113.72%;
     ascent-override: 77.20%;
-    descent-override: 18.46%;
+    descent-override: 18.47%;
     line-gap-override: 0%;
 }
 
@@ -100,9 +100,9 @@
     font-weight: 650 900;
     font-stretch: 106% 118%;
     src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("Arimo Bold");
-    size-adjust: 110.45%;
-    ascent-override: 79.49%;
-    descent-override: 19.01%;
+    size-adjust: 107.49%;
+    ascent-override: 81.69%;
+    descent-override: 19.54%;
     line-gap-override: 0%;
 }
 
@@ -111,9 +111,9 @@
     font-weight: 100 349;
     font-stretch: 119% 125%;
     src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo");
-    size-adjust: 123.26%;
-    ascent-override: 71.23%;
-    descent-override: 17.04%;
+    size-adjust: 123.34%;
+    ascent-override: 71.19%;
+    descent-override: 17.03%;
     line-gap-override: 0%;
 }
 
@@ -122,8 +122,8 @@
     font-weight: 350 449;
     font-stretch: 119% 125%;
     src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo");
-    size-adjust: 126.06%;
-    ascent-override: 69.65%;
+    size-adjust: 126.05%;
+    ascent-override: 69.66%;
     descent-override: 16.66%;
     line-gap-override: 0%;
 }
@@ -133,9 +133,9 @@
     font-weight: 450 549;
     font-stretch: 119% 125%;
     src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo");
-    size-adjust: 128.75%;
-    ascent-override: 68.19%;
-    descent-override: 16.31%;
+    size-adjust: 128.82%;
+    ascent-override: 68.16%;
+    descent-override: 16.30%;
     line-gap-override: 0%;
 }
 
@@ -155,9 +155,9 @@
     font-weight: 650 900;
     font-stretch: 119% 125%;
     src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("Arimo Bold");
-    size-adjust: 124.54%;
-    ascent-override: 70.50%;
-    descent-override: 16.86%;
+    size-adjust: 121.92%;
+    ascent-override: 72.01%;
+    descent-override: 17.22%;
     line-gap-override: 0%;
 }
 

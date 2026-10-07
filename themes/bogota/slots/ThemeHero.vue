@@ -67,9 +67,10 @@ const flyers = computed<Flyer[]>(() =>
       :src="photo.src"
       :class="['bogota-hero-photo', `bogota-hero-photo-${photo.theme}`]"
       :sizes="`${width}px`"
-      densities="x1 x2"
+      :densities="compact ? 'x1' : 'x1 x2'"
       format="webp"
       loading="lazy"
+      fetchpriority="high"
       alt=""
       aria-hidden="true"
     />

@@ -89,11 +89,23 @@ describe('checkTheme', () => {
     expect(checkTheme(minimal!, hooks)).toEqual({ theme: 'minimal', errors: [], warnings: [] })
   })
 
-  it('warns, without failing, about Bogotá fonts over 100 KB', () => {
+  it('has no font warning for Bogotá (fonts under the 100 KB target, #350)', () => {
     const bogota = installed.find(theme => theme.id === 'bogota')!
     const report = checkTheme(bogota, hooks)
     expect(report.errors).toEqual([])
-    expect(report.warnings.map(warning => warning.message)).toEqual([expect.stringContaining('fonts total 143.6 KB')])
+    expect(report.warnings).toEqual([])
+  })
+
+  it('warns, without failing, about fonts over 100 KB', () => {
+    const dir = join(mkdtempSync(join(tmpdir(), 'theme-')), 'minimal')
+    cpSync(`${fixtures}/minimal`, dir, { recursive: true })
+    mkdirSync(join(dir, 'fonts'))
+    writeFileSync(join(dir, 'fonts', 'big.woff2'), Buffer.alloc(120 * 1024))
+    const [minimal] = discoverThemes([`${fixtures}/minimal`])
+    const heavy = { ...minimal!, dir, manifest: { ...minimal!.manifest, fonts: [{ family: 'Big', file: 'big.woff2' }] } }
+    const report = checkTheme(heavy, hooks)
+    expect(report.errors).toEqual([])
+    expect(report.warnings.map(warning => warning.message)).toEqual([expect.stringContaining('fonts total 120.0 KB')])
   })
 
   it('errors when the fonts pass the ceiling', () => {
