@@ -66,15 +66,16 @@ export function missingRoutes(required: Iterable<string>, prerendered: Iterable<
 }
 
 // Only real media tags: sanitized Markdown keeps literal quotes, so `&lt;img src="..."&gt;` in a code block must not match
-const MEDIA_TAG = /<(?:img|video|source|audio)\b[^>]*>/gi
-const MEDIA_ATTRIBUTE = /(\s(?:src|poster)=")([^"]+)(")/g
+// `<link rel="icon">` too: the site's favicon comes from Strapi and the static CSP allows no image origin
+const MEDIA_TAG = /<(?:(?:img|video|source|audio)\b|link\b(?=[^>]*\brel="[^"]*\bicon\b))[^>]*>/gi
+const MEDIA_ATTRIBUTE = /(\s(?:src|poster|href)=")([^"]+)(")/g
 
 function decodeAmpersands(value: string): string {
   return value.replaceAll('&amp;', '&')
 }
 
 /**
- * Absolute `src` and `poster` URLs of media tags that start with one of the prefixes (the HTML-decoded form), in order of appearance.
+ * Absolute `src`, `poster` and icon `href` URLs of media tags that start with one of the prefixes (the HTML-decoded form), in order of appearance.
  * Prefixes are `<strapi origin>/uploads/` and `<media origin>/`.
  */
 export function mediaUrlsIn(html: string, prefixes: readonly string[]): string[] {

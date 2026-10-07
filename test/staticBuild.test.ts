@@ -103,6 +103,14 @@ describe('media on the CMS origin', () => {
     expect(out).toContain('src="https://other.org/x.svg"')
   })
 
+  it('finds and rewrites the favicon link, whatever the attribute order', () => {
+    const page = `<head><link rel="stylesheet" href="${origin}/uploads/x.css"><link href="${origin}/uploads/fav.svg" rel="icon" type="image/svg+xml"></head>`
+    expect(mediaUrlsIn(page, [`${origin}/uploads/`])).toEqual([`${origin}/uploads/fav.svg`])
+    const out = rewriteMediaUrls(page, new Map([[`${origin}/uploads/fav.svg`, '/_media/ab-fav.svg']]))
+    expect(out).toContain('href="/_media/ab-fav.svg" rel="icon"')
+    expect(out).toContain(`href="${origin}/uploads/x.css"`)
+  })
+
   it('ignores other paths of the origin and the media host prefix works', () => {
     const other = `<img src="${origin}/api/x.png"><img src="https://media.example.org/a/b.png">`
     expect(mediaUrlsIn(other, [`${origin}/uploads/`])).toEqual([])
