@@ -17,7 +17,8 @@ runs:
       with:
         path: ~/.cache/ms-playwright
         key: playwright-${{ runner.os }}-${{ steps.version.outputs.version }}-chromium
-    # Composite steps have no timeout-minutes: `timeout` bounds each attempt (5 minutes), two attempts
+    # Composite steps have no timeout-minutes: `timeout` bounds each attempt (10 minutes), two attempts.
+    # A timeout kills npx but not the apt-get it started as root, which keeps the dpkg lock: wait for it before retrying.
     - name: Install Chromium and system dependencies
       shell: bash
       env:
@@ -29,7 +30,11 @@ runs:
           command=(npx playwright install --with-deps chromium)
         fi
         for attempt in 1 2; do
-          if timeout 300 "${command[@]}"; then exit 0; fi
+          if timeout 600 "${command[@]}"; then exit 0; fi
           echo "::warning::Playwright install failed or timed out (attempt ${attempt})"
+          for _ in $(seq 60); do
+            pgrep -x 'apt-get|apt|dpkg' >/dev/null || break
+            sleep 5
+          done
         done
         exit 1
