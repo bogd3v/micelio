@@ -25,6 +25,36 @@ const TYPES = {
   '.woff2': 'font/woff2',
 }
 
+// `_headers` (Cloudflare Pages, Netlify): a path line, then indented `Name: value` lines. Supports `/*`, `/prefix/*` and exact paths
+async function readRules() {
+  const rules = []
+  try {
+    for (const line of (await readFile(join(root, '_headers'), 'utf8')).split('\n')) {
+      if (!line.trim()) continue
+      if (!/^\s/.test(line)) rules.push({ path: line.trim(), headers: {} })
+      else {
+        const [name, ...value] = line.trim().split(':')
+        if (rules.length) rules.at(-1).headers[name.trim()] = value.join(':').trim()
+      }
+    }
+  } catch {
+    // No _headers: no extra headers
+  }
+  return rules
+}
+
+function headersFor(rules, pathname) {
+  const headers = {}
+  for (const { path, headers: own } of rules) {
+    const matches = path.endsWith('*') ? pathname.startsWith(path.slice(0, -1)) : pathname === path
+    // A header repeated by several matching rules is joined with a comma, as Cloudflare Pages does (policies only tighten)
+    if (matches) for (const [name, value] of Object.entries(own)) headers[name] = headers[name] ? `${headers[name]}, ${value}` : value
+  }
+  return headers
+}
+
+const rules = await readRules()
+
 async function isFile(path) {
   try {
     return (await stat(path)).isFile()
@@ -50,7 +80,7 @@ const server = createServer(async (req, res) => {
   const type = TYPES[extname(found)] ?? 'application/octet-stream'
   try {
     const body = await readFile(found)
-    res.writeHead(file ? 200 : 404, { 'Content-Type': type })
+    res.writeHead(file ? 200 : 404, { ...headersFor(rules, pathname), 'Content-Type': type })
     res.end(req.method === 'HEAD' ? undefined : body)
   } catch {
     res.writeHead(404, { 'Content-Type': 'text/plain' })

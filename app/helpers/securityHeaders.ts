@@ -1,6 +1,10 @@
 export interface ContentSecurityPolicyOptions {
   scriptHashes: string[]
   imageOrigins: string[]
+  /** For a `<meta http-equiv>`: without the directives a meta cannot carry (`frame-ancestors`; ADR 0006, section 7). */
+  meta?: boolean
+  /** `blob:` in `img-src` (default true: the dynamic site's output); static pages do not use it. */
+  imageBlobs?: boolean
 }
 
 const SCRIPT_PATTERN = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
@@ -51,13 +55,14 @@ export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): st
     ['default-src', ['\'self\'']],
     ['script-src', ['\'self\'', ...hashes]],
     ['style-src', ['\'self\'', '\'unsafe-inline\'']],
-    ['img-src', ['\'self\'', 'data:', 'blob:', ...origins(options.imageOrigins)]],
+    ['img-src', ['\'self\'', 'data:', ...(options.imageBlobs === false ? [] : ['blob:']), ...origins(options.imageOrigins)]],
     // Videos of page sections (<video>) come from the same origins as the images
     ['media-src', ['\'self\'', ...origins(options.imageOrigins)]],
     ['font-src', ['\'self\'']],
     ['connect-src', ['\'self\'']],
     ['frame-src', FRAME_ORIGINS],
-    ['frame-ancestors', ['\'none\'']],
+    // `report-uri` and `sandbox` are never emitted; a meta ignores `frame-ancestors`
+    ...(options.meta ? [] : [['frame-ancestors', ['\'none\'']] as [string, string[]]]),
     ['base-uri', ['\'self\'']],
     ['form-action', ['\'self\'']],
     ['object-src', ['\'none\'']],
