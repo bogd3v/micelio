@@ -17,6 +17,7 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  BUILDER_IMAGE_NAME: ${{ github.repository }}-builder
 
 jobs:
   lint-and-typecheck:
@@ -348,6 +349,30 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64
 
+      # The builder image (Dockerfile target `static`): generates and serves static sites; docs/static-mode.md
+      - name: Extract builder metadata
+        id: meta-builder
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.BUILDER_IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=,format=short
+
+      - name: Build and push builder image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          target: static
+          push: true
+          tags: ${{ steps.meta-builder.outputs.tags }}
+          labels: ${{ steps.meta-builder.outputs.labels }}
+          build-args: |
+            GIT_COMMIT_SHA=${{ github.sha }}
+            GIT_COMMIT_DATE=${{ steps.meta-builder.outputs.created }}
+          cache-from: type=gha,scope=builder
+          cache-to: type=gha,mode=max,scope=builder
+          platforms: linux/amd64
+
   deploy:
     name: Deploy to Dokploy
     runs-on: ubuntu-latest
@@ -372,6 +397,8 @@ jobs:
         run: |
           image="${REGISTRY}/${IMAGE_NAME}"
           docker buildx imagetools create --tag "${image}:latest" "${image}:${GITHUB_SHA::7}"
+          builder="${REGISTRY}/${BUILDER_IMAGE_NAME}"
+          docker buildx imagetools create --tag "${builder}:latest" "${builder}:${GITHUB_SHA::7}"
 
       # Dokploy does not watch GHCR: it only redeploys (pulling :latest) when asked.
       - name: Trigger Dokploy deployment

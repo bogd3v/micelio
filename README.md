@@ -117,6 +117,8 @@ Every push to `main` runs `.github/workflows/deploy.yml`:
 3. Build the Docker image (`Dockerfile`: Node 22 builder, distroless Node 22 runtime, non-root) and push it to GHCR as `:latest` and `:<short sha>`
 4. Ask Dokploy to redeploy the application, which pulls `:latest`
 
+The same job also pushes `ghcr.io/bogd3v/micelio-builder` (target `static`): generates and serves a static site from a container ([docs/static-mode.md](docs/static-mode.md#builder-image)).
+
 The pipeline can also be started by hand from the Actions tab (`workflow_dispatch`); on `main` it builds and deploys like a push. Dependabot opens weekly update PRs for npm, the GitHub Actions and the Docker base image.
 
 The server, DNS and reverse proxy (Traefik on Dokploy) are managed with Terraform in the private `bogdev-infra` repository.
