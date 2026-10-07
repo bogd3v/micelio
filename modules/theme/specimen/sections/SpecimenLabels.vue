@@ -22,6 +22,7 @@ const { t } = useI18n()
       <div class="bd-specimen-row">
         <button type="button" class="bd-chip">{{ t('specimen.labels.chip') }}</button>
         <button type="button" class="bd-chip" aria-pressed="true">{{ t('specimen.labels.pressed') }}</button>
+        <a href="#" class="bd-chip" aria-current="page">{{ t('specimen.labels.current') }}</a>
         <button type="button" class="bd-chip" disabled>{{ t('specimen.labels.disabled') }}</button>
         <kbd class="bd-kbd">Ctrl K</kbd>
         <span class="bd-badge bd-badge-reader">{{ t('specimen.labels.reader') }}</span>

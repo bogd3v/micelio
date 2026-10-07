@@ -91,7 +91,7 @@ const resultLabel = computed<string>(() =>
           :key="chip.id ?? 'all'"
           :to="filterLocation({ category: chip.id, tag: undefined })"
           class="bd-chip"
-          :aria-current="filters.category === chip.id && !filters.tag ? 'true' : undefined"
+          :aria-current="filters.category === chip.id && !filters.tag ? 'page' : undefined"
         >
           <span class="bd-latest-dot" :style="{ background: chip.color }" aria-hidden="true" />{{ chip.label }}<span class="bd-latest-count">{{ chip.count }}</span>
         </NuxtLink>
@@ -106,7 +106,7 @@ const resultLabel = computed<string>(() =>
           :key="tag.slug"
           :to="filterLocation({ category: undefined, tag: filters.tag === tag.slug ? undefined : tag.slug })"
           class="bd-chip bd-blog-tag"
-          :aria-current="filters.tag === tag.slug ? 'true' : undefined"
+          :aria-current="filters.tag === tag.slug ? 'page' : undefined"
         >
           #{{ tag.name }}
         </NuxtLink>

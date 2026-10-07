@@ -4,10 +4,13 @@ import { iconType, xHandle } from '~/helpers/site'
 
 const { locale } = useI18n()
 const { localePaths } = useLocaleUtils()
+const { alternates } = useLocaleAlternates()
+const route = useRoute()
 const { siteUrl } = useSiteUrl()
 const site = useSite()
 
 const hreflangLinks = computed(() => {
+  if (alternates.value?.path === route.path && alternates.value.hreflang === false) return []
   const paths = localePaths.value
   const fallback = paths[defaultLocale] ?? paths[locale.value as Locale]
   const hreflangs = [

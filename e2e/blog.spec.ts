@@ -13,7 +13,7 @@ test('filters by category from the chips', async ({ page }) => {
   const categories = page.getByRole('group', { name: 'Filter by category' })
   await categories.getByRole('link', { name: /Software/ }).click()
   await expect(page).toHaveURL(/\/blog\/category\/software$/)
-  await expect(categories.getByRole('link', { name: /Software/ })).toHaveAttribute('aria-current', 'true')
+  await expect(categories.getByRole('link', { name: /Software/ })).toHaveAttribute('aria-current', 'page')
   await expect(page.getByRole('heading', { name: 'Linux Server Hardening Guide', level: 3 })).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'Understanding Vue Composables', level: 3 })).toBeVisible()
   await page.getByRole('button', { name: 'Remove filter Software' }).click()
@@ -27,7 +27,7 @@ test('filters by tag from the chips built from the real tags', async ({ page }) 
   await expect(tags.getByRole('link')).toHaveText(['#DevOps', '#Linux', '#TypeScript', '#Vue'])
   await tags.getByRole('link', { name: '#Linux' }).click()
   await expect(page).toHaveURL(/\/blog\/tag\/linux$/)
-  await expect(tags.getByRole('link', { name: '#Linux' })).toHaveAttribute('aria-current', 'true')
+  await expect(tags.getByRole('link', { name: '#Linux' })).toHaveAttribute('aria-current', 'page')
   await expect(page.getByRole('heading', { name: 'Understanding Vue Composables', level: 3 })).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'Linux Server Hardening Guide', level: 3 })).toBeVisible()
   await page.getByRole('button', { name: 'Remove filter #Linux' }).click()
@@ -82,7 +82,7 @@ test.describe('without JavaScript', () => {
     await page.goto('/blog/category/linux?search=linux')
     await expect(page.getByRole('heading', { name: 'Linux Server Hardening Guide', level: 3 })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Understanding Vue Composables', level: 3 })).toHaveCount(0)
-    await expect(page.getByRole('group', { name: 'Filter by category' }).getByRole('link', { name: /Linux/ })).toHaveAttribute('aria-current', 'true')
+    await expect(page.getByRole('group', { name: 'Filter by category' }).getByRole('link', { name: /Linux/ })).toHaveAttribute('aria-current', 'page')
     await expect(page.getByRole('searchbox', { name: 'Search articles' })).toHaveValue('linux')
   })
 })
@@ -201,12 +201,25 @@ test('serves the filter and page paths in both languages with path canonicals', 
   }
 })
 
-test('points hreflang and the language switch at the first page of the filter', async ({ page }) => {
-  await page.goto('/es/blog/category/linux/page/2', { waitUntil: 'networkidle' })
+test('lists hreflang on the first page only and the switch goes to the first page', async ({ page }) => {
+  await page.goto('/es/blog/category/linux', { waitUntil: 'networkidle' })
   await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute('href', 'https://bogdev.com.co/blog/category/linux')
   await expect(page.locator('link[rel="alternate"][hreflang="es"]')).toHaveAttribute('href', 'https://bogdev.com.co/es/blog/category/linux')
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://bogdev.com.co/es/blog/category/linux')
+
+  await page.goto('/es/blog/category/linux/page/2?sort=oldest', { waitUntil: 'networkidle' })
+  await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(0)
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://bogdev.com.co/es/blog/category/linux/page/2')
   await page.getByRole('group', { name: 'Idioma' }).getByRole('button', { name: 'English' }).click()
-  await expect(page).toHaveURL(/\/blog\/category\/linux$/)
+  await expect(page).toHaveURL(/\/blog\/category\/linux\?sort=oldest$/)
+})
+
+test('redirects capitals and padded pages in the path', async ({ request }) => {
+  for (const [from, to] of [['/blog/category/Linux', '/blog/category/linux'], ['/es/blog/page/02', '/es/blog/page/2']]) {
+    const response = await request.get(from, { maxRedirects: 0 })
+    expect(response.status(), from).toBe(301)
+    expect(response.headers().location).toBe(to)
+  }
 })
 
 test('answers 404 for an unknown category and for page 0', async ({ page }) => {

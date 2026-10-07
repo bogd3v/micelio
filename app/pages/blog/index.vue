@@ -2,14 +2,15 @@
 import { layout } from '#micelio/theme'
 import { Locale } from '~/interfaces'
 import type { BlogFilters, BlogSort, BlogView, Category, PostListItem, TagCount } from '~/interfaces'
-import { BLOG_SORTS, blogLocation, blogPageSize, blogPath, hasActiveFilters, parseBlogRoute, parseSort, searchTerm } from '~/helpers/blog'
+import { BLOG_SORTS, blogLocation, blogPageSize, blogPath, hasActiveFilters, isBlogRouteValid, parseBlogRoute, parseSort, searchTerm } from '~/helpers/blog'
 import { isCategory } from '~/helpers/categories'
 import { feedPath } from '~/helpers/feed'
 import { padCount } from '~/helpers/search'
 import { popularTags as pickPopularTags } from '~/helpers/tags'
 import { pageTitle } from '~/helpers/site'
 
-definePageMeta({ key: 'blog-list' })
+// An unknown category, or a page that has its own URL (/blog), is a 404 on every navigation
+definePageMeta({ key: 'blog-list', validate: route => isBlogRouteValid(route.params) })
 
 const RECENT_SIZE = 4
 const SEARCH_DEBOUNCE_MS = 300
@@ -29,13 +30,6 @@ const defaultOgImage = useDefaultOgImage()
 const site = useSite()
 const config = useRuntimeConfig()
 const fediverseOn = useModule('fediverse')
-
-// An unknown category, or a page that has its own URL (/blog), is a 404
-const pathCategory = route.params.category
-const pathPage = Number(route.params.page ?? 2)
-if ((pathCategory !== undefined && !isCategory(String(pathCategory).toLowerCase())) || pathPage < 2) {
-  throw createError({ statusCode: 404, statusMessage: 'Page not found' })
-}
 
 // Without the switch the view is not part of the URL
 const filters = computed<BlogFilters>(() => ({
@@ -131,12 +125,12 @@ watch(() => filters.value.search, (search) => {
   if (search !== searchTerm(searchInput.value)) searchInput.value = search ?? ''
 })
 
-// Page n of one language is not page n of the other: the alternates point at the first page
+// Page n of one language is not page n of the other: the switcher goes to the first page and pages above it have no hreflang
 watch(() => route.path, () => {
   setAlternates(Object.fromEntries(Object.values(Locale).map(code => [
     code,
     blogPath({ ...filters.value, page: 1 }, localizePath('/blog', code)),
-  ])))
+  ])), { hreflang: filters.value.page === 1 })
 }, { immediate: true })
 
 watch(() => filters.value.page, () => {
@@ -145,14 +139,17 @@ watch(() => filters.value.page, () => {
 })
 
 useHead(() => ({
-  link: filters.value.category
-    ? [{
-        rel: 'alternate',
-        type: 'application/rss+xml',
-        title: t('blog.feeds.title', { site: site.value.name, category: t(`bd.categories.${filters.value.category}`) }),
-        href: `${siteUrl.value}${feedPath(locale.value, filters.value.category)}`,
-      }]
-    : [],
+  link: [
+    { rel: 'canonical' as const, href: canonicalUrl.value },
+    ...(filters.value.category
+      ? [{
+          rel: 'alternate' as const,
+          type: 'application/rss+xml',
+          title: t('blog.feeds.title', { site: site.value.name, category: t(`bd.categories.${filters.value.category}`) }),
+          href: `${siteUrl.value}${feedPath(locale.value, filters.value.category)}`,
+        }]
+      : []),
+  ],
 }))
 
 useSeoMeta({

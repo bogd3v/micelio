@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { BLOG_PAGE_SIZE, LOG_PAGE_SIZE, blogPageSize, blogLocation, blogPath, blogQuery, groupPostsByMonth, hasActiveFilters, legacyBlogRedirect, paginationItems, parseBlogRoute, parseSort, searchTerm } from '../app/helpers/blog'
+import { BLOG_PAGE_SIZE, LOG_PAGE_SIZE, blogPageSize, blogLocation, blogPath, blogQuery, groupPostsByMonth, hasActiveFilters, isBlogRouteValid, legacyBlogRedirect, paginationItems, parseBlogRoute, parseSort, searchTerm } from '../app/helpers/blog'
 import type { PostListItem } from '../app/interfaces/strapi-post'
 import { Category } from '../app/interfaces/design'
 
@@ -75,6 +75,20 @@ describe('blogPath', () => {
   })
 })
 
+describe('isBlogRouteValid', () => {
+  it('accepts a known category and a page above the first', () => {
+    expect(isBlogRouteValid({})).toBe(true)
+    expect(isBlogRouteValid({ category: 'Linux', page: '2' })).toBe(true)
+    expect(isBlogRouteValid({ tag: 'anything', page: '10' })).toBe(true)
+  })
+
+  it('rejects an unknown category and pages 0 and 1', () => {
+    expect(isBlogRouteValid({ category: 'cooking' })).toBe(false)
+    expect(isBlogRouteValid({ page: '0' })).toBe(false)
+    expect(isBlogRouteValid({ page: '1' })).toBe(false)
+  })
+})
+
 describe('legacyBlogRedirect', () => {
   it('moves category, tag and page to the path in both languages', () => {
     expect(legacyBlogRedirect('/blog', '?category=linux')).toBe('/blog/category/linux')
@@ -103,12 +117,27 @@ describe('legacyBlogRedirect', () => {
     expect(legacyBlogRedirect('/es/blog/category/ia/page/1', 'sort=oldest')).toBe('/es/blog/category/ia?sort=oldest')
   })
 
+  it('lowercases the category and unpads the page', () => {
+    expect(legacyBlogRedirect('/blog/category/Linux', '')).toBe('/blog/category/linux')
+    expect(legacyBlogRedirect('/es/blog/category/Linux/page/02', 'view=log')).toBe('/es/blog/category/linux/page/2?view=log')
+    expect(legacyBlogRedirect('/blog/page/02', '')).toBe('/blog/page/2')
+    expect(legacyBlogRedirect('/blog/tag/vue/page/002', '')).toBe('/blog/tag/vue/page/2')
+  })
+
+  it('leaves a tag that is named like a category alone and keeps the 404 cases out', () => {
+    expect(legacyBlogRedirect('/blog/tag/linux', '')).toBeNull()
+    expect(legacyBlogRedirect('/blog/category/cooking', '')).toBeNull()
+    expect(legacyBlogRedirect('/blog/page/0', '')).toBeNull()
+  })
+
   it('leaves other URLs alone', () => {
     expect(legacyBlogRedirect('/blog', '')).toBeNull()
     expect(legacyBlogRedirect('/blog', 'sort=oldest')).toBeNull()
     expect(legacyBlogRedirect('/blog/some-post', 'page=2')).toBeNull()
     expect(legacyBlogRedirect('/about', 'category=linux')).toBeNull()
     expect(legacyBlogRedirect('/blog/page/2', '')).toBeNull()
+    expect(legacyBlogRedirect('/blog/category/linux/page/2', 'sort=oldest')).toBeNull()
+    expect(legacyBlogRedirect('/fr/blog', 'category=linux')).toBeNull()
   })
 })
 

@@ -537,6 +537,16 @@ describe('/sitemap.xml', () => {
       expect(url).toContain(`hreflang="es" href="${SITE_URL}${loc.startsWith('/es') ? loc : loc === '/' ? '/es' : `/es${loc}`}"`)
     }
   })
+
+  it('lists the category pages of the blog in both languages and no tag or page paths', async () => {
+    const xml = await sitemap()
+    for (const category of ['privacidad', 'diy', 'ia', 'software', 'linux']) {
+      expect(entry(xml, `/blog/category/${category}`)).toContain(`hreflang="es" href="${SITE_URL}/es/blog/category/${category}"`)
+      expect(entry(xml, `/es/blog/category/${category}`)).toContain(`hreflang="en" href="${SITE_URL}/blog/category/${category}"`)
+    }
+    expect(xml).not.toContain('/blog/tag/')
+    expect(xml).not.toContain('/blog/page/')
+  })
 })
 
 describe('cookies without a session', () => {

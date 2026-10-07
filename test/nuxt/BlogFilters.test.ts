@@ -17,7 +17,7 @@ describe('BlogFilters', () => {
     })
     const categories = wrapper.get('[role="group"][aria-label="Filter by category"]').findAll('a')
     expect(categories.map(chip => chip.text())).toEqual(['All03', 'Privacy00', 'DIY00', 'AI00', 'Software02', 'Linux01'])
-    expect(categories.map(chip => chip.attributes('aria-current'))).toEqual([undefined, undefined, undefined, undefined, 'true', undefined])
+    expect(categories.map(chip => chip.attributes('aria-current'))).toEqual([undefined, undefined, undefined, undefined, 'page', undefined])
     expect(categories.map(chip => chip.attributes('href'))).toEqual([
       '/blog?search=vue',
       '/blog/category/privacidad?search=vue',
@@ -34,7 +34,7 @@ describe('BlogFilters', () => {
   it('replaces the other filter and toggles the active tag off', async () => {
     const wrapper = await mountSuspended(BlogFilters, { props: { ...baseProps, filters: { tag: 'vue', page: 1 } } })
     const tags = wrapper.get('[role="group"][aria-label="Filter by tag"]').findAll('a')
-    expect(tags.map(chip => chip.attributes('aria-current'))).toEqual(['true', undefined])
+    expect(tags.map(chip => chip.attributes('aria-current'))).toEqual(['page', undefined])
     expect(tags[0]!.attributes('href')).toBe('/blog')
     const categories = wrapper.get('[role="group"][aria-label="Filter by category"]').findAll('a')
     expect(categories[5]!.attributes('href')).toBe('/blog/category/linux')

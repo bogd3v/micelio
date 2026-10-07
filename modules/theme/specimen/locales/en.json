@@ -52,6 +52,7 @@
       "chips": "Chips, keys and badges",
       "chip": "Chip",
       "pressed": "Pressed",
+      "current": "Current",
       "disabled": "Disabled",
       "reader": "Reader",
       "editor": "Editor",

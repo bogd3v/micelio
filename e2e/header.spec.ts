@@ -25,7 +25,7 @@ test('keeps the blog filters but not the page when switching language', async ({
   expect(url.pathname).toBe('/blog/tag/vue')
   expect(Object.fromEntries(url.searchParams)).toEqual({ view: 'log', sort: 'oldest', content: '1' })
   expect(url.hash).toBe('#posts')
-  await expect(page.getByRole('group', { name: 'Filter by tag' }).getByRole('link', { name: '#Vue' })).toHaveAttribute('aria-current', 'true')
+  await expect(page.getByRole('group', { name: 'Filter by tag' }).getByRole('link', { name: '#Vue' })).toHaveAttribute('aria-current', 'page')
   const log = page.locator('.bd-log-month')
   await expect(log.getByRole('link', { name: 'Understanding Vue Composables' })).toBeVisible()
   await expect(log.getByRole('link', { name: 'Linux Server Hardening Guide' })).toHaveCount(0)

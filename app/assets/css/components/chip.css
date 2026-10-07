@@ -21,7 +21,8 @@
     color: var(--ink);
 }
 
-.bd-chip[aria-pressed="true"] {
+.bd-chip[aria-pressed="true"],
+.bd-chip[aria-current] {
     color: var(--ink);
     background: var(--surface-raised);
     border-color: var(--ink);
@@ -42,7 +43,8 @@
         border-color: Highlight;
     }
 
-    .bd-chip[aria-pressed="true"] {
+    .bd-chip[aria-pressed="true"],
+    .bd-chip[aria-current] {
         background: Highlight;
         color: HighlightText;
         border-color: Highlight;
