@@ -72,6 +72,7 @@ export function mergeSite(defaults: Site, settings: SiteSettings | null | undefi
     modules: Object.fromEntries(
       SITE_MODULES.map(module => [module, pick(settings.modules?.[module], defaults.modules[module])]),
     ) as SiteModules,
+    ...(settings.homePage && { homePage: { slug: settings.homePage.slug } }),
   }
 }
 

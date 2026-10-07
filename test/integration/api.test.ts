@@ -51,6 +51,7 @@ beforeEach(() => {
   mock.failures.about = false
   mock.failures.site = false
   mock.theme.value = null
+  mock.homePage.value = null
   for (const module of Object.keys(mock.modules) as (keyof typeof mock.modules)[]) mock.modules[module] = true
   umami.requests.length = 0
 })
@@ -732,7 +733,7 @@ describe('/api/site', () => {
     })
     expect(mock.siteRequests).toEqual([expect.objectContaining({
       path: '/api/site-setting',
-      query: { populate: { author: 'true', logo: 'true', favicon: 'true', defaultOgImage: 'true', socialLinks: 'true', modules: 'true', theme: { populate: '*' } }, locale: 'es' },
+      query: { populate: { author: 'true', logo: 'true', favicon: 'true', defaultOgImage: 'true', socialLinks: 'true', modules: 'true', theme: { populate: '*' }, homePage: { fields: ['slug'] } }, locale: 'es' },
       authorization: 'Bearer test-api-token',
     })])
   })
@@ -753,6 +754,75 @@ describe('/api/site', () => {
   it('rejects an unknown locale without calling Strapi', async () => {
     await expect($fetch('/api/site', { query: { locale: 'fr' } })).rejects.toMatchObject({ response: { status: 400 } })
     expect(mock.requests).toEqual([])
+  })
+})
+
+describe('homePage from Strapi', () => {
+  async function html(path: string): Promise<string> {
+    return (await fetch(path)).text()
+  }
+
+  it('is absent from /api/site when the site settings have none', async () => {
+    const site = await $fetch<{ homePage?: unknown }>('/api/site')
+    expect(site.homePage).toBeUndefined()
+  })
+
+  it('exposes the slug of the locale and nothing else', async () => {
+    mock.homePage.value = { en: 'showcase', es: 'muestra' }
+    expect(await $fetch('/api/site', { query: { locale: 'en' } })).toMatchObject({ homePage: { slug: 'showcase' } })
+    const es = await $fetch<{ homePage: Record<string, unknown> }>('/api/site', { query: { locale: 'es' } })
+    expect(es.homePage).toEqual({ slug: 'muestra' })
+  })
+
+  it('drops a slug that is not a page slug and keeps the rest of the site', async () => {
+    mock.homePage.value = { en: '../etc' }
+    const site = await $fetch<{ homePage?: unknown, name: string }>('/api/site', { query: { locale: 'en' } })
+    expect(site.homePage).toBeUndefined()
+    expect(site.name).toBe('Micelio')
+  })
+
+  it('renders the page at /, canonical /, and keeps /<slug> with a canonical to /', async () => {
+    mock.homePage.value = { en: 'showcase', es: 'muestra' }
+    const home = await html('/')
+    expect(home).toContain('data-section="hero"')
+    expect(home.match(/<h1[\s>]/g)).toHaveLength(1)
+    expect(home).toContain(`<link rel="canonical" href="${SITE_URL}/">`)
+    const slug = await html('/showcase')
+    expect(slug).toContain('data-section="hero"')
+    expect(slug).toContain(`<link rel="canonical" href="${SITE_URL}/">`)
+    const es = await html('/es/muestra')
+    expect(es).toContain(`<link rel="canonical" href="${SITE_URL}/es">`)
+  })
+
+  it('points hreflang at canonical URLs, pairing the roots only when both are home pages', async () => {
+    const link = (lang: string, path: string): string => `<link rel="alternate" hreflang="${lang}" href="${SITE_URL}${path}">`
+    mock.homePage.value = { en: 'showcase', es: 'muestra' }
+    const both = await html('/')
+    expect(both).toContain(link('en', '/'))
+    expect(both).toContain(link('es', '/es'))
+    mock.homePage.value = { en: 'showcase', es: 'many-lists' }
+    const enOnly = await html('/')
+    expect(enOnly).toContain(link('en', '/'))
+    expect(enOnly).toContain(link('es', '/es/muestra'))
+    mock.homePage.value = { es: 'muestra' }
+    const esOnly = await html('/showcase')
+    expect(esOnly).toContain(link('en', '/showcase'))
+    expect(esOnly).toContain(link('es', '/es'))
+    expect(await html('/es/muestra')).toContain(link('en', '/showcase'))
+    mock.homePage.value = null
+    const neither = await html('/showcase')
+    expect(neither).toContain(link('en', '/showcase'))
+    expect(neither).toContain(link('es', '/es/muestra'))
+  })
+
+  it('falls back to the blog home when the page does not exist', async () => {
+    mock.homePage.value = { en: 'ghost' }
+    const response = await fetch('/')
+    expect(response.status).toBe(200)
+    const home = await response.text()
+    expect(home).not.toContain('data-section="hero"')
+    expect(home).toMatch(/<h1[\s>]/)
+    expect(home).toContain('application/ld+json')
   })
 })
 

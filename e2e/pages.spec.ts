@@ -1,5 +1,23 @@
 import { test, expect } from '@playwright/test'
+import type { APIRequestContext } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+
+// How many stylesheets (linked or inline) of a page hold the section rules
+async function sectionStylesheets(request: APIRequestContext, path: string): Promise<number> {
+  const html = await (await request.get(path)).text()
+  const hrefs = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(match => match[1]!)
+  let count = [...html.matchAll(/<style[^>]*>([^]*?)<\/style>/g)].filter(match => match[1]!.includes('bd-section-logo-track')).length
+  for (const href of hrefs) {
+    if ((await (await request.get(href)).text()).includes('bd-section-logo-track')) count++
+  }
+  return count
+}
+
+test('section CSS is one stylesheet on a section page and absent from the home and the blog', async ({ request }) => {
+  expect(await sectionStylesheets(request, '/showcase')).toBe(1)
+  expect(await sectionStylesheets(request, '/')).toBe(0)
+  expect(await sectionStylesheets(request, '/blog')).toBe(0)
+})
 
 const PAGES = [
   { path: '/showcase', title: 'Field Notes', description: 'A demo of every section a Micelio page can use.', canonical: 'https://bogdev.com.co/showcase', lang: 'en' },

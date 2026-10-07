@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { isValidEmail } from '~/helpers/auth'
 import { Locale } from '~/interfaces/locale'
+import { PAGE_SLUG_PATTERN } from '~/helpers/pages'
 import { DISPLAY_FONTS, SITE_MODULES, SOCIAL_NETWORKS } from '~/interfaces/site'
 import type { SiteModules, SiteSettings } from '~/interfaces/site'
 
@@ -47,6 +48,9 @@ const theme = z.object({
   })),
 })
 
+/** The page Strapi chose for `/`; null when none, and only its slug is read. */
+const homePage = z.object({ slug: z.string().regex(PAGE_SLUG_PATTERN) })
+
 export const siteSettingsSchema = z.object({
   name: lenient(text),
   description: lenient(text),
@@ -68,6 +72,7 @@ export const siteSettingsSchema = z.object({
   supportHandle: lenient(text.regex(/^[A-Za-z0-9_-]+$/)),
   modules: lenient(modules),
   theme: lenient(theme),
+  homePage: lenient(homePage.nullish().transform(value => value ?? undefined)),
 })
 
 export function parseSiteSettings(data: unknown): SiteSettings | null {

@@ -67,6 +67,8 @@ export interface Site {
   supportHandle: string
   modules: SiteModules
   theme?: SiteTheme
+  /** The page shown at `/` in this locale; absent keeps the blog home */
+  homePage?: { slug: string }
 }
 
 /** What Strapi's `theme` component held, validated and not yet checked against the theme. */

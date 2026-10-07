@@ -5,8 +5,9 @@ export default defineConfig({
   testDir: 'e2e',
   // Needs its own servers with every module off: playwright.modules-off.config.ts
   // theme-overrides.spec.ts: playwright.theme-overrides.config.ts, a mock Strapi that serves a theme
+  // home-page.spec.ts: playwright.home-page.config.ts, a mock Strapi whose site settings name a home page
   // e2e/theme runs in playwright.theme.config.ts (per theme and mode, in the Playwright image)
-  testIgnore: ['modules-off.spec.ts', 'theme-overrides.spec.ts', 'theme/**'],
+  testIgnore: ['modules-off.spec.ts', 'theme-overrides.spec.ts', 'home-page.spec.ts', 'theme/**'],
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,
