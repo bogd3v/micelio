@@ -19,3 +19,15 @@ export function articlePaths(slug: string, locale: Locale, translations: PostTra
   }
   return paths
 }
+
+export function pagePath(slug: string, locale: Locale): string {
+  return localizedPath(`/${slug}`, locale)
+}
+
+export function pagePaths(slug: string, locale: Locale, translations: PostTranslation[]): LocalePaths {
+  const paths: LocalePaths = { [locale]: pagePath(slug, locale) }
+  for (const translation of translations) {
+    if (translation.locale !== locale) paths[translation.locale] = pagePath(translation.slug, translation.locale)
+  }
+  return paths
+}

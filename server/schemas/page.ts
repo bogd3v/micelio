@@ -2,8 +2,9 @@ import { z } from 'zod'
 import { Locale } from '~/interfaces/locale'
 import type { Page, PageSection, PageSeo, PostListSection } from '~/interfaces'
 
-/** Strapi uid shape: lowercase letters, digits and `-_.~`, starting with a letter or digit. */
-export const PAGE_SLUG_PATTERN = /^[a-z0-9][a-z0-9_.~-]{0,63}$/
+import { PAGE_SLUG_PATTERN } from '~/helpers/pages'
+
+export { PAGE_SLUG_PATTERN }
 export const POST_LIST_MIN = 1
 export const POST_LIST_MAX = 12
 const POST_LIST_DEFAULT = 3

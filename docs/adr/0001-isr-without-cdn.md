@@ -42,3 +42,7 @@ Content appears up to five minutes after publishing in Strapi, in exchange for p
 - A page must never embed per-user data during SSR: the session plugin only loads the user when the session cookie is present, so cached pages never contain one (see [ADR-0003](0003-session-in-httponly-cookie.md)).
 - Response headers set while rendering (the CSP of [ADR-0004](0004-hash-based-csp.md)) are cached with the HTML and must stay valid for it.
 - Running more than one instance would mean separate caches; revisit with a shared storage driver or a CDN at that point.
+
+## Amendments
+
+- 2026-10-07: section pages (`app/pages/[slug].vue`, #244) have no `routeRules` entry. A `/**` rule would also match `/api` and the private pages, and the slugs are chosen in the CMS, so they cannot be listed. They are server-rendered per request; `/api/pages/:slug` is cached in Nitro (5 min), so the cost is a render, not a Strapi call.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { articlePath, articlePaths, publishedTranslations } from '~/helpers/translations'
+import { articlePath, articlePaths, pagePaths, publishedTranslations } from '~/helpers/translations'
 import { Locale } from '~/interfaces/locale'
 
 describe('publishedTranslations', () => {
@@ -41,5 +41,18 @@ describe('articlePaths', () => {
 
   it('builds a single article path', () => {
     expect(articlePath('que-es-solarpunk', Locale.SpanishColombia)).toBe('/es/blog/que-es-solarpunk')
+  })
+})
+
+describe('pagePaths', () => {
+  it('links each locale to its own slug', () => {
+    expect(pagePaths('showcase', Locale.English, [{ locale: Locale.SpanishColombia, slug: 'muestra' }]))
+      .toEqual({ en: '/showcase', es: '/es/muestra' })
+    expect(pagePaths('muestra', Locale.SpanishColombia, [{ locale: Locale.English, slug: 'showcase' }]))
+      .toEqual({ es: '/es/muestra', en: '/showcase' })
+  })
+
+  it('has only the current locale without translations', () => {
+    expect(pagePaths('showcase', Locale.English, [])).toEqual({ en: '/showcase' })
   })
 })

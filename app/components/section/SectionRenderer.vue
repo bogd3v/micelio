@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import type { PageSection } from '~/interfaces'
+import { knownSections as filterKnown } from '~/helpers/pages'
 import SectionHero from '~/components/section/SectionHero.vue'
 import SectionFeatureGrid from '~/components/section/SectionFeatureGrid.vue'
 import SectionMediaShowcase from '~/components/section/SectionMediaShowcase.vue'
@@ -18,6 +19,8 @@ import SectionScene from '~/components/section/SectionScene.vue'
 
 const props = defineProps<{
   sections: PageSection[] | null | undefined
+  /** The first section, when it is a hero, carries the page's h1 */
+  leadHeading?: boolean
 }>()
 
 const componentMap: Readonly<Record<PageSection['__component'], Component>> = {
@@ -37,9 +40,7 @@ const componentMap: Readonly<Record<PageSection['__component'], Component>> = {
   'section.scene': SectionScene,
 }
 
-const knownSections = computed<PageSection[]>(() =>
-  (props.sections ?? []).filter(section => section.__component in componentMap),
-)
+const knownSections = computed<PageSection[]>(() => filterKnown(props.sections))
 </script>
 
 <template>
@@ -48,6 +49,7 @@ const knownSections = computed<PageSection[]>(() =>
     v-for="(section, index) in knownSections"
     :key="`${section.__component}-${index}`"
     :section="section"
+    v-bind="index === 0 && section.__component === 'section.hero' && leadHeading ? { headingLevel: 1 } : {}"
   />
 </template>
 
