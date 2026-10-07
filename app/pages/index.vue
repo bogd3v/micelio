@@ -12,14 +12,14 @@ const home = homeSlug ? await useSectionPage(homeSlug) : null
 const sectionPage = computed<Page | undefined>(() => (home && !home.failure.value ? home.page.value : undefined))
 
 if (homeSlug && !sectionPage.value && import.meta.server) {
-  warnOnce(`${locale.value}:${homeSlug}`, `Home page "${homeSlug}" (${locale.value}) could not be loaded (status ${home?.failure.value}); showing the blog home`)
+  warnOnce(`${locale.value}:${homeSlug}:${home?.failure.value}`, `Home page "${homeSlug}" (${locale.value}) could not be loaded (status ${home?.failure.value}); showing the blog home`)
 }
 
 // <LazySectionRenderer> keeps the sections' CSS and chunks off the blog home
 const blog = sectionPage.value ? null : useBlogHome()
 
 if (sectionPage.value) {
-  setAlternates(await useHomeAlternates(sectionPage.value))
+  setAlternates(await useAlternates(sectionPage.value, true))
   usePageSeo(sectionPage, '/')
 }
 </script>

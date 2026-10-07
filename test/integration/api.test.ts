@@ -794,25 +794,35 @@ describe('homePage from Strapi', () => {
     expect(es).toContain(`<link rel="canonical" href="${SITE_URL}/es">`)
   })
 
-  it('pairs hreflang at / and /es only when both languages\' home pages are translations', async () => {
+  it('points hreflang at canonical URLs, pairing the roots only when both are home pages', async () => {
+    const link = (lang: string, path: string): string => `<link rel="alternate" hreflang="${lang}" href="${SITE_URL}${path}">`
     mock.homePage.value = { en: 'showcase', es: 'muestra' }
-    const paired = await html('/')
-    expect(paired).toContain(`<link rel="alternate" hreflang="es" href="${SITE_URL}/es">`)
+    const both = await html('/')
+    expect(both).toContain(link('en', '/'))
+    expect(both).toContain(link('es', '/es'))
     mock.homePage.value = { en: 'showcase', es: 'many-lists' }
-    const alone = await html('/')
-    expect(alone).toContain(`<link rel="alternate" hreflang="en" href="${SITE_URL}/">`)
-    expect(alone).not.toContain('hreflang="es"')
-    mock.homePage.value = { en: 'showcase' }
-    expect(await html('/showcase')).not.toContain('hreflang="es"')
+    const enOnly = await html('/')
+    expect(enOnly).toContain(link('en', '/'))
+    expect(enOnly).toContain(link('es', '/es/muestra'))
+    mock.homePage.value = { es: 'muestra' }
+    const esOnly = await html('/showcase')
+    expect(esOnly).toContain(link('en', '/showcase'))
+    expect(esOnly).toContain(link('es', '/es'))
+    expect(await html('/es/muestra')).toContain(link('en', '/showcase'))
+    mock.homePage.value = null
+    const neither = await html('/showcase')
+    expect(neither).toContain(link('en', '/showcase'))
+    expect(neither).toContain(link('es', '/es/muestra'))
   })
 
   it('falls back to the blog home when the page does not exist', async () => {
     mock.homePage.value = { en: 'ghost' }
-    const response = await fetch('/es/account/sign-in')
+    const response = await fetch('/')
     expect(response.status).toBe(200)
-    const home = await fetch('/')
-    expect(home.status).toBe(200)
-    expect(await home.text()).not.toContain('data-section="hero"')
+    const home = await response.text()
+    expect(home).not.toContain('data-section="hero"')
+    expect(home).toMatch(/<h1[\s>]/)
+    expect(home).toContain('application/ld+json')
   })
 })
 

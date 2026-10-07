@@ -58,15 +58,25 @@ describe('pagePaths', () => {
 })
 
 describe('homePaths', () => {
-  const es = [{ locale: Locale.SpanishColombia, slug: 'muestra' }]
+  const en = Locale.English
+  const es = Locale.SpanishColombia
+  const toEs = [{ locale: es, slug: 'muestra' }]
 
-  it('pairs the roots when the translation is the other language\'s home page', () => {
-    expect(homePaths(Locale.English, es, { es: 'muestra' })).toEqual({ en: '/', es: '/es' })
+  it('points both roots at each other when both are home pages', () => {
+    expect(homePaths(en, toEs, { es: 'muestra' })).toEqual({ en: '/', es: '/es' })
   })
 
-  it('keeps only the current language when the other home page is another page or none', () => {
-    expect(homePaths(Locale.English, es, { es: 'otra' })).toEqual({ en: '/' })
-    expect(homePaths(Locale.English, es, {})).toEqual({ en: '/' })
-    expect(homePaths(Locale.SpanishColombia, [], {})).toEqual({ es: '/es' })
+  it('links the translation by its slug when only this language has it as home', () => {
+    expect(homePaths(en, toEs, { es: 'other' })).toEqual({ en: '/', es: '/es/muestra' })
+    expect(homePaths(en, toEs, {})).toEqual({ en: '/', es: '/es/muestra' })
+  })
+
+  it('maps a translation to its root when only the other language has it as home', () => {
+    expect(pagePaths('showcase', en, toEs, { es: 'muestra' })).toEqual({ en: '/showcase', es: '/es' })
+  })
+
+  it('keeps every slug when neither is a home page', () => {
+    expect(pagePaths('showcase', en, toEs, {})).toEqual({ en: '/showcase', es: '/es/muestra' })
+    expect(homePaths(es, [], {})).toEqual({ es: '/es' })
   })
 })

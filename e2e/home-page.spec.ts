@@ -1,8 +1,34 @@
 import { test, expect } from '@playwright/test'
+import type { APIRequestContext } from '@playwright/test'
 
 // Run by playwright.home-page.config.ts: the mock's site-setting sets the showcase page as the home page of each locale
 
 const ORIGIN = 'https://bogdev.com.co'
+
+// How many stylesheets (linked or inline) of a page hold the section rules
+async function sectionStylesheets(request: APIRequestContext, path: string): Promise<number> {
+  const html = await (await request.get(path)).text()
+  const hrefs = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(match => match[1]!)
+  let count = [...html.matchAll(/<style[^>]*>([^]*?)<\/style>/g)].filter(match => match[1]!.includes('bd-section-logo-track')).length
+  for (const href of hrefs) {
+    if ((await (await request.get(href)).text()).includes('bd-section-logo-track')) count++
+  }
+  return count
+}
+
+test('the browser does not ask for the other language\'s site settings', async ({ page }) => {
+  const requests: string[] = []
+  page.on('request', request => requests.push(request.url()))
+  await page.goto('/', { waitUntil: 'networkidle' })
+  expect(requests.filter(url => url.includes('/api/site'))).toEqual([])
+})
+
+test('loads exactly one stylesheet (linked or inline) with the section rules at / and /showcase, none at /blog', async ({ request }) => {
+  expect(await sectionStylesheets(request, '/')).toBe(1)
+  expect(await sectionStylesheets(request, '/es')).toBe(1)
+  expect(await sectionStylesheets(request, '/showcase')).toBe(1)
+  expect(await sectionStylesheets(request, '/blog')).toBe(0)
+})
 
 test('/ renders the page\'s sections with one h1, its SEO and a canonical to /', async ({ page, request }) => {
   const response = await page.goto('/', { waitUntil: 'networkidle' })

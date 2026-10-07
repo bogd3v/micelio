@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import type { Locale } from '~/interfaces'
-import { pagePaths } from '~/helpers/translations'
 import { PAGE_SLUG_PATTERN } from '~/helpers/pages'
 
 // A slug the API would reject (400, e.g. "Showcase") is a page that does not exist: 404 without the call
 definePageMeta({ validate: route => PAGE_SLUG_PATTERN.test(String(route.params.slug)) })
 
-const { locale } = useI18n()
 const route = useRoute()
 const slug = route.params.slug as string
 const site = await useLoadedSite()
@@ -27,7 +24,7 @@ if (failure.value || !page.value) {
   })
 }
 
-setAlternates(isHome ? await useHomeAlternates(page.value) : pagePaths(slug, locale.value as Locale, page.value.translations))
+setAlternates(await useAlternates(page.value, isHome))
 
 usePageSeo(page, isHome ? '/' : `/${slug}`)
 </script>

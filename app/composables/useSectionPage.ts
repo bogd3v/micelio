@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import type { Locale, LocalePaths, Page, Site } from '~/interfaces'
-import { homePaths } from '~/helpers/translations'
+import { homePaths, pagePaths } from '~/helpers/translations'
 import { pageTitle } from '~/helpers/site'
 
 export interface SectionPageState {
@@ -52,13 +52,20 @@ export function usePageSeo(page: Ref<Page | undefined>, canonicalPath: string): 
   })
 }
 
-/** hreflang for a page shown at `/`: asks each translation's locale which page is its home page. */
-export async function useHomeAlternates(page: Page): Promise<LocalePaths> {
+/**
+ * hreflang for a section page: each translation points at its canonical path, which is its language's root when it is that language's home page.
+ * Runs on the server only and hydrates from the payload.
+ */
+export async function useAlternates(page: Page, isHome: boolean): Promise<LocalePaths> {
   const { locale } = useI18n()
-  const homeSlugs: Partial<Record<Locale, string | undefined>> = {}
-  await Promise.all(page.translations.filter(item => item.locale !== locale.value).map(async (item) => {
-    const other = await $fetch<Site>('/api/site', { query: { locale: item.locale } }).catch(() => undefined)
-    homeSlugs[item.locale] = other?.homePage?.slug
-  }))
-  return homePaths(locale.value as Locale, page.translations, homeSlugs)
+  const current = locale.value as Locale
+  const { data } = await useAsyncData<LocalePaths>(`home-alternates-${page.slug}-${locale.value}`, async () => {
+    const homeSlugs: Partial<Record<Locale, string | undefined>> = {}
+    await Promise.all(page.translations.filter(item => item.locale !== current).map(async (item) => {
+      const other = await $fetch<Site>('/api/site', { query: { locale: item.locale } }).catch(() => undefined)
+      homeSlugs[item.locale] = other?.homePage?.slug
+    }))
+    return isHome ? homePaths(current, page.translations, homeSlugs) : pagePaths(page.slug, current, page.translations, homeSlugs)
+  })
+  return data.value ?? {}
 }

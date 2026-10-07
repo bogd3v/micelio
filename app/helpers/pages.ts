@@ -6,12 +6,17 @@ export const PAGE_SLUG_PATTERN = /^[a-z0-9][a-z0-9_.~-]{0,63}$/
 
 const KNOWN_COMPONENTS: ReadonlySet<string> = new Set(PAGE_SECTION_COMPONENTS.map(kind => `section.${kind}`))
 
-const warned = new Set<string>()
+const WARN_EVERY_MS = 10 * 60 * 1000
+const WARN_MAX_KEYS = 100
+const warned = new Map<string, number>()
 
-/** console.warn once per process for a key (server render paths run on every request). */
+/** console.warn at most once per key every ten minutes (server render paths run on every request); keeps at most 100 keys. */
 export function warnOnce(key: string, message: string): void {
-  if (warned.has(key)) return
-  warned.add(key)
+  const now = Date.now()
+  const last = warned.get(key)
+  if (last !== undefined && now - last < WARN_EVERY_MS) return
+  if (warned.size >= WARN_MAX_KEYS) warned.clear()
+  warned.set(key, now)
   console.warn(message)
 }
 
