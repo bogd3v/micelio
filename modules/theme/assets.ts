@@ -9,7 +9,7 @@ import { IMAGES_URL } from './data'
 const IMAGE_FILE = /\.(png|jpe?g|webp|avif|gif|svg)$/i
 
 /** The static files of a theme get no capabilities: an SVG opened directly cannot run scripts or load anything. */
-const STATIC_CSP = 'default-src \'none\'; style-src \'unsafe-inline\'; sandbox'
+export const STATIC_CSP = 'default-src \'none\'; style-src \'unsafe-inline\'; sandbox'
 
 const logger = useLogger('micelio-theme')
 
@@ -37,7 +37,7 @@ export function copyServed(ctx: ThemeContext, source: string, target: string, fo
 
 /**
  * The theme's woff, woff2 and txt (license) files of fonts/ are served at /fonts/ (copied under the build, like the images); the
- * preloaded ones get a <link rel="preload">. A change to fonts/ needs a dev restart.
+ * preloaded ones get a <link rel="preload"> in server/plugins/themeMode.ts. A change to fonts/ needs a dev restart.
  */
 function setupFonts(ctx: ThemeContext): void {
   const { nuxt, dir } = ctx
@@ -52,10 +52,7 @@ function setupFonts(ctx: ThemeContext): void {
       if (!existsSync(target)) copyServed(ctx, source, target, 'fonts', FONT_FILE, 'a font or a license (woff, woff2, txt)')
     })
   }
-  const links = (nuxt.options.app.head.link ||= [])
-  for (const font of (ctx.load().manifest.fonts ?? []).filter(font => font.preload)) {
-    links.push({ rel: 'preload', href: `/fonts/${font.file}`, as: 'font', type: 'font/woff2', crossorigin: '' })
-  }
+  // The preload links are rendered per request by server/plugins/themeMode.ts (an emitted display font can drop one)
 }
 
 /**

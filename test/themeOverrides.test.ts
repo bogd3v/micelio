@@ -113,6 +113,12 @@ describe('resolveTheme', () => {
     expect(resolve({ accentOverrides: [{ mode: 'noche', color: noche!.accent.toUpperCase() }] })).toBeNull()
   })
 
+  it('keeps a display font only when it is a value of the enum', () => {
+    expect(resolve({ displayFont: 'newsreader', defaultMode: 'dia' })?.displayFont).toBe('newsreader')
+    expect(resolve({ displayFont: 'toString' as never, defaultMode: 'dia' })?.displayFont).toBeUndefined()
+    expect(resolve({ displayFont: 'comic-sans' as never })).toBeNull()
+  })
+
   it('ignores a theme that is not the build, and says so, but keeps the rest', () => {
     const theme = resolve({ themeId: 'other', defaultMode: 'dia', displayFont: 'fraunces' })
     expect(theme).toEqual({ id: 'bogota', defaultMode: 'dia', displayFont: 'fraunces', accents: {} })

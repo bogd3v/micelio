@@ -1,13 +1,10 @@
-@supports (animation-timeline: view()) {
-    .bd-reveal {
-        animation: bd-in linear both;
-        animation-timeline: view();
-        animation-range: entry 0% cover 22%;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .bd-reveal {
-        animation: none;
+/* Transform only: opacity would leave text at low contrast where the range starts (ADR 0005, section 10) */
+@media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+        .bd-reveal {
+            animation: bd-in linear both;
+            animation-timeline: view();
+            animation-range: entry 0% cover 22%;
+        }
     }
 }

@@ -28,3 +28,21 @@ test('applies the corrected accent in the mode it was set for only', async ({ pa
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dia'))
   expect(await accent()).not.toBe(corrected)
 })
+
+test('the display headings use the chosen font and its file loads', async ({ page }) => {
+  const fontResponses: { path: string, status: number }[] = []
+  page.on('response', (response) => {
+    if (response.url().includes('/fonts/display/')) fontResponses.push({ path: new URL(response.url()).pathname, status: response.status() })
+  })
+  await page.goto('/', { waitUntil: 'networkidle' })
+  await page.evaluate(() => document.fonts.ready)
+  const heading = await page.locator('main h1, main h2').first().evaluate(element => getComputedStyle(element).fontFamily)
+  expect(heading.startsWith('Fraunces, "Fraunces Fallback"')).toBe(true)
+  expect(fontResponses).toEqual([{ path: '/fonts/display/fraunces-latin-wght.woff2', status: 200 }])
+  expect(await page.evaluate(() => document.fonts.check('600 32px Fraunces', 'Soberanía digital'))).toBe(true)
+  expect(await page.evaluate(() => [...document.fonts].filter(face => face.family === 'Fraunces').map(face => face.status))).toEqual(['loaded'])
+  // Body text and mono keep the theme's fonts
+  const body = await page.evaluate(() => getComputedStyle(document.body).fontFamily)
+  expect(body).toMatch(/^Archivo/)
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--font-mono'))).toMatch(/JetBrains Mono/)
+})

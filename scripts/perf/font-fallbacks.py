@@ -6,9 +6,12 @@ text keeps its line breaks when the web font swaps in. Method and numbers: docs/
     pip install fonttools brotli
     python3 scripts/perf/font-fallbacks.py [--theme bogota] [ARIAL_REGULAR ARIAL_BOLD MONO_REGULAR]
     python3 scripts/perf/font-fallbacks.py --theme starter [TIMES_REGULAR TIMES_BOLD]
+    python3 scripts/perf/font-fallbacks.py --display [SANS_REGULAR SANS_BOLD SERIF_REGULAR SERIF_BOLD]
 
 The metric files default to Liberation Sans and Liberation Mono, which share Arial's and Courier
-New's advance widths; the starter uses Liberation Serif, which shares Times New Roman's.
+New's advance widths; the starter uses Liberation Serif, which shares Times New Roman's. `--display` writes
+app/assets/fonts/display-fallbacks.css for the curated display fonts (one `/* <id> */` section each,
+which the server embeds), the sans ones against Liberation Sans and the serif ones against Liberation Serif.
 """
 
 import argparse
@@ -22,6 +25,15 @@ OUT = ROOT / 'themes/bogota/font-fallbacks.css'
 FONTS = ROOT / 'themes/bogota/fonts'
 STARTER_OUT = ROOT / 'themes/starter/font-fallbacks.css'
 STARTER_FONTS = ROOT / 'themes/starter/fonts'
+DISPLAY_DIR = ROOT / 'app/assets/fonts/display'
+# id -> (family, serif?); keep in step with server/utils/displayFonts.ts
+DISPLAY_FONTS = {
+    'archivo': ('Archivo', False),
+    'fraunces': ('Fraunces', True),
+    'bricolage-grotesque': ('Bricolage Grotesque', False),
+    'newsreader': ('Newsreader', True),
+    'space-grotesk': ('Space Grotesk', False),
+}
 
 TIMES = 'local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("Tinos")'
 TIMES_BOLD = 'local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"), local("Liberation Serif Bold"), local("Tinos Bold")'
@@ -95,11 +107,43 @@ def starter(metrics: list[str]) -> None:
     print(f'{STARTER_OUT.relative_to(ROOT)} generated ({len(faces)} faces)')
 
 
+def display(metrics: list[str]) -> None:
+    sans, sans_bold, serif, serif_bold = (Path(p) for p in (metrics if len(metrics) == 4 else (
+        '/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf',
+        '/usr/share/fonts/liberation-sans-fonts/LiberationSans-Bold.ttf',
+        '/usr/share/fonts/liberation-serif-fonts/LiberationSerif-Regular.ttf',
+        '/usr/share/fonts/liberation-serif-fonts/LiberationSerif-Bold.ttf',
+    )))
+    widths = {False: (average_width(TTFont(sans)), average_width(TTFont(sans_bold))),
+              True: (average_width(TTFont(serif)), average_width(TTFont(serif_bold)))}
+    sections = []
+    for font_id, (family, is_serif) in DISPLAY_FONTS.items():
+        path = DISPLAY_DIR / f'{font_id}-latin-wght.woff2'
+        font = TTFont(path)
+        em = font['head'].unitsPerEm
+        ascent, descent = font['hhea'].ascent / em, -font['hhea'].descent / em
+        axis = next(a for a in font['fvar'].axes if a.axisTag == 'wght')
+        regular_width, bold_width = widths[is_serif]
+        faces = []
+        for weight, wght, bold in STARTER_WEIGHTS:
+            wght = min(max(wght, axis.minValue), axis.maxValue)
+            size = average_width(instance(path, {'wght': wght})) / (bold_width if bold else regular_width)
+            src = (TIMES_BOLD if bold else TIMES) if is_serif else (ARIAL_BOLD if bold else ARIAL)
+            faces.append(face(f'{family} Fallback', src, size, ascent, descent, weight))
+        sections.append(f'/* {font_id} */\n' + '\n'.join(faces))
+    out = DISPLAY_DIR.parent / 'display-fallbacks.css'
+    out.write_text(HEADER + '\n'.join(sections))
+    print(f'{out.relative_to(ROOT)} generated ({len(sections)} fonts)')
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--theme', choices=['bogota', 'starter'], default='bogota')
+    parser.add_argument('--display', action='store_true', help='the curated display fonts of the core')
     parser.add_argument('metrics', nargs='*', help='metric font files (3 for bogota, 2 for starter), optional')
     args = parser.parse_args()
+    if args.display:
+        return display(args.metrics)
     if args.theme == 'starter':
         return starter(args.metrics)
     sans, sans_bold, mono = (Path(p) for p in (args.metrics if len(args.metrics) == 3 else (

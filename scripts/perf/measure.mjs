@@ -2,7 +2,7 @@
 // Measures page weight and Lighthouse metrics against the budgets in budgets.json.
 // See docs/performance.md for what each number means and how budgets change.
 import { spawn } from 'node:child_process'
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { request as httpRequest } from 'node:http'
 import { request as httpsRequest } from 'node:https'
 import { brotliDecompressSync, gunzipSync, gzipSync } from 'node:zlib'
@@ -25,12 +25,33 @@ const runs = Number(args.runs ?? 3)
 // The build under test: --theme and --mode label the report; the server gets the theme it was built with
 const theme = typeof args.theme === 'string' ? args.theme : process.env.NUXT_PUBLIC_THEME || DEFAULT_THEME
 const mode = typeof args.mode === 'string' ? args.mode : budgets.mode
-const label = `theme ${theme}, ${mode} mode`
+// --display-font <id|heaviest>: the site picks a curated display font (ADR 0005, sections 8 and 9); that run's font limit is the theme's plus the file's allowance
+const displayFont = args['display-font'] === 'heaviest' ? heaviestDisplayFont() : typeof args['display-font'] === 'string' ? args['display-font'] : undefined
+const extraFontKb = displayFont ? budgets.displayFont?.extraFontKb ?? 60 : 0
+const label = `theme ${theme}, ${mode} mode${displayFont ? `, display font ${displayFont}` : ''}`
 if (mode !== budgets.mode) throw new Error(`budgets.json has budgets for the "${budgets.mode}" mode only, not "${mode}" (${label})`)
 const exception = budgets.themes?.[theme]
 for (const [id, entry] of Object.entries(budgets.themes ?? {})) {
   if (!entry?.reason) throw new Error(`budgets.json: the exception for theme "${id}" needs a "reason"`)
   if (!existsSync(new URL(`../../themes/${id}/theme.json`, import.meta.url))) console.warn(`warn  budgets.json: "themes.${id}" is not an installed theme in themes/`)
+}
+
+/** The id of the largest file in app/assets/fonts/display/ */
+function heaviestDisplayFont() {
+  const dir = new URL('../../app/assets/fonts/display/', import.meta.url)
+  const [heaviest] = readdirSync(dir).filter(file => file.endsWith('.woff2'))
+    .map(file => ({ id: file.replace(/-latin-wght\.woff2$/, ''), size: statSync(new URL(file, dir)).size }))
+    .sort((a, b) => b.size - a.size)
+  if (!heaviest) throw new Error('app/assets/fonts/display/ has no font')
+  return heaviest.id
+}
+
+/** The theme's own display family from its manifest, to tell whether the override emits anything */
+function themeDisplayFamily() {
+  const file = new URL(`../../themes/${theme}/theme.json`, import.meta.url)
+  if (!existsSync(file)) return undefined
+  const stack = JSON.parse(readFileSync(file, 'utf8')).type?.families?.display ?? ''
+  return stack.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase()
 }
 
 function parseArgs(list) {
@@ -54,6 +75,7 @@ function startServers() {
     ...({ NUXT_PUBLIC_THEME: theme }),
     NUXT_PUBLIC_STRAPI_URL: `http://127.0.0.1:${MOCK_PORT}`,
     NUXT_PUBLIC_SITE_URL: base,
+    ...(displayFont && { MOCK_DISPLAY_FONT: displayFont }),
     NUXT_PUBLIC_UMAMI_WEBSITE_ID: '',
     NUXT_MEDIA_URL: 'https://resources.bogdev.com.co',
     NUXT_PUBLIC_FEDIVERSE_HANDLE: '@bogdev@api.bogdev.com.co',
@@ -188,7 +210,9 @@ const HIGHER_IS_BETTER = new Set(['performance', 'accessibility'])
 /** The limits of a page and level; a recorded exception for the theme overrides single metrics */
 function limitsFor(page, level) {
   const global = budgets.limits[page]?.[level] ?? {}
-  return { ...global, ...(exception?.limits?.[page]?.[level] ?? {}) }
+  const limits = { ...global, ...(exception?.limits?.[page]?.[level] ?? {}) }
+  if (level === 'error' && extraFontKb && limits.fontKb !== undefined) limits.fontKb = Math.round((limits.fontKb + extraFontKb) * 10) / 10
+  return limits
 }
 
 function compare(page, metrics, limits, level) {
@@ -223,13 +247,17 @@ try {
     const metrics = { ...weight, ...(await countThirdParty(browser, url)), ...(await measureLighthouse(url)) }
     problems.push(...compare(name, metrics, limitsFor(name, 'error'), 'error'), ...compare(name, metrics, limitsFor(name, 'warn'), 'warn'))
     for (const message of checkFouc(html, url, stylesheets)) problems.push({ level: 'error', page: name, message })
+    // The run proves nothing if the font never reached the page (a theme using it itself emits nothing)
+    if (displayFont && themeDisplayFamily() !== displayFont.replace(/-/g, ' ') && !html.includes(`/fonts/display/${displayFont}-latin-wght.woff2`)) {
+      problems.push({ level: 'error', page: name, message: `the display font "${displayFont}" is not in the page` })
+    }
     report.push({ page: name, path, metrics })
     const { thirdPartyUrls, ...printable } = metrics
     console.log(`${name.padEnd(10)} ${JSON.stringify(printable)}`)
     if (thirdPartyUrls.length) console.log(`           third party: ${thirdPartyUrls.join(', ')}`)
   }
 
-  if (args.out) writeFileSync(args.out, JSON.stringify({ theme, mode, pages: report }, null, 2) + '\n')
+  if (args.out) writeFileSync(args.out, JSON.stringify({ theme, mode, ...(displayFont && { displayFont }), pages: report }, null, 2) + '\n')
   const lines = problems.map((p) => {
     const prefix = `${p.level === 'error' ? 'ERROR' : 'warn '} [${label}] ${p.page}:`
     if (p.message) return `${prefix} FOUC: ${p.message}`
