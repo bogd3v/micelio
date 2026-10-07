@@ -46,8 +46,9 @@ test('renders the Archivo width axis', async ({ page }) => {
   expect(widths.wide).toBeGreaterThan(widths.normal * 1.1)
 })
 
-test('preloads both fonts', async ({ request }) => {
+// Only the text font is on the LCP path; the mono font loads when code or meta text needs it (#350)
+test('preloads the text font only', async ({ request }) => {
   const html = await (await request.get('/')).text()
   expect(html).toMatch(/<link[^>]+rel="preload"[^>]+href="\/fonts\/archivo-latin-var\.woff2"/)
-  expect(html).toMatch(/<link[^>]+rel="preload"[^>]+href="\/fonts\/jetbrains-mono-latin-var\.woff2"/)
+  expect(html).not.toMatch(/<link[^>]+rel="preload"[^>]+href="\/fonts\/jetbrains-mono-latin-var\.woff2"/)
 })
