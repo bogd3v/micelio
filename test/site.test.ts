@@ -255,3 +255,18 @@ describe('parseSiteSettings theme', () => {
     expect(theme({ accentOverrides: { mode: 'dia', color: '#123456' }, defaultMode: 'dia' })?.theme).toEqual({ defaultMode: 'dia' })
   })
 })
+
+describe('homePage', () => {
+  it('keeps a valid slug and drops null, a bad slug or extra fields', () => {
+    expect(parseSiteSettings({ homePage: { id: 1, documentId: 'x', slug: 'showcase' } })?.homePage).toEqual({ slug: 'showcase' })
+    expect(parseSiteSettings({ homePage: null })?.homePage).toBeUndefined()
+    expect(parseSiteSettings({ homePage: { slug: 'Not A Slug' }, name: 'Micelio' })).toEqual({ name: 'Micelio' })
+    expect(parseSiteSettings({ homePage: { slug: '../x' } })?.homePage).toBeUndefined()
+    expect(parseSiteSettings({ homePage: 'showcase' })?.homePage).toBeUndefined()
+  })
+
+  it('merges into the site only when set', () => {
+    expect(mergeSite(defaults, { homePage: { slug: 'showcase' } }).homePage).toEqual({ slug: 'showcase' })
+    expect('homePage' in mergeSite(defaults, { name: 'Micelio' })).toBe(false)
+  })
+})

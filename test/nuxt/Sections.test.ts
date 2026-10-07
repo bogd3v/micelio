@@ -161,6 +161,16 @@ describe('SectionRenderer', () => {
     expect(rendered.map(node => node.attributes('data-section'))).toEqual(['cta', 'rich-text'])
   })
 
+  it('names a page with its title as the h1 unless a hero opens it', async () => {
+    const titled = await mountSuspended(SectionRenderer, { props: { sections: [sections.cta('banner')], pageTitle: 'Many lists' } })
+    expect(titled.findAll('h1').map(node => node.text())).toEqual(['Many lists'])
+    const heroed = await mountSuspended(SectionRenderer, { props: { sections: [sections.hero('centered'), sections.cta('banner')], pageTitle: 'Many lists' } })
+    expect(heroed.findAll('h1')).toHaveLength(1)
+    expect(heroed.find('[data-section="title"]').exists()).toBe(false)
+    const plain = await mountSuspended(SectionRenderer, { props: { sections: [sections.cta('banner')] } })
+    expect(plain.find('h1').exists()).toBe(false)
+  })
+
   it('labels each section with its heading', async () => {
     const wrapper = await render(sections.cta('banner'))
     const heading = wrapper.get('h2.bd-section-title')

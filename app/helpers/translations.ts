@@ -24,6 +24,13 @@ export function pagePath(slug: string, locale: Locale): string {
   return localizedPath(`/${slug}`, locale)
 }
 
+/** hreflang of a page that is the home page: each language it exists in answers at its own root. */
+export function homePaths(locale: Locale, translations: PostTranslation[]): LocalePaths {
+  const paths: LocalePaths = { [locale]: localizedPath('/', locale) }
+  for (const translation of translations) paths[translation.locale] = localizedPath('/', translation.locale)
+  return paths
+}
+
 export function pagePaths(slug: string, locale: Locale, translations: PostTranslation[]): LocalePaths {
   const paths: LocalePaths = { [locale]: pagePath(slug, locale) }
   for (const translation of translations) {

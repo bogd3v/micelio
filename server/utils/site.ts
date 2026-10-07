@@ -24,6 +24,7 @@ const SITE_POPULATE = {
   socialLinks: true,
   modules: true,
   theme: { populate: '*' },
+  homePage: { fields: ['slug'] },
 }
 
 export interface LoadedSite {

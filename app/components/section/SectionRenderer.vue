@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import type { PageSection } from '~/interfaces'
-import { knownSections as filterKnown } from '~/helpers/pages'
+import { heroLeadsPage, knownSections as filterKnown } from '~/helpers/pages'
 import SectionHero from '~/components/section/SectionHero.vue'
 import SectionFeatureGrid from '~/components/section/SectionFeatureGrid.vue'
 import SectionMediaShowcase from '~/components/section/SectionMediaShowcase.vue'
@@ -21,6 +21,8 @@ const props = defineProps<{
   sections: PageSection[] | null | undefined
   /** The first section, when it is a hero, carries the page's h1 */
   leadHeading?: boolean
+  /** A whole page: names it with this title as the h1 unless a hero opens it (then `leadHeading` is derived) */
+  pageTitle?: string
 }>()
 
 const componentMap: Readonly<Record<PageSection['__component'], Component>> = {
@@ -40,16 +42,23 @@ const componentMap: Readonly<Record<PageSection['__component'], Component>> = {
   'section.scene': SectionScene,
 }
 
+const titleLeads = computed<boolean>(() => props.pageTitle !== undefined && !heroLeadsPage(props.sections))
+const heroLeads = computed<boolean>(() => props.pageTitle !== undefined ? heroLeadsPage(props.sections) : Boolean(props.leadHeading))
 const knownSections = computed<PageSection[]>(() => filterKnown(props.sections))
 </script>
 
 <template>
+  <section v-if="titleLeads" class="bd-section" data-section="title">
+    <div class="bd-section-inner">
+      <h1 class="bd-section-title">{{ pageTitle }}</h1>
+    </div>
+  </section>
   <component
     :is="componentMap[section.__component]"
     v-for="(section, index) in knownSections"
     :key="`${section.__component}-${index}`"
     :section="section"
-    v-bind="index === 0 && section.__component === 'section.hero' && leadHeading ? { headingLevel: 1 } : {}"
+    v-bind="index === 0 && section.__component === 'section.hero' && heroLeads ? { headingLevel: 1 } : {}"
   />
 </template>
 

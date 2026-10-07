@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { articlePath, articlePaths, pagePaths, publishedTranslations } from '~/helpers/translations'
+import { articlePath, articlePaths, homePaths, pagePaths, publishedTranslations } from '~/helpers/translations'
 import { Locale } from '~/interfaces/locale'
 
 describe('publishedTranslations', () => {
@@ -54,5 +54,12 @@ describe('pagePaths', () => {
 
   it('has only the current locale without translations', () => {
     expect(pagePaths('showcase', Locale.English, [])).toEqual({ en: '/showcase' })
+  })
+})
+
+describe('homePaths', () => {
+  it('points each language at its own root', () => {
+    expect(homePaths(Locale.English, [{ locale: Locale.SpanishColombia, slug: 'muestra' }])).toEqual({ en: '/', es: '/es' })
+    expect(homePaths(Locale.SpanishColombia, [])).toEqual({ es: '/es' })
   })
 })

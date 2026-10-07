@@ -7,13 +7,15 @@ interface Servers {
   modulesOff?: boolean
   /** Answer site-setting with a default mode and an accent override (e2e/theme-overrides.spec.ts) */
   themeOverrides?: boolean
+  /** Answer site-setting with the showcase page as homePage in each locale (e2e/home-page.spec.ts) */
+  homePage?: boolean
 }
 
 /** The mock Strapi and the Nuxt server (dev, or the build with E2E_BUILD=1) pointed at it, with BogDev's site values. */
-export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false }: Servers): PlaywrightTestConfig['webServer'] {
+export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false }: Servers): PlaywrightTestConfig['webServer'] {
   return [
     {
-      command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=http://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''} node e2e/mock-strapi.mjs`,
+      command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=http://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''}${homePage ? ' MOCK_HOME_PAGE=1' : ''} node e2e/mock-strapi.mjs`,
       port: mockPort,
       reuseExistingServer: !process.env.CI,
       timeout: 15_000,
