@@ -13,7 +13,8 @@ Public styling hooks of contract v1, from `app/theme/hooks.json`. A theme's `the
 | `data-layout` | The root element of a layout region: the variant it renders. | `bar`, `centered`, `showcase`, `index`, `grid`, `list`, `aside`, `columns`, `minimal` |
 | `data-mode` | A button of the mode switch: the mode it selects (.bd-seg). | the ids of the theme's modes |
 | `data-level` | Password strength meter: how many bars are lit (.bd-meter). | `1`, `2`, `3`, `4` |
-| `data-variant` | Reserved: the variant of a page section (ADR 0005, section 11). | declared per section |
+| `data-section` | The root of a page section: the section it renders (.bd-section). | `hero`, `feature-grid`, `media-showcase`, `stats`, `logo-cloud`, `testimonials`, `pricing`, `faq`, `cta`, `post-list`, `newsletter`, `rich-text`, `gallery`, `scene` |
+| `data-variant` | The root of a page section: the variant it renders, always read together with data-section (ADR 0005, section 11). rich-text has none. | `hero: centered, split, full-bleed`, `feature-grid: grid, list, bento`, `media-showcase: left, right, stacked`, `stats: row, cards`, `logo-cloud: row, marquee`, `testimonials: single, grid`, `pricing: cards, table`, `faq: list, two-columns`, `cta: banner, card`, `post-list: cards, list`, `newsletter: inline, card`, `gallery: grid, masonry`, `scene: background, inline` |
 
 ## Classes of `header`
 
@@ -181,6 +182,28 @@ These appear in every layout variant.
 | `bd-comment-form` | The comment form. |  |
 | `bd-related` | Related articles. |  |
 | `bd-related-grid` | Grid of related articles. |  |
+| `bd-section` | Root of a page section (a `<section>`). Select it with data-section and data-variant: .bd-section[data-section="hero"][data-variant="split"]. | `[data-section]`, `[data-variant]` |
+| `bd-section-inner` | Width-limited content of a section. |  |
+| `bd-section-head` | Eyebrow, title and text of a section. |  |
+| `bd-section-title` | Title of a section (a heading). |  |
+| `bd-section-text` | Introduction or body text of a section (Markdown, server-rendered). |  |
+| `bd-section-media` | Image, video or poster of a section: the hero image, the showcase media, a scene poster. |  |
+| `bd-section-actions` | Buttons and links of a section (hero, cta, media-showcase). |  |
+| `bd-section-items` | The list of items: features, stats, logos, testimonials, plans, questions, gallery images, posts. |  |
+| `bd-section-item` | One item of bd-section-items. | `:hover`, `:focus-within` |
+| `bd-section-item-title` | Title of an item: feature title, plan heading. |  |
+| `bd-section-item-text` | Description of an item. |  |
+| `bd-section-icon` | Icon of a feature. |  |
+| `bd-section-stat-value` | Figure of a stat. |  |
+| `bd-section-stat-label` | Caption of a stat. |  |
+| `bd-section-logo-track` | Lane that holds the logos of logo-cloud; the marquee variant animates it (only with prefers-reduced-motion: no-preference). | `[data-variant="marquee"]` |
+| `bd-section-quote` | Quotation of a testimonial. |  |
+| `bd-section-author` | Name, role and avatar of a testimonial. |  |
+| `bd-section-plan` | A pricing plan, also a bd-section-item. | `bd-section-plan-recommended` |
+| `bd-section-plan-price` | Price and billing period of a plan. |  |
+| `bd-section-plan-features` | List of the features of a plan. |  |
+| `bd-section-question` | Question of an faq item (the `<summary>` of a native `<details>`). |  |
+| `bd-section-answer` | Answer of an faq item. |  |
 | `bd-btn` | A button or a link styled as one. | `bd-btn-primary`, `bd-btn-secondary`, `bd-btn-accent`, `bd-btn-text`, `bd-btn-sm`, `:hover`, `:disabled` |
 | `bd-btn-arrow` | Arrow inside a button. |  |
 | `bd-tag` | A category tag. |  |
