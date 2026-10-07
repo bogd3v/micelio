@@ -51,6 +51,8 @@ function isFediverseHandle(value: string): boolean {
           class="bd-plate-mascot"
           width="586"
           height="433"
+          loading="eager"
+          fetchpriority="high"
           decoding="async"
         >
       </div>
