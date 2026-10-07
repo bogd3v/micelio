@@ -1,5 +1,7 @@
-import { modes } from '#micelio/theme'
+import { assets, themeDisplay } from '#micelio/display-fonts'
+import { fonts, modes } from '#micelio/theme'
 import { Locale, defaultLocale } from '~/interfaces/locale'
+import { displayFontOverride, insertAfterStylesheet, themePreloadLinks } from '../utils/displayFonts'
 import { themeOverridesCss } from '../utils/theme'
 
 /** The locale of the page from its path prefix (`/es/...`); the default one otherwise. */
@@ -22,7 +24,10 @@ export default defineNitroPlugin((nitroApp) => {
     const initial = chosen ?? first
     // data-mode-default is read by the init script (modules/theme/init-script.mjs); the visitor's stored choice still wins
     html.htmlAttrs.push(`data-theme="${initial.id}" data-scheme="${initial.scheme}"${chosen ? ` data-mode-default="${chosen.id}"` : ''}`)
-    const css = themeOverridesCss(theme, modes.map(mode => mode.id))
+    const font = displayFontOverride(theme?.displayFont, themeDisplay, assets)
+    const css = [themeOverridesCss(theme, modes.map(mode => mode.id)), font?.css].filter(Boolean).join('')
+    html.head = insertAfterStylesheet(html.head, themePreloadLinks(fonts, themeDisplay, Boolean(font)))
+    if (font) html.head.push(`<link rel="preload" as="font" type="font/woff2" href="${font.href}" crossorigin>`)
     if (css) html.head.push(`<style id="theme-overrides">${css}</style>`)
   })
 })

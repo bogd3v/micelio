@@ -174,13 +174,25 @@ jobs:
       - name: Build
         run: npm run build
       - name: Check performance budgets
-        run: npm run perf -- --check --theme "${{ matrix.theme }}" --mode "${{ matrix.mode }}" --out perf-report.json
+        env:
+          PERF_THEME: ${{ matrix.theme }}
+          PERF_MODE: ${{ matrix.mode }}
+        run: npm run perf -- --check --theme "$PERF_THEME" --mode "$PERF_MODE" --out perf-report.json
+      # Same build, the mock Strapi sets the heaviest curated display font; the font limit is the theme's plus 60 KB (ADR 0005, section 9)
+      - name: Check performance budgets with the heaviest display font
+        if: ${{ !cancelled() }}
+        env:
+          PERF_THEME: ${{ matrix.theme }}
+          PERF_MODE: ${{ matrix.mode }}
+        run: npm run perf -- --check --theme "$PERF_THEME" --mode "$PERF_MODE" --display-font heaviest --out perf-report-display-font.json
       - name: Upload performance report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: perf-report-${{ matrix.theme }}-${{ matrix.mode }}
-          path: perf-report.json
+          path: |
+            perf-report.json
+            perf-report-display-font.json
           retention-days: 14
 
   # One stable check name for branch protection and deploy: fails when any matrix entry failed, was skipped or cancelled

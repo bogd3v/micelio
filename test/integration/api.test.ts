@@ -661,6 +661,38 @@ describe('theme from Strapi', () => {
     expect(mock.siteRequests.at(-1)?.query).toMatchObject({ locale: 'es' })
   })
 
+  it('emits the display font, its fallback faces and a preload, same-origin, with the CSP unchanged', async () => {
+    const without = await page(PAGE)
+    mock.theme.value = { themeId: 'bogota', accentOverrides: [], displayFont: 'newsreader' }
+    const { html, csp } = await page(PAGE)
+    const href = /<link rel="preload" as="font" type="font\/woff2" href="(\/fonts\/display\/newsreader-latin-wght\.woff2\?v=[\da-f]{8})" crossorigin>/.exec(html)?.[1]
+    expect(href, 'a preload for the font').toBeDefined()
+    const style = /<style id="theme-overrides">([^<]*)<\/style>/.exec(html)?.[1] ?? ''
+    expect(style).toContain(`@font-face{font-family:"Newsreader";font-style:normal;font-display:swap;font-weight:200 800;src:url("${href}") format("woff2")`)
+    expect(style).toContain('font-family:"Newsreader Fallback"')
+    expect(style).toContain(':root{--font-display:"Newsreader","Newsreader Fallback",Georgia,"Times New Roman",serif}')
+    expect(html.indexOf('rel="preload" as="font" type="font/woff2" href="/fonts/display/')).toBeLessThan(html.indexOf('<style id="theme-overrides">'))
+    expect(csp).toBe(without.csp)
+    expect(csp).toContain('font-src \'self\'')
+    const file = await fetch(href!)
+    expect(file.status).toBe(200)
+    expect(file.headers.get('content-type')).toContain('font/woff2')
+    expect(file.headers.get('content-security-policy')).toBe('default-src \'none\'; style-src \'unsafe-inline\'; sandbox')
+    expect(file.headers.get('cache-control')).toContain('max-age=31536000')
+    expect((await file.arrayBuffer()).byteLength).toBeLessThanOrEqual(60 * 1024)
+  })
+
+  it('emits nothing for the theme\'s own display font, mono stays, and an unknown font is dropped', async () => {
+    mock.theme.value = { themeId: 'bogota', accentOverrides: [], displayFont: 'archivo' }
+    expect((await page(PAGE)).html).not.toContain('theme-overrides')
+    mock.theme.value = { themeId: 'bogota', accentOverrides: [], displayFont: 'comic-sans' }
+    const { html } = await page(PAGE)
+    expect(html).not.toContain('theme-overrides')
+    expect(html).not.toContain('/fonts/display/')
+    mock.theme.value = { themeId: 'bogota', accentOverrides: [], displayFont: 'fraunces' }
+    expect((await page(PAGE)).html).not.toMatch(/--font-mono|--font-sans/)
+  })
+
   it('renders as before when Strapi fails', async () => {
     mock.theme.value = savedTheme
     mock.failures.site = true

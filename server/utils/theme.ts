@@ -1,6 +1,7 @@
 import { contrastRatio, mixOklab, nearestWhere, parseHex, toHex } from '~/helpers/color'
 import type { Rgb } from '~/helpers/color'
 import type { AccentColors, SiteTheme, ThemeSettings } from '~/interfaces/site'
+import { displayFontId } from './displayFonts'
 import type { ContrastRule } from '../../modules/theme/contrast'
 import type { ModePalette } from '../../modules/theme/palette'
 
@@ -120,7 +121,8 @@ export function resolveTheme(raw: ThemeSettings | null | undefined, palette: Pal
   }
   const theme: SiteTheme = { id: buildTheme, accents: {} }
   if (raw.defaultMode && Object.hasOwn(palette.modes, raw.defaultMode)) theme.defaultMode = raw.defaultMode
-  if (raw.displayFont) theme.displayFont = raw.displayFont
+  const displayFont = displayFontId(raw.displayFont)
+  if (displayFont) theme.displayFont = displayFont
   for (const { mode: modeId, color } of raw.accentOverrides ?? []) {
     const mode = Object.hasOwn(palette.modes, modeId) ? palette.modes[modeId] : undefined
     if (!mode || color.toLowerCase() === mode.accent) continue
