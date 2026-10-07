@@ -9,7 +9,7 @@ The browser never talks to Strapi: every call goes through the Nitro server, bui
 | Credential | Where it comes from | Used for |
 | --- | --- | --- |
 | API token | `NUXT_STRAPI_API_TOKEN`, a **Custom** token created for this frontend | Content, comments, search, feeds and newsletter subscribers |
-| None (public role) | — | Fediverse stats and ranking, the sitemap |
+| None (public role) | — | Fediverse stats and ranking |
 | User JWT | `bd_session` cookie (`httpOnly`, `secure`, `sameSite=lax`, 7 days), set at sign-in | `/api/users/me` (profile and account deletion) |
 | Editor JWT | Same cookie, for a user with the Editor role | Draft list and draft preview |
 | None | — | Sign-in, registration, password reset and email confirmation (`/api/auth/*` in Strapi) |
@@ -22,6 +22,7 @@ Create a **Custom** token, never Full Access or Read Only, with exactly these pe
 | --- | --- | --- |
 | Article | `find` | Blog list, article page (looked up by slug), reading path, RSS feeds. The search route (`/api/articles/search`) is public in the backend and needs no permission |
 | Category, Tag | `find` | Filters and counts |
+| Author | `find` | Author of an article (`populate` of the article routes) |
 | About | `find` | About page |
 | Page | `find` | Section pages (`/api/pages/:slug`, looked up by slug through the filtered `find`; `findOne` is not granted and not needed) |
 | Site-setting | `find` | Site identity and modules (`/api/site`, RSS feeds, newsletter emails). Without it Strapi answers 403 and everything falls back to `app.config.ts` |
@@ -30,11 +31,11 @@ Create a **Custom** token, never Full Access or Read Only, with exactly these pe
 
 `update` on Subscriber is easy to miss: without it a subscription is created but confirming it fails with a 500.
 
-The token is a server-side secret. It must only be set as `NUXT_STRAPI_API_TOKEN`: plain `STRAPI_API_TOKEN` is ignored at runtime, and the server logs `Missing runtime settings` at startup when it is empty. Rotate it in Strapi (Settings → API Tokens) if it is ever printed or shared, and delete tokens nobody uses.
+The token is a server-side secret. It must only be set as `NUXT_STRAPI_API_TOKEN`: plain `STRAPI_API_TOKEN` is ignored at runtime, and the server logs `Missing runtime settings` at startup when it is empty. Rotate it in Strapi (Settings → API Tokens) if it is ever printed or shared, and delete tokens nobody uses. A static build (`npm run generate`, ADR 0006) reads content at build time, only from `NUXT_STRAPI_API_TOKEN` in the build environment, and **must be given the CMS `build` token** (`BUILD_API_TOKEN` in micelio-cms, created by `src/migrations/api-tokens.ts`), never the frontend token, which can read and delete subscribers. The `build` token is Custom and find-only: Article, Category, Tag, About, Site-setting, Page and Author `find`, and nothing else (no comments, no subscribers, no writes). The route list (`modules/static-routes.ts`) and the prerendered pages call the same read routes as the dynamic site (articles, pages, site settings, categories, tags, authors, about). The generated site holds no token and calls no API.
 
 ### What the public role must allow
 
-The anonymous calls need, and should only get: `find` on Article (sitemap); the fediverse stats and ranking routes are public by design in the backend. Subscribers and users must stay closed to the public role (403); check it with:
+The only anonymous calls are the fediverse stats and ranking routes, public by design in the backend (the sitemap now uses the API token like the feeds, so the public role needs no `find` on Article). Subscribers and users must stay closed to the public role (403); check it with:
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' https://api.bogdev.com.co/api/subscribers   # 403

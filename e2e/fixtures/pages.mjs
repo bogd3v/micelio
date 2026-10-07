@@ -214,5 +214,9 @@ export function findPages(query, getNestedValue) {
     return { status: 500, body: { data: null, error: { status: 500, name: 'InternalServerError', message: 'Internal Server Error' } } }
   }
   const data = pageFixtures.filter(page => (!slug || page.slug === slug) && (!locale || page.locale === locale))
-  return { status: 200, body: { data: data.slice(0, 1), meta: { pagination: { page: 1, pageSize: 1, pageCount: data.length, total: data.length } } } }
+  // Without a slug it lists (the static build reads every page); with one, the first match
+  const pageSize = slug ? 1 : Number(getNestedValue(query, ['pagination', 'pageSize']) ?? 25)
+  const page = Number(getNestedValue(query, ['pagination', 'page']) ?? 1)
+  const start = slug ? 0 : (page - 1) * pageSize
+  return { status: 200, body: { data: data.slice(start, start + pageSize), meta: { pagination: { page, pageSize, pageCount: slug ? data.length : Math.ceil(data.length / pageSize), total: data.length } } } }
 }
