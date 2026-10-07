@@ -315,7 +315,7 @@
     },
     "landing": {
       "ci": false,
-      "reason": "Measured on the demo's seeded section showcase (micelio-cms compose.landing.yml, theme bogota, 2026-10-07): home 16.1 KB HTML (16.3 KB on /es) and 23.9 KB of CSS gzip. HTML is the measured value plus 5 %; CSS is the gzip value plus 5 % (the check counts what is sent, brotli, so it has room); fonts and LCP stay at the static limits (#350). Not in the CI matrix: the mock site has no showcase, so run it with --base against the demo (docs/performance.md, Measuring a real site)",
+      "reason": "Measured on the demo's seeded section showcase (micelio-cms compose.landing.yml, theme bogota, 2026-10-07): home 16.1 KB HTML (16.3 KB on /es) and 23.9 KB of CSS gzip. HTML is the measured value plus 5 %; CSS is the 21.5 KB sent (brotli) plus 5 %, the same as static; fonts and LCP stay at the static limits (#350). Not in the CI matrix: the mock site has no showcase, so run it with --base against the demo (docs/performance.md, Measuring a real site)",
       "pages": [
         {
           "name": "home",
@@ -333,7 +333,7 @@
             "initialJsGzKb": 3.8,
             "strayRequests": 0,
             "lcpMs": 1500,
-            "cssKb": 25.1,
+            "cssKb": 22.6,
             "htmlKb": 16.9,
             "fontKb": 100,
             "thirdPartyRequests": 0,
@@ -352,7 +352,7 @@
             "initialJsGzKb": 3.8,
             "strayRequests": 0,
             "lcpMs": 1500,
-            "cssKb": 25.1,
+            "cssKb": 22.6,
             "htmlKb": 17.2,
             "fontKb": 100,
             "thirdPartyRequests": 0,
