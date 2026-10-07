@@ -1,0 +1,35 @@
+name: Install Playwright Chromium
+description: Restores the browser from the cache, installs the system libraries, and fails fast when the download or apt hangs. Run after npm ci.
+
+runs:
+  using: composite
+  steps:
+    - name: Read the Playwright version
+      id: version
+      shell: bash
+      run: |
+        version="$(node -p "require('./package-lock.json').packages['node_modules/playwright-core'].version")"
+        echo "${version}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
+        echo "version=${version}" >> "$GITHUB_OUTPUT"
+    - name: Cache Playwright browsers
+      id: cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.version.outputs.version }}-chromium
+    # Composite steps have no timeout-minutes: `timeout` bounds each attempt (5 minutes), two attempts
+    - name: Install Chromium and system dependencies
+      shell: bash
+      env:
+        CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
+      run: |
+        if [ "${CACHE_HIT}" = "true" ]; then
+          command=(npx playwright install-deps chromium)
+        else
+          command=(npx playwright install --with-deps chromium)
+        fi
+        for attempt in 1 2; do
+          if timeout 300 "${command[@]}"; then exit 0; fi
+          echo "::warning::Playwright install failed or timed out (attempt ${attempt})"
+        done
+        exit 1

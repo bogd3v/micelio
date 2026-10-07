@@ -84,6 +84,7 @@ jobs:
   e2e-tests:
     name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -95,7 +96,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        uses: ./.github/actions/playwright
       # The built server answers at once; nuxt dev compiled each route on demand and timed out
       - name: Build
         run: npm run build
@@ -118,6 +119,7 @@ jobs:
   e2e-static:
     name: E2E Static Site (Playwright)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -129,7 +131,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        uses: ./.github/actions/playwright
       - name: Generate the static site and run the tests
         run: npm run test:static
       - name: Upload Playwright report
@@ -178,6 +180,7 @@ jobs:
     name: Performance Budgets (${{ matrix.theme }}, ${{ matrix.mode }})
     needs: matrix
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
@@ -196,7 +199,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        uses: ./.github/actions/playwright
       # A static entry generates its own site inside the perf script (against the mock Strapi), so only dynamic needs a build
       - name: Build
         if: ${{ matrix.mode == 'dynamic' }}
