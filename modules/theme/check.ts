@@ -36,9 +36,9 @@ export interface ThemeReport {
   warnings: ThemeIssue[]
 }
 
-/** theme.css and the slots' stylesheets, minified when they parse, as one string. */
+/** theme.css, sections.css and the slots' stylesheets, minified when they parse, as one string. */
 function themeCss(dir: string): string {
-  const files = [join(dir, 'theme.css')]
+  const files = [join(dir, 'theme.css'), join(dir, 'sections.css')]
   const slots = join(dir, 'slots')
   if (existsSync(slots)) files.push(...readdirSync(slots).filter(file => file.endsWith('.css')).sort().map(file => join(slots, file)))
   return files.filter(existsSync).map((file) => {
@@ -59,7 +59,7 @@ function budgetIssues(theme: InstalledTheme): { errors: ThemeIssue[], warnings: 
   const errors: ThemeIssue[] = []
   const warnings: ThemeIssue[] = []
   const gzip = gzipSync(themeCss(theme.dir)).length
-  if (gzip > MAX_CSS_GZIP_BYTES) errors.push({ kind: 'budget', message: `theme CSS is ${kb(gzip)} gzipped (theme.css and slots), the limit is ${kb(MAX_CSS_GZIP_BYTES)}` })
+  if (gzip > MAX_CSS_GZIP_BYTES) errors.push({ kind: 'budget', message: `theme CSS is ${kb(gzip)} gzipped (theme.css, sections.css and slots), the limit is ${kb(MAX_CSS_GZIP_BYTES)}` })
 
   const fonts = theme.manifest.fonts ?? []
   const families = new Set(fonts.map(font => font.family))

@@ -127,11 +127,11 @@ export function checkCss(code: string, file: string, ctx: CssRuleContext): { pro
   return { problems: [...found].map(problem => `${file}: ${problem}`), imports }
 }
 
-/** The stylesheets a theme ships: theme.css, the font faces and slots/*.css. */
+/** The stylesheets a theme ships: theme.css, sections.css, the font faces and slots/*.css. */
 export function themeCssFiles(themeDir: string): string[] {
   const slots = join(themeDir, 'slots')
   return [
-    ...['theme.css', 'fonts.css', 'font-fallbacks.css'].map(file => join(themeDir, file)),
+    ...['theme.css', 'sections.css', 'fonts.css', 'font-fallbacks.css'].map(file => join(themeDir, file)),
     ...(existsSync(slots) ? readdirSync(slots).filter(file => file.endsWith('.css')).sort().map(file => join(slots, file)) : []),
   ].filter(file => existsSync(file))
 }

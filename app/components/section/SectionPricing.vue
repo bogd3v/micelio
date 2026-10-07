@@ -30,11 +30,11 @@ const hasActions = computed<boolean>(() => props.section.plans.some(plan => plan
           <tr v-for="(plan, index) in section.plans" :key="index" :class="['bd-section-item', 'bd-section-plan', { 'bd-section-plan-recommended': plan.recommended }]">
             <th scope="row" class="bd-section-item-title">
               {{ plan.name }}
-              <span v-if="plan.recommended" class="bd-meta"> · {{ t('sections.recommended') }}</span>
+              <span v-if="plan.recommended" class="bd-meta">{{ t('sections.recommended') }}</span>
             </th>
             <td class="bd-section-plan-price">
               <strong>{{ plan.price }}</strong>
-              <span v-if="plan.period"> {{ plan.period }}</span>
+              <span v-if="plan.period">{{ ` ${plan.period}` }}</span>
             </td>
             <td>
               <ul class="bd-section-plan-features">
@@ -54,7 +54,7 @@ const hasActions = computed<boolean>(() => props.section.plans.some(plan => plan
           <component :is="itemLevel" class="bd-section-item-title">{{ plan.name }}</component>
           <p class="bd-section-plan-price">
             <strong>{{ plan.price }}</strong>
-            <span v-if="plan.period"> {{ plan.period }}</span>
+            <span v-if="plan.period">{{ ` ${plan.period}` }}</span>
           </p>
           <ul class="bd-section-plan-features">
             <li v-for="(feature, at) in plan.features" :key="at">{{ feature }}</li>

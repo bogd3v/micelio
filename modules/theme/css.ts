@@ -43,6 +43,12 @@ export function setupCss(ctx: ThemeContext): void {
       return lines.length ? `${lines.join('\n')}\n` : ''
     },
   })
+  // Optional: the page sections' styling, imported by SectionRenderer so only pages with sections load it (ADR 0005, sections 4 and 11)
+  addTemplate({
+    filename: 'micelio/sections.css',
+    write: true,
+    getContents: () => (existsSync(join(dir, 'sections.css')) ? `@import "${join(dir, 'sections.css')}";\n` : ''),
+  })
   for (const [region, filename] of Object.entries(REGION_TEMPLATES) as Array<[LayoutRegion, string]>) {
     addTemplate({
       filename,

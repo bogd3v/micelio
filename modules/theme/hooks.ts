@@ -28,7 +28,9 @@ export interface Hooks {
 
 export function parseHooks(raw: unknown): Hooks {
   const hooks = HooksSchema.parse(raw)
-  return { classes: new Set(Object.keys(hooks.classes)), attributes: new Set(Object.keys(hooks.attributes)) }
+  // A state that is a bare class ("bd-card-featured") is a hook too: it is documented as one
+  const states = Object.values(hooks.classes).flatMap(hook => (typeof hook === 'string' ? [] : hook.states ?? [])).filter(state => /^bd-[a-z0-9-]+$/.test(state))
+  return { classes: new Set([...Object.keys(hooks.classes), ...states]), attributes: new Set(Object.keys(hooks.attributes)) }
 }
 
 /** Hooks of the core: <srcDir>/theme/hooks.json. */

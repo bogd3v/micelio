@@ -61,4 +61,5 @@ const knownSections = computed<PageSection[]>(() => filterKnown(props.sections))
 @import "~/assets/css/components/section-pricing.css" layer(bd.components);
 @import "~/assets/css/components/section-faq.css" layer(bd.components);
 @import "~/assets/css/animations/section-marquee.css" layer(bd.animations);
+@import "#build/micelio/sections.css" layer(bd.theme);
 </style>

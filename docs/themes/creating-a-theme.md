@@ -49,6 +49,7 @@ NUXT_PUBLIC_THEME=my-theme npm run build
 themes/my-theme/
   theme.json          contract, id, modes, roles, type, layout, fonts, images, slots
   theme.css           hand-written CSS for the public hooks (optional)
+  sections.css       CSS for the page sections (optional, loaded only by pages that have sections)
   fonts.css           the @font-face rules (optional)
   font-fallbacks.css  size-adjusted fallback faces (optional)
   fonts/              woff2 files and license texts
@@ -177,7 +178,7 @@ Rules (`modules/theme/island.ts`, `slots.ts`):
 
 ## 4. `theme.css`
 
-Plain CSS, imported into the layer `bd.theme`: after the core's components, layout and pages and before animations and utilities (`app/assets/css/main.css`). A theme rule restyles a hook without raising specificity. The same rules apply to `theme.css`, `fonts.css`, `font-fallbacks.css` and `slots/*.css`, following local `@import`s (`modules/theme/css-rules.ts`):
+Plain CSS, imported into the layer `bd.theme`: after the core's components, layout and pages and before animations and utilities (`app/assets/css/main.css`). A theme rule restyles a hook without raising specificity. The same rules apply to `theme.css`, `sections.css`, `fonts.css`, `font-fallbacks.css` and `slots/*.css`, following local `@import`s (`modules/theme/css-rules.ts`):
 
 - Select only public hooks, listed with their states and layout variants in [reference/hooks.md](reference/hooks.md): a `bd-*` class or a `data-*` attribute that is not in `app/theme/hooks.json` fails, and so does an attribute selector on `class` that matches `bd-`. Every other `bd-*` class is internal and may change in any release.
 - A theme's own attributes start with `data-<id>-`; its own classes should carry the id as prefix (`my-theme-mark`).
@@ -187,6 +188,10 @@ Plain CSS, imported into the layer `bd.theme`: after the core's components, layo
 - The generated role CSS goes through the same checks.
 
 Hooks are validated by the build and by `theme:check`. `npm run lint` does not check them.
+
+### `sections.css`
+
+Optional. The style of the page sections (the `bd-section-*` hooks and `data-section` / `data-variant`, [reference/hooks.md](reference/hooks.md)) goes here, not in `theme.css`: `theme.css` loads on every page, `sections.css` only on pages that render sections, in the same chunk as the core section CSS and after it, in the layer `bd.theme`. Same rules as `theme.css`, and its gzipped size counts toward the same 25 KB budget. Without it the sections still render, styled from your roles by the core. Every theme styles every section and variant (ADR 0005, section 11), and `/_theme` shows them.
 
 ## 5. Messages
 
@@ -220,7 +225,7 @@ npm run theme:check -- --list            # installed ids as JSON (CI uses it for
 MICELIO_THEME_DIRS=test/fixtures/themes npm run theme:check -- low-contrast
 ```
 
-The flags need the `--`: without it npm swallows them. The exit code is 1 when a theme has errors; warnings do not fail. The check runs what the build validates (contract, package files, CSS rules) plus the contrast matrix and the static budgets: theme CSS (`theme.css` and `slots/*.css`, minified) at most 25 KB gzipped, at most 2 font families, fonts as above. The build does not check contrast, so a theme in progress does not stop `nuxt dev`.
+The flags need the `--`: without it npm swallows them. The exit code is 1 when a theme has errors; warnings do not fail. The check runs what the build validates (contract, package files, CSS rules) plus the contrast matrix and the static budgets: theme CSS (`theme.css`, `sections.css` and `slots/*.css`, minified) at most 25 KB gzipped, at most 2 font families, fonts as above. The build does not check contrast, so a theme in progress does not stop `nuxt dev`.
 
 Real output from this repository:
 

@@ -1,5 +1,5 @@
 /* Pricing section: plans as cards, or as a table */
-[data-section="pricing"] .bd-section-plan {
+[data-section="pricing"][data-variant="cards"] .bd-section-plan {
     display: grid;
     align-content: start;
     gap: var(--space-3);
@@ -65,4 +65,9 @@
 
 [data-section="pricing"][data-variant="table"] .bd-section-plan-recommended {
     background: var(--accent-soft);
+}
+
+/* The recommended mark sits under the plan name */
+[data-section="pricing"][data-variant="table"] .bd-section-plan-recommended .bd-section-item-title .bd-meta {
+    display: block;
 }

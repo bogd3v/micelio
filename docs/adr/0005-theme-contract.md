@@ -83,6 +83,7 @@ A theme lives in `themes/<id>/` in the repository (publishing themes or Micelio 
 themes/bogota/
   theme.json        $schema, contract, id, name, modes, roles per mode, type, layout, fonts, slots, mermaid
   theme.css         hand-written: the theme's styling of public hooks and of its own slots
+  sections.css      hand-written: the theme's styling of the page sections (optional)
   fonts/            woff2 files and their licenses
   images/           images used by theme.css and slots (optional)
   i18n/             <locale>.json, messages under the theme.* namespace (optional)
@@ -201,6 +202,8 @@ The core provides, as progressive enhancement implemented in #245: cross-documen
 ### 11. Section catalog
 
 Every theme styles every section of the `page` collection and every variant (bogd3v/micelio-cms#75, #244), so content survives a theme change. A theme may add CSS-only variants of an existing section (the same markup with its own `data-variant` value, declared in `theme.json`), never new sections; variants that need different markup, and new sections, enter the core catalog with a version. Each section and its `data-variant` are public hooks. The specimen page `/_theme` (#238) shows the whole catalog and is part of the visual regression matrix.
+
+**Amendment (2026-10-07, #244):** a theme may ship `sections.css` next to `theme.css`. The core's section CSS is a separate chunk that only pages rendering sections load (`SectionRenderer`), so a theme's section rules in `theme.css` would add bytes to every page, the blog and the articles included. The module emits `sections.css` as the template `#build/micelio/sections.css` (empty when the file is missing), `SectionRenderer` imports it with `layer(bd.theme)` after the core section files, and the chunk repeats the layer order statement, so the cascade is the same as for `theme.css`. It is optional, passes the same hook and `url()` rules as `theme.css` (`css-rules.ts`), counts in the 25 KB gzip budget of section 9 together with `theme.css` and the slots, and a theme without it works (the core styles the sections from the roles). Adding an optional file with a core default stays in contract v1 (section 6). Rejected: `@layer`-scoped rules in `theme.css` (still shipped everywhere) and one file per section (more requests, no gain).
 
 ### 12. Zero JavaScript in themes
 
