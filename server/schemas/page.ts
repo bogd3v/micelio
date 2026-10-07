@@ -56,7 +56,7 @@ export interface PageContext {
   render: RenderMarkdown
   /** The site's public URL; a canonical URL must be on its origin */
   siteUrl?: string
-  /** Origins media may come from (the CSP `img-src` ones); paths on the site are always allowed */
+  /** Origins media may come from (the CSP `img-src` ones); site paths only under /uploads/ */
   mediaOrigins: string[]
 }
 
@@ -64,7 +64,8 @@ function sharedSchemas(context: PageContext) {
   const siteOrigin = context.siteUrl ? originOf(context.siteUrl) : null
   const mediaOrigins = new Set(context.mediaOrigins.flatMap(url => originOf(url) ?? []))
 
-  const mediaUrl = text.refine(url => sitePath.test(url) || (httpUrl.safeParse(url).success && mediaOrigins.has(originOf(url) ?? '')))
+  // Site paths only under /uploads/ (Strapi local uploads), without `..`; the frontend applies the same rule
+  const mediaUrl = text.refine(url => (sitePath.test(url) && url.startsWith('/uploads/') && !url.includes('..')) || (httpUrl.safeParse(url).success && mediaOrigins.has(originOf(url) ?? '')))
 
   const media = z.object({
     url: mediaUrl,

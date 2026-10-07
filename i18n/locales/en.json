@@ -795,5 +795,16 @@
       "error": "We could not unsubscribe you. Try again in a moment.",
       "blog": "Go to the blog"
     }
+  },
+  "sections": {
+    "recommended": "Recommended",
+    "video": "Your browser cannot play this video.",
+    "pricing": {
+      "caption": "Plans and prices",
+      "plan": "Plan",
+      "price": "Price",
+      "includes": "Includes",
+      "action": "Action"
+    }
   }
 }

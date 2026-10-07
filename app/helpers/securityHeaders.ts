@@ -52,6 +52,8 @@ export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): st
     ['script-src', ['\'self\'', ...hashes]],
     ['style-src', ['\'self\'', '\'unsafe-inline\'']],
     ['img-src', ['\'self\'', 'data:', 'blob:', ...origins(options.imageOrigins)]],
+    // Videos of page sections (<video>) come from the same origins as the images
+    ['media-src', ['\'self\'', ...origins(options.imageOrigins)]],
     ['font-src', ['\'self\'']],
     ['connect-src', ['\'self\'']],
     ['frame-src', FRAME_ORIGINS],

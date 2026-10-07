@@ -155,8 +155,7 @@ describe('hooks.json', () => {
   it('names only classes the core uses', () => {
     const sources = ['app/assets/css', 'app/components', 'app/pages', 'app/layouts', 'app/theme', 'app/composables', 'themes/bogota']
     const text = sources.map(dir => readTree(join(process.cwd(), dir))).join('\n')
-    // The section hooks are declared before their components (#244, PR 2); drop this filter when PR 3 renders them
-    const unused = [...hooks.classes].filter(name => !/^bd-section(-|$)/.test(name)).filter(name => !new RegExp(`${name}(?![\\w-])`).test(text))
+    const unused = [...hooks.classes].filter(name => !new RegExp(`${name}(?![\\w-])`).test(text))
     expect(unused).toEqual([])
   })
 

@@ -10,6 +10,8 @@ const props = withDefaults(defineProps<{
   status?: NewsletterStatus
   message?: string
   id?: string
+  /** The page already heads the form: no eyebrow and no title */
+  hideHeading?: boolean
 }>(), {
   title: undefined,
   description: undefined,
@@ -19,6 +21,7 @@ const props = withDefaults(defineProps<{
   status: 'idle',
   message: undefined,
   id: 'bd-news-email',
+  hideHeading: false,
 })
 
 const emit = defineEmits<{
@@ -65,9 +68,9 @@ watch(() => [props.status, props.message] as const, ([status, message]) => {
 
 <template>
   <form class="bd-news" novalidate :aria-busy="submitting" @submit.prevent="handleSubmit">
-    <span class="bd-eyebrow bd-news-eyebrow">{{ eyebrowText }}</span>
-    <h3>{{ titleText }}</h3>
-    <p>{{ descriptionText }}</p>
+    <span v-if="!hideHeading" class="bd-eyebrow bd-news-eyebrow">{{ eyebrowText }}</span>
+    <h3 v-if="!hideHeading">{{ titleText }}</h3>
+    <p v-if="!hideHeading || description">{{ descriptionText }}</p>
     <label :for="id" class="bd-eyebrow bd-news-label">{{ t('bd.newsletter.label') }}</label>
     <div class="bd-news-row">
       <input

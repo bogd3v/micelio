@@ -39,6 +39,10 @@ describe('contentSecurityPolicy', () => {
     expect(directives.get('img-src')).toEqual(['\'self\'', 'data:', 'blob:', 'https://api.bogdev.com.co', 'https://resources.bogdev.com.co'])
   })
 
+  it('allows videos from the site and the media origins, and nothing else', () => {
+    expect(directives.get('media-src')).toEqual(['\'self\'', 'https://api.bogdev.com.co', 'https://resources.bogdev.com.co'])
+  })
+
   it('blocks framing, plugins and foreign forms', () => {
     expect(directives.get('frame-ancestors')).toEqual(['\'none\''])
     expect(directives.get('object-src')).toEqual(['\'none\''])

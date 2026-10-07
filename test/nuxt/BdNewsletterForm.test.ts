@@ -28,6 +28,15 @@ describe('BdNewsletterForm', () => {
     received.length = 0
   })
 
+  it('hides its eyebrow and title when the page heads it, keeping a given description', async () => {
+    const wrapper = await mountSuspended(BdNewsletterForm, { props: { hideHeading: true, description: 'Once a season.' } })
+    expect(wrapper.find('h3').exists()).toBe(false)
+    expect(wrapper.find('.bd-news-eyebrow').exists()).toBe(false)
+    expect(wrapper.get('p').text()).toBe('Once a season.')
+    const bare = await mountSuspended(BdNewsletterForm, { props: { hideHeading: true } })
+    expect(bare.find('form > p:not(.bd-news-msg)').exists()).toBe(false)
+  })
+
   it('renders the default copy with an associated label and a live region', async () => {
     const wrapper = await mountSuspended(BdNewsletterForm)
     expect(wrapper.get('h3').text()).toBe('Get the latest articles in your inbox')

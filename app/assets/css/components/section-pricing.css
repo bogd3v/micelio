@@ -1,0 +1,68 @@
+/* Pricing section: plans as cards, or as a table */
+[data-section="pricing"] .bd-section-plan {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3);
+}
+
+[data-section="pricing"][data-variant="cards"] .bd-section-plan-recommended {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-raised);
+}
+
+.bd-section-plan-price {
+    margin: 0;
+    color: var(--ink-muted);
+    font: var(--text-body);
+}
+
+.bd-section-plan-price strong {
+    color: var(--ink);
+    font: var(--text-heading-1);
+    letter-spacing: var(--tracking-heading-1);
+}
+
+.bd-section-plan-features {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font: var(--text-body);
+}
+
+.bd-section-plan-features li::before {
+    content: "✓ ";
+    color: var(--success);
+}
+
+[data-section="pricing"] .bd-section-plan > :last-child:is(a) {
+    justify-self: start;
+}
+
+/* Table: one row per plan */
+[data-section="pricing"][data-variant="table"] table.bd-section-items {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    font: var(--text-body);
+}
+
+[data-section="pricing"][data-variant="table"] :is(th, td) {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--line);
+    text-align: start;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+[data-section="pricing"][data-variant="table"] thead th {
+    color: var(--ink-muted);
+    font: var(--text-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+}
+
+[data-section="pricing"][data-variant="table"] .bd-section-plan-recommended {
+    background: var(--accent-soft);
+}
