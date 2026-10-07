@@ -1,4 +1,5 @@
 import type { ModuleRequirements } from './modules'
+import { validFormAction } from './newsletterForm'
 import { isStaticMode, parseSiteMode } from './siteMode'
 import type { SiteMode } from './siteMode'
 
@@ -85,6 +86,6 @@ export function moduleRequirements(config: CheckedRuntimeConfig): ModuleRequirem
   return {
     smtp: SMTP_SETTINGS.every(key => !empty(config[key])),
     fediverse: missing(config.public, OPTIONAL_PUBLIC_RUNTIME_SETTINGS).length === 0,
-    formAction: !empty(config.public?.newsletterFormAction),
+    formAction: validFormAction(config.public?.newsletterFormAction) !== '',
   }
 }

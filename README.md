@@ -70,7 +70,7 @@ All variables are read when the server starts, so the same Docker image works in
 | `NUXT_PUBLIC_FEDIVERSE_ACTOR_URL` | Its ActivityPub actor, e.g. `https://cms.example.org/fediverse/user/blog` | Fediverse only |
 | `NUXT_PUBLIC_FEDIVERSE_ARTICLES_URL` | Base URL of the federated articles, e.g. `https://cms.example.org/fediverse/articles` | Fediverse only |
 | `NUXT_PUBLIC_SITE_MODE` | `dynamic` (default), `static` or `landing`, read at build time ([ADR 0006](docs/adr/0006-site-modes.md)). Static and landing turn off comments, accounts, drafts and the fediverse; a different value at runtime stops the server | No |
-| `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION` | URL of the newsletter provider's form endpoint. In `static` and `landing` the newsletter is on only when it is set | Static modes, newsletter only |
+| `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION` | `https:` URL of the newsletter provider's form endpoint (e.g. Buttondown's embed-subscribe URL), read at build time. In `static` and `landing` the newsletter is on only when it is set and valid; its origin is added to `form-action` ([guide](docs/static-mode.md#newsletter)) | Static modes, newsletter only |
 | `NUXT_PUBLIC_NEWSLETTER_FORM_FIELD` | The provider's name for the email field (default: `email`) | Static modes, newsletter only |
 | `NUXT_PUBLIC_UMAMI_WEBSITE_ID` | Umami website ID. Empty: no tracker is loaded | Analytics only |
 | `NUXT_UMAMI_URL` | Internal Umami URL the proxy forwards to (e.g. `http://<umami-service>:3000`). Empty: no proxy | Analytics only |

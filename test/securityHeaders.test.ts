@@ -21,6 +21,23 @@ describe('inlineScripts', () => {
   })
 })
 
+describe('contentSecurityPolicy formOrigins', () => {
+  const base = { scriptHashes: [], imageOrigins: [] }
+  const formAction = (options: Partial<Parameters<typeof contentSecurityPolicy>[0]> = {}): string | undefined =>
+    contentSecurityPolicy({ ...base, ...options }).split('; ').find(directive => directive.startsWith('form-action'))
+
+  it('keeps form-action on self by default, byte-identical to before', () => {
+    expect(formAction()).toBe('form-action \'self\'')
+    expect(contentSecurityPolicy({ ...base, formOrigins: [] })).toBe(contentSecurityPolicy(base))
+  })
+
+  it('adds origins only, deduplicated, and drops what is not a URL', () => {
+    const origins = ['https://buttondown.com/api/emails/embed-subscribe/x', 'https://buttondown.com', 'nope', '']
+    expect(formAction({ formOrigins: origins })).toBe('form-action \'self\' https://buttondown.com')
+    expect(contentSecurityPolicy({ ...base, meta: true, formOrigins: origins })).toContain('form-action \'self\' https://buttondown.com;')
+  })
+})
+
 describe('contentSecurityPolicy', () => {
   const policy = contentSecurityPolicy({
     scriptHashes: ['abc=', 'abc=', 'def='],

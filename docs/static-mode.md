@@ -28,7 +28,8 @@ Settings, Secrets and variables, Actions.
 | `NUXT_PUBLIC_SITE_URL` | variable | yes | Public URL of the site (canonical links, feed, sitemap) |
 | `NUXT_MEDIA_URL` | variable | if media is on another origin | Media origin, as in `.env.example` |
 | `NUXT_PUBLIC_THEME` | variable | no | Theme id (default `bogota`) |
-| `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION` | variable | no | Provider form endpoint; the newsletter is off when empty |
+| `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION` | variable | no | Provider form endpoint (`https:`); the newsletter is off when empty or invalid. See [Newsletter](#newsletter) |
+| `NUXT_PUBLIC_NEWSLETTER_FORM_FIELD` | variable | no | The provider's name for the email field (default `email`) |
 | `CLOUDFLARE_PAGES_PROJECT` | variable | yes | Pages project name |
 | `STRAPI_BUILD_TOKEN` | secret | yes | The CMS `build` token, mapped to `NUXT_STRAPI_API_TOKEN` in the generate step only |
 | `CLOUDFLARE_API_TOKEN` | secret | yes | Token with Cloudflare Pages: Edit and nothing else |
@@ -62,6 +63,21 @@ Optional: `REBUILD_HOOK_DEBOUNCE_MS`, `REBUILD_HOOK_RETRIES`, `REBUILD_HOOK_RETR
 1. Create a Pages project with **Direct Upload** (no Git integration: GitHub builds, Cloudflare only serves). The project and its domain are created in bogdev-infra (Terraform) for the reference deployment.
 2. Create an API token with the permission *Account, Cloudflare Pages, Edit* only, and note the account id.
 3. Set the variables and secrets above and run the workflow once by hand.
+
+## Newsletter
+
+A static site has no server, so the newsletter is a plain HTML form that posts to an external provider (ADR 0006, section 5). It works with JavaScript off.
+
+1. Create the list at the provider. The reference is [Buttondown](https://buttondown.com): its embeddable form posts to `https://buttondown.com/api/emails/embed-subscribe/<your-newsletter>` with the email in a field named `email` and a hidden `embed=1`, and the subscriber confirms from their inbox (double opt-in is a Buttondown setting). The build adds `embed=1` by itself when the action is on `buttondown.com`. Check these against [Buttondown's embed documentation](https://docs.buttondown.com/) when you set it up: the form is theirs, not ours.
+2. Set `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION` (a repository variable, read at build time) to that URL, and `NUXT_PUBLIC_NEWSLETTER_FORM_FIELD` if the provider does not call the field `email`. Any provider that accepts a form POST works (Listmonk, Mailchimp, ...); if it needs other hidden fields, they are not configurable yet (open an issue).
+3. Rebuild. Every newsletter placement (home, article footer, the newsletter section of a page) becomes `<form method="post" action="...">` with a labelled `type="email"` field (`required`, `autocomplete="email"`), a submit button and a line saying where the email goes, with a link to the privacy notice. There is no client validation beyond those attributes and no `target`: without JavaScript a popup cannot open, so the provider's confirmation page replaces the page, and the visitor comes back with the browser's back button.
+4. The provider's origin is added to `form-action` in `_headers` and in the meta CSP, and the privacy page names its host ("your email goes to buttondown.com").
+
+Rules:
+
+- The action must be an `https:` URL without credentials (`http:` only for `localhost`, `127.0.0.1` and `[::1]`, for tests). Anything else is treated as not set: the newsletter module is off and the build prints a warning.
+- Chrome also checks `form-action` on the redirect that follows the post. The provider's answer must stay on its own origin or come back to this site; a provider that redirects to a third origin would be blocked until that origin is allowed (no setting for it yet).
+- Dynamic sites are unchanged: the newsletter there is Strapi + SMTP (`/api/newsletter`).
 
 ## Headers, 404 and analytics
 

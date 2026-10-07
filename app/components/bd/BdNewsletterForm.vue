@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { NewsletterStatus } from '~/interfaces'
+import { formFieldName, hiddenFields, providerHost, validFormAction } from '~/helpers/newsletterForm'
+import type { HiddenField } from '~/helpers/newsletterForm'
 
 const props = withDefaults(defineProps<{
   title?: string
@@ -30,6 +32,15 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { subscribe } = useNewsletter()
+const { isStatic } = useStaticSite()
+const localizePath = useLocalePath()
+const { newsletterFormAction, newsletterFormField } = useRuntimeConfig().public
+
+// Static builds: a plain form post to the provider, no Vue (ADR 0006, section 5)
+const providerAction = computed<string>(() => validFormAction(newsletterFormAction))
+const providerField = computed<string>(() => formFieldName(newsletterFormField))
+const providerName = computed<string>(() => providerHost(providerAction.value))
+const providerHidden = computed<HiddenField[]>(() => hiddenFields(providerAction.value))
 
 const email = ref('')
 const submitting = ref(false)
@@ -67,7 +78,23 @@ watch(() => [props.status, props.message] as const, ([status, message]) => {
 </script>
 
 <template>
-  <form class="bd-news" novalidate :aria-busy="submitting" @submit.prevent="handleSubmit">
+  <!-- No target: without JS a popup cannot open; the provider's confirmation page replaces this one -->
+  <form v-if="isStatic" class="bd-news" method="post" :action="providerAction">
+    <span v-if="!hideHeading" class="bd-eyebrow bd-news-eyebrow">{{ eyebrowText }}</span>
+    <h3 v-if="!hideHeading">{{ titleText }}</h3>
+    <p v-if="!hideHeading || description">{{ descriptionText }}</p>
+    <label :for="id" class="bd-eyebrow bd-news-label">{{ t('bd.newsletter.label') }}</label>
+    <div class="bd-news-row">
+      <input :id="id" class="bd-input" type="email" :name="providerField" autocomplete="email" required :placeholder="placeholderText">
+      <input v-for="field in providerHidden" :key="field.name" type="hidden" :name="field.name" :value="field.value">
+      <BdButton type="submit" variant="accent" arrow>{{ buttonText }}</BdButton>
+    </div>
+    <i18n-t keypath="bd.newsletter.external" tag="p" scope="global" class="bd-news-note">
+      <template #provider><strong>{{ providerName }}</strong></template>
+      <template #link><NuxtLink :to="localizePath('/privacy')">{{ t('bd.newsletter.privacyLink') }}</NuxtLink></template>
+    </i18n-t>
+  </form>
+  <form v-else class="bd-news" novalidate :aria-busy="submitting" @submit.prevent="handleSubmit">
     <span v-if="!hideHeading" class="bd-eyebrow bd-news-eyebrow">{{ eyebrowText }}</span>
     <h3 v-if="!hideHeading">{{ titleText }}</h3>
     <p v-if="!hideHeading || description">{{ descriptionText }}</p>

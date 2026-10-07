@@ -7,6 +7,8 @@ export interface ContentSecurityPolicyOptions {
   imageBlobs?: boolean
   /** `'wasm-unsafe-eval'` in `script-src`, for Pagefind's WebAssembly (default false: static builds only; ADR 0004 amendment). */
   wasmEval?: boolean
+  /** Extra `form-action` origins: the static newsletter provider (ADR 0004, amendment). Default none. */
+  formOrigins?: string[]
 }
 
 const SCRIPT_PATTERN = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
@@ -66,7 +68,7 @@ export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): st
     // `report-uri` and `sandbox` are never emitted; a meta ignores `frame-ancestors`
     ...(options.meta ? [] : [['frame-ancestors', ['\'none\'']] as [string, string[]]]),
     ['base-uri', ['\'self\'']],
-    ['form-action', ['\'self\'']],
+    ['form-action', ['\'self\'', ...origins(options.formOrigins ?? [])]],
     ['object-src', ['\'none\'']],
   ]
   return directives.map(([name, values]) => [name, ...values].join(' ')).join('; ')
