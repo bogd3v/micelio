@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
   let response: { data?: unknown }
   try {
-    response = await strapiFetch<{ data?: unknown }>(`/api/about?${params}`)
+    response = await strapiFetch<{ data?: unknown }>(`/api/about?${params}`, { event })
   } catch (error: unknown) {
     console.error('Strapi fetch about error:', asUpstreamError(error).data || error)
     throw createError({

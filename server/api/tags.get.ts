@@ -27,7 +27,7 @@ export default defineEventHandler(async (event): Promise<TagCount[]> => {
       slug?: string | null
       articles?: Array<{ id: number }>
     }>
-  }>(`/api/tags?${params}`)
+  }>(`/api/tags?${params}`, { event })
 
   return sortTags(response.data.flatMap((tag) => {
     const count = tag.articles?.length || 0

@@ -22,11 +22,13 @@ export default defineEventHandler(async (event): Promise<Comment> => {
 
   try {
     const response = await strapiFetch<Comment>(url, {
+      event,
       method: 'POST',
       body: { ...comment, locale },
     })
     return toPublicComment(response)
   } catch (error: unknown) {
+    rethrowUpstreamRateLimit(event, error)
     console.error('Strapi comment error:', asUpstreamError(error).data || error)
     throw createError({
       statusCode: asUpstreamError(error).response?.status || 500,

@@ -9,20 +9,22 @@ export default defineEventHandler(async (event): Promise<AuthUserResponse> => {
 
   let jwt: string
   try {
-    const response = await $fetch<{ jwt: string, user: StrapiAuthUser }>(strapiUrl('/api/auth/local'), {
+    const response = await strapiFetch<{ jwt: string, user: StrapiAuthUser }>('/api/auth/local', {
+      event, timeout: AUTH_TIMEOUT_MS,
+      auth: 'none',
       method: 'POST',
       body: { identifier, password },
     })
     jwt = response.jwt
   } catch (error: unknown) {
-    throw strapiAuthFailure(error, { invalidInput: 'invalidCredentials' })
+    throw strapiAuthFailure(event, error, { invalidInput: 'invalidCredentials' })
   }
 
   try {
-    const user = await fetchStrapiMe(jwt)
+    const user = await fetchStrapiMe(event, jwt)
     setSessionCookie(event, jwt)
     return { user: toPublicUser(user) }
   } catch (error: unknown) {
-    throw strapiAuthFailure(error)
+    throw strapiAuthFailure(event, error)
   }
 })

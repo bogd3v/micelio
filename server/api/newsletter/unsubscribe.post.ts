@@ -20,9 +20,10 @@ export default defineEventHandler(async (event): Promise<UnsubscribeResponse> =>
   }
 
   try {
-    const subscriber = await findSubscriber('unsubscribeToken', token)
-    if (subscriber) await deleteSubscriber(subscriber.documentId)
+    const subscriber = await findSubscriber(event, 'unsubscribeToken', token)
+    if (subscriber) await deleteSubscriber(event, subscriber.documentId)
   } catch (error: unknown) {
+    rethrowUpstreamRateLimit(event, error)
     console.error('Newsletter unsubscribe error:', error)
     throw createError({
       statusCode: 502,

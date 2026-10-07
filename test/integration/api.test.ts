@@ -26,6 +26,8 @@ process.env.NUXT_SMTP_USER = 'test'
 process.env.NUXT_SMTP_PASS = 'test'
 process.env.NUXT_NEWSLETTER_FROM = 'BogDev <no-reply@bogdev.test>'
 process.env.NUXT_STRAPI_API_TOKEN = 'test-api-token'
+const FORWARDER_SECRET = 'forwarder-secret-0123456789-abcdefghij'
+process.env.NUXT_STRAPI_FORWARDER_SECRET = FORWARDER_SECRET
 process.env.NUXT_PUBLIC_SITE_URL = SITE_URL
 // Module switches must take effect at once in these tests
 process.env.NUXT_SITE_CACHE_SECONDS = '0'
@@ -1363,6 +1365,28 @@ describe('Umami', () => {
     expect(request?.headers['user-agent']).toBe('Mozilla/5.0 Test')
   })
 
+  it('replaces every client address header with the resolved one', async () => {
+    await fetch('/api/bd', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-forwarded-for': '6.6.6.6, 203.0.113.8',
+        'x-real-ip': '7.7.7.7',
+        'cf-connecting-ip': '8.8.8.8',
+        'true-client-ip': '9.9.9.9',
+        'x-client-ip': '5.5.5.5',
+        'forwarded': 'for=4.4.4.4',
+        'cookie': 'bd_session=secret-session',
+        'authorization': 'Bearer secret',
+      },
+      body: '{}',
+    })
+    const headers = umami.requests[0]?.headers
+    expect(headers?.['x-forwarded-for']).toBe('203.0.113.8')
+    expect(headers?.['x-real-ip']).toBe('203.0.113.8')
+    for (const name of ['cf-connecting-ip', 'true-client-ip', 'x-client-ip', 'forwarded', 'cookie', 'authorization']) expect(headers?.[name]).toBeUndefined()
+  })
+
   it('leaves the other API routes alone', async () => {
     await $fetch('/api/categories', { query: { locale: 'en' } })
     expect(umami.requests).toEqual([])
@@ -1791,5 +1815,174 @@ describe('theme specimen (built only with MICELIO_SPECIMEN=1)', () => {
         expect(source.includes(needle), `${file} contains ${needle}`).toBe(false)
       }
     }
+  })
+})
+
+describe('visitor address for the CMS rate limits', () => {
+  const relation = 'api::article.article:doc-vue'
+  const visitor = { 'x-forwarded-for': '6.6.6.6, 203.0.113.77' }
+  const commentBody = { author: { name: 'Ana', email: 'ana@example.com' }, content: 'Hello' }
+
+  async function signIn(identifier: string, password: string): Promise<string> {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'origin': SITE_URL, 'content-type': 'application/json' },
+      body: JSON.stringify({ identifier, password }),
+    })
+    expect(response.status).toBe(200)
+    return response.headers.getSetCookie().find(cookie => cookie.startsWith('bd_session='))!.split(';')[0]!
+  }
+
+  beforeEach(() => {
+    mock.failures.rateLimited = false
+    mock.failures.retryAfter = '42'
+    mock.failures.rateLimitedReads = []
+  })
+
+  it('names the visitor, not the client-written entry, on reads and writes', async () => {
+    await $fetch('/api/comments/flat', { query: { relation }, headers: visitor })
+    await $fetch('/api/posts', { query: { locale: 'en' }, headers: visitor })
+    const forwarded = mock.requests.map(request => request.forwarder)
+    expect(forwarded.length).toBeGreaterThan(1)
+    for (const entry of forwarded) expect(entry).toEqual({ secret: FORWARDER_SECRET, ip: '203.0.113.77' })
+  })
+
+  it('forwards the address on token-less auth calls too', async () => {
+    await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'origin': SITE_URL, 'content-type': 'application/json', ...visitor },
+      body: JSON.stringify({ email: 'reader@example.com' }),
+    })
+    const call = mock.requests.find(request => request.path === '/api/auth/forgot-password')
+    expect(call?.authorization).toBeUndefined()
+    expect(call?.forwarder).toEqual({ secret: FORWARDER_SECRET, ip: '203.0.113.77' })
+  })
+
+  it('does not forward for the cached site settings or the sitemap', async () => {
+    await $fetch('/api/site', { query: { locale: 'en' }, headers: visitor })
+    await $fetch('/sitemap.xml', { headers: visitor })
+    expect(mock.siteRequests.length).toBeGreaterThan(0)
+    for (const request of [...mock.siteRequests, ...mock.requests]) expect(request.forwarder).toBeUndefined()
+  })
+
+  it('passes a CMS 429 on to the browser with its Retry-After on comments', async () => {
+    mock.failures.rateLimited = true
+    const response = await fetch(`/api/comments?relation=${relation}`, {
+      method: 'POST',
+      headers: { 'origin': SITE_URL, 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.78' },
+      body: JSON.stringify(commentBody),
+    })
+    expect(response.status).toBe(429)
+    expect(response.headers.get('retry-after')).toBe('42')
+  })
+
+  it('passes a CMS 429 on to the browser with its Retry-After on the newsletter', async () => {
+    mock.failures.rateLimited = true
+    const response = await fetch('/api/newsletter/subscribe', {
+      method: 'POST',
+      headers: { 'origin': SITE_URL, 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.79' },
+      body: JSON.stringify({ email: 'limited@example.com' }),
+    })
+    expect(response.status).toBe(429)
+    expect(response.headers.get('retry-after')).toBe('42')
+  })
+
+  it('names the visitor on comment writes, newsletter calls and calls made with a session', async () => {
+    const headers = { 'origin': SITE_URL, 'content-type': 'application/json', 'x-forwarded-for': '6.6.6.6, 203.0.113.80' }
+    await fetch(`/api/comments?relation=${relation}`, { method: 'POST', headers, body: JSON.stringify(commentBody) })
+    await fetch('/api/newsletter/subscribe', { method: 'POST', headers, body: JSON.stringify({ email: 'fwd@example.com' }) })
+    const cookie = await signIn(testUsers.reader.username, testUsers.reader.password)
+    mock.requests.length = 0
+    await fetch('/api/auth/me', { headers: { cookie, 'x-forwarded-for': '203.0.113.80' } })
+    const seen = (path: string, method: string) => mock.requests.find(request => request.path.startsWith(path) && request.method === method)
+    expect(seen('/api/users/me', 'GET')?.forwarder).toEqual({ secret: FORWARDER_SECRET, ip: '203.0.113.80' })
+    expect(seen('/api/users/me', 'GET')?.authorization).toMatch(/^Bearer mock-jwt/)
+    const written = await fetch(`/api/comments?relation=${relation}`, { method: 'POST', headers, body: JSON.stringify(commentBody) })
+    expect(written.status).toBeLessThan(500)
+    expect(seen(`/api/comments/${relation}`, 'POST')?.forwarder).toEqual({ secret: FORWARDER_SECRET, ip: '203.0.113.80' })
+    await fetch('/api/newsletter/subscribe', { method: 'POST', headers, body: JSON.stringify({ email: 'fwd2@example.com' }) })
+    expect(seen('/api/subscribers', 'GET')?.forwarder).toEqual({ secret: FORWARDER_SECRET, ip: '203.0.113.80' })
+  })
+
+  it('carries the visitor through the server-side render, which calls /api in process', async () => {
+    const cookie = await signIn(testUsers.reader.username, testUsers.reader.password)
+    mock.requests.length = 0
+    const page = await fetch('/blog', { headers: { 'cookie': cookie, 'x-forwarded-for': '6.6.6.6, 203.0.113.81' } })
+    expect(page.status).toBe(200)
+    const articles = mock.requests.filter(request => request.path === '/api/articles')
+    const me = mock.requests.filter(request => request.path === '/api/users/me')
+    expect(articles.length).toBeGreaterThan(0)
+    expect(me.length).toBeGreaterThan(0)
+    for (const request of [...articles, ...me]) expect(request.forwarder).toEqual({ secret: FORWARDER_SECRET, ip: '203.0.113.81' })
+  })
+
+  it('ignores the internal headers on a request from outside, with a wrong nonce or none', async () => {
+    const spoof = { 'x-micelio-internal-ip': '9.9.9.9', 'x-forwarded-for': '203.0.113.82' }
+    await fetch(`/api/comments/flat?relation=${relation}`, { headers: { ...spoof, 'x-micelio-internal-nonce': 'guess' } })
+    await fetch(`/api/comments/flat?relation=${relation}`, { headers: spoof })
+    const ips = mock.requests.map(request => request.forwarder?.ip)
+    expect(ips).toEqual(['203.0.113.82', '203.0.113.82'])
+  })
+
+  it('passes the Retry-After of a CMS 429 on the auth routes, clamped to an hour', async () => {
+    mock.failures.rateLimited = true
+    const post = (path: string, body: unknown) => fetch(path, {
+      method: 'POST',
+      headers: { 'origin': SITE_URL, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const login = await post('/api/auth/login', { identifier: 'someone', password: 'password-1' })
+    expect(login.status).toBe(429)
+    expect(login.headers.get('retry-after')).toBe('42')
+    mock.failures.retryAfter = '99999'
+    const forgot = await post('/api/auth/forgot-password', { email: 'someone@example.com' })
+    expect(forgot.status).toBe(429)
+    expect(forgot.headers.get('retry-after')).toBe('3600')
+    const comment = await fetch(`/api/comments?relation=${relation}`, {
+      method: 'POST',
+      headers: { 'origin': SITE_URL, 'content-type': 'application/json' },
+      body: JSON.stringify(commentBody),
+    })
+    expect(comment.headers.get('retry-after')).toBe('3600')
+    expect(comment.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('answers a CMS 429 on the post list with 429, Retry-After and no cache', async () => {
+    mock.failures.rateLimitedReads = ['/api/articles']
+    const response = await fetch('/api/posts?locale=en')
+    expect(response.status).toBe(429)
+    expect(response.headers.get('retry-after')).toBe('42')
+    expect(response.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('answers a CMS 429 on the fediverse stats routes with 429', async () => {
+    mock.failures.rateLimitedReads = ['/api/fediverse/articles/']
+    const one = await fetch('/api/fediverse/stats/doc-vue')
+    const many = await fetch('/api/fediverse/stats?documentIds=doc-vue')
+    expect([one.status, many.status]).toEqual([429, 429])
+    expect(one.headers.get('retry-after')).toBe('42')
+    expect(one.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('degrades search and the fediverse fallbacks without caching them while the CMS limits', async () => {
+    mock.failures.rateLimitedReads = ['/api/articles/search']
+    const search = await fetch('/api/search?q=vue&locale=en')
+    expect(search.status).toBe(200)
+    expect(await search.json()).toEqual([])
+    expect(search.headers.get('cache-control')).toBe('no-store')
+
+    mock.failures.rateLimitedReads = ['/api/fediverse/articles/']
+    const ranking = await fetch('/api/posts?locale=en&sort=fediverse')
+    expect(ranking.status).toBe(200)
+    expect(ranking.headers.get('cache-control')).toBe('no-store')
+    const stats = await fetch('/api/posts?locale=en&sort=fediverse&search=vue&content=1')
+    expect(stats.status).toBe(200)
+    expect(stats.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('does not forward a visitor to the CMS from a request without a socket address or valid nonce', async () => {
+    // The same bytes an in-process call would carry, sent from outside with a guessed nonce
+    await fetch(`/api/comments/flat?relation=${relation}`, { headers: { 'x-micelio-internal-ip': '9.9.9.9', 'x-micelio-internal-nonce': '0'.repeat(64) } })
+    expect(mock.requests.map(request => request.forwarder?.ip)).not.toContain('9.9.9.9')
   })
 })

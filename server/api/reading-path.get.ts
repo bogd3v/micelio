@@ -18,7 +18,7 @@ export default defineEventHandler(async (event): Promise<ReadingPath> => {
       pagination: { page: 1, pageSize: MAX_STEPS },
       locale,
     }, { skipNulls: true })
-    const response = await strapiFetch<StrapiPaginatedResponse<RawStrapiArticle[]>>(`/api/articles?${params}`)
+    const response = await strapiFetch<StrapiPaginatedResponse<RawStrapiArticle[]>>(`/api/articles?${params}`, { event })
     return response.data.map(article => ({ documentId: article.documentId, slug: article.slug, title: article.title }))
   }
 

@@ -26,7 +26,7 @@ export default defineEventHandler(async (event): Promise<CategoryCount[]> => {
       slug?: string | null
       articles?: Array<{ id: number }>
     }>
-  }>(`/api/categories?${params}`)
+  }>(`/api/categories?${params}`, { event })
 
   return response.data
     .map(category => ({

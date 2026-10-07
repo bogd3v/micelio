@@ -16,10 +16,11 @@ export default defineEventHandler(async (event) => {
   const url = `/api/comments/${relation}${params ? '?' + params : ''}`
 
   try {
-    const response = await strapiFetch<Comment[] | CommentsResponse>(url)
+    const response = await strapiFetch<Comment[] | CommentsResponse>(url, { event })
     if (Array.isArray(response)) return toPublicComments(response)
     return { ...response, data: toPublicComments(response?.data ?? []) }
   } catch (error: unknown) {
+    rethrowUpstreamRateLimit(event, error)
     console.error('Strapi fetch comments error:', asUpstreamError(error).data || error)
     throw createError({
       statusCode: asUpstreamError(error).response?.status || 500,

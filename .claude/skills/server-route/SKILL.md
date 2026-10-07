@@ -17,8 +17,9 @@ Every route follows the same contract. Skipping a step has already caused produc
 
 ## 2. Strapi
 
-- Only `strapiFetch<T>(path, { method, query, body, timeout })` (adds the API token) or `$fetch(strapiUrl(path))` for anonymous calls (fediverse, sitemap). Never build the URL or `Authorization` by hand.
-- User or editor calls send their own JWT (`fetchStrapiMe`, `fetchAsEditor`), never the API token.
+- Only `strapiFetch<T>(path, { event, method, query, body, timeout })` (adds the API token), with `auth: 'none'` for anonymous calls (fediverse, auth) and `auth: { jwt }` for user calls. Pass `event` on every call made for a visitor: it forwards the visitor's IP so the CMS rate-limits per visitor (`docs/security.md`). That covers browser requests to `/api/*` and SSR calls made through `useRequestFetch()` / `useFetch` (never the global `$fetch`, which carries no address); a `useFetch` with `server: false` runs in the browser and is forwarded directly; leave `event` out only for the cached `loadSite`/`loadPage`, feeds, sitemap and the build. Auth calls that send mail pass `timeout: AUTH_TIMEOUT_MS`. Never build the URL or `Authorization` by hand.
+- User or editor calls send their own JWT (`fetchStrapiMe(event, jwt)`, `fetchAsEditor(event, jwt, …)`), never the API token.
+- A write to the CMS catches errors and calls `rethrowUpstreamRateLimit(event, error)` first, so a CMS 429 reaches the browser with `Retry-After`; a route that degrades instead of failing (empty search, ranking fallback) calls `noStoreOnUpstreamRateLimit(event, error)` so the degraded answer is not cached.
 - A new content type or action needs a permission on the **custom** API token in Strapi: add it to the table in `docs/security.md` and tell the user to grant it. A missing `update` on Subscriber once broke every newsletter confirmation.
 - Upstream errors: catch, `console.error`, then `createError({ statusCode: 502, message: upstreamErrorMessage(error, '…') })` (or Strapi's status where the client needs it).
 

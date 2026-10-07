@@ -13,6 +13,8 @@ export interface RecordedRequest {
   body?: { data?: Record<string, unknown>, locale?: unknown }
   rawBody?: Record<string, unknown>
   authorization?: string
+  /** The visitor forwarding headers, when the request carried them */
+  forwarder?: { secret?: string, ip?: string }
 }
 
 interface MockSubscriber {
@@ -31,6 +33,12 @@ interface MockFailures {
   pathOrder: boolean
   about: boolean
   site: boolean
+  /** Comment writes and subscriber calls answer 429 with Retry-After, as the CMS limiter does */
+  rateLimited: boolean
+  /** The `Retry-After` those 429s carry */
+  retryAfter: string
+  /** Read paths (prefixes) that answer 429 as well; the rest of the API keeps working */
+  rateLimitedReads: string[]
 }
 
 type MockModules = Record<'newsletter' | 'comments' | 'accounts' | 'drafts' | 'fediverse' | 'search' | 'support', boolean>
@@ -437,7 +445,7 @@ function recordRequest(
 export async function startMockStrapi(): Promise<MockStrapiResult> {
   const requests: RecordedRequest[] = []
   const siteRequests: RecordedRequest[] = []
-  const failures: MockFailures = { pathOrder: false, about: false, site: false }
+  const failures: MockFailures = { pathOrder: false, about: false, site: false, rateLimited: false, retryAfter: '42', rateLimitedReads: [] }
   const modules: MockModules = { newsletter: true, comments: true, accounts: true, drafts: true, fediverse: true, search: true, support: true }
   const theme = { value: null as unknown }
   const homePage: MockStrapiResult['homePage'] = { value: null }
@@ -454,6 +462,18 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     const log = url.pathname === '/api/site-setting' ? siteRequests : requests
     recordRequest(log, method, url.pathname, query, body)
     if (req.headers.authorization) log[log.length - 1]!.authorization = req.headers.authorization
+
+    const secret = req.headers['x-micelio-forwarder-secret']
+    const ip = req.headers['x-micelio-client-ip']
+    if (secret || ip) log[log.length - 1]!.forwarder = { secret: String(secret ?? ''), ip: String(ip ?? '') }
+
+    const limitedPath = (method === 'POST' && url.pathname.startsWith('/api/comments/')) || url.pathname.startsWith('/api/subscribers') || (method === 'POST' && url.pathname.startsWith('/api/auth/'))
+    const limitedRead = method === 'GET' && failures.rateLimitedReads.some(prefix => url.pathname.startsWith(prefix))
+    if ((failures.rateLimited && limitedPath) || limitedRead) {
+      res.writeHead(429, { 'Content-Type': 'application/json', 'Retry-After': failures.retryAfter })
+      res.end(JSON.stringify({ data: null, error: { status: 429, name: 'RateLimitError', message: 'Too many requests, please try again later.', details: {} } }))
+      return
+    }
 
     const auth = authMock.handle(method, url.pathname, query, body, req.headers)
     if (auth) {

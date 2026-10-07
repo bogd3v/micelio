@@ -6,7 +6,7 @@ import { renderArticleBlocks } from '~/helpers/markdown'
 async function fetchPublishedVersion(event: H3Event, jwt: string, path: string, locale: Locale | undefined): Promise<PublishedVersion | null> {
   const query = qs.stringify({ status: 'published', locale, fields: ['slug', 'updatedAt', 'publishedAt'] }, { skipNulls: true })
   try {
-    const response = await fetchAsEditor<{ data?: PublishedVersion | null }>(jwt, path, query)
+    const response = await fetchAsEditor<{ data?: PublishedVersion | null }>(event, jwt, path, query)
     const version = response.data
     return version?.slug ? { slug: version.slug, updatedAt: version.updatedAt ?? null, publishedAt: version.publishedAt ?? null } : null
   } catch {
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event): Promise<DraftArticleResponse> =
   const query = qs.stringify({ status: 'draft', locale, populate: ARTICLE_POPULATE }, { skipNulls: true })
 
   const [draft, published] = await Promise.all([
-    fetchAsEditor<{ data?: RawStrapiArticle | null }>(jwt, path, query),
+    fetchAsEditor<{ data?: RawStrapiArticle | null }>(event, jwt, path, query),
     fetchPublishedVersion(event, jwt, path, locale),
   ])
   if (!draft.data) throw draftNotFound()

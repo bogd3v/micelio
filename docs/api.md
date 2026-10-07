@@ -61,7 +61,7 @@ Pages match with or without the `/es` prefix. `server/middleware/modules.ts` ans
 | --- | --- | --- | --- |
 | `GET /api/comments` | Query: `relation`, `locale`, `page`, `pageSize` (≤ 50), `sort` (`field:asc` / `field:desc`) | `Comment[]` as a tree (`children`) | 400, Strapi's status |
 | `GET /api/comments/flat` | Same query | `CommentsResponse` (`data` flat, with `threadOf`) | 400, Strapi's status |
-| `POST /api/comments` | Query: `relation`. Body: `author.name` (≤ 100), `author.email` (≤ 254), `author.avatar` (http(s), optional, dropped if invalid), `content` (≤ 5000), `threadOf` (positive integer, optional), `locale` | `Comment` | 400 invalid body or locale, 403 other origin, 429 (10 per IP / 10 min), Strapi's status |
+| `POST /api/comments` | Query: `relation`. Body: `author.name` (≤ 100), `author.email` (≤ 254), `author.avatar` (http(s), optional, dropped if invalid), `content` (≤ 5000), `threadOf` (positive integer, optional), `locale` | `Comment` | 400 invalid body or locale, 403 other origin, 429 (10 per IP / 10 min, or the CMS limit, with its `Retry-After`), Strapi's status |
 
 Every comment response hides `PENDING` and `REJECTED` comments and never includes the author's email. The author id of a posted comment is set by the server (`guest-<uuid>`). Types: `app/interfaces/comment.ts`.
 
@@ -78,7 +78,7 @@ These call Strapi anonymously. Type: `app/interfaces/fediverse.ts`.
 
 | Route | Input | Returns | Errors |
 | --- | --- | --- | --- |
-| `POST /api/newsletter/subscribe` | Body: `email` (≤ 254), `locale` (`es` or English for anything else) | `SubscribeResponse` — the same for new and already confirmed addresses | 400 `Email is required` / `Invalid email format`, 403 other origin, 429 (10 per IP and 3 per email / hour), 500 |
+| `POST /api/newsletter/subscribe` | Body: `email` (≤ 254), `locale` (`es` or English for anything else) | `SubscribeResponse` — the same for new and already confirmed addresses | 400 `Email is required` / `Invalid email format`, 403 other origin, 429 (10 per IP and 3 per email / hour, or the CMS limit), 500 |
 | `GET /api/newsletter/confirm` | Query: `token` | `ConfirmResponse`; `alreadyConfirmed: true` when the link is opened again | 400 missing token, 404 unknown or malformed token, 500 |
 | `POST /api/newsletter/unsubscribe` | `token` in the body (unsubscribe page) or the query (RFC 8058 one-click) | `{ success: true }`, also for unknown or used tokens | 400 malformed token, 502 |
 

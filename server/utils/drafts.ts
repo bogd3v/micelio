@@ -17,10 +17,9 @@ export function draftLocale(event: H3Event): Locale | undefined {
   return isLocale(locale) ? locale : undefined
 }
 
-export async function fetchAsEditor<T>(jwt: string, path: string, query: string): Promise<T> {
+export async function fetchAsEditor<T>(event: H3Event, jwt: string, path: string, query: string): Promise<T> {
   try {
-    const url = strapiUrl(query ? `${path}?${query}` : path)
-    return await $fetch<T>(url, { headers: { Authorization: `Bearer ${jwt}` } }) as T
+    return await strapiFetch<T>(query ? `${path}?${query}` : path, { event, auth: { jwt } })
   } catch (error: unknown) {
     const status = asUpstreamError(error).response?.status
     if (status === 401 || status === 403 || status === 404) throw draftNotFound()
