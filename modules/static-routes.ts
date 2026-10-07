@@ -47,7 +47,7 @@ export default defineNuxtModule({
     const logger = useLogger('micelio')
     // The newsletter provider receives the form post (ADR 0006, section 5); read as the module that turns the newsletter on reads it
     const newsletterOrigins = [formActionOrigin(process.env.NUXT_PUBLIC_NEWSLETTER_FORM_ACTION)].filter(Boolean)
-    // Nitro skips a route that is a file of public/ (robots.txt): the file wins
+    // Nitro skips a route that is a file of public/: the file wins
     const isPublicFile = (route: string): boolean => route !== '/' && existsSync(join(nuxt.options.rootDir, 'public', route))
     // Runtime overrides (NUXT_*) are not applied to the config at build setup
     const config: StrapiRequestConfig = {

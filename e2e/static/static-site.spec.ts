@@ -82,7 +82,7 @@ test('feeds, sitemap and robots.txt are files', async ({ request }) => {
   expect(sitemap).toContain('/es/blog/guia-vue-composables')
   const robots = await request.get('/robots.txt')
   expect(robots.status()).toBe(200)
-  expect(await robots.text()).toContain('User-Agent')
+  expect(await robots.text()).toMatch(/^Sitemap: .+\/sitemap\.xml$/m)
 })
 
 test('an unknown path answers the 404 page', async ({ request }) => {

@@ -486,6 +486,17 @@ describe('/api/posts/[slug]', () => {
   })
 })
 
+describe('/robots.txt', () => {
+  it('allows crawling and lists the sitemap', async () => {
+    const response = await fetch('/robots.txt')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toContain('text/plain')
+    const body = await response.text()
+    expect(body).toContain('User-agent: *')
+    expect(body).toContain(`Sitemap: ${SITE_URL}/sitemap.xml`)
+  })
+})
+
 describe('/sitemap.xml', () => {
   async function sitemap(): Promise<string> {
     const response = await fetch('/sitemap.xml')
