@@ -493,6 +493,7 @@ describe('/robots.txt', () => {
     expect(response.headers.get('content-type')).toContain('text/plain')
     const body = await response.text()
     expect(body).toContain('User-agent: *')
+    expect(body).toContain('Allow: /')
     expect(body).toContain(`Sitemap: ${SITE_URL}/sitemap.xml`)
   })
 })

@@ -243,7 +243,6 @@ server/
 └── utils/               # strapi.ts (strapiUrl, strapiFetch), auth, rate limit…
 
 i18n/locales/            # Translation files
-public/                  # Static assets
 ```
 
 ## Key Dependencies
