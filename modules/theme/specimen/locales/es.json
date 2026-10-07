@@ -12,8 +12,7 @@
       "prose": "Prosa, avisos y código",
       "forms": "Formularios",
       "states": "Avisos, estados vacíos y de error",
-      "regions": "Regiones de layout",
-      "pageSections": "Secciones de página"
+      "regions": "Regiones de layout"
     },
     "foundations": {
       "type": "Escala tipográfica",
@@ -112,7 +111,17 @@
       "homeVariant": "Inicio, variante {variant}",
       "postListVariant": "Lista de artículos, variante {variant}",
       "articleVariant": "Artículo, variante {variant} (modo borrador)",
-      "variantNames": {"bar": "barra", "centered": "centrado", "columns": "columnas", "minimal": "mínimo", "showcase": "vitrina", "index": "índice", "grid": "cuadrícula", "list": "lista", "aside": "lateral"},
+      "variantNames": {
+        "bar": "barra",
+        "centered": "centrado",
+        "columns": "columnas",
+        "minimal": "mínimo",
+        "showcase": "vitrina",
+        "index": "índice",
+        "grid": "cuadrícula",
+        "list": "lista",
+        "aside": "lateral"
+      },
       "navLabel": "Navegación, {variant}",
       "active": "Variante de cada región en el tema activo",
       "chrome": "El encabezado y el pie son los que rodean esta página.",
@@ -121,7 +130,24 @@
       "article": "Artículo (modo borrador, sin comentarios ni relacionados)"
     },
     "pageSections": {
-      "empty": "Aún no hay secciones."
+      "kinds": {
+        "hero": "Hero",
+        "feature-grid": "Cuadrícula de características",
+        "media-showcase": "Escaparate de medios",
+        "stats": "Cifras",
+        "logo-cloud": "Nube de logos",
+        "testimonials": "Testimonios",
+        "pricing": "Precios",
+        "faq": "Preguntas frecuentes",
+        "cta": "Llamada a la acción",
+        "post-list": "Lista de artículos",
+        "newsletter": "Boletín",
+        "rich-text": "Texto enriquecido",
+        "gallery": "Galería",
+        "scene": "Escena"
+      },
+      "noVariant": "Sin variantes",
+      "newsletterOff": "El módulo de boletín está desactivado en este sitio: la sección no se muestra."
     }
   }
 }

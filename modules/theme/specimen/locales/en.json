@@ -12,8 +12,7 @@
       "prose": "Prose, callouts and code",
       "forms": "Forms",
       "states": "Notices, empty and error states",
-      "regions": "Layout regions",
-      "pageSections": "Page sections"
+      "regions": "Layout regions"
     },
     "foundations": {
       "type": "Type scale",
@@ -112,7 +111,17 @@
       "homeVariant": "Home, {variant} variant",
       "postListVariant": "Post list, {variant} variant",
       "articleVariant": "Article, {variant} variant (draft mode)",
-      "variantNames": {"bar": "bar", "centered": "centered", "columns": "columns", "minimal": "minimal", "showcase": "showcase", "index": "index", "grid": "grid", "list": "list", "aside": "aside"},
+      "variantNames": {
+        "bar": "bar",
+        "centered": "centered",
+        "columns": "columns",
+        "minimal": "minimal",
+        "showcase": "showcase",
+        "index": "index",
+        "grid": "grid",
+        "list": "list",
+        "aside": "aside"
+      },
       "navLabel": "Navigation, {variant}",
       "active": "Variant of each region in the active theme",
       "chrome": "The header and the footer are the ones around this page.",
@@ -121,7 +130,24 @@
       "article": "Article (draft mode, no comments or related posts)"
     },
     "pageSections": {
-      "empty": "No sections yet."
+      "kinds": {
+        "hero": "Hero",
+        "feature-grid": "Feature grid",
+        "media-showcase": "Media showcase",
+        "stats": "Stats",
+        "logo-cloud": "Logo cloud",
+        "testimonials": "Testimonials",
+        "pricing": "Pricing",
+        "faq": "FAQ",
+        "cta": "Call to action",
+        "post-list": "Post list",
+        "newsletter": "Newsletter",
+        "rich-text": "Rich text",
+        "gallery": "Gallery",
+        "scene": "Scene"
+      },
+      "noVariant": "No variants",
+      "newsletterOff": "The newsletter module is off on this site: the section renders nothing."
     }
   }
 }

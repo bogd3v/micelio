@@ -1,4 +1,9 @@
-import type { PostListItem, StrapiBlock, StrapiImageCredit, StrapiPost } from '~/interfaces'
+import type {
+  CtaSection, FaqItem, FaqSection, FeatureGridSection, FeatureItem, GallerySection, HeroSection, LogoCloudSection, LogoItem,
+  MediaShowcaseSection, NewsletterSection, PageLink, PageMedia, PageSection, PageSectionKind, PostListItem, PostListSection,
+  PricingPlan, PricingSection, RichTextSection, SceneSection, StatItem, StatsSection, StrapiBlock, StrapiImageCredit, StrapiPost,
+  TestimonialItem, TestimonialsSection,
+} from '~/interfaces'
 import { Category } from '~/interfaces'
 import { renderCalloutHtml } from '~/helpers/callout'
 import { renderCodeBlockHtml } from '~/helpers/code'
@@ -112,3 +117,154 @@ export const ARTICLE: StrapiPost = {
   translations: [],
   seo: undefined,
 }
+
+// Page sections (#244): every section x variant, rendered by the real components. Uploads come from the media host (mock Strapi in e2e).
+
+function media(name: string, extra: Partial<PageMedia> = {}): PageMedia {
+  return { url: `/uploads/specimen-${name}`, alternativeText: `Specimen ${name}`, width: 1200, height: 630, mime: 'image/png', ...extra }
+}
+
+const icon = (name: string): PageMedia => media(name, { mime: 'image/svg+xml', width: 64, height: 64 })
+const logo = (name: string): PageMedia => media(name, { mime: 'image/svg+xml', width: 120, height: 40 })
+const avatar = (name: string): PageMedia => media(name, { width: 96, height: 96 })
+const link = (label: string, url: string): PageLink => ({ label, url })
+
+const SECTION_LEAD = 'A short introduction that shows how the text of a section wraps and which measure it takes.'
+
+const FEATURES: FeatureItem[] = [
+  { icon: icon('icon-light.svg'), title: 'Light', text: 'Four hours of sun a day.' },
+  { icon: icon('icon-pots.svg'), title: 'Pots', text: 'Any container with a hole.' },
+  { icon: icon('icon-water.svg'), title: 'Water', text: 'A little, often.' },
+  { title: 'Patience', text: 'A season or two.' },
+]
+
+const LOGOS: LogoItem[] = [
+  { image: logo('logo-circle.svg'), name: 'Circle Seeds', url: 'https://circle.example.com' },
+  { image: logo('logo-square.svg'), name: 'Square Soil' },
+  { image: logo('logo-triangle.svg'), name: 'Triangle Tools' },
+  { image: logo('logo-diamond.svg'), name: 'Diamond Dew' },
+]
+
+const TESTIMONIALS: TestimonialItem[] = [
+  { quote: 'The basil smells all the way to the street.', author: 'Sam', role: 'Neighbor', avatar: avatar('sam.png') },
+  { quote: 'I started my own pots.', author: 'Robin' },
+  { quote: 'Four hours of sun were enough.', author: 'Alex', role: 'Gardener', avatar: avatar('alex.png') },
+]
+
+const PLANS: PricingPlan[] = [
+  { name: 'Starter', price: '$5', period: 'per season', features: ['3 seed packs', 'A planting guide'], recommended: false },
+  { name: 'Gardener', price: '$12', period: 'per season', features: ['8 seed packs', 'A planting guide', 'Email support'], recommended: true, link: link('Choose', '/') },
+  { name: 'Co-op', price: '$30', features: ['20 seed packs', 'A shared plot'], recommended: false, link: link('Choose', '/') },
+]
+
+const ANSWERS: FaqItem[] = [
+  { question: 'Do I need a garden?', html: '<p>No: a balcony is enough.</p>' },
+  { question: 'Is this site real?', html: '<p>It is a demo of <a href="https://github.com/bogd3v/micelio">Micelio</a>.</p>' },
+  { question: 'When do I plant?', html: '<p>After the last frost, with <strong>warm soil</strong>.</p>' },
+]
+
+const STATS: StatItem[] = [
+  { value: '4 h', label: 'of sun a day' },
+  { value: '12', label: 'pots' },
+  { value: '3', label: 'months to compost' },
+]
+
+const hero = (variant: HeroSection['variant']): HeroSection => ({
+  __component: 'section.hero',
+  variant,
+  title: 'Grow food where you live',
+  text: SECTION_LEAD,
+  primaryLink: link('Read the notes', '/blog'),
+  secondaryLink: link('Micelio', 'https://github.com/bogd3v/micelio'),
+  media: media('hero.png', { width: 1600, height: 900 }),
+})
+const featureGrid = (variant: FeatureGridSection['variant']): FeatureGridSection => ({ __component: 'section.feature-grid', variant, title: 'What you need', text: SECTION_LEAD, items: FEATURES })
+const mediaShowcase = (variant: MediaShowcaseSection['variant']): MediaShowcaseSection => ({
+  __component: 'section.media-showcase',
+  variant,
+  title: 'A balcony in spring',
+  html: '<p>Lettuce, basil and <strong>cherry tomatoes</strong>, a few steps from the kitchen.</p>',
+  media: media('balcony.png'),
+  link: link('How to start', '/blog'),
+})
+const stats = (variant: StatsSection['variant']): StatsSection => ({ __component: 'section.stats', variant, title: 'One small garden', items: STATS })
+const logoCloud = (variant: LogoCloudSection['variant']): LogoCloudSection => ({ __component: 'section.logo-cloud', variant, title: 'Friends of the garden', logos: LOGOS })
+const testimonials = (variant: TestimonialsSection['variant']): TestimonialsSection => ({
+  __component: 'section.testimonials',
+  variant,
+  title: 'What neighbors say',
+  items: variant === 'single' ? TESTIMONIALS.slice(0, 1) : TESTIMONIALS,
+})
+const pricing = (variant: PricingSection['variant']): PricingSection => ({ __component: 'section.pricing', variant, title: 'Seed boxes', text: SECTION_LEAD, plans: PLANS })
+const faq = (variant: FaqSection['variant']): FaqSection => ({ __component: 'section.faq', variant, title: 'Questions', items: ANSWERS })
+const cta = (variant: CtaSection['variant']): CtaSection => ({
+  __component: 'section.cta',
+  variant,
+  title: 'Start this weekend',
+  text: 'One pot, one plant.',
+  primaryLink: link('Read the guide', '/blog'),
+  secondaryLink: link('Micelio', 'https://github.com/bogd3v/micelio'),
+})
+const postList = (variant: PostListSection['variant']): PostListSection => ({ __component: 'section.post-list', variant, title: 'From the garden', count: 3, posts: POSTS.slice(0, 3) })
+const newsletter = (variant: NewsletterSection['variant']): NewsletterSection => ({
+  __component: 'section.newsletter',
+  variant,
+  title: 'Notes by email',
+  text: 'One email per season.',
+  buttonLabel: 'Subscribe',
+})
+const gallery = (variant: GallerySection['variant']): GallerySection => ({
+  __component: 'section.gallery',
+  variant,
+  title: 'Through the year',
+  images: [
+    media('spring.png'),
+    media('summer.png', { width: 800, height: 1000 }),
+    media('autumn.png', { width: 1000, height: 700 }),
+    media('winter.png', { width: 800, height: 800 }),
+    media('seeds.png', { width: 1200, height: 800 }),
+  ],
+})
+const scene = (variant: SceneSection['variant']): SceneSection => ({
+  __component: 'section.scene',
+  variant,
+  model: media('triangle.glb', { mime: 'model/gltf-binary', width: undefined, height: undefined }),
+  poster: media('triangle-poster.png'),
+  alt: 'A green triangle',
+  title: 'A scene',
+  text: SECTION_LEAD,
+})
+const richText: RichTextSection = {
+  __component: 'section.rich-text',
+  html: '<h2>About this page</h2><p>Rich text has no variant: it sets <strong>Markdown</strong> prose between the other sections, with <a href="/blog">a link</a>.</p><ul><li>A list item</li><li>Another item</li></ul>',
+}
+
+export interface SpecimenPageSection {
+  /** Section kind, as in `data-section` */
+  kind: PageSectionKind
+  /** `data-variant`; empty for rich-text */
+  variant: string
+  section: PageSection
+}
+
+function entries<V extends string>(kind: PageSectionKind, variants: V[], build: (variant: V) => PageSection): SpecimenPageSection[] {
+  return variants.map(variant => ({ kind, variant, section: build(variant) }))
+}
+
+/** Every section and variant of the catalog (test/specimenSections.test.ts checks it against app/theme/hooks.json). */
+export const PAGE_SECTIONS: SpecimenPageSection[] = [
+  ...entries('hero', ['centered', 'split', 'full-bleed'], hero),
+  ...entries('feature-grid', ['grid', 'list', 'bento'], featureGrid),
+  ...entries('media-showcase', ['left', 'right', 'stacked'], mediaShowcase),
+  ...entries('stats', ['row', 'cards'], stats),
+  ...entries('logo-cloud', ['row', 'marquee'], logoCloud),
+  ...entries('testimonials', ['single', 'grid'], testimonials),
+  ...entries('pricing', ['cards', 'table'], pricing),
+  ...entries('faq', ['list', 'two-columns'], faq),
+  ...entries('cta', ['banner', 'card'], cta),
+  ...entries('post-list', ['cards', 'list'], postList),
+  ...entries('newsletter', ['inline', 'card'], newsletter),
+  { kind: 'rich-text', variant: '', section: richText },
+  ...entries('gallery', ['grid', 'masonry'], gallery),
+  ...entries('scene', ['background', 'inline'], scene),
+]

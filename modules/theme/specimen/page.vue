@@ -32,7 +32,7 @@ useSeoMeta({
       :aria-labelledby="`${section.id}-title`"
     >
       <h2 :id="`${section.id}-title`" class="bd-heading-2 bd-specimen-title">{{ t(section.title) }}</h2>
-      <component :is="section.component" />
+      <component :is="section.component" v-bind="section.props" />
     </section>
   </div>
 </template>
