@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { ofetch } from 'ofetch'
 import qs from 'qs'
@@ -10,11 +10,23 @@ import { formActionOrigin } from '../app/helpers/newsletterForm'
 import { contentSecurityPolicy, inlineScripts } from '../app/helpers/securityHeaders'
 import { isStaticMode } from '../app/helpers/siteMode'
 import type { SiteMode } from '../app/helpers/siteMode'
-import { articleRoute, failsBuild, headersFile, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, STATIC_INITIAL_ROUTES, staticFileRoutes, stripImageErrorHandlers } from '../app/helpers/staticBuild'
+import { articleRoute, failsBuild, headersFile, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, STATIC_INITIAL_ROUTES, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
 import { strapiRequest } from '../server/lib/strapiRequest'
 import type { StrapiRequestConfig } from '../server/lib/strapiRequest'
 
 const PAGE_SIZE = 100
+// Where a page, a stylesheet or an island may name a script; media and the image cache never do
+const SKIPPED_FOLDERS = new Set(['_ipx', '_media', 'fonts'])
+
+async function filesUnder(dir: string): Promise<string[]> {
+  const found: string[] = []
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (!SKIPPED_FOLDERS.has(entry.name)) found.push(...await filesUnder(join(dir, entry.name)))
+    } else found.push(join(dir, entry.name))
+  }
+  return found
+}
 
 function sha256(content: string): string {
   return createHash('sha256').update(content).digest('base64')
@@ -54,6 +66,32 @@ export default defineNuxtModule({
       strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || String(nuxt.options.runtimeConfig.public.strapiUrl || ''),
       strapiApiToken: process.env.NUXT_STRAPI_API_TOKEN || String(nuxt.options.runtimeConfig.strapiApiToken || ''),
     }
+
+    // Nothing in a static site loads the Nuxt client, so its chunks (Mermaid alone is ~8 MB) are dead weight.
+    // The public assets are copied after the prerender, so this runs on their hook. A script stays when a page, a stylesheet, an island or a kept script names it, which is how a heavy island will keep its chunks (docs/performance.md, "Unused client JS")
+    async function pruneScripts(publicDir: string): Promise<void> {
+      const nuxtDir = join(publicDir, '_nuxt')
+      if (!existsSync(nuxtDir)) return
+      const scripts = new Map<string, string>()
+      let before = 0
+      for (const name of await readdir(nuxtDir)) {
+        if (!name.endsWith('.js')) continue
+        scripts.set(name, await readFile(join(nuxtDir, name), 'utf8'))
+        before += (await stat(join(nuxtDir, name))).size
+      }
+      const roots: string[] = []
+      for (const file of await filesUnder(publicDir)) {
+        if (file.startsWith(`${nuxtDir}/`) && file.endsWith('.js')) continue
+        if (/\.(?:html|css|js|mjs)$/.test(file)) roots.push(await readFile(file, 'utf8'))
+      }
+      const unused = unreachableScripts(scripts, roots)
+      // The precompressed copies and maps go with the script
+      await Promise.all(unused.flatMap(name => ['', '.br', '.gz', '.map'].map(suffix => rm(join(nuxtDir, `${name}${suffix}`), { force: true }))))
+      const removed = unused.reduce((sum, name) => sum + scripts.get(name)!.length, 0)
+      logger.info(`Pruned ${unused.length} of ${scripts.size} unused scripts from /_nuxt/ (${(removed / 1024 / 1024).toFixed(1)} MB of ${(before / 1024 / 1024).toFixed(1)} MB)`)
+    }
+
+    nuxt.hook('nitro:build:public-assets', nitro => pruneScripts(nitro.options.output.publicDir))
 
     nuxt.hook('nitro:init', (nitro) => {
       // A dead link found by the crawler is a warning; a 404 on a route we asked for, or any other error, fails the build

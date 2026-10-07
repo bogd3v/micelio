@@ -21,7 +21,27 @@ npm run perf -- --out report.json # save the full report
 npm run perf -- --theme <id>      # label the run with the theme the build used (--mode likewise)
 ```
 
-`--serve` (included in `npm run perf`) starts the mock and the built server on ports 4310 and 3211. Pass `--base <url>` without `--serve` to measure a server that is already running. The CI job **Performance Budgets** runs `npm run perf -- --check` on every push and pull request for every installed theme and site mode (next section), and writes the table to the job summary.
+`--serve` (included in `npm run perf`) starts the mock and the built server on ports 4310 and 3211 (`PERF_MOCK_PORT`, `PERF_SERVER_PORT` and `PERF_DEBUG_PORT` change them when another run uses them). Pass `--base <url>` without `--serve` to measure a server that is already running. The CI job **Performance Budgets** runs `npm run perf -- --check` on every push and pull request for every installed theme and site mode (next section), and writes the table to the job summary.
+
+### Static builds
+
+`--mode static` (`landing` shares its budgets, see ADR 0006) measures a `nuxt generate` output instead of the Nitro server. With `--serve` the script generates the site itself (`scripts/lib/static-generate.mjs`, the same code as `npm run test:static`) against the mock Strapi, which only lives while it generates, and serves `.output/public` with `scripts/static-serve.mjs` (`_headers` applied, `COMPRESS=1` so text is sent in brotli like a CDN does). It overwrites `.output`, so run `npm run build` again before a dynamic run.
+
+```bash
+npm run perf -- --mode static --check --theme starter   # generates, serves, measures
+npm run perf -- --mode static --skip-generate           # reuse .output/public
+NUXT_PUBLIC_THEME=starter npm run perf -- --mode static # the theme of the generate
+```
+
+Pages are the dynamic ones plus the Spanish home (`/es`). Three metrics only exist here:
+
+| Metric | What it is |
+| --- | --- |
+| `initialJsGzKb` | Gzip KB of the declared scripts plus the inline ones (the theme init script): what runs before the first paint |
+| `strayRequests` | Requests a browser makes while loading the page to a Pagefind file, or to a script the HTML does not declare. Limit 0: nothing of an island or of Pagefind is in the initial load (ADR 0006, section 6) |
+| `islands.search` | Opens the palette on the first page, types a query and measures what loads from then on: `loaderGzKb`, `pagefindGzKb` (runtime and worker, gzip), `wasmKb` (largest `wasm.<lang>.pagefind`, raw). Checked against `islands` in `budgets.json`, as errors |
+
+`budgets.json` has one section per mode under `modes` (`pages`, `limits` and, for static, `islands`); `aliases` maps `landing` to `static`. A theme exception names its `mode` (every mode when it does not). The `e2e/static/search.spec.ts` check of the islands budget stays: it reads the files of the output and runs in `npm run test:static` without Lighthouse.
 
 Sizes come from what the HTML declares, not from what a browser happens to download, because a browser measurement is not repeatable: depending on CPU speed, Nuxt's idle prefetch of linked pages and lazy chunks like Mermaid land before or after the cut. Lazy chunks are left out of the initial budget on purpose; they get their own heavy island budget (ADR 0006).
 
@@ -36,7 +56,7 @@ The first limits are the baseline plus 5 % for sizes, plus 0.02 for CLS, and the
 
 ### Per theme and site mode
 
-The limits above apply to **every installed theme** in every site mode that has budgets (ADR 0005, section 9; ADR 0006). The `perf-matrix` job lists the installed themes (`npx jiti scripts/theme-check.ts --list`, which reads `themes/` and `MICELIO_THEME_DIRS`) and the mode of `budgets.json`; the **Performance Budgets** job then runs once per theme × mode, building with `NUXT_PUBLIC_THEME` set to that theme, and uploads `perf-report-<theme>-<mode>`. Every failure line and the job summary carry `[theme <id>, <mode> mode]`. Only `dynamic` has budgets today; `measure.mjs` fails on a `--mode` that `budgets.json` does not cover, so a new mode needs its own budgets before it joins the matrix. The `Performance Budgets` check (job `performance-gate`) aggregates the matrix and fails if any entry failed, was skipped or was cancelled; it is the one to mark as required in branch protection, and `deploy` depends on it. A theme that goes over fails CI, and the other entries still finish (`fail-fast: false`).
+The limits above apply to **every installed theme** in every site mode that has budgets (ADR 0005, section 9; ADR 0006). The `perf-matrix` job lists the installed themes (`npx jiti scripts/theme-check.ts --list`, which reads `themes/` and `MICELIO_THEME_DIRS`) and the modes of `budgets.json` (`dynamic` and `static`); the **Performance Budgets** job then runs once per theme × mode, building with `NUXT_PUBLIC_THEME` set to that theme, and uploads `perf-report-<theme>-<mode>`. Every failure line and the job summary carry `[theme <id>, <mode> mode]`. `dynamic` and `static` have budgets (`landing` reuses `static`); `measure.mjs` fails on a `--mode` that `budgets.json` does not cover, so a new mode needs its own budgets before it joins the matrix. The `Performance Budgets` check (job `performance-gate`) aggregates the matrix and fails if any entry failed, was skipped or was cancelled; it is the one to mark as required in branch protection, and `deploy` depends on it. A theme that goes over fails CI, and the other entries still finish (`fail-fast: false`).
 
 The same run asserts that the page does not flash (`scripts/perf/fouc.mjs`, tested in `test/foucCheck.test.ts`), as an error on every page: the theme init script is an inline script in `<head>` before the first stylesheet, and every preloaded font has a `"<family> Fallback"` `@font-face` with `size-adjust`. It lives here and not in Playwright because it needs the production build (the dev server orders `<head>` differently and ships no built CSS) and has to run for every theme, which this matrix already does. The CLS side is the existing `cls` budget.
 
@@ -97,13 +117,37 @@ Dynamic mode, production build of `main` at `9aa9c3f`, against the e2e mock:
 
 ### Islands
 
-`scripts/perf/budgets.json` has an `islands` section (ADR 0006, section 6): the bytes an island sends once it is used, apart from the page budgets. `measure.mjs` does not read it yet (static budgets join CI in the static perf PR); today `e2e/static/search.spec.ts` enforces it on the static build (`npm run test:static`).
+`scripts/perf/budgets.json` has an `islands` section (ADR 0006, section 6): the bytes an island sends once it is used, apart from the page budgets. `measure.mjs --mode static` enforces it on what a browser loads when the palette opens (see "Static builds"), and `e2e/static/search.spec.ts` on the files of the build (`npm run test:static`). The section lives in `modes.static`.
 
 | Island | What loads at start | What loads when it is used | Limits (`error`) |
 | --- | --- | --- | --- |
 | `search` (static and landing) | `/_islands/search-<hash>.js`: 8.1 KB raw, 3.2 KB gzip (2.8 KB brotli), plus 1.5 KB of palette markup per page | On the first open of the palette: `pagefind.js` 44.5 KB raw / 12.5 KB gzip and `pagefind-worker.js` 40.3 KB / 11.6 KB (24.1 KB gzip together); one `wasm.<lang>.pagefind` of about 70 KB (already compressed); the entry and meta files (under 1 KB); then the index and fragment chunks a query needs (a few KB on the mock site, which grows with the content) | `loaderGzKb` 3.5, `pagefindGzKb` 26, `wasmKb` 80 |
 
 The loader counts towards the 15 KB initial JS of the static targets; the second column does not. Nothing of Pagefind is requested before the palette opens, and only the language of the page is loaded. The numbers come from the mock site (`npm run test:static`, Pagefind 1.5.2).
+
+### Static budgets (2026-10-07)
+
+`modes.static` of `budgets.json`, measured on the mock site (generated by this branch, Chromium with Lighthouse 13 mobile, median of 3, brotli like a CDN, no other job running):
+
+| Theme | Page | Initial JS (gzip) | LCP | Performance | Accessibility | CSS sent | HTML sent | Fonts |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `starter` | all six | 3.6 KB | 1.20 to 1.35 s | 100 | 100 | 19.8 KB | 3.7 to 6.0 KB | 35.8 KB |
+| `bogota` | `/` and `/es` | 3.6 KB | 2.63 s | 97 | 100 | 21.5 KB | 14.9 KB | 143.6 KB |
+| `bogota` | `/blog` | 3.6 KB | 2.03 s | 99 | 100 | 21.5 KB | 12.4 KB | 143.6 KB |
+| `bogota` | article | 3.6 KB | 1.95 s | 99 | 100 | 21.5 KB | 13.2 KB | 143.6 KB |
+| `bogota` | `/about` | 3.6 KB | 2.33 s | 98 | 100 | 21.5 KB | 15.4 KB | 143.6 KB |
+| `bogota` | `/privacy` | 3.6 KB | 1.95 s | 99 | 100 | 21.5 KB | 12.1 KB | 143.6 KB |
+
+Every page loads one script (the 3.2 KB search island) and the 0.3 KB inline theme script; TBT is 0, CLS 0 and third-party and stray requests 0. The search island sends 3.25 KB gzip at start; opening the palette loads 24.4 KB gzip of Pagefind and a 70.5 KB WASM file (8 requests), inside the `islands.search` limits. Lighthouse here is deterministic: two runs of the same build gave the same LCP within 1 ms.
+
+- **Limits.** Global: initial JS 3.8 KB (the target is 15 KB; a second island that loads at start raises it with a reason), LCP 1.5 s, accessibility 100, fonts 100 KB, performance at least 95 (a warning below 100). `starter` meets them all.
+- **`bogota` does not meet the LCP and font targets**, so it has a recorded exception (`themes.bogota`, mode `static`): LCP 2.25 to 3.05 s, fonts 150.8 KB, performance 90. Cause: its two preloaded fonts (143.6 KB, target 100 KB). Under the simulated 4G they delay the heading that is the LCP; with `*.woff2` blocked the article measures 1.35 s (and the home 2.26 s, where the hero image adds the rest). Lighter or fewer fonts is theme work, not a budget change.
+
+### Unused client JS in static output
+
+`nuxt generate` copies the whole client build into `/_nuxt/`, but a static page loads none of it (noScripts, ADR 0006 section 3). `modules/static-routes.ts` prunes it at the end of the build (hook `nitro:build:public-assets`, because Nitro copies the public assets after the prerender), in `static` and `landing` only: every `_nuxt/*.js` that no page, stylesheet, island or Pagefind script names, directly or through another kept script (`unreachableScripts` in `app/helpers/staticBuild.ts`), is deleted with its `.br`, `.gz` and `.map`. CSS, fonts and `builds/` stay. The mock site's `.output/public` goes from 14.72 MB to 5.94 MB (`du -sb`; `_nuxt` 9.00 MB to 0.02 MB, all 163 scripts, 5.4 MB raw plus their precompressed copies).
+
+Heavy islands (ADR 0006, section 6; Mermaid first) are built by `modules/islands.ts` into `/_islands/`, with their own chunks in `/_islands/chunks/`, so they do not depend on `/_nuxt/` and the pruning does not touch them. A script of `/_nuxt/` that an island or a page starts to load by name is kept by the same rule; the build logs how many it pruned.
 
 ## History
 
@@ -123,12 +167,13 @@ The loader counts towards the 15 KB initial JS of the static targets; the second
 | 2026-10-06 | Second variants of the header (`centered`) and the footer (`minimal`) with the specimen alternates (#263, PR 1): variant CSS scoped by `data-layout` with `:where()` (specificity unchanged), `bar.css` and `columns.css` included. A build without `MICELIO_SPECIMEN` has neither `RegionHeaderCentered`, `RegionFooterMinimal` nor their CSS. Bogotá, all `_nuxt` CSS: 140,432 → 144,553 raw (+4,121), 24,216 → 24,379 gzip (+163); entry CSS 140,260 → 144,381 raw, 24,106 → 24,269 gzip, all of it from scoping the existing two files. All `_nuxt` JS: 5,674,775 → 5,674,807 raw, 1,677,490 → 1,677,504 gzip (+14). Computed styles of home, blog, an article and about at 375 / 800 / 1280 in noche and dia: only running animations differ | CSS sent 19.9 → 20.1 KB on every Bogotá page (CI); the new variants add 0 bytes to a theme that does not use them. Budget: CSS 19.9 → 21.1 KB (the new measurement plus 5 %), since the scoping cost was accepted in #263 |
 | 2026-10-06 | Second variants of the home (`index`), the post list (`list`) and the article (`centered`) (#263, PR 2): `showcase.css`, `grid.css` and `aside.css` re-scoped by `data-layout` with `:where()`; the aside-only `.bd-article-share` rules moved from `pages/article/after.css` into `aside.css`. A build without `MICELIO_SPECIMEN` has neither `RegionHomeIndex`, `RegionPostListList`, `RegionArticleCentered` nor their selectors. Bogotá, all `_nuxt` CSS: 144,586 → 145,906 raw (+1,320), 24,508 → 24,596 gzip (+88); all `_nuxt` JS: 5,675,064 → 5,675,457 raw, 1,683,111 → 1,683,300 gzip (+189, `useArticleState` and `usePostStats`). `npm run perf` per page: CSS 20.1 KB (budget 21.1 KB). Computed styles of home, blog, an article and about at 375 / 800 / 1280 in noche and dia: only running animations differ | CSS +0.09 KB gzip on every Bogotá page; the new variants add 0 bytes to a theme that does not use them |
 | 2026-10-06 | Curated display fonts (#239, PR 3): five latin `wght`-only files of at most 60 KB in `app/assets/fonts/display/` (Archivo 36.5 KB, Fraunces 35.6, Bricolage Grotesque 46.1, Newsreader 57.8, Space Grotesk 26.6, from a pinned google/fonts commit with recorded hashes, `app/assets/fonts/display-sources.json`), emitted only when Strapi picks one that the theme does not already use (`@font-face`, size-adjusted fallback faces, `--font-display`, preload in `<style id="theme-overrides">`). The job runs each theme a second time with the heaviest font (Newsreader) at theme limit + 60 KB. The theme's font preloads are rendered per request (`server/plugins/themeMode.ts`, same place in the head) so that an emitted display font leaves out the theme's own display file, which the client head used to add back on hydration; a starter page with Newsreader downloads 59.2 KB of fonts, not 95.8 KB. `fontKb` still counts every font a stylesheet references, so the unused Fraunces face stays in it. Local runs on a production build (median of 3): Bogotá without the font 143.6 KB, with it 201.4 KB (limit 210.8), LCP home/blog/article/about/privacy 4923/3320/3621/5121/3322 ms → 5362/4518/4594/5870/4148 ms (limits 5950/4700/5200/6600/4350), CLS 0 in both, accessibility 100 in both; starter 35.8 → 93.6 KB, LCP 2860/2622/2893/2775/2467 → 3098/3126/3022/3346/3031 ms, CLS 0. `/fonts/display/` is cached for a year (immutable, the URL carries `?v=<hash>`) | No change without a font (HTML identical on 5 pages, CSP identical but for script hashes). The home's accessibility was 97 in the font run until the reveal stopped animating opacity (below) |
+| 2026-10-07 | Static budgets in CI (#243, PR 9): `modes.static` in `budgets.json`, `measure.mjs --mode static` generates, serves and measures the static site (initial JS from the real requests, LCP, Lighthouse, no island byte before use, the search island when the palette opens), `static` joins the Performance Budgets matrix, and unused `/_nuxt/*.js` is pruned from static output (14.72 MB to 5.94 MB) | Dynamic budgets unchanged. Static: 3.6 KB initial JS gzip on every page |
 
 The HTML is rendered per request, so Nitro does not compress it (108.5 KB on the home page here). In production Traefik compresses it, together with Strapi's JSON (bogd3v/bogdev-infra#10): the home page HTML goes from 141.8 KB to 27.7 KB with brotli. This measurement serves the Nitro build directly, so it still reports the uncompressed HTML.
 
 ## Targets
 
-From the Micelio spec. The budgets move towards them PR by PR:
+From the Micelio spec. The budgets move towards them PR by PR (static: `starter` meets them, `bogota` has a recorded exception for LCP and fonts):
 
 | Metric | Landing / static | Dynamic blog |
 | --- | --- | --- |

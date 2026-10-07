@@ -178,3 +178,25 @@ export function headersFile(policy: string): string {
   if (merged.length > HEADERS_MAX_RULES) throw new Error(`_headers: ${merged.length} rules, over the ${HEADERS_MAX_RULES} that Cloudflare Pages accepts`)
   return `${merged.map(rule => rule.join('\n')).join('\n\n')}\n`
 }
+
+const SCRIPT_NAME = /[\w$.-]+\.js/g
+
+/**
+ * The `_nuxt` scripts that nothing reaches: not named by a page, a stylesheet, an island or another kept script.
+ * `scripts` maps a file name to its text; `roots` is the text of everything that may load one (HTML, CSS, islands).
+ */
+export function unreachableScripts(scripts: ReadonlyMap<string, string>, roots: Iterable<string>): string[] {
+  const reached = new Set<string>()
+  const queue: string[] = []
+  const visit = (text: string): void => {
+    for (const [name] of text.matchAll(SCRIPT_NAME)) {
+      if (scripts.has(name) && !reached.has(name)) {
+        reached.add(name)
+        queue.push(name)
+      }
+    }
+  }
+  for (const text of roots) visit(text)
+  for (let name = queue.pop(); name !== undefined; name = queue.pop()) visit(scripts.get(name) ?? '')
+  return [...scripts.keys()].filter(name => !reached.has(name)).sort()
+}

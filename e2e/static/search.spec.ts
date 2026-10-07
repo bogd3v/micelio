@@ -72,7 +72,7 @@ const gzipKb = (file: string): number => gzipSync(readFileSync(file), { level: 9
 const site = join(process.cwd(), '.output/public')
 
 test('the search island and Pagefind stay within the islands budget', () => {
-  const budget = JSON.parse(readFileSync(join(process.cwd(), 'scripts/perf/budgets.json'), 'utf8')).islands.search.error as Record<string, number>
+  const budget = JSON.parse(readFileSync(join(process.cwd(), 'scripts/perf/budgets.json'), 'utf8')).modes.static.islands.search.error as Record<string, number>
   const [island] = readdirSync(join(site, '_islands')).filter(name => /^search-[\w-]+\.js$/.test(name))
   expect(island).toBeDefined()
   const loaderGzKb = gzipKb(join(site, '_islands', island!))
