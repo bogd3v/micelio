@@ -118,14 +118,14 @@ export const ARTICLE: StrapiPost = {
   seo: undefined,
 }
 
-// Page sections (#244): every section x variant, rendered by the real components. Uploads come from the media host (mock Strapi in e2e).
+// Page sections (#244): every section x variant, rendered by the real components. Media are generated SVGs served by the specimen itself (modules/theme/specimen/media, /_theme/media/).
 
 function media(name: string, extra: Partial<PageMedia> = {}): PageMedia {
-  return { url: `/uploads/specimen-${name}`, alternativeText: `Specimen ${name}`, width: 1200, height: 630, mime: 'image/png', ...extra }
+  return { url: `/_theme/media/${name}`, alternativeText: `Specimen ${name}`, width: 1200, height: 630, mime: 'image/svg+xml', ...extra }
 }
 
-const icon = (name: string): PageMedia => media(name, { mime: 'image/svg+xml', width: 64, height: 64 })
-const logo = (name: string): PageMedia => media(name, { mime: 'image/svg+xml', width: 120, height: 40 })
+const icon = (name: string): PageMedia => media(name, { width: 64, height: 64 })
+const logo = (name: string): PageMedia => media(name, { width: 120, height: 40 })
 const avatar = (name: string): PageMedia => media(name, { width: 96, height: 96 })
 const link = (label: string, url: string): PageLink => ({ label, url })
 
@@ -146,9 +146,9 @@ const LOGOS: LogoItem[] = [
 ]
 
 const TESTIMONIALS: TestimonialItem[] = [
-  { quote: 'The basil smells all the way to the street.', author: 'Sam', role: 'Neighbor', avatar: avatar('sam.png') },
+  { quote: 'The basil smells all the way to the street.', author: 'Sam', role: 'Neighbor', avatar: avatar('sam.svg') },
   { quote: 'I started my own pots.', author: 'Robin' },
-  { quote: 'Four hours of sun were enough.', author: 'Alex', role: 'Gardener', avatar: avatar('alex.png') },
+  { quote: 'Four hours of sun were enough.', author: 'Alex', role: 'Gardener', avatar: avatar('alex.svg') },
 ]
 
 const PLANS: PricingPlan[] = [
@@ -176,7 +176,7 @@ const hero = (variant: HeroSection['variant']): HeroSection => ({
   text: SECTION_LEAD,
   primaryLink: link('Read the notes', '/blog'),
   secondaryLink: link('Micelio', 'https://github.com/bogd3v/micelio'),
-  media: media('hero.png', { width: 1600, height: 900 }),
+  media: media('hero.svg', { width: 1600, height: 900 }),
 })
 const featureGrid = (variant: FeatureGridSection['variant']): FeatureGridSection => ({ __component: 'section.feature-grid', variant, title: 'What you need', text: SECTION_LEAD, items: FEATURES })
 const mediaShowcase = (variant: MediaShowcaseSection['variant']): MediaShowcaseSection => ({
@@ -184,7 +184,7 @@ const mediaShowcase = (variant: MediaShowcaseSection['variant']): MediaShowcaseS
   variant,
   title: 'A balcony in spring',
   html: '<p>Lettuce, basil and <strong>cherry tomatoes</strong>, a few steps from the kitchen.</p>',
-  media: media('balcony.png'),
+  media: media('balcony.svg'),
   link: link('How to start', '/blog'),
 })
 const stats = (variant: StatsSection['variant']): StatsSection => ({ __component: 'section.stats', variant, title: 'One small garden', items: STATS })
@@ -218,18 +218,18 @@ const gallery = (variant: GallerySection['variant']): GallerySection => ({
   variant,
   title: 'Through the year',
   images: [
-    media('spring.png'),
-    media('summer.png', { width: 800, height: 1000 }),
-    media('autumn.png', { width: 1000, height: 700 }),
-    media('winter.png', { width: 800, height: 800 }),
-    media('seeds.png', { width: 1200, height: 800 }),
+    media('spring.svg'),
+    media('summer.svg', { width: 800, height: 1000 }),
+    media('autumn.svg', { width: 1000, height: 700 }),
+    media('winter.svg', { width: 800, height: 800 }),
+    media('seeds.svg', { width: 1200, height: 800 }),
   ],
 })
 const scene = (variant: SceneSection['variant']): SceneSection => ({
   __component: 'section.scene',
   variant,
   model: media('triangle.glb', { mime: 'model/gltf-binary', width: undefined, height: undefined }),
-  poster: media('triangle-poster.png'),
+  poster: media('triangle-poster.svg'),
   alt: 'A green triangle',
   title: 'A scene',
   text: SECTION_LEAD,
