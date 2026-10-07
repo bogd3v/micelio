@@ -5,6 +5,8 @@ export interface ContentSecurityPolicyOptions {
   meta?: boolean
   /** `blob:` in `img-src` (default true: the dynamic site's output); static pages do not use it. */
   imageBlobs?: boolean
+  /** `'wasm-unsafe-eval'` in `script-src`, for Pagefind's WebAssembly (default false: static builds only; ADR 0004 amendment). */
+  wasmEval?: boolean
 }
 
 const SCRIPT_PATTERN = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
@@ -53,7 +55,7 @@ export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): st
   const hashes = [...new Set(options.scriptHashes)].map(hash => `'sha256-${hash}'`)
   const directives: [string, string[]][] = [
     ['default-src', ['\'self\'']],
-    ['script-src', ['\'self\'', ...hashes]],
+    ['script-src', ['\'self\'', ...(options.wasmEval ? ['\'wasm-unsafe-eval\''] : []), ...hashes]],
     ['style-src', ['\'self\'', '\'unsafe-inline\'']],
     ['img-src', ['\'self\'', 'data:', ...(options.imageBlobs === false ? [] : ['blob:']), ...origins(options.imageOrigins)]],
     // Videos of page sections (<video>) come from the same origins as the images

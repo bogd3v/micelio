@@ -6,6 +6,7 @@ const props = defineProps<{ section: PostListSection }>()
 
 const { localizePath } = useLocaleUtils()
 const toPostCard = usePostCard()
+const { isStatic } = useStaticSite()
 const titleId = useId()
 
 // Items are h3 under the section's h2; without a title they are the h2s
@@ -14,7 +15,7 @@ const posts = computed(() => props.section.posts ?? [])
 </script>
 
 <template>
-  <section v-if="posts.length" class="bd-section" data-section="post-list" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section v-if="posts.length" class="bd-section" data-section="post-list" :data-pagefind-ignore="isStatic ? '' : undefined" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
     <div class="bd-section-inner">
       <SectionHead :title="section.title" :title-id="titleId" />
       <ul v-if="section.variant === 'list'" class="bd-section-items">

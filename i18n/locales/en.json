@@ -474,6 +474,8 @@
     "search": {
       "dialog": "Search {site}",
       "placeholder": "Search articles, topics or actions",
+      "placeholderStatic": "Search articles and pages",
+      "unavailable": "Search is unavailable right now",
       "content": "Also search the content",
       "close": "Close search",
       "minLength": "Type {count} or more letters to search articles",
@@ -484,11 +486,13 @@
       "toMode": "Switch to the {mode} theme",
       "fediverse": "Follow on the fediverse",
       "groups": {
+        "results": "Results",
         "article": "Articles",
         "topic": "Topics",
         "action": "Actions"
       },
       "kinds": {
+        "page": "Page",
         "article": "Article",
         "topic": "Topic",
         "action": "Action"

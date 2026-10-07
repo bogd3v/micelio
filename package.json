@@ -68,6 +68,7 @@
     "jiti": "^2.7.0",
     "lighthouse": "^13.5.0",
     "lightningcss": "^1.33.0",
+    "pagefind": "1.5.2",
     "typescript-eslint": "^8.71.0",
     "vitest": "^5.0.2",
     "vue-tsc": "^3.3.11"

@@ -14,6 +14,7 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useI18n()
+const { isStatic } = useStaticSite()
 const hud = useThemeHud()
 const { localizePath } = useLocaleUtils()
 const commentsOn = useModule('comments')
@@ -33,7 +34,7 @@ useMarkAsRead(prose, readDocumentId)
         <time v-if="publishedDate" class="bd-meta" :datetime="post.publishedAt ?? undefined">{{ publishedDate }}</time>
         <span v-if="post.readTime" class="bd-meta">{{ t("blog.readTime", { minutes: post.readTime }) }}</span>
       </div>
-      <h1 class="bd-article-title bd-wide">{{ post.title }}</h1>
+      <h1 class="bd-article-title bd-wide" :data-pagefind-meta="isStatic ? 'title' : undefined">{{ post.title }}</h1>
       <p v-if="post.description" class="bd-article-lead">{{ post.description }}</p>
       <div class="bd-article-byline">
         <div class="bd-article-author">
@@ -75,14 +76,14 @@ useMarkAsRead(prose, readDocumentId)
     <div class="bd-article-body">
       <BlogTableOfContents class="bd-article-toc" :headings="headings" />
 
-      <article class="bd-article-content">
+      <article class="bd-article-content" :data-pagefind-body="isStatic ? '' : undefined" :data-pagefind-meta="isStatic ? 'kind:article' : undefined">
         <div ref="prose" class="bd-prose">
           <StrapiBlocksRenderer :blocks="post.blocks" />
         </div>
 
         <BlogReferences :entries="references" />
 
-        <div class="bd-article-after">
+        <div class="bd-article-after" :data-pagefind-ignore="isStatic ? '' : undefined">
           <div v-if="post.tags?.length" class="bd-article-tags">
             <span class="bd-eyebrow bd-home-eyebrow">{{ t("post.tags") }}</span>
             <NuxtLink

@@ -7,6 +7,7 @@ definePageMeta({ validate: route => PAGE_SLUG_PATTERN.test(String(route.params.s
 const route = useRoute()
 const slug = route.params.slug as string
 const site = await useLoadedSite()
+const { isStatic } = useStaticSite()
 const { setAlternates } = useLocaleAlternates()
 
 // The page set as the home page keeps answering here, with `/` as its canonical (no redirect)
@@ -30,7 +31,7 @@ usePageSeo(page, isHome ? '/' : `/${slug}`)
 </script>
 
 <template>
-  <div>
+  <div :data-pagefind-body="isStatic ? '' : undefined" :data-pagefind-meta="isStatic ? 'kind:page' : undefined">
     <SectionRenderer :sections="page?.sections" :page-title="page?.title" />
   </div>
 </template>
