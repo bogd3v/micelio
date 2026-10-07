@@ -23,9 +23,24 @@ npm run perf -- --theme <id>      # label the run with the theme the build used 
 
 `--serve` (included in `npm run perf`) starts the mock and the built server on ports 4310 and 3211 (`PERF_MOCK_PORT`, `PERF_SERVER_PORT` and `PERF_DEBUG_PORT` change them when another run uses them). Pass `--base <url>` without `--serve` to measure a server that is already running. The CI job **Performance Budgets** runs `npm run perf -- --check` on every push and pull request for every installed theme and site mode (next section), and writes the table to the job summary.
 
+### Measuring a real site
+
+`--base <url>` without `--serve` measures any running site, but the budgeted pages are the mock site's. Two options adapt the run to another site:
+
+```bash
+npm run perf -- --mode landing --base http://localhost:3000 \
+  --pages home,about,article=/posts/composting --search-query compost
+```
+
+`--pages` takes a comma-separated list: `name` measures that budgeted page at its path, `name=/path` points it (or a new name, without limits) at another path. `--search-query` is what the search island types; it needs a result on that site (default `vue`, the mock's).
+
+### Landing
+
+`modes.landing` has the pages of the demo's seeded showcase (`/` and `/es`), the static limits for JS, fonts, LCP and Lighthouse, and its own `htmlKb` (16.9 and 17.2) and `cssKb` (25.1), measured on that page plus 5 % (#363). The showcase is larger than the mock's home, so the static HTML and CSS limits do not fit it. It is not in CI: the mock site has no showcase, so run it against the demo with `--base` (see above). The `bogota` exception covers `static` and `landing`.
+
 ### Static builds
 
-`--mode static` (`landing` shares its budgets, see ADR 0006) measures a `nuxt generate` output instead of the Nitro server. With `--serve` the script generates the site itself (`scripts/lib/static-generate.mjs`, the same code as `npm run test:static`) against the mock Strapi, which only lives while it generates, and serves `.output/public` with `scripts/static-serve.mjs` (`_headers` applied, `COMPRESS=1` so text is sent in brotli like a CDN does). It overwrites `.output`, so run `npm run build` again before a dynamic run.
+`--mode static` (`landing` has its own section, see "Landing" below) measures a `nuxt generate` output instead of the Nitro server. With `--serve` the script generates the site itself (`scripts/lib/static-generate.mjs`, the same code as `npm run test:static`) against the mock Strapi, which only lives while it generates, and serves `.output/public` with `scripts/static-serve.mjs` (`_headers` applied, `COMPRESS=1` so text is sent in brotli like a CDN does). It overwrites `.output`, so run `npm run build` again before a dynamic run.
 
 ```bash
 npm run perf -- --mode static --check --theme starter   # generates, serves, measures
@@ -41,7 +56,7 @@ Pages are the dynamic ones plus the Spanish home (`/es`). Three metrics only exi
 | `strayRequests` | Requests a browser makes while loading the page to a Pagefind file, or to a script the HTML does not declare. Limit 0: nothing of an island or of Pagefind is in the initial load (ADR 0006, section 6) |
 | `islands.search` | Opens the palette on the first page, types a query and measures what loads from then on: `loaderGzKb`, `pagefindGzKb` (runtime and worker, gzip), `wasmKb` (largest `wasm.<lang>.pagefind`, raw). Checked against `islands` in `budgets.json`, as errors |
 
-`budgets.json` has one section per mode under `modes` (`pages`, `limits` and, for static, `islands`); `aliases` maps `landing` to `static`. A theme exception names its `mode` (every mode when it does not). A theme has at most one exception entry, so it covers one mode or all of them; limits that differ per mode need the entry without `mode` and metrics that suit both. The `e2e/static/search.spec.ts` check of the islands budget stays: it reads the files of the output and runs in `npm run test:static` without Lighthouse.
+`budgets.json` has one section per mode under `modes` (`pages`, `limits` and, for static, `islands`); `aliases` can map a mode to another's budgets (none today). A section with `"ci": false` stays out of the `perf-matrix` job. A theme exception names its `mode`, one or a list (every mode when it does not). A theme has at most one exception entry, so it covers one mode or all of them; limits that differ per mode need the entry without `mode` and metrics that suit both. The `e2e/static/search.spec.ts` check of the islands budget stays: it reads the files of the output and runs in `npm run test:static` without Lighthouse.
 
 Sizes come from what the HTML declares, not from what a browser happens to download, because a browser measurement is not repeatable: depending on CPU speed, Nuxt's idle prefetch of linked pages and lazy chunks like Mermaid land before or after the cut. Lazy chunks are left out of the initial budget on purpose; they get their own heavy island budget (ADR 0006).
 
@@ -56,7 +71,7 @@ The first limits are the baseline plus 5 % for sizes, plus 0.02 for CLS, and the
 
 ### Per theme and site mode
 
-The limits above apply to **every installed theme** in every site mode that has budgets (ADR 0005, section 9; ADR 0006). The `perf-matrix` job lists the installed themes (`npx jiti scripts/theme-check.ts --list`, which reads `themes/` and `MICELIO_THEME_DIRS`) and the modes of `budgets.json` (`dynamic` and `static`); the **Performance Budgets** job then runs once per theme × mode, building with `NUXT_PUBLIC_THEME` set to that theme, and uploads `perf-report-<theme>-<mode>`. Every failure line and the job summary carry `[theme <id>, <mode> mode]`. `dynamic` and `static` have budgets (`landing` reuses `static`); `measure.mjs` fails on a `--mode` that `budgets.json` does not cover, so a new mode needs its own budgets before it joins the matrix. The `Performance Budgets` check (job `performance-gate`) aggregates the matrix and fails if any entry failed, was skipped or was cancelled; it is the one to mark as required in branch protection, and `deploy` depends on it. A theme that goes over fails CI, and the other entries still finish (`fail-fast: false`).
+The limits above apply to **every installed theme** in every site mode that has budgets (ADR 0005, section 9; ADR 0006). The `perf-matrix` job lists the installed themes (`npx jiti scripts/theme-check.ts --list`, which reads `themes/` and `MICELIO_THEME_DIRS`) and the modes of `budgets.json` (the ones without `"ci": false`: `dynamic` and `static`); the **Performance Budgets** job then runs once per theme × mode, building with `NUXT_PUBLIC_THEME` set to that theme, and uploads `perf-report-<theme>-<mode>`. Every failure line and the job summary carry `[theme <id>, <mode> mode]`. `dynamic`, `static` and `landing` have budgets (`landing` is not in the matrix); `measure.mjs` fails on a `--mode` that `budgets.json` does not cover, so a new mode needs its own budgets before it joins the matrix. The `Performance Budgets` check (job `performance-gate`) aggregates the matrix and fails if any entry failed, was skipped or was cancelled; it is the one to mark as required in branch protection, and `deploy` depends on it. A theme that goes over fails CI, and the other entries still finish (`fail-fast: false`).
 
 The same run asserts that the page does not flash (`scripts/perf/fouc.mjs`, tested in `test/foucCheck.test.ts`), as an error on every page: the theme init script is an inline script in `<head>` before the first stylesheet, and every preloaded font has a `"<family> Fallback"` `@font-face` with `size-adjust`. It lives here and not in Playwright because it needs the production build (the dev server orders `<head>` differently and ships no built CSS) and has to run for every theme, which this matrix already does. The CLS side is the existing `cls` budget.
 

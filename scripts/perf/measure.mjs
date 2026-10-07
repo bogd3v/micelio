@@ -30,20 +30,35 @@ const runs = Number(args.runs ?? 3)
 // The build under test: --theme and --mode label the report; the server gets the theme it was built with
 const theme = typeof args.theme === 'string' ? args.theme : process.env.NUXT_PUBLIC_THEME || DEFAULT_THEME
 const mode = typeof args.mode === 'string' ? args.mode : process.env.PERF_MODE || 'dynamic'
-// `landing` is `static` with a content profile (ADR 0006, section 2): it shares the budgets until the page profile of F12 adds its own
+// `landing` is `static` with a content profile (ADR 0006, section 2): same build, its own budgets
 const budgetMode = budgets.aliases?.[mode] ?? mode
 const modeBudgets = budgets.modes?.[budgetMode]
-const isStatic = budgetMode === 'static'
+const isStatic = budgetMode === 'static' || budgetMode === 'landing'
 // --display-font <id|heaviest>: the site picks a curated display font (ADR 0005, sections 8 and 9); that run's font limit is the theme's plus the file's allowance
+// --search-query <text>: what the search island types; it must have a result on the site under test
+const searchQuery = typeof args['search-query'] === 'string' ? args['search-query'] : 'vue'
 const displayFont = args['display-font'] === 'heaviest' ? heaviestDisplayFont() : typeof args['display-font'] === 'string' ? args['display-font'] : undefined
 const extraFontKb = displayFont ? budgets.displayFont?.extraFontKb ?? 60 : 0
 const label = `theme ${theme}, ${mode} mode${displayFont ? `, display font ${displayFont}` : ''}`
 if (!modeBudgets) throw new Error(`budgets.json has budgets for the modes ${Object.keys(budgets.modes).join(', ')}, not "${mode}" (${label})`)
+// --pages home,article=/posts/x: measure these pages only; `name=path` points a budgeted page at another path (a real site, not the mock)
+const pages = pagesToMeasure(args.pages)
 // A recorded exception applies to every mode unless it names one
-const exception = budgets.themes?.[theme] && (!budgets.themes[theme].mode || budgets.themes[theme].mode === budgetMode) ? budgets.themes[theme] : undefined
+const exception = budgets.themes?.[theme] && [budgets.themes[theme].mode ?? budgetMode].flat().includes(budgetMode) ? budgets.themes[theme] : undefined
 for (const [id, entry] of Object.entries(budgets.themes ?? {})) {
   if (!entry?.reason) throw new Error(`budgets.json: the exception for theme "${id}" needs a "reason"`)
   if (!existsSync(new URL(`../../themes/${id}/theme.json`, import.meta.url))) console.warn(`warn  budgets.json: "themes.${id}" is not an installed theme in themes/`)
+}
+
+/** The budgeted pages of the mode, narrowed and re-pathed by `--pages` */
+function pagesToMeasure(list) {
+  if (typeof list !== 'string') return modeBudgets.pages
+  return list.split(',').filter(Boolean).map((entry) => {
+    const [name, path] = entry.split('=')
+    const known = modeBudgets.pages.find(page => page.name === name)
+    if (!known && !path) throw new Error(`--pages: "${name}" is not a page of the ${budgetMode} budgets (${modeBudgets.pages.map(page => page.name).join(', ')}); give its path as name=/path`)
+    return { name, path: path ?? known.path }
+  })
 }
 
 /** The id of the largest file in app/assets/fonts/display/ */
@@ -222,7 +237,7 @@ async function measureSearchIsland(browser, url, declaredScripts) {
   const initial = paths.length
   // Only the island's upgrade sets aria-keyshortcuts on the button, so waiting for it waits for the upgrade
   await page.locator('button[aria-keyshortcuts]').first().click()
-  await page.getByRole('dialog').getByRole('combobox').fill('vue')
+  await page.getByRole('dialog').getByRole('combobox').fill(searchQuery)
   await page.getByRole('option').first().waitFor()
   await page.waitForLoadState('networkidle')
   await context.close()
@@ -314,7 +329,7 @@ try {
   const report = []
   const problems = []
   const islands = {}
-  for (const { name, path } of modeBudgets.pages) {
+  for (const { name, path } of pages) {
     const url = new URL(path, base).href
     await fetch(url)
     const { html, stylesheets, declaredScripts, ...weight } = await measureWeight(url)

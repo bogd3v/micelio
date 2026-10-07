@@ -166,7 +166,7 @@ jobs:
         id: matrix
         run: |
           themes="$(npx jiti scripts/theme-check.ts --list)"
-          modes="$(node -p "JSON.stringify(Object.keys(require('./scripts/perf/budgets.json').modes))")"
+          modes="$(node -p "JSON.stringify(Object.entries(require('./scripts/perf/budgets.json').modes).filter(([, mode]) => mode.ci !== false).map(([id]) => id))")"
           echo "matrix={\"theme\":${themes},\"mode\":${modes}}" >> "$GITHUB_OUTPUT"
           echo "themes=${themes}" >> "$GITHUB_OUTPUT"
       # The lockfile decides the browser build, so the Docker image follows a Dependabot bump of @playwright/test
