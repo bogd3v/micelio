@@ -21,12 +21,14 @@ describe('BdLangSwitch', () => {
   })
 
   it('keeps the blog filters and the hash, but not the page, in the other language', async () => {
-    const wrapper = await mountSuspended(BdLangSwitch, { route: '/blog?tag=llm&sort=fediverse&page=2#posts' })
+    const wrapper = await mountSuspended(BdLangSwitch, { route: '/blog/tag/llm/page/2?sort=fediverse#posts' })
+    // The blog page lists the first page of the filter as the alternate
+    useLocaleAlternates().setAlternates({ en: '/blog/tag/llm', es: '/es/blog/tag/llm' }, { hreflang: false })
     await wrapper.findAll('button')[0]!.trigger('click')
     await vi.waitFor(() => expect(wrapper.emitted('change')).toEqual([['es']]))
     const route = useRouter().currentRoute.value
-    expect(route.path).toBe('/es/blog')
-    expect(route.query).toEqual({ tag: 'llm', sort: 'fediverse' })
+    expect(route.path).toBe('/es/blog/tag/llm')
+    expect(route.query).toEqual({ sort: 'fediverse' })
     expect(route.hash).toBe('#posts')
     await useNuxtApp().$i18n.setLocale('en')
   })

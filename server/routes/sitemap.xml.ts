@@ -1,5 +1,7 @@
 import qs from 'qs'
 import { defaultLocale, Locale, type LocalePaths, type RawStrapiArticle } from '~/interfaces'
+import { blogPath } from '~/helpers/blog'
+import { CATEGORIES } from '~/helpers/categories'
 import { localizedPath } from '~/helpers/locale'
 import { articlePaths, publishedTranslations } from '~/helpers/translations'
 
@@ -26,6 +28,7 @@ export default defineEventHandler(async (event) => {
     const staticPages = [
       { path: '/', changefreq: 'daily', priority: '1.0' },
       { path: '/blog', changefreq: 'daily', priority: '0.9' },
+      ...CATEGORIES.map(category => ({ path: blogPath({ category, page: 1 }), changefreq: 'daily', priority: '0.6' })),
       { path: '/about', changefreq: 'weekly', priority: '0.7' },
       { path: '/privacy', changefreq: 'yearly', priority: '0.3' },
     ]

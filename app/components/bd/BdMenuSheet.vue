@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { blogPath } from '~/helpers/blog'
 import type { HeaderSection } from '~/interfaces'
 import { modes } from '#micelio/theme'
 import { CATEGORIES, categoryColor } from '~/helpers/categories'
@@ -38,7 +39,7 @@ const topics = computed<{ slug: string, label: string, color: string, to: string
     slug,
     label: t(`bd.categoryShort.${slug}`),
     color: categoryColor(slug),
-    to: `${localizePath('/blog')}?category=${slug}`,
+    to: blogPath({ category: slug, page: 1 }, localizePath('/blog')),
   })),
 )
 const panelStyle = computed<Record<string, string> | undefined>(() =>

@@ -134,7 +134,7 @@ These appear in every layout variant.
 | `bd-seg` | A segmented button. | `[aria-pressed]`, `[data-mode]` |
 | `bd-lang` | The language switch. |  |
 | `bd-iconbtn` | Button that holds only an icon. |  |
-| `bd-chip` | Small pill: a filter, a tag link, a shortcut. | `:hover`, `[aria-pressed]` |
+| `bd-chip` | Small pill: a filter, a tag link, a shortcut. | `:hover`, `[aria-pressed]`, `[aria-current]` |
 | `bd-kbd` | Keyboard shortcut hint. |  |
 | `bd-home-section` | A home page section (also used by the about page blocks). |  |
 | `bd-home-head` | Heading block of a section. |  |

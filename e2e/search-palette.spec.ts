@@ -77,7 +77,7 @@ test('filters by topic from the palette', async ({ page }) => {
   const palette = page.getByRole('dialog', { name: 'Search BogDev' })
   await palette.getByRole('combobox').fill('ux')
   await palette.getByRole('option', { name: /Linux and open source/ }).click()
-  await expect(page).toHaveURL(/\/blog\?category=linux$/)
+  await expect(page).toHaveURL(/\/blog\/category\/linux$/)
 })
 
 test('keeps focus inside the palette', async ({ page }) => {

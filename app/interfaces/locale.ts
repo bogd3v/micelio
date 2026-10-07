@@ -20,4 +20,6 @@ export type LocalePaths = Partial<Record<Locale, string>>
 export interface LocaleAlternates {
   path: string
   paths: LocalePaths
+  /** False: the page lists no hreflang alternates, but the language switcher still uses `paths` */
+  hreflang?: boolean
 }

@@ -71,7 +71,7 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
   const feedUrl = `${baseUrl}${feedPath(locale, category)}`
   const altFeedUrl = `${baseUrl}${feedPath(otherLocale(locale), category)}`
   const channelLink = category
-    ? `${baseUrl}${localePrefix(locale)}/blog?category=${category}`
+    ? `${baseUrl}${localePrefix(locale)}/blog/category/${category}`
     : `${baseUrl}${localePrefix(locale)}`
   const title = escapeXml(channelTitle(site.name, locale, category))
   const description = escapeXml(channelDescription(site.name, locale, category))

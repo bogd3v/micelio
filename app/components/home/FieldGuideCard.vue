@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { blogPath } from '~/helpers/blog'
 import type { Category } from '~/interfaces'
 import { CATEGORY_INFO } from '~/helpers/categories'
 import { padCount } from '~/helpers/search'
@@ -27,7 +28,7 @@ const countLabel = computed<string>(() => t('home.guide.count', { count: padCoun
 
 <template>
   <NuxtLink
-    :to="`${localizePath('/blog')}?category=${category}`"
+    :to="blogPath({ category: props.category, page: 1 }, localizePath('/blog'))"
     :class="['bd-guide-card', { 'bd-guide-pillar': pillar }]"
   >
     <div class="bd-guide-head">

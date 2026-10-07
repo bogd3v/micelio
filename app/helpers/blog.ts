@@ -1,17 +1,19 @@
-import type { LocationQuery } from 'vue-router'
+import type { LocationQuery, RouteParams } from 'vue-router'
 import type { BlogFilters, BlogSort, BlogView, PaginationItem, PostMonth } from '../interfaces/blog'
 import type { PostListItem } from '../interfaces/strapi-post'
+import { defaultLocale, Locale } from '../interfaces/locale'
 import { isCategory } from './categories'
 import { MIN_SEARCH_LENGTH, isContentSearch } from './search'
 
 export const BLOG_PAGE_SIZE = 6
 export const LOG_PAGE_SIZE = 24
+const BLOG_BASE = '/blog'
 
 const LOG_VIEW = 'log'
 export const BLOG_SORTS: BlogSort[] = ['recent', 'oldest', 'fediverse']
 const TIME_ZONE = 'America/Bogota'
 
-function firstValue(value: LocationQuery[string] | undefined): string {
+function firstValue(value: LocationQuery[string] | RouteParams[string] | undefined): string {
   const raw = Array.isArray(value) ? value[0] : value
   return typeof raw === 'string' ? raw.trim() : ''
 }
@@ -21,13 +23,14 @@ export function searchTerm(input: string): string | undefined {
   return term.length >= MIN_SEARCH_LENGTH ? term : undefined
 }
 
-export function parseBlogQuery(query: LocationQuery): BlogFilters {
-  const category = firstValue(query.category).toLowerCase()
-  const tag = firstValue(query.tag)
-  const page = Number.parseInt(firstValue(query.page), 10)
+export function parseBlogRoute(params: RouteParams, query: LocationQuery): BlogFilters {
+  const category = firstValue(params.category).toLowerCase()
+  const tag = firstValue(params.tag)
+  const page = Number.parseInt(firstValue(params.page), 10)
   return {
+    // A path carries one filter: the category wins over the tag
     category: isCategory(category) ? category : undefined,
-    tag: tag || undefined,
+    tag: isCategory(category) ? undefined : tag || undefined,
     search: searchTerm(firstValue(query.search)),
     page: Number.isFinite(page) && page > 1 ? page : 1,
     view: parseView(firstValue(query.view)),
@@ -49,16 +52,67 @@ export function blogPageSize(view: BlogView | undefined): number {
   return view === 'log' ? LOG_PAGE_SIZE : BLOG_PAGE_SIZE
 }
 
+/** The filters that stay in the query string: search, view, sort and content. */
 export function blogQuery(filters: BlogFilters): Record<string, string> {
   const query: Record<string, string> = {}
-  if (filters.category) query.category = filters.category
-  if (filters.tag) query.tag = filters.tag
   if (filters.search) query.search = filters.search
-  if (filters.page > 1) query.page = String(filters.page)
   if (filters.view === 'log') query.view = LOG_VIEW
   if (filters.sort && filters.sort !== 'recent') query.sort = filters.sort
   if (filters.content) query.content = '1'
   return query
+}
+
+/** `/blog`, `/blog/category/<slug>`, `/blog/tag/<slug>` and their `/page/<n>`; one filter per path, the category wins. */
+export function blogPath(filters: Pick<BlogFilters, 'category' | 'tag' | 'page'>, base = BLOG_BASE): string {
+  const filter = filters.category
+    ? `/category/${encodeURIComponent(filters.category)}`
+    : filters.tag ? `/tag/${encodeURIComponent(filters.tag)}` : ''
+  return `${base}${filter}${filters.page > 1 ? `/page/${filters.page}` : ''}`
+}
+
+export function blogLocation(filters: BlogFilters, base = BLOG_BASE): { path: string, query: Record<string, string> } {
+  return { path: blogPath(filters, base), query: blogQuery(filters) }
+}
+
+const LOCALE_PREFIXES = Object.values(Locale).filter(code => code !== defaultLocale).join('|')
+const BLOG_URL_PATH = new RegExp(`^((?:/(?:${LOCALE_PREFIXES}))?${BLOG_BASE})(?:/(category|tag)/([^/]+))?(?:/page/(\\d+))?/?$`)
+const LEGACY_PARAMS = ['category', 'tag', 'page']
+
+/** Whether the path parameters of a blog list route name a real category and a page above the first. */
+export function isBlogRouteValid(params: RouteParams): boolean {
+  const category = firstValue(params.category)
+  if (category && !isCategory(category.toLowerCase())) return false
+  return params.page === undefined || Number.parseInt(firstValue(params.page), 10) >= 2
+}
+
+/**
+ * The canonical URL for a blog list request, or null when it already is: old query-string filters
+ * (`/blog?category=x&page=2`), a category in capitals, a padded page number or `/page/1`.
+ */
+export function legacyBlogRedirect(pathname: string, search: string): string | null {
+  const match = BLOG_URL_PATH.exec(pathname)
+  if (!match) return null
+  const [, base = BLOG_BASE, kind, slug, pageText] = match
+  const params = new URLSearchParams(search)
+  const legacy = LEGACY_PARAMS.some(name => params.has(name))
+  const queryFilters = legacy && !kind && !pageText
+  const category = (kind === 'category' ? slug : queryFilters ? params.get('category') : '')?.trim().toLowerCase() ?? ''
+  const tag = (kind === 'tag' ? slug : queryFilters ? params.get('tag') : '')?.trim() ?? ''
+  const page = Number.parseInt(pageText ?? (queryFilters ? params.get('page') ?? '' : ''), 10)
+  // An unknown category or page 0 in a path is a 404, not a redirect
+  if (kind === 'category' && !isCategory(category)) return null
+  if (pageText !== undefined && page < 1) return null
+  const location = blogPath({
+    category: isCategory(category) ? category : undefined,
+    tag: isCategory(category) ? undefined : tag || undefined,
+    page: Number.isFinite(page) && page > 1 ? page : 1,
+  }, base)
+  const rest = new URLSearchParams()
+  for (const [name, value] of params) if (!queryFilters || !LEGACY_PARAMS.includes(name)) rest.append(name, value)
+  const query = rest.toString()
+  const target = query ? `${location}?${query}` : location
+  // Compare without the query: a canonical path is left alone
+  return location === pathname && !queryFilters ? null : target
 }
 
 function monthKey(date: string): string {

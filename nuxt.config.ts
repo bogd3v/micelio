@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { Locale } from './app/interfaces/locale'
 import { SECURITY_HEADERS } from './app/helpers/securityHeaders'
 import { parseSiteMode } from './app/helpers/siteMode'
@@ -26,6 +27,16 @@ const ESBUILD_TARGETS = Object.entries(CSS_TARGETS).map(
 
 // Read at build time: it changes what is built (ADR 0006); an invalid value fails the build
 const siteMode = parseSiteMode(process.env.NUXT_PUBLIC_SITE_MODE)
+
+// Blog filters are paths, not query strings (ADR 0006, section 7); they reuse the blog list page
+const BLOG_LIST_PAGE = fileURLToPath(new URL('./app/pages/blog/index.vue', import.meta.url))
+const BLOG_FILTER_ROUTES: { name: string, path: string }[] = [
+  { name: 'blog-page', path: '/blog/page/:page(\\d+)' },
+  { name: 'blog-category', path: '/blog/category/:category' },
+  { name: 'blog-category-page', path: '/blog/category/:category/page/:page(\\d+)' },
+  { name: 'blog-tag', path: '/blog/tag/:tag' },
+  { name: 'blog-tag-page', path: '/blog/tag/:tag/page/:page(\\d+)' },
+]
 
 export default defineNuxtConfig({
   // The theme goes first: @nuxt/image reads image.dirs when it is set up (modules/theme/assets.ts)
@@ -142,6 +153,11 @@ export default defineNuxtConfig({
   // The theme packages' slots are checked with the app (ADR 0005, section 4)
   typescript: {
     tsConfig: { include: ['../themes/**/*'] },
+  },
+  hooks: {
+    'pages:extend'(pages) {
+      for (const route of BLOG_FILTER_ROUTES) pages.push({ ...route, file: BLOG_LIST_PAGE })
+    },
   },
   eslint: {
     config: {

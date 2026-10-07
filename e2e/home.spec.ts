@@ -31,7 +31,7 @@ test('filters the latest articles by topic and shows the empty nest', async ({ p
 test('links every field guide topic to its blog filter', async ({ page }) => {
   await page.goto('/')
   const hrefs = await page.locator('.bd-guide-card').evaluateAll(cards => cards.map(card => card.getAttribute('href')))
-  expect(hrefs).toEqual(['privacidad', 'diy', 'ia', 'software', 'linux'].map(slug => `/blog?category=${slug}`))
+  expect(hrefs).toEqual(['privacidad', 'diy', 'ia', 'software', 'linux'].map(slug => `/blog/category/${slug}`))
 })
 
 test.describe('with reduced motion', () => {

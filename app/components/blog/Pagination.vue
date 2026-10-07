@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import type { BlogFilters, PaginationItem } from '~/interfaces'
-import { blogQuery, paginationItems } from '~/helpers/blog'
+import { blogLocation, paginationItems } from '~/helpers/blog'
 import { padCount } from '~/helpers/search'
 
 const props = defineProps<{
@@ -11,6 +11,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const { localizePath } = useLocaleUtils()
 
 const current = computed<number>(() => Math.min(props.filters.page, Math.max(props.totalPages, 1)))
 const pageCount = computed<number>(() => Math.max(props.totalPages, 1))
@@ -20,7 +21,7 @@ const status = computed<string>(() =>
 )
 
 function linkTo(page: number): RouteLocationRaw {
-  return { query: blogQuery({ ...props.filters, page }) }
+  return blogLocation({ ...props.filters, page }, localizePath('/blog'))
 }
 </script>
 

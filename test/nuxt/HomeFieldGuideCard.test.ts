@@ -6,7 +6,7 @@ import HomeFieldGuideCard from '~/components/home/FieldGuideCard.vue'
 describe('HomeFieldGuideCard', () => {
   it('renders a pillar with its bird, note and empty count', async () => {
     const wrapper = await mountSuspended(HomeFieldGuideCard, { props: { category: Category.Privacy, count: 0, figure: 0 } })
-    expect(wrapper.attributes('href')).toBe('/blog?category=privacidad')
+    expect(wrapper.attributes('href')).toBe('/blog/category/privacidad')
     expect(wrapper.classes()).toContain('bd-guide-pillar')
     expect(wrapper.get('.bd-guide-label').text()).toBe('Pillar 01')
     expect(wrapper.get('.bd-guide-bird').text()).toBe('Masked flowerpiercer · Diglossa cyanea')

@@ -38,7 +38,7 @@
     "bd-seg": { "describes": "A segmented button.", "states": ["[aria-pressed]", "[data-mode]"] },
     "bd-lang": "The language switch.",
     "bd-iconbtn": "Button that holds only an icon.",
-    "bd-chip": { "describes": "Small pill: a filter, a tag link, a shortcut.", "states": [":hover", "[aria-pressed]"] },
+    "bd-chip": { "describes": "Small pill: a filter, a tag link, a shortcut.", "states": [":hover", "[aria-pressed]", "[aria-current]"] },
     "bd-kbd": "Keyboard shortcut hint.",
 
     "bd-foot": { "describes": "Site footer.", "layouts": { "footer": ["columns", "minimal"] } },

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { blogPath } from '~/helpers/blog'
 import type { StrapiPost } from '~/interfaces'
 
 defineOptions({ name: 'RegionArticleAside' })
@@ -87,7 +88,7 @@ useMarkAsRead(prose, readDocumentId)
             <NuxtLink
               v-for="tag in post.tags"
               :key="tag.slug"
-              :to="{ path: localizePath('/blog'), query: { tag: tag.slug } }"
+              :to="blogPath({ tag: tag.slug, page: 1 }, localizePath('/blog'))"
               class="bd-chip bd-blog-tag"
             >
               #{{ tag.name }}

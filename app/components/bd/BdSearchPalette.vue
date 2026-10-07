@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { blogPath } from '~/helpers/blog'
 import type { CategoryCount, Locale, PaletteGroup, PaletteOption, SearchPostResult } from '~/interfaces'
 import { CATEGORIES, isCategory, categoryColor } from '~/helpers/categories'
 import { formatDotDate } from '~/helpers/formatDate'
@@ -55,7 +56,7 @@ const groups = computed<PaletteGroup[]>(() => {
       label: t(`bd.categories.${slug}`),
       hint: slug in counts.value ? padCount(counts.value[slug]!) : undefined,
       color: categoryColor(slug),
-      to: `${localizePath('/blog')}?category=${slug}`,
+      to: blogPath({ category: slug, page: 1 }, localizePath('/blog')),
     }))
     .filter(option => matchesQuery(option.label, trimmed.value))
   const actionOptions: PaletteOption[] = [

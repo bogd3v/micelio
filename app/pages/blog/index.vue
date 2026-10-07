@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { layout } from '#micelio/theme'
-import type { BlogFilters, BlogSort, BlogView, Category, Locale, PostListItem, TagCount } from '~/interfaces'
-import { BLOG_SORTS, blogPageSize, blogQuery, hasActiveFilters, parseBlogQuery, parseSort, searchTerm } from '~/helpers/blog'
+import { Locale } from '~/interfaces'
+import type { BlogFilters, BlogSort, BlogView, Category, PostListItem, TagCount } from '~/interfaces'
+import { BLOG_SORTS, blogLocation, blogPageSize, blogPath, hasActiveFilters, isBlogRouteValid, parseBlogRoute, parseSort, searchTerm } from '~/helpers/blog'
 import { isCategory } from '~/helpers/categories'
 import { feedPath } from '~/helpers/feed'
 import { padCount } from '~/helpers/search'
 import { popularTags as pickPopularTags } from '~/helpers/tags'
 import { pageTitle } from '~/helpers/site'
+
+// An unknown category, or a page that has its own URL (/blog), is a 404 on every navigation
+definePageMeta({ key: 'blog-list', validate: route => isBlogRouteValid(route.params) })
 
 const RECENT_SIZE = 4
 const SEARCH_DEBOUNCE_MS = 300
@@ -18,15 +22,22 @@ const viewSwitch = layout.postList !== 'list'
 const { locale, t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const { localizePath } = useLocaleUtils()
+const { setAlternates } = useLocaleAlternates()
 const { fetchPosts, fetchCategories, fetchTags } = useStrapi()
-const { canonicalUrl } = useCanonicalUrl('/blog')
 const { siteUrl } = useSiteUrl()
 const defaultOgImage = useDefaultOgImage()
 const site = useSite()
 const config = useRuntimeConfig()
 const fediverseOn = useModule('fediverse')
 
-const filters = computed<BlogFilters>(() => parseBlogQuery(route.query))
+// Without the switch the view is not part of the URL
+const filters = computed<BlogFilters>(() => ({
+  ...parseBlogRoute(route.params, route.query),
+  ...(viewSwitch ? {} : { view: undefined }),
+}))
+const blogBase = computed<string>(() => localizePath('/blog'))
+const canonicalUrl = computed<string>(() => `${siteUrl.value}${blogPath(filters.value, blogBase.value)}`)
 const currentLocale = computed<Locale>(() => locale.value as Locale)
 const view = computed<BlogView>(() => viewSwitch ? (filters.value.view ?? 'grid') : 'grid')
 const pageSize = computed<number>(() => blogPageSize(view.value))
@@ -76,10 +87,11 @@ const applySearch = useDebounceFn(() => {
 }, SEARCH_DEBOUNCE_MS)
 
 function navigate(patch: Partial<BlogFilters>, replace = false): void {
-  // Without the switch the view is not part of the URL
-  const query = blogQuery({ ...filters.value, ...patch, ...(viewSwitch ? {} : { view: undefined }) })
-  if (replace) router.replace({ query })
-  else router.push({ query })
+  // One filter per path: choosing a category drops the tag and the other way round
+  const next: BlogFilters = { ...filters.value, ...patch }
+  const location = blogLocation(next, blogBase.value)
+  if (replace) router.replace(location)
+  else router.push(location)
 }
 
 function selectView(next: BlogView): void {
@@ -95,14 +107,6 @@ function selectSort(event: Event): void {
 
 function toggleContent(enabled: boolean): void {
   navigate({ content: enabled || undefined, page: 1 })
-}
-
-function selectCategory(category: Category | undefined): void {
-  navigate({ category, page: 1 })
-}
-
-function selectTag(tag: string | undefined): void {
-  navigate({ tag, page: 1 })
 }
 
 function removeFilter(filter: 'category' | 'tag' | 'search'): void {
@@ -121,20 +125,31 @@ watch(() => filters.value.search, (search) => {
   if (search !== searchTerm(searchInput.value)) searchInput.value = search ?? ''
 })
 
+// Page n of one language is not page n of the other: the switcher goes to the first page and pages above it have no hreflang
+watch(() => route.path, () => {
+  setAlternates(Object.fromEntries(Object.values(Locale).map(code => [
+    code,
+    blogPath({ ...filters.value, page: 1 }, localizePath('/blog', code)),
+  ])), { hreflang: filters.value.page === 1 })
+}, { immediate: true })
+
 watch(() => filters.value.page, () => {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   document.getElementById('posts')?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' })
 })
 
 useHead(() => ({
-  link: filters.value.category
-    ? [{
-        rel: 'alternate',
-        type: 'application/rss+xml',
-        title: t('blog.feeds.title', { site: site.value.name, category: t(`bd.categories.${filters.value.category}`) }),
-        href: `${siteUrl.value}${feedPath(locale.value, filters.value.category)}`,
-      }]
-    : [],
+  link: [
+    { rel: 'canonical' as const, href: canonicalUrl.value },
+    ...(filters.value.category
+      ? [{
+          rel: 'alternate' as const,
+          type: 'application/rss+xml',
+          title: t('blog.feeds.title', { site: site.value.name, category: t(`bd.categories.${filters.value.category}`) }),
+          href: `${siteUrl.value}${feedPath(locale.value, filters.value.category)}`,
+        }]
+      : []),
+  ],
 }))
 
 useSeoMeta({
@@ -190,8 +205,6 @@ useSeoMeta({
       :counts="counts"
       :tags="popularTags"
       :result-count="resultCount"
-      @category="selectCategory"
-      @tag="selectTag"
       @content="toggleContent"
       @remove="removeFilter"
       @clear="clearFilters"

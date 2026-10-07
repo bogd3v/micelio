@@ -13,13 +13,13 @@ describe('BlogPagination', () => {
     const pages = wrapper.findAll('.bd-page-list a')
     expect(pages.map(page => page.text())).toEqual(['01', '02', '03'])
     expect(pages.map(page => page.attributes('href'))).toEqual([
-      '/?category=linux',
-      '/?category=linux&page=2',
-      '/?category=linux&page=3',
+      '/blog/category/linux',
+      '/blog/category/linux/page/2',
+      '/blog/category/linux/page/3',
     ])
     expect(pages[1]!.attributes('aria-current')).toBe('page')
-    expect(wrapper.get('a[aria-label="Previous page"]').attributes('href')).toBe('/?category=linux')
-    expect(wrapper.get('a[aria-label="Next page"]').attributes('href')).toBe('/?category=linux&page=3')
+    expect(wrapper.get('a[aria-label="Previous page"]').attributes('href')).toBe('/blog/category/linux')
+    expect(wrapper.get('a[aria-label="Next page"]').attributes('href')).toBe('/blog/category/linux/page/3')
     expect(wrapper.get('.bd-page-status').text()).toBe('Page 02 of 03 · 6 per page')
   })
 

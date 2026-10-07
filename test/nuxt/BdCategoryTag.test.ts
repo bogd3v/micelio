@@ -14,11 +14,11 @@ describe('BdCategoryTag', () => {
 
   it('renders a link and accepts a custom label', async () => {
     const wrapper = await mountSuspended(BdCategoryTag, {
-      props: { category: Category.Diy, href: `/blog?category=${Category.Diy}` },
+      props: { category: Category.Diy, href: `/blog/category/${Category.Diy}` },
       slots: { default: () => 'DIY' },
     })
     expect(wrapper.element.tagName).toBe('A')
-    expect(wrapper.attributes('href')).toBe('/blog?category=diy')
+    expect(wrapper.attributes('href')).toBe('/blog/category/diy')
     expect(wrapper.text()).toBe('DIY')
   })
 })

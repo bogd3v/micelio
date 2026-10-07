@@ -18,13 +18,14 @@ test('switches language from the header', async ({ page }) => {
 })
 
 test('keeps the blog filters but not the page when switching language', async ({ page }) => {
-  await page.goto('/es/blog?category=software&tag=vue&view=log&sort=oldest&content=1&page=2#posts', { waitUntil: 'networkidle' })
+  await page.goto('/es/blog/tag/vue/page/2?view=log&sort=oldest&content=1#posts', { waitUntil: 'networkidle' })
   await page.getByRole('group', { name: 'Idioma' }).getByRole('button', { name: 'English' }).click()
-  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/blog\?/)
+  await expect(page).toHaveURL(/^https?:\/\/[^/]+\/blog\/tag\/vue\?/)
   const url = new URL(page.url())
-  expect(Object.fromEntries(url.searchParams)).toEqual({ category: 'software', tag: 'vue', view: 'log', sort: 'oldest', content: '1' })
+  expect(url.pathname).toBe('/blog/tag/vue')
+  expect(Object.fromEntries(url.searchParams)).toEqual({ view: 'log', sort: 'oldest', content: '1' })
   expect(url.hash).toBe('#posts')
-  await expect(page.getByRole('group', { name: 'Filter by tag' }).getByRole('button', { name: '#Vue' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('group', { name: 'Filter by tag' }).getByRole('link', { name: '#Vue' })).toHaveAttribute('aria-current', 'page')
   const log = page.locator('.bd-log-month')
   await expect(log.getByRole('link', { name: 'Understanding Vue Composables' })).toBeVisible()
   await expect(log.getByRole('link', { name: 'Linux Server Hardening Guide' })).toHaveCount(0)

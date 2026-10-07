@@ -13,7 +13,7 @@ describe('BdMenuSheet', () => {
     expect(sections.get('[aria-current="page"]').text()).toContain('About')
     const topics = wrapper.findAll('.bd-sheet-cat')
     expect(topics.map(a => a.text())).toEqual(['Privacy', 'DIY', 'AI', 'Software', 'Linux', '◆@bogdev'])
-    expect(topics[0]!.attributes('href')).toBe('/blog?category=privacidad')
+    expect(topics[0]!.attributes('href')).toBe('/blog/category/privacidad')
     expect(topics[5]!.attributes('href')).toBe('/#fediverso')
     expect(wrapper.find('[role="group"][aria-label="Color theme"]').exists()).toBe(true)
     expect(wrapper.find('[role="group"][aria-label="Language"]').exists()).toBe(true)

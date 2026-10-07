@@ -52,6 +52,7 @@
       "chips": "Chips, teclas e insignias",
       "chip": "Chip",
       "pressed": "Presionado",
+      "current": "Actual",
       "disabled": "Deshabilitado",
       "reader": "Lector",
       "editor": "Editor",

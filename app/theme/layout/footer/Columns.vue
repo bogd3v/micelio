@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { blogPath } from '~/helpers/blog'
 import { CATEGORIES, categoryColor } from '~/helpers/categories'
 import { FOOTER_SOCIALS } from '~/helpers/site'
 import { resolveSourceUrl } from '~/helpers/source'
@@ -52,7 +53,7 @@ const topics = computed<FooterLink[]>(() =>
   CATEGORIES.map(slug => ({
     id: slug,
     label: t(`bd.categories.${slug}`),
-    to: `${localizePath('/blog')}?category=${slug}`,
+    to: blogPath({ category: slug, page: 1 }, localizePath('/blog')),
     color: categoryColor(slug),
   })),
 )
