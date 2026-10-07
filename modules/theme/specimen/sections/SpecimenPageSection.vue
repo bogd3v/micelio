@@ -13,7 +13,7 @@ provide(TRUSTED_MEDIA_PREFIX, '/_theme/media/')
 const { t } = useI18n()
 const newsletter = useModule('newsletter')
 
-const entries = computed(() => PAGE_SECTIONS.filter(entry => entry.kind === props.kind))
+const entries = computed<typeof PAGE_SECTIONS>(() => PAGE_SECTIONS.filter(entry => entry.kind === props.kind))
 const unavailable = computed<boolean>(() => props.kind === 'newsletter' && !newsletter.value)
 </script>
 

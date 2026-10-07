@@ -228,6 +228,7 @@ const gallery = (variant: GallerySection['variant']): GallerySection => ({
 const scene = (variant: SceneSection['variant']): SceneSection => ({
   __component: 'section.scene',
   variant,
+  // Placeholder: no model file ships; SectionScene renders only the poster until #246 adds the island
   model: media('triangle.glb', { mime: 'model/gltf-binary', width: undefined, height: undefined }),
   poster: media('triangle-poster.svg'),
   alt: 'A green triangle',
