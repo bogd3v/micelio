@@ -139,8 +139,10 @@ export function scriptHashDisagreements(pages: ReadonlyMap<string, readonly stri
 const IMMUTABLE = 'public, max-age=31536000, immutable'
 const REVALIDATE = 'public, max-age=0, must-revalidate'
 /** Strapi keeps a file's URL when it is replaced, so `_ipx` (named after the source URL) revalidates; `_nuxt` (Vite hash) and `_media` (byte hash) never change under a name. */
-export const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_media/*']
-export const REVALIDATED_PATHS: readonly string[] = ['/_ipx/*']
+/** `_islands` files carry a content hash in the name. */
+export const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_media/*', '/_islands/*']
+/** `/pagefind/*` is rebuilt with every generate (`pagefind.js` keeps its name), so it is never immutable. */
+export const REVALIDATED_PATHS: readonly string[] = ['/_ipx/*', '/pagefind/*']
 /** Files copied from Strapi are data, never documents: an SVG opened directly runs nothing and loads nothing. Sent on top of the site policy (repeated policies only tighten). */
 export const MEDIA_POLICY = 'default-src \'none\'; style-src \'unsafe-inline\'; img-src \'self\' data:; sandbox'
 

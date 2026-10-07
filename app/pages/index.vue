@@ -5,6 +5,7 @@ import { warnOnce } from '~/helpers/pages'
 const { locale } = useI18n()
 const site = await useLoadedSite()
 const { setAlternates } = useLocaleAlternates()
+const { isStatic } = useStaticSite()
 
 // The page chosen in the site settings; if it cannot be loaded the blog home shows instead
 const homeSlug = site.value.homePage?.slug
@@ -25,7 +26,7 @@ if (sectionPage.value) {
 </script>
 
 <template>
-  <div v-if="sectionPage">
+  <div v-if="sectionPage" :data-pagefind-body="isStatic ? '' : undefined" :data-pagefind-meta="isStatic ? 'kind:page' : undefined">
     <LazySectionRenderer :sections="sectionPage.sections" :page-title="sectionPage.title" />
   </div>
   <RegionHome v-else-if="blog" :featured-post="blog.featuredPost.value" :total="blog.total.value" :counts="blog.counts.value" :topics="blog.topics.value" />

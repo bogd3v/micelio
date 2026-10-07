@@ -83,7 +83,7 @@ export default defineNuxtModule({
 
       // Static pages load no Nuxt client and copy their images and media into the site: no image origin is needed
       function staticPolicy(hashes: string[], meta: boolean): string {
-        return contentSecurityPolicy({ scriptHashes: hashes, imageOrigins: [], imageBlobs: false, meta })
+        return contentSecurityPolicy({ scriptHashes: hashes, imageOrigins: [], imageBlobs: false, wasmEval: true, meta })
       }
       async function writeHeaders(): Promise<void> {
         const different = scriptHashDisagreements(scriptHashes)

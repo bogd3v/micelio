@@ -29,7 +29,8 @@ for (const { name, path, status } of PAGES) {
       expect(header).toContain(hash)
       expect(meta).toContain(hash)
     }
-    expect(header).toMatch(/script-src 'self' 'sha256-[^;]+;/)
+    // 'wasm-unsafe-eval' is for Pagefind (ADR 0004 amendment)
+    expect(header).toMatch(/script-src 'self' 'wasm-unsafe-eval' 'sha256-[^;]+;/)
     expect(header).toContain('frame-ancestors \'none\'')
     expect(meta).not.toContain('frame-ancestors')
     // Same policy but for the directives a meta cannot carry

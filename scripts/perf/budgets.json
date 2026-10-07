@@ -29,6 +29,16 @@
     "extraFontKb": 60
   },
   "themes": {},
+  "islands": {
+    "search": {
+      "trigger": "opening the palette (click or Ctrl/Cmd+K) in a static build",
+      "error": {
+        "loaderGzKb": 3.5,
+        "pagefindGzKb": 26,
+        "wasmKb": 80
+      }
+    }
+  },
   "limits": {
     "home": {
       "error": {

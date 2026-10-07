@@ -20,6 +20,10 @@ describe('noScriptsViolations', () => {
     expect(noScriptsViolations('<link rel="preload" as="fetch" href="/blog/_payload.json">')).toEqual(['a preload of _payload.json'])
   })
 
+  it('lets an island script through', () => {
+    expect(noScriptsViolations('<script type="module" src="/_islands/search-AbC123.js"></script>')).toEqual([])
+  })
+
   it('lets stylesheets and fonts from /_nuxt/ through', () => {
     expect(noScriptsViolations('<link rel="stylesheet" href="/_nuxt/entry.css"><link rel="preload" href="/_nuxt/font.woff2">')).toEqual([])
   })
@@ -164,7 +168,9 @@ describe('static headers', () => {
     expect(rules.slice(1)).toEqual([
       '/_nuxt/*\n  Cache-Control: public, max-age=31536000, immutable',
       '/_media/*\n  Cache-Control: public, max-age=31536000, immutable\n  Content-Security-Policy: default-src \'none\'; style-src \'unsafe-inline\'; img-src \'self\' data:; sandbox',
+      '/_islands/*\n  Cache-Control: public, max-age=31536000, immutable',
       '/_ipx/*\n  Cache-Control: public, max-age=0, must-revalidate',
+      '/pagefind/*\n  Cache-Control: public, max-age=0, must-revalidate',
     ])
   })
 

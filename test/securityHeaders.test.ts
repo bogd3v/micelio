@@ -35,6 +35,13 @@ describe('contentSecurityPolicy', () => {
     expect(directives.get('script-src')).toEqual(['\'self\'', '\'sha256-abc=\'', '\'sha256-def=\''])
   })
 
+  it('allows WebAssembly compilation only when asked (static search)', () => {
+    expect(policy).not.toContain('wasm-unsafe-eval')
+    const wasm = contentSecurityPolicy({ scriptHashes: ['abc='], imageOrigins: [], wasmEval: true })
+    expect(wasm).toContain('script-src \'self\' \'wasm-unsafe-eval\' \'sha256-abc=\';')
+    expect(wasm.replace(' \'wasm-unsafe-eval\'', '')).toBe(contentSecurityPolicy({ scriptHashes: ['abc='], imageOrigins: [] }))
+  })
+
   it('allows images from the site and the media origins', () => {
     expect(directives.get('img-src')).toEqual(['\'self\'', 'data:', 'blob:', 'https://api.bogdev.com.co', 'https://resources.bogdev.com.co'])
   })

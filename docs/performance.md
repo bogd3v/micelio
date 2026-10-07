@@ -95,6 +95,16 @@ Dynamic mode, production build of `main` at `9aa9c3f`, against the e2e mock:
 3. **`@nuxt/ui` and full hydration** keep the base JS above 190 KB gzipped on every page.
 4. **Accessibility:** on `/blog` the card titles are `<h3>` with no `<h2>` before them (`heading-order`). On the article, the only failure is an `<img src="x">` without `alt` that comes from the mock content.
 
+### Islands
+
+`scripts/perf/budgets.json` has an `islands` section (ADR 0006, section 6): the bytes an island sends once it is used, apart from the page budgets. `measure.mjs` does not read it yet (static budgets join CI in the static perf PR); today `e2e/static/search.spec.ts` enforces it on the static build (`npm run test:static`).
+
+| Island | What loads at start | What loads when it is used | Limits (`error`) |
+| --- | --- | --- | --- |
+| `search` (static and landing) | `/_islands/search-<hash>.js`: 8.1 KB raw, 3.2 KB gzip (2.8 KB brotli), plus 1.5 KB of palette markup per page | On the first open of the palette: `pagefind.js` 44.5 KB raw / 12.5 KB gzip and `pagefind-worker.js` 40.3 KB / 11.6 KB (24.1 KB gzip together); one `wasm.<lang>.pagefind` of about 70 KB (already compressed); the entry and meta files (under 1 KB); then the index and fragment chunks a query needs (a few KB on the mock site, which grows with the content) | `loaderGzKb` 3.5, `pagefindGzKb` 26, `wasmKb` 80 |
+
+The loader counts towards the 15 KB initial JS of the static targets; the second column does not. Nothing of Pagefind is requested before the palette opens, and only the language of the page is loaded. The numbers come from the mock site (`npm run test:static`, Pagefind 1.5.2).
+
 ## History
 
 | Date | Change | Effect on the home page |

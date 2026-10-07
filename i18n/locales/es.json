@@ -474,6 +474,9 @@
     "search": {
       "dialog": "Buscar en {site}",
       "placeholder": "Buscar artículos, temas o acciones",
+      "minLengthStatic": "Escribe {count} letras o más para buscar artículos y páginas",
+      "placeholderStatic": "Buscar artículos y páginas",
+      "unavailable": "La búsqueda no está disponible ahora",
       "content": "Buscar también en el contenido",
       "close": "Cerrar búsqueda",
       "minLength": "Escribe {count} letras o más para buscar artículos",
@@ -484,11 +487,13 @@
       "toMode": "Cambiar al tema {mode}",
       "fediverse": "Seguir en el fediverso",
       "groups": {
+        "results": "Resultados",
         "article": "Artículos",
         "topic": "Temas",
         "action": "Acciones"
       },
       "kinds": {
+        "page": "Página",
         "article": "Artículo",
         "topic": "Tema",
         "action": "Acción"

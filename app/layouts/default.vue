@@ -45,6 +45,7 @@ onMounted(() => {
       @close="isMobileMenuOpen = false"
     />
 
+    <LazyBdSearchIsland v-if="searchOn && isStatic" />
     <BdSearchPalette v-if="searchOn && !isStatic" :open="isSearchOpen" @close="isSearchOpen = false" />
 
     <main id="main-content" class="bd-app-main" role="main">

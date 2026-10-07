@@ -39,6 +39,16 @@ export function highlightSegments(text: string, query: string): TextSegment[] {
   return segments
 }
 
+/**
+ * A Pagefind result URL as the site writes its links: no trailing slash on the path (`/blog/a/` -> `/blog/a`, `/` stays).
+ * Undefined unless it is a path of this site: it must start with `/`, not `//` or `/\`.
+ */
+export function resultPath(url: string): string | undefined {
+  if (!/^\/(?![/\\])/.test(url)) return undefined
+  const [path = '', ...rest] = url.split(/(?=[?#])/)
+  return `${path.length > 1 ? path.replace(/\/+$/, '') : path}${rest.join('')}`
+}
+
 const TRUE_VALUES = new Set(['1', 'true'])
 
 export function isContentSearch(value: unknown): boolean {
