@@ -104,6 +104,36 @@ npx wrangler pages deploy .output/public --project-name=<project> --branch=main
 
 Trigger it from the CMS host with a cron job or a small receiver of the same hook.
 
+## Builder image
+
+`ghcr.io/bogd3v/micelio-builder` (the `static` target of the `Dockerfile`, published by CI next to `micelio`: `:<short sha>` and `:latest`) holds the source and the `npm ci` dependencies (the build tooling and Pagefind's Linux binary), runs as the non-root `node` user (uid 1000) and has two commands. Use it to generate and serve a static site from a Docker Compose (the demo instance) without Node on the host. Its build tooling makes it large (about 1.3 GB), so it is not for a runtime host that only serves.
+
+| Command | What it does |
+| --- | --- |
+| `generate` (default) | Runs `npm run generate` with the variables below, then replaces the content of `/out` with `.output/public`. Fails with a message when `NUXT_PUBLIC_SITE_MODE` is `dynamic`, or when the Strapi URL or token is missing |
+| `serve` | Serves `/out` on port 8080 with `scripts/static-serve.mjs`: the `_headers` rules (CSP and the rest), `404.html`, and brotli or gzip for the precompressed files, as a CDN does. `PORT`, `HOST` (default `0.0.0.0`) and `COMPRESS` (default `1`) can be overridden |
+
+Nothing is baked in: the site is generated when the container runs, so every setting is an environment variable (compatible with `docker run --env-file`).
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `NUXT_PUBLIC_STRAPI_URL` | yes | Strapi URL reachable from the container |
+| `NUXT_STRAPI_API_TOKEN` | yes | The CMS `build` token, read-only (see [The build token](#the-build-token)) |
+| `NUXT_PUBLIC_SITE_MODE` | no | `static` (default) or `landing` |
+| `NUXT_PUBLIC_SITE_URL` | yes for real sites | Public URL (canonical links, feed, sitemap) |
+| `NUXT_MEDIA_URL` | if media is on another origin | Media origin |
+| `NUXT_PUBLIC_THEME` | no | Theme id (default `bogota`) |
+| `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION`, `NUXT_PUBLIC_NEWSLETTER_FORM_FIELD` | no | See [Newsletter](#newsletter) |
+
+`/out` is a volume owned by uid 1000. Images are downloaded from Strapi during generation, so the generated site needs no CMS at runtime. Nuxt writes `.nuxt`, `.output` and `node_modules/.cache` inside the container, which uid 1000 owns, so the image works with `--read-only` only if those are tmpfs mounts; there is no need for that normally.
+
+```bash
+docker run --rm --env-file builder.env -v site:/out ghcr.io/bogd3v/micelio-builder generate
+docker run -d -p 8080:8080 -v site:/out:ro ghcr.io/bogd3v/micelio-builder serve
+```
+
+Regenerate by running `generate` again into the same volume (the CMS rebuild hook can start it); the `serve` container picks the new files up without a restart. With a bind mount instead of a named volume, the host directory must be writable by uid 1000 (`chown 1000:1000`, or `--userns=keep-id:uid=1000,gid=1000` in Podman; add `:Z` on SELinux hosts). To build locally: `docker build --target static -t micelio-builder .`; the default target is still the production image.
+
 ## Preview locally
 
 ```bash

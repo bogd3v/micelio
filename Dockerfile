@@ -13,6 +13,41 @@ RUN npm ci --ignore-scripts
 COPY . .
 RUN npm rebuild && npm run build
 
+# Builder image (ghcr.io/bogd3v/micelio-builder): generates a static site at run time and serves it.
+# Declared before the production stage, which must stay last (the default target). docs/static-mode.md
+FROM node:22.23-slim AS static
+
+ARG GIT_COMMIT_SHA=unknown
+ARG GIT_COMMIT_DATE=unknown
+
+LABEL org.opencontainers.image.title="Micelio builder"
+LABEL org.opencontainers.image.description="Generates and serves a Micelio static site (nuxt generate plus Pagefind)"
+LABEL org.opencontainers.image.source="https://github.com/bogd3v/micelio"
+LABEL org.opencontainers.image.revision="${GIT_COMMIT_SHA}"
+LABEL org.opencontainers.image.created="${GIT_COMMIT_DATE}"
+
+# Non-root: the node user (uid 1000) owns the source tree, where Nuxt writes .nuxt, .output and node_modules/.cache
+RUN mkdir /app /out && chown node:node /app /out
+WORKDIR /app
+USER node
+
+COPY --chown=node:node package*.json ./
+RUN npm ci --ignore-scripts
+
+COPY --chown=node:node . .
+RUN npm rebuild
+
+COPY --chown=node:node --chmod=755 scripts/docker/builder-entrypoint.sh /usr/local/bin/micelio-builder
+ENV NUXT_TELEMETRY_DISABLED=1 \
+    OUT_DIR=/out \
+    PORT=8080
+
+VOLUME /out
+EXPOSE 8080
+
+ENTRYPOINT ["/usr/local/bin/micelio-builder"]
+CMD ["generate"]
+
 FROM gcr.io/distroless/nodejs22-debian12
 
 LABEL org.opencontainers.image.title="Micelio"

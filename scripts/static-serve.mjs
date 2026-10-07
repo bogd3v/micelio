@@ -104,3 +104,6 @@ const server = createServer(async (req, res) => {
 })
 
 server.listen(port, host, () => console.log(`Serving ${root} at http://${host}:${port}`))
+
+// As PID 1 in a container, Node ignores SIGTERM unless it has a handler
+for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => process.exit(0))
