@@ -58,8 +58,15 @@ describe('pagePaths', () => {
 })
 
 describe('homePaths', () => {
-  it('points each language at its own root', () => {
-    expect(homePaths(Locale.English, [{ locale: Locale.SpanishColombia, slug: 'muestra' }])).toEqual({ en: '/', es: '/es' })
-    expect(homePaths(Locale.SpanishColombia, [])).toEqual({ es: '/es' })
+  const es = [{ locale: Locale.SpanishColombia, slug: 'muestra' }]
+
+  it('pairs the roots when the translation is the other language\'s home page', () => {
+    expect(homePaths(Locale.English, es, { es: 'muestra' })).toEqual({ en: '/', es: '/es' })
+  })
+
+  it('keeps only the current language when the other home page is another page or none', () => {
+    expect(homePaths(Locale.English, es, { es: 'otra' })).toEqual({ en: '/' })
+    expect(homePaths(Locale.English, es, {})).toEqual({ en: '/' })
+    expect(homePaths(Locale.SpanishColombia, [], {})).toEqual({ es: '/es' })
   })
 })

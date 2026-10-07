@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Locale, Page } from '~/interfaces'
-import { homePaths } from '~/helpers/translations'
+import type { Page } from '~/interfaces'
+import { warnOnce } from '~/helpers/pages'
 
 const { locale } = useI18n()
 const site = await useLoadedSite()
@@ -12,14 +12,14 @@ const home = homeSlug ? await useSectionPage(homeSlug) : null
 const sectionPage = computed<Page | undefined>(() => (home && !home.failure.value ? home.page.value : undefined))
 
 if (homeSlug && !sectionPage.value && import.meta.server) {
-  console.warn(`Home page "${homeSlug}" (${locale.value}) could not be loaded (status ${home?.failure.value}); showing the blog home`)
+  warnOnce(`${locale.value}:${homeSlug}`, `Home page "${homeSlug}" (${locale.value}) could not be loaded (status ${home?.failure.value}); showing the blog home`)
 }
 
 // <LazySectionRenderer> keeps the sections' CSS and chunks off the blog home
 const blog = sectionPage.value ? null : useBlogHome()
 
 if (sectionPage.value) {
-  setAlternates(homePaths(locale.value as Locale, sectionPage.value.translations))
+  setAlternates(await useHomeAlternates(sectionPage.value))
   usePageSeo(sectionPage, '/')
 }
 </script>

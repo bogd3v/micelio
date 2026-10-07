@@ -6,6 +6,15 @@ export const PAGE_SLUG_PATTERN = /^[a-z0-9][a-z0-9_.~-]{0,63}$/
 
 const KNOWN_COMPONENTS: ReadonlySet<string> = new Set(PAGE_SECTION_COMPONENTS.map(kind => `section.${kind}`))
 
+const warned = new Set<string>()
+
+/** console.warn once per process for a key (server render paths run on every request). */
+export function warnOnce(key: string, message: string): void {
+  if (warned.has(key)) return
+  warned.add(key)
+  console.warn(message)
+}
+
 /** The sections the frontend can render, in order. */
 export function knownSections(sections: PageSection[] | null | undefined): PageSection[] {
   return (sections ?? []).filter(section => KNOWN_COMPONENTS.has(section.__component))

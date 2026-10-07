@@ -24,10 +24,12 @@ export function pagePath(slug: string, locale: Locale): string {
   return localizedPath(`/${slug}`, locale)
 }
 
-/** hreflang of a page that is the home page: each language it exists in answers at its own root. */
-export function homePaths(locale: Locale, translations: PostTranslation[]): LocalePaths {
+/** hreflang of a page that is the home page: a translation answers at its root only if it is that language's home page too (`homeSlugs`, by locale). */
+export function homePaths(locale: Locale, translations: PostTranslation[], homeSlugs: Partial<Record<Locale, string | undefined>>): LocalePaths {
   const paths: LocalePaths = { [locale]: localizedPath('/', locale) }
-  for (const translation of translations) paths[translation.locale] = localizedPath('/', translation.locale)
+  for (const translation of translations) {
+    if (translation.locale !== locale && homeSlugs[translation.locale] === translation.slug) paths[translation.locale] = localizedPath('/', translation.locale)
+  }
   return paths
 }
 

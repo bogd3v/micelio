@@ -1,5 +1,6 @@
 import type { Ref } from 'vue'
-import type { Page } from '~/interfaces'
+import type { Locale, LocalePaths, Page, Site } from '~/interfaces'
+import { homePaths } from '~/helpers/translations'
 import { pageTitle } from '~/helpers/site'
 
 export interface SectionPageState {
@@ -49,4 +50,15 @@ export function usePageSeo(page: Ref<Page | undefined>, canonicalPath: string): 
   useHead({
     link: () => [{ rel: 'canonical' as const, href: pageUrl.value }],
   })
+}
+
+/** hreflang for a page shown at `/`: asks each translation's locale which page is its home page. */
+export async function useHomeAlternates(page: Page): Promise<LocalePaths> {
+  const { locale } = useI18n()
+  const homeSlugs: Partial<Record<Locale, string | undefined>> = {}
+  await Promise.all(page.translations.filter(item => item.locale !== locale.value).map(async (item) => {
+    const other = await $fetch<Site>('/api/site', { query: { locale: item.locale } }).catch(() => undefined)
+    homeSlugs[item.locale] = other?.homePage?.slug
+  }))
+  return homePaths(locale.value as Locale, page.translations, homeSlugs)
 }

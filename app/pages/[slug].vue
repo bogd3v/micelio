@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Locale } from '~/interfaces'
-import { homePaths, pagePaths } from '~/helpers/translations'
+import { pagePaths } from '~/helpers/translations'
 import { PAGE_SLUG_PATTERN } from '~/helpers/pages'
 
 // A slug the API would reject (400, e.g. "Showcase") is a page that does not exist: 404 without the call
@@ -27,10 +27,7 @@ if (failure.value || !page.value) {
   })
 }
 
-watch(page, (value) => {
-  const translations = value?.translations ?? []
-  setAlternates(!value ? {} : isHome ? homePaths(locale.value as Locale, translations) : pagePaths(slug, locale.value as Locale, translations))
-}, { immediate: true })
+setAlternates(isHome ? await useHomeAlternates(page.value) : pagePaths(slug, locale.value as Locale, page.value.translations))
 
 usePageSeo(page, isHome ? '/' : `/${slug}`)
 </script>

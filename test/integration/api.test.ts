@@ -794,6 +794,18 @@ describe('homePage from Strapi', () => {
     expect(es).toContain(`<link rel="canonical" href="${SITE_URL}/es">`)
   })
 
+  it('pairs hreflang at / and /es only when both languages\' home pages are translations', async () => {
+    mock.homePage.value = { en: 'showcase', es: 'muestra' }
+    const paired = await html('/')
+    expect(paired).toContain(`<link rel="alternate" hreflang="es" href="${SITE_URL}/es">`)
+    mock.homePage.value = { en: 'showcase', es: 'many-lists' }
+    const alone = await html('/')
+    expect(alone).toContain(`<link rel="alternate" hreflang="en" href="${SITE_URL}/">`)
+    expect(alone).not.toContain('hreflang="es"')
+    mock.homePage.value = { en: 'showcase' }
+    expect(await html('/showcase')).not.toContain('hreflang="es"')
+  })
+
   it('falls back to the blog home when the page does not exist', async () => {
     mock.homePage.value = { en: 'ghost' }
     const response = await fetch('/es/account/sign-in')
