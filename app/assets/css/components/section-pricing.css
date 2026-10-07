@@ -1,5 +1,5 @@
 /* Pricing section: plans as cards, or as a table */
-[data-section="pricing"] .bd-section-plan {
+[data-section="pricing"][data-variant="cards"] .bd-section-plan {
     display: grid;
     align-content: start;
     gap: var(--space-3);

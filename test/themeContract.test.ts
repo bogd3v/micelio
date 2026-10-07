@@ -332,6 +332,12 @@ describe('package files', () => {
     expect(problems).toEqual(['theme.css: ".bd-made-up" is not a public hook (internal bd-* classes can change in any release)'])
   })
 
+  it('checks the optional sections.css like theme.css', () => {
+    expect(problemsOf(install('sections-ok', () => {}, { 'sections.css': '.bd-section[data-section="hero"] { top: 0 }' }))).toEqual([])
+    const problems = problemsOf(install('sections-bad', () => {}, { 'sections.css': '.bd-made-up { color: red }' }))
+    expect(problems).toEqual(['sections.css: ".bd-made-up" is not a public hook (internal bd-* classes can change in any release)'])
+  })
+
   it('checks slot CSS and the files theme.css imports', () => {
     const slot = problemsOf(install('slotcss', () => {}, { 'slots/mark.css': '.x { color: red !important }' }))
     expect(slot.join('\n')).toMatch(/slots\/mark\.css: !important on "color"/)

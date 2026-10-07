@@ -1,0 +1,385 @@
+/* Bogotá's page sections: square, hairlines, wide light titles, mono labels, corner marks and a little light. Loaded only by pages that render sections (ADR 0005, section 4). */
+
+/* Rhythm: a hairline between sections */
+.bd-section + .bd-section {
+    border-top: 1px solid var(--line);
+}
+
+/* Heads: a short accent bar, then a wide light title */
+.bd-section-head::before {
+    content: "";
+    width: var(--space-8);
+    height: 2px;
+    margin-bottom: var(--space-2);
+    background: var(--accent);
+}
+
+.bd-section-title {
+    font-weight: 300;
+}
+
+@media (min-width: 700px) {
+    .bd-section-title {
+        font-stretch: 125%;
+    }
+}
+
+[data-variant="centered"] > .bd-section-inner > .bd-section-head::before,
+[data-variant="banner"] > .bd-section-inner > .bd-section-head::before {
+    justify-self: center;
+}
+
+/* Frames: media sit in a hairline with two corner marks */
+:is(.bd-section-inner, [data-section="gallery"] .bd-section-item) > .bd-section-media {
+    position: relative;
+    border: 1px solid var(--line);
+}
+
+:is(.bd-section-inner, [data-section="gallery"] .bd-section-item) > .bd-section-media::before,
+:is(.bd-section-inner, [data-section="gallery"] .bd-section-item) > .bd-section-media::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+}
+
+:is(.bd-section-inner, [data-section="gallery"] .bd-section-item) > .bd-section-media::before {
+    top: 0;
+    left: 0;
+    border-top: 2px solid var(--link);
+    border-left: 2px solid var(--link);
+}
+
+:is(.bd-section-inner, [data-section="gallery"] .bd-section-item) > .bd-section-media::after {
+    right: 0;
+    bottom: 0;
+    border-right: 2px solid var(--link);
+    border-bottom: 2px solid var(--link);
+}
+
+/* Cards: the hover is light, not lift */
+[data-section="feature-grid"] .bd-section-item:hover,
+[data-section="testimonials"][data-variant="grid"] .bd-section-item:hover,
+[data-section="pricing"][data-variant="cards"] .bd-section-item:hover,
+[data-section="stats"][data-variant="cards"] .bd-section-item:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--glow-link);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .bd-section-item {
+        transition: border-color var(--duration-base) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard);
+    }
+}
+
+/* Hero: a wash of light from the top, a wide display title */
+[data-section="hero"] {
+    background: radial-gradient(60% 50% at 50% 0, color-mix(in oklab, var(--link) 12%, transparent), transparent);
+}
+
+@media (min-width: 700px) {
+    [data-section="hero"] .bd-section-title {
+        font-stretch: 125%;
+    }
+}
+
+[data-section="hero"] .bd-section-text {
+    font: var(--text-body-l);
+}
+
+[data-section="hero"][data-variant="full-bleed"] {
+    background: none;
+}
+
+[data-section="hero"][data-variant="full-bleed"] .bd-section-inner {
+    border-top: 1px solid var(--line);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+    [data-section="hero"][data-variant="full-bleed"] .bd-section-inner {
+        backdrop-filter: blur(8px);
+    }
+}
+
+/* Feature grid: icons in mono hairline boxes; the list is numbered; bento tints its wide items */
+.bd-section-icon {
+    padding: var(--space-2);
+    border: 1px solid var(--line-strong);
+    box-sizing: content-box;
+}
+
+[data-section="feature-grid"][data-variant="list"] .bd-section-items {
+    counter-reset: bd-feature;
+}
+
+[data-section="feature-grid"][data-variant="list"] .bd-section-item {
+    display: grid;
+    grid-template-columns: var(--space-12) minmax(0, 1fr);
+    padding-block: var(--space-6);
+    counter-increment: bd-feature;
+}
+
+[data-section="feature-grid"][data-variant="list"] .bd-section-item::before {
+    content: counter(bd-feature, decimal-leading-zero);
+    grid-row: 1 / span 3;
+    color: var(--link);
+    font: var(--text-meta);
+    font-family: var(--font-mono);
+}
+
+[data-section="feature-grid"][data-variant="list"] .bd-section-item > * {
+    grid-column: 2;
+}
+
+@media (min-width: 900px) {
+    [data-section="feature-grid"][data-variant="bento"] .bd-section-item:is(:nth-child(4n + 1), :nth-child(4n + 4)) {
+        background: var(--surface-sunken);
+    }
+}
+
+/* Stats: figures in the display face, captions in mono */
+.bd-section-stat-value {
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+}
+
+.bd-section-stat-label {
+    font: var(--text-meta);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+}
+
+[data-section="stats"][data-variant="row"] .bd-section-item {
+    padding-top: var(--space-4);
+    border-top: 2px solid var(--line-strong);
+}
+
+@media (min-width: 700px) {
+    .bd-section-stat-value {
+        font-stretch: 125%;
+    }
+}
+
+/* Logo cloud: quiet until pointed at */
+.bd-section-logo-track .bd-section-media {
+    border: 0;
+    opacity: 0.7;
+    filter: grayscale(1);
+}
+
+.bd-section-logo-track .bd-section-item:hover .bd-section-media {
+    opacity: 1;
+    filter: none;
+}
+
+/* Testimonials: a large quotation mark and a mono byline */
+.bd-section-quote::before {
+    content: "\201C" / "";
+    display: block;
+    color: var(--accent);
+    font: var(--text-display-xl);
+    font-weight: 300;
+    line-height: 0.8;
+}
+
+.bd-section-author {
+    font-family: var(--font-mono);
+    letter-spacing: var(--tracking-meta);
+}
+
+.bd-section-author .bd-section-media {
+    border: 1px solid var(--line-strong);
+}
+
+[data-section="testimonials"][data-variant="single"] .bd-section-item {
+    padding-inline-start: var(--space-6);
+    border-inline-start: 2px solid var(--accent);
+}
+
+[data-section="testimonials"][data-variant="single"] .bd-section-quote {
+    font: var(--text-heading-2);
+    font-weight: 300;
+}
+
+/* Pricing: the recommended plan carries the accent; prices are display figures */
+.bd-section-plan-price strong {
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+}
+
+[data-section="pricing"][data-variant="cards"] .bd-section-plan-recommended {
+    box-shadow: var(--glow-accent);
+}
+
+[data-section="pricing"][data-variant="cards"] .bd-section-plan-recommended::before {
+    content: "";
+    height: 2px;
+    margin: calc(var(--space-6) * -1) calc(var(--space-6) * -1) var(--space-2);
+    background: var(--accent);
+}
+
+[data-section="pricing"][data-variant="table"] .bd-section-plan-recommended > :first-child {
+    box-shadow: inset 2px 0 0 var(--accent);
+}
+
+[data-section="pricing"][data-variant="table"] thead th {
+    font-family: var(--font-mono);
+}
+
+/* Narrow screens: tighter cells that wrap between words, not inside them */
+@media (max-width: 699px) {
+    [data-section="pricing"][data-variant="table"] :is(th, td) {
+        padding: var(--space-3) var(--space-2);
+        overflow-wrap: break-word;
+    }
+
+    [data-section="pricing"][data-variant="table"] .bd-btn {
+        padding-inline: var(--space-3);
+    }
+
+    [data-section="pricing"][data-variant="table"] .bd-section-plan-price strong {
+        font: var(--text-heading-2);
+        font-weight: 300;
+    }
+}
+
+.bd-section-plan-features li::before {
+    font-family: var(--font-mono);
+}
+
+/* Faq: a plus that turns into a minus */
+.bd-section-question {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: 44px;
+    box-sizing: border-box;
+    list-style: none;
+}
+
+.bd-section-question::after {
+    content: "+";
+    flex: none;
+    color: var(--link);
+    font: var(--text-heading-2);
+    font-weight: 300;
+    font-family: var(--font-mono);
+}
+
+.bd-section-item[open] > .bd-section-question::after {
+    content: "\2212";
+}
+
+.bd-section-question:hover {
+    color: var(--link);
+}
+
+.bd-section-item[open] {
+    border-bottom-color: var(--line-strong);
+}
+
+/* Cta: the banner is lit from the middle, the card has corner marks */
+[data-section="cta"][data-variant="banner"] {
+    background: radial-gradient(50% 120% at 50% 100%, color-mix(in oklab, var(--accent) 14%, var(--surface-sunken)), var(--surface-sunken));
+    border-block: 1px solid var(--line);
+}
+
+[data-section="cta"][data-variant="card"] .bd-section-inner {
+    border-color: var(--line-strong);
+    box-shadow: var(--glow-link);
+}
+
+[data-section="cta"][data-variant="card"] .bd-section-inner::before,
+[data-section="cta"][data-variant="card"] .bd-section-inner::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+}
+
+[data-section="cta"][data-variant="card"] .bd-section-inner {
+    position: relative;
+}
+
+[data-section="cta"][data-variant="card"] .bd-section-inner::before {
+    top: -1px;
+    left: -1px;
+    border-top: 2px solid var(--link);
+    border-left: 2px solid var(--link);
+}
+
+[data-section="cta"][data-variant="card"] .bd-section-inner::after {
+    right: -1px;
+    bottom: -1px;
+    border-right: 2px solid var(--link);
+    border-bottom: 2px solid var(--link);
+}
+
+/* Post list: the list variant reads like the blog's log, with dates in mono */
+[data-section="post-list"][data-variant="list"] .bd-section-item {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+[data-section="post-list"][data-variant="list"] .bd-meta {
+    color: var(--link);
+    font-family: var(--font-mono);
+}
+
+[data-section="post-list"][data-variant="list"] .bd-section-item-title a {
+    color: var(--ink);
+    text-decoration: none;
+}
+
+[data-section="post-list"][data-variant="list"] .bd-section-item-title a:hover {
+    color: var(--link);
+}
+
+@media (min-width: 700px) {
+    [data-section="post-list"][data-variant="list"] .bd-section-item {
+        grid-template-columns: 9rem minmax(0, 1fr);
+        column-gap: var(--space-6);
+    }
+
+    [data-section="post-list"][data-variant="list"] .bd-section-item > :not(.bd-meta) {
+        grid-column: 2;
+    }
+
+    [data-section="post-list"][data-variant="list"] .bd-meta {
+        grid-row: 1 / span 2;
+    }
+}
+
+/* Newsletter: the card variant is a framed panel */
+[data-section="newsletter"][data-variant="card"] .bd-news {
+    border-color: var(--line-strong);
+    box-shadow: var(--glow-link);
+}
+
+/* Gallery: square frames, light on hover */
+[data-section="gallery"] .bd-section-media {
+    border: 1px solid var(--line);
+}
+
+[data-section="gallery"] .bd-section-item:hover .bd-section-media {
+    border-color: var(--link);
+}
+
+/* Scene: the poster is a lit stage; the inline variant is a plain frame */
+[data-section="scene"][data-variant="background"] {
+    background: var(--surface-sunken);
+}
+
+[data-section="scene"][data-variant="background"] .bd-section-media {
+    box-shadow: var(--glow-link);
+}
+
+/* Rich text: a reading column */
+[data-section="rich-text"] .bd-section-text {
+    max-width: var(--measure);
+    color: var(--ink);
+}

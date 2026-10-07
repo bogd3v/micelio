@@ -18,6 +18,11 @@ describe('theme CSS rules', () => {
     expect(problems('[data-theme="dia"] .bd-header[data-layout="bar"] { top: 0 } [data-scheme="dark"] .bd-seg[data-mode="a"] { top: 0 }')).toEqual([])
   })
 
+  it('accepts the class states of a hook, not other bd-* classes', () => {
+    expect(problems('.bd-section-plan-recommended { top: 0 } .bd-card.bd-card-featured { top: 0 }')).toEqual([])
+    expect(problems('.bd-section-plan-nope { top: 0 }')).toHaveLength(1)
+  })
+
   it('rejects an internal bd-* class anywhere in a selector, including :is(), :not(), nesting and at-rules', () => {
     for (const css of [
       '.bd-secret { top: 0 }',
