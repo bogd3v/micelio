@@ -1729,13 +1729,19 @@ describe('Strapi API token', () => {
     }
   })
 
-  it('keeps the public fediverse endpoints and the sitemap anonymous', async () => {
+  it('keeps the public fediverse endpoints anonymous', async () => {
     await $fetch('/api/fediverse/stats', { query: { documentIds: 'doc-vue' } }).catch(() => null)
     await $fetch('/api/posts', { query: { sort: 'fediverse' } }).catch(() => null)
-    await fetch('/sitemap.xml')
-    const anonymous = mock.requests.filter(request => request.path.startsWith('/api/fediverse/') || request.query.fields !== undefined)
+    const anonymous = mock.requests.filter(request => request.path.startsWith('/api/fediverse/'))
     expect(anonymous.length).toBeGreaterThan(0)
     expect(anonymous.every(request => request.authorization === undefined)).toBe(true)
+  })
+
+  it('sends the API token when the sitemap lists the articles (the static build reads the same data)', async () => {
+    await fetch('/sitemap.xml')
+    const articles = mock.requests.filter(request => request.path === '/api/articles')
+    expect(articles.length).toBeGreaterThan(0)
+    expect(articles.every(request => request.authorization === API_TOKEN)).toBe(true)
   })
 })
 

@@ -1,16 +1,17 @@
-import type { NitroFetchOptions } from 'nitropack'
+import { strapiRequest, strapiRequestUrl } from './strapiRequest'
+import type { StrapiRequestConfig, StrapiRequestOptions } from './strapiRequest'
 
-export type StrapiFetchOptions = Pick<NitroFetchOptions<string>, 'method' | 'query' | 'body' | 'timeout'>
+export type StrapiFetchOptions = StrapiRequestOptions
 
-export function strapiUrl(path: string): string {
-  return `${useRuntimeConfig().public.strapiUrl.replace(/\/+$/, '')}${path}`
+function strapiConfig(): StrapiRequestConfig {
+  const config = useRuntimeConfig()
+  return { strapiUrl: config.public.strapiUrl, strapiApiToken: config.strapiApiToken }
 }
 
-function apiTokenHeaders(): Record<string, string> {
-  const token = useRuntimeConfig().strapiApiToken
-  return token ? { Authorization: `Bearer ${token}` } : {}
+export function strapiUrl(path: string): string {
+  return strapiRequestUrl(strapiConfig(), path)
 }
 
 export function strapiFetch<T>(path: string, options: StrapiFetchOptions = {}): Promise<T> {
-  return $fetch<T>(strapiUrl(path), { ...options, headers: apiTokenHeaders() }) as Promise<T>
+  return strapiRequest<T>(strapiConfig(), path, options)
 }

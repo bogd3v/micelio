@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { Locale } from './app/interfaces/locale'
 import { SECURITY_HEADERS } from './app/helpers/securityHeaders'
-import { parseSiteMode } from './app/helpers/siteMode'
+import { isStaticMode, parseSiteMode } from './app/helpers/siteMode'
 import { UPSTREAM_SOURCE_URL } from './app/helpers/source'
 
 const privatePageHeaders = {
@@ -27,6 +27,39 @@ const ESBUILD_TARGETS = Object.entries(CSS_TARGETS).map(
 
 // Read at build time: it changes what is built (ADR 0006); an invalid value fails the build
 const siteMode = parseSiteMode(process.env.NUXT_PUBLIC_SITE_MODE)
+const staticSite = isStaticMode(siteMode)
+
+// Hosts @nuxt/image may optimise from (Strapi and its media host); static builds write _ipx/ at generate time
+function imageDomains(...urls: Array<string | undefined>): string[] {
+  const hosts = urls.flatMap((url) => {
+    try {
+      return url ? [new URL(url).host] : []
+    } catch {
+      return []
+    }
+  })
+  return [...new Set(hosts)]
+}
+
+// Page revalidation (ADR 0001); a static site has no server to revalidate
+const ISR_RULES = {
+  '/': { isr: 300 },
+  '/about': { isr: 3600 },
+  '/blog': { isr: 300 },
+  '/blog/**': { isr: 300 },
+  '/es': { isr: 300 },
+  '/es/about': { isr: 3600 },
+  '/privacy': { isr: 3600 },
+  '/es/privacy': { isr: 3600 },
+  '/es/blog': { isr: 300 },
+  '/es/blog/**': { isr: 300 },
+}
+
+// Module routes that are off in static modes (ADR 0006, section 2): not crawled, not generated
+const STATIC_PRERENDER_IGNORE = [
+  '/account', '/es/account', '/drafts', '/es/drafts', '/newsletter', '/es/newsletter', '/confirm', '/es/confirm', '/_theme', '/es/_theme',
+  '/api/auth', '/api/comments', '/api/drafts', '/api/newsletter', '/api/fediverse', '/__nuxt_island',
+]
 
 // Blog filters are paths, not query strings (ADR 0006, section 7); they reuse the blog list page
 const BLOG_LIST_PAGE = fileURLToPath(new URL('./app/pages/blog/index.vue', import.meta.url))
@@ -40,7 +73,7 @@ const BLOG_FILTER_ROUTES: { name: string, path: string }[] = [
 
 export default defineNuxtConfig({
   // The theme goes first: @nuxt/image reads image.dirs when it is set up (modules/theme/assets.ts)
-  modules: ['./modules/theme', './modules/site-mode', '@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
+  modules: ['./modules/theme', './modules/site-mode', './modules/static-routes', '@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
   ssr: true,
   devtools: { enabled: false },
   app: {
@@ -89,17 +122,9 @@ export default defineNuxtConfig({
   //   take effect if a shared cache/CDN is introduced later. Do not add
   //   Vercel-only headers (CDN-Cache-Control / Vercel-CDN-Cache-Control).
   routeRules: {
-    '/**': { headers: SECURITY_HEADERS },
-    '/': { isr: 300 },
-    '/about': { isr: 3600 },
-    '/blog': { isr: 300 },
-    '/blog/**': { isr: 300 },
-    '/es': { isr: 300 },
-    '/es/about': { isr: 3600 },
-    '/privacy': { isr: 3600 },
-    '/es/privacy': { isr: 3600 },
-    '/es/blog': { isr: 300 },
-    '/es/blog/**': { isr: 300 },
+    // noScripts is a route rule, not features.noScripts: the global flag would drop island chunks (ADR 0006, section 3)
+    '/**': staticSite ? { headers: SECURITY_HEADERS, noScripts: true } : { headers: SECURITY_HEADERS },
+    ...(staticSite ? {} : ISR_RULES),
     '/account': { headers: privatePageHeaders },
     '/account/**': { headers: privatePageHeaders },
     '/es/account': { headers: privatePageHeaders },
@@ -122,11 +147,22 @@ export default defineNuxtConfig({
   },
   experimental: {
     viewTransition: true,
-    payloadExtraction: 'client',
+    // Under noScripts the payload would still be written as _payload.json
+    payloadExtraction: staticSite ? false : 'client',
   },
   nitro: {
-    static: false,
-    preset: 'node-server',
+    static: staticSite,
+    // `nuxt generate` picks the static preset
+    ...(staticSite ? {} : { preset: 'node-server' }),
+    ...(staticSite && {
+      prerender: {
+        crawlLinks: true,
+        routes: ['/', '/es', '/blog', '/es/blog'],
+        ignore: STATIC_PRERENDER_IGNORE,
+        // A dead link in the content is logged; routes Strapi lists must render (modules/static-routes.ts)
+        failOnError: false,
+      },
+    }),
     compressPublicAssets: { gzip: true, brotli: true },
     externals: {
       inline: [/nodemailer/],
@@ -192,5 +228,6 @@ export default defineNuxtConfig({
   image: {
     quality: 80,
     format: ['webp', 'avif'],
+    ...(staticSite && { domains: imageDomains(process.env.NUXT_PUBLIC_STRAPI_URL, process.env.NUXT_MEDIA_URL) }),
   },
 })

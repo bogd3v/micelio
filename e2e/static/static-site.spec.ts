@@ -1,0 +1,83 @@
+import { test, expect } from '@playwright/test'
+import type { Page } from '@playwright/test'
+
+// ADR 0006: a static site loads no Nuxt client and never asks Strapi anything at runtime
+const PAGES = [
+  { name: 'home', path: '/' },
+  { name: 'home (es)', path: '/es' },
+  { name: 'blog list', path: '/blog' },
+  { name: 'article', path: '/blog/understanding-vue-composables' },
+  { name: 'article (es)', path: '/es/blog/guia-vue-composables' },
+  { name: 'section page', path: '/showcase' },
+  { name: 'about', path: '/about' },
+]
+
+async function requestsOf(page: Page, path: string): Promise<string[]> {
+  const urls: string[] = []
+  page.on('request', request => urls.push(request.url()))
+  const response = await page.goto(path, { waitUntil: 'networkidle' })
+  expect(response?.status()).toBe(200)
+  return urls
+}
+
+for (const { name, path } of PAGES) {
+  test(`${name} loads no Nuxt client, payload or API call`, async ({ page, baseURL }) => {
+    const urls = await requestsOf(page, path)
+    expect(urls.filter(url => /\/_nuxt\/[^?]*\.m?js/.test(url))).toEqual([])
+    expect(urls.filter(url => url.includes('_payload'))).toEqual([])
+    expect(urls.filter(url => new URL(url).pathname.startsWith('/api/'))).toEqual([])
+    expect(urls.filter(url => !url.startsWith(baseURL!) && !url.startsWith('data:'))).toEqual([])
+  })
+
+  test(`${name} has no Nuxt state or client script in the HTML`, async ({ request }) => {
+    const html = await (await request.get(path)).text()
+    expect(html).not.toMatch(/<script[^>]*src=/)
+    expect(html).not.toContain('__NUXT__')
+    expect(html).not.toContain('__NUXT_DATA__')
+    expect(html).not.toContain('_payload.json')
+    expect(html).not.toMatch(/rel="modulepreload"/)
+  })
+}
+
+test('the pages render their content without JavaScript', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false })
+  const page = await context.newPage()
+  await page.goto('/blog/understanding-vue-composables')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Understanding Vue Composables')
+  await page.goto('/blog')
+  await expect(page.locator('.bd-blog-grid .bd-card-title').first()).toBeVisible()
+  await context.close()
+})
+
+test('module pages are not generated', async ({ request }) => {
+  for (const path of ['/account', '/account/sign-in', '/es/account', '/drafts', '/es/drafts', '/newsletter/unsubscribe', '/confirm', '/_theme']) {
+    expect((await request.get(path)).status(), path).toBe(404)
+  }
+})
+
+test('the API is not part of the site', async ({ request }) => {
+  for (const path of ['/api/posts', '/api/search?q=vue', '/api/comments', '/api/auth/me']) {
+    expect((await request.get(path)).status(), path).toBe(404)
+  }
+})
+
+test('feeds, sitemap and robots.txt are files', async ({ request }) => {
+  for (const path of ['/feed.xml', '/es/feed.xml', '/feed/linux.xml', '/es/feed/linux.xml']) {
+    const response = await request.get(path)
+    expect(response.status(), path).toBe(200)
+    expect(response.headers()['content-type']).toContain('xml')
+    expect(await response.text()).toContain('<rss')
+  }
+  const sitemap = await (await request.get('/sitemap.xml')).text()
+  expect(sitemap).toContain('/blog/understanding-vue-composables')
+  expect(sitemap).toContain('/es/blog/guia-vue-composables')
+  const robots = await request.get('/robots.txt')
+  expect(robots.status()).toBe(200)
+  expect(await robots.text()).toContain('User-Agent')
+})
+
+test('an unknown path answers the 404 page', async ({ request }) => {
+  const response = await request.get('/blog/does-not-exist')
+  expect(response.status()).toBe(404)
+  expect(await response.text()).toContain('<html')
+})

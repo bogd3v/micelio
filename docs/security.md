@@ -9,7 +9,7 @@ The browser never talks to Strapi: every call goes through the Nitro server, bui
 | Credential | Where it comes from | Used for |
 | --- | --- | --- |
 | API token | `NUXT_STRAPI_API_TOKEN`, a **Custom** token created for this frontend | Content, comments, search, feeds and newsletter subscribers |
-| None (public role) | — | Fediverse stats and ranking, the sitemap |
+| None (public role) | — | Fediverse stats and ranking |
 | User JWT | `bd_session` cookie (`httpOnly`, `secure`, `sameSite=lax`, 7 days), set at sign-in | `/api/users/me` (profile and account deletion) |
 | Editor JWT | Same cookie, for a user with the Editor role | Draft list and draft preview |
 | None | — | Sign-in, registration, password reset and email confirmation (`/api/auth/*` in Strapi) |
@@ -30,11 +30,11 @@ Create a **Custom** token, never Full Access or Read Only, with exactly these pe
 
 `update` on Subscriber is easy to miss: without it a subscription is created but confirming it fails with a 500.
 
-The token is a server-side secret. It must only be set as `NUXT_STRAPI_API_TOKEN`: plain `STRAPI_API_TOKEN` is ignored at runtime, and the server logs `Missing runtime settings` at startup when it is empty. Rotate it in Strapi (Settings → API Tokens) if it is ever printed or shared, and delete tokens nobody uses.
+The token is a server-side secret. It must only be set as `NUXT_STRAPI_API_TOKEN`: plain `STRAPI_API_TOKEN` is ignored at runtime, and the server logs `Missing runtime settings` at startup when it is empty. Rotate it in Strapi (Settings → API Tokens) if it is ever printed or shared, and delete tokens nobody uses. A static build (`npm run generate`, ADR 0006) also reads the token at build time, only from `NUXT_STRAPI_API_TOKEN` in the build environment, to read content: the route list (`modules/static-routes.ts`) and the prerendered pages call the same read routes as the dynamic site (articles, pages, site settings, categories, tags, about). A build token needs those `find` permissions and none of the write ones (comments, subscribers). The generated site holds no token and calls no API. No permission is added.
 
 ### What the public role must allow
 
-The anonymous calls need, and should only get: `find` on Article (sitemap); the fediverse stats and ranking routes are public by design in the backend. Subscribers and users must stay closed to the public role (403); check it with:
+The only anonymous calls are the fediverse stats and ranking routes, public by design in the backend (the sitemap now uses the API token like the feeds, so the public role needs no `find` on Article). Subscribers and users must stay closed to the public role (403); check it with:
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' https://api.bogdev.com.co/api/subscribers   # 403

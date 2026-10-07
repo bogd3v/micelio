@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
         populate: { localizations: { fields: ['slug', 'locale', 'publishedAt'] } },
         sort: 'publishedAt:desc',
       })
-      return $fetch<{ data: RawStrapiArticle[] }>(strapiUrl(`/api/articles?${params}`))
+      return strapiFetch<{ data: RawStrapiArticle[] }>(`/api/articles?${params}`)
     }))
 
     const staticPages = [

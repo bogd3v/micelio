@@ -7,7 +7,8 @@ export default defineConfig({
   // theme-overrides.spec.ts: playwright.theme-overrides.config.ts, a mock Strapi that serves a theme
   // home-page.spec.ts: playwright.home-page.config.ts, a mock Strapi whose site settings name a home page
   // e2e/theme runs in playwright.theme.config.ts (per theme and mode, in the Playwright image)
-  testIgnore: ['modules-off.spec.ts', 'theme-overrides.spec.ts', 'home-page.spec.ts', 'theme/**'],
+  // e2e/static runs in playwright.static.config.ts against a generated site (npm run test:static)
+  testIgnore: ['modules-off.spec.ts', 'theme-overrides.spec.ts', 'home-page.spec.ts', 'theme/**', 'static/**'],
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,
