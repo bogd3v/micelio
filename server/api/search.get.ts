@@ -14,8 +14,9 @@ export default defineEventHandler(async (event): Promise<SearchPostResult[]> => 
   setHeader(event, 'Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120')
 
   try {
-    return await searchArticles({ query: term, locale, content, limit: PALETTE_RESULTS })
+    return await searchArticles({ event, query: term, locale, content, limit: PALETTE_RESULTS })
   } catch (error: unknown) {
+    noStoreOnUpstreamRateLimit(event, error)
     console.error('Search error:', asUpstreamError(error).data || error)
     return []
   }

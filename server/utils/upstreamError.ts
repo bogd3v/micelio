@@ -1,5 +1,5 @@
 interface UpstreamFetchError {
-  response?: { status?: number }
+  response?: { status?: number, headers?: Headers }
   statusCode?: number
   data?: { error?: { message?: string }, message?: string }
   message?: string

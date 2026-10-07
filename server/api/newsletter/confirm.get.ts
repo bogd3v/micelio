@@ -14,7 +14,13 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
     })
   }
 
-  const subscriber = isNewsletterToken(token) ? await findSubscriber('confirmationToken', token) : null
+  let subscriber: Awaited<ReturnType<typeof findSubscriber>>
+  try {
+    subscriber = isNewsletterToken(token) ? await findSubscriber(event, 'confirmationToken', token) : null
+  } catch (error: unknown) {
+    rethrowUpstreamRateLimit(event, error)
+    throw error
+  }
 
   if (!subscriber) {
     throw createError({
@@ -39,11 +45,12 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
   const unsubscribeToken = subscriber.unsubscribeToken || newUnsubscribeToken()
 
   try {
-    await updateSubscriber(subscriber.documentId, {
+    await updateSubscriber(event, subscriber.documentId, {
       confirmed: true,
       unsubscribeToken,
     })
   } catch (error: unknown) {
+    rethrowUpstreamRateLimit(event, error)
     console.error('Newsletter confirmation error:', error)
     throw createError({
       statusCode: 500,

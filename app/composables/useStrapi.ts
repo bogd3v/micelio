@@ -18,6 +18,8 @@ import { toQueryString } from '~/helpers/query'
  */
 export function useStrapi() {
   const config = useRuntimeConfig()
+  // On the server this is the visitor's event.$fetch, which carries the address for the CMS rate limits
+  const requestFetch = useRequestFetch()
 
   function fetchPosts(params?: {
     page?: MaybeRef<number | undefined>
@@ -43,7 +45,7 @@ export function useStrapi() {
     }
 
     return useAsyncData(() => `posts-${buildQuery() || 'default'}`, async () => {
-      const response = await $fetch<StrapiPaginatedResponse<RawStrapiArticle[]>>(
+      const response = await requestFetch<StrapiPaginatedResponse<RawStrapiArticle[]>>(
         `/api/posts?${buildQuery()}`,
       )
 
@@ -82,7 +84,7 @@ export function useStrapi() {
         locale: locale || undefined,
       })
 
-      const response = await $fetch<RawStrapiArticle | null>(
+      const response = await requestFetch<RawStrapiArticle | null>(
         `/api/posts/${slug}?${query}`,
       )
 
@@ -91,7 +93,7 @@ export function useStrapi() {
   }
 
   async function searchPosts(queryStr: string, locale?: Locale, content = false): Promise<SearchPostResult[]> {
-    return $fetch<SearchPostResult[]>('/api/search', {
+    return requestFetch<SearchPostResult[]>('/api/search', {
       query: { q: queryStr, locale, content: content ? '1' : undefined },
     })
   }
@@ -102,7 +104,7 @@ export function useStrapi() {
         locale: locale || undefined,
       })
 
-      return $fetch<CategoryCount[]>(
+      return requestFetch<CategoryCount[]>(
         `/api/categories?${query}`,
       )
     }, {
@@ -116,7 +118,7 @@ export function useStrapi() {
         locale: locale || undefined,
       })
 
-      return $fetch<TagCount[]>(
+      return requestFetch<TagCount[]>(
         `/api/tags?${query}`,
       )
     }, {
@@ -132,7 +134,7 @@ export function useStrapi() {
           locale: locale || undefined,
         })
 
-        return $fetch<StrapiAbout>(`/api/about?${query}`)
+        return requestFetch<StrapiAbout>(`/api/about?${query}`)
       },
     )
   }

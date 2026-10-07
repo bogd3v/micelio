@@ -19,10 +19,14 @@ export function authFailure(code: AuthErrorCode) {
   return createError({ statusCode: AUTH_ERROR_STATUS[code], statusMessage: code, data: { code } })
 }
 
-export function strapiAuthFailure(err: unknown, overrides: Partial<Record<AuthErrorCode, AuthErrorCode>> = {}) {
+/** The auth calls may send mail inside Strapi (register, password reset), so they wait longer than a read. */
+export const AUTH_TIMEOUT_MS = 30_000
+
+export function strapiAuthFailure(event: H3Event, err: unknown, overrides: Partial<Record<AuthErrorCode, AuthErrorCode>> = {}) {
   const e = asUpstreamError(err)
   const status = e.response?.status
   const code = strapiAuthErrorCode(status, e.data?.error?.message)
+  if (code === 'tooManyRequests') copyRetryAfter(event, err)
   if (code === 'unknown') console.error('Strapi auth error:', status, e.data?.error?.message || e.message)
   return authFailure(overrides[code] ?? code)
 }
@@ -62,9 +66,6 @@ export function clearSessionCookie(event: H3Event): void {
   deleteCookie(event, SESSION_COOKIE, { httpOnly: true, secure: true, sameSite: 'lax', path: '/' })
 }
 
-export function fetchStrapiMe(jwt: string): Promise<StrapiAuthUser> {
-  return $fetch<StrapiAuthUser>(strapiUrl('/api/users/me'), {
-    query: { populate: 'role' },
-    headers: { Authorization: `Bearer ${jwt}` },
-  })
+export function fetchStrapiMe(event: H3Event, jwt: string): Promise<StrapiAuthUser> {
+  return strapiFetch<StrapiAuthUser>('/api/users/me', { event, auth: { jwt }, query: { populate: 'role' } })
 }

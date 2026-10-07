@@ -57,13 +57,49 @@ The routes of a module switched off in `site-setting.modules`, or off for lack o
 | `GET /api/fediverse/stats`, `/api/fediverse/stats/:documentId` | Public | Document id pattern, at most 50 ids |
 | `POST /api/newsletter/subscribe` | Public | Same-origin check, 10 per IP and 3 per email every hour, same answer for new and confirmed addresses |
 | `GET /api/newsletter/confirm`, `POST /api/newsletter/unsubscribe` | Holder of the emailed token | Token format check; unsubscribe also accepts RFC 8058 one-click POSTs from mail providers, so it has no origin check |
-| `POST /api/auth/login`, `register`, `forgot-password`, `reset-password`, `resend-confirmation`, `logout` | Public | Same-origin check, body schema, `no-store`; Strapi rate-limits the auth routes |
+| `POST /api/auth/login`, `register`, `forgot-password`, `reset-password`, `resend-confirmation`, `logout` | Public | Same-origin check, body schema, `no-store`; the CMS rate-limits the auth routes per visitor (see "Client IP and rate limits") |
 | `GET /api/auth/me` | Session | `no-store` |
 | `DELETE /api/auth/me` | Session + password | Same-origin check, username and password re-checked by Strapi |
 | `GET /api/drafts`, `/api/drafts/:documentId` | Editor | Answers 404, not 403, to anyone else; `no-store` |
 | `/feed.xml`, `/feed/*.xml`, `/sitemap.xml`, `/robots.txt` | Public | Read only |
 
-Rate limits are in memory (`server/utils/rateLimit.ts`): they reset when the container restarts and are per instance. The client IP comes from `X-Forwarded-For`, which is safe only because Traefik replaces it; if a CDN or another proxy is put in front, revisit `clientIp()`.
+Rate limits of comments and the newsletter are in memory (`server/utils/rateLimit.ts`): they reset when the container restarts and are per instance. The CMS has its own limits (micelio-cms `docs/RATE_LIMITING.md`); a CMS 429 on comments, the newsletter or the auth routes reaches the browser as a 429 with its `Retry-After` and the same message as the route's own limit.
+
+### Client IP and rate limits
+
+The visitor's address (`clientIp()`, also used for the Umami proxy) is not taken from the leftmost `X-Forwarded-For` entry, which the visitor writes. `NUXT_TRUST_PROXY` says how far the header is trusted, the same model as the CMS's `TRUST_PROXY`; nothing depends on a particular proxy:
+
+| `NUXT_TRUST_PROXY` | Meaning |
+| --- | --- |
+| `private` (default) | Read the header only while the socket peer and each hop, from right to left, are loopback, private, unique-local or link-local; the first public entry is the visitor. A public peer is never trusted |
+| `N` | Exactly `N` trusted proxies: the visitor is the `N`-th entry from the right. A shorter chain falls back to the socket address |
+| `10.0.0.0/8,203.0.113.7` | Trust only those proxies (addresses or CIDR ranges; `private` stands for the private ranges). An empty prefix or `/0` is refused |
+| `false` | Never read the header: the socket address |
+
+`true` is refused at startup because it trusts any header. `NUXT_PROXY_IP_HEADER` (default `X-Forwarded-For`) names another header, e.g. a CDN's, for the same chain. Ports, brackets, zones and `::ffff:` prefixes are normalised. Choose the value that matches the real proxy chain: with a public hop in front that is not listed, every visitor would share the proxy's address.
+
+Nitro runs environment values through `destr`, so `false`, `0`, `2` and `true` arrive as boolean or number; `NUXT_TRUST_PROXY=true` is refused either way. If the container is published directly with no reverse proxy (Docker's userland proxy or the gateway shows up as a private address), the default `private` would trust a visitor's own `X-Forwarded-For`: set `NUXT_TRUST_PROXY=false`, or the exact CIDR of the proxies you run.
+
+The server calls the CMS from one address, so the CMS limits would be shared by all visitors. With `NUXT_STRAPI_FORWARDER_SECRET` set (at least 32 characters, the same value as `RATE_LIMIT_FORWARDER_SECRET` in the CMS; shorter stops the boot; it is read from the raw environment and used untrimmed, as the CMS compares it), every CMS call made on behalf of a visitor sends `X-Micelio-Forwarder-Secret` and `X-Micelio-Client-IP` (the address above, only when it is a valid IP). Without the secret on both sides the CMS limits are per server, not per visitor. The boot also stops if the secret is set and `NUXT_PUBLIC_STRAPI_URL` is neither `https` nor a private address (loopback, private range, `localhost`, a dotless service name, `.internal`, `.local`), and forwarded calls use `redirect: 'error'` so the secret never follows a redirect to another host.
+
+What forwards:
+
+- Every browser request to `/api/*` (comments, newsletter, auth, posts, search, categories, tags, about, reading path, drafts, fediverse), with the address resolved from its socket.
+- Server-side rendering. SSR calls `/api/*` in process, with no socket address, through Nuxt's `event.$fetch` (`useRequestFetch`, `useFetch`, and `useStrapi`). `server/plugins/internalClientIp.ts` adds the outer request's resolved address and a per-process random nonce (`x-micelio-internal-ip`, `x-micelio-internal-nonce`) to those calls; `clientIp()` accepts them only when the socket has no remote address and the nonce matches (timing-safe). A request from outside carrying those headers, with a wrong nonce or none, is ignored (and has a socket address anyway). The nonce never leaves the process; the headers are never sent to the CMS or to Umami. A plain global `$fetch` carries nothing, so SSR code that calls `/api` must use `useRequestFetch()`.
+
+Notes on what counts as a visitor:
+
+- An uncached server-side render counts against the visitor who triggered it, so crawlers and visitors behind one NAT share a bucket. ISR/page caching keeps this cheap: a cache hit makes no CMS call, and a cached render is never attributed to a visitor on purpose (Nitro's cache handler builds its own event, which does not carry the internal headers).
+- `useFetch(..., { server: false })` runs in the browser, so its request reaches `/api/*` directly and is forwarded like any browser request.
+- The internal headers are added only to same-origin relative paths (`/api/...`); an absolute URL or `//host` never gets them. `clientIp()` removes them from the request after reading, so `getProxyRequestHeaders` cannot carry them onward.
+- `NITRO_UNIX_SOCKET` (listening on a unix socket) is unsupported for per-visitor limits: there is no remote address, so every visitor resolves to `unknown` and nothing is forwarded.
+- A secret set only in `nuxt.config.ts` goes through `String()` and cannot be recovered if it looks like a number; set it by environment variable.
+
+What does not forward (the CMS counts these against the API token's bucket): the cached site settings and pages (`loadSite`, `loadPage`, shared between visitors), the feeds and the sitemap (crawler and CDN-cached traffic), and the static build. A call without the visitor, such as a failed address (`unknown`), sends no headers.
+
+`strapiFetch(path, { event })` adds the headers, and every call to the CMS goes through it (`test/strapiRequest.test.ts` fails on a `$fetch(strapiUrl(...))` or a `strapiFetch` outside the exceptions above whose options lack `event`), including the token-less ones (`auth: 'none'`) and those with a user's JWT (`auth: { jwt }`). Extra headers can never carry `Authorization`. The auth calls wait up to 30 s (register and password mails are sent inside Strapi); other calls 10 s.
+
+A CMS 429 reaches the browser as a 429 with the CMS's `Retry-After` (a positive number, at most 3600) and, where the route would otherwise degrade (search, fediverse ranking and stats), `Cache-Control: no-store`. The Umami proxy replaces `X-Forwarded-For` and `X-Real-IP` with the resolved address and drops the other client address headers (`CF-Connecting-IP`, `True-Client-IP`, `X-Client-IP`, `Forwarded`…); set Umami's `CLIENT_IP_HEADER` to `x-forwarded-for` or `x-real-ip`. The secret is a credential: keep it out of logs and of the repository, and rotate both sides together.
 
 ## Browser-side protections
 

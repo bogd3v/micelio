@@ -56,6 +56,9 @@ All variables are read when the server starts, so the same Docker image works in
 |----------|-------------|----------|
 | `NUXT_PUBLIC_STRAPI_URL` | URL of your Strapi instance | Yes |
 | `NUXT_STRAPI_API_TOKEN` | API token from Strapi settings | Yes |
+| `NUXT_STRAPI_FORWARDER_SECRET` | Shared secret (32+ characters, same as the CMS's `RATE_LIMIT_FORWARDER_SECRET`) so the CMS rate-limits per visitor. Empty: off | No |
+| `NUXT_TRUST_PROXY` | How far `X-Forwarded-For` is trusted: `private` (default), a number of proxies, a CIDR list or `false`. See `docs/security.md` | No |
+| `NUXT_PROXY_IP_HEADER` | Header with the proxy chain (default `X-Forwarded-For`) | No |
 | `NUXT_SMTP_HOST` | SMTP server hostname | Newsletter only |
 | `NUXT_SMTP_PORT` | SMTP server port (default: 587) | Newsletter only |
 | `NUXT_SMTP_USER` | SMTP username | Newsletter only |

@@ -42,17 +42,20 @@ export default defineEventHandler(async (event) => {
 
   async function fetchArticles(params: Record<string, unknown>): Promise<StrapiPaginatedResponse<RawStrapiArticle[]>> {
     const queryString = qs.stringify({ populate: POST_CARD_POPULATE, locale, ...params }, { skipNulls: true })
-    return strapiFetch<StrapiPaginatedResponse<RawStrapiArticle[]>>(`/api/articles?${queryString}`)
+    return strapiFetch<StrapiPaginatedResponse<RawStrapiArticle[]>>(`/api/articles?${queryString}`, { event })
   }
 
   async function fetchRanked(): Promise<StrapiPaginatedResponse<RawStrapiArticle[]> | null> {
     let ranking: RankingPage
     try {
-      ranking = await $fetch<RankingPage>(strapiUrl('/api/fediverse/articles/ranking'), {
+      ranking = await strapiFetch<RankingPage>('/api/fediverse/articles/ranking', {
+        event,
+        auth: 'none',
         query: { page, pageSize, locale, category, tag, search: validSearch },
         timeout: RANKING_TIMEOUT_MS,
       })
     } catch (error: unknown) {
+      noStoreOnUpstreamRateLimit(event, error)
       console.error('Strapi fetch fediverse ranking error:', asUpstreamError(error).data || error)
       return null
     }
@@ -77,18 +80,21 @@ export default defineEventHandler(async (event) => {
 
   async function fetchStats(ids: string[]): Promise<BatchStats | null> {
     try {
-      return await $fetch<BatchStats>(strapiUrl('/api/fediverse/articles/stats'), {
+      return await strapiFetch<BatchStats>('/api/fediverse/articles/stats', {
+        event,
+        auth: 'none',
         query: { documentIds: ids.join(',') },
         timeout: STATS_TIMEOUT_MS,
       })
     } catch (error: unknown) {
+      noStoreOnUpstreamRateLimit(event, error)
       console.error('Strapi fetch fediverse batch stats error:', asUpstreamError(error).data || error)
       return null
     }
   }
 
   async function fetchContentMatches(): Promise<StrapiPaginatedResponse<RawStrapiArticle[]>> {
-    const matches = await searchArticles({ query: validSearch!, locale, content: true, limit: SEARCH_MAX_RESULTS })
+    const matches = await searchArticles({ event, query: validSearch!, locale, content: true, limit: SEARCH_MAX_RESULTS })
     if (matches.length === 0) return emptyPage()
 
     const ids = matches.map(match => match.documentId)
@@ -133,6 +139,7 @@ export default defineEventHandler(async (event) => {
       ...(Object.keys(filters).length > 0 ? { filters } : {}),
     })
   } catch (error: unknown) {
+    rethrowUpstreamRateLimit(event, error)
     throw createError({
       statusCode: asUpstreamError(error).response?.status === 400 ? 400 : 502,
       message: 'Failed to fetch posts',

@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
   try {
     response = await strapiFetch<{ data?: RawStrapiArticle[] }>(
       `/api/articles?${params}`,
+      { event },
     )
   } catch (error: unknown) {
     console.error('Strapi fetch post error:', asUpstreamError(error).data || error)

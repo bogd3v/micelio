@@ -89,6 +89,10 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     strapiApiToken: '',
+    // Visitor address for the CMS rate limits: docs/security.md, "Client IP"
+    strapiForwarderSecret: '',
+    trustProxy: 'private',
+    proxyIpHeader: 'X-Forwarded-For',
     smtpHost: '',
     smtpPort: 587,
     smtpUser: '',

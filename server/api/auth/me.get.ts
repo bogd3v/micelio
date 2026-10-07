@@ -7,13 +7,13 @@ export default defineEventHandler(async (event): Promise<AuthUserResponse> => {
   if (!jwt) return { user: null }
 
   try {
-    return { user: toPublicUser(await fetchStrapiMe(jwt)) }
+    return { user: toPublicUser(await fetchStrapiMe(event, jwt)) }
   } catch (error: unknown) {
     const status = asUpstreamError(error).response?.status
     if (status === 401 || status === 403) {
       clearSessionCookie(event)
       return { user: null }
     }
-    throw strapiAuthFailure(error)
+    throw strapiAuthFailure(event, error)
   }
 })

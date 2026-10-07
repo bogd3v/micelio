@@ -25,12 +25,12 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
   assertRateLimit(event, 'newsletterPerEmail', email)
 
   try {
-    const existing = await findSubscriber('email', email)
+    const existing = await findSubscriber(event, 'email', email)
     if (existing?.confirmed) return successResponse(language)
-    if (existing) await deleteSubscriber(existing.documentId)
+    if (existing) await deleteSubscriber(event, existing.documentId)
 
     const confirmationToken = randomUUID()
-    await createSubscriber({
+    await createSubscriber(event, {
       email,
       confirmationToken,
       unsubscribeToken: newUnsubscribeToken(),
@@ -43,6 +43,7 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
 
     return successResponse(language)
   } catch (error: unknown) {
+    rethrowUpstreamRateLimit(event, error)
     console.error('Newsletter subscription error:', error)
     throw createError({
       statusCode: 500,

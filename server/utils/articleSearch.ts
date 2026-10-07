@@ -1,3 +1,4 @@
+import type { H3Event } from 'h3'
 import type { SearchMatch, SearchPostResult } from '~/interfaces'
 
 const SEARCH_TIMEOUT_MS = 3000
@@ -17,6 +18,7 @@ interface UpstreamSearchRow {
 }
 
 export interface ArticleSearchOptions {
+  event: H3Event
   query: string
   locale?: string
   content: boolean
@@ -44,8 +46,9 @@ function toResult(row: UpstreamSearchRow): SearchPostResult | null {
   }
 }
 
-export async function searchArticles({ query, locale, content, limit }: ArticleSearchOptions): Promise<SearchPostResult[]> {
+export async function searchArticles({ event, query, locale, content, limit }: ArticleSearchOptions): Promise<SearchPostResult[]> {
   const response = await strapiFetch<{ data?: UpstreamSearchRow[] }>('/api/articles/search', {
+    event,
     query: { q: query, locale, content: content ? '1' : undefined, limit: Math.min(limit, SEARCH_MAX_RESULTS) },
     timeout: SEARCH_TIMEOUT_MS,
   })

@@ -6,9 +6,12 @@ export default defineEventHandler(async (event): Promise<{ ok: true }> => {
   const { email } = await validBody(event, emailSchema, () => authFailure('invalidInput'))
 
   try {
-    await $fetch(strapiUrl('/api/auth/send-email-confirmation'), { method: 'POST', body: { email } })
+    await strapiFetch('/api/auth/send-email-confirmation', { event, timeout: AUTH_TIMEOUT_MS, auth: 'none', method: 'POST', body: { email } })
   } catch (error: unknown) {
-    if (asUpstreamError(error).response?.status === 429) throw authFailure('tooManyRequests')
+    if (asUpstreamError(error).response?.status === 429) {
+      copyRetryAfter(event, error)
+      throw authFailure('tooManyRequests')
+    }
     console.error('Strapi send-email-confirmation error:', asUpstreamError(error).data?.error?.message || error)
   }
   return { ok: true }

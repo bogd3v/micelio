@@ -11,22 +11,23 @@ export default defineEventHandler(async (event): Promise<{ ok: true }> => {
 
   let user: StrapiAuthUser
   try {
-    user = await fetchStrapiMe(jwt)
+    user = await fetchStrapiMe(event, jwt)
   } catch (error: unknown) {
-    const failure = strapiAuthFailure(error)
+    const failure = strapiAuthFailure(event, error)
     if (failure.statusCode === 401) clearSessionCookie(event)
     throw failure
   }
   if (user.username !== username) throw authFailure('invalidInput')
 
   try {
-    await $fetch(strapiUrl('/api/users/me'), {
+    await strapiFetch('/api/users/me', {
+      event, timeout: AUTH_TIMEOUT_MS,
+      auth: { jwt },
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${jwt}` },
       body: { password },
     })
   } catch (error: unknown) {
-    throw strapiAuthFailure(error, { invalidInput: 'wrongPassword', invalidCredentials: 'wrongPassword' })
+    throw strapiAuthFailure(event, error, { invalidInput: 'wrongPassword', invalidCredentials: 'wrongPassword' })
   }
 
   clearSessionCookie(event)

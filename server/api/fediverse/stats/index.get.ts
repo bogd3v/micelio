@@ -29,11 +29,14 @@ export default defineEventHandler(async (event): Promise<Record<string, Fedivers
 
   let response: UpstreamStats
   try {
-    response = await $fetch<UpstreamStats>(strapiUrl('/api/fediverse/articles/stats'), {
+    response = await strapiFetch<UpstreamStats>('/api/fediverse/articles/stats', {
+      event,
+      auth: 'none',
       query: { documentIds: ids.join(',') },
       timeout: UPSTREAM_TIMEOUT_MS,
     })
   } catch (error: unknown) {
+    rethrowUpstreamRateLimit(event, error)
     console.error('Strapi fetch fediverse batch stats error:', asUpstreamError(error).data || error)
     throw createError({
       statusCode: 502,
