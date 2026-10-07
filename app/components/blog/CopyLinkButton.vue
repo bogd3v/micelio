@@ -9,6 +9,7 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useI18n()
+const { isStatic } = useStaticSite()
 const { copy, copied } = useClipboard({ copiedDuring: COPIED_MS, legacy: true })
 
 const label = computed<string>(() => (copied.value ? t('post.linkCopied') : t('post.copyLink')))
@@ -19,7 +20,7 @@ function copyLink(): void {
 </script>
 
 <template>
-  <span class="bd-copy-link">
+  <span v-if="!isStatic" class="bd-copy-link">
     <BdButton v-if="variant === 'button'" variant="secondary" size="sm" @click="copyLink">{{ label }}</BdButton>
     <button v-else type="button" class="bd-share-link" @click="copyLink">{{ label }}</button>
     <span class="bd-sr" aria-live="polite">{{ copied ? t('post.linkCopied') : '' }}</span>

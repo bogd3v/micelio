@@ -34,6 +34,11 @@
     cursor: pointer;
 }
 
+/* The label comes from the script: without it the button is not shown */
+.bd-code-copy:empty {
+    display: none;
+}
+
 .bd-code-copy::after {
     content: "";
     position: absolute;

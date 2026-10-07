@@ -2,6 +2,7 @@
 import type { Category, Locale } from '~/interfaces'
 import { CATEGORIES, categoryColor } from '~/helpers/categories'
 import { padCount } from '~/helpers/search'
+import { blogPath } from '~/helpers/blog'
 
 interface TopicFilter {
   id: Category | 'all'
@@ -22,6 +23,7 @@ const themeMessage = useThemeMessage()
 const { fetchPosts } = useStrapi()
 const { localizePath } = useLocaleUtils()
 const toPostCard = usePostCard()
+const { isStatic } = useStaticSite()
 
 const selected = ref<Category | undefined>()
 
@@ -59,16 +61,24 @@ function select(id: TopicFilter['id']): void {
         <h2 id="latest-title" class="bd-home-title bd-stretch">{{ t('home.latest.title') }}</h2>
       </div>
       <div class="bd-latest-filters" role="group" :aria-label="t('home.latest.filters')">
-        <button
-          v-for="filter in filters"
-          :key="filter.id"
-          type="button"
-          class="bd-chip"
-          :aria-pressed="(selected ?? 'all') === filter.id ? 'true' : 'false'"
-          @click="select(filter.id)"
-        >
-          <span class="bd-latest-dot" :style="{ background: filter.color }" aria-hidden="true" />{{ filter.label }}<span class="bd-latest-count">{{ filter.count }}</span>
-        </button>
+        <template v-for="filter in filters" :key="filter.id">
+          <NuxtLink
+            v-if="isStatic"
+            :to="filter.id === 'all' ? localizePath('/blog') : blogPath({ category: filter.id, page: 1 }, localizePath('/blog'))"
+            class="bd-chip"
+          >
+            <span class="bd-latest-dot" :style="{ background: filter.color }" aria-hidden="true" />{{ filter.label }}<span class="bd-latest-count">{{ filter.count }}</span>
+          </NuxtLink>
+          <button
+            v-else
+            type="button"
+            class="bd-chip"
+            :aria-pressed="(selected ?? 'all') === filter.id ? 'true' : 'false'"
+            @click="select(filter.id)"
+          >
+            <span class="bd-latest-dot" :style="{ background: filter.color }" aria-hidden="true" />{{ filter.label }}<span class="bd-latest-count">{{ filter.count }}</span>
+          </button>
+        </template>
       </div>
     </div>
 

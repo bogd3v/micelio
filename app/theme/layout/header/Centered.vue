@@ -30,6 +30,7 @@ const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
 const site = useSite()
 const fediverseUser = useFediverseUser()
+const { isStatic } = useStaticSite()
 const { accountsOn, searchOn, fediverseOn, tracking, mounted, shortcut, links, hud, percent, progressStyle } = useHeaderState(props)
 </script>
 
@@ -56,26 +57,22 @@ const { accountsOn, searchOn, fediverseOn, tracking, mounted, shortcut, links, h
         <BdLangSwitch class="bd-nav-lang" @change="emit('lang', $event)" />
         <div class="bd-nav-mobile">
           <BdAccountMenu v-if="accountsOn" compact />
-          <button
+          <BdSearchTrigger
             v-if="searchOn"
-            type="button"
             class="bd-iconbtn"
             :aria-label="t('bd.header.search')"
-            aria-haspopup="dialog"
-            @click="emit('search')"
+            @search="emit('search')"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6" /><path d="M15.5 15.5 L20 20" /></svg>
-          </button>
-          <button
-            type="button"
+          </BdSearchTrigger>
+          <BdMenuTrigger
             class="bd-iconbtn"
             :aria-label="t('bd.header.menu')"
-            aria-haspopup="dialog"
-            :aria-expanded="menuOpen ? 'true' : 'false'"
-            @click="emit('menu')"
+            :open="menuOpen"
+            @menu="emit('menu')"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M4 7 H20 M4 12 H20 M4 17 H20" /></svg>
-          </button>
+          </BdMenuTrigger>
         </div>
       </div>
     </div>
@@ -109,16 +106,9 @@ const { accountsOn, searchOn, fediverseOn, tracking, mounted, shortcut, links, h
           <NuxtLink v-if="fediverseOn" :to="`${localizePath('/')}#fediverso`" class="bd-chip" :aria-label="t('bd.header.fediverse', { handle: fediverseUser })">
             <span class="bd-hud-mark" aria-hidden="true">◆</span> {{ fediverseUser }}
           </NuxtLink>
-          <button
-            v-if="searchOn"
-            type="button"
-            class="bd-chip"
-            aria-haspopup="dialog"
-            aria-keyshortcuts="Control+K Meta+K"
-            @click="emit('search')"
-          >
-            {{ t('bd.header.search') }} <kbd class="bd-kbd" aria-hidden="true">{{ shortcut }}</kbd>
-          </button>
+          <BdSearchTrigger v-if="searchOn" class="bd-chip" shortcut @search="emit('search')">
+            {{ t('bd.header.search') }} <kbd v-if="!isStatic" class="bd-kbd" aria-hidden="true">{{ shortcut }}</kbd>
+          </BdSearchTrigger>
           <BdThemeSwitch @change="emit('theme', $event)" />
           <BdAccountMenu v-if="accountsOn" />
         </div>

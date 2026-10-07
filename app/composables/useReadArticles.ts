@@ -9,13 +9,15 @@ interface ReadArticles {
 }
 
 export function useReadArticles(): ReadArticles {
+  const { isStatic } = useStaticSite()
   const ids = useState<string[]>('bd-read-articles', () => [])
   const loaded = useState<boolean>('bd-read-articles-loaded', () => false)
 
   const count = computed<number>(() => ids.value.length)
 
   function isRead(documentId: string | null | undefined): boolean {
-    return Boolean(documentId) && ids.value.includes(documentId!)
+    // Static pages show no read marks: the history lives in the browser
+    return !isStatic && Boolean(documentId) && ids.value.includes(documentId!)
   }
 
   function ensureLoaded(): void {

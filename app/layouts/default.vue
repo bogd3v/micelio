@@ -5,6 +5,7 @@ import { headerSection, isReadingPath } from '~/helpers/header'
 const route = useRoute()
 const section = useHeaderSection()
 const searchOn = useModule('search')
+const { isStatic } = useStaticSite()
 
 const isSearchOpen = ref(false)
 const isMobileMenuOpen = ref(false)
@@ -38,12 +39,13 @@ onMounted(() => {
     />
 
     <BdMenuSheet
+      v-if="!isStatic"
       :open="isMobileMenuOpen"
       :active="active"
       @close="isMobileMenuOpen = false"
     />
 
-    <BdSearchPalette v-if="searchOn" :open="isSearchOpen" @close="isSearchOpen = false" />
+    <BdSearchPalette v-if="searchOn && !isStatic" :open="isSearchOpen" @close="isSearchOpen = false" />
 
     <main id="main-content" class="bd-app-main" role="main">
       <slot />

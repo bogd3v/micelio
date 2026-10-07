@@ -29,6 +29,8 @@ const search = defineModel<string>('search', { required: true })
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
 
+const { isStatic } = useStaticSite()
+
 const blogBase = computed<string>(() => localizePath('/blog'))
 
 // One filter per URL: a chip replaces the other filter and goes back to the first page
@@ -59,7 +61,7 @@ const resultLabel = computed<string>(() =>
 
 <template>
   <section class="bd-blog-filters" :aria-label="t('blog.filters')">
-    <div class="bd-blog-search">
+    <div v-if="!isStatic" class="bd-blog-search">
       <label for="bd-blog-q" class="bd-sr">{{ t('blog.search.label') }}</label>
       <span class="bd-blog-search-prompt" aria-hidden="true">→</span>
       <input
@@ -115,17 +117,30 @@ const resultLabel = computed<string>(() =>
 
     <div v-if="hasActiveFilters(filters)" class="bd-meta bd-blog-active">
       <span class="bd-blog-active-label">{{ t('blog.filteringBy') }}</span>
-      <button
-        v-for="filter in activeFilters"
-        :key="filter.id"
-        type="button"
-        class="bd-chip bd-blog-active-chip"
-        :aria-label="t('blog.removeFilter', { label: filter.label })"
-        @click="emit('remove', filter.id)"
-      >
-        {{ filter.label }} <span aria-hidden="true">✕</span>
-      </button>
-      <button type="button" class="bd-blog-textbtn" @click="emit('clear')">{{ t('blog.clearFilters') }}</button>
+      <template v-if="isStatic">
+        <NuxtLink
+          v-for="filter in activeFilters"
+          :key="filter.id"
+          :to="blogBase"
+          class="bd-chip bd-blog-active-chip"
+          :aria-label="t('blog.removeFilter', { label: filter.label })"
+        >
+          {{ filter.label }} <span aria-hidden="true">✕</span>
+        </NuxtLink>
+      </template>
+      <template v-else>
+        <button
+          v-for="filter in activeFilters"
+          :key="filter.id"
+          type="button"
+          class="bd-chip bd-blog-active-chip"
+          :aria-label="t('blog.removeFilter', { label: filter.label })"
+          @click="emit('remove', filter.id)"
+        >
+          {{ filter.label }} <span aria-hidden="true">✕</span>
+        </button>
+        <button type="button" class="bd-blog-textbtn" @click="emit('clear')">{{ t('blog.clearFilters') }}</button>
+      </template>
     </div>
   </section>
 </template>
