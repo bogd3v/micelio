@@ -66,3 +66,8 @@
 [data-section="pricing"][data-variant="table"] .bd-section-plan-recommended {
     background: var(--accent-soft);
 }
+
+/* The recommended mark sits under the plan name */
+[data-section="pricing"][data-variant="table"] .bd-section-plan-recommended .bd-section-item-title .bd-meta {
+    display: block;
+}

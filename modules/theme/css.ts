@@ -43,7 +43,7 @@ export function setupCss(ctx: ThemeContext): void {
       return lines.length ? `${lines.join('\n')}\n` : ''
     },
   })
-  // Optional: the page sections' styling, imported by SectionRenderer so only pages with sections load it (ADR 0005, section 4)
+  // Optional: the page sections' styling, imported by SectionRenderer so only pages with sections load it (ADR 0005, sections 4 and 11)
   addTemplate({
     filename: 'micelio/sections.css',
     write: true,
