@@ -108,7 +108,7 @@ for (const { path, ...expected } of LANGUAGE_LINKS) {
         expect(await link.getAttribute('href')).toBe(href)
       }
     }
-    await expect(page.locator('button:visible:not([type="submit"])')).toHaveCount(0)
+    await expect(page.locator('button:visible:not(form.bd-news[method="post"][action] button)')).toHaveCount(0)
     await expect(page.locator('#bd-site-nav')).toHaveCount(1)
     await context.close()
   })

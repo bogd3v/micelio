@@ -42,3 +42,21 @@ describe('form helpers', () => {
     expect(hiddenFields('')).toEqual([])
   })
 })
+
+describe('hostile actions', () => {
+  it('rejects hosts that would change a CSP source list', () => {
+    for (const value of ['https://*/x', 'https://*.evil.com/x', 'https://a.com%2a/x', 'https://a;b.com/x', 'https://a b.com/x', 'https://:@buttondown.com/x', 'https://u@buttondown.com/x', 'https://buttondown.com/x\r\nX: y', 'https://localhost/x']) {
+      expect(validFormAction(value), value).toBe('')
+    }
+  })
+
+  it('strips a trailing dot from the origin and returns the normalized href', () => {
+    expect(formActionOrigin('https://buttondown.com./x')).toBe('https://buttondown.com')
+    expect(validFormAction('https://BUTTONDOWN.com/a%20b')).toBe('https://buttondown.com/a%20b')
+  })
+
+  it('shows IDN hosts decoded', () => {
+    expect(providerHost('https://xn--bcher-kva.example/x')).toBe('bücher.example')
+    expect(providerHost('https://xn--mnchen-3ya.de/x')).toBe('münchen.de')
+  })
+})

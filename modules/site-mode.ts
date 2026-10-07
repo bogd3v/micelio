@@ -13,7 +13,7 @@ export default defineNuxtModule({
     const formAction = process.env.NUXT_PUBLIC_NEWSLETTER_FORM_ACTION?.trim() ?? ''
     if (isStaticMode(mode) && validFormAction(formAction) === '') {
       // A typo must not publish a form that posts nowhere: an invalid action is the same as none
-      const reason = formAction ? `"${formAction}" is not an https: URL (http: is accepted only for localhost), so it is ignored and` : 'is not set, so'
+      const reason = formAction ? `${JSON.stringify(formAction.slice(0, 200))} is not an https: URL (http: is accepted only for localhost), so it is ignored and` : 'is not set, so'
       useLogger('micelio').warn(`Site mode "${mode}": NUXT_PUBLIC_NEWSLETTER_FORM_ACTION ${reason} the newsletter module is off.`)
     }
     addTypeTemplate({

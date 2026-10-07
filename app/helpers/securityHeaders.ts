@@ -48,9 +48,21 @@ export function inlineScripts(html: string): string[] {
   return scripts
 }
 
+const HOST_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*$/
+const IPV6_PATTERN = /^\[[0-9a-f:.]+\]$/
+
+/** Origin of a URL for a CSP source list, or `''` if its host could change the policy (`*`, `;`, spaces, `%`…). A trailing dot is dropped. */
+export function cspOrigin(value: string): string {
+  if (!URL.canParse(value)) return ''
+  const url = new URL(value)
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return ''
+  const host = url.hostname.replace(/\.$/, '')
+  if (!HOST_PATTERN.test(host) && !IPV6_PATTERN.test(host)) return ''
+  return `${url.protocol}//${host}${url.port ? `:${url.port}` : ''}`
+}
+
 function origins(urls: string[]): string[] {
-  const found = urls.filter(url => URL.canParse(url)).map(url => new URL(url).origin)
-  return [...new Set(found)]
+  return [...new Set(urls.map(cspOrigin).filter(Boolean))]
 }
 
 export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): string {
