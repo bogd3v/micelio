@@ -45,9 +45,9 @@ export interface ContrastProblem {
   message: string
 }
 
-type Lookup = (name: string) => string | undefined
+export type Lookup = (name: string) => string | undefined
 
-function lookupFor(manifest: ThemeManifest, mode: string): Lookup {
+export function lookupFor(manifest: ThemeManifest, mode: string): Lookup {
   const tokens = new Map<string, string | Record<string, string>>()
   for (const token of [...manifest.color.tokens, ...(manifest.shadow?.tokens ?? [])]) tokens.set(token.name, token.value)
   return (name) => {
@@ -57,10 +57,10 @@ function lookupFor(manifest: ThemeManifest, mode: string): Lookup {
   }
 }
 
-type Resolved = Rgb & { translucent?: boolean }
+export type Resolved = Rgb & { translucent?: boolean }
 
 /** The opaque color of a role in a mode over `backdrop`; a string is the reason when it cannot be resolved. */
-function resolveOver(lookup: Lookup, name: string, backdrop: Rgb | null): Resolved | string {
+export function resolveOver(lookup: Lookup, name: string, backdrop: Rgb | null): Resolved | string {
   const raw = lookup(name)
   if (raw === undefined) return `"${name}" has no value`
   const resolved = resolveRefs(raw, lookup)
