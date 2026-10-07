@@ -1,12 +1,14 @@
 """Subsets Bogotá's fonts (themes/bogota/fonts/, #350). Dev-only: nothing here runs in the build.
 
-Sources are pinned in scripts/perf/bogota-font-sources.json: the google/fonts commit and the sha256 of each OFL variable TTF.
-The script downloads them from that commit, stops if a hash differs, and writes <name>-latin-var.woff2: only the glyphs
-English and Spanish text needs, the variable axes cut to the range the CSS uses (Archivo `wght` 300-600 and `wdth` 100-125,
-JetBrains Mono `wght` 400-700; the other axes are untouched), the layout features the CSS can reach, no hinting. Glyph
-outlines inside those ranges are unchanged; a character outside the set (or a weight above 600 for Archivo) renders in the
-fallback font (or at 600). Why and how much: docs/performance.md (#350). The unicode ranges must match themes/bogota/fonts.css.
-The woff2 hashes are recorded for reproducibility; `--update` records new ones.
+The sources are the full latin variable fonts that themes/bogota/fonts/ held before #350 (Google Fonts' woff2, the
+exact glyphs and hinting the site rendered): git blobs of this repository, pinned in
+scripts/perf/bogota-font-sources.json with their sha256 (the upstream google/fonts TTFs are other builds: other outlines,
+JetBrains Mono 2.211 against 2.304). The script reads them with `git cat-file`, stops if a hash differs, and writes
+<name>-latin-var.woff2: only the glyphs English and Spanish text needs, the variable axes cut to the range the CSS uses
+(Archivo `wght` 300-600 and `wdth` 100-125, JetBrains Mono `wght` 400-700; the other axes are untouched), the layout
+features the CSS can reach, hinting tables kept. Outlines inside those ranges are unchanged (docs/performance.md, #350); a
+character outside the set, or a weight above 600 for Archivo, renders in the fallback font or at 600. The unicode ranges
+must match themes/bogota/fonts.css. The woff2 hashes are recorded for reproducibility; `--update` records new ones.
 After changing the files, regenerate the fallback metrics with scripts/perf/font-fallbacks.py.
 
     pip install fonttools brotli
@@ -20,9 +22,8 @@ import hashlib
 import io
 import json
 import sys
-import urllib.request
+import subprocess
 from pathlib import Path
-from urllib.parse import quote
 
 import fontTools
 from fontTools import subset
@@ -56,18 +57,16 @@ def main() -> None:
     changed = []
     for font_id, spec in FONTS.items():
         entry = sources['fonts'][font_id]
-        url = f'https://raw.githubusercontent.com/google/fonts/{sources["commit"]}/{quote(entry["path"])}'
-        with urllib.request.urlopen(url, timeout=60) as response:  # noqa: S310 (fixed https host)
-            ttf = response.read()
-        if sha256(ttf) != entry['ttfSha256']:
-            sys.exit(f'{font_id}: the TTF at commit {sources["commit"]} does not match the recorded sha256')
-        font = instantiateVariableFont(TTFont(io.BytesIO(ttf), recalcTimestamp=False), spec['axes'])
+        source = subprocess.run(['git', 'cat-file', 'blob', entry['blob']], cwd=ROOT, check=True, capture_output=True).stdout
+        if sha256(source) != entry['sourceSha256']:
+            sys.exit(f'{font_id}: blob {entry["blob"]} does not match the recorded sha256')
+        font = instantiateVariableFont(TTFont(io.BytesIO(source), recalcTimestamp=False), spec['axes'])
         buffer = io.BytesIO()
         font.save(buffer)  # reload: the subsetter chokes on the instancer's lazy gvar
         font = TTFont(io.BytesIO(buffer.getvalue()), recalcTimestamp=False)
         options = subset.Options()
         options.flavor = 'woff2'
-        options.hinting = False
+        options.hinting = True  # keep prep and gasp: small text renders differently without them
         options.layout_features = FEATURES
         options.name_IDs = [1, 2, 3, 4, 6]
         options.notdef_outline = True
