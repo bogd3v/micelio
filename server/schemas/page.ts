@@ -34,35 +34,66 @@ function list<T extends z.ZodType>(schema: T) {
 }
 
 const text = z.string().trim().min(1)
-const linkUrl = text.regex(/^(?:https?:\/\/\S+|mailto:\S+|\/(?!\/)\S*)$/)
+// One leading slash and no backslash: `//host` and `/\host` both leave the site in a browser
+const SITE_PATH = String.raw`\/(?![\/\\])[^\s\\]*`
+const sitePath = new RegExp(`^${SITE_PATH}$`)
+const linkUrl = text.regex(new RegExp(String.raw`^(?:https?:\/\/\S+|mailto:\S+|${SITE_PATH})$`))
 const httpUrl = text.regex(/^https?:\/\/\S+$/)
-const mediaUrl = text.regex(/^(?:https?:\/\/\S+|\/(?!\/)\S*)$/)
 
-const media = z.object({
-  url: mediaUrl,
-  alternativeText: optional(z.string().trim()),
-  width: optional(z.number().positive()),
-  height: optional(z.number().positive()),
-  mime: optional(z.string()),
-})
+// The directives of the robots meta tag that Google documents
+const ROBOTS_TOKEN = /^(?:all|none|index|noindex|follow|nofollow|noarchive|nosnippet|noimageindex|notranslate|max-image-preview:(?:none|standard|large)|max-snippet:-?\d+|max-video-preview:-?\d+)$/
 
-const link = z.object({ label: text, url: linkUrl })
+function originOf(url: string): string | null {
+  try {
+    return new URL(url).origin
+  } catch {
+    return null
+  }
+}
 
-const seo = z.object({
-  metaTitle: text,
-  metaDescription: text,
-  metaImage: optional(media),
-  metaRobots: optional(text),
-  keywords: optional(text),
-  canonicalURL: optional(httpUrl),
-})
+/** What the schemas need besides the data: the Markdown renderer and the origins the site trusts. */
+export interface PageContext {
+  render: RenderMarkdown
+  /** The site's public URL; a canonical URL must be on its origin */
+  siteUrl?: string
+  /** Origins media may come from (the CSP `img-src` ones); paths on the site are always allowed */
+  mediaOrigins: string[]
+}
+
+function sharedSchemas(context: PageContext) {
+  const siteOrigin = context.siteUrl ? originOf(context.siteUrl) : null
+  const mediaOrigins = new Set(context.mediaOrigins.flatMap(url => originOf(url) ?? []))
+
+  const mediaUrl = text.refine(url => sitePath.test(url) || (httpUrl.safeParse(url).success && mediaOrigins.has(originOf(url) ?? '')))
+
+  const media = z.object({
+    url: mediaUrl,
+    alternativeText: optional(z.string().trim()),
+    width: optional(z.number().positive()),
+    height: optional(z.number().positive()),
+    mime: optional(z.string()),
+  })
+
+  const link = z.object({ label: text, url: linkUrl })
+
+  const seo = z.object({
+    metaTitle: text,
+    metaDescription: text,
+    metaImage: optional(media),
+    metaRobots: optional(text.refine(value => value.split(',').every(token => ROBOTS_TOKEN.test(token.trim().toLowerCase())))),
+    keywords: optional(text),
+    canonicalURL: optional(httpUrl.refine(url => siteOrigin !== null && originOf(url) === siteOrigin)),
+  })
+
+  return { media, link, seo }
+}
 
 function html(render: RenderMarkdown): z.ZodType<string> {
   return text.transform(render).refine(value => value.length > 0, 'Empty text')
 }
 
-function sectionSchemas(render: RenderMarkdown): Record<string, z.ZodType<PageSection>> {
-  const markdown = html(render)
+function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof sharedSchemas>): Record<string, z.ZodType<PageSection>> {
+  const markdown = html(context.render)
   const slugRelation = optional(z.object({ slug: text }).transform(relation => relation.slug))
 
   const schemas: Record<string, z.ZodType<PageSection>> = {
@@ -179,8 +210,8 @@ function sectionSchemas(render: RenderMarkdown): Record<string, z.ZodType<PageSe
 }
 
 /** One section, or null when its component is unknown or it fails its schema. */
-export function parseSection(raw: unknown, render: RenderMarkdown): PageSection | null {
-  return parseWith(raw, sectionSchemas(render))
+export function parseSection(raw: unknown, context: PageContext): PageSection | null {
+  return parseWith(raw, sectionSchemas(context, sharedSchemas(context)))
 }
 
 function parseWith(raw: unknown, schemas: Record<string, z.ZodType<PageSection>>): PageSection | null {
@@ -197,25 +228,28 @@ const translation = z.object({
   locale: z.enum(Object.values(Locale) as [Locale, ...Locale[]]),
 })
 
-const pageHeader = z.object({
-  documentId: text,
-  title: text,
-  slug: z.string().regex(PAGE_SLUG_PATTERN),
-  locale: optional(z.enum(Object.values(Locale) as [Locale, ...Locale[]])),
-  seo: optional(seo),
-  sections: z.array(z.unknown()).nullish(),
-  localizations: z.array(z.unknown()).nullish(),
-})
+function pageHeader(seo: ReturnType<typeof sharedSchemas>['seo']) {
+  return z.object({
+    documentId: text,
+    title: text,
+    slug: z.string().regex(PAGE_SLUG_PATTERN),
+    locale: optional(z.enum(Object.values(Locale) as [Locale, ...Locale[]])),
+    seo: optional(seo),
+    sections: z.array(z.unknown()).nullish(),
+    localizations: z.array(z.unknown()).nullish(),
+  })
+}
 
 /**
  * Strapi's page, validated: an invalid or unknown section is dropped alone, never the page.
  * Null when the page itself has no title or slug.
  */
-export function parsePage(data: unknown, render: RenderMarkdown): Page | null {
-  const header = pageHeader.safeParse(data)
+export function parsePage(data: unknown, context: PageContext): Page | null {
+  const shared = sharedSchemas(context)
+  const header = pageHeader(shared.seo).safeParse(data)
   if (!header.success) return null
   const { sections, localizations, seo: pageSeo, ...rest } = header.data
-  const schemas = sectionSchemas(render)
+  const schemas = sectionSchemas(context, shared)
   return {
     ...rest,
     ...(pageSeo && { seo: pageSeo as PageSeo }),

@@ -10,6 +10,7 @@ import { Category } from '~/interfaces/design'
 import { startMockStrapi } from './mock-strapi'
 import { MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
 import { resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
+import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
 import { contrastRatio, parseHex } from '~/helpers/color'
 import { inlineScripts } from '~/helpers/securityHeaders'
 
@@ -574,56 +575,17 @@ describe('/api/pages/[slug]', () => {
   function section<K extends PageSection['__component']>(page: PageBody, name: K): Extract<PageSection, { __component: K }> {
     return page.sections.find(item => item.__component === name) as Extract<PageSection, { __component: K }>
   }
+  function pageRequests(): number {
+    return mock.requests.filter(request => request.path === '/api/pages').length
+  }
 
   const COMPONENTS = [
     'hero', 'feature-grid', 'media-showcase', 'stats', 'logo-cloud', 'testimonials', 'pricing',
     'faq', 'cta', 'post-list', 'newsletter', 'rich-text', 'gallery', 'scene',
   ].map(name => `section.${name}`)
 
-  it.each([['en', 'showcase', 'muestra'], ['es', 'muestra', 'showcase']])('returns the %s showcase with its 14 sections', async (locale, slug, other) => {
-    const response = await fetch(`/api/pages/${slug}?locale=${locale}`)
-    expect(response.status).toBe(200)
-    expect(response.headers.get('cache-control')).toBe('public, s-maxage=300, stale-while-revalidate=600')
-    const page = await response.json() as PageBody
-    expect(page.slug).toBe(slug)
-    expect(page.sections.map(item => item.__component)).toEqual(COMPONENTS)
-    expect(page.seo).toMatchObject({ metaImage: { url: '/uploads/page-og.png' } })
-    expect(page.translations).toEqual([{ locale: locale === 'en' ? 'es' : 'en', slug: other }])
-  })
-
-  it('renders the Markdown of the sections to sanitized HTML and drops the sources', async () => {
-    const page = await $fetch<PageBody>('/api/pages/showcase', { query: { locale: 'en' } })
-    expect(section(page, 'section.media-showcase').html).toContain('<strong>cherry tomatoes</strong>')
-    expect(section(page, 'section.faq').items[1]!.html).toContain('<a href="https://github.com/bogd3v/micelio"')
-    expect(section(page, 'section.rich-text').html).toContain('<h2 id="about-this-page">About this page</h2>')
-    expect(section(page, 'section.rich-text')).not.toHaveProperty('body')
-    expect(section(page, 'section.pricing').plans[0]!.features).toEqual(['3 seed packs', 'A planting guide'])
-  })
-
-  it('resolves the post list on the server', async () => {
-    const page = await $fetch<PageBody>('/api/pages/showcase', { query: { locale: 'en' } })
-    const list = section(page, 'section.post-list')
-    expect(list.category).toBe('software')
-    expect(list.posts.length).toBeGreaterThan(0)
-    expect(list.posts.length).toBeLessThanOrEqual(3)
-    expect(list.posts.every(post => post.category?.slug === 'software')).toBe(true)
-    const articles = mock.requests.find(request => request.path === '/api/articles')!
-    expect(articles.query).toMatchObject({
-      locale: 'en',
-      sort: 'publishedAt:desc',
-      filters: { category: { slug: { $eq: 'software' } } },
-      pagination: { page: '1', pageSize: '3' },
-    })
-  })
-
-  it('drops invalid and unknown sections alone and gives an empty list when no post matches', async () => {
-    const page = await $fetch<PageBody>('/api/pages/partial', { query: { locale: 'en' } })
-    expect(page.sections.map(item => item.__component)).toEqual(['section.hero', 'section.post-list'])
-    expect(section(page, 'section.post-list').posts).toEqual([])
-    expect(page.translations).toEqual([])
-    expect(page.seo).toBeUndefined()
-  })
-
+  // Pages are cached by locale and slug for the life of the server, so the first read of each
+  // one is the only one that reaches Strapi: the tests that inspect the requests come first.
   it('asks Strapi for one page, populating every nested relation, with the API token', async () => {
     await $fetch('/api/pages/muestra', { query: { locale: 'es' } })
     const request = mock.requests.find(item => item.path === '/api/pages')!
@@ -654,11 +616,80 @@ describe('/api/pages/[slug]', () => {
     expect(Object.keys(populate.sections.on)).toEqual(COMPONENTS)
   })
 
-  it('answers 404 for a missing page, never cached as public', async () => {
-    const response = await fetch('/api/pages/nothing?locale=en')
-    expect(response.status).toBe(404)
-    expect(response.headers.get('cache-control')).not.toContain('public')
+  it('resolves the post list on the server', async () => {
+    const page = await $fetch<PageBody>('/api/pages/showcase', { query: { locale: 'en' } })
+    const list = section(page, 'section.post-list')
+    expect(list.category).toBe('software')
+    expect(list.posts.length).toBeGreaterThan(0)
+    expect(list.posts.length).toBeLessThanOrEqual(3)
+    expect(list.posts.every(post => post.category?.slug === 'software')).toBe(true)
+    const articles = mock.requests.find(request => request.path === '/api/articles')!
+    expect(articles.query).toMatchObject({
+      locale: 'en',
+      sort: 'publishedAt:desc',
+      filters: { category: { slug: { $eq: 'software' } } },
+      pagination: { page: '1', pageSize: '3' },
+    })
+  })
+
+  it('resolves at most four post lists per page', async () => {
+    const page = await $fetch<PageBody>('/api/pages/many-lists', { query: { locale: 'en' } })
+    const lists = page.sections.filter(item => item.__component === 'section.post-list')
+    expect(lists).toHaveLength(6)
+    expect(mock.requests.filter(request => request.path === '/api/articles')).toHaveLength(4)
+    expect(lists.map(list => list.posts.length > 0)).toEqual([true, true, true, true, false, false])
+  })
+
+  it.each([['en', 'showcase', 'muestra'], ['es', 'muestra', 'showcase']])('returns the %s showcase with its 14 sections', async (locale, slug, other) => {
+    const response = await fetch(`/api/pages/${slug}?locale=${locale}`)
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('public, s-maxage=300, stale-while-revalidate=600')
+    const page = await response.json() as PageBody
+    expect(page.slug).toBe(slug)
+    expect(page.sections.map(item => item.__component)).toEqual(COMPONENTS)
+    expect(page.seo).toMatchObject({ metaImage: { url: '/uploads/page-og.png' } })
+    expect(page.translations).toEqual([{ locale: locale === 'en' ? 'es' : 'en', slug: other }])
+  })
+
+  it('serves a page already read from the cache, without calling Strapi', async () => {
+    const first = await $fetch<PageBody>('/api/pages/showcase', { query: { locale: 'en' } })
+    const second = await $fetch<PageBody>('/api/pages/showcase', { query: { locale: 'en' } })
+    expect(second).toEqual(first)
+    expect(mock.requests).toEqual([])
+  })
+
+  it('renders the Markdown of the sections to sanitized HTML and drops the sources', async () => {
+    const page = await $fetch<PageBody>('/api/pages/showcase', { query: { locale: 'en' } })
+    expect(section(page, 'section.media-showcase').html).toContain('<strong>cherry tomatoes</strong>')
+    expect(section(page, 'section.faq').items[1]!.html).toContain('<a href="https://github.com/bogd3v/micelio"')
+    expect(section(page, 'section.rich-text').html).toContain('<h2 id="about-this-page">About this page</h2>')
+    expect(section(page, 'section.rich-text')).not.toHaveProperty('body')
+    expect(section(page, 'section.pricing').plans[0]!.features).toEqual(['3 seed packs', 'A planting guide'])
+  })
+
+  it('drops invalid and unknown sections alone and gives an empty list when no post matches', async () => {
+    const page = await $fetch<PageBody>('/api/pages/partial', { query: { locale: 'en' } })
+    expect(page.sections.map(item => item.__component)).toEqual(['section.hero', 'section.post-list'])
+    expect(section(page, 'section.post-list').posts).toEqual([])
+    expect(page.translations).toEqual([])
+    expect(page.seo).toBeUndefined()
+  })
+
+  it('answers 404 for a missing page, and does not store it: the page appears once published', async () => {
+    const missing = await fetch('/api/pages/late-page?locale=en')
+    expect(missing.status).toBe(404)
+    expect(missing.headers.get('cache-control')).not.toContain('public')
     expect((await fetch('/api/pages/showcase?locale=es')).status).toBe(404)
+
+    const late = { documentId: 'page-late', title: 'Late', slug: 'late-page', locale: 'en', seo: null, sections: [], localizations: [] }
+    pageFixtures.push(late)
+    try {
+      mock.requests.length = 0
+      expect((await fetch('/api/pages/late-page?locale=en')).status).toBe(200)
+      expect(pageRequests()).toBe(1)
+    } finally {
+      pageFixtures.splice(pageFixtures.indexOf(late), 1)
+    }
   })
 
   it('rejects a bad slug or locale without calling Strapi', async () => {
@@ -669,10 +700,16 @@ describe('/api/pages/[slug]', () => {
     expect(mock.requests).toEqual([])
   })
 
-  it('answers 502, never cached as public, when Strapi fails', async () => {
-    const response = await fetch('/api/pages/broken-page')
-    expect(response.status).toBe(502)
-    expect(response.headers.get('cache-control')).not.toContain('public')
+  it('answers 502, never cached, when Strapi fails', async () => {
+    const attempts: number[] = []
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const response = await fetch('/api/pages/broken-page')
+      expect(response.status).toBe(502)
+      expect(response.headers.get('cache-control')).not.toContain('public')
+      attempts.push(pageRequests())
+    }
+    // The second failure reached Strapi again (fetch may retry, so compare, not count)
+    expect(attempts[1]).toBeGreaterThan(attempts[0]!)
   })
 })
 

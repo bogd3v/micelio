@@ -183,7 +183,28 @@ const partial = {
   localizations: [],
 }
 
-export const pageFixtures = [showcase(false), showcase(true), partial]
+// Six post lists: only the first four are resolved
+const manyLists = {
+  id: 4,
+  documentId: 'page-many-lists',
+  title: 'Many lists',
+  slug: 'many-lists',
+  locale: 'en',
+  seo: null,
+  sections: Array.from({ length: 6 }, (_, index) => ({
+    id: index + 1,
+    __component: 'section.post-list',
+    variant: 'cards',
+    title: `List ${index + 1}`,
+    category: { id: 21, slug: 'software' },
+    tag: null,
+    count: 2,
+  })),
+  localizations: [],
+}
+
+/** Mutable: a test may publish a page after a first miss. */
+export const pageFixtures = [showcase(false), showcase(true), partial, manyLists]
 
 /** Answers GET /api/pages like Strapi: the slug and locale filters, always fully populated. */
 export function findPages(query, getNestedValue) {

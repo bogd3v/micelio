@@ -3,6 +3,7 @@ import { PAGE_SECTION_COMPONENTS } from '../app/interfaces'
 import { pageParamsSchema, parsePage, parseSection } from '../server/schemas/page'
 
 const render = (markdown: string): string => `<p>${markdown}</p>`
+const context = { render, siteUrl: 'https://bogdev.test/', mediaOrigins: ['https://media.test', 'http://127.0.0.1:1337', ''] }
 const image = { id: 1, url: '/uploads/a.png', alternativeText: null, width: 800, height: 600, mime: 'image/png', formats: { thumbnail: {} } }
 const link = { id: 2, label: 'Read', url: '/blog' }
 
@@ -53,30 +54,30 @@ describe('parseSection', () => {
   })
 
   it.each(Object.keys(valid))('accepts a valid %s', (component) => {
-    expect(parseSection(section(component), render)?.__component).toBe(component)
+    expect(parseSection(section(component), context)?.__component).toBe(component)
   })
 
   it.each(Object.keys(invalid))('rejects an invalid %s', (component) => {
-    expect(parseSection(section(component, invalid[component]), render)).toBeNull()
+    expect(parseSection(section(component, invalid[component]), context)).toBeNull()
   })
 
   it('drops unknown components, prototype keys and non-objects', () => {
     for (const raw of [{ __component: 'section.carousel' }, { __component: 'shared.rich-text' }, { __component: 'constructor' }, { __component: 'toString' }, {}, null, 'hero', 7]) {
-      expect(parseSection(raw, render)).toBeNull()
+      expect(parseSection(raw, context)).toBeNull()
     }
   })
 
   it('defaults a missing variant and rejects an unknown one', () => {
-    expect(parseSection(section('section.hero', { variant: undefined }), render)).toMatchObject({ variant: 'centered' })
-    expect(parseSection(section('section.hero', { variant: null }), render)).toMatchObject({ variant: 'centered' })
-    expect(parseSection(section('section.hero', { variant: 'wide' }), render)).toBeNull()
+    expect(parseSection(section('section.hero', { variant: undefined }), context)).toMatchObject({ variant: 'centered' })
+    expect(parseSection(section('section.hero', { variant: null }), context)).toMatchObject({ variant: 'centered' })
+    expect(parseSection(section('section.hero', { variant: 'wide' }), context)).toBeNull()
   })
 
   it('normalizes media and drops what Strapi adds', () => {
-    expect(parseSection(section('section.hero'), render)).toMatchObject({
+    expect(parseSection(section('section.hero'), context)).toMatchObject({
       media: { url: '/uploads/a.png', width: 800, height: 600, mime: 'image/png' },
     })
-    const hero = parseSection(section('section.hero'), render) as { media: Record<string, unknown>, id?: number, text?: string }
+    const hero = parseSection(section('section.hero'), context) as { media: Record<string, unknown>, id?: number, text?: string }
     expect(hero.media).not.toHaveProperty('formats')
     expect(hero.media.alternativeText).toBeUndefined()
     expect(hero).not.toHaveProperty('id')
@@ -88,47 +89,66 @@ describe('parseSection', () => {
       primaryLink: { label: 'Bad', url: 'javascript:alert(1)' },
       secondaryLink: { label: 'Protocol relative', url: '//evil.test' },
       media: { url: 'data:image/png;base64,AA' },
-    }), render)
+    }), context)
     expect(hero).toMatchObject({ title: 'Hi' })
     expect(JSON.parse(JSON.stringify(hero))).toEqual({ __component: 'section.hero', variant: 'split', title: 'Hi' })
   })
 
   it('accepts http(s), mailto and site-path links', () => {
     for (const url of ['https://a.test/x', 'http://a.test', 'mailto:hi@a.test', '/', '/es/blog']) {
-      expect(parseSection(section('section.cta', { primaryLink: { label: 'L', url } }), render)).toMatchObject({ primaryLink: { url } })
+      expect(parseSection(section('section.cta', { primaryLink: { label: 'L', url } }), context)).toMatchObject({ primaryLink: { url } })
+    }
+  })
+
+  it('rejects links that leave the site through a path', () => {
+    for (const url of ['//evil.test', '/\\evil.test', '/\\\\evil.test', '/a\\b', '\\evil.test', '/ x', 'javascript:alert(1)', 'ftp://a.test']) {
+      const cta = parseSection(section('section.cta', { primaryLink: { label: 'L', url } }), context) as { primaryLink?: unknown }
+      expect(cta.primaryLink, url).toBeUndefined()
+    }
+    // A percent-encoded backslash stays a path on the site in browsers
+    expect(parseSection(section('section.cta', { primaryLink: { label: 'L', url: '/%5Cevil.test' } }), context)).toMatchObject({ primaryLink: { url: '/%5Cevil.test' } })
+  })
+
+  it('accepts media from site paths and trusted origins only', () => {
+    function heroMedia(url: string): unknown {
+      return (parseSection(section('section.hero', { media: { ...image, url } }), context) as { media?: unknown }).media
+    }
+    for (const url of ['/uploads/a.png', 'https://media.test/a.png', 'http://127.0.0.1:1337/uploads/a.png']) expect(heroMedia(url), url).toBeDefined()
+    for (const url of ['https://evil.test/a.png', 'https://media.test.evil.test/a.png', 'http://media.test/a.png', '//media.test/a.png', '/\\evil.test/a.png', 'data:image/png;base64,AA', 'javascript:alert(1)']) {
+      expect(heroMedia(url), url).toBeUndefined()
     }
   })
 
   it('keeps only http(s) logo links', () => {
     const logos = [{ image, name: 'A', url: '/internal' }]
-    const cloud = parseSection(section('section.logo-cloud', { logos }), render) as { logos: Array<{ name: string, url?: string }> }
+    const cloud = parseSection(section('section.logo-cloud', { logos }), context) as { logos: Array<{ name: string, url?: string }> }
     expect(cloud.logos[0]).toMatchObject({ name: 'A' })
     expect(cloud.logos[0]!.url).toBeUndefined()
   })
 
   it('drops invalid items one by one', () => {
-    const stats = parseSection(section('section.stats', { items: [{ value: '1' }, { value: '2', label: 'two' }] }), render)
+    const stats = parseSection(section('section.stats', { items: [{ value: '1' }, { value: '2', label: 'two' }] }), context)
     expect(stats).toMatchObject({ items: [{ value: '2', label: 'two' }] })
   })
 
   it('renders Markdown to HTML on the server', () => {
-    expect(parseSection(section('section.rich-text'), render)).toEqual({ __component: 'section.rich-text', html: '<p>## About</p>' })
-    expect(parseSection(section('section.media-showcase'), render)).toMatchObject({ html: '<p>Some **text**</p>' })
-    expect(parseSection(section('section.faq'), render)).toMatchObject({ items: [{ question: 'Q?', html: '<p>A.</p>' }] })
+    expect(parseSection(section('section.rich-text'), context)).toEqual({ __component: 'section.rich-text', html: '<p>## About</p>' })
+    expect(parseSection(section('section.media-showcase'), context)).toMatchObject({ html: '<p>Some **text**</p>' })
+    expect(parseSection(section('section.faq'), context)).toMatchObject({ items: [{ question: 'Q?', html: '<p>A.</p>' }] })
   })
 
   it('splits plan features by line', () => {
-    expect(parseSection(section('section.pricing'), render)).toMatchObject({ plans: [{ features: ['A', 'B'], recommended: false }] })
+    expect(parseSection(section('section.pricing'), context)).toMatchObject({ plans: [{ features: ['A', 'B'], recommended: false }] })
   })
 
   it('clamps the post list count and keeps one filter', () => {
-    expect(parseSection(section('section.post-list', { count: 99 }), render)).toMatchObject({ count: 12, category: 'linux', posts: [] })
-    expect(parseSection(section('section.post-list', { count: 0 }), render)).toMatchObject({ count: 1 })
-    expect(parseSection(section('section.post-list', { count: null }), render)).toMatchObject({ count: 3 })
-    const both = parseSection(section('section.post-list', { tag: { slug: 'vue' } }), render)
+    expect(parseSection(section('section.post-list', { count: 99 }), context)).toMatchObject({ count: 12, category: 'linux', posts: [] })
+    expect(parseSection(section('section.post-list', { count: 0 }), context)).toMatchObject({ count: 1 })
+    expect(parseSection(section('section.post-list', { count: null }), context)).toMatchObject({ count: 3 })
+    const both = parseSection(section('section.post-list', { tag: { slug: 'vue' } }), context)
     expect(both).toMatchObject({ category: 'linux' })
     expect(both).not.toHaveProperty('tag')
-    expect(parseSection(section('section.post-list', { category: null, tag: { slug: 'vue' } }), render)).toMatchObject({ tag: 'vue' })
+    expect(parseSection(section('section.post-list', { category: null, tag: { slug: 'vue' } }), context)).toMatchObject({ tag: 'vue' })
   })
 })
 
@@ -145,12 +165,12 @@ describe('parsePage', () => {
   }
 
   it('drops invalid and unknown sections alone, keeping order', () => {
-    const page = parsePage(raw, render)
+    const page = parsePage(raw, context)
     expect(page?.sections.map(item => item.__component)).toEqual(['section.hero', 'section.rich-text'])
   })
 
   it('returns the SEO, the locale and the translations for hreflang', () => {
-    expect(parsePage(raw, render)).toMatchObject({
+    expect(parsePage(raw, context)).toMatchObject({
       documentId: 'page-1',
       title: 'Showcase',
       slug: 'showcase',
@@ -161,7 +181,7 @@ describe('parsePage', () => {
   })
 
   it('accepts a page without sections, SEO or localizations', () => {
-    expect(parsePage({ documentId: 'p', title: 'T', slug: 't', sections: null, seo: null }, render)).toEqual({
+    expect(parsePage({ documentId: 'p', title: 'T', slug: 't', sections: null, seo: null }, context)).toEqual({
       documentId: 'p',
       title: 'T',
       slug: 't',
@@ -170,14 +190,33 @@ describe('parsePage', () => {
     })
   })
 
+  it('keeps a canonical URL only on the site origin', () => {
+    function canonical(url: string): unknown {
+      return parsePage({ ...raw, seo: { ...raw.seo, canonicalURL: url } }, context)?.seo?.canonicalURL
+    }
+    expect(canonical('https://bogdev.test/showcase')).toBe('https://bogdev.test/showcase')
+    for (const url of ['https://evil.test/showcase', 'http://bogdev.test/x', 'https://bogdev.test.evil.test/', '/showcase', 'javascript:alert(1)']) {
+      expect(canonical(url), url).toBeUndefined()
+    }
+    expect(parsePage({ ...raw, seo: { ...raw.seo, canonicalURL: 'https://bogdev.test/x' } }, { ...context, siteUrl: undefined })?.seo?.canonicalURL).toBeUndefined()
+  })
+
+  it('keeps the robots meta only when every token is a known directive', () => {
+    function robots(value: string): unknown {
+      return parsePage({ ...raw, seo: { ...raw.seo, metaRobots: value } }, context)?.seo?.metaRobots
+    }
+    for (const value of ['noindex', 'noindex, nofollow', 'index,follow,max-image-preview:large', 'NOARCHIVE', 'max-snippet:-1']) expect(robots(value), value).toBe(value)
+    for (const value of ['noindex, <script>', 'unavailable_after: 1 Jan 2030', 'index;follow', 'max-image-preview:huge', 'noindex,']) expect(robots(value), value).toBeUndefined()
+  })
+
   it('drops an invalid SEO alone', () => {
-    expect(parsePage({ ...raw, seo: { metaTitle: '' } }, render)).not.toHaveProperty('seo')
+    expect(parsePage({ ...raw, seo: { metaTitle: '' } }, context)).not.toHaveProperty('seo')
   })
 
   it('is null without a title or a valid slug', () => {
-    expect(parsePage({ ...raw, title: '' }, render)).toBeNull()
-    expect(parsePage({ ...raw, slug: 'Bad Slug' }, render)).toBeNull()
-    expect(parsePage(null, render)).toBeNull()
+    expect(parsePage({ ...raw, title: '' }, context)).toBeNull()
+    expect(parsePage({ ...raw, slug: 'Bad Slug' }, context)).toBeNull()
+    expect(parsePage(null, context)).toBeNull()
   })
 })
 
