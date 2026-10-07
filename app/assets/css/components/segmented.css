@@ -23,11 +23,19 @@
     letter-spacing: 0.12em;
 }
 
+a.bd-seg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
 .bd-seg:hover {
     color: var(--ink);
 }
 
-.bd-seg[aria-pressed="true"] {
+.bd-seg[aria-pressed="true"],
+.bd-seg[aria-current="true"] {
     background: var(--ink);
     color: var(--on-ink);
 }
@@ -45,7 +53,8 @@
         border-color: ButtonText;
     }
 
-    .bd-seg[aria-pressed="true"] {
+    .bd-seg[aria-pressed="true"],
+    .bd-seg[aria-current="true"] {
         background: Highlight;
         color: HighlightText;
     }

@@ -30,6 +30,8 @@ const defaultOgImage = useDefaultOgImage()
 const site = useSite()
 const config = useRuntimeConfig()
 const fediverseOn = useModule('fediverse')
+// View, sort and search only exist in dynamic sites (ADR 0006, section 7)
+const { isStatic } = useStaticSite()
 
 // Without the switch the view is not part of the URL
 const filters = computed<BlogFilters>(() => ({
@@ -176,7 +178,7 @@ useSeoMeta({
       <p class="bd-eyebrow bd-home-eyebrow">{{ eyebrow }}</p>
       <h1 class="bd-blog-title bd-wide">{{ t("nav.blog") }}</h1>
       <p class="bd-blog-lead">{{ t("blog.exploreArticles") }}</p>
-      <div class="bd-blog-controls">
+      <div v-if="!isStatic" class="bd-blog-controls">
         <div v-if="viewSwitch" class="bd-seg-group bd-blog-views" role="group" :aria-label="t('blog.view.label')">
           <button
             v-for="option in VIEWS"
@@ -219,9 +221,14 @@ useSeoMeta({
           <p class="bd-meta bd-home-eyebrow bd-latest-empty-note">
             {{ filtered ? t("blog.tryAdjustingFilters") : t("blog.noArticlesYet") }}
           </p>
-          <button v-if="filtered" type="button" class="bd-chip" @click="clearFilters">
-            {{ t("blog.clearFilters") }} <span aria-hidden="true">→</span>
-          </button>
+          <template v-if="filtered">
+            <NuxtLink v-if="isStatic" :to="blogBase" class="bd-chip">
+              {{ t("blog.clearFilters") }} <span aria-hidden="true">→</span>
+            </NuxtLink>
+            <button v-else type="button" class="bd-chip" @click="clearFilters">
+              {{ t("blog.clearFilters") }} <span aria-hidden="true">→</span>
+            </button>
+          </template>
         </ThemeEmptyState>
 
         <BlogPagination

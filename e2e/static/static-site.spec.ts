@@ -89,3 +89,26 @@ test('an unknown path answers the 404 page', async ({ request }) => {
   expect(response.status()).toBe(404)
   expect(await response.text()).toContain('<html')
 })
+
+// Without JS every control is a link or absent, and the language links point at the real translation
+const LANGUAGE_LINKS = [
+  { path: '/blog/understanding-vue-composables', es: '/es/blog/guia-vue-composables' },
+  { path: '/es/blog/guia-vue-composables', en: '/blog/understanding-vue-composables' },
+  { path: '/showcase', es: '/es/muestra' },
+]
+
+for (const { path, ...expected } of LANGUAGE_LINKS) {
+  test(`${path} links to its translation and has no visible button`, async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false })
+    const page = await context.newPage()
+    expect((await page.goto(path))?.status()).toBe(200)
+    for (const [code, href] of Object.entries(expected)) {
+      for (const link of await page.locator(`a[data-bd-lang="${code}"]`).all()) {
+        expect(await link.getAttribute('href')).toBe(href)
+      }
+    }
+    await expect(page.locator('button:visible')).toHaveCount(0)
+    await expect(page.locator('#bd-site-nav')).toHaveCount(1)
+    await context.close()
+  })
+}

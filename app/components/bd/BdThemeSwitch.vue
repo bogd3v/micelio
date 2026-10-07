@@ -7,6 +7,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { modes, theme, setTheme, modeLabel } = useTheme()
+// Static pages follow the stored or system mode through the inline init script
+const { isStatic } = useStaticSite()
 
 function select(next: ThemeMode, event: MouseEvent): void {
   if (next === theme.value) return
@@ -16,7 +18,7 @@ function select(next: ThemeMode, event: MouseEvent): void {
 </script>
 
 <template>
-  <div v-if="modes.length > 1" class="bd-seg-group" role="group" :aria-label="t('bd.header.theme')">
+  <div v-if="modes.length > 1 && !isStatic" class="bd-seg-group" role="group" :aria-label="t('bd.header.theme')">
     <button
       v-for="mode in modes"
       :key="mode.id"

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const searchOn = useModule('search')
+const { isStatic } = useStaticSite()
 
 function skipToContent() {
   const main = document.querySelector('main')
@@ -30,7 +31,7 @@ function skipToSearch() {
         {{ t('common.skipToMain') }}
       </a>
       <a
-        v-if="searchOn"
+        v-if="searchOn && !isStatic"
         href="#search"
         class="bd-skip-link"
         @click.prevent="skipToSearch"

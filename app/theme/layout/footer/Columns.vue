@@ -38,6 +38,7 @@ const fediverseUser = useFediverseUser()
 const fediverseOn = useModule('fediverse')
 const newsletterOn = useModule('newsletter')
 const supportOn = useModule('support')
+const { isStatic, menuId } = useStaticSite()
 
 const year = new Date().getFullYear()
 const sourceUrl = resolveSourceUrl(useRuntimeConfig().public.sourceUrl)
@@ -82,7 +83,7 @@ const navigateGroup = computed<FooterGroup>(() => ({
   id: 'navigate',
   label: t('bd.footer.navigate'),
   summary: String(sections.value.length).padStart(2, '0'),
-  open: false,
+  open: isStatic,
   links: sections.value,
 }))
 const subscribeGroup = computed<FooterGroup>(() => ({
@@ -146,7 +147,7 @@ function scrollToTop(): void {
         </template>
       </nav>
 
-      <div class="bd-foot-accordions">
+      <div :id="isStatic ? menuId : undefined" class="bd-foot-accordions">
         <details v-for="group in mobileGroups" :key="group.id" class="bd-acc" :open="group.open">
           <summary>
             <span class="bd-eyebrow bd-acc-label">{{ group.label }}</span>
@@ -176,6 +177,9 @@ function scrollToTop(): void {
             </template>
           </div>
         </details>
+        <div v-if="isStatic" class="bd-acc-body">
+          <BdLangSwitch />
+        </div>
       </div>
     </div>
 
@@ -189,7 +193,11 @@ function scrollToTop(): void {
       </span>
       <span v-if="hud.madeIn">{{ hud.madeIn }} <span v-if="hud.coords" class="bd-foot-diamond" aria-hidden="true">◆</span> {{ hud.coords }}</span>
       <span v-if="te('theme.divider.credit')">{{ t('theme.divider.credit') }}</span>
-      <button type="button" class="bd-foot-row bd-foot-top" @click="scrollToTop">
+      <a v-if="isStatic" href="#main-content" class="bd-foot-row bd-foot-top">
+        <span>{{ t('common.backToTop') }}</span>
+        <span class="bd-foot-row-arrow" aria-hidden="true">↑</span>
+      </a>
+      <button v-else type="button" class="bd-foot-row bd-foot-top" @click="scrollToTop">
         <span>{{ t('common.backToTop') }}</span>
         <span class="bd-foot-row-arrow" aria-hidden="true">↑</span>
       </button>

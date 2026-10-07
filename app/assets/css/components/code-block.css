@@ -34,6 +34,11 @@
     cursor: pointer;
 }
 
+/* Safety net: a copy button without its label (no script) shows nothing */
+.bd-code-copy:empty {
+    display: none;
+}
+
 .bd-code-copy::after {
     content: "";
     position: absolute;

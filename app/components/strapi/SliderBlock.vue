@@ -9,10 +9,12 @@ const props = defineProps<{
 
 const { getMediaUrl } = useStrapi()
 const { t } = useI18n()
+const { isStatic } = useStaticSite()
 
 const slides = computed<StrapiSlide[]>(() => slidesOf(props.block))
 const totalSlides = computed(() => slides.value.length)
-const hasMultiple = computed(() => totalSlides.value > 1)
+// Without JS only the first slide shows, so there is nothing to control
+const hasMultiple = computed(() => totalSlides.value > 1 && !isStatic)
 
 const currentIndex = ref(0)
 const isPaused = ref(false)

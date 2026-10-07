@@ -7,6 +7,15 @@ defineProps<{
   block: StrapiOpenSource
 }>()
 
+const { isStatic } = useStaticSite()
+const { localizePath } = useLocaleUtils()
+
+// Without the palette, the search link of the guide goes to the blog
+function guideHtml(html: string | null | undefined): string {
+  const value = html ?? ''
+  return isStatic ? value.replaceAll(`href="${SEARCH_HREF}"`, `href="${localizePath('/blog')}"`) : value
+}
+
 function onGuideClick(event: MouseEvent): void {
   const link = (event.target as Element).closest('a')
   if (link?.getAttribute('href') !== SEARCH_HREF) return
@@ -28,7 +37,7 @@ function onGuideClick(event: MouseEvent): void {
         <li v-for="item in block.guide" :key="item.id">
           <span class="bd-guide-arrow" aria-hidden="true">→</span>
           <!-- eslint-disable-next-line vue/no-v-html -- sanitized on the server (app/helpers/markdown.ts) -->
-          <span v-html="item.html ?? ''" />
+          <span v-html="guideHtml(item.html)" />
         </li>
       </ul>
     </div>

@@ -33,6 +33,8 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
     'button',
     'sup',
   ],
+  // `hidden` on the copy button is a boolean attribute: the script shows it when the browser can copy
+  nonBooleanAttributes: sanitizeHtml.defaults.nonBooleanAttributes.filter(name => name !== 'hidden'),
   allowedAttributes: {
     ...sanitizeHtml.defaults.allowedAttributes,
     'a': ['href', 'title', 'target', 'rel', 'aria-label'],

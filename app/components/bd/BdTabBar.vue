@@ -29,19 +29,13 @@ const searchOn = useModule('search')
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M5 4 H19 V20 H5 Z M8 8 H16 M8 12 H16 M8 16 H13" /></svg>
       <span>{{ t('nav.blog') }}</span>
     </NuxtLink>
-    <button v-if="searchOn" type="button" class="bd-tab" aria-haspopup="dialog" @click="emit('search')">
+    <BdSearchTrigger v-if="searchOn" class="bd-tab" @search="emit('search')">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6" /><path d="M15.5 15.5 L20 20" /></svg>
       <span>{{ t('bd.header.search') }}</span>
-    </button>
-    <button
-      type="button"
-      class="bd-tab"
-      aria-haspopup="dialog"
-      :aria-expanded="menuOpen ? 'true' : 'false'"
-      @click="emit('menu')"
-    >
+    </BdSearchTrigger>
+    <BdMenuTrigger class="bd-tab" :open="menuOpen" @menu="emit('menu')">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M4 7 H20 M4 12 H20 M4 17 H20" /></svg>
       <span>{{ t('bd.mobile.menu') }}</span>
-    </button>
+    </BdMenuTrigger>
   </nav>
 </template>
