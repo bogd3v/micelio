@@ -193,7 +193,7 @@ function scrollToTop(): void {
       </span>
       <span v-if="hud.madeIn">{{ hud.madeIn }} <span v-if="hud.coords" class="bd-foot-diamond" aria-hidden="true">◆</span> {{ hud.coords }}</span>
       <span v-if="te('theme.divider.credit')">{{ t('theme.divider.credit') }}</span>
-      <a v-if="isStatic" href="#" class="bd-foot-row bd-foot-top">
+      <a v-if="isStatic" href="#main-content" class="bd-foot-row bd-foot-top">
         <span>{{ t('common.backToTop') }}</span>
         <span class="bd-foot-row-arrow" aria-hidden="true">↑</span>
       </a>

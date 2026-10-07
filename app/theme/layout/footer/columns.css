@@ -186,6 +186,10 @@
     padding-bottom: var(--space-3);
 }
 
+:where(.bd-foot[data-layout="columns"]) .bd-acc-body > .bd-seg-group {
+    align-self: flex-start;
+}
+
 :where(.bd-foot[data-layout="columns"]) .bd-foot-row {
     display: flex;
     align-items: center;

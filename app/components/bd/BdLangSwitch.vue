@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Locale } from '~/interfaces'
-import type { LocaleSwitchTarget } from '~/interfaces'
-import { isReadingPath } from '~/helpers/header'
+import { headerSection } from '~/helpers/header'
 import { localizedPath } from '~/helpers/locale'
 
 const emit = defineEmits<{
@@ -16,11 +15,11 @@ const { isStatic } = useStaticSite()
 
 const options: Locale[] = [Locale.SpanishColombia, Locale.English]
 
-// Static: SSR renders the header and footer before an article sets its translated slug, so
-// the other language of a reading page goes to its blog until the build knows the translation
-function staticTarget(next: Locale): LocaleSwitchTarget | string {
-  if (next === locale.value || !isReadingPath(route.path)) return switchLocale(next)
-  return localizedPath('/blog', next)
+// Static: this href is only the fallback (the blog or the home of that language, never a guessed translation).
+// server/plugins/staticLangLinks.ts replaces it with the translation the page declares in its head
+function staticHref(next: Locale): string {
+  if (next === locale.value) return route.path
+  return localizedPath(headerSection(route.path) === 'blog' ? '/blog' : '/', next)
 }
 
 async function select(next: Locale): Promise<void> {
@@ -35,7 +34,8 @@ async function select(next: Locale): Promise<void> {
     <template v-for="option in options" :key="option">
       <NuxtLink
         v-if="isStatic"
-        :to="staticTarget(option)"
+        :to="staticHref(option)"
+        :data-bd-lang="option"
         class="bd-seg"
         :lang="option"
         :hreflang="option"

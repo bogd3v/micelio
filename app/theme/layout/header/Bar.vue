@@ -67,7 +67,7 @@ const { accountsOn, searchOn, fediverseOn, tracking, mounted, shortcut, links, h
           </BdSearchTrigger>
           <BdMenuTrigger
             class="bd-iconbtn"
-            :aria-label="t('bd.header.menu')"
+            :aria-label="isStatic ? t('bd.mobile.menu') : t('bd.header.menu')"
             :open="menuOpen"
             @menu="emit('menu')"
           >

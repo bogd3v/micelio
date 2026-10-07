@@ -55,6 +55,7 @@ const subscriptions = computed<FooterLink[]>(() => [
       <nav :id="isStatic ? menuId : undefined" class="bd-foot-nav" :aria-label="label ?? t('bd.footer.navigate')">
         <NuxtLink v-for="link in sections" :key="link.id" :to="link.to" class="bd-foot-link">{{ link.label }}</NuxtLink>
       </nav>
+      <BdLangSwitch v-if="isStatic" />
       <ul v-if="socials.length" class="bd-foot-socials" :aria-label="t('bd.footer.social')">
         <li v-for="social in socials" :key="social.id">
           <a :href="social.href" class="bd-foot-soc" target="_blank" rel="noopener noreferrer me">

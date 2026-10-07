@@ -34,7 +34,7 @@
     cursor: pointer;
 }
 
-/* The label comes from the script: without it the button is not shown */
+/* Safety net: a copy button without its label (no script) shows nothing */
 .bd-code-copy:empty {
     display: none;
 }

@@ -44,6 +44,10 @@ describe('renderMarkdown', () => {
     expect(renderer.renderMarkdown('```mermaid\ngraph TD; A-->B\n```')).toContain('mermaid')
   })
 
+  it('keeps the copy button hidden until the script shows it', () => {
+    expect(renderer.renderMarkdown('```ts\nconst a = 1\n```')).toContain('<button type="button" class="bd-code-copy" data-bd-copy hidden></button>')
+  })
+
   it('removes raw HTML that is not allowed', () => {
     const html = renderer.renderMarkdown('Hi <img src=x onerror=alert(1)> <script>alert(1)</script>')
     expect(html).not.toContain('onerror')

@@ -35,9 +35,9 @@
     "bd-progress-track": { "describes": "Lane a ThemeProgressMarker travels along (the slot renders it); moved by the --bd-read custom property of .bd-progress.", "layouts": { "header": ["bar", "centered"] } },
     "bd-hud": { "describes": "Place line of the header strip; rendered only when the theme has theme.hud messages.", "layouts": { "header": ["bar", "centered"] } },
     "bd-seg-group": "Group of segmented buttons: the mode switch and the language switch.",
-    "bd-seg": { "describes": "A segmented button.", "states": ["[aria-pressed]", "[data-mode]"] },
+    "bd-seg": { "describes": "A segmented button.", "states": ["[aria-pressed]", "[aria-current]", "[data-mode]"] },
     "bd-lang": "The language switch.",
-    "bd-iconbtn": "Button that holds only an icon.",
+    "bd-iconbtn": "Button or link that holds only an icon.",
     "bd-chip": { "describes": "Small pill: a filter, a tag link, a shortcut.", "states": [":hover", "[aria-pressed]", "[aria-current]"] },
     "bd-kbd": "Keyboard shortcut hint.",
 

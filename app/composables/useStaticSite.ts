@@ -10,5 +10,5 @@ export interface UseStaticSite {
 /** The one place that reads the site mode for UI that falls back to plain HTML. */
 export function useStaticSite(): UseStaticSite {
   const isStatic = isStaticMode(parseSiteMode(useRuntimeConfig().public.siteMode))
-  return { isStatic, menuId: 'bd-foot-nav' }
+  return { isStatic, menuId: 'bd-site-nav' }
 }

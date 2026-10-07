@@ -131,9 +131,9 @@ These appear in every layout variant.
 | `bd-sr` | Visually hidden text for screen readers. |  |
 | `bd-reveal` | A block that fades in when scrolled into view. |  |
 | `bd-seg-group` | Group of segmented buttons: the mode switch and the language switch. |  |
-| `bd-seg` | A segmented button. | `[aria-pressed]`, `[data-mode]` |
+| `bd-seg` | A segmented button. | `[aria-pressed]`, `[aria-current]`, `[data-mode]` |
 | `bd-lang` | The language switch. |  |
-| `bd-iconbtn` | Button that holds only an icon. |  |
+| `bd-iconbtn` | Button or link that holds only an icon. |  |
 | `bd-chip` | Small pill: a filter, a tag link, a shortcut. | `:hover`, `[aria-pressed]`, `[aria-current]` |
 | `bd-kbd` | Keyboard shortcut hint. |  |
 | `bd-home-section` | A home page section (also used by the about page blocks). |  |
