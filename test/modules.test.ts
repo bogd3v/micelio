@@ -87,11 +87,11 @@ describe('moduleRequirements', () => {
 
 describe('moduleRequirements formAction', () => {
   it('is set by NUXT_PUBLIC_NEWSLETTER_FORM_ACTION', () => {
-    expect(moduleRequirements({ public: { newsletterFormAction: 'https://buttondown.com/api/emails/embed-subscribe/x' } }).formAction).toBe(true)
-    expect(moduleRequirements({ public: { newsletterFormAction: ' ' } }).formAction).toBe(false)
-    // A value that is not an https: URL counts as unset
-    expect(moduleRequirements({ public: { newsletterFormAction: 'buttondown.com/x' } }).formAction).toBe(false)
-    expect(fallbackModules(ALL_MODULES_ON, 'static', 'http://example.com/x').newsletter).toBe(false)
+    expect(moduleRequirements({ public: { newsletterProvider: { action: 'https://buttondown.com/api/emails/embed-subscribe/x' } } }).formAction).toBe(true)
+    expect(moduleRequirements({ public: { newsletterProvider: { action: '' } } }).formAction).toBe(false)
+    // The build resolves the action (validFormAction), so the client only checks that it is there
+    expect(fallbackModules(ALL_MODULES_ON, 'static', '').newsletter).toBe(false)
+    expect(fallbackModules(ALL_MODULES_ON, 'static', 'https://example.com/x').newsletter).toBe(true)
   })
 })
 

@@ -109,8 +109,8 @@ export default defineNuxtConfig({
       strapiUrl: '',
       siteUrl: '',
       siteMode,
-      newsletterFormAction: '',
-      newsletterFormField: 'email',
+      // Resolved at build by modules/site-mode.ts from NUXT_PUBLIC_NEWSLETTER_FORM_ACTION/_FIELD (build env only, never overridden at runtime)
+      newsletterProvider: { action: '', field: 'email', host: '', hidden: [] as { name: string, value: string }[] },
       umamiWebsiteId: '',
       umamiScriptPath: '/bd.js',
       fediverseHandle: '',
@@ -178,6 +178,8 @@ export default defineNuxtConfig({
     },
   },
   vite: {
+    // Lets dynamic builds drop code only static pages use (docs/performance.md); declared in app/types/static-build.d.ts
+    define: { __STATIC_BUILD__: JSON.stringify(staticSite) },
     css: {
       transformer: 'lightningcss',
       lightningcss: { targets: LIGHTNINGCSS_TARGETS },

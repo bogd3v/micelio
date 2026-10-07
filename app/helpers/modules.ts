@@ -1,6 +1,5 @@
 import { SITE_MODULES } from '../interfaces/site'
 import type { SiteModule, SiteModules } from '../interfaces/site'
-import { validFormAction } from './newsletterForm'
 import { isStaticMode } from './siteMode'
 import type { SiteMode } from './siteMode'
 
@@ -66,6 +65,6 @@ export function effectiveModules(modules: SiteModules, requirements: ModuleRequi
 
 /** The modules before /api/site answers (or if it fails): all on, within what the mode allows. SMTP and the fediverse count as available. */
 export function fallbackModules(modules: SiteModules, mode: SiteMode, newsletterFormAction: unknown): SiteModules {
-  const formAction = validFormAction(newsletterFormAction) !== ''
+  const formAction = typeof newsletterFormAction === 'string' && newsletterFormAction !== ''
   return effectiveModules(modules, { smtp: true, fediverse: true, formAction }, mode)
 }

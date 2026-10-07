@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { BROWSER_STORAGE_KEYS, SITE_COOKIES } from '~/helpers/privacy'
 import { modes } from '#micelio/theme'
-import { providerHost, validFormAction } from '~/helpers/newsletterForm'
 import { formatDotDate } from '~/helpers/formatDate'
 import { THEME_STORAGE_KEY, formatModeList } from '~/helpers/theme'
 
@@ -17,7 +16,7 @@ const accountsOn = useModule('accounts')
 const newsletterOn = useModule('newsletter')
 const commentsOn = useModule('comments')
 const { isStatic } = useStaticSite()
-const providerName = providerHost(validFormAction(useRuntimeConfig().public.newsletterFormAction))
+const providerName = useRuntimeConfig().public.newsletterProvider.host
 const { canonicalUrl } = useCanonicalUrl('/privacy')
 const defaultOgImage = useDefaultOgImage()
 

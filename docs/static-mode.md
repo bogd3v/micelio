@@ -77,6 +77,7 @@ Rules:
 
 - The action must be an `https:` URL without credentials (`http:` only for `localhost`, `127.0.0.1` and `[::1]`, for tests). Anything else is treated as not set: the newsletter module is off and the build prints a warning.
 - Chrome also checks `form-action` on the redirect that follows the post. The provider's answer must stay on its own origin or come back to this site; a provider that redirects to a third origin would be blocked until that origin is allowed (no setting for it yet).
+- The variables are read at build time and resolved once in `modules/site-mode.ts` into `runtimeConfig.public.newsletterProvider`; a `NUXT_PUBLIC_*` value set at runtime cannot reach a prerendered page and the client never ships the validation code.
 - Dynamic sites are unchanged: the newsletter there is Strapi + SMTP (`/api/newsletter`).
 
 ## Headers, 404 and analytics

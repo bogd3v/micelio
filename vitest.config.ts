@@ -45,6 +45,8 @@ export default defineConfig({
               domEnvironment: 'happy-dom',
               // BogDev's site values: the defaults in nuxt.config.ts are empty
               overrides: {
+                // Tests switch the mode at runtime, so keep the static branches in the code
+                vite: { define: { __STATIC_BUILD__: 'true' } },
                 runtimeConfig: {
                   public: {
                     strapiUrl: 'https://api.bogdev.com.co',

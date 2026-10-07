@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { createError, readBody } from 'h3'
+import { hiddenFields, providerHost } from '~/helpers/newsletterForm'
 import BdNewsletterForm from '~/components/bd/BdNewsletterForm.vue'
 
 let response: () => unknown = () => ({ success: true, message: 'ok' })
@@ -123,11 +124,12 @@ describe('BdNewsletterForm', () => {
   })
 
   describe('static build', () => {
-    const original = { siteMode: 'dynamic', newsletterFormAction: '', newsletterFormField: 'email' }
+    const original = { siteMode: 'dynamic', newsletterProvider: { action: '', field: 'email', host: '', hidden: [] } }
     afterEach(() => Object.assign(useRuntimeConfig().public, original))
 
     function configure(action: string, field = 'email'): void {
-      Object.assign(useRuntimeConfig().public, { siteMode: 'static', newsletterFormAction: action, newsletterFormField: field })
+      // What modules/site-mode.ts resolves at build
+      Object.assign(useRuntimeConfig().public, { siteMode: 'static', newsletterProvider: { action, field, host: providerHost(action), hidden: hiddenFields(action) } })
     }
 
     it('renders a plain form post to the provider, with no Vue handlers or state', async () => {
