@@ -1,5 +1,5 @@
-import { strapiRequest, strapiRequestUrl } from './strapiRequest'
-import type { StrapiRequestConfig, StrapiRequestOptions } from './strapiRequest'
+import { strapiRequest, strapiRequestUrl } from '../lib/strapiRequest'
+import type { StrapiRequestConfig, StrapiRequestOptions } from '../lib/strapiRequest'
 
 export type StrapiFetchOptions = StrapiRequestOptions
 

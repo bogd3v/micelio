@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Locale } from '../app/interfaces/locale'
-import { articleRoute, noScriptsViolations, sectionPageRoute, staticFileRoutes } from '../app/helpers/staticBuild'
-import { strapiRequest, strapiRequestUrl } from '../server/utils/strapiRequest'
+import { articleRoute, failsBuild, missingRoutes, noScriptsViolations, sectionPageRoute, staticFileRoutes } from '../app/helpers/staticBuild'
+import { strapiRequest, strapiRequestUrl } from '../server/lib/strapiRequest'
 
 const PAGE = '<html><head><script>(function(){var d=document})()</script><script type="application/ld+json">{"a":1}</script></head><body>Nuxt __NUXT__ in an article</body></html>'
 
@@ -57,5 +57,25 @@ describe('strapiRequest', () => {
     } finally {
       server.mockRestore()
     }
+  })
+})
+
+describe('build failures', () => {
+  const required = new Set(['/', '/blog/hello'])
+
+  it('ignores only a 404 found by the crawler', () => {
+    expect(failsBuild('/blog/dead-link', 404, required)).toBe(false)
+    expect(failsBuild('/blog/dead-link', 500, required)).toBe(true)
+    expect(failsBuild('/about', undefined, required)).toBe(true)
+  })
+
+  it('fails on any error of a required route, a 404 included', () => {
+    expect(failsBuild('/', 404, required)).toBe(true)
+    expect(failsBuild('/blog/hello', 404, required)).toBe(true)
+  })
+
+  it('finds required routes that were never prerendered', () => {
+    expect(missingRoutes(required, ['/', '/about'])).toEqual(['/blog/hello'])
+    expect(missingRoutes(required, ['/blog/hello', '/'])).toEqual([])
   })
 })

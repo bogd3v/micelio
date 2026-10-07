@@ -46,3 +46,20 @@ export function articleRoute(slug: string, locale: Locale): string {
 export function sectionPageRoute(slug: string, locale: Locale): string {
   return localized(`/${slug}`, locale)
 }
+
+/** Routes every static site must have, whatever Strapi lists. */
+export const STATIC_INITIAL_ROUTES: readonly string[] = ['/', '/es', '/blog', '/es/blog']
+
+/**
+ * Whether a route's error fails the build: anything but a 404 found by the crawler (a dead link in the content).
+ * Routes the build asked for (Strapi's, the initial ones) must render, 404 included.
+ */
+export function failsBuild(route: string, statusCode: number | undefined, required: ReadonlySet<string>): boolean {
+  return required.has(route) || statusCode !== 404
+}
+
+/** The required routes that were never prerendered (skipped, ignored or dropped). */
+export function missingRoutes(required: Iterable<string>, prerendered: Iterable<string>): string[] {
+  const done = new Set(prerendered)
+  return [...required].filter(route => !done.has(route))
+}

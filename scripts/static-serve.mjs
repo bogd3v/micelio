@@ -1,11 +1,11 @@
 // A small static server for a `nuxt generate` output (e2e/static, local preview). No dependencies.
-// Usage: node scripts/static-serve.mjs [dir] ; PORT and HOST env variables (defaults 3230, 127.0.0.1)
+// Usage: node scripts/static-serve.mjs [dir] ; PORT and HOST env variables (defaults 3260, 127.0.0.1)
 import { createServer } from 'node:http'
 import { readFile, stat } from 'node:fs/promises'
 import { extname, join, normalize, resolve } from 'node:path'
 
 const root = resolve(process.argv[2] ?? '.output/public')
-const port = Number(process.env.PORT ?? 3230)
+const port = Number(process.env.PORT ?? 3260)
 const host = process.env.HOST ?? '127.0.0.1'
 
 const TYPES = {

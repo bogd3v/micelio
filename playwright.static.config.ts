@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test'
 
 // e2e/static against the output of `NUXT_PUBLIC_SITE_MODE=static npm run generate`, which scripts/test-static.mjs
 // builds against the mock Strapi (stopped afterwards: a static site has no Strapi at runtime)
-const appPort = Number(process.env.STATIC_APP_PORT ?? 3230)
+const appPort = Number(process.env.STATIC_APP_PORT ?? 3260)
 
 export default defineConfig({
   testDir: 'e2e/static',

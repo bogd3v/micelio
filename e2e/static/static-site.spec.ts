@@ -50,7 +50,7 @@ test('the pages render their content without JavaScript', async ({ browser }) =>
 })
 
 test('module pages are not generated', async ({ request }) => {
-  for (const path of ['/account', '/account/sign-in', '/es/account', '/drafts', '/es/drafts', '/newsletter/unsubscribe', '/confirm', '/_theme']) {
+  for (const path of ['/account', '/account/sign-in', '/es/account', '/drafts', '/es/drafts', '/newsletter/unsubscribe', '/es/confirm', '/es/newsletter/unsubscribe', '/confirm', '/_theme']) {
     expect((await request.get(path)).status(), path).toBe(404)
   }
 })

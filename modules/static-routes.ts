@@ -1,11 +1,13 @@
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import qs from 'qs'
 import { defineNuxtModule, useLogger } from 'nuxt/kit'
 import { Locale } from '../app/interfaces/locale'
 import { isStaticMode } from '../app/helpers/siteMode'
 import type { SiteMode } from '../app/helpers/siteMode'
-import { articleRoute, noScriptsViolations, sectionPageRoute, staticFileRoutes } from '../app/helpers/staticBuild'
-import { strapiRequest } from '../server/utils/strapiRequest'
-import type { StrapiRequestConfig } from '../server/utils/strapiRequest'
+import { articleRoute, failsBuild, missingRoutes, noScriptsViolations, sectionPageRoute, STATIC_INITIAL_ROUTES, staticFileRoutes } from '../app/helpers/staticBuild'
+import { strapiRequest } from '../server/lib/strapiRequest'
+import type { StrapiRequestConfig } from '../server/lib/strapiRequest'
 
 const PAGE_SIZE = 100
 
@@ -34,6 +36,8 @@ export default defineNuxtModule({
     if (nuxt.options.dev || !isStaticMode(mode)) return
 
     const logger = useLogger('micelio')
+    // Nitro skips a route that is a file of public/ (robots.txt): the file wins
+    const isPublicFile = (route: string): boolean => route !== '/' && existsSync(join(nuxt.options.rootDir, 'public', route))
     // Runtime overrides (NUXT_*) are not applied to the config at build setup
     const config: StrapiRequestConfig = {
       strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || String(nuxt.options.runtimeConfig.public.strapiUrl || ''),
@@ -41,8 +45,8 @@ export default defineNuxtModule({
     }
 
     nuxt.hook('nitro:init', (nitro) => {
-      // A broken link found by the crawler is a warning; a route Strapi lists must render
-      const listed = new Set<string>()
+      // A dead link found by the crawler is a warning; a 404 on a route we asked for, or any other error, fails the build
+      const listed = new Set<string>(STATIC_INITIAL_ROUTES)
       nitro.hooks.hook('prerender:routes', async (routes) => {
         if (!config.strapiUrl) throw new Error(`Site mode "${mode}": NUXT_PUBLIC_STRAPI_URL is not set; the build reads the content from Strapi.`)
         if (!config.strapiApiToken) throw new Error(`Site mode "${mode}": NUXT_STRAPI_API_TOKEN is not set; the build needs a read-only Strapi token (docs/security.md).`)
@@ -72,13 +76,14 @@ export default defineNuxtModule({
       const violations = new Map<string, string[]>()
       const failed: string[] = []
       nitro.hooks.hook('prerender:generate', (route) => {
-        if (route.error && listed.has(route.route)) failed.push(`${route.route} (${route.error.message})`)
+        if (route.error && failsBuild(route.route, route.error.statusCode, listed)) failed.push(`${route.route} (${route.error.message})`)
         if (!route.fileName?.endsWith('.html')) return
         const found = noScriptsViolations(route.contents ?? '')
         if (found.length) violations.set(route.route, found)
       })
-      nitro.hooks.hook('prerender:done', () => {
-        if (failed.length) throw new Error(`Site mode "${mode}": ${failed.length} route(s) listed by Strapi did not render:\n  ${failed.slice(0, 10).join('\n  ')}`)
+      nitro.hooks.hook('prerender:done', ({ prerenderedRoutes }) => {
+        failed.push(...missingRoutes([...listed].filter(route => !isPublicFile(route)), prerenderedRoutes.map(({ route }) => route)).map(route => `${route} (not prerendered)`))
+        if (failed.length) throw new Error(`Site mode "${mode}": ${failed.length} route(s) failed or are missing:\n  ${failed.slice(0, 10).join('\n  ')}`)
         if (!violations.size) return
         const list = [...violations].slice(0, 10).map(([route, found]) => `  ${route}: ${found.join(', ')}`).join('\n')
         throw new Error(`Site mode "${mode}": ${violations.size} generated page(s) still load Nuxt's client (noScripts did not apply). See "Plan B" in docs/adr/0006-site-modes.md, section 3.\n${list}`)

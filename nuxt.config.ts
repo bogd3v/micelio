@@ -57,8 +57,8 @@ const ISR_RULES = {
 
 // Module routes that are off in static modes (ADR 0006, section 2): not crawled, not generated
 const STATIC_PRERENDER_IGNORE = [
-  '/account', '/es/account', '/drafts', '/es/drafts', '/newsletter', '/es/newsletter', '/confirm', '/es/confirm', '/_theme', '/es/_theme',
-  '/api/auth', '/api/comments', '/api/drafts', '/api/newsletter', '/api/fediverse', '/__nuxt_island',
+  /^\/(es\/)?(account|drafts|newsletter|confirm|_theme)(\/|$)/,
+  /^\/(api\/(auth|comments|drafts|newsletter|fediverse)|__nuxt_island)(\/|$)/,
 ]
 
 // Blog filters are paths, not query strings (ADR 0006, section 7); they reuse the blog list page
