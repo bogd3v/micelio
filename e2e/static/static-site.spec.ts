@@ -17,6 +17,14 @@ async function requestsOf(page: Page, path: string): Promise<string[]> {
   page.on('request', request => urls.push(request.url()))
   const response = await page.goto(path, { waitUntil: 'networkidle' })
   expect(response?.status()).toBe(200)
+  // Lazy images load when they near the viewport: go through the whole page
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.body.scrollHeight; y += window.innerHeight) {
+      window.scrollTo(0, y)
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+  })
+  await page.waitForLoadState('networkidle')
   return urls
 }
 

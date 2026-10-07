@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Locale } from '../app/interfaces/locale'
-import { articleRoute, failsBuild, missingRoutes, noScriptsViolations, sectionPageRoute, staticFileRoutes } from '../app/helpers/staticBuild'
+import { articleRoute, failsBuild, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, sectionPageRoute, staticFileRoutes } from '../app/helpers/staticBuild'
 import { strapiRequest, strapiRequestUrl } from '../server/lib/strapiRequest'
 
 const PAGE = '<html><head><script>(function(){var d=document})()</script><script type="application/ld+json">{"a":1}</script></head><body>Nuxt __NUXT__ in an article</body></html>'
@@ -77,5 +77,27 @@ describe('build failures', () => {
   it('finds required routes that were never prerendered', () => {
     expect(missingRoutes(required, ['/', '/about'])).toEqual(['/blog/hello'])
     expect(missingRoutes(required, ['/blog/hello', '/'])).toEqual([])
+  })
+})
+
+describe('media on the CMS origin', () => {
+  const origin = 'https://cms.example.org'
+  const html = `<img src="${origin}/uploads/logo.svg" alt="x"><video poster="${origin}/uploads/p.png?a=1&amp;b=2"><source src="${origin}/uploads/v.mp4"></video><img src="/_ipx/w_1/a.jpg"><img src="https://other.org/x.svg"><a href="${origin}/uploads/doc.pdf">d</a>`
+
+  it('finds the src and poster URLs of the origin only', () => {
+    expect(mediaUrlsIn(html, [origin])).toEqual([`${origin}/uploads/logo.svg`, `${origin}/uploads/p.png?a=1&b=2`, `${origin}/uploads/v.mp4`])
+  })
+
+  it('rewrites them to site paths and leaves the rest', () => {
+    const local = new Map([[`${origin}/uploads/logo.svg`, '/_media/ab-logo.svg'], [`${origin}/uploads/p.png?a=1&b=2`, '/_media/cd-p.png']])
+    const out = rewriteMediaUrls(html, local)
+    expect(out).toContain('<img src="/_media/ab-logo.svg" alt="x">')
+    expect(out).toContain('poster="/_media/cd-p.png"')
+    expect(out).toContain(`src="${origin}/uploads/v.mp4"`)
+    expect(out).toContain('src="https://other.org/x.svg"')
+  })
+
+  it('names the file after a hash and a safe base name', () => {
+    expect(mediaFileName(`${origin}/uploads/my logo (1).svg?x=1`, 'abcd1234')).toBe('abcd1234-my_20logo_20_1_.svg')
   })
 })

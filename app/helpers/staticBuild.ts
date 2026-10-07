@@ -63,3 +63,33 @@ export function missingRoutes(required: Iterable<string>, prerendered: Iterable<
   const done = new Set(prerendered)
   return [...required].filter(route => !done.has(route))
 }
+
+const MEDIA_ATTRIBUTE = /(\s(?:src|poster)=")([^"]+)(")/g
+
+function decodeAmpersands(value: string): string {
+  return value.replaceAll('&amp;', '&')
+}
+
+/** Absolute `src` and `poster` URLs on one of the origins (the HTML-decoded form), in order of appearance. */
+export function mediaUrlsIn(html: string, origins: readonly string[]): string[] {
+  const found = new Set<string>()
+  for (const [, , value = ''] of html.matchAll(MEDIA_ATTRIBUTE)) {
+    const url = decodeAmpersands(value)
+    if (origins.some(origin => url.startsWith(`${origin}/`))) found.add(url)
+  }
+  return [...found]
+}
+
+/** The same HTML with each URL of `local` (decoded URL to path on the site) replaced by its path. */
+export function rewriteMediaUrls(html: string, local: ReadonlyMap<string, string>): string {
+  return html.replace(MEDIA_ATTRIBUTE, (match, before: string, value: string, after: string) => {
+    const path = local.get(decodeAmpersands(value))
+    return path ? `${before}${path}${after}` : match
+  })
+}
+
+/** A file name under /_media/ for a media URL: a short hash of the URL, then its safe base name. */
+export function mediaFileName(url: string, hash: string): string {
+  const base = new URL(url).pathname.split('/').pop() ?? 'file'
+  return `${hash}-${base.replace(/[^\w.-]/g, '_')}`
+}

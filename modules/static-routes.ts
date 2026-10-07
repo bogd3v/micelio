@@ -1,11 +1,14 @@
+import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { ofetch } from 'ofetch'
 import qs from 'qs'
 import { defineNuxtModule, useLogger } from 'nuxt/kit'
 import { Locale } from '../app/interfaces/locale'
 import { isStaticMode } from '../app/helpers/siteMode'
 import type { SiteMode } from '../app/helpers/siteMode'
-import { articleRoute, failsBuild, missingRoutes, noScriptsViolations, sectionPageRoute, STATIC_INITIAL_ROUTES, staticFileRoutes } from '../app/helpers/staticBuild'
+import { articleRoute, failsBuild, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, sectionPageRoute, STATIC_INITIAL_ROUTES, staticFileRoutes } from '../app/helpers/staticBuild'
 import { strapiRequest } from '../server/lib/strapiRequest'
 import type { StrapiRequestConfig } from '../server/lib/strapiRequest'
 
@@ -75,7 +78,38 @@ export default defineNuxtModule({
 
       const violations = new Map<string, string[]>()
       const failed: string[] = []
-      nitro.hooks.hook('prerender:generate', (route) => {
+
+      // Raw <img> and <video> files of Strapi (SVGs, videos) bypass _ipx: copy them into the site so no page asks Strapi at runtime
+      const mediaOrigins = [config.strapiUrl, process.env.NUXT_MEDIA_URL || String(nuxt.options.runtimeConfig.mediaUrl || '')]
+        .flatMap(url => (url ? [new URL(url).origin] : []))
+      const localMedia = new Map<string, Promise<string>>()
+      function copyMedia(url: string): Promise<string> {
+        let path = localMedia.get(url)
+        if (!path) {
+          path = (async () => {
+            const bytes = Buffer.from(await (await ofetch<Blob, 'blob'>(url, { responseType: 'blob', timeout: 60_000 })).arrayBuffer())
+            const name = mediaFileName(url, createHash('sha256').update(url).digest('hex').slice(0, 8))
+            await mkdir(join(nitro.options.output.publicDir, '_media'), { recursive: true })
+            await writeFile(join(nitro.options.output.publicDir, '_media', name), bytes)
+            return `/_media/${name}`
+          })()
+          localMedia.set(url, path)
+        }
+        return path
+      }
+
+      nitro.hooks.hook('prerender:generate', async (route) => {
+        if (route.fileName?.endsWith('.html') && !route.error && route.contents) {
+          const urls = mediaUrlsIn(route.contents, mediaOrigins)
+          if (urls.length) {
+            try {
+              const paths = new Map(await Promise.all(urls.map(async url => [url, await copyMedia(url)] as const)))
+              route.contents = rewriteMediaUrls(route.contents, paths)
+            } catch (error) {
+              failed.push(`${route.route} (media: ${error instanceof Error ? error.message : String(error)})`)
+            }
+          }
+        }
         if (route.error && failsBuild(route.route, route.error.statusCode, listed)) failed.push(`${route.route} (${route.error.message})`)
         if (!route.fileName?.endsWith('.html')) return
         const found = noScriptsViolations(route.contents ?? '')
