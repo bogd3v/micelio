@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-03
-**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice), 2026-10-06 (#238)
+**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice), 2026-10-06 (#238, #263, #306, #239)
 **Deciders:** BogDev maintainer
 
 ## Context
@@ -185,6 +185,8 @@ Empty fields mean "use the theme", so with nothing set BogDev looks exactly as t
 **Display font.** The curated faces ship with the core, not with themes, in `assets/fonts/display/`: latin subset, `wght` axis only, at most **60 KB** per file (measured on 2026-10-03 with Google's latin subsets: Fraunces 35.8 KB, Bricolage Grotesque 40.4 KB, Newsreader 56.7 KB, Space Grotesk 21.8 KB; Archivo is subset to `wght` only for this use). Each has a generated fallback face. Choosing a font emits its `@font-face` and its preload; choosing the font the theme already uses for display emits nothing. The mono family cannot be overridden. A new font enters the list by meeting these limits in a PR to the core and adding the value to the Strapi enum.
 
 **Injection.** The server renders the overrides into one `<style id="theme-overrides">` in the SSR `<head>`: per-mode role values under `[data-theme="<mode>"]` and, when a display font is chosen, its `@font-face` and `--font-display`. It is unlayered, so it beats the theme's layered values. Values are re-serialized from the parsed color and the enum lookup, never interpolated from the raw CMS string. It is cached with the page under ISR ([ADR-0001](0001-isr-without-cdn.md)) and changes when the site settings do. The CSP already allows inline styles ([ADR-0004](0004-hash-based-csp.md)); if `style-src` is tightened later, this block gets a hash computed in the same `render:html` hook as the scripts.
+
+**Amendment (2026-10-06, #239):** "Installed" means the theme the build was made with (`NUXT_PUBLIC_THEME`): the build bundles one theme, as section 4 requires (only the active theme's CSS, fonts and slots reach the page) and as the budgets of section 9 assume. A `themeId` that names another theme is ignored and logged, and the other fields still apply to the built theme by mode id; choosing among several themes at runtime needs bundling them all and would get its own ADR. The derivations are fixed in the core, the same for every theme: `accent-soft` mixes 14 % of the accent into `surface` in OKLab, `accent-hover` mixes 80 % of the accent with `ink`, and `on-accent` is `ink` or `on-ink`, whichever contrasts more. The candidate accent must meet the section 1 rules for `accent`, `on-accent` and, when they follow the accent, `link` and `focus` (an alias chain that ends in `{accent}` counts). The lightness search takes the nearest OKLCH lightness that passes, in either direction; on a tie, the one with more contrast on `surface`. The glow roles (`glow-accent`) keep the theme's value; an override does not recolor them. The server resolves the overrides with the site settings (the same 60-second cache as the modules), so a change in Strapi reaches pages after that cache and the ISR window of [ADR-0001](0001-isr-without-cdn.md).
 
 ### 9. Performance budgets
 

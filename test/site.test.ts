@@ -207,3 +207,51 @@ describe('parseSiteSettings', () => {
     expect(parseSiteSettings('site')).toBeNull()
   })
 })
+
+describe('parseSiteSettings theme', () => {
+  const theme = (value: unknown): ReturnType<typeof parseSiteSettings> => parseSiteSettings({ theme: value })
+
+  it('is absent when Strapi sends null or nothing', () => {
+    expect(theme(null)?.theme).toBeUndefined()
+    expect(parseSiteSettings({})?.theme).toBeUndefined()
+    expect(theme('dark')?.theme).toBeUndefined()
+  })
+
+  it('reads a saved component, with null for what was never set', () => {
+    expect(theme({ id: 1, themeId: null, defaultMode: 'dia', accentOverrides: [], displayFont: null })?.theme).toEqual({ defaultMode: 'dia', accentOverrides: [] })
+    expect(theme({ themeId: 'bogota', defaultMode: 'noche', displayFont: 'fraunces' })?.theme).toEqual({ themeId: 'bogota', defaultMode: 'noche', displayFont: 'fraunces' })
+  })
+
+  it('drops a slug or font that is not valid, alone', () => {
+    expect(theme({ themeId: 'Bogota', defaultMode: '1dia', displayFont: 'comic-sans' })?.theme).toEqual({})
+    expect(theme({ themeId: 'bogota', defaultMode: 'dia x' })?.theme).toEqual({ themeId: 'bogota' })
+  })
+
+  it('validates accent overrides item by item and keeps the first of each mode', () => {
+    const overrides = [
+      { id: 1, mode: 'dia', color: '#AABBCC' },
+      { mode: 'dia', color: '#112233' },
+      { mode: 'noche', color: 'red' },
+      { mode: 'noche', color: '#12345' },
+      { mode: 'Noche', color: '#123456' },
+      { mode: 'noche', color: '#123456ff' },
+      { mode: 'sepia' },
+      null,
+      { mode: 'noche', color: '#123456' },
+    ]
+    expect(theme({ accentOverrides: overrides })?.theme?.accentOverrides).toEqual([
+      { mode: 'dia', color: '#AABBCC' },
+      { mode: 'noche', color: '#123456' },
+    ])
+  })
+
+  it('drops an accentOverrides list longer than 16', () => {
+    const many = Array.from({ length: 17 }, (_, index) => ({ mode: `m${index}`, color: '#123456' }))
+    expect(theme({ accentOverrides: many, defaultMode: 'dia' })?.theme).toEqual({ defaultMode: 'dia' })
+    expect(theme({ accentOverrides: many.slice(0, 16) })?.theme?.accentOverrides).toHaveLength(16)
+  })
+
+  it('drops accentOverrides that is not a list', () => {
+    expect(theme({ accentOverrides: { mode: 'dia', color: '#123456' }, defaultMode: 'dia' })?.theme).toEqual({ defaultMode: 'dia' })
+  })
+})

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LIGHTNESS_STEP, atLightness, composite, contrastRatio, nearestPassing, nearestWhere, oklchToSrgb, parseColor, resolveRefs, srgbToOklch, toHex } from '../modules/theme/color'
+import { LIGHTNESS_STEP, atLightness, composite, contrastRatio, mixOklab, nearestPassing, nearestWhere, oklchToSrgb, parseColor, resolveRefs, srgbToOklab, srgbToOklch, toHex } from '../modules/theme/color'
 import type { Rgb, Rgba } from '../modules/theme/color'
 
 function rgb(css: string): Rgb {
@@ -138,5 +138,23 @@ describe('nearestWhere', () => {
 
   it('returns null when nothing passes', () => {
     expect(nearestWhere({ r: 0.5, g: 0.5, b: 0.5 }, () => false)).toBeNull()
+  })
+})
+
+describe('mixOklab', () => {
+  const [black, white, red] = [{ r: 0, g: 0, b: 0 }, { r: 1, g: 1, b: 1 }, { r: 1, g: 0, b: 0 }]
+
+  it('is the first color at weight 1 and the second at weight 0', () => {
+    expect(toHex(mixOklab(red, white, 1))).toBe('#ff0000')
+    expect(toHex(mixOklab(red, white, 0))).toBe('#ffffff')
+  })
+
+  it('mixes lightness evenly in OKLab', () => {
+    expect(srgbToOklab(mixOklab(black, white, 0.5)).l).toBeCloseTo(0.5, 2)
+  })
+
+  it.each([0.14, 0.5, 0.8])('matches Lightning CSS color-mix(in oklab) at %s', (weight) => {
+    const css = rgb(`color-mix(in oklab, #8a1c1c ${weight * 100}%, #f3e9df)`)
+    expect(toHex(mixOklab(rgb('#8a1c1c'), rgb('#f3e9df'), weight))).toBe(toHex(css))
   })
 })
