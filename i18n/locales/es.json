@@ -795,5 +795,16 @@
       "error": "No pudimos darte de baja. Inténtalo de nuevo en un momento.",
       "blog": "Ir al blog"
     }
+  },
+  "sections": {
+    "recommended": "Recomendado",
+    "video": "Tu navegador no puede reproducir este video.",
+    "pricing": {
+      "caption": "Planes y precios",
+      "plan": "Plan",
+      "price": "Precio",
+      "includes": "Incluye",
+      "action": "Acción"
+    }
   }
 }

@@ -1,0 +1,61 @@
+/* Logo cloud: a wrapped row, or a CSS-only marquee while motion is welcome */
+.bd-section-logo-track {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+}
+
+.bd-section-logo-track .bd-section-items {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-6) var(--space-8);
+}
+
+.bd-section-logo-track .bd-section-item {
+    display: flex;
+    align-items: center;
+}
+
+.bd-section-logo-track .bd-section-media {
+    width: auto;
+    height: var(--space-8);
+    background: none;
+    border-radius: 0;
+}
+
+.bd-section-logo-track .bd-section-media img {
+    width: auto;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* The loop copy is only for the marquee */
+.bd-section-logo-track[data-variant="marquee"] > .bd-section-items + .bd-section-items {
+    display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .bd-section-logo-track[data-variant="marquee"] {
+        flex-wrap: nowrap;
+        gap: 0;
+        width: max-content;
+        animation: bd-section-marquee 40s linear infinite;
+    }
+
+    .bd-section-logo-track[data-variant="marquee"] > .bd-section-items {
+        flex-wrap: nowrap;
+        flex: none;
+        gap: var(--space-8);
+        padding-inline-end: var(--space-8);
+    }
+
+    .bd-section-logo-track[data-variant="marquee"] > .bd-section-items + .bd-section-items {
+        display: flex;
+    }
+
+    /* Pointing at a logo or tabbing to its link stops the lane */
+    [data-section="logo-cloud"]:is(:hover, :focus-within) .bd-section-logo-track[data-variant="marquee"] {
+        animation-play-state: paused;
+    }
+}

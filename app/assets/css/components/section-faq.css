@@ -1,0 +1,47 @@
+/* Faq section: native details, in one list or two columns */
+[data-section="faq"] .bd-section-items {
+    display: block;
+    max-width: var(--measure);
+}
+
+[data-section="faq"][data-variant="two-columns"] .bd-section-items {
+    max-width: none;
+    column-width: 22rem;
+    column-gap: var(--space-8);
+}
+
+[data-section="faq"] .bd-section-item {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--line);
+}
+
+.bd-section-question {
+    padding-block: var(--space-4);
+    font: var(--text-heading-3);
+    cursor: pointer;
+}
+
+.bd-section-question:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+}
+
+.bd-section-answer {
+    padding-bottom: var(--space-4);
+    color: var(--ink-muted);
+    font: var(--text-body);
+}
+
+.bd-section-answer > :first-child {
+    margin-top: 0;
+}
+
+.bd-section-answer > :last-child {
+    margin-bottom: 0;
+}
+
+@media (forced-colors: active) {
+    [data-section="faq"] .bd-section-item {
+        border-color: CanvasText;
+    }
+}
