@@ -106,7 +106,7 @@ Trigger it from the CMS host with a cron job or a small receiver of the same hoo
 
 ## Builder image
 
-`ghcr.io/bogd3v/micelio-builder` (the `static` target of the `Dockerfile`, published by CI next to `micelio`: `:<short sha>` and `:latest`) holds the source and the `npm ci` dependencies (the build tooling and Pagefind's Linux binary), runs as the non-root `node` user (uid 1000) and has two commands. Use it to generate and serve a static site from a Docker Compose (the demo instance) without Node on the host. Its build tooling makes it large (about 1.3 GB), so it is not for a runtime host that only serves.
+`ghcr.io/bogd3v/micelio-builder` (the `static` target of the `Dockerfile`, published by CI next to `micelio`: `:<short sha>` and `:latest`, for `linux/amd64` and `linux/arm64`, so it runs natively on Apple Silicon and arm servers) holds the source and the `npm ci` dependencies (the build tooling and Pagefind's Linux binary), runs as the non-root `node` user (uid 1000) and has two commands. Use it to generate and serve a static site from a Docker Compose (the demo instance) without Node on the host. Its build tooling makes it large (about 1.3 GB), so it is not for a runtime host that only serves.
 
 | Command | What it does |
 | --- | --- |
