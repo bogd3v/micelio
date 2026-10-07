@@ -131,6 +131,8 @@ They use the editor's own JWT, never the API token, and answer `private, no-stor
 | --- | --- |
 | `GET /feed.xml`, `/es/feed.xml` | RSS 2.0 of the latest articles in each language |
 | `GET /feed/:category.xml`, `/es/feed/:category.xml` | RSS of one category; `404` for an unknown one |
+| `GET /blog/category/:slug`, `/blog/tag/:slug`, `/blog/page/:n`, `/blog/category/:slug/page/:n`, `/blog/tag/:slug/page/:n` (and under `/es`) | The blog list with one filter (a category or a tag) and a page; `sort`, `view` and `search` stay in the query. Unknown category or page 0: `404`. Canonical is the path form; hreflang points at the first page of the filter in each language |
+| `GET /blog?category=&tag=&page=` (and `/es/blog`), `/blog/**/page/1` | `301` to the path form (`server/middleware/blog-redirects.ts`, before the ISR handler); the category wins over the tag; other parameters are kept |
 | `GET /sitemap.xml` | Every page and article with `hreflang` alternates |
 | `GET /robots.txt` | Crawl rules and the sitemap URL |
 | `/bd.js`, `/api/bd` | Umami tracker and collect endpoint, proxied by `server/middleware/umami.ts` when `NUXT_UMAMI_URL` is set |

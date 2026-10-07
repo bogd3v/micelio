@@ -33,7 +33,7 @@ test('serves well-formed feeds per category and language', async ({ page }) => {
 })
 
 test('links the category feeds from the blog and the filtered page head', async ({ page }) => {
-  await page.goto('/es/blog?category=linux', { waitUntil: 'networkidle' })
+  await page.goto('/es/blog/category/linux', { waitUntil: 'networkidle' })
   const feeds = page.locator('.bd-blog-feeds')
   await expect(feeds.getByRole('link', { name: 'Feed RSS de Linux' })).toHaveAttribute('href', '/es/feed/linux.xml')
   await expect(page.locator('.bd-blog-aside').getByRole('link', { name: /RSS · feed completo/ })).toHaveAttribute('href', '/es/feed.xml')

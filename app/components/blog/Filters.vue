@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { BlogFilters, Category, StrapiTagRef } from '~/interfaces'
 import { CATEGORIES, categoryColor } from '~/helpers/categories'
-import { hasActiveFilters } from '~/helpers/blog'
+import { blogLocation, hasActiveFilters } from '~/helpers/blog'
 import { tagLabel } from '~/helpers/tags'
 import { padCount } from '~/helpers/search'
 
@@ -19,8 +19,6 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  category: [category: Category | undefined]
-  tag: [tag: string | undefined]
   content: [enabled: boolean]
   remove: [filter: ActiveFilter['id']]
   clear: []
@@ -29,6 +27,14 @@ const emit = defineEmits<{
 const search = defineModel<string>('search', { required: true })
 
 const { t } = useI18n()
+const { localizePath } = useLocaleUtils()
+
+const blogBase = computed<string>(() => localizePath('/blog'))
+
+// One filter per URL: a chip replaces the other filter and goes back to the first page
+function filterLocation(patch: Pick<BlogFilters, 'category' | 'tag'>): ReturnType<typeof blogLocation> {
+  return blogLocation({ ...props.filters, ...patch, page: 1 }, blogBase.value)
+}
 
 const categoryChips = computed<{ id: Category | undefined, label: string, color: string, count: string }[]>(() => [
   { id: undefined, label: t('blog.all'), color: 'var(--ink-muted)', count: padCount(props.total) },
@@ -80,32 +86,30 @@ const resultLabel = computed<string>(() =>
     <div class="bd-blog-filter-row">
       <span class="bd-eyebrow bd-blog-filter-label">{{ t('blog.categories') }}</span>
       <div class="bd-blog-chips" role="group" :aria-label="t('blog.filterCategory')">
-        <button
+        <NuxtLink
           v-for="chip in categoryChips"
           :key="chip.id ?? 'all'"
-          type="button"
+          :to="filterLocation({ category: chip.id, tag: undefined })"
           class="bd-chip"
-          :aria-pressed="filters.category === chip.id ? 'true' : 'false'"
-          @click="emit('category', chip.id)"
+          :aria-current="filters.category === chip.id && !filters.tag ? 'true' : undefined"
         >
           <span class="bd-latest-dot" :style="{ background: chip.color }" aria-hidden="true" />{{ chip.label }}<span class="bd-latest-count">{{ chip.count }}</span>
-        </button>
+        </NuxtLink>
       </div>
     </div>
 
     <div v-if="tags.length" class="bd-blog-filter-row">
       <span class="bd-eyebrow bd-blog-filter-label">{{ t('blog.tags') }}</span>
       <div class="bd-blog-chips" role="group" :aria-label="t('blog.filterTag')">
-        <button
+        <NuxtLink
           v-for="tag in tags"
           :key="tag.slug"
-          type="button"
+          :to="filterLocation({ category: undefined, tag: filters.tag === tag.slug ? undefined : tag.slug })"
           class="bd-chip bd-blog-tag"
-          :aria-pressed="filters.tag === tag.slug ? 'true' : 'false'"
-          @click="emit('tag', filters.tag === tag.slug ? undefined : tag.slug)"
+          :aria-current="filters.tag === tag.slug ? 'true' : undefined"
         >
           #{{ tag.name }}
-        </button>
+        </NuxtLink>
       </div>
     </div>
 

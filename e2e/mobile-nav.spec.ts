@@ -96,7 +96,7 @@ test('navigates from the sheet and filters by topic', async ({ page }) => {
 
   await menuTab.click()
   await sheet.getByRole('link', { name: 'Linux' }).click()
-  await expect(page).toHaveURL(/\/blog\?category=linux$/)
+  await expect(page).toHaveURL(/\/blog\/category\/linux$/)
   await expect(sheet).toBeHidden()
   await expect(page.getByRole('heading', { name: 'Linux Server Hardening Guide', level: 3 })).toBeVisible()
 })
@@ -114,10 +114,10 @@ test('changes theme and language from the sheet', async ({ page }) => {
 })
 
 test('keeps the blog filters when switching language from the sheet', async ({ page }) => {
-  await page.goto('/blog?tag=vue&sort=fediverse', { waitUntil: 'networkidle' })
+  await page.goto('/blog/tag/vue?sort=fediverse', { waitUntil: 'networkidle' })
   await page.getByRole('navigation', { name: 'Bottom navigation' }).getByRole('button', { name: 'Menu' }).click()
   await page.getByRole('dialog', { name: 'Menu' }).getByRole('group', { name: 'Language' }).getByRole('button', { name: 'Español' }).click()
-  await expect(page).toHaveURL(/\/es\/blog\?tag=vue&sort=fediverse$/)
+  await expect(page).toHaveURL(/\/es\/blog\/tag\/vue\?sort=fediverse$/)
 })
 
 test('hides the tab bar on desktop', async ({ page }) => {

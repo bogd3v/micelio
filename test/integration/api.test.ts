@@ -334,7 +334,7 @@ describe('RSS feeds', () => {
     expect(linux.cache).toBe('public, s-maxage=1800, stale-while-revalidate=3600')
     expect(linux.body).toContain('<title>Micelio - Linux and open source</title>')
     expect(linux.body).toContain('<description>Micelio articles about Linux and open source, from Bogotá, Colombia.</description>')
-    expect(linux.body).toContain(`<link>${SITE_URL}/blog?category=linux</link>`)
+    expect(linux.body).toContain(`<link>${SITE_URL}/blog/category/linux</link>`)
     expect(linux.body).toContain(`<atom:link href="${SITE_URL}/feed/linux.xml" rel="self" type="application/rss+xml"/>`)
     expect(linux.body).toContain(`<atom:link href="${SITE_URL}/es/feed/linux.xml" rel="alternate" type="application/rss+xml" hreflang="es"/>`)
     expect(items(linux.body)).toEqual(['Linux Server Hardening Guide'])

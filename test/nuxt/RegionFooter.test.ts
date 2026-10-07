@@ -44,7 +44,7 @@ describe('RegionFooter', () => {
     const navs = wrapper.findAll('nav.bd-foot-nav')
     expect(navs.map(nav => nav.get('h2').text())).toEqual(['Navigate', 'Topics', 'Subscribe'])
     expect(navs[0]!.findAll('a').map(a => a.attributes('href'))).toEqual(['/', '/blog', '/about'])
-    expect(navs[1]!.findAll('a')[0]!.attributes('href')).toBe('/blog?category=privacidad')
+    expect(navs[1]!.findAll('a')[0]!.attributes('href')).toBe('/blog/category/privacidad')
     expect(navs[2]!.findAll('a').map(a => a.attributes('href'))).toEqual([
       '/feed.xml',
       '/#fediverso',

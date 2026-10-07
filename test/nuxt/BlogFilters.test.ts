@@ -11,19 +11,33 @@ const baseProps = {
 }
 
 describe('BlogFilters', () => {
-  it('renders category and tag chips with aria-pressed', async () => {
+  it('renders category and tag chips as links with aria-current', async () => {
     const wrapper = await mountSuspended(BlogFilters, {
-      props: { ...baseProps, filters: { category: Category.Software, page: 1 } },
+      props: { ...baseProps, filters: { category: Category.Software, page: 2, search: 'vue' } },
     })
-    const categories = wrapper.get('[role="group"][aria-label="Filter by category"]').findAll('button')
+    const categories = wrapper.get('[role="group"][aria-label="Filter by category"]').findAll('a')
     expect(categories.map(chip => chip.text())).toEqual(['All03', 'Privacy00', 'DIY00', 'AI00', 'Software02', 'Linux01'])
-    expect(categories.map(chip => chip.attributes('aria-pressed'))).toEqual(['false', 'false', 'false', 'false', 'true', 'false'])
-    const tags = wrapper.get('[role="group"][aria-label="Filter by tag"]').findAll('button')
+    expect(categories.map(chip => chip.attributes('aria-current'))).toEqual([undefined, undefined, undefined, undefined, 'true', undefined])
+    expect(categories.map(chip => chip.attributes('href'))).toEqual([
+      '/blog?search=vue',
+      '/blog/category/privacidad?search=vue',
+      '/blog/category/diy?search=vue',
+      '/blog/category/ia?search=vue',
+      '/blog/category/software?search=vue',
+      '/blog/category/linux?search=vue',
+    ])
+    const tags = wrapper.get('[role="group"][aria-label="Filter by tag"]').findAll('a')
     expect(tags.map(chip => chip.text())).toEqual(['#Vue', '#Linux'])
-    await categories[0]!.trigger('click')
-    await tags[0]!.trigger('click')
-    expect(wrapper.emitted('category')).toEqual([[undefined]])
-    expect(wrapper.emitted('tag')).toEqual([['vue']])
+    expect(tags.map(chip => chip.attributes('href'))).toEqual(['/blog/tag/vue?search=vue', '/blog/tag/linux?search=vue'])
+  })
+
+  it('replaces the other filter and toggles the active tag off', async () => {
+    const wrapper = await mountSuspended(BlogFilters, { props: { ...baseProps, filters: { tag: 'vue', page: 1 } } })
+    const tags = wrapper.get('[role="group"][aria-label="Filter by tag"]').findAll('a')
+    expect(tags.map(chip => chip.attributes('aria-current'))).toEqual(['true', undefined])
+    expect(tags[0]!.attributes('href')).toBe('/blog')
+    const categories = wrapper.get('[role="group"][aria-label="Filter by category"]').findAll('a')
+    expect(categories[5]!.attributes('href')).toBe('/blog/category/linux')
   })
 
   it('shows removable active filters and the search count', async () => {

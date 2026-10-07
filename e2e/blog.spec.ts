@@ -11,9 +11,9 @@ test('lists posts', async ({ page }) => {
 test('filters by category from the chips', async ({ page }) => {
   await page.goto('/blog', { waitUntil: 'networkidle' })
   const categories = page.getByRole('group', { name: 'Filter by category' })
-  await categories.getByRole('button', { name: /Software/ }).click()
-  await expect(page).toHaveURL(/category=software/)
-  await expect(categories.getByRole('button', { name: /Software/ })).toHaveAttribute('aria-pressed', 'true')
+  await categories.getByRole('link', { name: /Software/ }).click()
+  await expect(page).toHaveURL(/\/blog\/category\/software$/)
+  await expect(categories.getByRole('link', { name: /Software/ })).toHaveAttribute('aria-current', 'true')
   await expect(page.getByRole('heading', { name: 'Linux Server Hardening Guide', level: 3 })).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'Understanding Vue Composables', level: 3 })).toBeVisible()
   await page.getByRole('button', { name: 'Remove filter Software' }).click()
@@ -24,10 +24,10 @@ test('filters by category from the chips', async ({ page }) => {
 test('filters by tag from the chips built from the real tags', async ({ page }) => {
   await page.goto('/blog', { waitUntil: 'networkidle' })
   const tags = page.getByRole('group', { name: 'Filter by tag' })
-  await expect(tags.getByRole('button')).toHaveText(['#DevOps', '#Linux', '#TypeScript', '#Vue'])
-  await tags.getByRole('button', { name: '#Linux' }).click()
-  await expect(page).toHaveURL(/tag=linux/)
-  await expect(tags.getByRole('button', { name: '#Linux' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(tags.getByRole('link')).toHaveText(['#DevOps', '#Linux', '#TypeScript', '#Vue'])
+  await tags.getByRole('link', { name: '#Linux' }).click()
+  await expect(page).toHaveURL(/\/blog\/tag\/linux$/)
+  await expect(tags.getByRole('link', { name: '#Linux' })).toHaveAttribute('aria-current', 'true')
   await expect(page.getByRole('heading', { name: 'Understanding Vue Composables', level: 3 })).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'Linux Server Hardening Guide', level: 3 })).toBeVisible()
   await page.getByRole('button', { name: 'Remove filter #Linux' }).click()
@@ -40,7 +40,7 @@ test('opens the blog filtered by a tag from an article', async ({ page }) => {
   const tags = page.locator('.bd-article-tags')
   await expect(tags.getByRole('link')).toHaveText(['#Vue', '#TypeScript'])
   await tags.getByRole('link', { name: '#TypeScript' }).click()
-  await expect(page).toHaveURL(/\/blog\?tag=typescript$/)
+  await expect(page).toHaveURL(/\/blog\/tag\/typescript$/)
   await expect(page.getByRole('heading', { name: 'Understanding Vue Composables', level: 3 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Linux Server Hardening Guide', level: 3 })).toHaveCount(0)
 })
@@ -61,7 +61,7 @@ test('searches titles from three letters and keeps the term in the URL', async (
 })
 
 test('shows the empty state and clears the filters', async ({ page }) => {
-  await page.goto('/blog?category=privacidad', { waitUntil: 'networkidle' })
+  await page.goto('/blog/category/privacidad', { waitUntil: 'networkidle' })
   await expect(page.getByRole('heading', { name: 'No articles found', level: 2 })).toBeVisible()
   await page.locator('.bd-blog-empty').getByRole('button', { name: 'Clear filters' }).click()
   await expect(page).toHaveURL(/\/blog$/)
@@ -79,10 +79,10 @@ test.describe('without JavaScript', () => {
   test.use({ javaScriptEnabled: false })
 
   test('resolves the filters from the URL on the server', async ({ page }) => {
-    await page.goto('/blog?category=linux&search=linux')
+    await page.goto('/blog/category/linux?search=linux')
     await expect(page.getByRole('heading', { name: 'Linux Server Hardening Guide', level: 3 })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Understanding Vue Composables', level: 3 })).toHaveCount(0)
-    await expect(page.getByRole('group', { name: 'Filter by category' }).getByRole('button', { name: /Linux/ })).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByRole('group', { name: 'Filter by category' }).getByRole('link', { name: /Linux/ })).toHaveAttribute('aria-current', 'true')
     await expect(page.getByRole('searchbox', { name: 'Search articles' })).toHaveValue('linux')
   })
 })
@@ -108,9 +108,8 @@ test('switches to the log view, grouped by month, and keeps it in the URL', asyn
 
 test('keeps the log view while filtering', async ({ page }) => {
   await page.goto('/blog?view=log', { waitUntil: 'networkidle' })
-  await page.getByRole('group', { name: 'Filter by category' }).getByRole('button', { name: /Linux/ }).click()
-  await expect(page).toHaveURL(/category=linux/)
-  await expect(page).toHaveURL(/view=log/)
+  await page.getByRole('group', { name: 'Filter by category' }).getByRole('link', { name: /Linux/ }).click()
+  await expect(page).toHaveURL(/\/blog\/category\/linux\?view=log$/)
   await expect(page.locator('.bd-log-row')).toHaveCount(1)
   await expect(page.locator('.bd-log-row').getByRole('link', { name: 'Linux Server Hardening Guide' })).toBeVisible()
 })
@@ -171,4 +170,79 @@ test('searches the article body from the blog and keeps it in the URL', async ({
   await page.reload({ waitUntil: 'networkidle' })
   await expect(page.getByRole('checkbox', { name: 'Also search the content' })).toBeChecked()
   await expect(page.locator('.bd-card')).toHaveCount(1)
+})
+
+test('replaces the category with the tag: one filter per URL', async ({ page }) => {
+  await page.goto('/blog/category/software', { waitUntil: 'networkidle' })
+  await page.getByRole('group', { name: 'Filter by tag' }).getByRole('link', { name: '#Linux' }).click()
+  await expect(page).toHaveURL(/\/blog\/tag\/linux$/)
+  const categories = page.getByRole('group', { name: 'Filter by category' })
+  await expect(categories.locator('[aria-current]')).toHaveCount(0)
+  await categories.getByRole('link', { name: /Software/ }).click()
+  await expect(page).toHaveURL(/\/blog\/category\/software$/)
+  await expect(page.getByRole('group', { name: 'Filter by tag' }).locator('[aria-current]')).toHaveCount(0)
+})
+
+test('serves the filter and page paths in both languages with path canonicals', async ({ page }) => {
+  for (const [path, base] of [
+    ['/blog/category/linux', '/blog/category/linux'],
+    ['/blog/tag/vue', '/blog/tag/vue'],
+    ['/blog/page/2', '/blog/page/2'],
+    ['/blog/category/linux/page/2', '/blog/category/linux/page/2'],
+    ['/blog/tag/vue/page/2', '/blog/tag/vue/page/2'],
+    ['/es/blog/category/linux', '/es/blog/category/linux'],
+    ['/es/blog/tag/vue/page/2', '/es/blog/tag/vue/page/2'],
+    ['/es/blog/page/2', '/es/blog/page/2'],
+  ] as const) {
+    const response = await page.goto(path, { waitUntil: 'networkidle' })
+    expect(response?.status(), path).toBe(200)
+    await expect(page.getByRole('heading', { level: 1 }), path).toBeVisible()
+    await expect(page.locator('meta[property="og:url"]'), path).toHaveAttribute('content', `https://bogdev.com.co${base}`)
+  }
+})
+
+test('points hreflang and the language switch at the first page of the filter', async ({ page }) => {
+  await page.goto('/es/blog/category/linux/page/2', { waitUntil: 'networkidle' })
+  await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute('href', 'https://bogdev.com.co/blog/category/linux')
+  await expect(page.locator('link[rel="alternate"][hreflang="es"]')).toHaveAttribute('href', 'https://bogdev.com.co/es/blog/category/linux')
+  await page.getByRole('group', { name: 'Idioma' }).getByRole('button', { name: 'English' }).click()
+  await expect(page).toHaveURL(/\/blog\/category\/linux$/)
+})
+
+test('answers 404 for an unknown category and for page 0', async ({ page }) => {
+  for (const path of ['/blog/category/cooking', '/es/blog/category/cooking', '/blog/page/0']) {
+    expect((await page.goto(path))?.status(), path).toBe(404)
+  }
+})
+
+test.describe('old query URLs', () => {
+  const cases: [string, string][] = [
+    ['/blog?category=linux', '/blog/category/linux'],
+    ['/blog?tag=vue', '/blog/tag/vue'],
+    ['/blog?page=2', '/blog/page/2'],
+    ['/blog?category=linux&page=2', '/blog/category/linux/page/2'],
+    ['/blog?tag=vue&page=3', '/blog/tag/vue/page/3'],
+    ['/es/blog?category=linux', '/es/blog/category/linux'],
+    ['/es/blog?tag=vue&page=2', '/es/blog/tag/vue/page/2'],
+    ['/blog?category=linux&tag=vue', '/blog/category/linux'],
+    ['/blog?category=linux&search=ssh&sort=oldest&view=log', '/blog/category/linux?search=ssh&sort=oldest&view=log'],
+    ['/blog?page=1', '/blog'],
+    ['/blog/category/linux/page/1', '/blog/category/linux'],
+  ]
+  for (const [from, to] of cases) {
+    test(`redirects ${from} with a 301`, async ({ request }) => {
+      const response = await request.get(from, { maxRedirects: 0 })
+      expect(response.status()).toBe(301)
+      expect(response.headers().location).toBe(to)
+    })
+  }
+
+  test('leaves the unfiltered list alone', async ({ request }) => {
+    expect((await request.get('/blog?sort=oldest', { maxRedirects: 0 })).status()).toBe(200)
+  })
+
+  test('lands on the filtered list', async ({ page }) => {
+    await page.goto('/es/blog?category=linux', { waitUntil: 'networkidle' })
+    await expect(page).toHaveURL(/\/es\/blog\/category\/linux$/)
+  })
 })
