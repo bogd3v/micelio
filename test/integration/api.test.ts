@@ -4,6 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { $fetch, fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
 import type { RawStrapiArticle } from '~/interfaces/strapi-post'
+import type { Page, PageSection } from '~/interfaces/page'
 import type { StrapiRichText } from '~/interfaces/strapi-blocks'
 import { Category } from '~/interfaces/design'
 import { startMockStrapi } from './mock-strapi'
@@ -565,6 +566,113 @@ describe('/api/about', () => {
   it('rejects an unknown locale without calling Strapi', async () => {
     await expect($fetch('/api/about', { query: { locale: 'invalid' } })).rejects.toMatchObject({ response: { status: 400 } })
     expect(mock.requests).toEqual([])
+  })
+})
+
+describe('/api/pages/[slug]', () => {
+  type PageBody = Page
+  function section<K extends PageSection['__component']>(page: PageBody, name: K): Extract<PageSection, { __component: K }> {
+    return page.sections.find(item => item.__component === name) as Extract<PageSection, { __component: K }>
+  }
+
+  const COMPONENTS = [
+    'hero', 'feature-grid', 'media-showcase', 'stats', 'logo-cloud', 'testimonials', 'pricing',
+    'faq', 'cta', 'post-list', 'newsletter', 'rich-text', 'gallery', 'scene',
+  ].map(name => `section.${name}`)
+
+  it.each([['en', 'showcase', 'muestra'], ['es', 'muestra', 'showcase']])('returns the %s showcase with its 14 sections', async (locale, slug, other) => {
+    const response = await fetch(`/api/pages/${slug}?locale=${locale}`)
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('public, s-maxage=300, stale-while-revalidate=600')
+    const page = await response.json() as PageBody
+    expect(page.slug).toBe(slug)
+    expect(page.sections.map(item => item.__component)).toEqual(COMPONENTS)
+    expect(page.seo).toMatchObject({ metaImage: { url: '/uploads/page-og.png' } })
+    expect(page.translations).toEqual([{ locale: locale === 'en' ? 'es' : 'en', slug: other }])
+  })
+
+  it('renders the Markdown of the sections to sanitized HTML and drops the sources', async () => {
+    const page = await $fetch<PageBody>('/api/pages/showcase', { query: { locale: 'en' } })
+    expect(section(page, 'section.media-showcase').html).toContain('<strong>cherry tomatoes</strong>')
+    expect(section(page, 'section.faq').items[1]!.html).toContain('<a href="https://github.com/bogd3v/micelio"')
+    expect(section(page, 'section.rich-text').html).toContain('<h2 id="about-this-page">About this page</h2>')
+    expect(section(page, 'section.rich-text')).not.toHaveProperty('body')
+    expect(section(page, 'section.pricing').plans[0]!.features).toEqual(['3 seed packs', 'A planting guide'])
+  })
+
+  it('resolves the post list on the server', async () => {
+    const page = await $fetch<PageBody>('/api/pages/showcase', { query: { locale: 'en' } })
+    const list = section(page, 'section.post-list')
+    expect(list.category).toBe('software')
+    expect(list.posts.length).toBeGreaterThan(0)
+    expect(list.posts.length).toBeLessThanOrEqual(3)
+    expect(list.posts.every(post => post.category?.slug === 'software')).toBe(true)
+    const articles = mock.requests.find(request => request.path === '/api/articles')!
+    expect(articles.query).toMatchObject({
+      locale: 'en',
+      sort: 'publishedAt:desc',
+      filters: { category: { slug: { $eq: 'software' } } },
+      pagination: { page: '1', pageSize: '3' },
+    })
+  })
+
+  it('drops invalid and unknown sections alone and gives an empty list when no post matches', async () => {
+    const page = await $fetch<PageBody>('/api/pages/partial', { query: { locale: 'en' } })
+    expect(page.sections.map(item => item.__component)).toEqual(['section.hero', 'section.post-list'])
+    expect(section(page, 'section.post-list').posts).toEqual([])
+    expect(page.translations).toEqual([])
+    expect(page.seo).toBeUndefined()
+  })
+
+  it('asks Strapi for one page, populating every nested relation, with the API token', async () => {
+    await $fetch('/api/pages/muestra', { query: { locale: 'es' } })
+    const request = mock.requests.find(item => item.path === '/api/pages')!
+    expect(request.authorization).toBe('Bearer test-api-token')
+    expect(request.query).toMatchObject({
+      filters: { slug: { $eq: 'muestra' } },
+      locale: 'es',
+      pagination: { limit: '1' },
+      populate: {
+        seo: { populate: '*' },
+        localizations: { fields: ['slug', 'locale'] },
+        sections: {
+          on: {
+            'section.hero': { populate: { primaryLink: 'true', secondaryLink: 'true', media: 'true' } },
+            'section.feature-grid': { populate: { items: { populate: { icon: 'true' } } } },
+            'section.media-showcase': { populate: { media: 'true', link: 'true' } },
+            'section.logo-cloud': { populate: { logos: { populate: { image: 'true' } } } },
+            'section.testimonials': { populate: { items: { populate: { avatar: 'true' } } } },
+            'section.pricing': { populate: { plans: { populate: { link: 'true' } } } },
+            'section.post-list': { populate: { category: { fields: ['slug'] }, tag: { fields: ['slug'] } } },
+            'section.gallery': { populate: { images: 'true' } },
+            'section.scene': { populate: { model: 'true', poster: 'true' } },
+          },
+        },
+      },
+    })
+    const populate = request.query.populate as { sections: { on: Record<string, unknown> } }
+    expect(Object.keys(populate.sections.on)).toEqual(COMPONENTS)
+  })
+
+  it('answers 404 for a missing page, never cached as public', async () => {
+    const response = await fetch('/api/pages/nothing?locale=en')
+    expect(response.status).toBe(404)
+    expect(response.headers.get('cache-control')).not.toContain('public')
+    expect((await fetch('/api/pages/showcase?locale=es')).status).toBe(404)
+  })
+
+  it('rejects a bad slug or locale without calling Strapi', async () => {
+    for (const path of ['/api/pages/Showcase', '/api/pages/a%20b', '/api/pages/-x', `/api/pages/${'x'.repeat(65)}`, '/api/pages/showcase?locale=fr']) {
+      const response = await fetch(path)
+      expect(response.status, path).toBe(400)
+    }
+    expect(mock.requests).toEqual([])
+  })
+
+  it('answers 502, never cached as public, when Strapi fails', async () => {
+    const response = await fetch('/api/pages/broken-page')
+    expect(response.status).toBe(502)
+    expect(response.headers.get('cache-control')).not.toContain('public')
   })
 })
 

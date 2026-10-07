@@ -7,14 +7,6 @@ import { postsQuerySchema } from '../../schemas/query'
 const RANKING_TIMEOUT_MS = 3000
 const STATS_TIMEOUT_MS = 3000
 
-const POPULATE = {
-  cover: { populate: '*' },
-  category: { populate: '*' },
-  author: { populate: '*' },
-  seo: { populate: '*' },
-  tags: { fields: ['name', 'slug'] },
-}
-
 interface RankingPage {
   data: Array<{ documentId: string }>
   meta: StrapiPaginatedResponse<unknown>['meta']
@@ -49,7 +41,7 @@ export default defineEventHandler(async (event) => {
   if (validSearch && !contentSearch) filters.title = { $containsi: validSearch }
 
   async function fetchArticles(params: Record<string, unknown>): Promise<StrapiPaginatedResponse<RawStrapiArticle[]>> {
-    const queryString = qs.stringify({ populate: POPULATE, locale, ...params }, { skipNulls: true })
+    const queryString = qs.stringify({ populate: POST_CARD_POPULATE, locale, ...params }, { skipNulls: true })
     return strapiFetch<StrapiPaginatedResponse<RawStrapiArticle[]>>(`/api/articles?${queryString}`)
   }
 

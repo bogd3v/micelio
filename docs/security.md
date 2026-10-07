@@ -23,6 +23,7 @@ Create a **Custom** token, never Full Access or Read Only, with exactly these pe
 | Article | `find` | Blog list, article page (looked up by slug), reading path, RSS feeds. The search route (`/api/articles/search`) is public in the backend and needs no permission |
 | Category, Tag | `find` | Filters and counts |
 | About | `find` | About page |
+| Page | `find` | Section pages (`/api/pages/:slug`, looked up by slug through the filtered `find`; `findOne` is not granted and not needed) |
 | Site-setting | `find` | Site identity and modules (`/api/site`, RSS feeds, newsletter emails). Without it Strapi answers 403 and everything falls back to `app.config.ts` |
 | Comments (plugin) | read (hierarchy and flat), create | Comment threads and guest comments |
 | Subscriber | `find`, `create`, `update`, `delete` | Newsletter: subscribe, confirm, unsubscribe |
@@ -49,6 +50,7 @@ The routes of a module switched off in `site-setting.modules`, or off for lack o
 | Endpoint | Access | Protections |
 | --- | --- | --- |
 | `GET /api/posts`, `/api/posts/:slug`, `/api/search`, `/api/categories`, `/api/tags`, `/api/about`, `/api/reading-path`, `/api/site` | Public | Query schema: known locales only, `pageSize` ≤ 50, slugs, search ≤ 200 chars |
+| `GET /api/pages/:slug` | Public | Slug checked against the Strapi uid shape and locale against the known ones before any Strapi call; the response is rebuilt from a zod schema (unknown sections and fields dropped, links limited to `http(s)`, `mailto:` and single-slash paths, media URLs to `http(s)` or site paths); Markdown comes out as sanitized HTML (`sanitize-html`, same options as articles); only published content is read (`find` without `status=draft`) |
 | `GET /api/comments`, `/api/comments/flat` | Public | Relation must be `api::article.article:<id>`; pagination and sort validated; email and hidden comments never returned |
 | `POST /api/comments` | Public | Same-origin check, 10 per IP every 10 min, allow-listed fields and lengths, author id set by the server |
 | `GET /api/fediverse/stats`, `/api/fediverse/stats/:documentId` | Public | Document id pattern, at most 50 ids |
