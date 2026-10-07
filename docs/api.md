@@ -134,7 +134,7 @@ They use the editor's own JWT, never the API token, and answer `private, no-stor
 | `GET /blog/category/:slug`, `/blog/tag/:slug`, `/blog/page/:n`, `/blog/category/:slug/page/:n`, `/blog/tag/:slug/page/:n` (and under `/es`) | The blog list with one filter (a category or a tag) and a page; `sort`, `view` and `search` stay in the query. Unknown category or page 0: `404`. `<link rel="canonical">` is the path form (no search, sort or view). hreflang points at the same filter in each language on the first page and is omitted on page 2 and above; the language switcher goes to the first page |
 | `GET /blog?category=&tag=&page=` (and `/es/blog`), `/blog/**/page/1` | `301` to the path form (`server/middleware/blog-redirects.ts`, before the ISR handler); the category wins over the tag; other parameters are kept. `/blog/category/Linux` becomes lowercase and `/blog/page/02` loses the padding |
 | `GET /sitemap.xml` | Every page, article and `/blog/category/<slug>` (both languages) with `hreflang` alternates; tag and page paths are not listed |
-| `GET /robots.txt` | Crawl rules and the sitemap URL |
+| `GET /robots.txt` | Crawl rules and the sitemap URL (`Sitemap: <NUXT_PUBLIC_SITE_URL>/sitemap.xml`); there is no `public/robots.txt`, which would shadow the route |
 | `/bd.js`, `/api/bd` | Umami tracker and collect endpoint, proxied by `server/middleware/umami.ts` when `NUXT_UMAMI_URL` is set |
 
 ## Static build (`npm run generate`)
