@@ -11,10 +11,10 @@ export function waitFor(url, attempts = 50) {
 }
 
 /**
- * Runs `npm run generate` in `static` mode with the mock Strapi up on `mockPort`, then stops the mock.
+ * Runs `npm run generate` in `mode` (`static` or `landing`) with the mock Strapi up on `mockPort`, then stops the mock.
  * `extraEnv` goes to both processes (a theme, MOCK_DISPLAY_FONT). Resolves with the exit code of the generate (0 = ok).
  */
-export async function generateStatic({ mockPort, appPort, extraEnv = {} }) {
+export async function generateStatic({ mockPort, appPort, mode = 'static', extraEnv = {} }) {
   const mock = spawn('node', ['e2e/mock-strapi.mjs'], {
     env: { ...process.env, ...extraEnv, MOCK_PORT: String(mockPort), MOCK_FRONTEND_URL: `http://127.0.0.1:${appPort}` },
     stdio: 'ignore',
@@ -29,7 +29,7 @@ export async function generateStatic({ mockPort, appPort, extraEnv = {} }) {
       env: {
         ...process.env,
         ...extraEnv,
-        NUXT_PUBLIC_SITE_MODE: 'static',
+        NUXT_PUBLIC_SITE_MODE: mode,
         NUXT_PUBLIC_STRAPI_URL: `http://127.0.0.1:${mockPort}`,
         // Any value: the mock does not check it, the module only requires it
         NUXT_STRAPI_API_TOKEN: 'e2e-build-token',

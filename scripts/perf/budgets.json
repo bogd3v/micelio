@@ -11,48 +11,42 @@
   "themes": {
     "bogota": {
       "mode": "static",
-      "reason": "Archivo and JetBrains Mono are preloaded (143.6 KB of fonts against the 100 KB target) and the home page leads with a hero image: LCP is 1.9 to 2.6 s against 1.5 s, and performance 97 to 99. With the fonts blocked the article measures 1.35 s. The limits are the measured values plus 15 % (LCP) or 5 % (fonts); lower them as the fonts and the hero get lighter",
+      "reason": "Archivo and JetBrains Mono are preloaded (143.6 KB of fonts against the 100 KB target) and the home page leads with a hero image: LCP is 1.9 to 2.6 s against 1.5 s, and performance 97 to 99. With the fonts blocked the article measures 1.35 s. The limits are the measured values plus 15 % (LCP) or 5 % (fonts); lower them as the fonts and the hero get lighter (#350)",
       "limits": {
         "home": {
           "error": {
             "lcpMs": 3050,
-            "fontKb": 150.8,
-            "performance": 90
+            "fontKb": 150.8
           }
         },
         "blog": {
           "error": {
             "lcpMs": 2350,
-            "fontKb": 150.8,
-            "performance": 90
+            "fontKb": 150.8
           }
         },
         "article": {
           "error": {
             "lcpMs": 2250,
-            "fontKb": 150.8,
-            "performance": 90
+            "fontKb": 150.8
           }
         },
         "about": {
           "error": {
             "lcpMs": 2700,
-            "fontKb": 150.8,
-            "performance": 90
+            "fontKb": 150.8
           }
         },
         "privacy": {
           "error": {
             "lcpMs": 2250,
-            "fontKb": 150.8,
-            "performance": 90
+            "fontKb": 150.8
           }
         },
         "home-es": {
           "error": {
             "lcpMs": 3050,
-            "fontKb": 150.8,
-            "performance": 90
+            "fontKb": 150.8
           }
         }
       }

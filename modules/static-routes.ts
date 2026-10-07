@@ -87,7 +87,7 @@ export default defineNuxtModule({
       const unused = unreachableScripts(scripts, roots)
       // The precompressed copies and maps go with the script
       await Promise.all(unused.flatMap(name => ['', '.br', '.gz', '.map'].map(suffix => rm(join(nuxtDir, `${name}${suffix}`), { force: true }))))
-      const removed = unused.reduce((sum, name) => sum + scripts.get(name)!.length, 0)
+      const removed = before - (await Promise.all([...scripts.keys()].filter(name => !unused.includes(name)).map(async name => (await stat(join(nuxtDir, name))).size))).reduce((sum, size) => sum + size, 0)
       logger.info(`Pruned ${unused.length} of ${scripts.size} unused scripts from /_nuxt/ (${(removed / 1024 / 1024).toFixed(1)} MB of ${(before / 1024 / 1024).toFixed(1)} MB)`)
     }
 
