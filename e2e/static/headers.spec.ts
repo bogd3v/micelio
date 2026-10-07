@@ -35,7 +35,7 @@ for (const { name, path, status } of PAGES) {
     // Same policy but for the directives a meta cannot carry
     expect(header.replace('frame-ancestors \'none\'; ', '')).toBe(meta)
     // No Strapi origin: images and media are copied into the site
-    expect(header).toMatch(/img-src 'self' data: blob:;/)
+    expect(header).toMatch(/img-src 'self' data:;/)
     expect(header).toMatch(/media-src 'self';/)
   })
 
@@ -65,7 +65,7 @@ for (const { name, path, status } of PAGES) {
   })
 }
 
-test('hashed assets are cached for a year, pages are not', async ({ request }) => {
+test('hashed assets are cached for a year, _ipx revalidates, pages are not', async ({ request }) => {
   const html = await (await request.get('/blog')).text()
   const css = /href="(\/_nuxt\/[^"]+\.css)"/.exec(html)?.[1]
   const image = /src="(\/_ipx\/[^"]+)"/.exec(html)?.[1]?.replaceAll('&amp;', '&')
@@ -76,7 +76,10 @@ test('hashed assets are cached for a year, pages are not', async ({ request }) =
   for (const asset of [css!, image!, media!]) {
     const response = await request.get(asset)
     expect(response.status(), asset).toBe(200)
-    expect(response.headers()['cache-control'], asset).toBe('public, max-age=31536000, immutable')
+    const immutable = !asset.startsWith('/_ipx/')
+    expect(response.headers()['cache-control'], asset).toBe(immutable ? 'public, max-age=31536000, immutable' : 'public, max-age=0, must-revalidate')
+    // Copied Strapi files carry a second, tighter policy (repeated policies only tighten)
+    if (asset.startsWith('/_media/')) expect(response.headers()['content-security-policy']).toContain('default-src \'none\'; style-src \'unsafe-inline\'; img-src \'self\' data:; sandbox')
   }
   expect((await request.get('/')).headers()['cache-control']).toBeUndefined()
 })

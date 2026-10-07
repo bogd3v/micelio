@@ -83,7 +83,7 @@ export default defineNuxtModule({
 
       // Static pages load no Nuxt client and copy their images and media into the site: no image origin is needed
       function staticPolicy(hashes: string[], meta: boolean): string {
-        return contentSecurityPolicy({ scriptHashes: hashes, imageOrigins: [], meta })
+        return contentSecurityPolicy({ scriptHashes: hashes, imageOrigins: [], imageBlobs: false, meta })
       }
       async function writeHeaders(): Promise<void> {
         const different = scriptHashDisagreements(scriptHashes)
@@ -100,14 +100,19 @@ export default defineNuxtModule({
       const failed: string[] = []
 
       // Raw <img> and <video> files of Strapi (SVGs, videos) bypass _ipx: copy them into the site so no page asks Strapi at runtime
-      const mediaOrigins = [config.strapiUrl, process.env.NUXT_MEDIA_URL || String(nuxt.options.runtimeConfig.mediaUrl || '')]
-        .flatMap(url => (url ? [new URL(url).origin] : []))
+      // Only Strapi's /uploads/ and the media host: any other path of the Strapi origin (its API, its admin) is not media
+      const mediaPrefixes = [
+        ...(config.strapiUrl ? [`${new URL(config.strapiUrl).origin}/uploads/`] : []),
+        ...(process.env.NUXT_MEDIA_URL || nuxt.options.runtimeConfig.mediaUrl ? [`${new URL(process.env.NUXT_MEDIA_URL || String(nuxt.options.runtimeConfig.mediaUrl)).origin}/`] : []),
+      ]
       const localMedia = new Map<string, Promise<string>>()
       function copyMedia(url: string): Promise<string> {
         let path = localMedia.get(url)
         if (!path) {
           path = (async () => {
-            const bytes = Buffer.from(await (await ofetch<Blob, 'blob'>(url, { responseType: 'blob', timeout: 60_000 })).arrayBuffer())
+            const blob = await ofetch<Blob, 'blob'>(url, { responseType: 'blob', timeout: 60_000 })
+            if (!/^(image|video|audio)\//.test(blob.type)) throw new Error(`${url} is ${blob.type || 'of unknown type'}, not an image, video or audio`)
+            const bytes = Buffer.from(await blob.arrayBuffer())
             // Named by its bytes: a file that changes behind the same URL gets a new name, so /_media/ can be immutable
             const name = mediaFileName(url, createHash('sha256').update(bytes).digest('hex').slice(0, 8))
             await mkdir(join(nitro.options.output.publicDir, '_media'), { recursive: true })
@@ -130,7 +135,7 @@ export default defineNuxtModule({
         }
         if (route.fileName?.endsWith('.html') && !route.error && route.contents) {
           route.contents = stripImageErrorHandlers(route.contents)
-          const urls = mediaUrlsIn(route.contents, mediaOrigins)
+          const urls = mediaUrlsIn(route.contents, mediaPrefixes)
           if (urls.length) {
             try {
               const paths = new Map(await Promise.all(urls.map(async url => [url, await copyMedia(url)] as const)))
@@ -147,7 +152,11 @@ export default defineNuxtModule({
         if (route.error || !route.contents) return
         const hashes = inlineScripts(route.contents).map(sha256)
         scriptHashes.set(route.route, hashes)
-        route.contents = injectCspMeta(route.contents, staticPolicy(hashes, true))
+        try {
+          route.contents = injectCspMeta(route.contents, staticPolicy(hashes, true))
+        } catch (error) {
+          failed.push(`${route.route} (${error instanceof Error ? error.message : String(error)})`)
+        }
       })
       nitro.hooks.hook('prerender:done', async ({ prerenderedRoutes }) => {
         failed.push(...missingRoutes([...listed].filter(route => !isPublicFile(route)), prerenderedRoutes.map(({ route }) => route)).map(route => `${route} (not prerendered)`))

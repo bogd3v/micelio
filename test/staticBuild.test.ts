@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { createMarkdownRenderer } from '../app/helpers/markdown'
 import { Locale } from '../app/interfaces/locale'
 import { articleRoute, failsBuild, headersFile, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers } from '../app/helpers/staticBuild'
 import { SECURITY_HEADERS, contentSecurityPolicy } from '../app/helpers/securityHeaders'
@@ -86,7 +87,7 @@ describe('media on the CMS origin', () => {
   const html = `<img src="${origin}/uploads/logo.svg" alt="x"><video poster="${origin}/uploads/p.png?a=1&amp;b=2"><source src="${origin}/uploads/v.mp4"></video><img src="/_ipx/w_1/a.jpg"><img src="https://other.org/x.svg"><a href="${origin}/uploads/doc.pdf">d</a>`
 
   it('finds the src and poster URLs of the origin only', () => {
-    expect(mediaUrlsIn(html, [origin])).toEqual([`${origin}/uploads/logo.svg`, `${origin}/uploads/p.png?a=1&b=2`, `${origin}/uploads/v.mp4`])
+    expect(mediaUrlsIn(html, [`${origin}/uploads/`])).toEqual([`${origin}/uploads/logo.svg`, `${origin}/uploads/p.png?a=1&b=2`, `${origin}/uploads/v.mp4`])
   })
 
   it('rewrites them to site paths and leaves the rest', () => {
@@ -96,6 +97,24 @@ describe('media on the CMS origin', () => {
     expect(out).toContain('poster="/_media/cd-p.png"')
     expect(out).toContain(`src="${origin}/uploads/v.mp4"`)
     expect(out).toContain('src="https://other.org/x.svg"')
+  })
+
+  it('ignores other paths of the origin and the media host prefix works', () => {
+    const other = `<img src="${origin}/api/x.png"><img src="https://media.example.org/a/b.png">`
+    expect(mediaUrlsIn(other, [`${origin}/uploads/`])).toEqual([])
+    expect(mediaUrlsIn(other, [`${origin}/uploads/`, 'https://media.example.org/'])).toEqual(['https://media.example.org/a/b.png'])
+  })
+
+  it('leaves URLs in code blocks and text alone, after real Markdown rendering', () => {
+    const renderer = createMarkdownRenderer({ callout: () => 'Note', cite: n => `Reference ${n}` })
+    const rendered = renderer.renderMarkdown(`Text <img src="${origin}/uploads/real.png" alt="r">\n\n\`\`\`html\n<img src="${origin}/uploads/code.png">\n\`\`\`\n\nInline \`<img src="${origin}/uploads/inline.png">\``)
+    const prefixes = [`${origin}/uploads/`]
+    expect(mediaUrlsIn(rendered, prefixes)).toEqual([`${origin}/uploads/real.png`])
+    const local = new Map(['real', 'code', 'inline'].map(name => [`${origin}/uploads/${name}.png`, `/_media/${name}.png`]))
+    const out = rewriteMediaUrls(rendered, local)
+    expect(out).toContain('/_media/real.png')
+    expect(out).not.toContain('/_media/code.png')
+    expect(out).not.toContain('/_media/inline.png')
   })
 
   it('names the file after a hash and a safe base name', () => {
@@ -110,19 +129,22 @@ describe('static headers', () => {
     const img = '<img src="/a.png" data-nuxt-img onerror="this.setAttribute(&#39;data-error&#39;, 1)" alt="x">'
     expect(stripImageErrorHandlers(img)).toBe('<img src="/a.png" data-nuxt-img alt="x">')
     expect(stripImageErrorHandlers('<img onerror="alert(1)">')).toBe('<img onerror="alert(1)">')
+    expect(stripImageErrorHandlers('<div data-nuxt-img onerror="this.setAttribute(&#39;data-error&#39;, 1)">')).toContain('onerror')
   })
 
   it('injects the policy as a meta after the charset, escaped', () => {
     const out = injectCspMeta('<html><head><meta charset="utf-8"><title>x</title></head></html>', 'a "b" & c')
     expect(out).toBe('<html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="a &quot;b&quot; &amp; c"><title>x</title></head></html>')
     expect(injectCspMeta('<html><head><title>x</title>', 'p')).toContain('<head><meta http-equiv')
-    expect(injectCspMeta('no head', 'p')).toBe('no head')
+    expect(() => injectCspMeta('no head', 'p')).toThrow('no <head>')
+    expect(injectCspMeta('<meta charset="utf-8"><head><title>x</title></head>', 'p')).toBe('<meta charset="utf-8"><head><meta http-equiv="Content-Security-Policy" content="p"><title>x</title></head>')
   })
 
   it('drops frame-ancestors from the meta policy only', () => {
     expect(policy).toContain('frame-ancestors \'none\'')
     expect(contentSecurityPolicy({ scriptHashes: ['abc='], imageOrigins: [], meta: true })).not.toContain('frame-ancestors')
     expect(policy).toContain('img-src \'self\' data: blob:;')
+    expect(contentSecurityPolicy({ scriptHashes: [], imageOrigins: [], imageBlobs: false })).toContain('img-src \'self\' data:;')
   })
 
   it('names the pages whose scripts differ from the common ones', () => {
@@ -131,14 +153,22 @@ describe('static headers', () => {
     expect(scriptHashDisagreements(new Map())).toEqual([])
   })
 
-  it('writes one /* rule with the policy and the security headers, and immutable assets', () => {
-    const file = headersFile(policy)
-    const [everything = '', ...assets] = file.trim().split('\n\n')
+  it('writes one /* rule with the policy and the security headers, and the cache rules', () => {
+    const rules = headersFile(policy).trim().split('\n\n')
+    const everything = rules[0] ?? ''
     expect(everything.split('\n')[0]).toBe('/*')
     expect(everything).toContain(`  Content-Security-Policy: ${policy}`)
     expect(everything).toContain('  Strict-Transport-Security: max-age=31536000')
     expect(everything).toContain('  Cross-Origin-Opener-Policy: same-origin')
     expect(everything.split('\n')).toHaveLength(2 + Object.keys(SECURITY_HEADERS).length)
-    expect(assets).toEqual(['/_nuxt/*', '/_ipx/*', '/_media/*'].map(path => `${path}\n  Cache-Control: public, max-age=31536000, immutable`))
+    expect(rules.slice(1)).toEqual([
+      '/_nuxt/*\n  Cache-Control: public, max-age=31536000, immutable',
+      '/_media/*\n  Cache-Control: public, max-age=31536000, immutable\n  Content-Security-Policy: default-src \'none\'; style-src \'unsafe-inline\'; img-src \'self\' data:; sandbox',
+      '/_ipx/*\n  Cache-Control: public, max-age=0, must-revalidate',
+    ])
+  })
+
+  it('fails over the Cloudflare Pages line limit', () => {
+    expect(() => headersFile('a'.repeat(2000))).toThrow('2000')
   })
 })

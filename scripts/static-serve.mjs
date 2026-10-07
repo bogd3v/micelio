@@ -47,7 +47,8 @@ function headersFor(rules, pathname) {
   const headers = {}
   for (const { path, headers: own } of rules) {
     const matches = path.endsWith('*') ? pathname.startsWith(path.slice(0, -1)) : pathname === path
-    if (matches) Object.assign(headers, own)
+    // A header repeated by several matching rules is joined with a comma, as Cloudflare Pages does (policies only tighten)
+    if (matches) for (const [name, value] of Object.entries(own)) headers[name] = headers[name] ? `${headers[name]}, ${value}` : value
   }
   return headers
 }

@@ -65,28 +65,35 @@ export function missingRoutes(required: Iterable<string>, prerendered: Iterable<
   return [...required].filter(route => !done.has(route))
 }
 
+// Only real media tags: sanitized Markdown keeps literal quotes, so `&lt;img src="..."&gt;` in a code block must not match
+const MEDIA_TAG = /<(?:img|video|source|audio)\b[^>]*>/gi
 const MEDIA_ATTRIBUTE = /(\s(?:src|poster)=")([^"]+)(")/g
 
 function decodeAmpersands(value: string): string {
   return value.replaceAll('&amp;', '&')
 }
 
-/** Absolute `src` and `poster` URLs on one of the origins (the HTML-decoded form), in order of appearance. */
-export function mediaUrlsIn(html: string, origins: readonly string[]): string[] {
+/**
+ * Absolute `src` and `poster` URLs of media tags that start with one of the prefixes (the HTML-decoded form), in order of appearance.
+ * Prefixes are `<strapi origin>/uploads/` and `<media origin>/`.
+ */
+export function mediaUrlsIn(html: string, prefixes: readonly string[]): string[] {
   const found = new Set<string>()
-  for (const [, , value = ''] of html.matchAll(MEDIA_ATTRIBUTE)) {
-    const url = decodeAmpersands(value)
-    if (origins.some(origin => url.startsWith(`${origin}/`))) found.add(url)
+  for (const [tag] of html.matchAll(MEDIA_TAG)) {
+    for (const [, , value = ''] of tag.matchAll(MEDIA_ATTRIBUTE)) {
+      const url = decodeAmpersands(value)
+      if (prefixes.some(prefix => url.startsWith(prefix))) found.add(url)
+    }
   }
   return [...found]
 }
 
-/** The same HTML with each URL of `local` (decoded URL to path on the site) replaced by its path. */
+/** The same HTML with each URL of `local` (decoded URL to path on the site) replaced by its path, in media tags only. */
 export function rewriteMediaUrls(html: string, local: ReadonlyMap<string, string>): string {
-  return html.replace(MEDIA_ATTRIBUTE, (match, before: string, value: string, after: string) => {
+  return html.replace(MEDIA_TAG, tag => tag.replace(MEDIA_ATTRIBUTE, (match, before: string, value: string, after: string) => {
     const path = local.get(decodeAmpersands(value))
     return path ? `${before}${path}${after}` : match
-  })
+  }))
 }
 
 /** A file name under /_media/ for a media URL: a short hash of the URL, then its safe base name. */
@@ -96,19 +103,27 @@ export function mediaFileName(url: string, hash: string): string {
 }
 
 // NuxtImg writes an inline `onerror` on the server; the hash CSP blocks inline handlers, so under it the attribute is dead weight
-const IMAGE_ERROR_HANDLER = / onerror="this\.setAttribute\(&#39;data-error&#39;, 1\)"/g
+const NUXT_IMG_TAG = /<img\b[^>]*\bdata-nuxt-img\b[^>]*>/gi
+const IMAGE_ERROR_HANDLER = / onerror="this\.setAttribute\(&#39;data-error&#39;, 1\)"/
 
-/** The HTML without the inert `onerror` handler `@nuxt/image` adds to its images. */
+/** The HTML without the inert `onerror` handler `@nuxt/image` adds to its images (only on `data-nuxt-img` tags). */
 export function stripImageErrorHandlers(html: string): string {
-  return html.replace(IMAGE_ERROR_HANDLER, '')
+  return html.replace(NUXT_IMG_TAG, tag => tag.replace(IMAGE_ERROR_HANDLER, ''))
 }
 
-/** The HTML with the policy as `<meta http-equiv>` right after the charset (or `<head>`), for hosts without `_headers`. */
+/**
+ * The HTML with the policy as `<meta http-equiv>` right after the charset in the `<head>` (or the `<head>` tag), for hosts without `_headers`.
+ * Throws when there is no `<head>`: a page without the meta must not ship.
+ */
 export function injectCspMeta(html: string, policy: string): string {
   const meta = `<meta http-equiv="Content-Security-Policy" content="${policy.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}">`
-  const anchor = /<meta charset="utf-8">/i.exec(html) ?? /<head>/i.exec(html)
-  if (!anchor) return html
-  const end = anchor.index + anchor[0].length
+  const head = /<head(?:\s[^>]*)?>/i.exec(html)
+  if (!head) throw new Error('no <head> to put the CSP meta in')
+  const start = head.index + head[0].length
+  const closing = html.indexOf('</head>', start)
+  const inHead = html.slice(start, closing === -1 ? undefined : closing)
+  const charset = /<meta charset="utf-8">/i.exec(inHead)
+  const end = start + (charset ? charset.index + charset[0].length : 0)
   return `${html.slice(0, end)}${meta}${html.slice(end)}`
 }
 
@@ -122,17 +137,41 @@ export function scriptHashDisagreements(pages: ReadonlyMap<string, readonly stri
 }
 
 const IMMUTABLE = 'public, max-age=31536000, immutable'
-/** Folders whose file names change with their content (Vite's hashes, _ipx's URL and options, _media's bytes). */
-export const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_ipx/*', '/_media/*']
+const REVALIDATE = 'public, max-age=0, must-revalidate'
+/** Strapi keeps a file's URL when it is replaced, so `_ipx` (named after the source URL) revalidates; `_nuxt` (Vite hash) and `_media` (byte hash) never change under a name. */
+export const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_media/*']
+export const REVALIDATED_PATHS: readonly string[] = ['/_ipx/*']
+/** Files copied from Strapi are data, never documents: an SVG opened directly runs nothing and loads nothing. Sent on top of the site policy (repeated policies only tighten). */
+export const MEDIA_POLICY = 'default-src \'none\'; style-src \'unsafe-inline\'; img-src \'self\' data:; sandbox'
+
+// Cloudflare Pages limits (docs): 100 rules, 2000 characters per line
+export const HEADERS_MAX_RULES = 100
+export const HEADERS_MAX_LINE = 2000
 
 function headerName(name: string): string {
   return name.replace(/(^|-)([a-z])/g, (_match, dash: string, letter: string) => `${dash}${letter.toUpperCase()}`)
 }
 
-/** The `_headers` file (Cloudflare Pages, Netlify): the policy and the fixed security headers on every path, long cache on hashed assets. */
+/** The `_headers` file (Cloudflare Pages, Netlify): the policy and the fixed security headers on every path, cache rules on assets. Throws over the host limits. */
 export function headersFile(policy: string): string {
   const everything = Object.entries({ 'content-security-policy': policy, ...SECURITY_HEADERS })
     .map(([name, value]) => `  ${headerName(name)}: ${value}`)
-  const assets = IMMUTABLE_PATHS.map(path => `${path}\n  Cache-Control: ${IMMUTABLE}`)
-  return `${['/*', ...everything].join('\n')}\n\n${assets.join('\n\n')}\n`
+  const rules = [
+    ['/*', ...everything],
+    ...IMMUTABLE_PATHS.map(path => [path, `  Cache-Control: ${IMMUTABLE}`]),
+    ...REVALIDATED_PATHS.map(path => [path, `  Cache-Control: ${REVALIDATE}`]),
+    ['/_media/*', `  Content-Security-Policy: ${MEDIA_POLICY}`],
+  ]
+  // `/_media/*` appears twice on purpose: two rules, two header sets
+  const merged = rules.reduce<string[][]>((all, rule) => {
+    const same = all.find(other => other[0] === rule[0])
+    if (same) same.push(...rule.slice(1))
+    else all.push([...rule])
+    return all
+  }, [])
+  const lines = merged.flat()
+  const long = lines.find(line => line.length > HEADERS_MAX_LINE)
+  if (long) throw new Error(`_headers: a line has ${long.length} characters, over the ${HEADERS_MAX_LINE} that Cloudflare Pages accepts (${long.slice(0, 60)}...)`)
+  if (merged.length > HEADERS_MAX_RULES) throw new Error(`_headers: ${merged.length} rules, over the ${HEADERS_MAX_RULES} that Cloudflare Pages accepts`)
+  return `${merged.map(rule => rule.join('\n')).join('\n\n')}\n`
 }
