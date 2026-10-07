@@ -3,6 +3,7 @@ import qs from 'qs'
 import { aboutBlocks } from './fixtures/about.mjs'
 import { createAuthMock } from './fixtures/auth.mjs'
 import { createDraftsMock } from './fixtures/drafts.mjs'
+import { findPages } from './fixtures/pages.mjs'
 
 const author = {
   id: 31,
@@ -508,6 +509,12 @@ const server = createServer(async (req, res) => {
         }),
       },
     })
+    return
+  }
+
+  if (method === 'GET' && url.pathname === '/api/pages') {
+    const result = findPages(query, getNestedValue)
+    sendJson(res, result.status, result.body)
     return
   }
 

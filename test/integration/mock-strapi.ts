@@ -4,6 +4,7 @@ import type { RawStrapiArticle, StrapiAuthorRef, StrapiCategoryRef, StrapiLocali
 import type { StrapiRichText } from '~/interfaces/strapi-blocks'
 import { createAuthMock } from '../../e2e/fixtures/auth.mjs'
 import { createDraftsMock } from '../../e2e/fixtures/drafts.mjs'
+import { findPages } from '../../e2e/fixtures/pages.mjs'
 
 export interface RecordedRequest {
   method: string
@@ -641,6 +642,12 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
           theme: theme.value,
         },
       })
+      return
+    }
+
+    if (method === 'GET' && url.pathname === '/api/pages') {
+      const result = findPages(query, getNestedValue)
+      sendJson(res, result.status, result.body)
       return
     }
 
