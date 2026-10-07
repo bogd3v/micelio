@@ -9,9 +9,9 @@ import type { AppSiteConfig } from '~/helpers/site'
 function fetchSite(): { defaults: Site, request: ReturnType<typeof useAsyncData<Site>> } {
   const { locale } = useI18n()
   const appConfig = useAppConfig()
-  const { siteMode, newsletterFormAction } = useRuntimeConfig().public
+  const { siteMode, newsletterProvider } = useRuntimeConfig().public
   const base = siteFromAppConfig(appConfig.site as AppSiteConfig, images.favicon)
-  const defaults: Site = { ...base, modules: fallbackModules(base.modules, parseSiteMode(siteMode), newsletterFormAction) }
+  const defaults: Site = { ...base, modules: fallbackModules(base.modules, parseSiteMode(siteMode), newsletterProvider.action) }
   const request = useAsyncData(
     () => `site-${locale.value}`,
     () => $fetch<Site>('/api/site', { query: { locale: locale.value } }),

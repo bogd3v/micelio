@@ -6,6 +6,7 @@ import { ofetch } from 'ofetch'
 import qs from 'qs'
 import { defineNuxtModule, useLogger } from 'nuxt/kit'
 import { Locale } from '../app/interfaces/locale'
+import { formActionOrigin } from '../app/helpers/newsletterForm'
 import { contentSecurityPolicy, inlineScripts } from '../app/helpers/securityHeaders'
 import { isStaticMode } from '../app/helpers/siteMode'
 import type { SiteMode } from '../app/helpers/siteMode'
@@ -44,6 +45,8 @@ export default defineNuxtModule({
     if (nuxt.options.dev || !isStaticMode(mode)) return
 
     const logger = useLogger('micelio')
+    // The newsletter provider receives the form post (ADR 0006, section 5); read as the module that turns the newsletter on reads it
+    const newsletterOrigins = [formActionOrigin(process.env.NUXT_PUBLIC_NEWSLETTER_FORM_ACTION)].filter(Boolean)
     // Nitro skips a route that is a file of public/ (robots.txt): the file wins
     const isPublicFile = (route: string): boolean => route !== '/' && existsSync(join(nuxt.options.rootDir, 'public', route))
     // Runtime overrides (NUXT_*) are not applied to the config at build setup
@@ -83,7 +86,7 @@ export default defineNuxtModule({
 
       // Static pages load no Nuxt client and copy their images and media into the site: no image origin is needed
       function staticPolicy(hashes: string[], meta: boolean): string {
-        return contentSecurityPolicy({ scriptHashes: hashes, imageOrigins: [], imageBlobs: false, wasmEval: true, meta })
+        return contentSecurityPolicy({ scriptHashes: hashes, imageOrigins: [], imageBlobs: false, wasmEval: true, formOrigins: newsletterOrigins, meta })
       }
       async function writeHeaders(): Promise<void> {
         const different = scriptHashDisagreements(scriptHashes)

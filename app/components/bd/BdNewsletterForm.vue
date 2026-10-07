@@ -30,6 +30,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { subscribe } = useNewsletter()
+const { isStatic } = useStaticSite()
+// The ternary is folded by __STATIC_BUILD__, so dynamic builds ship neither the call nor the chunk (docs/performance.md)
+const StaticForm = __STATIC_BUILD__ ? defineAsyncComponent(() => import('./BdNewsletterStatic.vue')) : undefined
 
 const email = ref('')
 const submitting = ref(false)
@@ -67,7 +70,19 @@ watch(() => [props.status, props.message] as const, ([status, message]) => {
 </script>
 
 <template>
-  <form class="bd-news" novalidate :aria-busy="submitting" @submit.prevent="handleSubmit">
+  <component
+    :is="StaticForm"
+    v-if="StaticForm && isStatic"
+    :id="id"
+    :hide-heading="hideHeading"
+    :eyebrow="eyebrowText"
+    :title="titleText"
+    :description="descriptionText"
+    :show-description="!hideHeading || Boolean(description)"
+    :placeholder="placeholderText"
+    :button-label="buttonText"
+  />
+  <form v-else class="bd-news" novalidate :aria-busy="submitting" @submit.prevent="handleSubmit">
     <span v-if="!hideHeading" class="bd-eyebrow bd-news-eyebrow">{{ eyebrowText }}</span>
     <h3 v-if="!hideHeading">{{ titleText }}</h3>
     <p v-if="!hideHeading || description">{{ descriptionText }}</p>

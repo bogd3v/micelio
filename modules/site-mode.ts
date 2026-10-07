@@ -1,4 +1,5 @@
 import { addTypeTemplate, defineNuxtModule, useLogger } from 'nuxt/kit'
+import { formFieldName, hiddenFields, providerHost, validFormAction } from '../app/helpers/newsletterForm'
 import { isStaticMode, SITE_MODES } from '../app/helpers/siteMode'
 import type { SiteMode } from '../app/helpers/siteMode'
 
@@ -9,8 +10,19 @@ export default defineNuxtModule({
   meta: { name: 'micelio-site-mode' },
   setup(_options, nuxt) {
     const mode = nuxt.options.runtimeConfig.public.siteMode as SiteMode
-    if (isStaticMode(mode) && !process.env.NUXT_PUBLIC_NEWSLETTER_FORM_ACTION) {
-      useLogger('micelio').warn(`Site mode "${mode}": NUXT_PUBLIC_NEWSLETTER_FORM_ACTION is not set, so the newsletter module is off.`)
+    const formAction = process.env.NUXT_PUBLIC_NEWSLETTER_FORM_ACTION?.trim() ?? ''
+    const action = isStaticMode(mode) ? validFormAction(formAction) : ''
+    // Only resolved strings reach the client, so no validation code ships there (docs/performance.md)
+    nuxt.options.runtimeConfig.public.newsletterProvider = {
+      action,
+      field: formFieldName(process.env.NUXT_PUBLIC_NEWSLETTER_FORM_FIELD),
+      host: providerHost(action),
+      hidden: hiddenFields(action),
+    }
+    if (isStaticMode(mode) && action === '') {
+      // A typo must not publish a form that posts nowhere: an invalid action is the same as none
+      const reason = formAction ? `${JSON.stringify(formAction.slice(0, 200))} is not an https: URL (http: is accepted only for localhost), so it is ignored and` : 'is not set, so'
+      useLogger('micelio').warn(`Site mode "${mode}": NUXT_PUBLIC_NEWSLETTER_FORM_ACTION ${reason} the newsletter module is off.`)
     }
     addTypeTemplate({
       filename: 'types/micelio-site-mode.d.ts',

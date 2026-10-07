@@ -7,6 +7,8 @@ export interface ContentSecurityPolicyOptions {
   imageBlobs?: boolean
   /** `'wasm-unsafe-eval'` in `script-src`, for Pagefind's WebAssembly (default false: static builds only; ADR 0004 amendment). */
   wasmEval?: boolean
+  /** Extra `form-action` origins: the static newsletter provider (ADR 0004, amendment). Default none. */
+  formOrigins?: string[]
 }
 
 const SCRIPT_PATTERN = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
@@ -46,9 +48,21 @@ export function inlineScripts(html: string): string[] {
   return scripts
 }
 
+const HOST_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*$/
+const IPV6_PATTERN = /^\[[0-9a-f:.]+\]$/
+
+/** Origin of a URL for a CSP source list, or `''` if its host could change the policy (`*`, `;`, spaces, `%`…). A trailing dot is dropped. */
+export function cspOrigin(value: string): string {
+  if (!URL.canParse(value)) return ''
+  const url = new URL(value)
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return ''
+  const host = url.hostname.replace(/\.$/, '')
+  if (!HOST_PATTERN.test(host) && !IPV6_PATTERN.test(host)) return ''
+  return `${url.protocol}//${host}${url.port ? `:${url.port}` : ''}`
+}
+
 function origins(urls: string[]): string[] {
-  const found = urls.filter(url => URL.canParse(url)).map(url => new URL(url).origin)
-  return [...new Set(found)]
+  return [...new Set(urls.map(cspOrigin).filter(Boolean))]
 }
 
 export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): string {
@@ -66,7 +80,7 @@ export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): st
     // `report-uri` and `sandbox` are never emitted; a meta ignores `frame-ancestors`
     ...(options.meta ? [] : [['frame-ancestors', ['\'none\'']] as [string, string[]]]),
     ['base-uri', ['\'self\'']],
-    ['form-action', ['\'self\'']],
+    ['form-action', ['\'self\'', ...origins(options.formOrigins ?? [])]],
     ['object-src', ['\'none\'']],
   ]
   return directives.map(([name, values]) => [name, ...values].join(' ')).join('; ')

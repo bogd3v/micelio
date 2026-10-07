@@ -428,6 +428,8 @@
       "label": "Correo electrónico",
       "placeholder": "tu{'@'}correo.com",
       "button": "Suscribirme",
+      "external": "Tu correo va a {provider}, que puede enviar una confirmación y envía los artículos. Lee el {link}.",
+      "privacyLink": "aviso de privacidad",
       "success": "✓ Revisa tu correo para confirmar la suscripción.",
       "invalid": "✕ Ese correo no parece válido.",
       "error": "✕ No pudimos suscribirte. Intenta de nuevo en un momento.",
@@ -776,6 +778,7 @@
       "account": "Cuenta:",
       "accountText": "si creas una, tu correo, tu nombre de usuario y tu contraseña cifrada. Puedes eliminarla cuando quieras desde Mi cuenta; tus comentarios quedan como «Anónimo».",
       "newsletter": "Newsletter:",
+      "newsletterExternalText": "si te suscribes, tu correo va a {provider}, el proveedor del boletín, que puede enviar una confirmación y envía los artículos nuevos; este sitio no lo guarda. El proveedor también recibe tu dirección IP, datos de tu navegador y la dirección de este sitio, puede poner sus propias cookies y se aplica su propia política de privacidad. Puedes darte de baja cuando quieras desde el enlace de cualquiera de sus correos.",
       "newsletterText": "si te suscribes, tu correo, solo para enviarte los artículos nuevos. Puedes darte de baja cuando quieras desde el enlace de cualquiera de nuestros correos, y borramos tu dirección.",
       "comments": "Comentarios:",
       "commentsText": "el nombre y el texto que escribes, que se publican después de revisarlos. Las respuestas desde el fediverso llegan con tu dirección pública de Mastodon."

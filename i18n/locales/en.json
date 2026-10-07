@@ -428,6 +428,8 @@
       "label": "Email address",
       "placeholder": "you{'@'}email.com",
       "button": "Subscribe",
+      "external": "Your email goes to {provider}, which may send a confirmation and sends the articles. Read the {link}.",
+      "privacyLink": "privacy notice",
       "success": "✓ Check your email to confirm the subscription.",
       "invalid": "✕ That email does not look valid.",
       "error": "✕ We could not subscribe you. Try again in a moment.",
@@ -776,6 +778,7 @@
       "account": "Account:",
       "accountText": "if you create one, your email, your username and your hashed password. You can delete it whenever you want from My account; your comments remain as “Anonymous”.",
       "newsletter": "Newsletter:",
+      "newsletterExternalText": "if you subscribe, your email goes to {provider}, the newsletter provider, which may send a confirmation and sends the new articles; this site does not keep it. The provider also receives your IP address, browser data and the address of this site, may set its own cookies, and its own privacy policy applies. You can unsubscribe whenever you want from the link in any of its emails.",
       "newsletterText": "if you subscribe, your email, only to send you new articles. You can unsubscribe whenever you want from the link in any of our emails, and we delete your address.",
       "comments": "Comments:",
       "commentsText": "the name and the text you write, published after review. Replies from the fediverse arrive with your public Mastodon address."

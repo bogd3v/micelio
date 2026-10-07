@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contentSecurityPolicy, inlineScripts } from '../app/helpers/securityHeaders'
+import { contentSecurityPolicy, cspOrigin, inlineScripts } from '../app/helpers/securityHeaders'
 
 describe('inlineScripts', () => {
   it('returns the content of executable inline scripts only', () => {
@@ -18,6 +18,34 @@ describe('inlineScripts', () => {
 
   it('keeps multi-line content exactly as written', () => {
     expect(inlineScripts('<script>\n  var a = 1;\n</script>')).toEqual(['\n  var a = 1;\n'])
+  })
+})
+
+describe('cspOrigin', () => {
+  it('keeps plain origins as URL.origin gives them', () => {
+    for (const url of ['https://api.bogdev.com.co/x', 'http://localhost:1337/', 'http://127.0.0.1:4310', 'http://strapi:1337/up']) expect(cspOrigin(url)).toBe(new URL(url).origin)
+  })
+
+  it('drops hosts that change the policy and a trailing dot', () => {
+    for (const url of ['https://*/x', 'https://*.x.com/', 'https://a.com%2a/', 'https://a;b.com/', 'ftp://x.com/', 'nope', '']) expect(cspOrigin(url), url).toBe('')
+    expect(cspOrigin('https://a.com./x')).toBe('https://a.com')
+  })
+})
+
+describe('contentSecurityPolicy formOrigins', () => {
+  const base = { scriptHashes: [], imageOrigins: [] }
+  const formAction = (options: Partial<Parameters<typeof contentSecurityPolicy>[0]> = {}): string | undefined =>
+    contentSecurityPolicy({ ...base, ...options }).split('; ').find(directive => directive.startsWith('form-action'))
+
+  it('keeps form-action on self by default, byte-identical to before', () => {
+    expect(formAction()).toBe('form-action \'self\'')
+    expect(contentSecurityPolicy({ ...base, formOrigins: [] })).toBe(contentSecurityPolicy(base))
+  })
+
+  it('adds origins only, deduplicated, and drops what is not a URL', () => {
+    const origins = ['https://buttondown.com/api/emails/embed-subscribe/x', 'https://buttondown.com', 'nope', '']
+    expect(formAction({ formOrigins: origins })).toBe('form-action \'self\' https://buttondown.com')
+    expect(contentSecurityPolicy({ ...base, meta: true, formOrigins: origins })).toContain('form-action \'self\' https://buttondown.com;')
   })
 })
 

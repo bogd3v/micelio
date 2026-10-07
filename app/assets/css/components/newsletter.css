@@ -79,3 +79,9 @@
 .bd-news .bd-news-msg-error {
     color: var(--danger);
 }
+
+.bd-news .bd-news-note {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 20px;
+}

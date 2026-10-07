@@ -65,6 +65,6 @@ export function effectiveModules(modules: SiteModules, requirements: ModuleRequi
 
 /** The modules before /api/site answers (or if it fails): all on, within what the mode allows. SMTP and the fediverse count as available. */
 export function fallbackModules(modules: SiteModules, mode: SiteMode, newsletterFormAction: unknown): SiteModules {
-  const formAction = typeof newsletterFormAction === 'string' && newsletterFormAction.trim() !== ''
+  const formAction = typeof newsletterFormAction === 'string' && newsletterFormAction !== ''
   return effectiveModules(modules, { smtp: true, fediverse: true, formAction }, mode)
 }

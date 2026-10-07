@@ -15,6 +15,8 @@ const site = useSite()
 const accountsOn = useModule('accounts')
 const newsletterOn = useModule('newsletter')
 const commentsOn = useModule('comments')
+const { isStatic } = useStaticSite()
+const providerName = useRuntimeConfig().public.newsletterProvider.host
 const { canonicalUrl } = useCanonicalUrl('/privacy')
 const defaultOgImage = useDefaultOgImage()
 
@@ -135,7 +137,8 @@ useHead({
         <p class="bd-eyebrow bd-privacy-label">{{ t('privacy.data.label') }}</p>
         <h2 id="data-title">{{ t('privacy.data.title') }}</h2>
         <p v-if="accountsOn"><strong>{{ t('privacy.data.account') }}</strong> {{ t('privacy.data.accountText') }}</p>
-        <p v-if="newsletterOn"><strong>{{ t('privacy.data.newsletter') }}</strong> {{ t('privacy.data.newsletterText') }}</p>
+        <p v-if="newsletterOn && isStatic"><strong>{{ t('privacy.data.newsletter') }}</strong> {{ t('privacy.data.newsletterExternalText', { provider: providerName }) }}</p>
+        <p v-else-if="newsletterOn"><strong>{{ t('privacy.data.newsletter') }}</strong> {{ t('privacy.data.newsletterText') }}</p>
         <p v-if="commentsOn"><strong>{{ t('privacy.data.comments') }}</strong> {{ t('privacy.data.commentsText') }}</p>
         <p v-if="!accountsOn && !newsletterOn && !commentsOn">{{ t('privacy.data.none') }}</p>
       </section>

@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { createError, readBody } from 'h3'
+import { hiddenFields, providerHost } from '~/helpers/newsletterForm'
 import BdNewsletterForm from '~/components/bd/BdNewsletterForm.vue'
 
 let response: () => unknown = () => ({ success: true, message: 'ok' })
@@ -120,5 +121,51 @@ describe('BdNewsletterForm', () => {
     expect(status.classes()).toContain('bd-news-msg-error')
     expect(wrapper.get('input').attributes('aria-invalid')).toBeUndefined()
     expect(wrapper.emitted('subscribed')).toBeUndefined()
+  })
+
+  describe('static build', () => {
+    const original = { siteMode: 'dynamic', newsletterProvider: { action: '', field: 'email', host: '', hidden: [] } }
+    afterEach(() => Object.assign(useRuntimeConfig().public, original))
+
+    function configure(action: string, field = 'email'): void {
+      // What modules/site-mode.ts resolves at build
+      Object.assign(useRuntimeConfig().public, { siteMode: 'static', newsletterProvider: { action, field, host: providerHost(action), hidden: hiddenFields(action) } })
+    }
+
+    it('renders a plain form post to the provider, with no Vue handlers or state', async () => {
+      configure('https://buttondown.com/api/emails/embed-subscribe/micelio')
+      const wrapper = await mountSuspended(BdNewsletterForm, { props: { id: 'nl-test' } })
+      const form = wrapper.get('form')
+      expect(form.attributes('method')).toBe('post')
+      expect(form.attributes('action')).toBe('https://buttondown.com/api/emails/embed-subscribe/micelio')
+      expect(form.attributes('novalidate')).toBeUndefined()
+      expect(form.attributes('target')).toBeUndefined()
+      expect(form.attributes('aria-busy')).toBeUndefined()
+      const email = wrapper.get('input[type="email"]')
+      expect(email.attributes()).toMatchObject({ id: 'nl-test', name: 'email', autocomplete: 'email', required: '' })
+      expect(wrapper.get('label').attributes('for')).toBe('nl-test')
+      expect(wrapper.get('input[name="embed"]').attributes()).toMatchObject({ type: 'hidden', value: '1' })
+      expect(wrapper.get('button').attributes('type')).toBe('submit')
+      expect(wrapper.find('[role="status"]').exists()).toBe(false)
+      expect(wrapper.get('.bd-news-note').text()).toContain('buttondown.com')
+      expect(wrapper.get('.bd-news-note a').attributes('href')).toBe('/privacy')
+      // Submitting does not call the API
+      await form.trigger('submit')
+      expect(received).toEqual([])
+    })
+
+    it('uses the provider field name and no hidden field for other providers', async () => {
+      configure('https://lists.example.org/subscription/form', 'EMAIL_ADDRESS')
+      const wrapper = await mountSuspended(BdNewsletterForm)
+      expect(wrapper.get('input[type="email"]').attributes('name')).toBe('EMAIL_ADDRESS')
+      expect(wrapper.find('input[type="hidden"]').exists()).toBe(false)
+    })
+
+    it('keeps the dynamic form in dynamic builds', async () => {
+      const wrapper = await mountSuspended(BdNewsletterForm)
+      expect(wrapper.get('form').attributes('novalidate')).toBeDefined()
+      expect(wrapper.get('form').attributes('action')).toBeUndefined()
+      expect(wrapper.find('.bd-news-note').exists()).toBe(false)
+    })
   })
 })
