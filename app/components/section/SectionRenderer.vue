@@ -18,6 +18,8 @@ import SectionScene from '~/components/section/SectionScene.vue'
 
 const props = defineProps<{
   sections: PageSection[] | null | undefined
+  /** The first section, when it is a hero, carries the page's h1 */
+  leadHeading?: boolean
 }>()
 
 const componentMap: Readonly<Record<PageSection['__component'], Component>> = {
@@ -48,6 +50,7 @@ const knownSections = computed<PageSection[]>(() =>
     v-for="(section, index) in knownSections"
     :key="`${section.__component}-${index}`"
     :section="section"
+    v-bind="index === 0 && section.__component === 'section.hero' && leadHeading ? { headingLevel: 1 } : {}"
   />
 </template>
 

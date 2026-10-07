@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import type { HeroSection } from '~/interfaces'
 
-defineProps<{ section: HeroSection }>()
+defineProps<{
+  section: HeroSection
+  /** 1 when the hero opens the page and its title is the page's h1 */
+  headingLevel?: 1 | 2
+}>()
 
 const titleId = useId()
 </script>
@@ -11,7 +15,7 @@ const titleId = useId()
     <!-- A background cannot hold controls: a video has no place here (it has no poster either), so the text sits on the surface -->
     <SectionMedia v-if="section.variant === 'full-bleed' && !section.media?.mime?.startsWith('video/')" :media="section.media" sizes="100vw" eager />
     <div class="bd-section-inner">
-      <SectionHead :title="section.title" :text="section.text" :title-id="titleId" />
+      <SectionHead :title="section.title" :text="section.text" :title-id="titleId" :level="headingLevel" />
       <div v-if="section.primaryLink || section.secondaryLink" class="bd-section-actions">
         <SectionLink :link="section.primaryLink" variant="primary" arrow />
         <SectionLink :link="section.secondaryLink" variant="secondary" />
