@@ -1,6 +1,8 @@
 export interface ContentSecurityPolicyOptions {
   scriptHashes: string[]
   imageOrigins: string[]
+  /** For a `<meta http-equiv>`: without the directives a meta cannot carry (`frame-ancestors`; ADR 0006, section 7). */
+  meta?: boolean
 }
 
 const SCRIPT_PATTERN = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
@@ -57,7 +59,8 @@ export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): st
     ['font-src', ['\'self\'']],
     ['connect-src', ['\'self\'']],
     ['frame-src', FRAME_ORIGINS],
-    ['frame-ancestors', ['\'none\'']],
+    // `report-uri` and `sandbox` are never emitted; a meta ignores `frame-ancestors`
+    ...(options.meta ? [] : [['frame-ancestors', ['\'none\'']] as [string, string[]]]),
     ['base-uri', ['\'self\'']],
     ['form-action', ['\'self\'']],
     ['object-src', ['\'none\'']],

@@ -6,13 +6,18 @@ import { ofetch } from 'ofetch'
 import qs from 'qs'
 import { defineNuxtModule, useLogger } from 'nuxt/kit'
 import { Locale } from '../app/interfaces/locale'
+import { contentSecurityPolicy, inlineScripts } from '../app/helpers/securityHeaders'
 import { isStaticMode } from '../app/helpers/siteMode'
 import type { SiteMode } from '../app/helpers/siteMode'
-import { articleRoute, failsBuild, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, sectionPageRoute, STATIC_INITIAL_ROUTES, staticFileRoutes } from '../app/helpers/staticBuild'
+import { articleRoute, failsBuild, headersFile, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, STATIC_INITIAL_ROUTES, staticFileRoutes, stripImageErrorHandlers } from '../app/helpers/staticBuild'
 import { strapiRequest } from '../server/lib/strapiRequest'
 import type { StrapiRequestConfig } from '../server/lib/strapiRequest'
 
 const PAGE_SIZE = 100
+
+function sha256(content: string): string {
+  return createHash('sha256').update(content).digest('base64')
+}
 
 interface SlugList {
   data?: Array<{ slug?: string }>
@@ -76,6 +81,21 @@ export default defineNuxtModule({
         logger.info(`Static routes: ${articles} articles and ${pages} pages from Strapi, plus feeds, sitemap and robots.txt`)
       })
 
+      // Static pages load no Nuxt client and copy their images and media into the site: no image origin is needed
+      function staticPolicy(hashes: string[], meta: boolean): string {
+        return contentSecurityPolicy({ scriptHashes: hashes, imageOrigins: [], meta })
+      }
+      async function writeHeaders(): Promise<void> {
+        const different = scriptHashDisagreements(scriptHashes)
+        if (different.length) {
+          const list = different.slice(0, 10).map(route => `  ${route}: ${scriptHashes.get(route)?.join(', ') || '(no inline script)'}`).join('\n')
+          throw new Error(`Site mode "${mode}": ${different.length} page(s) have inline scripts that differ from the other pages, so one CSP for /* cannot cover them (ADR 0006, section 7). SHA-256 of their scripts:\n${list}`)
+        }
+        const hashes = [...scriptHashes.values()][0] ?? []
+        await writeFile(join(nitro.options.output.publicDir, '_headers'), headersFile(staticPolicy(hashes, false)))
+        logger.info(`Wrote _headers (${hashes.length} script hash(es), ${scriptHashes.size} pages)`)
+      }
+
       const violations = new Map<string, string[]>()
       const failed: string[] = []
 
@@ -88,7 +108,8 @@ export default defineNuxtModule({
         if (!path) {
           path = (async () => {
             const bytes = Buffer.from(await (await ofetch<Blob, 'blob'>(url, { responseType: 'blob', timeout: 60_000 })).arrayBuffer())
-            const name = mediaFileName(url, createHash('sha256').update(url).digest('hex').slice(0, 8))
+            // Named by its bytes: a file that changes behind the same URL gets a new name, so /_media/ can be immutable
+            const name = mediaFileName(url, createHash('sha256').update(bytes).digest('hex').slice(0, 8))
             await mkdir(join(nitro.options.output.publicDir, '_media'), { recursive: true })
             await writeFile(join(nitro.options.output.publicDir, '_media', name), bytes)
             return `/_media/${name}`
@@ -98,8 +119,17 @@ export default defineNuxtModule({
         return path
       }
 
+      // Inline scripts of every page; the policy and its meta fallback come from them (ADR 0004, ADR 0006 section 7)
+      const scriptHashes = new Map<string, string[]>()
+
       nitro.hooks.hook('prerender:generate', async (route) => {
+        // Hosts must answer unknown paths with 404.html: no SPA fallback file
+        if (route.route === '/200.html') {
+          route.skip = true
+          return
+        }
         if (route.fileName?.endsWith('.html') && !route.error && route.contents) {
+          route.contents = stripImageErrorHandlers(route.contents)
           const urls = mediaUrlsIn(route.contents, mediaOrigins)
           if (urls.length) {
             try {
@@ -114,10 +144,15 @@ export default defineNuxtModule({
         if (!route.fileName?.endsWith('.html')) return
         const found = noScriptsViolations(route.contents ?? '')
         if (found.length) violations.set(route.route, found)
+        if (route.error || !route.contents) return
+        const hashes = inlineScripts(route.contents).map(sha256)
+        scriptHashes.set(route.route, hashes)
+        route.contents = injectCspMeta(route.contents, staticPolicy(hashes, true))
       })
-      nitro.hooks.hook('prerender:done', ({ prerenderedRoutes }) => {
+      nitro.hooks.hook('prerender:done', async ({ prerenderedRoutes }) => {
         failed.push(...missingRoutes([...listed].filter(route => !isPublicFile(route)), prerenderedRoutes.map(({ route }) => route)).map(route => `${route} (not prerendered)`))
         if (failed.length) throw new Error(`Site mode "${mode}": ${failed.length} route(s) failed or are missing:\n  ${failed.slice(0, 10).join('\n  ')}`)
+        if (!violations.size) await writeHeaders()
         if (!violations.size) return
         const list = [...violations].slice(0, 10).map(([route, found]) => `  ${route}: ${found.join(', ')}`).join('\n')
         throw new Error(`Site mode "${mode}": ${violations.size} generated page(s) still load Nuxt's client (noScripts did not apply). See "Plan B" in docs/adr/0006-site-modes.md, section 3.\n${list}`)

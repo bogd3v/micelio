@@ -1,5 +1,6 @@
 import { CATEGORIES } from './categories'
 import { feedPath } from './feed'
+import { SECURITY_HEADERS } from './securityHeaders'
 import { defaultLocale, Locale } from '../interfaces/locale'
 
 const SCRIPT_TAG = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
@@ -92,4 +93,46 @@ export function rewriteMediaUrls(html: string, local: ReadonlyMap<string, string
 export function mediaFileName(url: string, hash: string): string {
   const base = new URL(url).pathname.split('/').pop() ?? 'file'
   return `${hash}-${base.replace(/[^\w.-]/g, '_')}`
+}
+
+// NuxtImg writes an inline `onerror` on the server; the hash CSP blocks inline handlers, so under it the attribute is dead weight
+const IMAGE_ERROR_HANDLER = / onerror="this\.setAttribute\(&#39;data-error&#39;, 1\)"/g
+
+/** The HTML without the inert `onerror` handler `@nuxt/image` adds to its images. */
+export function stripImageErrorHandlers(html: string): string {
+  return html.replace(IMAGE_ERROR_HANDLER, '')
+}
+
+/** The HTML with the policy as `<meta http-equiv>` right after the charset (or `<head>`), for hosts without `_headers`. */
+export function injectCspMeta(html: string, policy: string): string {
+  const meta = `<meta http-equiv="Content-Security-Policy" content="${policy.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}">`
+  const anchor = /<meta charset="utf-8">/i.exec(html) ?? /<head>/i.exec(html)
+  if (!anchor) return html
+  const end = anchor.index + anchor[0].length
+  return `${html.slice(0, end)}${meta}${html.slice(end)}`
+}
+
+/** The routes whose inline-script hashes differ from the most common set among the pages (empty when all agree). */
+export function scriptHashDisagreements(pages: ReadonlyMap<string, readonly string[]>): string[] {
+  const key = (hashes: readonly string[]): string => [...new Set(hashes)].sort().join(' ')
+  const counts = new Map<string, number>()
+  for (const hashes of pages.values()) counts.set(key(hashes), (counts.get(key(hashes)) ?? 0) + 1)
+  const common = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0]
+  return [...pages].filter(([, hashes]) => key(hashes) !== common).map(([route]) => route)
+}
+
+const IMMUTABLE = 'public, max-age=31536000, immutable'
+/** Folders whose file names change with their content (Vite's hashes, _ipx's URL and options, _media's bytes). */
+export const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_ipx/*', '/_media/*']
+
+function headerName(name: string): string {
+  return name.replace(/(^|-)([a-z])/g, (_match, dash: string, letter: string) => `${dash}${letter.toUpperCase()}`)
+}
+
+/** The `_headers` file (Cloudflare Pages, Netlify): the policy and the fixed security headers on every path, long cache on hashed assets. */
+export function headersFile(policy: string): string {
+  const everything = Object.entries({ 'content-security-policy': policy, ...SECURITY_HEADERS })
+    .map(([name, value]) => `  ${headerName(name)}: ${value}`)
+  const assets = IMMUTABLE_PATHS.map(path => `${path}\n  Cache-Control: ${IMMUTABLE}`)
+  return `${['/*', ...everything].join('\n')}\n\n${assets.join('\n\n')}\n`
 }

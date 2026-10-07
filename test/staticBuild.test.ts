@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Locale } from '../app/interfaces/locale'
-import { articleRoute, failsBuild, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, sectionPageRoute, staticFileRoutes } from '../app/helpers/staticBuild'
+import { articleRoute, failsBuild, headersFile, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers } from '../app/helpers/staticBuild'
+import { SECURITY_HEADERS, contentSecurityPolicy } from '../app/helpers/securityHeaders'
 import { strapiRequest, strapiRequestUrl } from '../server/lib/strapiRequest'
 
 const PAGE = '<html><head><script>(function(){var d=document})()</script><script type="application/ld+json">{"a":1}</script></head><body>Nuxt __NUXT__ in an article</body></html>'
@@ -99,5 +100,45 @@ describe('media on the CMS origin', () => {
 
   it('names the file after a hash and a safe base name', () => {
     expect(mediaFileName(`${origin}/uploads/my logo (1).svg?x=1`, 'abcd1234')).toBe('abcd1234-my_20logo_20_1_.svg')
+  })
+})
+
+describe('static headers', () => {
+  const policy = contentSecurityPolicy({ scriptHashes: ['abc='], imageOrigins: [] })
+
+  it('removes the inline onerror of NuxtImg and nothing else', () => {
+    const img = '<img src="/a.png" data-nuxt-img onerror="this.setAttribute(&#39;data-error&#39;, 1)" alt="x">'
+    expect(stripImageErrorHandlers(img)).toBe('<img src="/a.png" data-nuxt-img alt="x">')
+    expect(stripImageErrorHandlers('<img onerror="alert(1)">')).toBe('<img onerror="alert(1)">')
+  })
+
+  it('injects the policy as a meta after the charset, escaped', () => {
+    const out = injectCspMeta('<html><head><meta charset="utf-8"><title>x</title></head></html>', 'a "b" & c')
+    expect(out).toBe('<html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="a &quot;b&quot; &amp; c"><title>x</title></head></html>')
+    expect(injectCspMeta('<html><head><title>x</title>', 'p')).toContain('<head><meta http-equiv')
+    expect(injectCspMeta('no head', 'p')).toBe('no head')
+  })
+
+  it('drops frame-ancestors from the meta policy only', () => {
+    expect(policy).toContain('frame-ancestors \'none\'')
+    expect(contentSecurityPolicy({ scriptHashes: ['abc='], imageOrigins: [], meta: true })).not.toContain('frame-ancestors')
+    expect(policy).toContain('img-src \'self\' data: blob:;')
+  })
+
+  it('names the pages whose scripts differ from the common ones', () => {
+    expect(scriptHashDisagreements(new Map([['/', ['a']], ['/b', ['a']], ['/c', ['a', 'b']], ['/d', []]]))).toEqual(['/c', '/d'])
+    expect(scriptHashDisagreements(new Map([['/', ['a', 'b']], ['/x', ['b', 'a', 'a']]]))).toEqual([])
+    expect(scriptHashDisagreements(new Map())).toEqual([])
+  })
+
+  it('writes one /* rule with the policy and the security headers, and immutable assets', () => {
+    const file = headersFile(policy)
+    const [everything = '', ...assets] = file.trim().split('\n\n')
+    expect(everything.split('\n')[0]).toBe('/*')
+    expect(everything).toContain(`  Content-Security-Policy: ${policy}`)
+    expect(everything).toContain('  Strict-Transport-Security: max-age=31536000')
+    expect(everything).toContain('  Cross-Origin-Opener-Policy: same-origin')
+    expect(everything.split('\n')).toHaveLength(2 + Object.keys(SECURITY_HEADERS).length)
+    expect(assets).toEqual(['/_nuxt/*', '/_ipx/*', '/_media/*'].map(path => `${path}\n  Cache-Control: public, max-age=31536000, immutable`))
   })
 })
