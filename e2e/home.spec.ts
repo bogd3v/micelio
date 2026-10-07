@@ -18,6 +18,15 @@ test('emits WebSite JSON-LD structured data', async ({ page }) => {
   expect(types).toContain('Organization')
 })
 
+test('resolves relative site media against the Strapi origin', async ({ page }) => {
+  await page.goto('/')
+  const origin = 'http://127.0.0.1:4310/uploads/'
+  expect(await page.locator('link[rel="icon"]').getAttribute('href')).toBe(`${origin}favicon.svg`)
+  expect(await page.locator('meta[property="og:image"]').getAttribute('content')).toBe(`${origin}og.png`)
+  const graph = JSON.parse(await page.locator('script[type="application/ld+json"]').first().textContent() || '{}')['@graph']
+  expect(graph.find((node: { '@type': string }) => node['@type'] === 'Organization').logo.url).toBe(`${origin}logo.svg`)
+})
+
 test('filters the latest articles by topic and shows the empty nest', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' })
   const filters = page.getByRole('group', { name: 'Filter by topic' })

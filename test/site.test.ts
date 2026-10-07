@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { absoluteUrl, ALL_MODULES_ON, defaultOgImageUrl, fediverseUser, iconType, mergeSite, pageTitle, siteFromAppConfig, siteLogoUrl, xHandle } from '../app/helpers/site'
+import { absoluteUrl, ALL_MODULES_ON, defaultOgImageUrl, fediverseUser, iconType, mergeSite, pageTitle, resolveSiteImage, resolveSiteMedia, siteFromAppConfig, siteLogoUrl, xHandle } from '../app/helpers/site'
 import type { AppSiteConfig } from '../app/helpers/site'
 import { parseSiteSettings } from '../server/schemas/site'
 import { Locale } from '../app/interfaces/locale'
@@ -268,5 +268,38 @@ describe('homePage', () => {
   it('merges into the site only when set', () => {
     expect(mergeSite(defaults, { homePage: { slug: 'showcase' } }).homePage).toEqual({ slug: 'showcase' })
     expect('homePage' in mergeSite(defaults, { name: 'Micelio' })).toBe(false)
+  })
+})
+
+describe('resolveSiteMedia', () => {
+  const strapi = 'https://cms.example.org/'
+
+  it('resolves relative URLs against the Strapi public URL', () => {
+    expect(resolveSiteImage({ url: '/uploads/logo.svg', width: 10 }, strapi)).toEqual({ url: 'https://cms.example.org/uploads/logo.svg', width: 10 })
+    expect(resolveSiteImage({ url: 'uploads/logo.svg' }, strapi)).toEqual({ url: 'https://cms.example.org/uploads/logo.svg' })
+  })
+
+  it('keeps URLs with a scheme and makes protocol-relative ones https', () => {
+    expect(resolveSiteImage({ url: 'https://cdn.test/a.png' }, strapi)).toEqual({ url: 'https://cdn.test/a.png' })
+    expect(resolveSiteImage({ url: 'data:image/png;base64,AAA' }, strapi)).toEqual({ url: 'data:image/png;base64,AAA' })
+    expect(resolveSiteImage({ url: 'blob:https://x.test/1' }, strapi)).toEqual({ url: 'blob:https://x.test/1' })
+    expect(resolveSiteImage({ url: '//cdn.test/a.png' }, strapi)).toEqual({ url: 'https://cdn.test/a.png' })
+  })
+
+  it('passes empty values through', () => {
+    expect(resolveSiteImage(null, strapi)).toBeNull()
+    expect(resolveSiteImage(undefined, strapi)).toBeUndefined()
+    expect(resolveSiteImage({ url: '' }, strapi)).toEqual({ url: '' })
+    expect(resolveSiteMedia(null, strapi)).toBeNull()
+  })
+
+  it('resolves logo, favicon and defaultOgImage of the settings', () => {
+    const settings = resolveSiteMedia({ name: 'X', logo: { url: '/uploads/l.svg' }, favicon: { url: 'https://cdn.test/f.ico' }, defaultOgImage: { url: '/uploads/o.png' } }, strapi)
+    expect(settings).toMatchObject({
+      name: 'X',
+      logo: { url: 'https://cms.example.org/uploads/l.svg' },
+      favicon: { url: 'https://cdn.test/f.ico' },
+      defaultOgImage: { url: 'https://cms.example.org/uploads/o.png' },
+    })
   })
 })
