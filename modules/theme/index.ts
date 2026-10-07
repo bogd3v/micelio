@@ -3,6 +3,7 @@ import { setupAssets } from './assets'
 import { createContext, setupWatch } from './context'
 import { setupCss } from './css'
 import { setupComponents, setupData } from './data'
+import { setupDisplayFonts } from './display-fonts'
 import { setupLayout } from './layout'
 import { setupModes } from './modes'
 import { setupSlots } from './slots'
@@ -16,6 +17,7 @@ export default defineNuxtModule({
     const ctx = createContext(nuxt)
     setupData(ctx)
     setupAssets(ctx)
+    setupDisplayFonts(ctx)
     setupModes(ctx)
     setupSlots(ctx)
     setupLayout(ctx)

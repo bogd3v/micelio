@@ -1,3 +1,6 @@
+import qs from 'qs'
+import { buildTheme } from '#micelio/build-theme'
+import { modes as paletteModes, rules as paletteRules } from '#micelio/theme-palette'
 import { images } from '#micelio/theme'
 import type { Locale, Site } from '~/interfaces'
 import { effectiveModules } from '~/helpers/modules'
@@ -11,6 +14,18 @@ const SITE_TIMEOUT_MS = 3000
 // Module checks run on every request; a short cache keeps them off Strapi (docs/api.md)
 const FAILED_CACHE_MS = 10_000
 
+// Strapi does not mix '*' with keyed entries; one per relation or component parseSiteSettings reads.
+// `accentOverrides` sits inside `theme`, one level down, so it needs its own populate.
+const SITE_POPULATE = {
+  author: true,
+  logo: true,
+  favicon: true,
+  defaultOgImage: true,
+  socialLinks: true,
+  modules: true,
+  theme: { populate: '*' },
+}
+
 export interface LoadedSite {
   site: Site
   /** false when Strapi failed and every value comes from app.config.ts */
@@ -23,8 +38,12 @@ export async function loadSite(locale: Locale): Promise<LoadedSite> {
   const requirements = moduleRequirements(useRuntimeConfig())
   let loaded: LoadedSite
   try {
-    const response = await strapiFetch<{ data?: unknown }>('/api/site-setting', { query: { populate: '*', locale }, timeout: SITE_TIMEOUT_MS })
-    loaded = { site: mergeSite(defaults, parseSiteSettings(response.data)), fromStrapi: true }
+    // Nested populate does not survive fetch's query option, so the string is built here
+    const query = qs.stringify({ populate: SITE_POPULATE, locale })
+    const response = await strapiFetch<{ data?: unknown }>(`/api/site-setting?${query}`, { timeout: SITE_TIMEOUT_MS })
+    const settings = parseSiteSettings(response.data)
+    const theme = resolveTheme(settings?.theme, { modes: paletteModes, rules: paletteRules }, buildTheme)
+    loaded = { site: { ...mergeSite(defaults, settings), ...(theme && { theme }) }, fromStrapi: true }
   } catch (error: unknown) {
     console.error('Strapi fetch site-setting error:', asUpstreamError(error).data || error)
     loaded = { site: defaults, fromStrapi: false }

@@ -28,6 +28,10 @@ export interface ModePalette {
   'linkIsAccent': boolean
   /** Same for `focus`. */
   'focusIsAccent': boolean
+  /** The theme defines `link-soft` as `{accent-soft}`, so an accent override moves it. */
+  'linkSoftIsAccentSoft': boolean
+  /** The theme omits `link-soft`, so the core default (a mix of `link` into `surface`) applies and follows `link`. */
+  'linkSoftIsDefault': boolean
 }
 
 export interface SkippedMode {
@@ -46,14 +50,14 @@ const COLOR_ROLES = ['surface', 'surface-raised', 'surface-sunken', 'ink', 'on-i
 
 const MAX_ALIAS_DEPTH = 20
 
-/** True when `role` is the accent or a chain of pure single references that ends at it. */
-function isAccentRef(lookup: Lookup, role: string): boolean {
+/** True when `role` is `target` or a chain of pure single references that ends at it. */
+function isRefTo(lookup: Lookup, role: string, target: string): boolean {
   let raw = lookup(role)
   for (let depth = 0; depth < MAX_ALIAS_DEPTH && raw !== undefined; depth++) {
     const match = /^\s*(?:\{([\w-]+)\}|var\(\s*--([\w-]+)\s*\))\s*$/.exec(raw)
     const name = match?.[1] ?? match?.[2]
     if (!name) return false
-    if (name === 'accent') return true
+    if (name === target) return true
     raw = lookup(name)
   }
   return false
@@ -87,8 +91,10 @@ export function buildPalette(manifest: ThemeManifest): ThemePalette {
     modes[mode.id] = {
       scheme: mode.scheme,
       ...colors,
-      linkIsAccent: isAccentRef(lookup, 'link'),
-      focusIsAccent: isAccentRef(lookup, 'focus'),
+      linkIsAccent: isRefTo(lookup, 'link', 'accent'),
+      focusIsAccent: isRefTo(lookup, 'focus', 'accent'),
+      linkSoftIsAccentSoft: isRefTo(lookup, 'link-soft', 'accent-soft'),
+      linkSoftIsDefault: !manifest.color.tokens.some(token => token.name === 'link-soft'),
     }
   }
   return { modes, rules: CONTRAST_RULES.filter(rule => PALETTE_RULE_ROLES.includes(rule.role)), skipped }

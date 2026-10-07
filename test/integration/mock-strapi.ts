@@ -43,6 +43,8 @@ interface MockStrapiResult {
   failures: MockFailures
   /** The modules site-setting answers with; tests switch them off and back on */
   modules: MockModules
+  /** The `theme` component site-setting answers with (null, as Strapi does when it was never saved) */
+  theme: { value: unknown }
   users: Array<{ id: number, username: string, email: string, password: string, confirmed: boolean, role: string }>
 }
 
@@ -434,6 +436,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
   const siteRequests: RecordedRequest[] = []
   const failures: MockFailures = { pathOrder: false, about: false, site: false }
   const modules: MockModules = { newsletter: true, comments: true, accounts: true, drafts: true, fediverse: true, search: true, support: true }
+  const theme = { value: null as unknown }
   const authMock = createAuthMock({ frontendUrl: 'https://bogdev.test' })
   const draftsMock = createDraftsMock({ userFromAuth: authMock.userFromAuth, publishedArticles: articles })
 
@@ -635,6 +638,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
           privacyUpdatedAt: null,
           supportHandle: null,
           modules: { id: 1, ...modules },
+          theme: theme.value,
         },
       })
       return
@@ -809,7 +813,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address()
       const port = typeof address === 'object' && address !== null ? address.port : 0
-      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, users: authMock.users })
+      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, users: authMock.users })
     })
   })
 }

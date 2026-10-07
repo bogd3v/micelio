@@ -499,6 +499,13 @@ const server = createServer(async (req, res) => {
         supportHandle: 'ale9420',
         // MOCK_MODULES_OFF=1 runs e2e/modules-off.spec.ts against a site with every module off
         modules: { id: 1, ...Object.fromEntries(['newsletter', 'comments', 'accounts', 'drafts', 'fediverse', 'search', 'support'].map(module => [module, process.env.MOCK_MODULES_OFF !== '1'])) },
+        // MOCK_THEME=1 runs e2e/theme-overrides.spec.ts against a site with a default mode, a low-contrast accent and the Fraunces display font.
+        // MOCK_DISPLAY_FONT=<id> alone sets only that display font (the perf run of the heaviest one, scripts/perf/measure.mjs). Unset, there is no `theme` key
+        ...((process.env.MOCK_THEME === '1' || process.env.MOCK_DISPLAY_FONT) && {
+          theme: process.env.MOCK_THEME === '1'
+            ? { id: 1, themeId: 'bogota', defaultMode: 'dia', displayFont: process.env.MOCK_DISPLAY_FONT || 'fraunces', accentOverrides: [{ id: 1, mode: 'noche', color: '#202020' }] }
+            : { id: 1, themeId: null, defaultMode: null, displayFont: process.env.MOCK_DISPLAY_FONT, accentOverrides: [] },
+        }),
       },
     })
     return

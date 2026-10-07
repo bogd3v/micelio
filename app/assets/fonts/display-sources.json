@@ -1,0 +1,37 @@
+{
+  "repo": "https://github.com/google/fonts",
+  "commit": "7085eb89a950e85db5b166b7a58d414544b4140c",
+  "fonts": {
+    "archivo": {
+      "path": "ofl/archivo/Archivo[wdth,wght].ttf",
+      "ttfSha256": "0e094a7d3c7c4c25cf1310c4b30014f1dae9332220b1c2c88f4fa996f0b05053",
+      "oflSha256": "108b4e57c9c796d3d38d0428ca7ee39de47ad93187302718d9b2d8864b9b716b",
+      "woff2Sha256": "c9bcd30d0f00a07d74c7a0dbf4336f468d74fc4652dd49a4b24449879276610d"
+    },
+    "fraunces": {
+      "path": "ofl/fraunces/Fraunces[SOFT,WONK,opsz,wght].ttf",
+      "ttfSha256": "177ff6c0f14e5550a3c624247cd1189611d4eb65d000b14944c63d967958abbb",
+      "oflSha256": "bdf4c22802eaf804f998195871c6b8938aac2ac14b2d78a8bd66a6f1eced833b",
+      "woff2Sha256": "6bd23f4e64df2430ce8560b3d2229716deace3e41ccf041d95b6a901e71c0b6e"
+    },
+    "bricolage-grotesque": {
+      "path": "ofl/bricolagegrotesque/BricolageGrotesque[opsz,wdth,wght].ttf",
+      "ttfSha256": "413e7357809ddd12fd80a96a8a396de0e401638d4acd3cb3e37532f0472ac682",
+      "oflSha256": "4b5a7d8f37f5602621c8a8d7358a6a2e71317e6c231c661e15aef0275d3e07ba",
+      "woff2Sha256": "f26bb2aefe86f916302b4f8111f87f54943b39b4b9f1c3a0ae0a95b840f8d3ee"
+    },
+    "newsreader": {
+      "path": "ofl/newsreader/Newsreader[opsz,wght].ttf",
+      "ttfSha256": "8a08d13f8a6c0d51be379a60af84f945f65369a67e509ee3c3bdcc421254d7c1",
+      "oflSha256": "fdfad38143ec470553cae82a1e45320bdd1b9ec70415d37bd0171051d8a4ded8",
+      "woff2Sha256": "a5e07912d00cafd30239b7470b3d0c0466b2de110a7c29e941d48a6f57029524"
+    },
+    "space-grotesk": {
+      "path": "ofl/spacegrotesk/SpaceGrotesk[wght].ttf",
+      "ttfSha256": "acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72",
+      "oflSha256": "564ce565c371c5e5bbf286006565a7c9aa55a9f56e7ca58d56e05d649dd61a72",
+      "woff2Sha256": "0d283ee847c39bb2afc4012de0882633ee0cf79a4fb1ff5665c29af2991b7fa5"
+    }
+  },
+  "fontTools": "4.66.0"
+}

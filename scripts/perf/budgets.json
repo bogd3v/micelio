@@ -25,6 +25,9 @@
       "path": "/privacy"
     }
   ],
+  "displayFont": {
+    "extraFontKb": 60
+  },
   "themes": {},
   "limits": {
     "home": {

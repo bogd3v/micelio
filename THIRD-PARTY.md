@@ -19,6 +19,21 @@ Under the SIL Open Font License 1.1; the license text ships next to each file.
 | Archivo, The Archivo Project Authors | `themes/bogota/fonts/archivo-latin-var.woff2` | OFL-1.1 (`OFL-Archivo.txt`) |
 | JetBrains Mono, The JetBrains Mono Project Authors | `themes/bogota/fonts/jetbrains-mono-latin-var.woff2` | OFL-1.1 (`OFL-JetBrainsMono.txt`) |
 | Fraunces, The Fraunces Project Authors | `themes/starter/fonts/fraunces-latin-var.woff2` | OFL-1.1 (`OFL-Fraunces.txt`) |
+| Archivo, The Archivo Project Authors | `app/assets/fonts/display/archivo-latin-wght.woff2` (curated display font, served at `/fonts/display/`) | OFL-1.1 (`OFL-Archivo.txt`) |
+| Fraunces, The Fraunces Project Authors | `app/assets/fonts/display/fraunces-latin-wght.woff2` (curated display font, served at `/fonts/display/`) | OFL-1.1 (`OFL-Fraunces.txt`) |
+| Bricolage Grotesque, The Bricolage Grotesque Project Authors | `app/assets/fonts/display/bricolage-grotesque-latin-wght.woff2` (curated display font, served at `/fonts/display/`) | OFL-1.1 (`OFL-BricolageGrotesque.txt`) |
+| Newsreader, The Newsreader Project Authors | `app/assets/fonts/display/newsreader-latin-wght.woff2` (curated display font, served at `/fonts/display/`) | OFL-1.1 (`OFL-Newsreader.txt`) |
+| Space Grotesk, The Space Grotesk Project Authors | `app/assets/fonts/display/space-grotesk-latin-wght.woff2` (curated display font, served at `/fonts/display/`) | OFL-1.1 (`OFL-SpaceGrotesk.txt`) |
+
+The curated display fonts in `app/assets/fonts/display/` are subset from the variable TTFs of https://github.com/google/fonts at commit `7085eb89a950e85db5b166b7a58d414544b4140c` (fontTools 4.66.0). `scripts/perf/subset-display-fonts.py` (dev-only) downloads them from that commit, checks the source hashes below and reproduces the committed files byte for byte; `app/assets/fonts/display-sources.json` records the same hashes (and those of the license texts) and `test/displayFonts.test.ts` pins the woff2 ones.
+
+| Font | Source in google/fonts | sha256 of the source TTF | sha256 of the woff2 |
+| --- | --- | --- | --- |
+| `archivo` | `ofl/archivo/Archivo[wdth,wght].ttf` | `0e094a7d3c7c4c25cf1310c4b30014f1dae9332220b1c2c88f4fa996f0b05053` | `c9bcd30d0f00a07d74c7a0dbf4336f468d74fc4652dd49a4b24449879276610d` |
+| `fraunces` | `ofl/fraunces/Fraunces[SOFT,WONK,opsz,wght].ttf` | `177ff6c0f14e5550a3c624247cd1189611d4eb65d000b14944c63d967958abbb` | `6bd23f4e64df2430ce8560b3d2229716deace3e41ccf041d95b6a901e71c0b6e` |
+| `bricolage-grotesque` | `ofl/bricolagegrotesque/BricolageGrotesque[opsz,wdth,wght].ttf` | `413e7357809ddd12fd80a96a8a396de0e401638d4acd3cb3e37532f0472ac682` | `f26bb2aefe86f916302b4f8111f87f54943b39b4b9f1c3a0ae0a95b840f8d3ee` |
+| `newsreader` | `ofl/newsreader/Newsreader[opsz,wght].ttf` | `8a08d13f8a6c0d51be379a60af84f945f65369a67e509ee3c3bdcc421254d7c1` | `a5e07912d00cafd30239b7470b3d0c0466b2de110a7c29e941d48a6f57029524` |
+| `space-grotesk` | `ofl/spacegrotesk/SpaceGrotesk[wght].ttf` | `acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72` | `0d283ee847c39bb2afc4012de0882633ee0cf79a4fb1ff5665c29af2991b7fa5` |
 
 ## Images
 
