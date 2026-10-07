@@ -163,7 +163,7 @@ jobs:
         id: matrix
         run: |
           themes="$(npx jiti scripts/theme-check.ts --list)"
-          modes="$(node -p "JSON.stringify([require('./scripts/perf/budgets.json').mode])")"
+          modes="$(node -p "JSON.stringify(Object.keys(require('./scripts/perf/budgets.json').modes))")"
           echo "matrix={\"theme\":${themes},\"mode\":${modes}}" >> "$GITHUB_OUTPUT"
           echo "themes=${themes}" >> "$GITHUB_OUTPUT"
       # The lockfile decides the browser build, so the Docker image follows a Dependabot bump of @playwright/test
@@ -197,7 +197,9 @@ jobs:
         run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
+      # A static entry generates its own site inside the perf script (against the mock Strapi), so only dynamic needs a build
       - name: Build
+        if: ${{ matrix.mode == 'dynamic' }}
         run: npm run build
       - name: Check performance budgets
         env:
@@ -206,7 +208,7 @@ jobs:
         run: npm run perf -- --check --theme "$PERF_THEME" --mode "$PERF_MODE" --out perf-report.json
       # Same build, the mock Strapi sets the heaviest curated display font; the font limit is the theme's plus 60 KB (ADR 0005, section 9)
       - name: Check performance budgets with the heaviest display font
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && matrix.mode == 'dynamic' }}
         env:
           PERF_THEME: ${{ matrix.theme }}
           PERF_MODE: ${{ matrix.mode }}

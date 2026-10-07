@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createMarkdownRenderer } from '../app/helpers/markdown'
 import { Locale } from '../app/interfaces/locale'
-import { articleRoute, failsBuild, headersFile, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers } from '../app/helpers/staticBuild'
+import { articleRoute, failsBuild, headersFile, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
 import { SECURITY_HEADERS, contentSecurityPolicy } from '../app/helpers/securityHeaders'
 import { strapiRequest, strapiRequestUrl } from '../server/lib/strapiRequest'
 
@@ -184,5 +184,31 @@ describe('static headers', () => {
 
   it('fails over the Cloudflare Pages line limit', () => {
     expect(() => headersFile('a'.repeat(2000))).toThrow('2000')
+  })
+})
+
+describe('unreachableScripts', () => {
+  const scripts = new Map([
+    ['entry.AAA.js', 'import"./shared.BBB.js";import("./lazy.CCC.js")'],
+    ['shared.BBB.js', 'export const a=1'],
+    ['lazy.CCC.js', 'export const b=1'],
+    ['mermaid.DDD.js', 'import"./mermaid-core.EEE.js"'],
+    ['mermaid-core.EEE.js', 'export const c=1'],
+  ])
+
+  it('keeps everything a root names, directly or through other scripts', () => {
+    expect(unreachableScripts(scripts, ['<script src="/_nuxt/entry.AAA.js"></script>'])).toEqual(['mermaid-core.EEE.js', 'mermaid.DDD.js'])
+  })
+
+  it('follows a script named by a stylesheet or an island', () => {
+    expect(unreachableScripts(scripts, ['import("/_nuxt/mermaid.DDD.js")'])).toEqual(['entry.AAA.js', 'lazy.CCC.js', 'shared.BBB.js'])
+  })
+
+  it('removes all of them when nothing refers to any', () => {
+    expect(unreachableScripts(scripts, ['<html>no scripts</html>'])).toHaveLength(5)
+  })
+
+  it('ignores names that are not scripts of the folder', () => {
+    expect(unreachableScripts(scripts, ['/_islands/search-Ab12.js'])).toHaveLength(5)
   })
 })

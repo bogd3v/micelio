@@ -1,123 +1,316 @@
 {
-  "mode": "dynamic",
+  "aliases": {
+    "landing": "static"
+  },
   "firstPartyOrigins": [
     "http://127.0.0.1:4310"
-  ],
-  "pages": [
-    {
-      "name": "home",
-      "path": "/"
-    },
-    {
-      "name": "blog",
-      "path": "/blog"
-    },
-    {
-      "name": "article",
-      "path": "/blog/linux-server-hardening-guide"
-    },
-    {
-      "name": "about",
-      "path": "/about"
-    },
-    {
-      "name": "privacy",
-      "path": "/privacy"
-    }
   ],
   "displayFont": {
     "extraFontKb": 60
   },
-  "themes": {},
-  "islands": {
-    "search": {
-      "trigger": "opening the palette (click or Ctrl/Cmd+K) in a static build",
-      "error": {
-        "loaderGzKb": 3.5,
-        "pagefindGzKb": 26,
-        "wasmKb": 80
+  "themes": {
+    "bogota": {
+      "mode": "static",
+      "reason": "Archivo and JetBrains Mono are preloaded (143.6 KB of fonts against the 100 KB target) and the home page leads with a hero image: LCP is 1.9 to 2.6 s against 1.5 s, and performance 97 to 99. With the fonts blocked the article measures 1.35 s. The limits are the measured values plus 15 % (LCP) or 5 % (fonts); lower them as the fonts and the hero get lighter (#350)",
+      "limits": {
+        "home": {
+          "error": {
+            "lcpMs": 3050,
+            "fontKb": 150.8
+          }
+        },
+        "blog": {
+          "error": {
+            "lcpMs": 2350,
+            "fontKb": 150.8
+          }
+        },
+        "article": {
+          "error": {
+            "lcpMs": 2250,
+            "fontKb": 150.8
+          }
+        },
+        "about": {
+          "error": {
+            "lcpMs": 2700,
+            "fontKb": 150.8
+          }
+        },
+        "privacy": {
+          "error": {
+            "lcpMs": 2250,
+            "fontKb": 150.8
+          }
+        },
+        "home-es": {
+          "error": {
+            "lcpMs": 3050,
+            "fontKb": 150.8
+          }
+        }
       }
     }
   },
-  "limits": {
-    "home": {
-      "error": {
-        "jsKb": 146.7,
-        "lcpMs": 5950,
-        "cssKb": 21.1,
-        "htmlKb": 113.9,
-        "fontKb": 150.8,
-        "thirdPartyRequests": 0,
-        "cls": 0.02,
-        "accessibility": 100
-      },
-      "warn": {
-        "tbtMs": 300,
-        "performance": 63
+  "modes": {
+    "dynamic": {
+      "pages": [
+        {
+          "name": "home",
+          "path": "/"
+        },
+        {
+          "name": "blog",
+          "path": "/blog"
+        },
+        {
+          "name": "article",
+          "path": "/blog/linux-server-hardening-guide"
+        },
+        {
+          "name": "about",
+          "path": "/about"
+        },
+        {
+          "name": "privacy",
+          "path": "/privacy"
+        }
+      ],
+      "limits": {
+        "home": {
+          "error": {
+            "jsKb": 146.7,
+            "lcpMs": 5950,
+            "cssKb": 21.1,
+            "htmlKb": 113.9,
+            "fontKb": 150.8,
+            "thirdPartyRequests": 0,
+            "cls": 0.02,
+            "accessibility": 100
+          },
+          "warn": {
+            "tbtMs": 300,
+            "performance": 63
+          }
+        },
+        "blog": {
+          "error": {
+            "jsKb": 142.1,
+            "lcpMs": 4700,
+            "cssKb": 21.1,
+            "htmlKb": 80.4,
+            "fontKb": 150.8,
+            "thirdPartyRequests": 0,
+            "cls": 0.02,
+            "accessibility": 100
+          },
+          "warn": {
+            "tbtMs": 200,
+            "performance": 76
+          }
+        },
+        "article": {
+          "error": {
+            "jsKb": 158.6,
+            "lcpMs": 5200,
+            "cssKb": 21.1,
+            "htmlKb": 82.7,
+            "fontKb": 150.8,
+            "thirdPartyRequests": 0,
+            "cls": 0.02,
+            "accessibility": 95
+          },
+          "warn": {
+            "tbtMs": 1050,
+            "performance": 55
+          }
+        },
+        "about": {
+          "error": {
+            "jsKb": 143.8,
+            "lcpMs": 6600,
+            "cssKb": 21.1,
+            "htmlKb": 95.3,
+            "fontKb": 150.8,
+            "thirdPartyRequests": 0,
+            "cls": 0.02,
+            "accessibility": 100
+          },
+          "warn": {
+            "tbtMs": 250,
+            "performance": 61
+          }
+        },
+        "privacy": {
+          "error": {
+            "jsKb": 130.4,
+            "lcpMs": 4350,
+            "cssKb": 21.1,
+            "htmlKb": 71.1,
+            "fontKb": 150.8,
+            "thirdPartyRequests": 0,
+            "cls": 0.02,
+            "accessibility": 100
+          },
+          "warn": {
+            "tbtMs": 200,
+            "performance": 78
+          }
+        }
       }
     },
-    "blog": {
-      "error": {
-        "jsKb": 142.1,
-        "lcpMs": 4700,
-        "cssKb": 21.1,
-        "htmlKb": 80.4,
-        "fontKb": 150.8,
-        "thirdPartyRequests": 0,
-        "cls": 0.02,
-        "accessibility": 100
+    "static": {
+      "pages": [
+        {
+          "name": "home",
+          "path": "/"
+        },
+        {
+          "name": "blog",
+          "path": "/blog"
+        },
+        {
+          "name": "article",
+          "path": "/blog/linux-server-hardening-guide"
+        },
+        {
+          "name": "about",
+          "path": "/about"
+        },
+        {
+          "name": "privacy",
+          "path": "/privacy"
+        },
+        {
+          "name": "home-es",
+          "path": "/es"
+        }
+      ],
+      "limits": {
+        "home": {
+          "error": {
+            "jsKb": 3.3,
+            "initialJsGzKb": 3.8,
+            "strayRequests": 0,
+            "lcpMs": 1500,
+            "cssKb": 22.6,
+            "htmlKb": 15.7,
+            "fontKb": 100,
+            "thirdPartyRequests": 0,
+            "cls": 0,
+            "accessibility": 100,
+            "performance": 95
+          },
+          "warn": {
+            "tbtMs": 100,
+            "performance": 100
+          }
+        },
+        "blog": {
+          "error": {
+            "jsKb": 3.3,
+            "initialJsGzKb": 3.8,
+            "strayRequests": 0,
+            "lcpMs": 1500,
+            "cssKb": 22.6,
+            "htmlKb": 13.1,
+            "fontKb": 100,
+            "thirdPartyRequests": 0,
+            "cls": 0,
+            "accessibility": 100,
+            "performance": 95
+          },
+          "warn": {
+            "tbtMs": 100,
+            "performance": 100
+          }
+        },
+        "article": {
+          "error": {
+            "jsKb": 3.3,
+            "initialJsGzKb": 3.8,
+            "strayRequests": 0,
+            "lcpMs": 1500,
+            "cssKb": 22.6,
+            "htmlKb": 13.9,
+            "fontKb": 100,
+            "thirdPartyRequests": 0,
+            "cls": 0,
+            "accessibility": 100,
+            "performance": 95
+          },
+          "warn": {
+            "tbtMs": 100,
+            "performance": 100
+          }
+        },
+        "about": {
+          "error": {
+            "jsKb": 3.3,
+            "initialJsGzKb": 3.8,
+            "strayRequests": 0,
+            "lcpMs": 1500,
+            "cssKb": 22.6,
+            "htmlKb": 16.2,
+            "fontKb": 100,
+            "thirdPartyRequests": 0,
+            "cls": 0,
+            "accessibility": 100,
+            "performance": 95
+          },
+          "warn": {
+            "tbtMs": 100,
+            "performance": 100
+          }
+        },
+        "privacy": {
+          "error": {
+            "jsKb": 3.3,
+            "initialJsGzKb": 3.8,
+            "strayRequests": 0,
+            "lcpMs": 1500,
+            "cssKb": 22.6,
+            "htmlKb": 12.7,
+            "fontKb": 100,
+            "thirdPartyRequests": 0,
+            "cls": 0,
+            "accessibility": 100,
+            "performance": 95
+          },
+          "warn": {
+            "tbtMs": 100,
+            "performance": 100
+          }
+        },
+        "home-es": {
+          "error": {
+            "jsKb": 3.3,
+            "initialJsGzKb": 3.8,
+            "strayRequests": 0,
+            "lcpMs": 1500,
+            "cssKb": 22.6,
+            "htmlKb": 15.7,
+            "fontKb": 100,
+            "thirdPartyRequests": 0,
+            "cls": 0,
+            "accessibility": 100,
+            "performance": 95
+          },
+          "warn": {
+            "tbtMs": 100,
+            "performance": 100
+          }
+        }
       },
-      "warn": {
-        "tbtMs": 200,
-        "performance": 76
-      }
-    },
-    "article": {
-      "error": {
-        "jsKb": 158.6,
-        "lcpMs": 5200,
-        "cssKb": 21.1,
-        "htmlKb": 82.7,
-        "fontKb": 150.8,
-        "thirdPartyRequests": 0,
-        "cls": 0.02,
-        "accessibility": 95
-      },
-      "warn": {
-        "tbtMs": 1050,
-        "performance": 55
-      }
-    },
-    "about": {
-      "error": {
-        "jsKb": 143.8,
-        "lcpMs": 6600,
-        "cssKb": 21.1,
-        "htmlKb": 95.3,
-        "fontKb": 150.8,
-        "thirdPartyRequests": 0,
-        "cls": 0.02,
-        "accessibility": 100
-      },
-      "warn": {
-        "tbtMs": 250,
-        "performance": 61
-      }
-    },
-    "privacy": {
-      "error": {
-        "jsKb": 130.4,
-        "lcpMs": 4350,
-        "cssKb": 21.1,
-        "htmlKb": 71.1,
-        "fontKb": 150.8,
-        "thirdPartyRequests": 0,
-        "cls": 0.02,
-        "accessibility": 100
-      },
-      "warn": {
-        "tbtMs": 200,
-        "performance": 78
+      "islands": {
+        "search": {
+          "trigger": "opening the palette (click or Ctrl/Cmd+K) in a static build",
+          "error": {
+            "loaderGzKb": 3.5,
+            "pagefindGzKb": 26,
+            "wasmKb": 80
+          }
+        }
       }
     }
   }

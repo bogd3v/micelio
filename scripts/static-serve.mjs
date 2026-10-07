@@ -1,12 +1,17 @@
 // A small static server for a `nuxt generate` output (e2e/static, local preview). No dependencies.
 // Usage: node scripts/static-serve.mjs [dir] ; PORT and HOST env variables (defaults 3260, 127.0.0.1)
+// COMPRESS=1 answers text files in brotli or gzip, as the hosts do (scripts/perf measures a compressed site)
 import { createServer } from 'node:http'
 import { readFile, stat } from 'node:fs/promises'
 import { extname, join, normalize, resolve } from 'node:path'
+import { brotliCompressSync, constants, gzipSync } from 'node:zlib'
 
 const root = resolve(process.argv[2] ?? '.output/public')
 const port = Number(process.env.PORT ?? 3260)
 const host = process.env.HOST ?? '127.0.0.1'
+const compress = process.env.COMPRESS === '1'
+const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.mjs', '.json', '.xml', '.txt', '.svg'])
+const compressed = new Map()
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -79,8 +84,18 @@ const server = createServer(async (req, res) => {
   const found = file ?? join(root, '404.html')
   const type = TYPES[extname(found)] ?? 'application/octet-stream'
   try {
-    const body = await readFile(found)
-    res.writeHead(file ? 200 : 404, { ...headersFor(rules, pathname), 'Content-Type': type })
+    let body = await readFile(found)
+    const headers = { ...headersFor(rules, pathname), 'Content-Type': type }
+    const accepted = String(req.headers['accept-encoding'] ?? '')
+    const encoding = compress && COMPRESSIBLE.has(extname(found)) && body.length > 1024 ? (/\bbr\b/.test(accepted) ? 'br' : /\bgzip\b/.test(accepted) ? 'gzip' : undefined) : undefined
+    if (encoding) {
+      const key = `${encoding}:${found}`
+      if (!compressed.has(key)) compressed.set(key, encoding === 'br' ? brotliCompressSync(body, { params: { [constants.BROTLI_PARAM_QUALITY]: 9 } }) : gzipSync(body, { level: 9 }))
+      body = compressed.get(key)
+      headers['Content-Encoding'] = encoding
+      headers.Vary = 'Accept-Encoding'
+    }
+    res.writeHead(file ? 200 : 404, headers)
     res.end(req.method === 'HEAD' ? undefined : body)
   } catch {
     res.writeHead(404, { 'Content-Type': 'text/plain' })
