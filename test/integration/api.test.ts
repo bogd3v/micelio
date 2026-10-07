@@ -736,7 +736,7 @@ describe('/api/site', () => {
       description: 'Un motor de blogs',
       url: 'https://micelio.test',
       author: { name: 'Grace', url: 'https://bogdev.com.co/about' },
-      logo: { url: '/uploads/logo.svg', alternativeText: 'Micelio', width: 120, height: 40 },
+      logo: { url: `${mock.url}/uploads/logo.svg`, alternativeText: 'Micelio', width: 120, height: 40 },
       socialLinks: [{ network: 'codeberg', url: 'https://codeberg.org/micelio' }],
       contactEmail: 'hola@micelio.test',
       privacyContactEmail: 'gx_alejandro@hotmail.com',

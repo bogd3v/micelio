@@ -484,9 +484,9 @@ const server = createServer(async (req, res) => {
         url: 'https://bogdev.com.co',
         defaultLocale: 'en',
         author: { id: 1, name: 'Alejandro Ramírez', url: 'https://bogdev.com.co/about' },
-        logo: null,
-        favicon: { id: 1, url: '/theme/images/bogdev.svg', alternativeText: null, width: null, height: null },
-        defaultOgImage: null,
+        logo: { id: 2, url: '/uploads/logo.svg', alternativeText: null, width: null, height: null },
+        favicon: { id: 1, url: '/uploads/favicon.svg', alternativeText: null, width: null, height: null },
+        defaultOgImage: { id: 3, url: '/uploads/og.png', alternativeText: null, width: null, height: null },
         socialLinks: [
           { id: 1, network: 'linkedin', url: 'https://www.linkedin.com/in/alejandro-ramirez-garcia-046713139' },
           { id: 2, network: 'github', url: 'https://github.com/ale9420' },

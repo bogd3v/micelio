@@ -6,7 +6,7 @@ import { images } from '#micelio/theme'
 import type { Locale, Site } from '~/interfaces'
 import { effectiveModules } from '~/helpers/modules'
 import { moduleRequirements } from '~/helpers/runtimeConfig'
-import { mergeSite, siteFromAppConfig } from '~/helpers/site'
+import { mergeSite, resolveSiteMedia, siteFromAppConfig } from '~/helpers/site'
 import type { AppSiteConfig } from '~/helpers/site'
 import { parseSiteSettings } from '../schemas/site'
 
@@ -43,7 +43,7 @@ export async function loadSite(locale: Locale): Promise<LoadedSite> {
     // Nested populate does not survive fetch's query option, so the string is built here
     const query = qs.stringify({ populate: SITE_POPULATE, locale })
     const response = await strapiFetch<{ data?: unknown }>(`/api/site-setting?${query}`, { timeout: SITE_TIMEOUT_MS })
-    const settings = parseSiteSettings(response.data)
+    const settings = resolveSiteMedia(parseSiteSettings(response.data), useRuntimeConfig().public.strapiUrl)
     const theme = resolveTheme(settings?.theme, { modes: paletteModes, rules: paletteRules }, buildTheme)
     loaded = { site: { ...mergeSite(defaults, settings), ...(theme && { theme }) }, fromStrapi: true }
   } catch (error: unknown) {

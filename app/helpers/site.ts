@@ -49,6 +49,25 @@ function pick<T>(value: T | undefined | null, fallback: T): T {
   return present(value) ? value : fallback
 }
 
+/** `image` with a relative URL (Strapi's local upload provider) resolved against the Strapi public URL; URLs with a scheme (http, data, blob) stay, and `//host/x` becomes `https://host/x`. */
+export function resolveSiteImage(image: SiteImage | null | undefined, strapiUrl: string): SiteImage | null | undefined {
+  if (!image?.url) return image
+  if (image.url.startsWith('//')) return { ...image, url: `https:${image.url}` }
+  if (/^[a-z][a-z\d+.-]*:/i.test(image.url) || !strapiUrl) return image
+  return { ...image, url: `${strapiUrl.replace(/\/+$/, '')}/${image.url.replace(/^\/+/, '')}` }
+}
+
+/** The settings with `logo`, `favicon` and `defaultOgImage` resolved to absolute URLs (see resolveSiteImage). */
+export function resolveSiteMedia(settings: SiteSettings | null | undefined, strapiUrl: string): SiteSettings | null | undefined {
+  if (!settings) return settings
+  return {
+    ...settings,
+    logo: resolveSiteImage(settings.logo, strapiUrl),
+    favicon: resolveSiteImage(settings.favicon, strapiUrl),
+    defaultOgImage: resolveSiteImage(settings.defaultOgImage, strapiUrl),
+  }
+}
+
 /** Strapi's values over the defaults, field by field: an empty or missing field keeps the default. */
 export function mergeSite(defaults: Site, settings: SiteSettings | null | undefined): Site {
   if (!settings) return defaults
