@@ -27,6 +27,12 @@ describe('resultPath', () => {
     expect(resultPath('/es/blog/guia-vue-composables/')).toBe('/es/blog/guia-vue-composables')
   })
 
+  it('accepts only paths of this site', () => {
+    for (const url of ['//evil.example/x', 'https://evil.example/', 'javascript:alert(1)', '/\\evil.example', 'blog/a', '', 'data:text/html,x']) {
+      expect(resultPath(url), url).toBeUndefined()
+    }
+  })
+
   it('keeps the root, queries and anchors', () => {
     expect(resultPath('/')).toBe('/')
     expect(resultPath('/blog/a/?x=1#top')).toBe('/blog/a?x=1#top')

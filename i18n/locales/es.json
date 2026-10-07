@@ -474,6 +474,7 @@
     "search": {
       "dialog": "Buscar en {site}",
       "placeholder": "Buscar artículos, temas o acciones",
+      "minLengthStatic": "Escribe {count} letras o más para buscar artículos y páginas",
       "placeholderStatic": "Buscar artículos y páginas",
       "unavailable": "La búsqueda no está disponible ahora",
       "content": "Buscar también en el contenido",

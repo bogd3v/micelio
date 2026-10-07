@@ -35,7 +35,7 @@ useMarkAsRead(prose, readDocumentId)
         <span v-if="post.readTime" class="bd-meta">{{ t("blog.readTime", { minutes: post.readTime }) }}</span>
       </div>
       <h1 class="bd-article-title bd-wide" :data-pagefind-meta="isStatic ? 'title' : undefined">{{ post.title }}</h1>
-      <p v-if="post.description" class="bd-article-lead">{{ post.description }}</p>
+      <p v-if="post.description" class="bd-article-lead" :data-pagefind-body="isStatic ? '' : undefined">{{ post.description }}</p>
       <div class="bd-article-byline">
         <div class="bd-article-author">
           <BlogAuthorBadge :author="post.author" />

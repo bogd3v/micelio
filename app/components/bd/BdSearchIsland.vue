@@ -10,7 +10,6 @@ const baseURL = useRuntimeConfig().app.baseURL
 useIsland('search')
 
 const dialogLabel = computed<string>(() => t('bd.search.dialog', { site: site.value.name }))
-const pagefindSrc = `${baseURL.replace(/\/+$/, '')}/pagefind/pagefind.js`
 // `{count}` and `{query}` stay in the text: the island fills them
 const placeholders = { count: '{count}', query: '{query}' }
 </script>
@@ -18,8 +17,8 @@ const placeholders = { count: '{count}', query: '{query}' }
 <template>
   <micelio-search
     data-pagefind-ignore
-    :data-pagefind-src="pagefindSrc"
-    :data-min-length="t('bd.search.minLength', { count: MIN_SEARCH_LENGTH })"
+    :data-base-url="baseURL"
+    :data-min-length="t('bd.search.minLengthStatic', { count: MIN_SEARCH_LENGTH })"
     :data-loading="t('bd.search.loading')"
     :data-empty="t('bd.search.empty', { query: placeholders.query })"
     :data-unavailable="t('bd.search.unavailable')"
@@ -50,7 +49,7 @@ const placeholders = { count: '{count}', query: '{query}' }
           <button type="button" class="bd-chip bd-palette-esc" :aria-label="t('bd.search.close')">Esc</button>
         </div>
 
-        <p class="bd-meta bd-palette-note" data-search-note>{{ t('bd.search.minLength', { count: MIN_SEARCH_LENGTH }) }}</p>
+        <p class="bd-meta bd-palette-note" data-search-note>{{ t('bd.search.minLengthStatic', { count: MIN_SEARCH_LENGTH }) }}</p>
 
         <div id="bd-palette-list" class="bd-palette-list" role="listbox" :aria-label="dialogLabel" />
 

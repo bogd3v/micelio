@@ -115,6 +115,29 @@ test('searches the English index, navigates with the keyboard and closes with Es
   await expect(page).toHaveURL(new RegExp(`${ARTICLE}$`))
 })
 
+test('on /blog the trigger is not announced as the current page', async ({ page }) => {
+  const html = await (await page.request.get('/blog')).text()
+  expect(html.match(/<a[^>]*data-micelio-search-open[^>]*>/g)?.join(' ')).not.toMatch(/aria-current|router-link/)
+  await page.goto('/blog', { waitUntil: 'networkidle' })
+  for (const button of await page.locator('button[aria-haspopup="dialog"]').all()) {
+    await expect(button).not.toHaveAttribute('aria-current', /.*/)
+    expect(await button.getAttribute('class')).not.toContain('router-link')
+  }
+})
+
+test('says the search is unavailable when Pagefind cannot load, and recovers its state', async ({ page }) => {
+  await page.route('**/pagefind/pagefind.js', route => route.abort())
+  await page.goto(HOME, { waitUntil: 'networkidle' })
+  await trigger(page).click()
+  const palette = page.getByRole('dialog', { name: 'Search BogDev' })
+  const input = palette.getByRole('combobox')
+  await input.fill('vue')
+  await expect(palette).toContainText('Search is unavailable right now')
+  await expect(input).toHaveAttribute('aria-expanded', 'false')
+  await expect(input).not.toHaveAttribute('aria-activedescendant', /.*/)
+  await expect(palette.getByRole('option')).toHaveCount(0)
+})
+
 test('closing returns the focus to the trigger and clears the query', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' })
   const button = trigger(page)

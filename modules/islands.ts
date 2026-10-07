@@ -1,4 +1,5 @@
 import { existsSync, readdirSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import { join, parse } from 'node:path'
 import { build } from 'vite'
 import { addTemplate, defineNuxtModule, useLogger } from 'nuxt/kit'
@@ -18,8 +19,9 @@ export default defineNuxtModule({
     const manifest: Record<string, string> = {}
 
     if (isStaticMode(mode) && existsSync(sourceDir)) {
-      // Not buildDir: Nuxt empties it before it builds
-      const outDir = join(nuxt.options.rootDir, 'node_modules', '.cache', 'micelio', 'islands')
+      // Not buildDir (Nuxt empties it before it builds); one folder per process, so two builds never write the same files
+      const outDir = join(nuxt.options.rootDir, 'node_modules', '.cache', 'micelio', `islands-${process.pid}`)
+      nuxt.hook('close', () => rm(outDir, { recursive: true, force: true }))
       const input = Object.fromEntries(
         readdirSync(sourceDir)
           .filter(file => file.endsWith('.ts') && !file.endsWith('.d.ts'))
@@ -36,6 +38,7 @@ export default defineNuxtModule({
             emptyOutDir: true,
             write: true,
             copyPublicDir: false,
+            // cssTarget is the site's browser list (nuxt.config.ts, CSS_TARGETS) in esbuild syntax, which is also what Vite wants here
             target: nuxt.options.vite.build?.cssTarget ?? 'es2022',
             minify: true,
             sourcemap: false,

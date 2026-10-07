@@ -31,7 +31,7 @@ usePageSeo(page, isHome ? '/' : `/${slug}`)
 </script>
 
 <template>
-  <div :data-pagefind-body="isStatic ? '' : undefined" :data-pagefind-meta="isStatic ? 'kind:page' : undefined">
+  <div :data-pagefind-body="isStatic && !isHome ? '' : undefined" :data-pagefind-meta="isStatic && !isHome ? 'kind:page' : undefined">
     <SectionRenderer :sections="page?.sections" :page-title="page?.title" />
   </div>
 </template>

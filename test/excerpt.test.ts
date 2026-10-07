@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { excerptSegments } from '~/helpers/excerpt'
+import { excerptSegments, plainText } from '~/helpers/excerpt'
 
 describe('excerptSegments', () => {
   it('keeps the text around <mark> and flags the matches', () => {
@@ -38,5 +38,12 @@ describe('excerptSegments', () => {
   it('returns nothing for an empty excerpt', () => {
     expect(excerptSegments('')).toEqual([])
     expect(excerptSegments('<mark></mark>')).toEqual([])
+  })
+})
+
+describe('plainText', () => {
+  it('decodes entities and drops tags of a title', () => {
+    expect(plainText('Q&amp;A &lt;b&gt; <i>with</i> tags')).toBe('Q&A <b> with tags')
+    expect(plainText('')).toBe('')
   })
 })

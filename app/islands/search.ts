@@ -1,6 +1,6 @@
 // <micelio-search>: upgrades the complete server markup of BdSearchIsland into the static search palette (ADR 0006, sections 3 and 4).
 // Strings come from the server in data attributes; Pagefind (JS, WASM, index) loads when the palette first opens.
-import { excerptSegments } from '../helpers/excerpt'
+import { excerptSegments, plainText } from '../helpers/excerpt'
 import { cycleIndex, highlightSegments, MIN_SEARCH_LENGTH, resultPath } from '../helpers/search'
 import type { TextSegment } from '../interfaces/design'
 
@@ -11,6 +11,7 @@ interface PagefindResultData {
 }
 
 interface PagefindApi {
+  options: (options: { baseUrl: string }) => Promise<void>
   init: () => Promise<void>
   debouncedSearch: (term: string, options?: object, wait?: number) => Promise<{ results: Array<{ data: () => Promise<PagefindResultData> }> } | null>
 }
@@ -74,7 +75,9 @@ class MicelioSearch extends HTMLElement {
     const button = element('button')
     button.type = 'button'
     for (const { name, value } of link.attributes) {
-      if (name !== 'href' && name !== 'data-micelio-search-open') button.setAttribute(name, value)
+      // A link to /blog is "current" on /blog; the button opens a palette and is not
+      if (name === 'href' || name === 'data-micelio-search-open' || name === 'aria-current') continue
+      button.setAttribute(name, name === 'class' ? value.split(/\s+/).filter(item => item && !item.startsWith('router-link-')).join(' ') : value)
     }
     button.setAttribute('aria-haspopup', 'dialog')
     button.setAttribute('aria-keyshortcuts', 'Control+K Meta+K')
@@ -109,7 +112,10 @@ class MicelioSearch extends HTMLElement {
   }
 
   private load(): Promise<PagefindApi> {
-    this.pagefind ??= import(/* @vite-ignore */ this.dataset.pagefindSrc ?? '/pagefind/pagefind.js').then(async (api: PagefindApi) => {
+    // The module is always <app.baseURL>/pagefind/pagefind.js of this origin, never a URL taken from the markup
+    const base = /^\/(?!\/)[\w./-]*$/.test(this.dataset.baseUrl ?? '') ? this.dataset.baseUrl!.replace(/\/+$/, '') : ''
+    this.pagefind ??= import(/* @vite-ignore */ `${base}/pagefind/pagefind.js`).then(async (api: PagefindApi) => {
+      await api.options({ baseUrl: `${base}/` })
       await api.init()
       return api
     })
@@ -121,7 +127,7 @@ class MicelioSearch extends HTMLElement {
   }
 
   private label(name: string, values: Record<string, string> = {}): string {
-    return Object.entries(values).reduce((text, [key, value]) => text.replaceAll(`{${key}}`, value), this.dataset[name] ?? '')
+    return Object.entries(values).reduce((text, [key, value]) => text.replaceAll(`{${key}}`, () => value), this.dataset[name] ?? '')
   }
 
   private setNote(text: string): void {
@@ -162,8 +168,7 @@ class MicelioSearch extends HTMLElement {
       if (request === this.request) this.render(term, data)
     } catch {
       if (request !== this.request) return
-      this.list.replaceChildren()
-      this.options = []
+      this.clear()
       this.setNote(this.label('unavailable'))
       this.announce(this.label('unavailable'))
     }
@@ -178,10 +183,16 @@ class MicelioSearch extends HTMLElement {
     heading.setAttribute('role', 'presentation')
     group.append(heading)
 
-    this.options = data.map((item, index) => {
+    // Only paths of this site: a URL that is not `/…` (or is `//…`) is skipped
+    const safe = data.flatMap((item) => {
+      const path = resultPath(item.url)
+      return path ? [{ item, path }] : []
+    })
+    data = safe.map(({ item }) => item)
+    this.options = safe.map(({ item, path }, index) => {
       const link = element('a', 'bd-result')
       link.id = `bd-result-${index}`
-      link.href = resultPath(item.url)
+      link.href = path
       link.tabIndex = -1
       link.setAttribute('role', 'option')
       link.setAttribute('aria-selected', 'false')
@@ -189,7 +200,7 @@ class MicelioSearch extends HTMLElement {
       kind.setAttribute('aria-hidden', 'true')
       const text = element('span', 'bd-result-text')
       const title = element('span', 'bd-result-label')
-      fill(title, highlightSegments(item.meta.title ?? item.url, term))
+      fill(title, highlightSegments(plainText(item.meta.title ?? '') || item.url, term))
       text.append(title)
       const excerpt = excerptSegments(item.excerpt)
       if (excerpt.length) {

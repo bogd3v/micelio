@@ -474,6 +474,7 @@
     "search": {
       "dialog": "Search {site}",
       "placeholder": "Search articles, topics or actions",
+      "minLengthStatic": "Type {count} or more letters to search articles and pages",
       "placeholderStatic": "Search articles and pages",
       "unavailable": "Search is unavailable right now",
       "content": "Also search the content",

@@ -14,12 +14,14 @@ const emit = defineEmits<{
 
 const { isStatic } = useStaticSite()
 const { localizePath } = useLocaleUtils()
+const baseURL = useRuntimeConfig().app.baseURL
 </script>
 
 <template>
-  <NuxtLink v-if="isStatic" :to="localizePath('/blog')" data-micelio-search-open>
+  <!-- A plain link, not NuxtLink: the island turns it into a button, which must not inherit aria-current or router-link classes -->
+  <a v-if="isStatic" :href="`${baseURL.replace(/\/+$/, '')}${localizePath('/blog')}`" data-micelio-search-open>
     <slot />
-  </NuxtLink>
+  </a>
   <button
     v-else
     type="button"

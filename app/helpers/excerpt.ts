@@ -40,3 +40,8 @@ export function excerptSegments(html: string): TextSegment[] {
   push(html.slice(cursor))
   return segments
 }
+
+/** The text of an HTML fragment (a Pagefind title may carry entities such as `&amp;`): tags dropped, entities decoded. */
+export function plainText(html: string): string {
+  return excerptSegments(html).map(segment => segment.text).join('')
+}
