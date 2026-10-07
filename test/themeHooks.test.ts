@@ -155,8 +155,26 @@ describe('hooks.json', () => {
   it('names only classes the core uses', () => {
     const sources = ['app/assets/css', 'app/components', 'app/pages', 'app/layouts', 'app/theme', 'app/composables', 'themes/bogota']
     const text = sources.map(dir => readTree(join(process.cwd(), dir))).join('\n')
-    const unused = [...hooks.classes].filter(name => !new RegExp(`${name}(?![\\w-])`).test(text))
+    // The section hooks are declared before their components (#244, PR 2); drop this filter when PR 3 renders them
+    const unused = [...hooks.classes].filter(name => !/^bd-section(-|$)/.test(name)).filter(name => !new RegExp(`${name}(?![\\w-])`).test(text))
     expect(unused).toEqual([])
+  })
+
+  it('declares the section catalog: every section in data-section and its variants in data-variant', () => {
+    const raw = JSON.parse(readFileSync(join(process.cwd(), 'app/theme/hooks.json'), 'utf8')) as { attributes: Record<string, { values: string[] }> }
+    const variants = Object.fromEntries(raw.attributes['data-variant']!.values.map((entry) => {
+      const [section, list] = entry.split(': ')
+      return [section, list!.split(', ')]
+    }))
+    expect(raw.attributes['data-section']!.values.filter(id => id !== 'rich-text').sort()).toEqual(Object.keys(variants).sort())
+    expect(variants['hero']).toEqual(['centered', 'split', 'full-bleed'])
+    expect(Object.values(variants).flat()).toHaveLength(29)
+  })
+
+  it('accepts the section hooks in theme CSS', () => {
+    const ctx = { themeId: 'sample', themeDir: '/theme', hooks }
+    const problems = (css: string): string[] => checkCss(css, 'theme.css', ctx).problems
+    expect(problems('.bd-section[data-section="hero"][data-variant="split"] .bd-section-title { top: 0 }')).toEqual([])
   })
 
   it('names only variants the core implements in every layouts entry and in data-layout', () => {
