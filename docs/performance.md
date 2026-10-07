@@ -36,7 +36,7 @@ npm run perf -- --mode landing --base http://localhost:3000 \
 
 ### Landing
 
-`modes.landing` has the pages of the demo's seeded showcase (`/` and `/es`), the static limits for JS, fonts, LCP and Lighthouse, and its own `htmlKb` (16.9 and 17.2) and `cssKb` (25.1), measured on that page plus 5 % (#363). The showcase is larger than the mock's home, so the static HTML and CSS limits do not fit it. It is not in CI: the mock site has no showcase, so run it against the demo with `--base` (see above). The `bogota` exception covers `static` and `landing`.
+`modes.landing` has the pages of the demo's seeded showcase (`/` and `/es`), the static limits for JS, fonts, LCP and Lighthouse, and its own `htmlKb` (16.9 and 17.2) and `cssKb` (22.6), measured on that page plus 5 % (#363). The showcase is larger than the mock's home, so the static HTML limits do not fit it (the CSS limit matches static; measured 21.5 KB sent). It is not in CI: the mock site has no showcase, so run it against the demo with `--base` (see above). The `bogota` exception covers `static` and `landing`.
 
 ### Static builds
 
