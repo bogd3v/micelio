@@ -37,7 +37,7 @@
     object-fit: cover;
 }
 
-/* Slow zoom on the active slide (zoom only, no pan) */
+/* The active slide is scaled up slightly (zoom only, no pan) */
 .bd-slider-img-zoom {
     scale: 1.05;
 }
