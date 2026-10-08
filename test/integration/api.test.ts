@@ -1254,8 +1254,8 @@ describe('/api/newsletter/subscribe', () => {
   })
 
   it('stores the Spanish language and treats any other locale as English', async () => {
-    await subscribe({ email: 'es@example.com', locale: 'es' }).catch(() => null)
-    await subscribe({ email: 'fr@example.com', locale: 'fr' }).catch(() => null)
+    await ignoreError(subscribe({ email: 'es@example.com', locale: 'es' }))
+    await ignoreError(subscribe({ email: 'fr@example.com', locale: 'fr' }))
     const languages = mock.requests
       .filter(request => request.method === 'POST' && request.path === '/api/subscribers')
       .map(request => [request.body?.data?.email, request.body?.data?.language])
@@ -1264,7 +1264,7 @@ describe('/api/newsletter/subscribe', () => {
 
   it('limits confirmation emails to the same address, whatever the visitor', async () => {
     for (let i = 0; i < 3; i++) {
-      await subscribe({ email: 'Target@Example.com' }, { 'x-forwarded-for': `198.51.100.${i}` }).catch(() => null)
+      await ignoreError(subscribe({ email: 'Target@Example.com' }, { 'x-forwarded-for': `198.51.100.${i}` }))
     }
     await expect(subscribe({ email: 'target@example.com' }, { 'x-forwarded-for': '198.51.100.9' })).rejects.toMatchObject({ response: { status: 429 } })
     const created = mock.requests.filter(request => request.method === 'POST' && request.body?.data?.email === 'target@example.com')
@@ -1274,7 +1274,7 @@ describe('/api/newsletter/subscribe', () => {
   it('limits how many subscriptions one visitor can request', async () => {
     const visitor = { 'x-forwarded-for': '198.51.100.50' }
     for (let i = 0; i < 10; i++) {
-      await subscribe({ email: `reader${i}@example.com` }, visitor).catch(() => null)
+      await ignoreError(subscribe({ email: `reader${i}@example.com` }, visitor))
     }
     await expect(subscribe({ email: 'reader10@example.com' }, visitor)).rejects.toMatchObject({ response: { status: 429 } })
   })
@@ -1665,6 +1665,14 @@ describe('/api/drafts', () => {
   })
 })
 
+async function ignoreError(task: Promise<unknown>): Promise<void> {
+  try {
+    await task
+  } catch {
+    // The request is made for its side effects on the mock
+  }
+}
+
 function getNestedValue(obj: unknown, path: string[]): unknown {
   let current = obj
   for (const key of path) {
@@ -1756,7 +1764,7 @@ describe('Strapi API token', () => {
     await $fetch('/api/posts')
     await $fetch('/api/tags')
     await $fetch('/api/comments/flat', { query: { relation: 'api::article.article:doc-vue' } })
-    await $fetch('/api/newsletter/confirm', { query: { token: 'confirmation-token-unknown-0002' } }).catch(() => null)
+    await ignoreError($fetch('/api/newsletter/confirm', { query: { token: 'confirmation-token-unknown-0002' } }))
     const paths = ['/api/articles', '/api/tags', '/api/comments/api::article.article:doc-vue/flat', '/api/subscribers']
     for (const path of paths) {
       const request = mock.requests.find(recorded => recorded.path === path)
@@ -1766,8 +1774,8 @@ describe('Strapi API token', () => {
   })
 
   it('keeps the public fediverse endpoints anonymous', async () => {
-    await $fetch('/api/fediverse/stats', { query: { documentIds: 'doc-vue' } }).catch(() => null)
-    await $fetch('/api/posts', { query: { sort: 'fediverse' } }).catch(() => null)
+    await ignoreError($fetch('/api/fediverse/stats', { query: { documentIds: 'doc-vue' } }))
+    await ignoreError($fetch('/api/posts', { query: { sort: 'fediverse' } }))
     const anonymous = mock.requests.filter(request => request.path.startsWith('/api/fediverse/'))
     expect(anonymous.length).toBeGreaterThan(0)
     expect(anonymous.every(request => request.authorization === undefined)).toBe(true)

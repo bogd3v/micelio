@@ -99,7 +99,7 @@ class MicelioSearch extends HTMLElement {
     this.dialog.showModal()
     this.input.focus()
     // The first open starts loading Pagefind, so the first query does not wait for it
-    this.load().catch(() => {})
+    void this.preload()
     if (this.input.value) this.search()
   }
 
@@ -114,16 +114,29 @@ class MicelioSearch extends HTMLElement {
   private load(): Promise<PagefindApi> {
     // The module is always <app.baseURL>/pagefind/pagefind.js of this origin, never a URL taken from the markup
     const base = /^\/(?!\/)[\w./-]*$/.test(this.dataset.baseUrl ?? '') ? this.dataset.baseUrl!.replace(/\/+$/, '') : ''
-    this.pagefind ??= import(/* @vite-ignore */ `${base}/pagefind/pagefind.js`).then(async (api: PagefindApi) => {
+    this.pagefind ??= this.importPagefind(base)
+    return this.pagefind
+  }
+
+  private async importPagefind(base: string): Promise<PagefindApi> {
+    try {
+      const api: PagefindApi = await import(/* @vite-ignore */ `${base}/pagefind/pagefind.js`)
       await api.options({ baseUrl: `${base}/` })
       await api.init()
       return api
-    })
-    // A failed load is retried on the next query
-    this.pagefind.catch(() => {
+    } catch (error: unknown) {
+      // A failed load is retried on the next query
       this.pagefind = undefined
-    })
-    return this.pagefind
+      throw error
+    }
+  }
+
+  private async preload(): Promise<void> {
+    try {
+      await this.load()
+    } catch {
+      // The query that needs Pagefind shows the error
+    }
   }
 
   private label(name: string, values: Record<string, string> = {}): string {

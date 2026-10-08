@@ -49,7 +49,17 @@ export function useTheme(): UseTheme {
 
     root.classList.add('bd-vt-theme')
     const transition = document.startViewTransition(() => sync(next))
-    transition.finished.finally(() => root.classList.remove('bd-vt-theme'))
+    void clearWhenFinished(transition, root)
+  }
+
+  async function clearWhenFinished(transition: ViewTransition, root: HTMLElement): Promise<void> {
+    try {
+      await transition.finished
+    } catch {
+      // A skipped transition still ends the class
+    } finally {
+      root.classList.remove('bd-vt-theme')
+    }
   }
 
   function modeLabel(id: ThemeMode): string {

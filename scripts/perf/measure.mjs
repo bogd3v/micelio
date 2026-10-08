@@ -142,7 +142,12 @@ async function waitFor(url, children = [], timeoutMs = 30000) {
   while (Date.now() < end) {
     const dead = children.find(child => child.exitCode !== null)
     if (dead) throw new Error(`a server exited with ${dead.exitCode} while waiting for ${url} (is the port in use?)`)
-    const res = await fetch(url).catch(() => null)
+    let res
+    try {
+      res = await fetch(url)
+    } catch {
+      res = null
+    }
     if (res && res.status < 500) return
     await new Promise(resolve => setTimeout(resolve, 250))
   }

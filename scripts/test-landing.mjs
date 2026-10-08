@@ -11,10 +11,12 @@ const appPort = process.env.LANDING_APP_PORT ?? '3280'
 const mockEnv = { MOCK_NO_ARTICLES: '1', MOCK_HOME_PAGE: '1' }
 
 async function build(extraEnv = {}) {
-  return generateStatic({ mockPort, appPort, mode: 'landing', extraEnv: { ...mockEnv, ...extraEnv } }).catch((error) => {
+  try {
+    return await generateStatic({ mockPort, appPort, mode: 'landing', extraEnv: { ...mockEnv, ...extraEnv } })
+  } catch (error) {
     console.error(error.message)
     return 1
-  })
+  }
 }
 
 function playwright(env, args) {
