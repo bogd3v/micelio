@@ -12,7 +12,7 @@ import { createJiti } from 'jiti'
 import lighthouse from 'lighthouse'
 import { generateStatic } from '../lib/static-generate.mjs'
 import { checkFouc } from './fouc.mjs'
-import { ISLANDS_PREFIX, islandBudgetErrors, islandElement, islandMetrics, islandProblems, isStrayRequest } from './islands.mjs'
+import { budgetKeysOf, ISLANDS_PREFIX, islandBudgetErrors, islandElement, islandMetrics, islandProblems, isStrayRequest } from './islands.mjs'
 
 const ROOT = new URL('../../', import.meta.url).pathname
 // PERF_*_PORT: another set of ports when these are taken (parallel runs on one machine)
@@ -51,7 +51,7 @@ const exception = budgets.themes?.[theme] && [budgets.themes[theme].mode ?? budg
 const { HEAVY_ISLANDS } = await createJiti(import.meta.url).import('../../app/islands/heavy.ts')
 const budgetErrors = islandBudgetErrors(HEAVY_ISLANDS, budgets.modes)
 if (budgetErrors.length) throw new Error(`budgets.json:\n${budgetErrors.join('\n')}`)
-const heavyIslands = HEAVY_ISLANDS.filter(island => modeBudgets.islands?.[island.budget])
+const heavyIslands = HEAVY_ISLANDS.flatMap(island => budgetKeysOf(island, modeBudgets.islands).map(key => ({ island, key })))
 for (const [id, entry] of Object.entries(budgets.themes ?? {})) {
   if (!entry?.reason) throw new Error(`budgets.json: the exception for theme "${id}" needs a "reason"`)
   if (!existsSync(new URL(`../../themes/${id}/theme.json`, import.meta.url))) console.warn(`warn  budgets.json: "themes.${id}" is not an installed theme in themes/`)
@@ -443,18 +443,18 @@ try {
       problems.push(...islandProblems('search', islands.search, modeBudgets.islands.search.error))
     }
   }
-  // Each heavy island once, on the fixture page of its budget
-  for (const island of heavyIslands) {
-    const budget = modeBudgets.islands[island.budget]
+  // Each heavy island budget (and variant) once, on its fixture page
+  for (const { island, key } of heavyIslands) {
+    const budget = modeBudgets.islands[key]
     const { problem, strayUrls, ...measured } = await measureHeavyIsland(browser, island, budget)
     if (problem) {
-      problems.push({ level: 'error', page: `island ${island.id}`, message: problem })
+      problems.push({ level: 'error', page: `island ${key}`, message: problem })
       continue
     }
-    islands[island.id] = measured
-    console.log(`island     ${island.id} ${JSON.stringify(measured)}`)
+    islands[key] = measured
+    console.log(`island     ${key} ${JSON.stringify(measured)}`)
     if (strayUrls.length) console.log(`           before the trigger: ${strayUrls.join(', ')}`)
-    problems.push(...islandProblems(island.id, measured, { ...budget.error, strayRequests: 0 }))
+    problems.push(...islandProblems(key, measured, { ...budget.error, strayRequests: 0 }))
   }
 
   if (args.out) writeFileSync(args.out, JSON.stringify({ theme, mode, ...(displayFont && { displayFont }), pages: report, ...(Object.keys(islands).length && { islands }) }, null, 2) + '\n')

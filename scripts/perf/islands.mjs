@@ -23,20 +23,32 @@ export function islandElement(island) {
   return `micelio-${island.id}`
 }
 
+/** The island's own budget key and its variants (`playground:python`): one measurement each, on its own fixture */
+export function budgetKeysOf(island, islands = {}) {
+  return Object.keys(islands).filter(key => key === island.budget || key.startsWith(`${island.budget}:`))
+}
+
+const VARIANT = /^[a-z][a-z0-9-]*$/
+
 /** Problems of the `islands` sections of budgets.json against the heavy registry, one message each */
 export function islandBudgetErrors(registry, modes) {
   const errors = []
   const byKey = new Map(registry.map(island => [island.budget, island]))
   for (const island of registry) {
-    if (!Object.values(modes).some(mode => mode.islands?.[island.budget])) errors.push(`island "${island.id}" has no budget: add modes.<mode>.islands.${island.budget} to budgets.json`)
+    if (!Object.values(modes).some(mode => budgetKeysOf(island, mode.islands).length)) errors.push(`island "${island.id}" has no budget: add modes.<mode>.islands.${island.budget} to budgets.json`)
   }
   for (const [modeId, mode] of Object.entries(modes)) {
     for (const [key, budget] of Object.entries(mode.islands ?? {})) {
       const label = `modes.${modeId}.islands.${key}`
       if (LIGHT_ISLANDS.includes(key)) continue
-      const island = byKey.get(key)
+      const [base, variant, ...rest] = key.split(':')
+      const island = byKey.get(base)
       if (!island) {
         errors.push(`${label} is not the budget of an island in app/islands/heavy.ts`)
+        continue
+      }
+      if (variant !== undefined && (!VARIANT.test(variant) || rest.length)) {
+        errors.push(`${label}: a variant is <budget>:<name>, the name in lowercase letters, digits and hyphens`)
         continue
       }
       if (typeof budget.page !== 'string' || !budget.page.startsWith('/')) errors.push(`${label}.page must be the path of a page that renders <${islandElement(island)}>`)
