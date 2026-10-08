@@ -5,6 +5,7 @@ import { figureBlockKey, figureNumbers } from '~/helpers/figures'
 import StrapiRichTextBlock from '~/components/strapi/RichTextBlock.vue'
 import StrapiQuoteBlock from '~/components/strapi/QuoteBlock.vue'
 import StrapiMediaBlock from '~/components/strapi/MediaBlock.vue'
+import StrapiPlaygroundBlock from '~/components/strapi/PlaygroundBlock.vue'
 import StrapiSliderBlock from '~/components/strapi/SliderBlock.vue'
 import StrapiProfileBlock from '~/components/strapi/ProfileBlock.vue'
 import StrapiStatementBlock from '~/components/strapi/StatementBlock.vue'
@@ -22,6 +23,7 @@ const componentMap: Readonly<Record<StrapiBlock['__component'], Component>> = {
   'shared.rich-text': StrapiRichTextBlock,
   'shared.quote': StrapiQuoteBlock,
   'shared.media': StrapiMediaBlock,
+  'shared.playground': StrapiPlaygroundBlock,
   'shared.slider': StrapiSliderBlock,
   'about.profile': StrapiProfileBlock,
   'about.statement': StrapiStatementBlock,

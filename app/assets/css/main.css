@@ -30,6 +30,7 @@
 @import "./components/toc.css" layer(bd.components);
 @import "./components/prose.css" layer(bd.components);
 @import "./components/figure.css" layer(bd.components);
+@import "./components/playground.css" layer(bd.components);
 @import "./components/references.css" layer(bd.components);
 @import "./components/facts.css" layer(bd.components);
 @import "./components/corner.css" layer(bd.components);

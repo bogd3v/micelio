@@ -23,6 +23,19 @@ export interface StrapiQuote {
   title?: string
 }
 
+export type StrapiPlaygroundRuntime = 'python' | 'sql' | 'javascript'
+
+export interface StrapiPlayground {
+  id: number
+  __component: 'shared.playground'
+  runtime: StrapiPlaygroundRuntime | string
+  code: string
+  expectedOutput?: string | null
+  /** Hidden code that runs before `code`; never rendered */
+  setup?: string | null
+  caption?: string | null
+}
+
 export type StrapiImageCreditKind = 'photo' | 'illustration' | 'diagram' | 'screenshot'
 
 export type StrapiImageLicense
@@ -205,6 +218,7 @@ export type StrapiBlock
   = | StrapiRichText
     | StrapiQuote
     | StrapiMedia
+    | StrapiPlayground
     | StrapiSlider
     | StrapiProfile
     | StrapiStatement
