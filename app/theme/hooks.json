@@ -18,6 +18,8 @@
     "bd-meta": "Metadata text: dates, counts, coordinates.",
     "bd-sr": "Visually hidden text for screen readers.",
     "bd-reveal": "A block that fades in when scrolled into view.",
+    "bd-post-media": "Cover of a post (card, featured card, article): the element that takes part in the card to article view transition. The core sets its view-transition-name; do not set one.",
+    "bd-post-title": "Title of a post (card, featured card, article h1): the element that takes part in the card to article view transition. The core sets its view-transition-name; do not set one.",
 
     "bd-header": { "describes": "Site header.", "layouts": { "header": ["bar", "centered"] }, "states": ["bd-header-reading", "bd-header-auto"] },
     "bd-nav": { "describes": "Main row of the header: logo, navigation and actions in bar; logo above the navigation in centered.", "layouts": { "header": ["bar", "centered"] } },

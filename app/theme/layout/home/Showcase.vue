@@ -24,7 +24,7 @@ const newsletterOn = useModule('newsletter')
       <BdPostCard v-bind="toPostCard(featuredPost)" featured priority />
     </section>
 
-    <HomeLatest :total="total" :counts="counts" />
+    <HomeLatest :featured-slug="featuredPost?.slug" :total="total" :counts="counts" />
 
     <HomeFieldGuide :topics="topics" />
 

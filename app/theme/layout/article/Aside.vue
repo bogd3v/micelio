@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { blogPath } from '~/helpers/blog'
 import type { StrapiPost } from '~/interfaces'
+import type { PostTransitionNames } from '~/helpers/postTransition'
+import { postTransitionNames } from '~/helpers/postTransition'
 
 defineOptions({ name: 'RegionArticleAside' })
 
@@ -21,6 +23,8 @@ const commentsOn = useModule('comments')
 const supportOn = useModule('support')
 const { coverUrl, category, references, headings, mastodonUrl, publishedDate, federated, readDocumentId } = useArticleState(props)
 
+const names = computed<PostTransitionNames>(() => postTransitionNames(props.post.slug))
+
 const prose = ref<HTMLElement | null>(null)
 
 useMarkAsRead(prose, readDocumentId)
@@ -34,7 +38,7 @@ useMarkAsRead(prose, readDocumentId)
         <time v-if="publishedDate" class="bd-meta" :datetime="post.publishedAt ?? undefined">{{ publishedDate }}</time>
         <span v-if="post.readTime" class="bd-meta">{{ t("blog.readTime", { minutes: post.readTime }) }}</span>
       </div>
-      <h1 class="bd-article-title bd-wide" :data-pagefind-meta="isStatic ? 'title' : undefined">{{ post.title }}</h1>
+      <h1 class="bd-article-title bd-post-title bd-wide" :style="{ '--bd-vt-title': names.title }" :data-pagefind-meta="isStatic ? 'title' : undefined">{{ post.title }}</h1>
       <p v-if="post.description" class="bd-article-lead" :data-pagefind-body="isStatic ? '' : undefined">{{ post.description }}</p>
       <div class="bd-article-byline">
         <div class="bd-article-author">
@@ -55,7 +59,7 @@ useMarkAsRead(prose, readDocumentId)
     </header>
 
     <figure v-if="coverUrl" class="bd-article-figure">
-      <div class="bd-article-cover">
+      <div class="bd-article-cover bd-post-media" :style="{ '--bd-vt-media': names.media }">
         <NuxtImg
           :src="coverUrl"
           :alt="post.cover?.alternativeText || post.title"
