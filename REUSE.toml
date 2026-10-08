@@ -1,0 +1,100 @@
+version = 1
+SPDX-PackageName = "Micelio"
+SPDX-PackageDownloadLocation = "https://github.com/bogd3v/micelio"
+
+# Licensing of every file, by path (REUSE specification 3.3, ADR 0007 amendment of 2026-10-08).
+# Later annotations win over earlier ones; THIRD-PARTY.md explains the third-party entries.
+
+# Micelio: AGPL-3.0-only with the theme exception (LICENSE, LICENSE-EXCEPTION.md)
+[[annotations]]
+path = "**"
+SPDX-FileCopyrightText = "2026 Alejandro Ramirez Garcia and the Micelio contributors"
+SPDX-License-Identifier = "AGPL-3.0-only WITH LicenseRef-Micelio-Theme-exception"
+
+# The starter theme, copied by `npm run theme:new` (themes/starter/LICENSE)
+[[annotations]]
+path = "themes/starter/**"
+SPDX-FileCopyrightText = "2026 Alejandro Ramirez Garcia and the Micelio contributors"
+SPDX-License-Identifier = "MIT-0"
+
+# Fonts and their license texts
+[[annotations]]
+path = [
+  "app/assets/fonts/display/archivo-latin-wght.woff2",
+  "app/assets/fonts/display/OFL-Archivo.txt",
+  "themes/bogota/fonts/archivo-latin-var.woff2",
+  "themes/bogota/fonts/OFL-Archivo.txt",
+]
+SPDX-FileCopyrightText = "The Archivo Project Authors"
+SPDX-License-Identifier = "OFL-1.1"
+
+[[annotations]]
+path = [
+  "app/assets/fonts/display/fraunces-latin-wght.woff2",
+  "app/assets/fonts/display/OFL-Fraunces.txt",
+  "themes/starter/fonts/fraunces-latin-var.woff2",
+  "themes/starter/fonts/OFL-Fraunces.txt",
+]
+SPDX-FileCopyrightText = "The Fraunces Project Authors"
+SPDX-License-Identifier = "OFL-1.1"
+
+[[annotations]]
+path = ["app/assets/fonts/display/bricolage-grotesque-latin-wght.woff2", "app/assets/fonts/display/OFL-BricolageGrotesque.txt"]
+SPDX-FileCopyrightText = "The Bricolage Grotesque Project Authors"
+SPDX-License-Identifier = "OFL-1.1"
+
+[[annotations]]
+path = ["app/assets/fonts/display/newsreader-latin-wght.woff2", "app/assets/fonts/display/OFL-Newsreader.txt"]
+SPDX-FileCopyrightText = "The Newsreader Project Authors"
+SPDX-License-Identifier = "OFL-1.1"
+
+[[annotations]]
+path = ["app/assets/fonts/display/space-grotesk-latin-wght.woff2", "app/assets/fonts/display/OFL-SpaceGrotesk.txt"]
+SPDX-FileCopyrightText = "The Space Grotesk Project Authors"
+SPDX-License-Identifier = "OFL-1.1"
+
+[[annotations]]
+path = ["themes/bogota/fonts/jetbrains-mono-latin-var.woff2", "themes/bogota/fonts/OFL-JetBrainsMono.txt"]
+SPDX-FileCopyrightText = "The JetBrains Mono Project Authors"
+SPDX-License-Identifier = "OFL-1.1"
+
+# Photo of the Sumapaz páramo by Danielfjio (Wikimedia Commons), cropped and color graded (docs/design/assets/CREDITOS.md)
+[[annotations]]
+path = [
+  "themes/bogota/images/hero/sumapaz-*.jpg",
+  "docs/design/assets/sumapaz-foto-*.jpg",
+  "docs/design/assets/articulo-foto-sumapaz.jpg",
+]
+SPDX-FileCopyrightText = ["Danielfjio", "2026 Alejandro Ramirez Garcia (modifications)"]
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+# Visual baselines of the Bogotá theme render that photo
+[[annotations]]
+path = "e2e/theme/__screenshots__/bogota/**"
+SPDX-FileCopyrightText = ["2026 Alejandro Ramirez Garcia and the Micelio contributors", "Danielfjio"]
+SPDX-License-Identifier = "AGPL-3.0-only WITH LicenseRef-Micelio-Theme-exception AND CC-BY-SA-4.0"
+
+# Heroicons
+[[annotations]]
+path = [
+  "app/components/icons/ArrowPath.vue",
+  "app/components/icons/CheckCircle.vue",
+  "app/components/icons/ChevronUp.vue",
+  "app/components/icons/DocumentText.vue",
+  "app/components/icons/Home.vue",
+  "app/components/icons/XCircle.vue",
+  "app/components/icons/LICENSE-heroicons",
+]
+SPDX-FileCopyrightText = "Tailwind Labs, Inc."
+SPDX-License-Identifier = "MIT"
+
+# The Mastodon logo, a trademark used only to link to Mastodon
+[[annotations]]
+path = "docs/design/assets/mastodon-logo-purple.svg"
+SPDX-FileCopyrightText = "Mastodon gGmbH"
+SPDX-License-Identifier = "LicenseRef-Mastodon-Trademark"
+
+[[annotations]]
+path = "app/components/bd/BdMastodonLogo.vue"
+SPDX-FileCopyrightText = ["2026 Alejandro Ramirez Garcia and the Micelio contributors", "Mastodon gGmbH"]
+SPDX-License-Identifier = "AGPL-3.0-only WITH LicenseRef-Micelio-Theme-exception AND LicenseRef-Mastodon-Trademark"

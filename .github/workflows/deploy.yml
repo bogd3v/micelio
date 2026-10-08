@@ -45,6 +45,9 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      - name: Check licensing metadata (REUSE)
+        run: pipx run reuse==6.2.0 lint
+
       - name: Check themes (contrast and budgets)
         run: npm run theme:check
 

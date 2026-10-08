@@ -203,7 +203,7 @@ The footer shows a link to the site's source code (`bd-foot-source`, from `runti
 
 ### What slots may use, and the license of a theme
 
-A slot may call or import only the **slot APIs**: `useSite()`, `useAnimations()`, the helpers of `~/helpers/categories`, the types of `~/interfaces`, and Vue, Nuxt (`<NuxtLink>`, `<NuxtImg>`, `useId()`, `useRuntimeConfig()`) and `useI18n()`. A theme that keeps to them, to the public hooks and to the slot list may use any license, including a proprietary one ([theme exception](../../LICENSE-EXCEPTION.md)). `themes/starter/` is MIT-0, so a theme made with `npm run theme:new` can take any license (replace its `LICENSE`); a theme that copies `themes/bogota/` or core code is AGPL-3.0. Fonts and images keep their own licenses ([THIRD-PARTY.md](../../THIRD-PARTY.md)).
+A slot may call or import only the **slot APIs**: `useSite()`, `useAnimations()`, the helpers of `~/helpers/categories`, the types of `~/interfaces`, and Vue, Nuxt (`<NuxtLink>`, `<NuxtImg>`, `useId()`, `useRuntimeConfig()`) and `useI18n()`. A theme that keeps to them, to the public hooks and to the slot list may use any license, including a proprietary one ([theme exception](../../LICENSE-EXCEPTION.md)). `themes/starter/` is MIT-0, so a theme made with `npm run theme:new` can take any license (replace its `LICENSE`; a theme kept in this repository also gets an entry in [REUSE.toml](../../REUSE.toml) with its license, and OFL-1.1 for its fonts); a theme that copies `themes/bogota/` or core code is AGPL-3.0. Fonts and images keep their own licenses ([THIRD-PARTY.md](../../THIRD-PARTY.md)).
 
 ## 6. Accessibility handled by the core
 

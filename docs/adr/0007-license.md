@@ -21,7 +21,7 @@ Two more facts shape the decision:
 
 Both repositories are licensed under the **GNU Affero General Public License, version 3 only** (`AGPL-3.0-only`). `LICENSE` holds a short notice and then the full, unmodified text from gnu.org. Copyright line: `Copyright (C) 2026 Alejandro Ramirez Garcia and the Micelio contributors`. BogDev is a site running Micelio, not a legal entity, so it is not the holder. If a company is formed later, the maintainer's copyright can be assigned to it; the line changes then.
 
-`-only`, not `-or-later`: a future AGPL version cannot change the terms without the contributors' choice.
+`-only`, not `-or-later`: a future AGPL version is not accepted in advance. A section 14 proxy decides whether a later AGPL version can be used (amendment of 2026-10-08).
 
 `package.json` declares `"license": "AGPL-3.0-only"` and stays `"private": true`. The backend (bogd3v/micelio-cms#96) does the same and links to this record.
 
@@ -58,7 +58,7 @@ Outside contributions are accepted under the AGPL with the **Developer Certifica
 
 ### 7. No SPDX headers yet
 
-Source files do not carry `SPDX-License-Identifier` headers. `LICENSE` at the root covers the repository, and adding a header to every file is noise without a tool that needs it. Revisit if files start being copied out of the repository on their own (for example, themes generated from `themes/starter/`).
+Source files do not carry `SPDX-License-Identifier` headers. `LICENSE` at the root covers the repository, and adding a header to every file is noise without a tool that needs it. Revisit if files start being copied out of the repository on their own (for example, themes generated from `themes/starter/`). Replaced by REUSE metadata in the amendment of 2026-10-08.
 
 ## Options considered
 
@@ -100,3 +100,16 @@ Clear, but it closes the door to paid or proprietary themes (#320) and leaves th
 - New third-party material is listed in `THIRD-PARTY.md`; new production dependencies must pass `npm run lint:licenses`.
 - Branch protection on `main` should require the `DCO` and lint checks (a repository setting, done by hand).
 
+## Amendment (2026-10-08, #379): future versions, future permissions and REUSE
+
+The first two are cheap while the maintainer is the only copyright holder and need every contributor's agreement after the first outside contribution (section 3 gives the same reason for the theme exception); the third is tooling.
+
+**1. Section 14 proxy.** `LICENSE` names the maintainer, or whoever he assigns his copyright in Micelio to, as the proxy of AGPL section 14: a public statement of acceptance by the proxy permanently authorizes using a later version of the AGPL for Micelio. The license stays `AGPL-3.0-only`. Compared with `-or-later`, a future version is adopted after reading it instead of being accepted in advance; compared with plain `-only`, adopting it does not need every contributor. Section 14 covers later versions of the AGPL only, so a change to any other license still needs every copyright holder.
+
+**2. Future additional permissions.** `CONTRIBUTING.md` has contributors license their contributions also under any additional permission under section 7 that the maintainer (the section 14 proxy) publishes later, as was done for themes. Section 7 permissions only grant rights, so this cannot make Micelio less free, and it is not a CLA: contributors keep their copyright and dual licensing stays out (option D). Candidates, each bounded by a public contract with its own ADR and none adopted yet: islands (an island contract and SDK, extending the registry of ADR 0008), CMS extensions in `micelio-cms`, and the site output (the Micelio client code in a generated site). Integrations over the network get a clarification instead of a permission: the README states that the maintainer does not consider an app that only talks to Micelio over HTTP, without its code, to be combined with it.
+
+**3. REUSE instead of per-file SPDX headers.** Section 7 is replaced: the repository follows the [REUSE specification](https://reuse.software/) 3.3. `REUSE.toml` records the license and copyright of every file by path (Micelio's code, the MIT-0 starter theme, fonts, the CC BY-SA photo, Heroicons, the Mastodon logo), `LICENSES/` holds each license text, and CI runs `reuse lint`. `THIRD-PARTY.md` stays the human explanation. No file gets a header: `npm run theme:new` already copies `themes/starter/LICENSE` (MIT-0) into the new theme, and a header in every file would have to be edited by a theme author who picks another license. A theme created inside this repository is covered by the `**` (AGPL) annotation until its own path is annotated: `docs/themes/creating-a-theme.md` says to add its `REUSE.toml` entry (MIT-0 or its license, OFL-1.1 for its fonts).
+
+The exception keeps its identifier `LicenseRef-Micelio-Theme-exception`, used as `AGPL-3.0-only WITH LicenseRef-Micelio-Theme-exception`. SPDX 3.0 names custom additions after `WITH` with an `AdditionRef-` prefix, but REUSE 3.3 (`reuse` 6.2) rejects it; the rename waits until REUSE accepts it. `LICENSES/LicenseRef-Micelio-Theme-exception.txt` is a copy of `LICENSE-EXCEPTION.md`, kept equal by `test/reuse.test.ts`.
+
+The proxy and the contribution clause are part of the legal review planned in #306.

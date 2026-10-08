@@ -4,9 +4,14 @@ Thanks for helping. Conventions, commands and project structure are in [AGENTS.m
 
 ## License of your contribution
 
-Micelio is licensed under the [GNU AGPL-3.0-only](LICENSE) with the [theme exception](LICENSE-EXCEPTION.md). By contributing you agree that your contribution is licensed under the same terms. You keep your copyright; there is no CLA. The reasons are in [ADR 0007](docs/adr/0007-license.md).
+Micelio is licensed under the [GNU AGPL-3.0-only](LICENSE) with the [theme exception](LICENSE-EXCEPTION.md). By contributing you license your contribution under the same terms, and also:
 
-Only contribute work you have the right to contribute. Third-party material (code, fonts, images, logos) keeps its own license: add it only if that license allows it, keep its license file next to it, and list it in [THIRD-PARTY.md](THIRD-PARTY.md). New production dependencies must pass `npm run lint:licenses`.
+- under any **additional permission** under section 7 of the AGPL that Micelio's maintainer (the section 14 proxy named in [LICENSE](LICENSE)) publishes later for Micelio, as was done for themes. Such a permission can only give everyone more rights over Micelio, never restrict them, and Micelio itself stays under the AGPL;
+- under any later version of the GNU AGPL that the same proxy accepts for Micelio (section 14). This covers later versions of the AGPL only, never another license.
+
+You keep your copyright; there is no CLA. The reasons are in [ADR 0007](docs/adr/0007-license.md).
+
+Only contribute work you have the right to contribute. Third-party material (code, fonts, images, logos) keeps its own license: add it only if that license allows it, keep its license file next to it, list it in [THIRD-PARTY.md](THIRD-PARTY.md) and annotate its path in [REUSE.toml](REUSE.toml) (`reuse lint` checks it in CI). New production dependencies must pass `npm run lint:licenses`.
 
 ## Developer Certificate of Origin
 
