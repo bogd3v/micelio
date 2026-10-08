@@ -1,0 +1,7 @@
+Mastodon and the Mastodon logo are trademarks of Mastodon gGmbH.
+
+The logo is included unmodified, only to link to Mastodon, as the Mastodon
+trademark policy allows: https://joinmastodon.org/trademark
+
+No license to the logo is granted by Micelio's contributors, and it is not
+covered by Micelio's license. See THIRD-PARTY.md.

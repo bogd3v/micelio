@@ -2,7 +2,7 @@
 
 Micelio's license ([LICENSE](LICENSE), AGPL-3.0-only) and its theme exception ([LICENSE-EXCEPTION.md](LICENSE-EXCEPTION.md)) cover only the work of Micelio's contributors. **Third-party material is not part of that licensing**: Micelio's contributors do not relicense it, it is not offered under the AGPL or under the theme exception, and it keeps the license its authors gave it. Whoever reuses it follows that license, not Micelio's.
 
-This applies to everything below and to any third-party material added later, listed here or not. When you add some, list it here with its source and license, and keep its license file next to it.
+This applies to everything below and to any third-party material added later, listed here or not. When you add some, list it here with its source and license, keep its license file next to it, and annotate its path in [REUSE.toml](REUSE.toml), the machine-readable version of this list (`reuse lint` checks it in CI; the license texts are in `LICENSES/`).
 
 ## Dependencies
 
