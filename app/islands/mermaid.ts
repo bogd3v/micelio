@@ -1,11 +1,10 @@
 // <micelio-mermaid>: draws the diagram of a Mermaid block (ADR 0006, section 6). The server markup holds the source code
 // block, which stays on any failure. The loader (`loader.ts`) imports this file when a block nears the viewport after load and idle,
 // and Mermaid itself loads on the first draw. It does not share modules with the loader, or the loader would load a chunk at start.
-// The SVG goes into the light DOM once the page has hydrated, so Vue's v-html never sees a mismatch.
+// The loader imports this file after the page has hydrated, so the SVG goes into the light DOM without Vue's v-html seeing a mismatch.
 import type { Mermaid } from 'mermaid'
 import type { MermaidTokens } from '../helpers/mermaid'
 import { MERMAID_CONFIG_ID, MERMAID_CSS, MERMAID_TOKENS, mermaidThemeVariables, mermaidTitle, parseMermaidConfig, resolveMermaidOverrides } from '../helpers/mermaid'
-import { whenHydrated } from './lib/hydrated'
 
 const DIAGRAM_CLASS = 'bd-mermaid-diagram'
 const READY_CLASS = 'bd-mermaid-ready'
@@ -50,15 +49,21 @@ function configure(mermaid: Mermaid): void {
   })
 }
 
-// A new theme or mode changes data-theme and data-scheme: every drawn diagram is drawn again with the new roles
-function watchTheme(): void {
+function track(element: MicelioMermaid): void {
+  drawn.add(element)
+  // A new theme or mode changes data-theme and data-scheme: every tracked diagram is drawn again with the new roles
   observer ??= new MutationObserver(() => {
-    for (const element of drawn) {
-      if (element.isConnected) element.draw().catch(() => {})
-      else drawn.delete(element)
+    for (const item of drawn) {
+      if (item.isConnected) item.draw().catch(() => {})
+      else untrack(item)
     }
   })
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-scheme'] })
+}
+
+function untrack(element: MicelioMermaid): void {
+  drawn.delete(element)
+  if (!drawn.size) observer?.disconnect()
 }
 
 class MicelioMermaid extends HTMLElement {
@@ -66,7 +71,12 @@ class MicelioMermaid extends HTMLElement {
   private run = 0
 
   connectedCallback(): void {
-    if (this.abort || this.classList.contains(READY_CLASS)) return
+    // Moved while drawn: it keeps its diagram and follows the theme again
+    if (this.classList.contains(READY_CLASS)) {
+      track(this)
+      return
+    }
+    if (this.abort) return
     const abort = new AbortController()
     this.abort = abort
     this.start(abort.signal).catch(() => {})
@@ -76,17 +86,14 @@ class MicelioMermaid extends HTMLElement {
     this.abort?.abort()
     this.abort = undefined
     this.run++
-    drawn.delete(this)
+    untrack(this)
   }
 
   private async start(signal: AbortSignal): Promise<void> {
-    await whenHydrated()
     if (signal.aborted) return
+    // Tracked before the first draw, so a theme change during it draws again
+    track(this)
     await this.draw()
-    if (this.classList.contains(READY_CLASS) && !signal.aborted) {
-      drawn.add(this)
-      watchTheme()
-    }
   }
 
   draw(): Promise<void> {
@@ -121,7 +128,10 @@ class MicelioMermaid extends HTMLElement {
       diagram.innerHTML = svg
       this.classList.add(READY_CLASS)
     } catch {
-      if (current === this.run) this.showSource()
+      if (current === this.run) {
+        this.showSource()
+        untrack(this)
+      }
     }
   }
 }

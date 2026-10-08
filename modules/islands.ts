@@ -7,6 +7,8 @@ import { build } from 'vite'
 import { addTemplate, defineNuxtModule, useLogger } from 'nuxt/kit'
 import { ISLANDS_PATH } from '../app/helpers/islands'
 import { HEAVY_ISLANDS, validateHeavyIslands } from '../app/islands/heavy'
+import { sharedWithLoader } from './lib/islands-graph'
+import type { BuiltChunk } from './lib/islands-graph'
 import type { IslandManifest } from '../app/helpers/islands'
 
 const STALE_MS = 7 * 24 * 60 * 60 * 1000
@@ -110,6 +112,7 @@ async function readCache(rootDir: string, outDir: string, manifestFile: string):
 
 // Vite's preload helper would be one shared chunk the entry imports, so a heavy island's chunks would load with its entry (the stray check of
 // docs/performance.md). Modulepreload is off, so every importer gets its own copy of the one-line helper and the entry stays self-contained.
+// Islands must not import CSS: the copy drops Vite's CSS dependency loading and `vite:preloadError`.
 const PRELOAD_HELPER = '\0vite/preload-helper.js'
 const OWN_HELPER = '\0micelio-islands/preload-helper:'
 const inlinePreloadHelper = {
@@ -187,11 +190,15 @@ export default defineNuxtModule({
             })
             const outputs = (Array.isArray(result) ? result : [result]).flatMap(item => ('output' in item ? item.output : []))
             const ids = new Set<string>()
+            const graph: BuiltChunk[] = []
             for (const chunk of outputs) {
               if (chunk.type !== 'chunk') continue
+              graph.push({ fileName: chunk.fileName, name: chunk.name, isEntry: chunk.isEntry, imports: chunk.imports })
               if (chunk.isEntry) manifest[chunk.name] = chunk.fileName
               for (const id of chunk.moduleIds) ids.add(id)
             }
+            const shared = sharedWithLoader(graph, HEAVY_ISLANDS.map(island => island.entry))
+            if (shared.length) throw new Error(`Islands build:\n- ${shared.join('\n- ')}`)
             const modules = projectModules(nuxt.options.rootDir, ids)
             for (const island of HEAVY_ISLANDS) {
               if (!manifest[island.entry]) throw new Error(`Heavy island "${island.id}": entry "${island.entry}" was not built`)

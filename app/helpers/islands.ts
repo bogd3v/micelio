@@ -16,15 +16,30 @@ export const HEAVY_SCRIPT_PREFIX = 'micelio-island-'
 export const HEAVY_SCAN_EVENT = 'micelio:heavy-scan'
 
 export interface HeavyDeclaration {
-  /** The custom element the island upgrades. */
-  tag: string
+  /** The registry id; the element it upgrades is `heavyTag(id)`. */
+  id: string
+  trigger: 'visible' | 'interaction'
+  /** What `Save-Data` does to a `visible` island. */
+  saveData: 'load' | 'skip'
   /** Path of the island's entry under `/_islands/`. */
   src: string
+  /** `interaction` only: selector, inside the element, of the control whose press loads the entry. */
+  control?: string
+  /** What the browser must have for the island to run; without it the fallback stays. */
+  features: string[]
+}
+
+/** The custom element of a heavy island. */
+export function heavyTag(id: string): string {
+  return `micelio-${id}`
 }
 
 // A same-site path to a file of /_islands/ (app.baseURL in front), never a URL taken from the markup
 const ENTRY_PATH = /^\/(?:[\w.-]+\/)*_islands\/[\w.-]+\.js$/
-const TAG_NAME = /^micelio-[a-z][a-z0-9-]*$/
+// An attribute selector of ours (the same rule as the registry's), never free CSS
+const CONTROL = /^\[data-[a-z][a-z-]*\]$/
+const FEATURE = /^[a-z0-9]+$/
+const ISLAND_ID = /^[a-z][a-z0-9-]*$/
 
 /** JSON of a heavy island's script: the loader's fields and the island's own `config`. `<` is escaped, so the text cannot close the script element. */
 export function heavyDeclarationJson(declaration: HeavyDeclaration, config: object = {}): string {
@@ -35,7 +50,16 @@ export function heavyDeclarationJson(declaration: HeavyDeclaration, config: obje
 export function parseHeavyDeclaration(json: string | null | undefined): HeavyDeclaration | undefined {
   try {
     const data = JSON.parse(json ?? '') as Partial<HeavyDeclaration> | null
-    if (typeof data?.tag === 'string' && typeof data.src === 'string' && TAG_NAME.test(data.tag) && ENTRY_PATH.test(data.src)) return { tag: data.tag, src: data.src }
+    if (typeof data?.id !== 'string' || typeof data.src !== 'string' || !ISLAND_ID.test(data.id) || !ENTRY_PATH.test(data.src)) return undefined
+    if (data.trigger !== 'visible' && data.trigger !== 'interaction') return undefined
+    const features = Array.isArray(data.features) ? data.features.filter((feature): feature is string => typeof feature === 'string' && FEATURE.test(feature)) : []
+    const declaration: HeavyDeclaration = { id: data.id, trigger: data.trigger, saveData: data.saveData === 'load' ? 'load' : 'skip', src: data.src, features }
+    if (data.trigger === 'interaction') {
+      // An interaction island without a usable control has nothing to wait for
+      if (typeof data.control !== 'string' || !CONTROL.test(data.control)) return undefined
+      declaration.control = data.control
+    }
+    return declaration
   } catch {
     // Malformed: the island stays on its fallback
   }

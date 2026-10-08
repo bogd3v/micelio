@@ -8,15 +8,16 @@ const props = defineProps<{
   block: StrapiRichText
 }>()
 
-const root = ref<HTMLElement | null>(null)
 const { t } = useI18n()
+
+const root = ref<HTMLElement | null>(null)
 
 useCodeBlockCopy(root)
 
 // Diagrams are drawn by `app/islands/mermaid.ts` (ADR 0006, section 6); the page carries its label and the theme's overrides
 if (props.block.html?.includes(`<${MERMAID_ELEMENT}`)) {
   const config: MermaidConfig = { label: t('bd.mermaid.label'), overrides: mermaidOverrides }
-  useHeavyIsland('mermaid', MERMAID_ELEMENT, config)
+  useHeavyIsland('mermaid', config)
 }
 </script>
 

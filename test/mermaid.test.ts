@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { MermaidTokens } from '../app/helpers/mermaid'
-import { MERMAID_TOKENS, mermaidThemeVariables, mermaidTitle, parseMermaidConfig, renderMermaidBlockHtml, resolveMermaidOverrides } from '../app/helpers/mermaid'
+import { HEAVY_SCRIPT_PREFIX } from '../app/helpers/islands'
+import { MERMAID_CONFIG_ID, MERMAID_TOKENS, mermaidThemeVariables, mermaidTitle, parseMermaidConfig, renderMermaidBlockHtml, resolveMermaidOverrides } from '../app/helpers/mermaid'
 
 const tokens = Object.fromEntries(MERMAID_TOKENS.map(name => [name, `#${name}`])) as MermaidTokens
 
@@ -75,6 +76,13 @@ describe('theme overrides', () => {
   it('resolve each role and skip the ones without a value', () => {
     const values: Record<string, string> = { accent: ' #f00 ', ink: '' }
     expect(resolveMermaidOverrides({ lineColor: 'accent', textColor: 'ink', noteBkgColor: 'missing' }, role => values[role] ?? '')).toEqual({ lineColor: '#f00' })
+  })
+})
+
+describe('config script id', () => {
+  it('is the heavy island script id of mermaid', () => {
+    // Duplicated on purpose: the island must not import a module the loader imports
+    expect(MERMAID_CONFIG_ID).toBe(`${HEAVY_SCRIPT_PREFIX}mermaid`)
   })
 })
 
