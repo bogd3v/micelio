@@ -56,7 +56,7 @@ export function useTheme(): UseTheme {
     try {
       await transition.finished
     } catch {
-      // A skipped transition still ends the class
+      // The update failed: still remove the class
     } finally {
       root.classList.remove('bd-vt-theme')
     }
