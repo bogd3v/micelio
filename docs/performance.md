@@ -11,6 +11,7 @@ Performance is a product guarantee in Micelio: every page has a budget, and CI f
 | `jsKb`, `cssKb`, `htmlKb`, `fontKb` | KB the server sends (with `Accept-Encoding: br, gzip`) for the HTML and the assets it declares: the entry `<script>`, `modulepreload` links, stylesheets, preloaded fonts and the fonts those stylesheets reference. If the server does not compress, this is the raw size |
 | `jsGzipKb`, `cssGzipKb`, `htmlGzipKb` | The same files gzipped by the script: what the page would weigh with compression. Reported, not budgeted |
 | `thirdPartyRequests` | Requests a browser makes to origins other than the site and `firstPartyOrigins` until the network is idle |
+| `strayRequests` | Requests, in every mode, that only an island in use may make (ADR 0006, section 6): any file of `/_islands/` the HTML does not declare before the `load` event (a `visible` island may load after it), and in static and landing builds any Pagefind file or undeclared script until the network is idle. Limit 0 |
 | `lcpMs`, `tbtMs`, `cls`, `performance`, `accessibility` | Lighthouse 13, default mobile config (simulated 4G, 4x CPU slowdown), median of 3 runs |
 
 ```bash
@@ -48,15 +49,14 @@ npm run perf -- --mode static --skip-generate           # reuse .output/public
 NUXT_PUBLIC_THEME=starter npm run perf -- --mode static # the theme of the generate
 ```
 
-Pages are the dynamic ones plus the Spanish home (`/es`). Three metrics only exist here:
+Pages are the dynamic ones plus the Spanish home (`/es`). Two metrics only exist here:
 
 | Metric | What it is |
 | --- | --- |
 | `initialJsGzKb` | Gzip KB of the declared scripts plus the inline ones (the theme init script): what runs before the first paint |
-| `strayRequests` | Requests a browser makes while loading the page to a Pagefind file, or to a script the HTML does not declare. Limit 0: nothing of an island or of Pagefind is in the initial load (ADR 0006, section 6) |
 | `islands.search` | Opens the palette on the first page, types a query and measures what loads from then on: `loaderGzKb`, `pagefindGzKb` (runtime and worker, gzip), `wasmKb` (largest `wasm.<lang>.pagefind`, raw). Checked against `islands` in `budgets.json`, as errors |
 
-`budgets.json` has one section per mode under `modes` (`pages`, `limits` and, for static, `islands`); `aliases` can map a mode to another's budgets (none today). A section with `"ci": false` stays out of the `perf-matrix` job. A theme exception names its `mode`, one or a list (every mode when it does not). A theme has at most one exception entry, so it covers one mode or all of them; limits that differ per mode need the entry without `mode` and metrics that suit both. The `e2e/static/search.spec.ts` check of the islands budget stays: it reads the files of the output and runs in `npm run test:static` without Lighthouse.
+`budgets.json` has one section per mode under `modes` (`pages`, `limits` and `islands`); `aliases` can map a mode to another's budgets (none today). A section with `"ci": false` stays out of the `perf-matrix` job. A theme exception names its `mode`, one or a list (every mode when it does not). A theme has at most one exception entry, so it covers one mode or all of them; limits that differ per mode need the entry without `mode` and metrics that suit both. The `e2e/static/search.spec.ts` check of the islands budget stays: it reads the files of the output and runs in `npm run test:static` without Lighthouse.
 
 Sizes come from what the HTML declares, not from what a browser happens to download, because a browser measurement is not repeatable: depending on CPU speed, Nuxt's idle prefetch of linked pages and lazy chunks like Mermaid land before or after the cut. Lazy chunks are left out of the initial budget on purpose; they get their own heavy island budget (ADR 0006).
 
@@ -132,7 +132,28 @@ Dynamic mode, production build of `main` at `9aa9c3f`, against the e2e mock:
 
 ### Islands
 
-`scripts/perf/budgets.json` has an `islands` section (ADR 0006, section 6): the bytes an island sends once it is used, apart from the page budgets. `measure.mjs --mode static` enforces it on what a browser loads when the palette opens (see "Static builds"), and `e2e/static/search.spec.ts` on the files of the build (`npm run test:static`). The section lives in `modes.static`.
+Each mode of `scripts/perf/budgets.json` can have an `islands` section (ADR 0006, section 6): the bytes an island sends once it is used, apart from the page budgets. `search` has its own metrics: `measure.mjs --mode static` enforces them on what a browser loads when the palette opens (see "Static builds"), and `e2e/static/search.spec.ts` on the files of the build (`npm run test:static`).
+
+Every heavy island in `app/islands/heavy.ts` needs a budget, under the key its `budget` names, in at least one mode; `measure.mjs` refuses to start when an island has none or a budget has no island (`scripts/perf/islands.mjs`, tested in `test/perfIslands.test.ts`). In each mode that budgets it, the script loads the fixture page once, checks that no file of `/_islands/` loaded before the trigger and that the HTML does not declare the island's entry, fires the trigger and measures every file of `/_islands/` requested from then on (the entry, its chunks, workers and runtimes, including what a worker fetches):
+
+```json
+"islands": {
+  "mermaid": {
+    "page": "/blog/<an article with a diagram below the fold>",
+    "ready": "micelio-mermaid svg",
+    "error": { "scriptGzKb": 0, "wasmKb": 0, "totalKb": 0, "requests": 0 }
+  }
+}
+```
+
+| Field | What it is |
+| --- | --- |
+| `page` | Path of a page of the mock site that renders `<micelio-<id>>`; a `visible` island must start below the fold, or it loads before the trigger and fails |
+| `control` | `interaction` only: the CSS selector clicked to start the island (default the element itself) |
+| `ready` | Required: CSS selector of the island's rendered result (`micelio-mermaid svg`, a playground's filled output). The script waits for it, then for 500 ms without a request; an island that loads nothing of `/_islands/` after its trigger fails |
+| `error` | Limits: `scriptGzKb` (scripts, gzip), `wasmKb` (`.wasm` as sent), `totalKb` (everything as sent, each distinct file once), `requests` (every request, so a file fetched twice counts twice). `strayRequests` is always 0 |
+
+Only same-origin files under `/_islands/` are measured, so a heavy island self-hosts its code and runtimes there (ADR 0004 limits a worker's `connect-src` to `/_islands/runtimes/`).
 
 | Island | What loads at start | What loads when it is used | Limits (`error`) |
 | --- | --- | --- | --- |
@@ -188,6 +209,7 @@ Heavy islands (ADR 0006, section 6; Mermaid first) are built by `modules/islands
 | 2026-10-07 | Bogotá fonts (#350): `archivo-latin-var.woff2` 97.9 → 25.0 KB and `jetbrains-mono-latin-var.woff2` 49.0 → 10.5 KB (143.6 → 35.5 KB in the page), regenerated by `scripts/perf/subset-theme-fonts.py` from the full fonts it replaced, pinned as git blobs (`scripts/perf/bogota-font-sources.json`): only the glyphs English and Spanish need (ASCII, accents, ñ, ü, ¡ ¿, ª º °, punctuation, arrows), Archivo `wght` 300 to 600 and `wdth` 100 to 125 (`wdth` 62 to 100 and `wght` 100 to 300 were never used), JetBrains Mono `wght` 400 to 700, only the layout features the CSS reaches (`kern`, `liga`, `tnum`, `rvrn`). JetBrains Mono is no longer preloaded (`preload: false`). `font-fallbacks.css` regenerated (metrics move by 0.01 %); the first attempt used the upstream google/fonts TTFs, whose outlines and JetBrains Mono version (2.211, not 2.304) differ from the files the site served: small text came out bolder and wider on CI, so the subset now starts from the old woff2 and keeps its `prep` and `gasp` tables (outlines at 300 to 600 differ by at most 1 font unit). The home's compact hero photo is served at 1x (390 w, 19 KB, was 780 w, 91 KB on a 1.75 DPR phone) and with `fetchpriority=high` | Static, bogota, median of 3: LCP home/es 2.63 → 1.73 s, about 2.33 → 1.80, blog 2.03 → 1.43, article 1.95 → 1.35 (1.50 in a third of the runs), privacy 1.95 → 1.35; performance 98-99 → 99-100; fonts 143.6 → 35.5 KB; starter unchanged (1.35 to 1.43 s on this machine). Dynamic, bogota: LCP 4923/3320/3621/5121/3322 → 4292/2857/3546/3510/2614 ms (home/blog/article/about/privacy), with the heaviest display font 4616/3558/4284/4260/3217. **Visual changes:** characters outside the set and JetBrains Mono's code ligatures (`calt`) are gone, Archivo stops at weight 600 (the 404 code and `<strong>` outside `.bd-prose` were 700), and the home photo is softer on 2x and 3x phones. The `themes.bogota` exception shrinks to LCP on the home, the about page (images) and 3 % over the target on the text pages |
 | 2026-10-07 | Bogotá's LCP images (#367): the home hero is two `<picture>` per copy (`auto` follows `prefers-color-scheme`, `alt` is the other photo, lazy and shown only when the stored mode differs from the system scheme, through `data-scheme`), whose `<source media>` also select the breakpoint, so the visible photo is `fetchpriority=high` and eager and the three others fetch nothing; same files (webp, q 80). The about mascot is unchanged: AVIF/WebP of flat art are no smaller than its PNG (586 px: PNG 50.6 KB, lossless WebP 51.8, AVIF q 80 100.9; 330 px: 31.5, 94.7, 46.5), and a preload changed nothing | Static, bogota, median of 3: LCP unchanged (home/es 1.73 s, about 1.80), so the exception stays. Simulated floors, tried by replacing the image on a built site: home 1.58 s with a 1.6 KB photo, 1.66 with 4.6 KB, 1.73 with 9.7 and 19 KB; about 1.50 s with a 1.6 KB mascot, 1.80 with 24 and 54 KB; dropping the font preload moved the about page from 1.80 to 1.66 s. Real throttled Chromium (150 ms RTT, 1.6 Mbps, 4x CPU, 412 px at 1.75 DPR, median of 5): home LCP 1096 → 924 ms in a light system, 1044 → 868 dark; with a stored mode that differs from the system scheme 1050 → 1164 ms and one extra photo downloaded. **Visual changes:** none (same encoded files; `<picture>` is `display: contents`) |
 | 2026-10-08 | Landing budget against the demo (#244, PR 9): `compose.landing.yml` with a builder image of `main` (5335e9b), measured with `measure.mjs --mode landing --base http://localhost:3000 --search-query compost`, then regenerated with `NUXT_PUBLIC_THEME=starter` and measured again (the content untouched). `modes.landing` LCP error limit 1500 → 1550 ms. Found and fixed in #372: the builder's `serve` kept the old brotli HTML and `_headers` after a regeneration | Bogota: home/es initial JS 3.6 KB gzip, CSS 21.8 KB, HTML 16.5/16.7 KB, fonts 35.5 KB, CLS 0, TBT 0, performance 100, accessibility 100, LCP 1655/1653 ms (bogota exception, #367). Starter: initial JS 3.6 KB, CSS 20 KB, HTML 6.9/7.1 KB, fonts 35.8 KB, CLS 0, TBT 0, performance 100, accessibility 100, LCP 1505/1503 ms. Search island on both: loader 3.25 KB, Pagefind 24.39 KB gzip, wasm 70.52 KB |
+| 2026-10-08 | Heavy-island budgets (#247, PR 2): `strayRequests` in every mode (dynamic pages get a limit of 0) and counted only before the `load` event for `/_islands/`, so a `visible` island can load after it; `budgets.json` `islands` in any mode, validated against the heavy registry; `measure.mjs` measures each heavy island on its fixture page (`scripts/perf/islands.mjs`). The registry is empty until Mermaid (PR 3) | No budget changed. Dynamic and static bogota: `strayRequests` 0 on every page; search island unchanged (3.25 / 24.39 / 70.52) |
 
 The HTML is rendered per request, so Nitro does not compress it (108.5 KB on the home page here). In production Traefik compresses it, together with Strapi's JSON (bogd3v/bogdev-infra#10): the home page HTML goes from 141.8 KB to 27.7 KB with brotli. This measurement serves the Nitro build directly, so it still reports the uncompressed HTML.
 

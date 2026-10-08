@@ -8,9 +8,11 @@ import { request as httpRequest } from 'node:http'
 import { request as httpsRequest } from 'node:https'
 import { brotliDecompressSync, gunzipSync, gzipSync } from 'node:zlib'
 import { chromium } from '@playwright/test'
+import { createJiti } from 'jiti'
 import lighthouse from 'lighthouse'
 import { generateStatic } from '../lib/static-generate.mjs'
 import { checkFouc } from './fouc.mjs'
+import { ISLANDS_PREFIX, islandBudgetErrors, islandElement, islandMetrics, islandProblems, isStrayRequest } from './islands.mjs'
 
 const ROOT = new URL('../../', import.meta.url).pathname
 // PERF_*_PORT: another set of ports when these are taken (parallel runs on one machine)
@@ -45,6 +47,11 @@ if (!modeBudgets) throw new Error(`budgets.json has budgets for the modes ${Obje
 const pages = pagesToMeasure(args.pages)
 // A recorded exception applies to every mode unless it names one
 const exception = budgets.themes?.[theme] && [budgets.themes[theme].mode ?? budgetMode].flat().includes(budgetMode) ? budgets.themes[theme] : undefined
+// The heavy registry is TypeScript; every island in it needs a budget, and every heavy budget an island
+const { HEAVY_ISLANDS } = await createJiti(import.meta.url).import('../../app/islands/heavy.ts')
+const budgetErrors = islandBudgetErrors(HEAVY_ISLANDS, budgets.modes)
+if (budgetErrors.length) throw new Error(`budgets.json:\n${budgetErrors.join('\n')}`)
+const heavyIslands = HEAVY_ISLANDS.filter(island => modeBudgets.islands?.[island.budget])
 for (const [id, entry] of Object.entries(budgets.themes ?? {})) {
   if (!entry?.reason) throw new Error(`budgets.json: the exception for theme "${id}" needs a "reason"`)
   if (!existsSync(new URL(`../../themes/${id}/theme.json`, import.meta.url))) console.warn(`warn  budgets.json: "themes.${id}" is not an installed theme in themes/`)
@@ -214,17 +221,95 @@ async function observeLoad(browser, url, declaredScripts) {
   const firstParty = new Set([new URL(url).origin, `http://127.0.0.1:${MOCK_PORT}`, ...(budgets.firstPartyOrigins ?? [])])
   const thirdParty = []
   const stray = []
-  page.on('request', (request) => {
+  let loaded = false
+  page.once('load', () => {
+    loaded = true
+  })
+  // Context-wide, so a worker's requests count too
+  context.on('request', (request) => {
     const requestUrl = request.url()
     if (!/^https?:/.test(requestUrl)) return
     if (!firstParty.has(new URL(requestUrl).origin)) thirdParty.push(requestUrl)
     const { pathname } = new URL(requestUrl)
-    // A script the HTML does not declare, or any byte of Pagefind, before the visitor used the search (ADR 0006, section 6)
-    if (isStatic && (pathname.startsWith('/pagefind/') || (/\.m?js$/.test(pathname) && !declaredScripts.includes(pathname)))) stray.push(pathname)
+    // ADR 0006, section 6: no island byte in the initial load, no Pagefind before the search is used
+    if (isStrayRequest({ pathname, beforeLoad: !loaded, isStatic, declaredScripts })) stray.push(pathname)
   })
   await page.goto(url, { waitUntil: 'networkidle' })
   await context.close()
-  return { thirdPartyRequests: thirdParty.length, thirdPartyUrls: thirdParty, ...(isStatic && { strayRequests: stray.length }), strayUrls: stray }
+  return { thirdPartyRequests: thirdParty.length, thirdPartyUrls: thirdParty, strayRequests: stray.length, strayUrls: stray }
+}
+
+/** Resolves once no request has been in flight for `quietMs`; a load state that was already reached would resolve at once */
+function trackQuiet(context) {
+  let inflight = 0
+  let last = Date.now()
+  const done = () => {
+    inflight = Math.max(0, inflight - 1)
+    last = Date.now()
+  }
+  context.on('request', () => {
+    inflight++
+    last = Date.now()
+  })
+  context.on('requestfinished', done)
+  context.on('requestfailed', done)
+  return {
+    // Restarts the quiet window, so a trigger whose requests start late is waited for
+    mark: () => {
+      last = Date.now()
+    },
+    wait: async (quietMs = 500, timeoutMs = 60000) => {
+      const end = Date.now() + timeoutMs
+      while (inflight > 0 || Date.now() - last < quietMs) {
+        if (Date.now() > end) throw new Error(`requests still in flight after ${timeoutMs} ms`)
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+    },
+  }
+}
+
+/**
+ * Loads the island's fixture page, checks that nothing of it loaded before its trigger, fires the trigger
+ * (scrolls to the element, or clicks its control) and measures every file of /_islands/ requested from then on
+ */
+async function measureHeavyIsland(browser, island, budget) {
+  const url = new URL(budget.page, base).href
+  const declaredScripts = [...declaredAssets((await fetchAsSent(url)).text, url).scripts].map(src => new URL(src).pathname)
+  const context = await browser.newContext({ viewport: { width: 412, height: 823 }, isMobile: true })
+  const quiet = trackQuiet(context)
+  const page = await context.newPage()
+  const before = []
+  const after = []
+  let triggered = false
+  context.on('request', (request) => {
+    const { origin, pathname } = new URL(request.url())
+    if (origin !== new URL(url).origin || !pathname.startsWith(ISLANDS_PREFIX)) return
+    if (!triggered && !declaredScripts.includes(pathname)) before.push(pathname)
+    if (triggered) after.push(pathname)
+  })
+  try {
+    await page.goto(url, { waitUntil: 'load' })
+    await quiet.wait()
+    const element = islandElement(island)
+    if (!(await page.locator(element).count())) return { problem: `${budget.page} has no <${element}>` }
+    triggered = true
+    quiet.mark()
+    if (island.trigger === 'visible') await page.locator(element).first().scrollIntoViewIfNeeded()
+    else await page.locator(budget.control ?? element).first().click()
+    await page.locator(budget.ready).first().waitFor({ timeout: 60000 })
+    await quiet.wait()
+  } catch (error) {
+    return { problem: `${budget.page}: ${error.message.split('\n')[0]}` }
+  } finally {
+    await context.close()
+  }
+  if (!after.length) return { problem: `${budget.page}: nothing of /_islands/ loaded after the trigger${before.length ? ` (before it: ${before.join(', ')})` : ''}` }
+  const files = await Promise.all([...new Set(after)].map(async path => ({ path, ...(await fetchAsSent(new URL(path, url).href)) })))
+  // Never modulepreloaded: neither its entry nor an island chunk is in what the HTML declares (ADR 0006, section 6)
+  const entry = new RegExp(`^${ISLANDS_PREFIX}${island.entry}-[^/]+\\.js$`)
+  const preloaded = declaredScripts.filter(path => entry.test(path) || path.startsWith(`${ISLANDS_PREFIX}chunks/`))
+  // `requests` counts every request, so a file fetched twice (page and worker) shows
+  return { ...islandMetrics(files), requests: after.length, strayRequests: before.length + preloaded.length, strayUrls: [...before, ...preloaded] }
 }
 
 /** Opens the search palette of a static page and measures what loads from then on, against `islands.search` */
@@ -299,7 +384,7 @@ function compare(page, metrics, limits, level) {
 }
 
 function summaryTable(report) {
-  const columns = ['jsKb', 'jsGzipKb', ...(isStatic ? ['initialJsGzKb', 'strayRequests'] : []), 'cssKb', 'htmlKb', 'fontKb', 'thirdPartyRequests', 'lcpMs', 'tbtMs', 'cls', 'performance', 'accessibility']
+  const columns = ['jsKb', 'jsGzipKb', ...(isStatic ? ['initialJsGzKb'] : []), 'strayRequests', 'cssKb', 'htmlKb', 'fontKb', 'thirdPartyRequests', 'lcpMs', 'tbtMs', 'cls', 'performance', 'accessibility']
   const lines = [`| Page | ${columns.join(' | ')} |`, `| --- | ${columns.map(() => '---:').join(' | ')} |`]
   for (const row of report) lines.push(`| ${row.page} | ${columns.map(c => row.metrics[c]).join(' | ')} |`)
   return lines.join('\n')
@@ -350,23 +435,33 @@ try {
     if (isStatic && modeBudgets.islands?.search && !islands.search) {
       islands.search = await measureSearchIsland(browser, url, declaredScripts)
       console.log(`island     search ${JSON.stringify(islands.search)}`)
-      for (const [metric, limit] of Object.entries(modeBudgets.islands.search.error)) {
-        const value = islands.search[metric]
-        if (value === undefined || value > limit) problems.push({ level: 'error', page: 'island search', metric, value, limit })
-      }
+      problems.push(...islandProblems('search', islands.search, modeBudgets.islands.search.error))
     }
   }
+  // Each heavy island once, on the fixture page of its budget
+  for (const island of heavyIslands) {
+    const budget = modeBudgets.islands[island.budget]
+    const { problem, strayUrls, ...measured } = await measureHeavyIsland(browser, island, budget)
+    if (problem) {
+      problems.push({ level: 'error', page: `island ${island.id}`, message: problem })
+      continue
+    }
+    islands[island.id] = measured
+    console.log(`island     ${island.id} ${JSON.stringify(measured)}`)
+    if (strayUrls.length) console.log(`           before the trigger: ${strayUrls.join(', ')}`)
+    problems.push(...islandProblems(island.id, measured, { ...budget.error, strayRequests: 0 }))
+  }
 
-  if (args.out) writeFileSync(args.out, JSON.stringify({ theme, mode, ...(displayFont && { displayFont }), pages: report, ...(isStatic && { islands }) }, null, 2) + '\n')
+  if (args.out) writeFileSync(args.out, JSON.stringify({ theme, mode, ...(displayFont && { displayFont }), pages: report, ...(Object.keys(islands).length && { islands }) }, null, 2) + '\n')
   const lines = problems.map((p) => {
     const prefix = `${p.level === 'error' ? 'ERROR' : 'warn '} [${label}] ${p.page}:`
-    if (p.message) return `${prefix} FOUC: ${p.message}`
+    if (p.message) return `${prefix} ${p.page.startsWith('island ') ? '' : 'FOUC: '}${p.message}`
     const verb = HIGHER_IS_BETTER.has(p.metric) ? 'is below' : 'exceeds'
     return `${prefix} ${p.metric} ${p.value} ${verb} the budget of ${p.limit}`
   })
   if (lines.length) console.log('\n' + lines.join('\n'))
   if (process.env.GITHUB_STEP_SUMMARY) {
-    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Performance (${label})\n\n${exception ? `Recorded exception: ${exception.reason}\n\n` : ''}${summaryTable(report)}\n\n${isStatic ? `Search island: \`${JSON.stringify(islands.search)}\`\n\n` : ''}${lines.map(l => `- ${l}`).join('\n')}\n`)
+    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Performance (${label})\n\n${exception ? `Recorded exception: ${exception.reason}\n\n` : ''}${summaryTable(report)}\n\n${Object.entries(islands).map(([id, value]) => `Island ${id}: \`${JSON.stringify(value)}\`\n\n`).join('')}${lines.map(l => `- ${l}`).join('\n')}\n`)
   }
   if (args.check && problems.some(p => p.level === 'error')) process.exitCode = 1
 } finally {
