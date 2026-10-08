@@ -1,5 +1,4 @@
 .bd-account-page {
-    --e: var(--ease-standard);
     display: flex;
     flex-direction: column;
     gap: 48px;
@@ -134,7 +133,7 @@
     color: var(--ink);
     text-decoration: none;
     border: 1px solid var(--line);
-    transition: border-color var(--duration-base) var(--e);
+    transition: border-color var(--duration-base) var(--ease-standard);
 }
 
 .bd-account-drafts:hover {

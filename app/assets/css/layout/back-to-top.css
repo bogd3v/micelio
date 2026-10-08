@@ -15,9 +15,10 @@
     transition: all 0.2s var(--ease-emphasized);
 }
 
-/* The old hover color never applied (a utility with spaces Tailwind could not parse); only the zoom did */
 @media (hover: hover) {
     .bd-back-to-top:hover {
+        color: var(--on-accent);
+        background-color: var(--accent);
         scale: 1.1;
     }
 }

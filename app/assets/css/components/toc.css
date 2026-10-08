@@ -20,7 +20,7 @@
     color: var(--ink-muted);
     text-decoration: none;
     border-left: 1px solid var(--line);
-    transition: color var(--duration-base) var(--e);
+    transition: color var(--duration-base) var(--ease-standard);
 }
 
 .bd-toc-link:hover {

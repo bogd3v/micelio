@@ -8,7 +8,6 @@ html {
 }
 
 .bd-header:where([data-layout="centered"]) {
-    --e: var(--ease-standard);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -74,7 +73,7 @@ html {
     font-size: 15px;
     color: var(--ink-muted);
     text-decoration: none;
-    transition: color var(--duration-base) var(--e);
+    transition: color var(--duration-base) var(--ease-standard);
 }
 
 :where(.bd-header[data-layout="centered"]) .bd-nav-link:hover,
@@ -134,7 +133,7 @@ html {
     min-height: 44px;
     color: var(--ink-muted);
     text-decoration: none;
-    transition: color var(--duration-base) var(--e);
+    transition: color var(--duration-base) var(--ease-standard);
 }
 
 :where(.bd-header[data-layout="centered"]) .bd-strip-link:hover,

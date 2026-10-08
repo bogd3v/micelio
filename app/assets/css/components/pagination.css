@@ -11,7 +11,7 @@
     text-decoration: none;
     background: transparent;
     border: 1px solid var(--line);
-    transition: border-color var(--duration-base) var(--e), color var(--duration-base) var(--e);
+    transition: border-color var(--duration-base) var(--ease-standard), color var(--duration-base) var(--ease-standard);
 }
 
 a.bd-page:hover {

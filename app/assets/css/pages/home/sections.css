@@ -86,7 +86,7 @@
     background-color: var(--surface-sunken);
     background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--bd-scan) 3px 4px);
     border: 1px solid var(--line);
-    transition: box-shadow var(--duration-base) var(--e), border-color var(--duration-base) var(--e);
+    transition: box-shadow var(--duration-base) var(--ease-standard), border-color var(--duration-base) var(--ease-standard);
 }
 
 .bd-latest-archive:hover {
