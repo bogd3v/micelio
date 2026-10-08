@@ -1811,6 +1811,27 @@ describe('theme fonts', () => {
   })
 })
 
+describe('/_islands/ (islands are built in every mode, ADR 0006)', () => {
+  const islandFile = (): string => readdirSync(join(useTestContext().nuxt!.options.nitro.output!.dir!, 'public/_islands')).find(file => /^search-[\w-]+\.js$/.test(file))!
+
+  it('serves an island of the dynamic build as immutable JavaScript', async () => {
+    const response = await fetch(`/_islands/${islandFile()}`)
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toMatch(/javascript/)
+    expect(response.headers.get('cache-control')).toMatch(/max-age=31536000/)
+    expect(response.headers.get('cache-control')).toMatch(/immutable/)
+    expect((await response.text()).length).toBeGreaterThan(1000)
+  })
+
+  it('answers 404 for an island that does not exist', async () => {
+    expect((await fetch('/_islands/search-missing.js')).status).toBe(404)
+  })
+
+  it('renders no island script on a dynamic page', async () => {
+    expect(await $fetch<string>('/blog')).not.toContain('/_islands/')
+  })
+})
+
 describe('theme specimen (built only with MICELIO_SPECIMEN=1)', () => {
   it('has no /_theme route', async () => {
     for (const path of ['/_theme', '/es/_theme']) expect((await fetch(path)).status, path).toBe(404)
