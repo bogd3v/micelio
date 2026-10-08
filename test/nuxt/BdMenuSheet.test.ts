@@ -51,6 +51,10 @@ describe('BdMenuSheet', () => {
     await grip.trigger('pointermove', { clientY: 220, pointerId: 1 })
     await grip.trigger('pointerup', { pointerId: 1 })
     expect(wrapper.emitted('close')).toHaveLength(1)
+    // The exit starts from the drag offset; it resets when the sheet opens again
+    expect(wrapper.get('.bd-sheet-panel').attributes('style')).toContain('translateY(120px)')
+    await wrapper.setProps({ open: false })
+    await wrapper.setProps({ open: true })
     expect(wrapper.get('.bd-sheet-panel').attributes('style')).toBeUndefined()
   })
 })

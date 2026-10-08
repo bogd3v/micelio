@@ -86,10 +86,6 @@ html:has(.bd-sheet[open]) {
     backdrop-filter: blur(6px);
 }
 
-.bd-sheet[open] .bd-sheet-panel {
-    animation: bd-sheet-in 320ms var(--ease-standard);
-}
-
 .bd-sheet-panel {
     display: flex;
     flex-direction: column;
@@ -240,11 +236,49 @@ html:has(.bd-sheet[open]) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-sheet[open] .bd-sheet-panel {
-        animation: none;
-    }
-
     .bd-tab {
         transition: none;
+    }
+}
+
+/* Enter and exit: the dialog stays rendered (display, overlay) until the transition ends */
+@media (prefers-reduced-motion: no-preference) {
+    .bd-sheet,
+    .bd-sheet::backdrop {
+        opacity: 0;
+        transition:
+            opacity var(--duration-base) var(--ease-standard),
+            display var(--duration-base) allow-discrete,
+            overlay var(--duration-base) allow-discrete;
+    }
+
+    .bd-sheet[open],
+    .bd-sheet[open]::backdrop {
+        opacity: 1;
+    }
+
+    .bd-sheet-panel {
+        transform: translateY(40px);
+        transition: transform var(--duration-base) var(--ease-standard);
+    }
+
+    .bd-sheet[open] .bd-sheet-panel {
+        transform: none;
+    }
+
+    /* A drag follows the finger: no easing */
+    .bd-sheet-panel[data-dragging] {
+        transition: none;
+    }
+
+    @starting-style {
+        .bd-sheet[open],
+        .bd-sheet[open]::backdrop {
+            opacity: 0;
+        }
+
+        .bd-sheet[open] .bd-sheet-panel {
+            transform: translateY(40px);
+        }
     }
 }

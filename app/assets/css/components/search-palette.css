@@ -28,10 +28,6 @@ html:has(.bd-palette[open]) {
     box-shadow: var(--glow-link);
 }
 
-.bd-palette[open] .bd-palette-panel {
-    animation: bd-palette-in var(--duration-fast) var(--ease-standard);
-}
-
 .bd-palette-bar {
     display: flex;
     align-items: center;
@@ -213,9 +209,40 @@ a.bd-result {
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* Enter and exit: the dialog stays rendered (display, overlay) until the transition ends */
+@media (prefers-reduced-motion: no-preference) {
+    .bd-palette,
+    .bd-palette::backdrop {
+        opacity: 0;
+        transition:
+            opacity var(--duration-fast) var(--ease-standard),
+            display var(--duration-fast) allow-discrete,
+            overlay var(--duration-fast) allow-discrete;
+    }
+
+    .bd-palette[open],
+    .bd-palette[open]::backdrop {
+        opacity: 1;
+    }
+
+    .bd-palette-panel {
+        transform: translateY(-8px);
+        transition: transform var(--duration-fast) var(--ease-standard);
+    }
+
     .bd-palette[open] .bd-palette-panel {
-        animation: none;
+        transform: none;
+    }
+
+    @starting-style {
+        .bd-palette[open],
+        .bd-palette[open]::backdrop {
+            opacity: 0;
+        }
+
+        .bd-palette[open] .bd-palette-panel {
+            transform: translateY(-8px);
+        }
     }
 }
 

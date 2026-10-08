@@ -33,8 +33,6 @@ const isOpen = computed<boolean>(() => props.open)
 let debounceTimer: ReturnType<typeof setTimeout> | undefined
 let requestId = 0
 
-useFocusTrap(dialogRef, isOpen)
-
 const trimmed = computed<string>(() => query.value.trim())
 const searching = computed<boolean>(() => trimmed.value.length >= MIN_SEARCH_LENGTH)
 const groups = computed<PaletteGroup[]>(() => {
@@ -143,9 +141,14 @@ async function loadCounts(): Promise<void> {
   }
 }
 
-function reset(): void {
+function cancelSearch(): void {
   clearTimeout(debounceTimer)
   requestId++
+}
+
+// Cleared when it opens, not when it closes: the panel keeps its content while it fades out
+function reset(): void {
+  cancelSearch()
   query.value = ''
   articles.value = []
   loading.value = false
@@ -177,13 +180,14 @@ watch(isOpen, (open) => {
   const dialog = dialogRef.value as HTMLDialogElement | undefined
   if (!dialog) return
   if (open && !dialog.open) {
+    reset()
     dialog.showModal()
     inputRef.value?.focus()
     loadCounts()
   }
   if (!open) {
     if (dialog.open) dialog.close()
-    reset()
+    cancelSearch()
   }
 })
 

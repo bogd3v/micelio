@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { tabThroughDialog } from './fixtures/focus'
 
 test('opens with the shortcut, searches and opens an article with the keyboard', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' })
@@ -80,15 +81,12 @@ test('filters by topic from the palette', async ({ page }) => {
   await expect(page).toHaveURL(/\/blog\/category\/linux$/)
 })
 
-test('keeps focus inside the palette', async ({ page }) => {
+test('keeps Tab inside the palette or on the browser UI, never on the page behind', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' })
   await page.keyboard.press('ControlOrMeta+k')
   const palette = page.getByRole('dialog', { name: 'Search BogDev' })
   await expect(palette).toBeVisible()
-  for (let i = 0; i < 6; i++) {
-    await page.keyboard.press('Tab')
-    expect(await palette.evaluate(el => el.contains(document.activeElement))).toBe(true)
-  }
+  await tabThroughDialog(page, palette, 6)
 })
 
 test('opens from the mobile tab bar', async ({ page }) => {

@@ -31,8 +31,6 @@ const isOpen = computed<boolean>(() => props.open)
 const dragOffset = ref(0)
 let dragStart: number | null = null
 
-useFocusTrap(dialogRef, isOpen)
-
 const sections = useNavLinks()
 const topics = computed<{ slug: string, label: string, color: string, to: string }[]>(() =>
   CATEGORIES.map(slug => ({
@@ -74,14 +72,18 @@ function onDragEnd(): void {
   if (dragStart === null) return
   const shouldClose = dragOffset.value > SWIPE_CLOSE_DISTANCE
   dragStart = null
-  dragOffset.value = 0
+  // A swipe that closes keeps its offset, so the exit starts where the finger left the panel
   if (shouldClose) close()
+  else dragOffset.value = 0
 }
 
 watch(isOpen, (open) => {
   const dialog = dialogRef.value as HTMLDialogElement | undefined
   if (!dialog) return
-  if (open && !dialog.open) dialog.showModal()
+  if (open && !dialog.open) {
+    dragOffset.value = 0
+    dialog.showModal()
+  }
   if (!open && dialog.open) dialog.close()
 })
 
@@ -99,7 +101,7 @@ watch(() => route.fullPath, () => {
     @close="open && close()"
     @click="onDialogClick"
   >
-    <div class="bd-sheet-panel" :style="panelStyle">
+    <div class="bd-sheet-panel" :style="panelStyle" :data-dragging="dragOffset > 0 ? '' : undefined">
       <div
         class="bd-sheet-grip"
         @pointerdown="onDragStart"

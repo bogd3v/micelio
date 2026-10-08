@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { tabThroughDialog } from './fixtures/focus'
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true })
 
@@ -57,15 +58,12 @@ test('opens the menu sheet and closes it with the button, Esc and the backdrop',
   await expect(page.getByRole('button', { name: 'Open menu' })).toBeFocused()
 })
 
-test('keeps focus inside the sheet', async ({ page }) => {
+test('keeps Tab inside the sheet or on the browser UI, never on the page behind', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' })
   await page.getByRole('navigation', { name: 'Bottom navigation' }).getByRole('button', { name: 'Menu' }).click()
   const sheet = page.getByRole('dialog', { name: 'Menu' })
   await expect(sheet).toBeVisible()
-  for (let i = 0; i < 20; i++) {
-    await page.keyboard.press('Tab')
-    expect(await sheet.evaluate(el => el.contains(document.activeElement))).toBe(true)
-  }
+  await tabThroughDialog(page, sheet, 20)
 })
 
 test('closes the sheet when swiped down', async ({ page }) => {

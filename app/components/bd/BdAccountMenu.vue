@@ -14,8 +14,7 @@ const { user, isEditor, logout } = useAuth()
 const { count: draftCount } = useDraftCount()
 const draftsOn = useModule('drafts')
 
-const rootRef = ref<HTMLElement>()
-const toggleRef = ref<HTMLButtonElement>()
+const panelRef = ref<HTMLElement>()
 const open = ref(false)
 const panelId = useId()
 
@@ -28,15 +27,19 @@ const draftsLabel = computed<string>(() =>
   draftCount.value === null ? t('bd.header.drafts') : t('bd.header.draftsCount', draftCount.value),
 )
 const showDraftCount = computed<boolean>(() => isEditor.value && draftCount.value !== null)
+// One anchor per instance: the header renders the compact and the full menu
+const anchor = computed<string>(() => `--bd-account-${panelId.replace(/[^a-z0-9]/gi, '')}`)
 
-function close(returnFocus = false): void {
+// Closing for a navigation must not send focus back to the toggle: it starts at the new page
+function close(): void {
   if (!open.value) return
-  open.value = false
-  if (returnFocus) toggleRef.value?.focus()
+  const panel = panelRef.value
+  if (panel?.contains(document.activeElement)) (document.activeElement as HTMLElement).blur()
+  panel?.hidePopover()
 }
 
-function onKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape') close(true)
+function onToggle(event: Event): void {
+  open.value = (event as ToggleEvent).newState === 'open'
 }
 
 async function signOut(): Promise<void> {
@@ -45,32 +48,34 @@ async function signOut(): Promise<void> {
   await navigateTo({ path: localizePath('/account/sign-in'), query: { notice: 'signed-out' } })
 }
 
-onClickOutside(rootRef, () => close())
-
-watch(() => route.fullPath, () => close())
+watch(() => route.fullPath, close)
 </script>
 
 <template>
   <div
-    ref="rootRef"
     :class="['bd-account', { 'bd-account-compact': compact, 'bd-account-editor': isEditor }]"
-    @keydown="onKeydown"
   >
     <template v-if="user">
       <button
-        ref="toggleRef"
         type="button"
         class="bd-chip bd-account-toggle"
         :aria-label="t('bd.header.accountMenu', { username: user.username })"
-        :aria-expanded="open ? 'true' : 'false'"
         :aria-controls="panelId"
-        @click="open = !open"
+        :popovertarget="panelId"
+        :style="{ 'anchor-name': anchor }"
       >
         <span class="bd-account-avatar" aria-hidden="true">{{ userInitial(user.username) }}</span>
         <span v-if="compact && showDraftCount && draftCount" class="bd-count bd-account-badge" aria-hidden="true">{{ draftCount }}</span>
         <span class="bd-account-name" aria-hidden="true">{{ user.username }}</span>
       </button>
-      <ul v-show="open" :id="panelId" class="bd-account-panel">
+      <ul
+        :id="panelId"
+        ref="panelRef"
+        popover="auto"
+        class="bd-account-panel"
+        :style="{ 'position-anchor': anchor }"
+        @toggle="onToggle"
+      >
         <li class="bd-account-who" aria-hidden="true">{{ user.email }}</li>
         <li>
           <NuxtLink :to="localizePath('/account')" class="bd-account-item">{{ t('bd.header.account') }}</NuxtLink>

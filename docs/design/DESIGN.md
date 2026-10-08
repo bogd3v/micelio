@@ -168,7 +168,7 @@ Eventos: `search` (abre la paleta ⌘K), `menu` (abre la hoja inferior en móvil
   - Variante lectura: barra de progreso de 2 px en chillon con un ave aleteando en la punta (`animation-timeline: scroll(root)`), migas `INICIO / BLOG / <categoría>`, `LEÍDO N %` y segmento `Noche | Día`.
 - **Móvil** (< 768 px): barra de 64 px fija con `position: sticky`: logo 28 px + marca, botón Buscar y botón Menú (iconos de trazo, `aria-label`).
 - **Tab bar inferior** (móvil, parte del layout): fija, 64 px, Inicio · Blog · Buscar · Menú; pestaña activa con borde superior mirla.
-- **Hoja inferior** (móvil): `<dialog>` modal con secciones, los 5 temas con su punto de color, tema de color Noche/Día e idioma ES/EN. Esc y deslizar cierran; foco atrapado (`useFocusTrap` ya existe).
+- **Hoja inferior** (móvil): `<dialog>` modal con secciones, los 5 temas con su punto de color, tema de color Noche/Día e idioma ES/EN. Esc y deslizar cierran; el `<dialog>` modal deja inerte el resto de la página.
 - **Paleta de búsqueda** (`SearchModal.vue` rediseñado): resultados de artículos y temas, acciones «Cambiar tema» y «Seguir en el fediverso». Atajo ⌘K / Ctrl+K (`useKeyboardShortcut` ya existe).
 
 ### 5.2 Inicio (`Main.dc.html`, `Movil.dc.html`)
