@@ -9,10 +9,12 @@ interface Servers {
   themeOverrides?: boolean
   /** Answer site-setting with the showcase page as homePage in each locale (e2e/home-page.spec.ts) */
   homePage?: boolean
+  /** The site's origin when it is not the BogDev one: a Worker's CSP names it (e2e/playground) */
+  siteUrl?: string
 }
 
 /** The mock Strapi and the Nuxt server (dev, or the build with E2E_BUILD=1) pointed at it, with BogDev's site values. */
-export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false }: Servers): PlaywrightTestConfig['webServer'] {
+export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false, siteUrl = 'https://bogdev.com.co' }: Servers): PlaywrightTestConfig['webServer'] {
   return [
     {
       command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=http://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''}${homePage ? ' MOCK_HOME_PAGE=1' : ''} node e2e/mock-strapi.mjs`,
@@ -27,7 +29,7 @@ export function webServers({ mockPort, appPort, modulesOff = false, themeOverrid
         // /_theme exists in dev; a build needs it at build time too (modules/theme/specimen/setup.ts)
         'MICELIO_SPECIMEN=1',
         `NUXT_PUBLIC_STRAPI_URL=http://127.0.0.1:${mockPort}`,
-        'NUXT_PUBLIC_SITE_URL=https://bogdev.com.co',
+        `NUXT_PUBLIC_SITE_URL=${siteUrl}`,
         'NUXT_MEDIA_URL=https://resources.bogdev.com.co',
         'NUXT_PUBLIC_FEDIVERSE_HANDLE=@bogdev@api.bogdev.com.co',
         'NUXT_PUBLIC_FEDIVERSE_ACTOR_URL=https://api.bogdev.com.co/fediverse/user/devbog',

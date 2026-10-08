@@ -53,6 +53,17 @@ export const HEAVY_ISLANDS: readonly HeavyIsland[] = [
     saveData: 'load',
     budget: 'mermaid',
   },
+  {
+    id: 'playground',
+    entry: 'playground',
+    trigger: 'interaction',
+    fallback: 'the highlighted code and its expected output',
+    features: ['wasm', 'worker'],
+    control: '[data-playground-run]',
+    // The page may start a Worker of its own origin. Only the Worker compiles WebAssembly, under its own policy, workerPolicy() (ADR 0004)
+    csp: { workerSrc: ['\'self\''] },
+    budget: 'playground',
+  },
 ]
 
 // A control is an attribute selector of ours, never free CSS

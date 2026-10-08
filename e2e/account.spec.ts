@@ -1,7 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
 import { confirmationToken, testUsers } from './fixtures/auth.mjs'
 
-const MOCK_STRAPI = 'http://127.0.0.1:4310'
+const MOCK_STRAPI = `http://127.0.0.1:${process.env.E2E_MOCK_PORT ?? 4310}`
+const APP_PORT = process.env.E2E_APP_PORT ?? 3210
 
 function uniqueUser(prefix: string): { username: string, email: string, password: string } {
   const id = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
@@ -96,12 +97,12 @@ for (const [label, identifier, password, message] of [
 test('ignores an external redirect and follows an internal one', async ({ page }) => {
   await page.goto('/account/sign-in?redirect=https://otro.sitio', { waitUntil: 'networkidle' })
   await signIn(page, testUsers.reader.username, testUsers.reader.password)
-  await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:3210\/account$/)
+  await expect(page).toHaveURL(new RegExp(`^http://127\\.0\\.0\\.1:${APP_PORT}/account$`))
 
   await page.context().clearCookies()
   await page.goto('/account/sign-in?redirect=//otro.sitio/x', { waitUntil: 'networkidle' })
   await signIn(page, testUsers.reader.username, testUsers.reader.password)
-  await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:3210\/account$/)
+  await expect(page).toHaveURL(new RegExp(`^http://127\\.0\\.0\\.1:${APP_PORT}/account$`))
 
   await page.context().clearCookies()
   await page.goto('/account/sign-in?redirect=/blog', { waitUntil: 'networkidle' })

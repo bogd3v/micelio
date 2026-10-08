@@ -417,7 +417,21 @@
       "label": "Código ejecutable, {language}",
       "run": "Ejecutar",
       "runAria": "Ejecutar el código",
-      "expectedOutput": "Salida esperada"
+      "expectedOutput": "Salida esperada",
+      "runSize": "Ejecutar (descarga de {size})",
+      "runSizeAria": "Ejecutar el código. Antes descarga {size}",
+      "stop": "Detener",
+      "stopAria": "Detener el código",
+      "loading": "Cargando el entorno…",
+      "running": "Ejecutando…",
+      "empty": "El código se ejecutó y no imprimió nada.",
+      "error": "Error: {message}",
+      "timeout": "Detenido: el código tardó más de {seconds} segundos.",
+      "stopped": "Detenido.",
+      "truncated": "[Salida cortada en {size}]",
+      "unavailable": "El código no pudo ejecutarse en este navegador.",
+      "queued": "Esperando a que termine el código anterior…",
+      "statusDone": "Terminó, {lines} líneas de salida."
     },
     "mermaid": {
       "label": "Diagrama"

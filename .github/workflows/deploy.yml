@@ -98,6 +98,9 @@ jobs:
         run: npm ci
       - name: Install Playwright browsers
         uses: ./.github/actions/playwright
+        with:
+          # The playground's Worker runs under its own CSP; each engine must enforce it (ADR 0004)
+          browsers: chromium firefox webkit
       # The built server answers at once; nuxt dev compiled each route on demand and timed out
       - name: Build
         run: npm run build
@@ -133,8 +136,16 @@ jobs:
         run: npm ci
       - name: Install Playwright browsers
         uses: ./.github/actions/playwright
+        with:
+          browsers: chromium firefox webkit
       - name: Generate the static site and run the tests
         run: npm run test:static
+      # The same site on every engine, for the playground's Worker policy
+      - name: Run the playground tests on Firefox and WebKit
+        run: npm run test:static -- playground.spec.ts
+        env:
+          STATIC_SKIP_GENERATE: 1
+          STATIC_BROWSERS: chromium,firefox,webkit
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

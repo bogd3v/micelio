@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { gzipSync } from 'node:zlib'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { mkdir, readdir, readFile, rename, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -6,6 +7,7 @@ import { isAbsolute, join, parse, relative } from 'node:path'
 import { build } from 'vite'
 import { addTemplate, defineNuxtModule, useLogger } from 'nuxt/kit'
 import { ISLANDS_PATH } from '../app/helpers/islands'
+import { runtimeDownloads, UNUSED_RUNTIME_FILES } from '../app/helpers/playgroundRuntimes'
 import { HEAVY_ISLANDS, validateHeavyIslands } from '../app/islands/heavy'
 import { sharedWithLoader } from './lib/islands-graph'
 import type { BuiltChunk } from './lib/islands-graph'
@@ -74,6 +76,13 @@ function projectModules(rootDir: string, ids: Iterable<string>): string[] {
   return [...modules].sort()
 }
 
+// Gzip size of every file under `dir` (relative path -> bytes): what a reader downloads, for the labels that announce it
+async function gzipSizes(dir: string): Promise<Map<string, number>> {
+  const sizes = new Map<string, number>()
+  for (const file of filesIn(dir)) sizes.set(relative(dir, file), gzipSync(await readFile(file)).length)
+  return sizes
+}
+
 // Entries of other source hashes untouched for a week, and temp folders of a build that died; never the one in use
 async function prune(cacheDir: string, keep: string): Promise<void> {
   for (const name of await readdir(cacheDir).catch(() => [])) {
@@ -134,6 +143,7 @@ export default defineNuxtModule({
   async setup(_options, nuxt) {
     const sourceDir = join(nuxt.options.srcDir, 'islands')
     const manifest: Record<string, string> = {}
+    const downloads: Record<string, number> = {}
 
     // `nuxt prepare` (npm ci's postinstall) builds nothing, and .nuxt/tsconfig.app.json does not exist yet for Vite
     if (!nuxt.options._prepare && existsSync(sourceDir)) {
@@ -170,6 +180,8 @@ export default defineNuxtModule({
               configFile: false,
               logLevel: 'warn',
               publicDir: false,
+              // Relative URLs: a Worker is found next to the island that starts it (`new URL('./workers/x.ts', import.meta.url)`)
+              base: './',
               define: { __MICELIO_DEV__: JSON.stringify(nuxt.options.dev) },
               plugins: [inlinePreloadHelper],
               build: {
@@ -187,6 +199,18 @@ export default defineNuxtModule({
                   output: { format: 'es', entryFileNames: '[name]-[hash].js', chunkFileNames: 'chunks/[name]-[hash].js' },
                 },
               },
+              // Workers (/_islands/workers/, served with their own CSP; ADR 0004) and what they load on demand: their runtimes and
+              // the WebAssembly those need, all under /_islands/runtimes/, the one path a Worker may fetch from
+              worker: {
+                format: 'es',
+                rollupOptions: {
+                  output: {
+                    entryFileNames: 'workers/[name]-[hash].js',
+                    chunkFileNames: 'runtimes/[name]-[hash].js',
+                    assetFileNames: 'runtimes/[name]-[hash][extname]',
+                  },
+                },
+              },
             })
             const outputs = (Array.isArray(result) ? result : [result]).flatMap(item => ('output' in item ? item.output : []))
             const ids = new Set<string>()
@@ -199,6 +223,10 @@ export default defineNuxtModule({
             }
             const shared = sharedWithLoader(graph, HEAVY_ISLANDS.map(island => island.entry))
             if (shared.length) throw new Error(`Islands build:\n- ${shared.join('\n- ')}`)
+            // Files a package emits next to the ones it needs and nothing loads
+            for (const file of filesIn(tmpDir)) {
+              if (UNUSED_RUNTIME_FILES.some(pattern => pattern.test(relative(tmpDir, file)))) await rm(file)
+            }
             const modules = projectModules(nuxt.options.rootDir, ids)
             for (const island of HEAVY_ISLANDS) {
               if (!manifest[island.entry]) throw new Error(`Heavy island "${island.id}": entry "${island.entry}" was not built`)
@@ -218,6 +246,7 @@ export default defineNuxtModule({
           logger.info(`Islands (built ${key}): ${Object.values(manifest).join(', ')}`)
         }
         await prune(cacheDir, key)
+        Object.assign(downloads, runtimeDownloads(await gzipSizes(outDir)))
 
         nuxt.hook('nitro:config', (config) => {
           config.publicAssets ||= []
@@ -231,6 +260,12 @@ export default defineNuxtModule({
       filename: 'micelio/islands.ts',
       write: true,
       getContents: () => `const manifest: Readonly<Record<string, string>> = ${JSON.stringify(typed)}\n\nexport default manifest\n`,
+    })
+    // Kilobytes (gzip) each playground runtime downloads when Run is pressed
+    addTemplate({
+      filename: 'micelio/island-downloads.ts',
+      write: true,
+      getContents: () => `const downloads: Readonly<Record<string, number>> = ${JSON.stringify(downloads)}\n\nexport default downloads\n`,
     })
   },
 })

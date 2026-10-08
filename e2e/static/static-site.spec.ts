@@ -39,8 +39,8 @@ for (const { name, path } of PAGES) {
 
   test(`${name} has no Nuxt state or client script in the HTML`, async ({ request }) => {
     const html = await (await request.get(path)).text()
-    // The only script file is the search island (e2e/static/search.spec.ts)
-    expect([...html.matchAll(/<script[^>]*\ssrc="([^"]*)"/g)].map(match => match[1]).filter(src => !/^\/_islands\/search-[\w-]+\.js$/.test(src!))).toEqual([])
+    // The only script files are islands: the search (e2e/static/search.spec.ts) and, on a page with runnable code, the playground's loader
+    expect([...html.matchAll(/<script[^>]*\ssrc="([^"]*)"/g)].map(match => match[1]).filter(src => !/^\/_islands\/(?:search|loader)-[\w-]+\.js$/.test(src!))).toEqual([])
     expect(html).not.toContain('__NUXT__')
     expect(html).not.toContain('__NUXT_DATA__')
     expect(html).not.toContain('_payload.json')

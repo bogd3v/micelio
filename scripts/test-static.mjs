@@ -32,6 +32,8 @@ if (!process.env.STATIC_SKIP_GENERATE) {
   const code = await generateStatic({
     mockPort,
     appPort,
+    // The playground's Worker may fetch its runtime only from the site's own origin (ADR 0004)
+    siteUrl: `http://127.0.0.1:${appPort}`,
     extraEnv: { NUXT_PUBLIC_NEWSLETTER_FORM_ACTION: `http://127.0.0.1:${receiverPort}/subscribe` },
   }).catch((error) => {
     console.error(error.message)

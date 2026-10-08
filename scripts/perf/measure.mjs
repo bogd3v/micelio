@@ -393,7 +393,7 @@ function summaryTable(report) {
 // A static build is generated here (the mock Strapi lives only while it runs), so the run measures the code at hand;
 // --skip-generate reuses .output/public
 if (args.serve && isStatic && !args['skip-generate']) {
-  const code = await generateStatic({ mockPort: MOCK_PORT, appPort: SERVER_PORT, mode, extraEnv: { NUXT_PUBLIC_THEME: theme, ...(displayFont && { MOCK_DISPLAY_FONT: displayFont }) } })
+  const code = await generateStatic({ mockPort: MOCK_PORT, appPort: SERVER_PORT, mode, siteUrl: base, extraEnv: { NUXT_PUBLIC_THEME: theme, ...(displayFont && { MOCK_DISPLAY_FONT: displayFont }) } })
   if (code !== 0) throw new Error(`npm run generate failed (${label})`)
   mkdirSync(dirname(BUILD_MARKER), { recursive: true })
   writeFileSync(BUILD_MARKER, JSON.stringify({ theme, mode }) + '\n')

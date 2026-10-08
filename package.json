@@ -27,7 +27,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run -c vitest.config.integration.ts",
-    "test:e2e": "playwright test && playwright test -c playwright.modules-off.config.ts && playwright test -c playwright.theme-overrides.config.ts && playwright test -c playwright.home-page.config.ts",
+    "test:e2e": "playwright test && playwright test -c playwright.modules-off.config.ts && playwright test -c playwright.theme-overrides.config.ts && playwright test -c playwright.home-page.config.ts && playwright test -c playwright.playground.config.ts",
     "test:static": "node scripts/test-static.mjs",
     "test:landing": "node scripts/test-landing.mjs",
     "test:theme": "playwright test -c playwright.theme.config.ts",
@@ -37,6 +37,7 @@
   "dependencies": {
     "@nuxt/image": "^2.0.0",
     "@nuxtjs/i18n": "^10.6.0",
+    "@sqlite.org/sqlite-wasm": "3.53.4-build2",
     "@vueuse/nuxt": "^14.2.1",
     "marked": "^18.0.14",
     "mermaid": "^12.0.0",
