@@ -58,7 +58,27 @@ function headersFor(rules, pathname) {
   return headers
 }
 
-const rules = await readRules()
+// Re-read when the site is regenerated in place (the builder image's `serve` keeps running across `generate` runs)
+let rules = await readRules()
+let rulesVersion = await fileVersion(join(root, '_headers'))
+
+async function fileVersion(path) {
+  try {
+    const { mtimeMs, size } = await stat(path)
+    return `${mtimeMs}:${size}`
+  } catch {
+    return 'none'
+  }
+}
+
+async function currentRules() {
+  const version = await fileVersion(join(root, '_headers'))
+  if (version !== rulesVersion) {
+    rules = await readRules()
+    rulesVersion = version
+  }
+  return rules
+}
 
 async function isFile(path) {
   try {
@@ -85,13 +105,17 @@ const server = createServer(async (req, res) => {
   const type = TYPES[extname(found)] ?? 'application/octet-stream'
   try {
     let body = await readFile(found)
-    const headers = { ...headersFor(rules, pathname), 'Content-Type': type }
+    const headers = { ...headersFor(await currentRules(), pathname), 'Content-Type': type }
     const accepted = String(req.headers['accept-encoding'] ?? '')
     const encoding = compress && COMPRESSIBLE.has(extname(found)) && body.length > 1024 ? (/\bbr\b/.test(accepted) ? 'br' : /\bgzip\b/.test(accepted) ? 'gzip' : undefined) : undefined
     if (encoding) {
+      // One entry per file and encoding, replaced when the file changes (a regenerated site is compressed again)
       const key = `${encoding}:${found}`
-      if (!compressed.has(key)) compressed.set(key, encoding === 'br' ? brotliCompressSync(body, { params: { [constants.BROTLI_PARAM_QUALITY]: 9 } }) : gzipSync(body, { level: 9 }))
-      body = compressed.get(key)
+      const version = await fileVersion(found)
+      if (compressed.get(key)?.version !== version) {
+        compressed.set(key, { version, body: encoding === 'br' ? brotliCompressSync(body, { params: { [constants.BROTLI_PARAM_QUALITY]: 9 } }) : gzipSync(body, { level: 9 }) })
+      }
+      body = compressed.get(key).body
       headers['Content-Encoding'] = encoding
       headers.Vary = 'Accept-Encoding'
     }
