@@ -16,11 +16,11 @@ export interface WorkerRequest {
   setup: string
 }
 
-/** Worker -> main thread. `started`: the runtime is loaded and the code is about to run. */
+/** Worker -> main thread. `started`: the runtime is loaded and the code is about to run. `recycle`: the Worker should not run again (the pool replaces it). */
 export type WorkerReply
   = | { type: 'started', id: number }
-    | { type: 'done', id: number, output: string, truncated: boolean }
-    | { type: 'error', id: number, message: string }
+    | { type: 'done', id: number, output: string, truncated: boolean, recycle?: boolean }
+    | { type: 'error', id: number, message: string, recycle?: boolean }
 
 export type RunStatus = 'done' | 'error' | 'timeout' | 'stopped'
 

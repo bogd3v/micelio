@@ -88,6 +88,21 @@ describe('WorkerPool', () => {
     expect((await second.result).status).toBe('done')
   })
 
+  it('terminates a Worker whose reply asks for it and starts a new one for the next run', async () => {
+    const first = pool.run(RUN)
+    await vi.advanceTimersByTimeAsync(0)
+    workers[0]!.reply({ type: 'done', id: workers[0]!.last().id, output: 'ok', truncated: false, recycle: true })
+    expect(await first.result).toEqual({ status: 'done', output: 'ok', truncated: false })
+    expect(workers[0]!.terminated).toBe(true)
+
+    const error = pool.run(RUN)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(workers).toHaveLength(2)
+    workers[1]!.reply({ type: 'error', id: workers[1]!.last().id, message: 'out of memory', recycle: true })
+    expect((await error.result).status).toBe('error')
+    expect(workers[1]!.terminated).toBe(true)
+  })
+
   it('does not count the time the runtime takes to load against the limit', async () => {
     const run = pool.run(RUN)
     await vi.advanceTimersByTimeAsync(30000)

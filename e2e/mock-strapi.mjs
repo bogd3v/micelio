@@ -151,6 +151,23 @@ const playgroundsVueEs = [
     code: 'WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 5000)\nSELECT i, printf(\'%0100d\', i) AS padded FROM n;',
     caption: 'Una salida de más de 64 KB: se corta.',
   },
+  // JavaScript (QuickJS): code over hidden setup, and a loop that never ends (the `playground:javascript` island budget)
+  {
+    id: 20,
+    __component: 'shared.playground',
+    runtime: 'javascript',
+    setup: 'const tools = [\'sqlite\', \'vite\'];',
+    code: 'console.log(tools.map(name => name.toUpperCase()).join(\', \'));\ntools.length * 21',
+    expectedOutput: 'SQLITE, VITE\n42',
+    caption: 'Un fragmento de JavaScript sobre un arreglo creado antes.',
+  },
+  {
+    id: 21,
+    __component: 'shared.playground',
+    runtime: 'javascript',
+    code: 'while (true) {}',
+    caption: 'Un bucle sin fin en JavaScript: el intérprete lo detiene.',
+  },
 ]
 
 const referencesVueEs = [

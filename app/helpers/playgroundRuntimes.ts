@@ -2,6 +2,8 @@
 // A new runtime adds its pattern here.
 export const RUNTIME_FILES: Readonly<Record<string, RegExp>> = {
   sql: /^runtimes\/(?:sql|sqlite3)-[\w-]{8}\.(?:js|wasm)$/,
+  // The runtime, QuickJS's loader chunks (`ffi`, `module-*`, `emscripten-module.browser`) and its WebAssembly
+  javascript: /^runtimes\/(?:javascript|ffi|module-[\w]+|emscripten-module(?:\.browser)?)-[\w-]+\.(?:js|wasm)$/,
 }
 
 // Emitted by the SQLite package next to what we use, never loaded: its OPFS proxy and its worker1 API (we run in memory, in our own Worker)

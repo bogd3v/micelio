@@ -9,6 +9,7 @@ This applies to everything below and to any third-party material added later, li
 npm packages (`package.json`, `package-lock.json`) are distributed under their own licenses, which each package carries. `npm run lint:licenses` (`scripts/check-licenses.mjs`) fails when a production dependency has a license that cannot be combined with AGPL-3.0; the exceptions and their reasons are in `scripts/licenses-allow.json`.
 
 - `elkjs` (EPL-2.0), a dependency of `mermaid`, used unmodified and only on articles with diagrams, where it is sent to the browser as a separate file. EPL-2.0 is not on the compatible list; that file stays under the EPL-2.0, and its source is available at https://github.com/kieler/elkjs (version in `package-lock.json`).
+- `quickjs-emscripten-core` and `@jitl/quickjs-wasmfile-release-sync` (MIT), the JavaScript engine of the playground (QuickJS compiled to WebAssembly), used unmodified. The glue code and the `.wasm` file are sent to the browser as separate files under `/_islands/runtimes/`, only when a reader runs a JavaScript block. MIT is on the compatible list; the license text ships with each package, and QuickJS itself is MIT too (https://github.com/justjake/quickjs-emscripten, versions in `package-lock.json`).
 
 ## Fonts
 

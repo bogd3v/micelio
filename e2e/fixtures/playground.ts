@@ -7,6 +7,9 @@ export const PLAYGROUND_FREE_ARTICLE = '/blog/linux-server-hardening-guide'
 export const QUERY = 0
 export const LOOP = 1
 export const BIG = 2
+// The JavaScript (QuickJS) playgrounds that follow: code over hidden setup, and a loop that never ends
+export const JS = 3
+export const JS_LOOP = 4
 
 export function playground(page: Page, index: number): Locator {
   return page.locator('micelio-playground').nth(index)

@@ -1,14 +1,18 @@
 // Dedicated Worker of the playground (ADR 0004, worker containment). It is served from /_islands/workers/ with its own CSP, loads the
 // runtime of its first request, removes the network globals and then only runs code. One Worker serves one runtime.
-import { capOutput } from '../../helpers/playgroundRunner'
+import { capOutput, MAX_OUTPUT_BYTES, RUN_TIMEOUT_MS } from '../../helpers/playgroundRunner'
 import type { WorkerReply, WorkerRequest } from '../../helpers/playgroundRunner'
 import { removeNetworkGlobals } from '../../helpers/workerSandbox'
-import type { Runtime } from '../runtimes/runtime'
+import type { Runtime, RunLimits } from '../runtimes/runtime'
 
 // One loader per runtime; a runtime is a chunk fetched from /_islands/runtimes/ the first time it is needed
 const LOADERS: Readonly<Record<string, () => Promise<{ default: () => Promise<Runtime> }>>> = {
   sql: () => import('../runtimes/sql'),
+  javascript: () => import('../runtimes/javascript'),
 }
+
+// The interpreter of a runtime stops a second before the Worker is terminated, so it can say why
+const LIMITS: RunLimits = { deadlineMs: RUN_TIMEOUT_MS - 1000, outputBytes: MAX_OUTPUT_BYTES }
 
 let loaded: { name: string, runtime: Runtime } | undefined
 
@@ -33,12 +37,14 @@ async function load(name: string): Promise<Runtime> {
 self.addEventListener('message', async (event: MessageEvent<WorkerRequest>) => {
   const request = event.data
   if (request?.type !== 'run' || typeof request.id !== 'number') return
+  let runtime: Runtime | undefined
   try {
-    const runtime = await load(String(request.runtime))
+    runtime = await load(String(request.runtime))
     reply({ type: 'started', id: request.id })
-    const { text, truncated } = capOutput(await runtime.run(String(request.code), String(request.setup)))
-    reply({ type: 'done', id: request.id, output: text, truncated })
+    const { text, truncated } = capOutput(await runtime.run(String(request.code), String(request.setup), LIMITS))
+    reply({ type: 'done', id: request.id, output: text, truncated, recycle: runtime.recycle?.() })
   } catch (error) {
-    reply({ type: 'error', id: request.id, message: error instanceof Error ? error.message : String(error) })
+    // A message is output too: it never goes out whole
+    reply({ type: 'error', id: request.id, message: capOutput(error instanceof Error ? error.message : String(error)).text, recycle: runtime?.recycle?.() })
   }
 })
