@@ -17,13 +17,27 @@ let queue: Promise<void> = Promise.resolve()
 const drawn = new Set<MicelioMermaid>()
 let observer: MutationObserver | undefined
 
-function loadMermaid(): Promise<Mermaid> {
-  mermaidModule ??= import('mermaid').then(module => module.default)
-  // A failed load is retried by the next block
-  mermaidModule.catch(() => {
+async function importMermaid(): Promise<Mermaid> {
+  try {
+    return (await import('mermaid')).default
+  } catch (error: unknown) {
+    // A failed load is retried by the next block
     mermaidModule = undefined
-  })
+    throw error
+  }
+}
+
+function loadMermaid(): Promise<Mermaid> {
+  mermaidModule ??= importMermaid()
   return mermaidModule
+}
+
+async function ignore(task: Promise<unknown>): Promise<void> {
+  try {
+    await task
+  } catch {
+    // The element already shows its source
+  }
 }
 
 function readTokens(): MermaidTokens {
@@ -54,7 +68,7 @@ function track(element: MicelioMermaid): void {
   // A new theme or mode changes data-theme and data-scheme: every tracked diagram is drawn again with the new roles
   observer ??= new MutationObserver(() => {
     for (const item of drawn) {
-      if (item.isConnected) item.draw().catch(() => {})
+      if (item.isConnected) void ignore(item.draw())
       else untrack(item)
     }
   })
@@ -79,7 +93,7 @@ class MicelioMermaid extends HTMLElement {
     if (this.abort) return
     const abort = new AbortController()
     this.abort = abort
-    this.start(abort.signal).catch(() => {})
+    void ignore(this.start(abort.signal))
   }
 
   disconnectedCallback(): void {
@@ -98,9 +112,14 @@ class MicelioMermaid extends HTMLElement {
 
   draw(): Promise<void> {
     const current = ++this.run
-    const task = queue.then(() => this.render(current))
-    queue = task.catch(() => {})
+    const task = this.drawAfter(queue, current)
+    queue = ignore(task)
     return task
+  }
+
+  private async drawAfter(previous: Promise<void>, current: number): Promise<void> {
+    await previous
+    await this.render(current)
   }
 
   private showSource(): void {

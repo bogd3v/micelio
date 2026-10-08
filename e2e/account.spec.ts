@@ -32,7 +32,12 @@ test('registers, confirms, signs in and signs out without exposing the JWT', asy
   const user = uniqueUser('flujo')
   const authBodies: string[] = []
   page.on('response', async (response) => {
-    if (response.url().includes('/api/auth/')) authBodies.push(await response.text().catch(() => ''))
+    if (!response.url().includes('/api/auth/')) return
+    try {
+      authBodies.push(await response.text())
+    } catch {
+      authBodies.push('')
+    }
   })
 
   await registerAndConfirm(page, user)

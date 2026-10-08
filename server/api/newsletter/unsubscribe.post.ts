@@ -5,8 +5,12 @@ import type { UnsubscribeResponse } from '~/interfaces/newsletter'
 async function readToken(event: Parameters<typeof getQuery>[0]): Promise<unknown> {
   const fromQuery = getQuery(event).token
   if (fromQuery) return fromQuery
-  const body = await readBody<{ token?: unknown } | null>(event).catch(() => null)
-  return body?.token
+  try {
+    const body = await readBody<{ token?: unknown } | null>(event)
+    return body?.token
+  } catch {
+    return undefined
+  }
 }
 
 export default defineEventHandler(async (event): Promise<UnsubscribeResponse> => {

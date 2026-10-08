@@ -17,20 +17,40 @@ const imported = new Set<string>()
 const armed = new WeakMap<Element, AbortSignal>()
 let waiting: AbortController | undefined
 
+async function importEntry(src: string): Promise<unknown> {
+  try {
+    const module: unknown = await import(/* @vite-ignore */ src)
+    imported.add(src)
+    return module
+  } catch (error: unknown) {
+    // The next try imports again
+    loading.delete(src)
+    throw error
+  }
+}
+
 function load(src: string): Promise<unknown> {
   let promise = loading.get(src)
   if (!promise) {
-    promise = import(/* @vite-ignore */ src).then((module: unknown) => {
-      imported.add(src)
-      return module
-    }, (error: unknown) => {
-      // The next try imports again
-      loading.delete(src)
-      throw error
-    })
+    promise = importEntry(src)
     loading.set(src, promise)
   }
   return promise
+}
+
+async function ignore(task: Promise<unknown>): Promise<void> {
+  try {
+    await task
+  } catch {
+    // Aborted by a newer scan, or the entry did not load (the next scan tries again)
+  }
+}
+
+async function loadWhenVisible(elements: HTMLElement[], src: string, signal: AbortSignal): Promise<void> {
+  await Promise.any(elements.map(element => whenVisible(element, { signal })))
+  // The entry may write into the light DOM of the page: it loads once Vue has hydrated
+  await whenHydrated()
+  await load(src)
 }
 
 // A control is part of the Vue markup: wait for hydration before touching it
@@ -80,18 +100,12 @@ function scan(): void {
     if (!declaration) continue
     const elements = Array.from(document.querySelectorAll<HTMLElement>(heavyTag(declaration.id)))
     if (declaration.control) {
-      for (const element of elements) arm(element, { ...declaration, control: declaration.control }, controller.signal).catch(() => {})
+      for (const element of elements) void ignore(arm(element, { ...declaration, control: declaration.control }, controller.signal))
       continue
     }
     // Save-Data keeps a `visible` island on its fallback unless the island opted in
     if (imported.has(declaration.src) || !elements.length || missingFeatures(declaration.features as HeavyFeature[]).length || (declaration.saveData === 'skip' && saveData())) continue
-    Promise.any(elements.map(element => whenVisible(element, { signal: controller.signal })))
-      // The entry may write into the light DOM of the page: it loads once Vue has hydrated
-      .then(() => whenHydrated())
-      .then(() => load(declaration.src))
-      .catch(() => {
-        // Aborted by a newer scan, or the entry did not load (the next scan tries again)
-      })
+    void ignore(loadWhenVisible(elements, declaration.src, controller.signal))
   }
 }
 

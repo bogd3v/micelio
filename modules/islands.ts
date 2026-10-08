@@ -85,10 +85,21 @@ async function gzipSizes(dir: string): Promise<Map<string, number>> {
 
 // Entries of other source hashes untouched for a week, and temp folders of a build that died; never the one in use
 async function prune(cacheDir: string, keep: string): Promise<void> {
-  for (const name of await readdir(cacheDir).catch(() => [])) {
+  let names: string[]
+  try {
+    names = await readdir(cacheDir)
+  } catch {
+    names = []
+  }
+  for (const name of names) {
     if (!name.startsWith('islands-') || name === `islands-${keep}` || name === `islands-${keep}.json`) continue
     const path = join(cacheDir, name)
-    const info = await stat(path).catch(() => undefined)
+    let info: Awaited<ReturnType<typeof stat>> | undefined
+    try {
+      info = await stat(path)
+    } catch {
+      info = undefined
+    }
     const limit = name.includes('.tmp-') ? TMP_STALE_MS : STALE_MS
     if (info && Date.now() - info.mtimeMs > limit) await rm(path, { recursive: true, force: true })
   }
@@ -169,7 +180,11 @@ export default defineNuxtModule({
           Object.assign(manifest, cached.files)
           // A hit marks the entry as in use for the pruning done by other checkouts
           const now = new Date()
-          await Promise.all([utimes(outDir, now, now), utimes(manifestFile, now, now)]).catch(() => {})
+          try {
+            await Promise.all([utimes(outDir, now, now), utimes(manifestFile, now, now)])
+          } catch {
+            // Only the pruning date: the hit stays valid
+          }
           logger.info(`Islands (cached ${key}): ${Object.values(manifest).join(', ')}`)
         } else {
           // Built into a folder of its own, then renamed, so two builds at once never write the same files
@@ -233,9 +248,11 @@ export default defineNuxtModule({
             }
             // A stale folder (its manifest or files no longer match) is replaced; one that is there afterwards came from a build that won the race, with the same files
             if (existsSync(outDir)) await rm(outDir, { recursive: true, force: true })
-            await rename(tmpDir, outDir).catch((error: unknown) => {
+            try {
+              await rename(tmpDir, outDir)
+            } catch (error: unknown) {
               if (!existsSync(outDir)) throw error
-            })
+            }
             const manifestTmp = `${manifestFile}.tmp-${process.pid}-${Date.now()}`
             const record: CachedBuild = { files: manifest, modules, modulesHash: modulesHash(nuxt.options.rootDir, modules) }
             await writeFile(manifestTmp, JSON.stringify(record))

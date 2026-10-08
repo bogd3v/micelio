@@ -1,14 +1,23 @@
 import { test, expect } from '@playwright/test'
-import type { Page } from '@playwright/test'
+import type { Page, Response } from '@playwright/test'
 
 const ARTICLE = '/blog/linux-server-hardening-guide'
+
+async function mermaidScriptUrl(response: Response): Promise<string> {
+  try {
+    const body = await response.text()
+    return body.includes('mermaidAPI') ? response.url() : ''
+  } catch {
+    return ''
+  }
+}
 
 /** Scripts that hold Mermaid's API: a chunk of /_islands/ in the build and in dev */
 function trackMermaid(page: Page): Promise<string>[] {
   const scripts: Promise<string>[] = []
   page.on('response', (response) => {
     if (response.request().resourceType() !== 'script') return
-    scripts.push(response.text().then(body => body.includes('mermaidAPI') ? response.url() : '', () => ''))
+    scripts.push(mermaidScriptUrl(response))
   })
   return scripts
 }

@@ -1,13 +1,20 @@
 // Generates the static site against the mock Strapi (shared by scripts/test-static.mjs and scripts/perf/measure.mjs).
 import { spawn, spawnSync } from 'node:child_process'
 
-export function waitFor(url, attempts = 50) {
-  return new Promise((resolve, reject) => {
-    const tryOnce = (left) => {
-      fetch(url).then(() => resolve(), () => (left > 0 ? setTimeout(() => tryOnce(left - 1), 200) : reject(new Error(`${url} did not answer`))))
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+export async function waitFor(url, attempts = 50) {
+  for (let left = attempts; ; left--) {
+    try {
+      await fetch(url)
+      return
+    } catch {
+      if (left <= 0) throw new Error(`${url} did not answer`)
+      await sleep(200)
     }
-    tryOnce(attempts)
-  })
+  }
 }
 
 /**
@@ -20,10 +27,11 @@ export async function generateStatic({ mockPort, appPort, mode = 'static', extra
     stdio: 'ignore',
   })
   // A mock that exits early (the port is taken) must not be mistaken for the one we wait for
-  const exited = new Promise((_resolve, reject) => mock.once('exit', code => reject(new Error(`The mock Strapi exited with ${code} (is port ${mockPort} in use?)`))))
-  exited.catch(() => {})
+  // Resolves with the error (never rejects), so a mock stopped by us at the end is not an unhandled rejection
+  const exited = new Promise(resolve => mock.once('exit', code => resolve(new Error(`The mock Strapi exited with ${code} (is port ${mockPort} in use?)`))))
   try {
-    await Promise.race([waitFor(`http://127.0.0.1:${mockPort}/api/site-setting`), exited])
+    const early = await Promise.race([waitFor(`http://127.0.0.1:${mockPort}/api/site-setting`), exited])
+    if (early) throw early
     const result = spawnSync('npm', ['run', 'generate'], {
       stdio: 'inherit',
       env: {

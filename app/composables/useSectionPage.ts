@@ -62,7 +62,12 @@ export async function useAlternates(page: Page, isHome: boolean): Promise<Locale
   const { data } = await useAsyncData<LocalePaths>(`home-alternates-${page.slug}-${locale.value}`, async () => {
     const homeSlugs: Partial<Record<Locale, string | undefined>> = {}
     await Promise.all(page.translations.filter(item => item.locale !== current).map(async (item) => {
-      const other = await $fetch<Site>('/api/site', { query: { locale: item.locale } }).catch(() => undefined)
+      let other: Site | undefined
+      try {
+        other = await $fetch<Site>('/api/site', { query: { locale: item.locale } })
+      } catch {
+        other = undefined
+      }
       homeSlugs[item.locale] = other?.homePage?.slug
     }))
     return isHome ? homePaths(current, page.translations, homeSlugs) : pagePaths(page.slug, current, page.translations, homeSlugs)

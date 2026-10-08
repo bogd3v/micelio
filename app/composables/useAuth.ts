@@ -36,10 +36,16 @@ export function useAuth(): UseAuth {
 
   function refresh(): Promise<AuthUser | null> {
     if (import.meta.server) return load()
-    pendingRefresh ??= load().finally(() => {
-      pendingRefresh = null
-    })
+    pendingRefresh ??= loadOnce()
     return pendingRefresh
+  }
+
+  async function loadOnce(): Promise<AuthUser | null> {
+    try {
+      return await load()
+    } finally {
+      pendingRefresh = null
+    }
   }
 
   function ensure(): Promise<AuthUser | null> {

@@ -63,8 +63,15 @@ export function loadSiteCached(locale: Locale): Promise<LoadedSite> {
   if (hit && hit.expires > Date.now()) return hit.value
   const value = loadSite(locale)
   cache.set(locale, { expires: Date.now() + cacheMs, value })
-  void value.then((loaded) => {
-    if (!loaded.fromStrapi) cache.set(locale, { expires: Date.now() + Math.min(cacheMs, FAILED_CACHE_MS), value })
-  })
+  void shortenWhenFailed(locale, value, cacheMs)
   return value
+}
+
+async function shortenWhenFailed(locale: Locale, value: Promise<LoadedSite>, cacheMs: number): Promise<void> {
+  try {
+    const loaded = await value
+    if (!loaded.fromStrapi) cache.set(locale, { expires: Date.now() + Math.min(cacheMs, FAILED_CACHE_MS), value })
+  } catch {
+    // The caller of loadSiteCached sees the error
+  }
 }

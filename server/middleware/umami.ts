@@ -32,7 +32,14 @@ export default defineEventHandler(async (event) => {
   }
   // The resolved address goes in both headers; point Umami's CLIENT_IP_HEADER at either
   if (ip !== 'unknown') Object.assign(headers, { 'x-forwarded-for': ip, 'x-real-ip': ip })
-  const raw = PAYLOAD_METHODS.has(event.method) ? await readRawBody(event, false).catch(() => undefined) : undefined
+  let raw: Buffer | undefined
+  if (PAYLOAD_METHODS.has(event.method)) {
+    try {
+      raw = await readRawBody(event, false)
+    } catch {
+      raw = undefined
+    }
+  }
   const body = raw ? new Uint8Array(raw) : undefined
   return sendProxy(event, new URL(event.path, config.umamiUrl).href, { fetchOptions: { method: event.method, body, headers } })
 })

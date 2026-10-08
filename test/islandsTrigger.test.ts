@@ -32,7 +32,14 @@ function setReadyState(state: DocumentReadyState): void {
 // Fake timers are on, so "not yet" is checked after the microtasks have run
 async function settled(promise: Promise<unknown>): Promise<'resolved' | 'pending'> {
   let state: 'resolved' | 'pending' = 'pending'
-  promise.then(() => (state = 'resolved'), () => {})
+  void (async () => {
+    try {
+      await promise
+    } catch {
+      // Rejected counts as settled
+    }
+    state = 'resolved'
+  })()
   for (let i = 0; i < 10; i++) await Promise.resolve()
   return state
 }
@@ -119,7 +126,7 @@ describe('whenVisible', () => {
   })
 
   it('uses the given root margin', () => {
-    void whenVisible(document.createElement('div'), { rootMargin: '0px' }).catch(() => {})
+    void settled(whenVisible(document.createElement('div'), { rootMargin: '0px' }))
     expect(FakeObserver.instances[0]!.options?.rootMargin).toBe('0px')
   })
 

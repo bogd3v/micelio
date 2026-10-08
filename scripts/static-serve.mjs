@@ -101,7 +101,12 @@ async function find(pathname) {
 
 const server = createServer(async (req, res) => {
   const pathname = new URL(req.url ?? '/', 'http://localhost').pathname
-  const file = await find(pathname).catch(() => undefined)
+  let file
+  try {
+    file = await find(pathname)
+  } catch {
+    file = undefined
+  }
   const found = file ?? join(root, '404.html')
   const type = TYPES[extname(found)] ?? 'application/octet-stream'
   try {

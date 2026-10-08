@@ -33,7 +33,10 @@ describe('whenHydrated', () => {
   it('waits for the event on a Nuxt page', async () => {
     nuxtPage()
     let resolved = false
-    const promise = whenHydrated().then(() => (resolved = true))
+    const promise = (async () => {
+      await whenHydrated()
+      resolved = true
+    })()
     await Promise.resolve()
     expect(resolved).toBe(false)
     document.dispatchEvent(new Event(HYDRATED_EVENT))

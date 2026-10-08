@@ -18,7 +18,12 @@ export default defineNitroPlugin((nitroApp) => {
   // style, which style-src 'unsafe-inline' allows. A script would be blocked.
   nitroApp.hooks.hook('render:html', async (html, { event }) => {
     // Strapi down or slow: the theme's own first mode and colors, as before
-    const { site } = await loadSiteCached(pathLocale(event.path)).catch(() => ({ site: undefined }))
+    let site: Awaited<ReturnType<typeof loadSiteCached>>['site'] | undefined
+    try {
+      ({ site } = await loadSiteCached(pathLocale(event.path)))
+    } catch {
+      site = undefined
+    }
     const theme = site?.theme
     const chosen = modes.find(mode => mode.id === theme?.defaultMode)
     const initial = chosen ?? first
