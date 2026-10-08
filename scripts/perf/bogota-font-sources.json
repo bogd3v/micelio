@@ -1,0 +1,16 @@
+{
+  "note": "Source = git blobs of the full latin woff2 files that themes/bogota/fonts/ held before #350 (reachable from main's history)",
+  "fonts": {
+    "archivo": {
+      "blob": "1042066c29f3ffee021d22b1461bdba85ea94602",
+      "sourceSha256": "5099495885f27b657bc719c503085bf45d23a8fe4a1022356d7ab4bb4b12e35d",
+      "woff2Sha256": "246147a8bce198a7a25c7f54e471904bba65c00487224c5f2e12b1ea2533a52e"
+    },
+    "jetbrains-mono": {
+      "blob": "e1d5ae1b092f1a2df09db1007ab699b6f8dd6648",
+      "sourceSha256": "78b2ce4855fd1d80a0717cc38f68b46247b46cc8ec5da5b058876836ce3a09eb",
+      "woff2Sha256": "43ed94ae5f291bc846d1a1c522ede892fcb9763ea25e3a1a5fc0e2b88d841a65"
+    }
+  },
+  "fontTools": "4.66.1"
+}

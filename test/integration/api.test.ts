@@ -1782,11 +1782,10 @@ describe('Strapi API token', () => {
 })
 
 describe('theme fonts', () => {
-  it('preloads each font of the theme exactly once', async () => {
+  it('preloads the preloaded font of the theme exactly once, and not the others', async () => {
     const html = await $fetch<string>('/')
-    for (const file of ['archivo-latin-var.woff2', 'jetbrains-mono-latin-var.woff2']) {
-      expect(html.split(`<link rel="preload" href="/fonts/${file}"`)).toHaveLength(2)
-    }
+    expect(html.split('<link rel="preload" href="/fonts/archivo-latin-var.woff2"')).toHaveLength(2)
+    expect(html).not.toContain('<link rel="preload" href="/fonts/jetbrains-mono-latin-var.woff2"')
   })
 
   it('serves /fonts/ like other static assets', async () => {
