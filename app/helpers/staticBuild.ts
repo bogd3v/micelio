@@ -1,5 +1,6 @@
 import { CATEGORIES } from './categories'
 import { feedPath } from './feed'
+import { localePrefixSource } from './localePrefix'
 import { SECURITY_HEADERS } from './securityHeaders'
 import { defaultLocale, Locale } from '../interfaces/locale'
 
@@ -52,7 +53,10 @@ export function sectionPageRoute(slug: string, locale: Locale): string {
 export const STATIC_INITIAL_ROUTES: readonly string[] = ['/', '/es', '/blog', '/es/blog']
 
 /** What a build with no blog (a landing with no articles) must not generate or crawl: the blog, its filters and its feeds, in every locale. */
-export const BLOG_ROUTES = /^(?:\/es)?(?:\/blog(?:\/|$)|\/feed(?:\.xml|\/))/
+export const BLOG_ROUTES = new RegExp(`^${localePrefixSource()}(?:/blog(?:/|$)|/feed(?:\\.xml|/))`)
+
+/** The about page has no source in a landing with no blog (its links point at the blog); the crawler must not generate it. */
+export const ABOUT_ROUTES = new RegExp(`^${localePrefixSource()}/about(?:/|$)`)
 
 /** The routes every build must have: without a blog, only the home pages. */
 export function initialRoutes(blogEnabled: boolean): string[] {
@@ -207,4 +211,15 @@ export function unreachableScripts(scripts: ReadonlyMap<string, string>, roots: 
   for (const text of roots) visit(text)
   for (let name = queue.pop(); name !== undefined; name = queue.pop()) visit(scripts.get(name) ?? '')
   return [...scripts.keys()].filter(name => !reached.has(name)).sort()
+}
+
+/**
+ * What a landing needs from its home pages (docs/static-mode.md, "Landing"): with no articles, the home page is all there is,
+ * so a language without one fails the build; with articles the blog home answers, so it is only a warning.
+ */
+export function landingHomeCheck(blogEnabled: boolean, missing: readonly string[]): { error?: string, warning?: string } {
+  if (!missing.length) return {}
+  const locales = missing.join(', ')
+  if (!blogEnabled) return { error: `Site mode "landing": no published articles and no homePage for ${locales}; set one in the site settings` }
+  return { warning: `Site mode "landing": no homePage for ${locales}, so / shows the blog home there; set one in the site settings` }
 }

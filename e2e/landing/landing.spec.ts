@@ -64,15 +64,14 @@ test('the navigation of the Spanish home links to its own sections', async ({ pa
 })
 
 test('an anchor of the navigation scrolls to its section without JavaScript', async ({ browser }) => {
-  const context = await browser.newContext({ javaScriptEnabled: false })
+  const context = await browser.newContext({ javaScriptEnabled: false, reducedMotion: 'reduce' })
   const page = await context.newPage()
   await page.goto('/')
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'One small garden' }).click()
   await expect(page).toHaveURL(/\/#section-one-small-garden$/)
   await expect(page.locator('#section-one-small-garden')).toBeInViewport()
   // The footer navigation has them all
-  await page.getByRole('navigation', { name: 'Navigate' }).getByRole('link', { name: 'Questions' }).focus()
-  await page.keyboard.press('Enter')
+  await page.getByRole('navigation', { name: 'Navigate' }).getByRole('link', { name: 'Questions' }).click()
   await expect(page.locator('#section-questions')).toBeInViewport()
   // From another page the same link goes to the home page's section
   await page.goto('/privacy')
@@ -116,8 +115,8 @@ for (const { name, path } of PAGES) {
   })
 }
 
-test('there is no blog, category, tag page or feed in the output', async ({ request }) => {
-  for (const path of ['/blog', '/es/blog', '/blog/page/2', '/blog/category/linux', '/blog/tag/vue', '/blog/understanding-vue-composables', '/feed.xml', '/es/feed.xml', '/feed/linux.xml', '/es/feed/linux.xml']) {
+test('there is no blog, category, tag page, feed or about page in the output', async ({ request }) => {
+  for (const path of ['/blog', '/es/blog', '/blog/page/2', '/blog/category/linux', '/blog/tag/vue', '/blog/understanding-vue-composables', '/feed.xml', '/es/feed.xml', '/feed/linux.xml', '/es/feed/linux.xml', '/about', '/es/about']) {
     expect((await request.get(path)).status(), path).toBe(404)
   }
 })

@@ -10,7 +10,7 @@ import { formActionOrigin } from '../app/helpers/newsletterForm'
 import { contentSecurityPolicy, inlineScripts } from '../app/helpers/securityHeaders'
 import { isStaticMode } from '../app/helpers/siteMode'
 import type { SiteMode } from '../app/helpers/siteMode'
-import { articleRoute, BLOG_ROUTES, failsBuild, headersFile, initialRoutes, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
+import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, failsBuild, headersFile, initialRoutes, injectCspMeta, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
 import { strapiRequest } from '../server/lib/strapiRequest'
 import type { StrapiRequestConfig } from '../server/lib/strapiRequest'
 
@@ -35,6 +35,14 @@ function sha256(content: string): string {
 interface SlugList {
   data?: Array<{ slug?: string }>
   meta?: { pagination?: { pageCount?: number } }
+}
+
+class LandingConfigError extends Error {}
+
+async function hasHomePage(config: StrapiRequestConfig, locale: Locale): Promise<boolean> {
+  const query = qs.stringify({ locale, populate: { homePage: { fields: ['slug'] } } })
+  const response = await strapiRequest<{ data?: { homePage?: { slug?: string } | null } }>(config, `/api/site-setting?${query}`, { timeout: 30_000 })
+  return Boolean(response.data?.homePage?.slug)
 }
 
 async function fetchSlugs(config: StrapiRequestConfig, collection: 'articles' | 'pages', locale: Locale): Promise<string[]> {
@@ -71,15 +79,23 @@ export default defineNuxtModule({
     const articleSlugs = new Map<Locale, string[]>()
     // A landing with no articles has no blog (ADR 0006, section 1). Decided here, before the build, because components read it from the runtime config (useStaticSite)
     let blogEnabled = true
-    if (mode === 'landing' && config.strapiUrl && config.strapiApiToken) {
+    if (mode === 'landing' && !nuxt.options._prepare && config.strapiUrl && config.strapiApiToken) {
       try {
         for (const locale of Object.values(Locale)) articleSlugs.set(locale, await fetchSlugs(config, 'articles', locale))
         blogEnabled = [...articleSlugs.values()].some(slugs => slugs.length > 0)
-      } catch {
+        const withoutHome: Locale[] = []
+        for (const locale of Object.values(Locale)) if (!await hasHomePage(config, locale)) withoutHome.push(locale)
+        const { error, warning } = landingHomeCheck(blogEnabled, withoutHome)
+        if (error) throw new LandingConfigError(error)
+        if (warning) logger.warn(warning)
+      } catch (error) {
+        if (error instanceof LandingConfigError) throw error
         // The prerender hook reads the same content and reports the failure with its message
+        logger.warn(`Landing: could not read the articles and the home pages from Strapi (${error instanceof Error ? error.message : String(error)}); the blog stays on until the build reads them again`)
         articleSlugs.clear()
+        blogEnabled = true
       }
-      if (!blogEnabled) logger.info('Landing: there are no published articles, so the build has no blog, category or tag pages, feeds or links to them')
+      if (!blogEnabled) logger.info('Landing: there are no published articles, so the build has no blog, category or tag pages, feeds, about page or links to them')
     }
     if (mode === 'landing') nuxt.options.runtimeConfig.public.blogEnabled = blogEnabled
 
@@ -114,8 +130,8 @@ export default defineNuxtModule({
       const listed = new Set<string>(initialRoutes(blogEnabled))
       if (!blogEnabled) {
         // Not crawled either: a link to the blog in the content is a dead link, not a page to generate
-        nitro.options.prerender.routes = nitro.options.prerender.routes.filter(route => !BLOG_ROUTES.test(route))
-        nitro.options.prerender.ignore.push(BLOG_ROUTES)
+        nitro.options.prerender.routes = nitro.options.prerender.routes.filter(route => !BLOG_ROUTES.test(route) && !ABOUT_ROUTES.test(route))
+        nitro.options.prerender.ignore.push(BLOG_ROUTES, ABOUT_ROUTES)
       }
       nitro.hooks.hook('prerender:routes', async (routes) => {
         if (!config.strapiUrl) throw new Error(`Site mode "${mode}": NUXT_PUBLIC_STRAPI_URL is not set; the build reads the content from Strapi.`)
@@ -139,9 +155,9 @@ export default defineNuxtModule({
           throw new Error(`Site mode "${mode}": could not read the content from Strapi at ${config.strapiUrl} (${reason}). Check that it is reachable and that the token can read articles and pages.`, { cause: error })
         }
         for (const route of staticFileRoutes(blogEnabled)) listed.add(route)
-        if (!blogEnabled) for (const route of routes) if (BLOG_ROUTES.test(route)) routes.delete(route)
+        if (!blogEnabled) for (const route of routes) if (BLOG_ROUTES.test(route) || ABOUT_ROUTES.test(route)) routes.delete(route)
         for (const route of listed) routes.add(route)
-        logger.info(`Static routes: ${articles} articles and ${pages} pages from Strapi, plus feeds, sitemap and robots.txt`)
+        logger.info(`Static routes: ${articles} articles and ${pages} pages from Strapi, plus ${blogEnabled ? 'feeds, ' : ''}sitemap and robots.txt`)
       })
 
       // Static pages load no Nuxt client and copy their images and media into the site: no image origin is needed

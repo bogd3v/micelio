@@ -1,5 +1,5 @@
 import type { ComputedRef, Ref } from 'vue'
-import type { NavLink } from '~/interfaces'
+import type { SiteNavLink } from '~/interfaces'
 import { headerLinks } from '~/helpers/landing'
 
 export interface HeaderStateInput {
@@ -14,7 +14,7 @@ export interface HeaderState {
   tracking: ComputedRef<boolean>
   mounted: Ref<boolean>
   shortcut: Ref<string>
-  links: ComputedRef<NavLink[]>
+  links: ComputedRef<SiteNavLink[]>
   hud: ReturnType<typeof useThemeHud>
   percent: ComputedRef<number>
   progressStyle: ComputedRef<Record<string, string>>

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { headerLinks, landingLinks, sectionAnchors } from '../app/helpers/landing'
 import { isBlogEnabled } from '../app/helpers/siteMode'
-import { BLOG_ROUTES, initialRoutes, STATIC_INITIAL_ROUTES, staticFileRoutes } from '../app/helpers/staticBuild'
+import { localePrefixSource } from '../app/helpers/localePrefix'
+import { ABOUT_ROUTES, BLOG_ROUTES, initialRoutes, landingHomeCheck, STATIC_INITIAL_ROUTES, staticFileRoutes } from '../app/helpers/staticBuild'
 import type { PageSection } from '../app/interfaces/page'
 
 const context = { newsletterOn: true, blogEnabled: true }
@@ -107,5 +108,34 @@ describe('the blog switch', () => {
   it('matches the blog, its filters and the feeds in every locale and nothing else', () => {
     for (const route of ['/blog', '/es/blog', '/blog/a-post', '/blog/category/linux', '/es/blog/tag/vue/page/2', '/feed.xml', '/es/feed.xml', '/feed/linux.xml', '/es/feed/linux.xml']) expect(BLOG_ROUTES.test(route), route).toBe(true)
     for (const route of ['/', '/es', '/blogging', '/feedback', '/privacy', '/showcase', '/es/muestra']) expect(BLOG_ROUTES.test(route), route).toBe(false)
+  })
+})
+
+describe('the about page of a landing with no blog', () => {
+  it('matches the about page in every locale and nothing else', () => {
+    for (const route of ['/about', '/es/about', '/about/']) expect(ABOUT_ROUTES.test(route), route).toBe(true)
+    for (const route of ['/', '/aboutus', '/privacy', '/es/muestra']) expect(ABOUT_ROUTES.test(route), route).toBe(false)
+  })
+
+  it('builds the locale prefix from the locales', () => {
+    expect(localePrefixSource()).toBe('(?:/es)?')
+  })
+})
+
+describe('landingHomeCheck', () => {
+  it('passes when every language has a home page', () => {
+    expect(landingHomeCheck(false, [])).toEqual({})
+    expect(landingHomeCheck(true, [])).toEqual({})
+  })
+
+  it('fails the build when there are no articles and a language has no home page', () => {
+    expect(landingHomeCheck(false, ['es'])).toEqual({ error: 'Site mode "landing": no published articles and no homePage for es; set one in the site settings' })
+    expect(landingHomeCheck(false, ['en', 'es']).error).toContain('for en, es;')
+  })
+
+  it('only warns when the blog home can answer', () => {
+    const result = landingHomeCheck(true, ['es'])
+    expect(result.error).toBeUndefined()
+    expect(result.warning).toContain('no homePage for es')
   })
 })

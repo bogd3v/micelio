@@ -1,15 +1,8 @@
+import type { LandingNavLink } from '../interfaces/design'
 import type { PageLink, PageSection } from '../interfaces/page'
+import { localePrefixSource } from './localePrefix'
 import { resolveSectionLink } from './links'
 import { slugify } from './slugify'
-
-/** A link of the landing navigation: an anchor to a section of the home page, or a link of its hero or call to action. */
-export interface LandingLink {
-  id: string
-  label: string
-  to: string
-  anchor?: boolean
-  action?: boolean
-}
 
 export interface LandingContext {
   /** The newsletter section renders only when the module is on */
@@ -26,7 +19,7 @@ export interface SectionAnchor {
 }
 
 const ID_PREFIX = 'section-'
-const BLOG_PATH = /^(?:\/es)?\/blog(?:[/?#]|$)/
+const BLOG_PATH = new RegExp(`^${localePrefixSource()}/blog(?:[/?#]|$)`)
 
 /** The title of a section that renders and is worth a navigation entry (the hero opens the page: the brand link goes there). */
 function anchorTitle(section: PageSection, context: LandingContext): string | undefined {
@@ -72,8 +65,8 @@ export function landingLinks(
   homePath: string,
   context: LandingContext,
   resolve: { prefix: string, localize: (path: string) => string },
-): LandingLink[] {
-  const links: LandingLink[] = sectionAnchors(sections, context).map(anchor => ({ id: anchor.id, label: anchor.label, to: `${homePath}#${anchor.id}`, anchor: true }))
+): LandingNavLink[] {
+  const links: LandingNavLink[] = sectionAnchors(sections, context).map(anchor => ({ id: anchor.id, label: anchor.label, to: `${homePath}#${anchor.id}`, anchor: true }))
   const seen = new Set<string>()
   actionLinks(sections).forEach((link, index) => {
     const target = resolveSectionLink(link.url, resolve.prefix, resolve.localize)

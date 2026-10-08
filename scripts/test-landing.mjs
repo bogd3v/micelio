@@ -29,7 +29,7 @@ let status = process.env.LANDING_SKIP_GENERATE || (await build()) === 0 ? await 
 if (status === 0 && !process.env.LANDING_SKIP_THEME) {
   // Switching themes does not touch the page content (#244): the same page, another theme package
   status = (await build({ NUXT_PUBLIC_THEME: 'starter' })) === 0
-    ? await playwright({ LANDING_THEME: 'starter' }, ['e2e/landing/theme.spec.ts', ...extra])
+    ? await playwright({ LANDING_THEME: 'starter' }, ['e2e/landing/theme.spec.ts', 'e2e/landing/header.spec.ts', ...extra])
     : 1
 }
 process.exit(status)
