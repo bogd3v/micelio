@@ -23,6 +23,11 @@ describe('splitStatements', () => {
       .toEqual(['CREATE TRIGGER t AFTER INSERT ON x BEGIN DELETE FROM y; END;', ' SELECT 1;'])
   })
 
+  it('hands the rest over whole once the work budget is spent', () => {
+    const sql = '\'' + ';'.repeat(10) + '; SELECT 1;'
+    expect(splitStatements(sql, complete, 20)).toEqual([sql])
+  })
+
   it('keeps text after the last semicolon and drops trailing whitespace', () => {
     expect(splitStatements('SELECT 1; SELECT 2', complete)).toEqual(['SELECT 1;', ' SELECT 2'])
     expect(splitStatements('SELECT 1;\n  ', complete)).toEqual(['SELECT 1;'])
@@ -60,6 +65,14 @@ describe('SQL runtime', () => {
     // The row estimate counts a number as 20 characters, so it stops early and well under twice the cap
     expect(output.startsWith('i\n--\n1\n2\n')).toBe(true)
     expect(output.length).toBeLessThan(2048)
+  })
+
+  it('reports the error of an unclosed quote among many semicolons instead of splitting for seconds', async () => {
+    const sql = await load()
+    const code = 'SELECT \'' + ';'.repeat(50_000)
+    const started = performance.now()
+    expect(() => sql.run(code, '', LIMITS)).toThrow()
+    expect(performance.now() - started).toBeLessThan(2000)
   })
 
   it('reports an SQL error', async () => {

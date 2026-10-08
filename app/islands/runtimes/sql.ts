@@ -27,8 +27,6 @@ const LIMITS: Readonly<Record<string, number>> = {
 }
 // All the engine may hold: tables built by a loop stop here with an error
 const HEAP_LIMIT = 64 * 1024 * 1024
-// What `DB.prepare()` throws for a statement that is only whitespace or comments
-const EMPTY_SQL = /empty SQL/i
 
 export default async function load(): Promise<Runtime> {
   const sqlite3 = await sqlite3InitModule()
@@ -54,36 +52,29 @@ export default async function load(): Promise<Runtime> {
         if (setup.trim()) db.exec(setup)
         const sets: ResultSet[] = []
         let size = 0
-        // One statement at a time (`exec` only reports rows of the first one that has columns): every statement with
-        // columns is a result set, its header shown even when it returns no rows
-        statements: for (const text of splitStatements(code, sql => complete(sql) === 1)) {
-          let statement
-          try {
-            statement = db.prepare(text)
-          } catch (error) {
-            if (error instanceof Error && EMPTY_SQL.test(error.message)) continue
-            throw error
-          }
-          try {
-            if (!statement.columnCount) {
-              while (statement.step()) {
-                // A statement without columns has nothing to show
-              }
-              continue
-            }
-            const set: ResultSet = { columns: statement.getColumnNames([]), rows: [] }
-            sets.push(set)
-            size += 16
-            while (statement.step()) {
-              const cells = statement.get([]) as SqlCell[]
+        let full = false
+        // One statement per exec (`exec` only reports rows of the first statement that has columns): every statement with
+        // columns is a result set, its header filled in even when it returns no rows; empty or comment-only ones run nothing
+        for (const text of splitStatements(code, sql => complete(sql) === 1)) {
+          const set: ResultSet = { columns: [], rows: [] }
+          db.exec({
+            sql: text,
+            rowMode: 'array',
+            columnNames: set.columns,
+            callback: (row: unknown) => {
+              const cells = row as SqlCell[]
               set.rows.push(cells)
               size += cells.reduce<number>((sum, cell) => sum + cellLength(cell) + 3, 1)
               // Enough rows for the cap: a query that never ends stops here instead of filling memory
-              if (size > limits.outputBytes * 2) break statements
-            }
-          } finally {
-            statement.finalize()
+              full = size > limits.outputBytes * 2
+              if (full) return false
+            },
+          })
+          if (set.columns.length) {
+            sets.push(set)
+            size += 16
           }
+          if (full) break
         }
         return sets.map(set => formatTable(set.columns, set.rows)).join('\n\n')
       } finally {
