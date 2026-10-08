@@ -45,6 +45,7 @@
     "nodemailer": "^10.0.13",
     "nuxt": "^4.5.2",
     "ofetch": "^1.5.1",
+    "pyodide": "314.0.7",
     "qs": "^6.15.1",
     "quickjs-emscripten-core": "0.32.0",
     "sanitize-html": "^2.17.5",

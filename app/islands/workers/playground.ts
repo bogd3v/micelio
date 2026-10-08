@@ -9,6 +9,7 @@ import type { Runtime, RunLimits } from '../runtimes/runtime'
 const LOADERS: Readonly<Record<string, () => Promise<{ default: () => Promise<Runtime> }>>> = {
   sql: () => import('../runtimes/sql'),
   javascript: () => import('../runtimes/javascript'),
+  python: () => import('../runtimes/python'),
 }
 
 // The interpreter of a runtime stops a second before the Worker is terminated, so it can say why

@@ -9,7 +9,10 @@ import { addTemplate, defineNuxtModule, useLogger } from 'nuxt/kit'
 import { ISLANDS_PATH } from '../app/helpers/islands'
 import { runtimeDownloads, UNUSED_RUNTIME_FILES } from '../app/helpers/playgroundRuntimes'
 import { HEAVY_ISLANDS, validateHeavyIslands } from '../app/islands/heavy'
-import { sharedWithLoader } from './lib/islands-graph'
+import { runtimesImportingWorkers, sharedWithLoader } from './lib/islands-graph'
+import { dropPyodideCopies, pyodideAssets } from './lib/pyodide-assets'
+import { isStaticMode } from '../app/helpers/siteMode'
+import type { SiteMode } from '../app/helpers/siteMode'
 import type { BuiltChunk } from './lib/islands-graph'
 import type { IslandManifest } from '../app/helpers/islands'
 
@@ -50,6 +53,7 @@ function sourcesHash(srcDir: string, rootDir: string, target: string, dev: boole
     join(rootDir, 'package-lock.json'),
     join(rootDir, 'tsconfig.json'),
     join(rootDir, 'modules', 'islands.ts'),
+    join(rootDir, 'modules', 'lib', 'pyodide-assets.ts'),
   ]
   for (const file of files) {
     if (existsSync(file)) hash.update(`${relative(rootDir, file)}\0`).update(readFileSync(file)).update('\0')
@@ -218,6 +222,7 @@ export default defineNuxtModule({
               // the WebAssembly those need, all under /_islands/runtimes/, the one path a Worker may fetch from
               worker: {
                 format: 'es',
+                plugins: () => [pyodideAssets()],
                 rollupOptions: {
                   output: {
                     entryFileNames: 'workers/[name]-[hash].js',
@@ -238,6 +243,13 @@ export default defineNuxtModule({
             }
             const shared = sharedWithLoader(graph, HEAVY_ISLANDS.map(island => island.entry))
             if (shared.length) throw new Error(`Islands build:\n- ${shared.join('\n- ')}`)
+            const runtimeSources = new Map<string, string>()
+            for (const file of filesIn(tmpDir)) {
+              const name = relative(tmpDir, file).replaceAll('\\', '/')
+              if (name.startsWith('runtimes/') && name.endsWith('.js')) runtimeSources.set(name, await readFile(file, 'utf8'))
+            }
+            const importing = runtimesImportingWorkers(runtimeSources)
+            if (importing.length) throw new Error(`Islands build:\n- ${importing.join('\n- ')}`)
             // Files a package emits next to the ones it needs and nothing loads
             for (const file of filesIn(tmpDir)) {
               if (UNUSED_RUNTIME_FILES.some(pattern => pattern.test(relative(tmpDir, file)))) await rm(file)
@@ -264,6 +276,9 @@ export default defineNuxtModule({
         }
         await prune(cacheDir, key)
         Object.assign(downloads, runtimeDownloads(await gzipSizes(outDir)))
+
+        // After Nitro compressed the public assets: Pyodide's `.gz` copies (and `.br` in a static site) are 7 MB nobody asks for
+        nuxt.hook('nitro:build:public-assets', nitro => dropPyodideCopies(nitro.options.output.publicDir, !isStaticMode(nuxt.options.runtimeConfig.public.siteMode as SiteMode)))
 
         nuxt.hook('nitro:config', (config) => {
           config.publicAssets ||= []

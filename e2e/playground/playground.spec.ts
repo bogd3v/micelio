@@ -109,12 +109,18 @@ test('a playground that waits behind another says so, and Stop on it answers at 
   await openPlayground(page)
   await runButton(page, LOOP).click()
   await expect(resultOf(page, LOOP)).toHaveAttribute('data-state', 'running', { timeout: 45_000 })
-  await runButton(page, QUERY).click()
-  await expect(resultOf(page, QUERY)).toHaveAttribute('data-state', 'queued')
-  await stopButton(page, QUERY).click()
-  await expect(resultOf(page, QUERY)).toHaveAttribute('data-state', 'stopped')
+  // Run, read, Stop and read again happen in one task, so the 5 s clock of the loop cannot run out between them
+  const states = await page.evaluate(async ([queryIndex, loopIndex]) => {
+    const blocks = [...document.querySelectorAll('micelio-playground')]
+    const part = (index: number, selector: string): HTMLElement => blocks[index]!.querySelector<HTMLElement>(selector)!
+    part(queryIndex!, '[data-playground-run]').click()
+    const queued = part(queryIndex!, '[data-playground-result]').dataset.state
+    part(queryIndex!, '[data-playground-stop]').click()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    return { queued, stopped: part(queryIndex!, '[data-playground-result]').dataset.state, loop: part(loopIndex!, '[data-playground-result]').dataset.state }
+  }, [QUERY, LOOP])
   // The run in front of it is untouched
-  await expect(resultOf(page, LOOP)).toHaveAttribute('data-state', 'running')
+  expect(states).toEqual({ queued: 'queued', stopped: 'stopped', loop: 'running' })
   await stopButton(page, LOOP).click()
   await expect(resultOf(page, LOOP)).toHaveAttribute('data-state', 'stopped')
 })

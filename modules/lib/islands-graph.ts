@@ -12,6 +12,18 @@ export interface BuiltChunk {
 
 export const LOADER_ENTRY = 'loader'
 
+/**
+ * Problems, one message each: a Worker runtime chunk (`runtimes/`) that imports a Worker script (`workers/`). WebKit evaluates a module
+ * worker's main script again when a chunk imports it, so its message listener would run twice and its state would be split in two.
+ * `sources` is file name -> code.
+ */
+export function runtimesImportingWorkers(sources: ReadonlyMap<string, string>): string[] {
+  return [...sources]
+    .filter(([file]) => file.startsWith('runtimes/') && file.endsWith('.js'))
+    .filter(([, code]) => /(?:\bfrom|\bimport)\s*["'](?:\.\.\/|\.\/)?workers\//.test(code))
+    .map(([file]) => `runtime chunk "${file}" imports a Worker script: keep what a runtime shares with the Worker out of it (WebKit would run the Worker script twice)`)
+}
+
 function staticClosure(start: BuiltChunk, byFile: Map<string, BuiltChunk>): Set<string> {
   const seen = new Set<string>()
   const pending = [...start.imports]

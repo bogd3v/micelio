@@ -38,11 +38,12 @@ export interface CappedOutput {
 
 /** `text` cut to at most `maxBytes` of UTF-8, never in the middle of a character. */
 export function capOutput(text: string, maxBytes: number = MAX_OUTPUT_BYTES): CappedOutput {
-  const encoder = new TextEncoder()
   // A UTF-16 unit is at most 3 bytes of UTF-8
   if (text.length * 3 <= maxBytes) return { text, truncated: false }
-  const bytes = encoder.encode(text)
-  if (bytes.length <= maxBytes) return { text, truncated: false }
+  // At least one byte each: more units than `maxBytes` is more bytes than that, and the rest is never encoded
+  const longer = text.length > maxBytes
+  const bytes = new TextEncoder().encode(longer ? text.slice(0, maxBytes) : text)
+  if (!longer && bytes.length <= maxBytes) return { text, truncated: false }
   // A cut inside a character decodes to U+FFFD at the end; drop it
   return { text: new TextDecoder().decode(bytes.subarray(0, maxBytes)).replace(/�+$/, ''), truncated: true }
 }

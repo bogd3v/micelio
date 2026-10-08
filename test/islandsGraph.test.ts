@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sharedWithLoader } from '../modules/lib/islands-graph'
+import { runtimesImportingWorkers, sharedWithLoader } from '../modules/lib/islands-graph'
 import type { BuiltChunk } from '../modules/lib/islands-graph'
 
 const entry = (name: string, imports: string[] = []): BuiltChunk => ({ fileName: `${name}-h.js`, name, isEntry: true, imports })
@@ -32,5 +32,17 @@ describe('sharedWithLoader', () => {
   it('reports an island that imports the loader\'s own entry chunk', () => {
     const loader = entry('loader')
     expect(sharedWithLoader([loader, entry('mermaid', [loader.fileName])], ['mermaid'])).toHaveLength(1)
+  })
+})
+
+describe('runtimesImportingWorkers', () => {
+  it('accepts runtime chunks that import nothing of a Worker', () => {
+    const sources = new Map([['runtimes/sql-h.js', 'import{t as e}from"../chunks/x-h.js";export default 1'], ['workers/playground-h.js', 'import("../runtimes/sql-h.js")']])
+    expect(runtimesImportingWorkers(sources)).toEqual([])
+  })
+
+  it('reports a runtime chunk that imports a Worker script', () => {
+    const sources = new Map([['runtimes/python-h.js', 'import{t as e}from"../workers/playground-h.js";export default e'], ['runtimes/sql-h.js', 'export default 1']])
+    expect(runtimesImportingWorkers(sources)).toEqual([expect.stringContaining('"runtimes/python-h.js" imports a Worker script')])
   })
 })

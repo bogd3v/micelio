@@ -126,7 +126,7 @@ const figuresVueEs = [
 // A quote block, so verify-change and e2e cover QuoteBlock
 figuresVueEs.push({ id: 6, __component: 'shared.quote', body: 'El agua está ahí, pero alguien tiene que ir a buscarla.', title: 'Guía del páramo' })
 
-// Runnable SQL blocks (e2e/playground.spec.ts, the `playground` island budget): a query over hidden setup, a loop that never ends and a result over the 64 KB cap
+// Runnable SQL blocks, then Python (e2e/playground.spec.ts, the `playground` island budget): a query over hidden setup, a loop that never ends and a result over the 64 KB cap
 const playgroundsVueEs = [
   {
     id: 7,
@@ -167,6 +167,23 @@ const playgroundsVueEs = [
     runtime: 'javascript',
     code: 'while (true) {}',
     caption: 'Un bucle sin fin en JavaScript: el intérprete lo detiene.',
+  },
+  // Python (Pyodide, the `playground:python` budget): a program over hidden setup, and a loop that never ends
+  {
+    id: 30,
+    __component: 'shared.playground',
+    runtime: 'python',
+    setup: 'tools = {\'sqlite\': \'database\', \'vite\': \'bundler\'}',
+    code: 'for name in sorted(tools):\n    print(f\'{name}: {tools[name]}\')',
+    expectedOutput: 'sqlite: database\nvite: bundler',
+    caption: 'Un programa de Python sobre un diccionario preparado.',
+  },
+  {
+    id: 31,
+    __component: 'shared.playground',
+    runtime: 'python',
+    code: 'while True:\n    pass',
+    caption: 'Un bucle sin fin en Python: se detiene a los 5 segundos.',
   },
 ]
 
