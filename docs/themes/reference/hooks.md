@@ -170,6 +170,8 @@ These appear in every layout variant.
 | `bd-code-lang` | Language label. |  |
 | `bd-code-copy` | Copy button. |  |
 | `bd-quote` | A quotation block. |  |
+| `bd-playground` | A runnable code block: the code, its expected output and the result of running it. |  |
+| `bd-playground-output` | Expected output of a runnable code block. |  |
 | `bd-fig` | A figure block. |  |
 | `bd-fig-media` | Media of a figure. |  |
 | `bd-fig-cap` | Caption of a figure. |  |

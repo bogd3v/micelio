@@ -413,6 +413,12 @@
       "copied": "Copiado ✓",
       "copyAria": "Copiar código"
     },
+    "playground": {
+      "label": "Código ejecutable, {language}",
+      "run": "Ejecutar",
+      "runAria": "Ejecutar el código",
+      "expectedOutput": "Salida esperada"
+    },
     "mermaid": {
       "label": "Diagrama"
     },

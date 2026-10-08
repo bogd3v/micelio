@@ -413,6 +413,12 @@
       "copied": "Copied ✓",
       "copyAria": "Copy code"
     },
+    "playground": {
+      "label": "Runnable code, {language}",
+      "run": "Run",
+      "runAria": "Run the code",
+      "expectedOutput": "Expected output"
+    },
     "mermaid": {
       "label": "Diagram"
     },

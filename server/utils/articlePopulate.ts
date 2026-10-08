@@ -19,6 +19,7 @@ export const ARTICLE_POPULATE = {
       'shared.rich-text': { populate: '*' },
       'shared.quote': { populate: '*' },
       'shared.media': { populate: { file: true, credit: true } },
+      'shared.playground': true,
       'shared.slider': { populate: { items: { populate: { file: true, credit: true } }, files: true } },
     },
   },

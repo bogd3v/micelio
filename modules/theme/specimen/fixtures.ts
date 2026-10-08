@@ -57,6 +57,15 @@ export const PROSE_BLOCKS: StrapiBlock[] = [
   { id: 3, __component: 'shared.rich-text', body: '', html: CODE_HTML },
   { id: 4, __component: 'shared.rich-text', body: '', html: `${renderMermaidBlockHtml(MERMAID_SAMPLE)}${renderMermaidBlockHtml(SEQUENCE_SAMPLE)}` },
   { id: 5, __component: 'shared.quote', body: 'A pull quote.', html: 'A pull quote, set apart from the prose.', title: 'Someone Wise' },
+  {
+    id: 6,
+    __component: 'shared.playground',
+    runtime: 'sql',
+    setup: 'CREATE TABLE articles (name TEXT);\nINSERT INTO articles VALUES (\'mycelia\'), (\'mycelia\'), (\'mycelia\');',
+    code: 'SELECT name, COUNT(*) AS posts\nFROM articles\nGROUP BY name;',
+    expectedOutput: 'name   | posts\n-------+------\nmycelia |     3',
+    caption: 'Counting posts per author.',
+  },
 ]
 
 export const CREDIT: StrapiImageCredit = {
