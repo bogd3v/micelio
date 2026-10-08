@@ -3,15 +3,40 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import ThemeHero from '~~/themes/bogota/slots/ThemeHero.vue'
 
 describe('ThemeHero', () => {
-  it('renders a decorative photo per theme', async () => {
+  it('renders the photos as pictures that pick by breakpoint and system scheme', async () => {
     const wrapper = await mountSuspended(ThemeHero)
-    const photos = wrapper.findAll('img.bogota-hero-photo')
-    expect(photos.map(photo => photo.classes())).toEqual([
-      expect.arrayContaining(['bogota-hero-photo-night']),
-      expect.arrayContaining(['bogota-hero-photo-day']),
+    const pictures = wrapper.findAll('picture.bogota-hero-picture')
+    expect(pictures.map(picture => picture.classes())).toEqual([
+      expect.arrayContaining(['bogota-hero-picture-auto']),
+      expect.arrayContaining(['bogota-hero-picture-alt']),
     ])
-    expect(photos.every(photo => photo.attributes('alt') === '' && photo.attributes('aria-hidden') === 'true')).toBe(true)
-    expect(photos.every(photo => photo.attributes('loading') === 'lazy')).toBe(true)
+    const [auto, alt] = pictures.map(picture => picture.findAll('source').map(source => [source.attributes('media'), source.attributes('srcset')]))
+    expect(auto).toEqual([
+      ['(min-width: 1024px) and (prefers-color-scheme: dark)', expect.stringMatching(/^\S+w_760&f_webp&q_80\S+sumapaz-night\.jpg 1x, \S+w_1520\S+sumapaz-night\.jpg 2x$/)],
+      ['(min-width: 1024px)', expect.stringMatching(/sumapaz-day\.jpg 1x, .+ 2x$/)],
+    ])
+    expect(alt![0]![1]).toMatch(/sumapaz-day/)
+    expect(alt![1]![1]).toMatch(/sumapaz-night/)
+  })
+
+  it('loads only the picture that follows the system scheme, with high priority', async () => {
+    const wrapper = await mountSuspended(ThemeHero)
+    const [auto, alt] = wrapper.findAll('img.bogota-hero-photo')
+    expect(auto!.attributes('loading')).toBe('eager')
+    expect(auto!.attributes('fetchpriority')).toBe('high')
+    expect(alt!.attributes('loading')).toBe('lazy')
+    for (const photo of [auto!, alt!]) {
+      expect(photo.attributes('alt')).toBe('')
+      expect(photo.attributes('aria-hidden')).toBe('true')
+      expect(photo.attributes('src')).toBeUndefined()
+    }
+  })
+
+  it('serves the compact copy at 1x and only below the breakpoint', async () => {
+    const wrapper = await mountSuspended(ThemeHero, { props: { compact: true } })
+    const sources = wrapper.findAll('picture source')
+    expect(sources.every(source => source.attributes('media')!.startsWith('(max-width: 1023.98px)'))).toBe(true)
+    expect(sources.every(source => /^\S+w_390&f_webp&q_80\S+ 1x$/.test(source.attributes('srcset')!))).toBe(true)
   })
 
   it('marks Sumapaz on desktop and drops the species marks', async () => {
