@@ -20,7 +20,8 @@ export interface ContentSecurityPolicyOptions {
 const SCRIPT_PATTERN = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
 const SRC_PATTERN = /(?:^|\s)src\s*=/i
 const TYPE_PATTERN = /(?:^|\s)type\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i
-const EXECUTABLE_TYPES = new Set(['', 'text/javascript', 'application/javascript', 'module', 'importmap'])
+// `speculationrules` is not executed, but the browser checks it against `script-src`: it is hashed like the rest (ADR 0004 amendment)
+const EXECUTABLE_TYPES = new Set(['', 'text/javascript', 'application/javascript', 'module', 'importmap', 'speculationrules'])
 
 export const FRAME_ORIGINS = [
   'https://www.youtube.com',

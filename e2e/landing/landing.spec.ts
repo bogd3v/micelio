@@ -149,3 +149,12 @@ test('search finds the sections of the home page and loads nothing of the blog',
   await expect(palette.getByRole('option').first().locator('mark').first()).toBeVisible()
   expect(paths.filter(path => BLOG_OR_FEED.test(path))).toEqual([])
 })
+
+test('the home page carries one speculationrules script, hashed in the CSP meta', async ({ request }) => {
+  const html = await (await request.get('/')).text()
+  const scripts = [...html.matchAll(/<script type="speculationrules">([\s\S]*?)<\/script>/g)].map(match => match[1]!)
+  expect(scripts).toHaveLength(1)
+  expect(() => JSON.parse(scripts[0]!)).not.toThrow()
+  const meta = /<meta http-equiv="Content-Security-Policy" content="([^"]*)">/.exec(html)?.[1] ?? ''
+  expect(meta).toContain(`'sha256-${createHash('sha256').update(scripts[0]!).digest('base64')}'`)
+})
