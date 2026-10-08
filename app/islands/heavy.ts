@@ -7,13 +7,13 @@ export type HeavyFeature = 'webgl2' | 'wasm' | 'worker'
 /** `visible`: near the viewport, after load and idle. `interaction`: a click or key on the island's control. */
 export type HeavyTrigger = 'visible' | 'interaction'
 
+/** What `Save-Data` does to a `visible` island: `skip` keeps the fallback (the default), `load` loads it anyway. An `interaction` island always loads. */
+export type HeavySaveData = 'load' | 'skip'
+
 /**
  * CSP additions for the responses of the pages that render the island (ADR 0004, ADR 0006).
  * Sources are `'self'` or absolute `https://` origins with an optional path (`http://` only for localhost).
  */
-/** What `Save-Data` does to a `visible` island: `skip` keeps the fallback (the default), `load` loads it anyway. An `interaction` island always loads. */
-export type HeavySaveData = 'load' | 'skip'
-
 export interface HeavyCsp {
   connectSrc?: string[]
   workerSrc?: string[]

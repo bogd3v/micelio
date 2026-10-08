@@ -33,6 +33,8 @@ export function sharedWithLoader(chunks: readonly BuiltChunk[], heavyEntries: re
   const loader = chunks.find(chunk => chunk.isEntry && chunk.name === LOADER_ENTRY)
   if (!loader) return []
   const loaded = staticClosure(loader, byFile)
+  // An island importing the loader's own entry chunk would run the loader
+  loaded.add(loader.fileName)
   return chunks
     .filter(chunk => chunk.isEntry && heavyEntries.includes(chunk.name))
     .flatMap((chunk) => {

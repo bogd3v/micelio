@@ -33,7 +33,7 @@ function load(src: string): Promise<unknown> {
 }
 
 // A control is part of the Vue markup: wait for hydration before touching it
-async function arm(element: HTMLElement, declaration: HeavyDeclaration & { control: string }): Promise<void> {
+async function arm(element: HTMLElement, declaration: HeavyDeclaration & { control: string }, signal: AbortSignal): Promise<void> {
   const control = element.querySelector<HTMLElement>(declaration.control)
   if (!control || armed.has(control) || missingFeatures(declaration.features as HeavyFeature[]).length) return
   armed.add(control)
@@ -47,7 +47,15 @@ async function arm(element: HTMLElement, declaration: HeavyDeclaration & { contr
   control.hidden = false
   // Already imported (a client-side navigation): the entry upgrades the element and listens to the control by itself
   while (!imported.has(declaration.src)) {
-    await whenInteracted(control, { events: ['click'] })
+    try {
+      await whenInteracted(control, { events: ['click'], signal })
+    } catch {
+      // A newer scan (a navigation) replaced this wait: a control that stays on the page is armed again by it
+      armed.delete(control)
+      return
+    }
+    // Another element imported the entry meanwhile: this press already reached the entry, do not repeat it
+    if (imported.has(declaration.src)) break
     try {
       await load(declaration.src)
       element.removeAttribute('data-island-error')
@@ -69,7 +77,7 @@ function scan(): void {
     if (!declaration) continue
     const elements = Array.from(document.querySelectorAll<HTMLElement>(heavyTag(declaration.id)))
     if (declaration.control) {
-      for (const element of elements) arm(element, { ...declaration, control: declaration.control }).catch(() => {})
+      for (const element of elements) arm(element, { ...declaration, control: declaration.control }, controller.signal).catch(() => {})
       continue
     }
     // Save-Data keeps a `visible` island on its fallback unless the island opted in

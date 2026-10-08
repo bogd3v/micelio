@@ -96,6 +96,8 @@ describe('features', () => {
     vi.spyOn(document, 'createElement').mockReturnValue({ getContext: () => null } as unknown as HTMLCanvasElement)
     expect(missingFeatures(['wasm', 'worker', 'webgl2'])).toEqual(['worker', 'webgl2'])
     expect(missingFeatures([])).toEqual([])
+    // An unknown name counts as missing instead of throwing
+    expect(missingFeatures(['gpu' as never, 'wasm'])).toEqual(['gpu'])
   })
 
   it('reads prefers-reduced-motion and Save-Data', () => {

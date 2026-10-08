@@ -28,4 +28,9 @@ describe('sharedWithLoader', () => {
     const chunks = [entry('loader', ['chunks/a.js']), chunk('a', ['chunks/b.js']), chunk('b', ['chunks/a.js']), entry('mermaid', ['chunks/b.js'])]
     expect(sharedWithLoader(chunks, ['mermaid'])).toHaveLength(1)
   })
+
+  it('reports an island that imports the loader\'s own entry chunk', () => {
+    const loader = entry('loader')
+    expect(sharedWithLoader([loader, entry('mermaid', [loader.fileName])], ['mermaid'])).toHaveLength(1)
+  })
 })

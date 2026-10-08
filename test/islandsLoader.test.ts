@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const state = vi.hoisted(() => ({ missing: [] as string[], saveData: false, entryLoads: 0, visibleLoads: 0 }))
+const state = vi.hoisted(() => ({ missing: [] as string[], saveData: false, entryLoads: 0, visibleLoads: 0, twoLoads: 0, rescanLoads: 0 }))
 
 vi.mock('../app/islands/lib/features', () => ({
   missingFeatures: () => state.missing,
@@ -15,6 +15,15 @@ vi.mock('/_islands/play-1.js', () => {
 
 vi.mock('/_islands/play-2.js', () => {
   state.visibleLoads++
+  return {}
+})
+
+vi.mock('/_islands/play-3.js', () => {
+  state.twoLoads++
+  return {}
+})
+vi.mock('/_islands/play-4.js', () => {
+  state.rescanLoads++
   return {}
 })
 
@@ -40,6 +49,8 @@ beforeEach(() => {
   state.saveData = false
   state.entryLoads = 0
   state.visibleLoads = 0
+  state.twoLoads = 0
+  state.rescanLoads = 0
   vi.resetModules()
 })
 
@@ -93,6 +104,40 @@ describe('loader, interaction islands', () => {
     await vi.waitFor(() => expect(document.querySelector('micelio-play')!.hasAttribute('data-island-error')).toBe(true))
     // The press can be repeated: the loader waits for the next one
     expect(control.hidden).toBe(false)
+    // The next press tries again (the entry is still missing, so it fails again, and the loader still listens)
+    document.querySelector('micelio-play')!.removeAttribute('data-island-error')
+    control.click()
+    await vi.waitFor(() => expect(document.querySelector('micelio-play')!.hasAttribute('data-island-error')).toBe(true))
+  })
+
+  it('does not repeat a press when another element of the island imported the entry first', async () => {
+    declare({ src: '/_islands/play-3.js' })
+    document.body.insertAdjacentHTML('beforeend', '<micelio-play><button type="button" data-play-run hidden>Run</button></micelio-play>')
+    await start()
+    const [first, second] = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-play-run]'))
+    await vi.waitFor(() => expect(first!.hidden).toBe(false))
+    await vi.waitFor(() => expect(second!.hidden).toBe(false))
+    const secondClicks: number[] = []
+    second!.addEventListener('click', () => secondClicks.push(state.twoLoads))
+    first!.click()
+    await vi.waitFor(() => expect(state.twoLoads).toBe(1))
+    // A real press on the second control reaches the entry once; the loader does not replay it
+    second!.click()
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(secondClicks).toHaveLength(1)
+  })
+
+  it('stops waiting on a control when a newer scan replaces the wait, and arms it again', async () => {
+    declare({ src: '/_islands/play-4.js' })
+    const control = await start()
+    await vi.waitFor(() => expect(control.hidden).toBe(false))
+    const removed = vi.spyOn(control, 'removeEventListener')
+    document.dispatchEvent(new Event('micelio:heavy-scan'))
+    await vi.waitFor(() => expect(removed).toHaveBeenCalledWith('click', expect.any(Function)))
+    // Armed again by the new scan: a press still loads the entry
+    await new Promise(resolve => setTimeout(resolve, 20))
+    control.click()
+    await vi.waitFor(() => expect(state.rescanLoads).toBe(1))
   })
 
   it('ignores a declaration whose control is not a data attribute selector', async () => {
