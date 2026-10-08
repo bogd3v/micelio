@@ -3,6 +3,7 @@ import type { H3Event } from 'h3'
 import type { Category, Locale, RawStrapiArticle } from '~/interfaces'
 import { isCategory } from '~/helpers/categories'
 import { feedPath } from '~/helpers/feed'
+import { isBlogEnabled } from '~/helpers/siteMode'
 import en from '../../i18n/locales/en.json'
 import es from '../../i18n/locales/es.json'
 
@@ -121,6 +122,8 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
 }
 
 export async function sendFeed(event: H3Event, options: FeedOptions): Promise<string> {
+  // A landing with no articles has no feeds (ADR 0006, section 1)
+  if (!isBlogEnabled(useRuntimeConfig(event).public.blogEnabled)) throw createError({ statusCode: 404, message: 'This site has no blog' })
   setHeader(event, 'Content-Type', 'application/rss+xml; charset=utf-8')
   setHeader(event, 'Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=3600')
   try {

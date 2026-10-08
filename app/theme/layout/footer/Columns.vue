@@ -11,6 +11,7 @@ interface FooterLink {
   label: string
   to: string
   external?: boolean
+  anchor?: boolean
   color?: string
   mobileOnly?: boolean
 }
@@ -38,7 +39,7 @@ const fediverseUser = useFediverseUser()
 const fediverseOn = useModule('fediverse')
 const newsletterOn = useModule('newsletter')
 const supportOn = useModule('support')
-const { isStatic, menuId } = useStaticSite()
+const { isStatic, blogEnabled, menuId } = useStaticSite()
 
 const year = new Date().getFullYear()
 const sourceUrl = resolveSourceUrl(useRuntimeConfig().public.sourceUrl)
@@ -50,16 +51,19 @@ const socials = computed<SocialLink[]>(() =>
   }),
 )
 const sections = useNavLinks()
+// No blog, no categories to list
 const topics = computed<FooterLink[]>(() =>
-  CATEGORIES.map(slug => ({
-    id: slug,
-    label: t(`bd.categories.${slug}`),
-    to: blogPath({ category: slug, page: 1 }, localizePath('/blog')),
-    color: categoryColor(slug),
-  })),
+  blogEnabled
+    ? CATEGORIES.map(slug => ({
+        id: slug,
+        label: t(`bd.categories.${slug}`),
+        to: blogPath({ category: slug, page: 1 }, localizePath('/blog')),
+        color: categoryColor(slug),
+      }))
+    : [],
 )
 const subscriptions = computed<FooterLink[]>(() => [
-  { id: 'rss', label: t('bd.footer.rss'), to: '/feed.xml', external: true },
+  ...(blogEnabled ? [{ id: 'rss', label: t('bd.footer.rss'), to: '/feed.xml', external: true }] : []),
   ...(fediverseOn.value ? [{ id: 'fediverse', label: t('bd.footer.fediverse', { handle: fediverseUser }), to: `${localizePath('/')}#fediverso` }] : []),
   ...(newsletterOn.value ? [{ id: 'newsletter', label: t('bd.footer.newsletter'), to: `${localizePath('/')}#newsletter` }] : []),
   ...(supportOn.value
@@ -93,13 +97,14 @@ const subscribeGroup = computed<FooterGroup>(() => ({
   open: false,
   links: subscriptions.value,
 }))
+// A group with no links (no categories or feed without a blog) is left out
 const desktopGroups = computed<FooterGroup[]>(() =>
   [navigateGroup.value, topicGroup.value, subscribeGroup.value].map(group => ({
     ...group,
     links: group.links.filter(link => !link.mobileOnly),
-  })),
+  })).filter(group => group.links.length),
 )
-const mobileGroups = computed<FooterGroup[]>(() => [topicGroup.value, navigateGroup.value, subscribeGroup.value])
+const mobileGroups = computed<FooterGroup[]>(() => [topicGroup.value, navigateGroup.value, subscribeGroup.value].filter(group => group.links.length))
 
 function scrollToTop(): void {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -141,6 +146,7 @@ function scrollToTop(): void {
             target="_blank"
             rel="noopener noreferrer"
           >{{ link.label }}<span aria-hidden="true">↗</span></a>
+          <a v-else-if="link.anchor" :href="link.to" class="bd-foot-link">{{ link.label }}</a>
           <NuxtLink v-else :to="link.to" class="bd-foot-link">
             <span v-if="link.color" class="bd-foot-dot" :style="{ background: link.color }" aria-hidden="true" />{{ link.label }}
           </NuxtLink>
@@ -167,6 +173,10 @@ function scrollToTop(): void {
               >
                 <span>{{ link.label }}</span>
                 <span class="bd-foot-row-arrow" aria-hidden="true">↗</span>
+              </a>
+              <a v-else-if="link.anchor" :href="link.to" class="bd-foot-row">
+                <span class="bd-foot-row-label">{{ link.label }}</span>
+                <span class="bd-foot-row-arrow" aria-hidden="true">→</span>
               </a>
               <NuxtLink v-else :to="link.to" class="bd-foot-row">
                 <span class="bd-foot-row-label">

@@ -105,6 +105,7 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 | `npm run test:integration` | API and page tests against a production build and a mock Strapi (`test/integration/`) |
 | `npm run test:e2e` | Playwright end-to-end tests; starts a mock Strapi and the dev server (`e2e/`) |
 | `npm run test:static` | Generate a `static` site against the mock Strapi and run `e2e/static/` on `.output/public` (`NUXT_PUBLIC_SITE_MODE=static npm run generate` builds your own; see `docs/api.md`) |
+| `npm run test:landing` | Generate a `landing` site (a home page, no articles) against the mock Strapi and run `e2e/landing/`, then again with the `starter` theme |
 | `npm run test:theme` | Visual regression and axe for the active theme × mode (`e2e/theme/`, needs a build with `MICELIO_SPECIMEN=1`; baselines come from CI, see `docs/theme-testing.md`) |
 | `npm run tokens` | Print the role CSS the build generates from `themes/bogota/theme.json` (or pass another `theme.json`) |
 

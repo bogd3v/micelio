@@ -192,7 +192,7 @@ const commentThreads = {
   'doc-vue-es:es': spanishComments,
 }
 
-const articles = [
+const publishedArticles = [
   {
     id: 1,
     documentId: 'doc-vue',
@@ -255,6 +255,10 @@ const articles = [
     localizations: [{ id: 1, documentId: 'doc-vue', slug: 'understanding-vue-composables', locale: 'en', publishedAt: '2026-02-01T10:00:00.000Z' }],
   },
 ]
+
+// MOCK_NO_ARTICLES=1 publishes no article, tag or category (the landing e2e: a site with no blog)
+const noArticles = process.env.MOCK_NO_ARTICLES === '1'
+const articles = noArticles ? [] : publishedArticles
 
 let nextSubscriberId = 7
 
@@ -468,7 +472,7 @@ const server = createServer(async (req, res) => {
         .filter(article => article.category?.slug === category.slug && article.locale === localeFilter)
         .map(article => ({ id: article.id })),
     }))
-    sendJson(res, 200, { data: categories })
+    sendJson(res, 200, { data: noArticles ? [] : categories })
     return
   }
 

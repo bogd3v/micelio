@@ -17,6 +17,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
 const searchOn = useModule('search')
+const { blogEnabled } = useStaticSite()
 </script>
 
 <template>
@@ -25,7 +26,7 @@ const searchOn = useModule('search')
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M4 11 L12 4 L20 11 M6 9.5 V20 H18 V9.5" /></svg>
       <span>{{ t('nav.home') }}</span>
     </NuxtLink>
-    <NuxtLink :to="localizePath('/blog')" class="bd-tab" :aria-current="active === 'blog' ? 'page' : undefined">
+    <NuxtLink v-if="blogEnabled" :to="localizePath('/blog')" class="bd-tab" :aria-current="active === 'blog' ? 'page' : undefined">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M5 4 H19 V20 H5 Z M8 8 H16 M8 12 H16 M8 16 H13" /></svg>
       <span>{{ t('nav.blog') }}</span>
     </NuxtLink>

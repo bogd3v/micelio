@@ -62,7 +62,20 @@ export interface NavLink {
   id: HeaderSection
   label: string
   to: string
+  anchor?: never
+  action?: never
 }
+
+/** A landing's link: an anchor to a section of the home page (a plain `<a>`: the router would mark every one current), or a link of its hero or call to action. */
+export interface LandingNavLink {
+  id: string
+  label: string
+  to: string
+  anchor?: boolean
+  action?: boolean
+}
+
+export type SiteNavLink = NavLink | LandingNavLink
 
 export type PaletteKind = 'article' | 'topic' | 'action'
 
