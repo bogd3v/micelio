@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contentSecurityPolicy, cspOrigin, inlineScripts, islandPolicyOptions, islandsInHtml, isWorkerScriptPath, runtimesSource, workerPolicy } from '../app/helpers/securityHeaders'
+import { contentSecurityPolicy, cspOrigin, inlineScripts, islandPolicyOptions, islandsInHtml, isWorkerScriptPath, runtimesSource, sceneModelOrigins, workerPolicy } from '../app/helpers/securityHeaders'
 import { HEAVY_ISLANDS } from '../app/islands/heavy'
 import type { HeavyIsland } from '../app/islands/heavy'
 
@@ -113,6 +113,25 @@ describe('heavy island additions', () => {
   it('adds connect-src sources after self, without repeating it', () => {
     const policy = contentSecurityPolicy({ ...base, connectSources: ['\'self\'', 'https://models.example.com/glb/'] })
     expect(policy).toContain('connect-src \'self\' https://models.example.com/glb/;')
+  })
+
+  it('gives a scene page the origin of its model in connect-src, and no other page', () => {
+    const trusted = ['http://127.0.0.1:1337', 'https://resources.test']
+    const page = '<micelio-scene data-model="https://resources.test/a/m.glb?x=1&amp;y=2" data-variant="inline"><img></micelio-scene><micelio-scene data-model="http://127.0.0.1:1337/uploads/n.glb">'
+    expect(sceneModelOrigins(page, trusted)).toEqual(['https://resources.test', 'http://127.0.0.1:1337'])
+    expect(sceneModelOrigins('<main><img src="https://resources.test/a.png"></main>', trusted)).toEqual([])
+    const policy = contentSecurityPolicy({ ...base, connectSources: sceneModelOrigins(page, trusted) })
+    expect(policy).toContain('connect-src \'self\' https://resources.test http://127.0.0.1:1337;')
+  })
+
+  it('ignores a model outside the trusted origins, a site path and a host that would change the policy', () => {
+    const trusted = ['https://resources.test']
+    for (const model of ['https://evil.test/m.glb', '/uploads/m.glb', 'https://resources.test.evil.test/m.glb', 'https://*/m.glb', 'javascript:alert(1)', 'https://resources.test;script-src/m.glb']) {
+      expect(sceneModelOrigins(`<micelio-scene data-model="${model}">`, trusted), model).toEqual([])
+    }
+    expect(sceneModelOrigins('&lt;micelio-scene data-model="https://resources.test/m.glb"&gt;', trusted)).toEqual([])
+    expect(sceneModelOrigins('<micelio-scenes data-model="https://resources.test/m.glb">', trusted)).toEqual([])
+    expect(sceneModelOrigins('<micelio-scene data-model="https://resources.test/m.glb">', ['*', ''])).toEqual([])
   })
 
   it('finds the islands a page renders', () => {

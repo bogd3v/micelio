@@ -85,6 +85,20 @@ test('hashed assets are cached for a year, _ipx revalidates, pages are not', asy
   expect((await request.get('/')).headers()['cache-control']).toBeUndefined()
 })
 
+test('a scene\'s model is copied into /_media/ and the policy gains no connect-src source', async ({ request }) => {
+  const response = await request.get('/showcase')
+  const html = await response.text()
+  const model = /<micelio-scene data-model="([^"]+)"/.exec(html)?.[1]
+  expect(model).toMatch(/^\/_media\/[\da-f]{8}-triangle\.glb$/)
+  const file = await request.get(model!)
+  expect(file.status()).toBe(200)
+  expect((await file.body()).subarray(0, 4).toString('latin1')).toBe('glTF')
+  expect(file.headers()['cache-control']).toBe('public, max-age=31536000, immutable')
+  const connect = (policy: string): string => policy.split('; ').find(directive => directive.startsWith('connect-src ')) ?? ''
+  expect(connect(response.headers()['content-security-policy'] ?? '')).toBe('connect-src \'self\'')
+  expect(connect(/<meta http-equiv="Content-Security-Policy" content="([^"]*)">/.exec(html)?.[1] ?? '')).toBe('connect-src \'self\'')
+})
+
 test('there is no SPA fallback: unknown paths get 404.html', async ({ request }) => {
   expect((await request.get('/200.html')).status()).toBe(404)
   const response = await request.get('/nothing/here')

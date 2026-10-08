@@ -304,7 +304,11 @@
     margin-bottom: var(--space-4);
 }
 
-/* Scene: the static fallback of the 3D island (#246) */
+/* Scene: the static fallback of the 3D island (#246). Its wrapper is a block, so the poster lays out as before */
+micelio-scene {
+    display: block;
+}
+
 [data-section="scene"][data-variant="inline"] .bd-section-inner {
     justify-items: start;
 }

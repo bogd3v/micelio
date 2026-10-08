@@ -3,6 +3,7 @@ import { Locale } from '~/interfaces/locale'
 import type { Page, PageSection, PageSeo, PostListSection } from '~/interfaces'
 
 import { PAGE_SLUG_PATTERN } from '~/helpers/pages'
+import { isGlbUrl } from '~/helpers/scene'
 
 export { PAGE_SLUG_PATTERN }
 export const POST_LIST_MIN = 1
@@ -201,7 +202,8 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.scene': z.object({
       __component: z.literal('section.scene'),
       variant: variant(['background', 'inline']),
-      model: media.refine(file => /\.(?:glb|gltf)(?:\?.*)?$/i.test(file.url), 'Not a glTF file'),
+      // Binary glTF only: a .gltf names external buffers the island would not fetch (ADR 0006, amendment of #246)
+      model: media.refine(file => isGlbUrl(file.url), 'Not a .glb file'),
       poster: media,
       alt: text,
       title: optional(text),
