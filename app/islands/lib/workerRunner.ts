@@ -140,9 +140,9 @@ export class WorkerPool {
           timer = setTimeout(() => finish('timeout'), this.runMs)
           options.onStarted?.()
         } else if (reply.type === 'done') {
-          finish('done', reply.output, reply.truncated, true)
+          finish('done', reply.output, reply.truncated, reply.recycle !== true)
         } else {
-          finish('error', reply.message, false, true)
+          finish('error', reply.message, false, reply.recycle !== true)
         }
       }
       worker.onerror = () => finish('error')

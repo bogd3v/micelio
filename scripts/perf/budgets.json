@@ -177,6 +177,17 @@
             "totalKb": 417,
             "requests": 4
           }
+        },
+        "playground:javascript": {
+          "page": "/es/blog/guia-vue-composables",
+          "control": "[data-runtime=\"javascript\"] [data-playground-run]",
+          "ready": "[data-runtime=\"javascript\"] [data-playground-result][data-state=\"done\"]",
+          "error": {
+            "scriptGzKb": 19.4,
+            "wasmKb": 204.1,
+            "totalKb": 221.6,
+            "requests": 7
+          }
         }
       }
     },
@@ -350,6 +361,17 @@
             "wasmKb": 388,
             "totalKb": 451.7,
             "requests": 4
+          }
+        },
+        "playground:javascript": {
+          "page": "/es/blog/guia-vue-composables",
+          "control": "[data-runtime=\"javascript\"] [data-playground-run]",
+          "ready": "[data-runtime=\"javascript\"] [data-playground-result][data-state=\"done\"]",
+          "error": {
+            "scriptGzKb": 19.4,
+            "wasmKb": 221.3,
+            "totalKb": 240,
+            "requests": 7
           }
         }
       }

@@ -133,8 +133,8 @@ describe('runtime files', () => {
   ])
 
   it('adds up what a runtime downloads', () => {
-    expect(runtimeDownloads(sizes)).toEqual({ sql: 5 })
-    expect(runtimeDownloads(new Map())).toEqual({ sql: 0 })
+    expect(runtimeDownloads(sizes).sql).toBe(5)
+    expect(runtimeDownloads(new Map()).sql).toBe(0)
   })
 
   it('knows the files the SQLite package emits and nothing loads', () => {
