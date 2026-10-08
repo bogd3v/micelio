@@ -1,0 +1,25 @@
+// Islands that write into the light DOM of a Vue page wait for hydration, or Vue sees a mismatch (ADR 0006, section 6).
+// `app/plugins/hydrated.client.ts` sets the flag and dispatches the event on `app:suspense:resolve`.
+export const HYDRATED_EVENT = 'micelio:hydrated'
+export const HYDRATED_FLAG = '__micelioHydrated'
+
+interface HydratedWindow {
+  [HYDRATED_FLAG]?: boolean
+}
+
+/** Longest wait, in ms: an app that never finishes hydrating must not leave the island dead. */
+const HYDRATION_TIMEOUT = 15000
+
+/** Resolves at once on a page without a Nuxt app (static, landing), otherwise when hydration has finished. */
+export function whenHydrated(timeout: number = HYDRATION_TIMEOUT): Promise<void> {
+  if (!document.getElementById('__NUXT_DATA__') || (window as HydratedWindow)[HYDRATED_FLAG]) return Promise.resolve()
+  return new Promise((resolve) => {
+    const timer = setTimeout(done, timeout)
+    function done(): void {
+      clearTimeout(timer)
+      document.removeEventListener(HYDRATED_EVENT, done)
+      resolve()
+    }
+    document.addEventListener(HYDRATED_EVENT, done, { once: true })
+  })
+}
