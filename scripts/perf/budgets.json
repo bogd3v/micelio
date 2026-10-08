@@ -74,6 +74,7 @@
         "home": {
           "error": {
             "jsKb": 146.7,
+            "strayRequests": 0,
             "lcpMs": 5950,
             "cssKb": 21.1,
             "htmlKb": 113.9,
@@ -90,6 +91,7 @@
         "blog": {
           "error": {
             "jsKb": 142.1,
+            "strayRequests": 0,
             "lcpMs": 4700,
             "cssKb": 21.1,
             "htmlKb": 80.4,
@@ -106,6 +108,7 @@
         "article": {
           "error": {
             "jsKb": 158.6,
+            "strayRequests": 0,
             "lcpMs": 5200,
             "cssKb": 21.1,
             "htmlKb": 82.7,
@@ -122,6 +125,7 @@
         "about": {
           "error": {
             "jsKb": 143.8,
+            "strayRequests": 0,
             "lcpMs": 6600,
             "cssKb": 21.1,
             "htmlKb": 95.3,
@@ -138,6 +142,7 @@
         "privacy": {
           "error": {
             "jsKb": 130.4,
+            "strayRequests": 0,
             "lcpMs": 4350,
             "cssKb": 21.1,
             "htmlKb": 71.1,
