@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mermaid as mermaidOverrides } from '#micelio/theme'
+import mermaidOverrides from '#micelio/theme-mermaid'
 import type { StrapiRichText } from '~/interfaces'
 import { MERMAID_ELEMENT } from '~/helpers/mermaid'
 import type { MermaidConfig } from '~/helpers/mermaid'

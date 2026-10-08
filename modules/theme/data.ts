@@ -104,7 +104,7 @@ export function setupData(ctx: ThemeContext): void {
   nuxt.options.runtimeConfig.public.theme = ctx.id
 
   function themeData(): object {
-    const { id, modes, fonts, images, layout, slots, mermaid } = ctx.load().manifest
+    const { id, modes, fonts, images, layout, slots } = ctx.load().manifest
     return {
       id,
       modes: modes.map(({ id, scheme, name }: ModeDefinition) => ({ id, scheme, name })),
@@ -112,14 +112,24 @@ export function setupData(ctx: ThemeContext): void {
       images: Object.fromEntries(Object.entries(images ?? {}).map(([role, file]) => [role, `/${IMAGES_URL}/${file}`])),
       layout: { ...DEFAULT_LAYOUT, ...layout },
       slots: slots ?? {},
-      mermaid: mermaid ?? {},
     }
   }
   nuxt.options.alias['#micelio/theme'] = join(nuxt.options.buildDir, 'micelio/theme.mjs')
   addTemplate({
     filename: 'micelio/theme.mjs',
     write: true,
-    getContents: () => `const theme = ${JSON.stringify(themeData(), null, 2)}\nexport const { id, modes, fonts, images, layout, slots, mermaid } = theme\nexport default theme\n`,
+    getContents: () => `const theme = ${JSON.stringify(themeData(), null, 2)}\nexport const { id, modes, fonts, images, layout, slots } = theme\nexport default theme\n`,
+  })
+  // Apart from the theme data: only the article's rich text reads it, and the data is in every page's entry
+  nuxt.options.alias['#micelio/theme-mermaid'] = join(nuxt.options.buildDir, 'micelio/theme-mermaid.mjs')
+  addTemplate({
+    filename: 'micelio/theme-mermaid.mjs',
+    write: true,
+    getContents: () => `export default ${JSON.stringify(ctx.load().manifest.mermaid ?? {})}\n`,
+  })
+  addTypeTemplate({
+    filename: 'types/micelio-theme-mermaid.d.ts',
+    getContents: () => `declare module '#micelio/theme-mermaid' {\n  const overrides: Record<string, string>\n  export default overrides\n}\n`,
   })
   addTypeTemplate({
     filename: 'types/micelio-theme.d.ts',
@@ -151,7 +161,6 @@ export function setupData(ctx: ThemeContext): void {
     images: ThemeImages
     layout: Record<LayoutRegion, string>
     slots: Partial<Record<SlotName, SlotOptions>>
-    mermaid: Record<string, string>
   }
   export const id: string
   export const modes: ModeDefinition[]
@@ -159,7 +168,6 @@ export function setupData(ctx: ThemeContext): void {
   export const images: ThemeImages
   export const layout: Record<LayoutRegion, string>
   export const slots: Partial<Record<SlotName, SlotOptions>>
-  export const mermaid: Record<string, string>
   const theme: ActiveTheme
   export default theme
 }

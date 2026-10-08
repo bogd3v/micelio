@@ -1,13 +1,13 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const state = vi.hoisted(() => ({ missing: [] as string[], saveData: false, entryLoads: 0, visibleLoads: 0, twoLoads: 0, rescanLoads: 0 }))
+const state = vi.hoisted(() => ({ missing: [] as string[], saveData: false, entryLoads: 0, visibleLoads: 0, twoLoads: 0, rescanLoads: 0, hydration: Promise.resolve() as Promise<void>, raceLoads: 0 }))
 
 vi.mock('../app/islands/lib/features', () => ({
   missingFeatures: () => state.missing,
   saveData: () => state.saveData,
 }))
-vi.mock('../app/islands/lib/hydrated', () => ({ whenHydrated: () => Promise.resolve() }))
+vi.mock('../app/islands/lib/hydrated', () => ({ whenHydrated: () => state.hydration }))
 vi.mock('/_islands/play-1.js', () => {
   state.entryLoads++
   return {}
@@ -24,6 +24,11 @@ vi.mock('/_islands/play-3.js', () => {
 })
 vi.mock('/_islands/play-4.js', () => {
   state.rescanLoads++
+  return {}
+})
+
+vi.mock('/_islands/play-5.js', () => {
+  state.raceLoads++
   return {}
 })
 
@@ -44,17 +49,29 @@ async function start(): Promise<HTMLButtonElement> {
   return document.querySelector<HTMLButtonElement>('[data-play-run]')!
 }
 
+// Each import of the loader adds a scan listener to the document: drop them, or an earlier test's loader would answer this one's events
+const scanListeners: EventListener[] = []
+const addListener = document.addEventListener.bind(document)
+
 beforeEach(() => {
+  vi.spyOn(document, 'addEventListener').mockImplementation((type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) => {
+    if (type === 'micelio:heavy-scan') scanListeners.push(listener as EventListener)
+    addListener(type, listener, options)
+  })
   state.missing = []
   state.saveData = false
   state.entryLoads = 0
   state.visibleLoads = 0
   state.twoLoads = 0
   state.rescanLoads = 0
+  state.raceLoads = 0
+  state.hydration = Promise.resolve()
   vi.resetModules()
 })
 
 afterEach(() => {
+  for (const listener of scanListeners.splice(0)) document.removeEventListener('micelio:heavy-scan', listener)
+  vi.restoreAllMocks()
   vi.unstubAllGlobals()
   document.body.innerHTML = ''
 })
@@ -138,6 +155,21 @@ describe('loader, interaction islands', () => {
     await new Promise(resolve => setTimeout(resolve, 20))
     control.click()
     await vi.waitFor(() => expect(state.rescanLoads).toBe(1))
+  })
+
+  it('arms the control when a second scan comes while the page is still hydrating', async () => {
+    // useHeavyIsland dispatches a scan on mount, which can come before hydration has finished
+    let hydrated!: () => void
+    state.hydration = new Promise<void>((resolve) => {
+      hydrated = resolve
+    })
+    declare({ src: '/_islands/play-5.js' })
+    const control = await start()
+    document.dispatchEvent(new Event('micelio:heavy-scan'))
+    hydrated()
+    await vi.waitFor(() => expect(control.hidden).toBe(false))
+    control.click()
+    await vi.waitFor(() => expect(state.raceLoads).toBe(1))
   })
 
   it('ignores a declaration whose control is not a data attribute selector', async () => {

@@ -13,7 +13,8 @@ import { whenInteracted, whenVisible } from './lib/trigger'
 
 const loading = new Map<string, Promise<unknown>>()
 const imported = new Set<string>()
-const armed = new WeakSet<Element>()
+// The scan whose wait a control is under: a newer scan arms a control whose scan was replaced, or it would stay shown and dead
+const armed = new WeakMap<Element, AbortSignal>()
 let waiting: AbortController | undefined
 
 function load(src: string): Promise<unknown> {
@@ -35,9 +36,11 @@ function load(src: string): Promise<unknown> {
 // A control is part of the Vue markup: wait for hydration before touching it
 async function arm(element: HTMLElement, declaration: HeavyDeclaration & { control: string }, signal: AbortSignal): Promise<void> {
   const control = element.querySelector<HTMLElement>(declaration.control)
-  if (!control || armed.has(control) || missingFeatures(declaration.features as HeavyFeature[]).length) return
-  armed.add(control)
+  if (!control || armed.get(control)?.aborted === false || missingFeatures(declaration.features as HeavyFeature[]).length) return
+  armed.set(control, signal)
   await whenHydrated()
+  // A newer scan, started while the page hydrated, arms the control itself
+  if (signal.aborted) return
   // Save-Data keeps the control and says what pressing it costs (the server wrote both texts)
   const { saveDataLabel, saveDataAria } = element.dataset
   if (saveData() && saveDataLabel) {
@@ -51,7 +54,7 @@ async function arm(element: HTMLElement, declaration: HeavyDeclaration & { contr
       await whenInteracted(control, { events: ['click'], signal })
     } catch {
       // A newer scan (a navigation) replaced this wait: a control that stays on the page is armed again by it
-      armed.delete(control)
+      if (armed.get(control) === signal) armed.delete(control)
       return
     }
     // Another element imported the entry meanwhile: this press already reached the entry, do not repeat it

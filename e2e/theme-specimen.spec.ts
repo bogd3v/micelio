@@ -7,6 +7,9 @@ test('renders every group of the specimen', async ({ page }) => {
   await page.goto('/_theme', { waitUntil: 'networkidle' })
   await expect(page.getByRole('heading', { level: 1, name: 'Theme specimen' })).toBeVisible()
   for (const id of GROUPS) await expect(page.locator(`[data-section="${id}"]`)).toHaveCount(1)
+  // Drawn when near the viewport: scroll each block in
+  const blocks = page.locator('[data-section="prose"] micelio-mermaid')
+  for (let index = 0; index < await blocks.count(); index++) await blocks.nth(index).scrollIntoViewIfNeeded()
   await expect(page.locator('[data-section="prose"] .bd-mermaid-diagram svg')).toHaveCount(2)
 })
 
