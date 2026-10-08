@@ -86,7 +86,7 @@
     text-decoration: none;
     background: var(--surface-raised);
     border: 1px solid var(--line);
-    transition: border-color var(--duration-base) var(--e);
+    transition: border-color var(--duration-base) var(--ease-standard);
 }
 
 .bd-path-next:hover {

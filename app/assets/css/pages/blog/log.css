@@ -38,7 +38,7 @@
     align-items: baseline;
     padding: 20px 0;
     border-bottom: 1px solid var(--line);
-    transition: background-color var(--duration-base) var(--e);
+    transition: background-color var(--duration-base) var(--ease-standard);
 }
 
 .bd-log-row:hover {

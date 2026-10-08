@@ -37,7 +37,7 @@
     object-fit: cover;
 }
 
-/* The Ken Burns keyframes never matched (scoped name), so only the zoom applies */
+/* Slow zoom on the active slide (zoom only, no pan) */
 .bd-slider-img-zoom {
     scale: 1.05;
 }

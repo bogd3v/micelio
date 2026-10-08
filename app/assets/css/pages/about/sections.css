@@ -44,7 +44,7 @@
     align-items: baseline;
     padding: var(--space-6) 0;
     border-top: 1px solid var(--line);
-    transition: border-color var(--duration-base) var(--e);
+    transition: border-color var(--duration-base) var(--ease-standard);
 }
 
 .bd-principle:hover {
@@ -63,7 +63,7 @@
     line-height: 32px;
     font-weight: 300;
     font-stretch: 100%;
-    transition: font-stretch var(--duration-slow) var(--e);
+    transition: font-stretch var(--duration-slow) var(--ease-standard);
 }
 
 .bd-principle:hover .bd-principle-title {
@@ -195,13 +195,13 @@
     line-height: 28px;
     font-weight: 300;
     overflow-wrap: anywhere;
-    transition: font-stretch var(--duration-slow) var(--e), color var(--duration-base) var(--e);
+    transition: font-stretch var(--duration-slow) var(--ease-standard), color var(--duration-base) var(--ease-standard);
 }
 
 .bd-contact-arrow {
     font: 400 19px/1 var(--font-mono);
     text-align: right;
-    transition: transform var(--duration-base) var(--e), color var(--duration-base) var(--e);
+    transition: transform var(--duration-base) var(--ease-standard), color var(--duration-base) var(--ease-standard);
 }
 
 .bd-contact-row:hover .bd-contact-handle {

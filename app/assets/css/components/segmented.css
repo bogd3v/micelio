@@ -14,7 +14,7 @@
     background: transparent;
     border: 0;
     cursor: pointer;
-    transition: color var(--duration-base) var(--e), background-color var(--duration-base) var(--e);
+    transition: color var(--duration-base) var(--ease-standard), background-color var(--duration-base) var(--ease-standard);
 }
 
 .bd-lang .bd-seg {

@@ -228,7 +228,7 @@
     background: var(--surface);
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-control);
-    transition: box-shadow var(--duration-base) var(--e);
+    transition: box-shadow var(--duration-base) var(--ease-standard);
 }
 
 .bd-comment-input::placeholder {
