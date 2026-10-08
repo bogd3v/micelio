@@ -113,6 +113,11 @@ describe('whenVisible', () => {
     expect(observer.disconnected).toBe(true)
   })
 
+  it('throws AbortError at once for a signal that is already aborted', async () => {
+    await expect(whenVisible(document.createElement('div'), { signal: AbortSignal.abort() })).rejects.toMatchObject({ name: 'AbortError' })
+    expect(FakeObserver.instances).toHaveLength(0)
+  })
+
   it('uses the given root margin', () => {
     void whenVisible(document.createElement('div'), { rootMargin: '0px' }).catch(() => {})
     expect(FakeObserver.instances[0]!.options?.rootMargin).toBe('0px')
@@ -142,6 +147,7 @@ describe('whenInteracted', () => {
     const promise = whenInteracted(area)
     area.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }))
     area.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift' }))
+    for (const key of ['ArrowDown', 'PageUp', 'Home', 'End', 'F5']) area.dispatchEvent(new KeyboardEvent('keydown', { key }))
     expect(await settled(promise)).toBe('pending')
     area.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }))
     await expect(promise).resolves.toBeUndefined()

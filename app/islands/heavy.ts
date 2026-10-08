@@ -7,10 +7,15 @@ export type HeavyFeature = 'webgl2' | 'wasm' | 'worker'
 /** `visible`: near the viewport, after load and idle. `interaction`: a click or key on the island's control. */
 export type HeavyTrigger = 'visible' | 'interaction'
 
-/** CSP sources added to the responses of the pages that render the island (ADR 0004). */
+/**
+ * CSP additions for the responses of the pages that render the island (ADR 0004, ADR 0006).
+ * Sources are `'self'` or absolute `https://` origins with an optional path (`http://` only for localhost).
+ */
 export interface HeavyCsp {
   connectSrc?: string[]
   workerSrc?: string[]
+  /** Adds `'wasm-unsafe-eval'` to `script-src`. */
+  wasm?: true
 }
 
 export interface HeavyIsland {
@@ -33,8 +38,8 @@ export const HEAVY_TRIGGERS: readonly HeavyTrigger[] = ['visible', 'interaction'
 export const HEAVY_ISLANDS: readonly HeavyIsland[] = []
 
 const NAME = /^[a-z][a-z0-9-]*$/
-// An origin (`https://host[:port]`) or a same-origin path; never a wildcard, a keyword, a space or a `;`
-const SOURCE = /^(?:https?:\/\/[\w.-]+(?::\d+)?|\/(?!\/)[\w./-]*)$/
+// `'self'` or an absolute origin with an optional path; never a wildcard, another keyword, a bare path, a space or a `;`
+const SOURCE = /^(?:'self'|https:\/\/[\w.-]+(?::\d+)?(?:\/[\w./-]*)?|http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(?:\/[\w./-]*)?)$/
 
 function sourceErrors(label: string, sources: unknown): string[] {
   if (sources === undefined) return []
@@ -58,6 +63,7 @@ export function validateHeavyIslands(islands: readonly HeavyIsland[]): string[] 
     for (const feature of island.features) {
       if (!HEAVY_FEATURES.includes(feature)) errors.push(`${label}: unknown feature "${String(feature)}"`)
     }
+    if (island.csp?.wasm !== undefined && island.csp.wasm !== true) errors.push(`${label}: csp.wasm must be true or absent`)
     errors.push(...sourceErrors(`${label}: csp.connectSrc`, island.csp?.connectSrc), ...sourceErrors(`${label}: csp.workerSrc`, island.csp?.workerSrc))
   }
   return errors

@@ -41,6 +41,18 @@ describe('whenHydrated', () => {
     expect(resolved).toBe(true)
   })
 
+  it('warns in development when it gives up', async () => {
+    vi.useFakeTimers()
+    vi.stubGlobal('__MICELIO_DEV__', true)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    nuxtPage()
+    const promise = whenHydrated(10)
+    await vi.advanceTimersByTimeAsync(10)
+    await promise
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('whenHydrated()'))
+    warn.mockRestore()
+  })
+
   it('gives up after the timeout', async () => {
     vi.useFakeTimers()
     nuxtPage()

@@ -14,7 +14,10 @@ const HYDRATION_TIMEOUT = 15000
 export function whenHydrated(timeout: number = HYDRATION_TIMEOUT): Promise<void> {
   if (!document.getElementById('__NUXT_DATA__') || (window as HydratedWindow)[HYDRATED_FLAG]) return Promise.resolve()
   return new Promise((resolve) => {
-    const timer = setTimeout(done, timeout)
+    const timer = setTimeout(() => {
+      if (typeof __MICELIO_DEV__ !== 'undefined' && __MICELIO_DEV__) console.warn('[micelio] whenHydrated() timed out; the page did not finish hydrating')
+      done()
+    }, timeout)
     function done(): void {
       clearTimeout(timer)
       document.removeEventListener(HYDRATED_EVENT, done)

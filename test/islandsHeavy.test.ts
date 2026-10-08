@@ -20,7 +20,7 @@ describe('heavy island registry', () => {
   })
 
   it('accepts a complete entry with CSP sources', () => {
-    const island: HeavyIsland = { ...valid, id: 'playground', features: ['wasm', 'worker'], csp: { connectSrc: ['/_islands/runtimes/', 'https://cdn.example.com:8443'], workerSrc: ['/_islands/workers/'] } }
+    const island: HeavyIsland = { ...valid, id: 'playground', features: ['wasm', 'worker'], csp: { connectSrc: ['\'self\'', 'https://cdn.example.com:8443/runtimes/', 'http://localhost:3000'], workerSrc: ['\'self\''], wasm: true } }
     expect(validateHeavyIslands([valid, island])).toEqual([])
   })
 
@@ -39,9 +39,10 @@ describe('heavy island registry', () => {
   })
 
   it('rejects CSP sources that could add a directive or a wildcard', () => {
-    for (const source of ['*', '\'unsafe-eval\'', 'https://a.com; script-src *', 'https://*.example.com', 'data:', '//evil.com', '']) {
+    for (const source of ['*', '\'unsafe-eval\'', 'https://a.com; script-src *', 'https://*.example.com', 'data:', '//evil.com', '/_islands/runtimes/', 'http://example.com', '']) {
       expect(validateHeavyIslands([{ ...valid, csp: { connectSrc: [source] } }]), source).toHaveLength(1)
     }
+    expect(validateHeavyIslands([{ ...valid, csp: { wasm: false as never } }])[0]).toContain('csp.wasm')
     expect(validateHeavyIslands([{ ...valid, csp: { workerSrc: 'blob:' as never } }])[0]).toContain('must be an array')
   })
 })

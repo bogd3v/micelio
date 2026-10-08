@@ -17,7 +17,8 @@ export interface InteractionOptions extends TriggerOptions {
 }
 
 // Keys that move focus or modify; they do not mean the reader is using the control
-const PASSIVE_KEYS = new Set(['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Escape'])
+const PASSIVE_KEYS = new Set(['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End'])
+const FUNCTION_KEY = /^F\d{1,2}$/
 
 function abortError(): DOMException {
   return new DOMException('The trigger was aborted', 'AbortError')
@@ -91,6 +92,7 @@ function intersects(element: Element, options: VisibleOptions): Promise<void> {
 
 /** `visible`: the element is in (or near) the viewport and the page has loaded and gone idle, so it never competes with the LCP. */
 export async function whenVisible(element: Element, options: VisibleOptions = {}): Promise<void> {
+  if (options.signal?.aborted) throw abortError()
   // One controller cancels the other half when either rejects
   const inner = new AbortController()
   const forward = (): void => inner.abort()
@@ -112,7 +114,7 @@ export function whenInteracted(target: EventTarget, options: InteractionOptions 
     if (signal?.aborted) return reject(abortError())
 
     function listener(event: Event): void {
-      if (event instanceof KeyboardEvent && PASSIVE_KEYS.has(event.key)) return
+      if (event instanceof KeyboardEvent && (PASSIVE_KEYS.has(event.key) || FUNCTION_KEY.test(event.key))) return
       cleanup()
       resolve()
     }
