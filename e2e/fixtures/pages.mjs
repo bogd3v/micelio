@@ -205,8 +205,32 @@ const manyLists = {
   localizations: [],
 }
 
+// A textured scene that opens the page: its poster is the LCP element, and its model carries an image (e2e/scene)
+const sceneHero = {
+  id: 5,
+  documentId: 'page-scene-hero',
+  title: 'Scene hero',
+  slug: 'scene-hero',
+  locale: 'en',
+  seo: null,
+  sections: [
+    {
+      id: 1,
+      __component: 'section.scene',
+      variant: 'background',
+      model: media(210, 'textured.glb', { mime: 'model/gltf-binary', width: null, height: null }),
+      poster: media(211, 'triangle-poster.png', { width: 1600, height: 900 }),
+      alt: 'A green triangle',
+      title: 'A hero scene',
+      text: 'Drawn behind this text.',
+    },
+    { id: 2, __component: 'section.rich-text', body: '## After the scene\n\nText below.' },
+  ],
+  localizations: [],
+}
+
 /** Mutable: a test may publish a page after a first miss. */
-export const pageFixtures = [showcase(false), showcase(true), partial, manyLists]
+export const pageFixtures = [showcase(false), showcase(true), partial, manyLists, sceneHero]
 
 // What replaces the showcase pages when there are no articles
 const landingShowcases = [showcase(false, true), showcase(true, true)]

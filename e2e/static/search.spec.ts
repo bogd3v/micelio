@@ -33,7 +33,8 @@ test('a page loads the small island and nothing of Pagefind', async ({ page }) =
 test('the island is only on the pages that render the search', async ({ request }) => {
   for (const path of ['/', '/es', '/blog', ARTICLE, '/showcase']) {
     const html = await (await request.get(path)).text()
-    const sources = [...html.matchAll(/<script[^>]*\ssrc="([^"]*)"/g)].map(match => match[1])
+    // The loader of the heavy islands (the scene of /showcase, ADR 0006) is not the search
+    const sources = [...html.matchAll(/<script[^>]*\ssrc="([^"]*)"/g)].map(match => match[1]).filter(src => !/^\/_islands\/loader-[\w-]+\.js$/.test(src!))
     expect(sources, path).toHaveLength(1)
     expect(sources[0], path).toMatch(ISLAND)
     expect(html, path).toContain('<micelio-search')

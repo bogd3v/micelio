@@ -199,6 +199,15 @@
             "totalKb": 221.6,
             "requests": 7
           }
+        },
+        "scene": {
+          "page": "/showcase",
+          "ready": "micelio-scene[data-state=\"ready\"]",
+          "error": {
+            "scriptGzKb": 158.8,
+            "totalKb": 129.8,
+            "requests": 3
+          }
         }
       }
     },
@@ -271,7 +280,7 @@
         "article": {
           "error": {
             "jsKb": 4.5,
-            "initialJsGzKb": 5.0,
+            "initialJsGzKb": 5.2,
             "strayRequests": 0,
             "lcpMs": 1550,
             "cssKb": 22.6,
@@ -394,6 +403,15 @@
             "wasmKb": 221.3,
             "totalKb": 240,
             "requests": 7
+          }
+        },
+        "scene": {
+          "page": "/showcase",
+          "ready": "micelio-scene[data-state=\"ready\"]",
+          "error": {
+            "scriptGzKb": 158.8,
+            "totalKb": 141.9,
+            "requests": 3
           }
         }
       }

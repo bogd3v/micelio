@@ -304,17 +304,52 @@
     margin-bottom: var(--space-4);
 }
 
-/* Scene: the static fallback of the 3D island (#246). Its wrapper is a block, so the poster lays out as before */
+/* Scene: the poster, and over it the canvas of the 3D island (#246). The island draws in the element's shadow root */
 micelio-scene {
     display: block;
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    background: var(--surface-sunken);
 }
 
 [data-section="scene"][data-variant="inline"] .bd-section-inner {
-    justify-items: start;
+    justify-items: stretch;
 }
 
+/* Behind the section's content: the scene fills the section and its head sits on a panel at the foot of it */
 [data-section="scene"][data-variant="background"] .bd-section-inner {
     position: relative;
+    isolation: isolate;
+    align-content: end;
+    min-height: clamp(22rem, 65vh, 40rem);
+}
+
+[data-section="scene"][data-variant="background"] micelio-scene {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 0;
+}
+
+[data-section="scene"][data-variant="background"] micelio-scene .bd-section-media,
+[data-section="scene"][data-variant="background"] micelio-scene :is(picture, img) {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+}
+
+/* The poster can be any image, so the head never reads against it: it sits on the surface role, opaque enough that ink and ink-muted
+   keep 4.5:1 over a black or a white poster in every mode of the installed themes (test/sceneScrim.test.ts reads this percentage) */
+[data-section="scene"][data-variant="background"] .bd-section-head {
+    justify-self: start;
+    box-sizing: border-box;
+    max-width: min(100%, 34rem);
+    padding: var(--space-4) var(--space-6);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
 }
 
 @media (forced-colors: active) {

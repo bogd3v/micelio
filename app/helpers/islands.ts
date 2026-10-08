@@ -25,6 +25,8 @@ export interface HeavyDeclaration {
   src: string
   /** `interaction` only: selector, inside the element, of the control whose press loads the entry. */
   control?: string
+  /** The island animates: `prefers-reduced-motion: reduce` keeps the fallback. */
+  motion?: true
   /** What the browser must have for the island to run; without it the fallback stays. */
   features: string[]
 }
@@ -54,6 +56,7 @@ export function parseHeavyDeclaration(json: string | null | undefined): HeavyDec
     if (data.trigger !== 'visible' && data.trigger !== 'interaction') return undefined
     const features = Array.isArray(data.features) ? data.features.filter((feature): feature is string => typeof feature === 'string' && FEATURE.test(feature)) : []
     const declaration: HeavyDeclaration = { id: data.id, trigger: data.trigger, saveData: data.saveData === 'load' ? 'load' : 'skip', src: data.src, features }
+    if (data.motion === true) declaration.motion = true
     if (data.trigger === 'interaction') {
       // An interaction island without a usable control has nothing to wait for
       if (typeof data.control !== 'string' || !CONTROL.test(data.control)) return undefined

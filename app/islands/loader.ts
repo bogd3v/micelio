@@ -7,7 +7,7 @@
 import type { HeavyFeature } from './heavy'
 import { HEAVY_SCAN_EVENT, HEAVY_SCRIPT_PREFIX, heavyTag, parseHeavyDeclaration } from '../helpers/islands'
 import type { HeavyDeclaration } from '../helpers/islands'
-import { missingFeatures, saveData } from './lib/features'
+import { missingFeatures, prefersReducedMotion, saveData } from './lib/features'
 import { whenHydrated } from './lib/hydrated'
 import { whenInteracted, whenVisible } from './lib/trigger'
 
@@ -38,6 +38,11 @@ function load(src: string): Promise<unknown> {
   return promise
 }
 
+// The fallback stays: the browser lacks a feature, or the island animates and the reader asked for less motion
+function stays(declaration: HeavyDeclaration): boolean {
+  return missingFeatures(declaration.features as HeavyFeature[]).length > 0 || (declaration.motion === true && prefersReducedMotion())
+}
+
 async function ignore(task: Promise<unknown>): Promise<void> {
   try {
     await task
@@ -56,7 +61,7 @@ async function loadWhenVisible(elements: HTMLElement[], src: string, signal: Abo
 // A control is part of the Vue markup: wait for hydration before touching it
 async function arm(element: HTMLElement, declaration: HeavyDeclaration & { control: string }, signal: AbortSignal): Promise<void> {
   const control = element.querySelector<HTMLElement>(declaration.control)
-  if (!control || armed.get(control)?.aborted === false || missingFeatures(declaration.features as HeavyFeature[]).length) return
+  if (!control || armed.get(control)?.aborted === false || stays(declaration)) return
   armed.set(control, signal)
   await whenHydrated()
   // A newer scan, started while the page hydrated, arms the control itself
@@ -104,7 +109,7 @@ function scan(): void {
       continue
     }
     // Save-Data keeps a `visible` island on its fallback unless the island opted in
-    if (imported.has(declaration.src) || !elements.length || missingFeatures(declaration.features as HeavyFeature[]).length || (declaration.saveData === 'skip' && saveData())) continue
+    if (imported.has(declaration.src) || !elements.length || stays(declaration) || (declaration.saveData === 'skip' && saveData())) continue
     void ignore(loadWhenVisible(elements, declaration.src, controller.signal))
   }
 }

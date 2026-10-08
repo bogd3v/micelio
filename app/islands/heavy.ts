@@ -33,6 +33,8 @@ export interface HeavyIsland {
   saveData?: HeavySaveData
   /** `interaction` only, required: attribute selector (`[data-playground-run]`), inside the element, of the control whose press loads the island. */
   control?: string
+  /** The island animates: under `prefers-reduced-motion: reduce` the loader never imports it and the fallback stays (ADR 0006, amendment of #246). */
+  motion?: true
   csp?: HeavyCsp
   /** Key under `islands` in `scripts/perf/budgets.json`. */
   budget: string
@@ -64,6 +66,17 @@ export const HEAVY_ISLANDS: readonly HeavyIsland[] = [
     csp: { workerSrc: ['\'self\''] },
     budget: 'playground',
   },
+  {
+    id: 'scene',
+    entry: 'scene',
+    trigger: 'visible',
+    fallback: 'the poster, with the scene\'s alt text',
+    features: ['webgl2'],
+    // Decoration: Save-Data keeps the poster
+    saveData: 'skip',
+    motion: true,
+    budget: 'scene',
+  },
 ]
 
 // A control is an attribute selector of ours, never free CSS
@@ -93,6 +106,7 @@ export function validateHeavyIslands(islands: readonly HeavyIsland[]): string[] 
     if (island.saveData !== undefined && !HEAVY_SAVE_DATA.includes(island.saveData)) errors.push(`${label}: unknown saveData "${String(island.saveData)}"`)
     if (island.trigger === 'interaction' && !(island.control && CONTROL.test(island.control))) errors.push(`${label}: an interaction island needs a control like [data-name]`)
     if (island.trigger === 'visible' && island.control !== undefined) errors.push(`${label}: only an interaction island has a control`)
+    if (island.motion !== undefined && island.motion !== true) errors.push(`${label}: motion must be true or absent`)
     if (!island.budget.trim()) errors.push(`${label}: budget key is empty`)
     for (const feature of island.features) {
       if (!HEAVY_FEATURES.includes(feature)) errors.push(`${label}: unknown feature "${String(feature)}"`)

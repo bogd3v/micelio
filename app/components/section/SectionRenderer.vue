@@ -68,7 +68,7 @@ const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLand
     :id="anchorIds.get(index)"
     :key="`${section.__component}-${index}`"
     :section="section"
-    v-bind="index === 0 && section.__component === 'section.hero' && heroLeads ? { headingLevel: 1 } : {}"
+    v-bind="index === 0 && section.__component === 'section.hero' && heroLeads ? { headingLevel: 1 } : index === 0 && section.__component === 'section.scene' ? { eager: true } : {}"
   />
 </template>
 

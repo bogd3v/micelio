@@ -12,7 +12,7 @@ export function useHeavyIsland(id: string, config: object = {}): void {
   const src = islandSrc(manifest, island?.entry ?? id, useRuntimeConfig().app.baseURL)
   if (!island || !src) return
   useIsland('loader')
-  const declaration = { id, trigger: island.trigger, saveData: island.saveData ?? 'skip', src, features: island.features, ...(island.control && { control: island.control }) }
+  const declaration = { id, trigger: island.trigger, saveData: island.saveData ?? 'skip', src, features: island.features, ...(island.control && { control: island.control }), ...(island.motion && { motion: true as const }) }
   useHead({ script: [{ key: `${HEAVY_SCRIPT_PREFIX}${id}`, id: `${HEAVY_SCRIPT_PREFIX}${id}`, type: 'application/json', innerHTML: heavyDeclarationJson(declaration, config) }] })
   // A client-side navigation to a page with the island: the loader may be running already
   onMounted(() => document.dispatchEvent(new Event(HEAVY_SCAN_EVENT)))
