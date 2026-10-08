@@ -153,6 +153,8 @@ export default defineNuxtConfig({
   },
   experimental: {
     viewTransition: true,
+    // Prefetch a link's route on hover or focus, not when it scrolls into view (ADR 0006, section 3; docs/performance.md)
+    defaults: { nuxtLink: { prefetchOn: { interaction: true, visibility: false } } },
     // Under noScripts the payload would still be written as _payload.json
     payloadExtraction: staticSite ? false : 'client',
   },

@@ -208,8 +208,8 @@ async function measureWeight(url) {
   })
   const font = await total(fonts)
   const kb = value => Math.round(value / 102.4) / 10
-  // Inline scripts (the theme init) run before first paint too, so they count towards the initial JS
-  const inline = [...page.text.matchAll(/<script\b(?![^>]*\ssrc=)(?![^>]*type="application\/(?:ld\+)?json")[^>]*>([\s\S]*?)<\/script>/g)].map(match => gzipSync(match[1]).length)
+  // Inline scripts (the theme init) run before first paint too, so they count towards the initial JS; data (JSON, speculation rules) does not run
+  const inline = [...page.text.matchAll(/<script\b(?![^>]*\ssrc=)(?![^>]*type="(?:application\/(?:ld\+)?json|speculationrules)")[^>]*>([\s\S]*?)<\/script>/g)].map(match => gzipSync(match[1]).length)
   return {
     jsKb: kb(js.sent), cssKb: kb(css.sent), htmlKb: kb(page.sent), fontKb: kb(font.sent),
     jsGzipKb: kb(js.gzip), cssGzipKb: kb(css.gzip), htmlGzipKb: kb(page.gzip),

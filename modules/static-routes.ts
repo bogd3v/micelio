@@ -9,8 +9,9 @@ import { Locale } from '../app/interfaces/locale'
 import { formActionOrigin } from '../app/helpers/newsletterForm'
 import { contentSecurityPolicy, inlineScripts, islandPolicyOptions, workerPolicy } from '../app/helpers/securityHeaders'
 import { isStaticMode } from '../app/helpers/siteMode'
+import { speculationRules } from '../app/helpers/speculation'
 import type { SiteMode } from '../app/helpers/siteMode'
-import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, failsBuild, headersFile, initialRoutes, injectCspMeta, isCopyableMedia, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
+import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, failsBuild, headersFile, initialRoutes, injectCspMeta, injectSpeculationRules, isCopyableMedia, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
 import { HEAVY_ISLANDS } from '../app/islands/heavy'
 import { strapiRequest } from '../server/lib/strapiRequest'
 import type { StrapiRequestConfig } from '../server/lib/strapiRequest'
@@ -212,6 +213,10 @@ export default defineNuxtModule({
       // Inline scripts of every page; the policy and its meta fallback come from them (ADR 0004, ADR 0006 section 7)
       const scriptHashes = new Map<string, string[]>()
 
+      // The same rules in every page (ADR 0004 amendment); with Umami they only prefetch, so no prerender counts a pageview nobody saw
+      const umamiWebsiteId = process.env.NUXT_PUBLIC_UMAMI_WEBSITE_ID || String(nuxt.options.runtimeConfig.public.umamiWebsiteId || '')
+      const rules = speculationRules({ baseURL: nuxt.options.app.baseURL, prerender: !umamiWebsiteId })
+
       nitro.hooks.hook('prerender:generate', async (route) => {
         // Hosts must answer unknown paths with 404.html: no SPA fallback file
         if (route.route === '/200.html') {
@@ -235,6 +240,11 @@ export default defineNuxtModule({
         const found = noScriptsViolations(route.contents ?? '')
         if (found.length) violations.set(route.route, found)
         if (route.error || !route.contents) return
+        try {
+          route.contents = injectSpeculationRules(route.contents, rules)
+        } catch (error) {
+          failed.push(`${route.route} (${error instanceof Error ? error.message : String(error)})`)
+        }
         const hashes = inlineScripts(route.contents).map(sha256)
         scriptHashes.set(route.route, hashes)
         try {

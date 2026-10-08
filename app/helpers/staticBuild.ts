@@ -3,6 +3,7 @@ import { feedPath } from './feed'
 import { localePrefixSource } from './localePrefix'
 import { isGlb, isGlbUrl, MODEL_MAX_BYTES } from './scene'
 import { SECURITY_HEADERS } from './securityHeaders'
+import type { SpeculationRules } from './speculation'
 import { defaultLocale, Locale } from '../interfaces/locale'
 
 const SCRIPT_TAG = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
@@ -153,6 +154,18 @@ export function injectCspMeta(html: string, policy: string): string {
   const charset = /<meta charset="utf-8">/i.exec(inHead)
   const end = start + (charset ? charset.index + charset[0].length : 0)
   return `${html.slice(0, end)}${meta}${html.slice(end)}`
+}
+
+/**
+ * The HTML with the Speculation Rules as one `<script type="speculationrules">` at the end of the `<head>` (ADR 0004 amendment).
+ * Added to the generated pages, not rendered by the app: the error shell (`404.html`) has no app head, and every page must carry the same script.
+ * A page that has the script already is left as it is. Throws when there is no `</head>`: a page without the rules would break the shared policy.
+ */
+export function injectSpeculationRules(html: string, rules: SpeculationRules): string {
+  const end = html.indexOf('</head>')
+  if (end === -1) throw new Error('no </head> to put the speculation rules in')
+  if (html.includes('type="speculationrules"')) return html
+  return `${html.slice(0, end)}<script type="speculationrules">${JSON.stringify(rules)}</script>${html.slice(end)}`
 }
 
 /** The routes whose inline-script hashes differ from the most common set among the pages (empty when all agree). */
