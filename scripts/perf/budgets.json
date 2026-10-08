@@ -11,7 +11,7 @@
         "static",
         "landing"
       ],
-      "reason": "Fonts are 35.5 KB (limit 100) since #350. LCP: blog, article and privacy measure 1.35 or 1.43 s and sometimes 1.503 s (the simulated throttling lands on one of two values 150 ms apart from run to run, one round trip of the simulated 4G), so they get 3 % of headroom over the 1.5 s target. The home and the about page lead with an image (the hero photo at 390 px, 19 KB, lazy so that the other three copies stay out of the page: 1.73 s; the mascot, a 54 KB PNG that does not get smaller without changing the art: 1.80 s), so their limits are the measured value plus 15 %. Lower them as the images get lighter (#350)",
+      "reason": "Fonts are 35.5 KB (limit 100) since #350. LCP: blog, article and privacy measure 1.35 or 1.43 s and sometimes 1.503 s (the simulated throttling lands on one of two values 150 ms apart from run to run, one round trip of the simulated 4G), so they get 3 % of headroom over the 1.5 s target. The home and the about page lead with an image and cannot reach 1.5 s in the simulation (#367): with the image cut to 1.6 KB they still measure 1.58 and 1.50 s, and the lazy-to-eager picture of the home, a preload and AVIF/WebP of the mascot changed nothing (the mascot is flat art whose lossless PNG is as small as any encoding). The hero photo (19 KB at 390 px) measures 1.73 s and the mascot (54 KB PNG, unchanged art) 1.80 s, so their limits are the measured value plus 15 %",
       "limits": {
         "home": {
           "error": {

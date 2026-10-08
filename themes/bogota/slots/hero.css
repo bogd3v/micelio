@@ -17,9 +17,33 @@
     object-position: 80% 58%;
 }
 
-:root:not([data-theme="dia"]) .bogota-hero-photo-day,
-[data-theme="dia"] .bogota-hero-photo-night {
+/* "auto" follows the system scheme and loads first; "alt" shows when the chosen mode (data-scheme) differs from it */
+.bogota-hero-picture {
+    display: contents;
+}
+
+.bogota-hero-picture-alt {
     display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    [data-scheme="light"] .bogota-hero-picture-auto {
+        display: none;
+    }
+
+    [data-scheme="light"] .bogota-hero-picture-alt {
+        display: contents;
+    }
+}
+
+@media not (prefers-color-scheme: dark) {
+    [data-scheme="dark"] .bogota-hero-picture-auto {
+        display: none;
+    }
+
+    [data-scheme="dark"] .bogota-hero-picture-alt {
+        display: contents;
+    }
 }
 
 .bogota-flight-place {

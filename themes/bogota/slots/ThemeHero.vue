@@ -11,9 +11,14 @@ interface Flyer {
   wing: number
 }
 
-interface HeroPhoto {
-  theme: 'night' | 'day'
-  src: string
+interface PhotoSource {
+  media: string
+  srcset: string
+}
+
+interface HeroPicture {
+  id: 'auto' | 'alt'
+  sources: PhotoSource[]
 }
 
 const props = withDefaults(defineProps<{
@@ -26,10 +31,11 @@ const { t, locale } = useI18n()
 
 const PHOTO_SOURCE_URL = 'https://commons.wikimedia.org/wiki/File:Paisaje_Sumapaz,_Colombia.jpg'
 
-const PHOTOS: readonly HeroPhoto[] = [
-  { theme: 'night', src: '/theme/images/hero/sumapaz-night.jpg' },
-  { theme: 'day', src: '/theme/images/hero/sumapaz-day.jpg' },
-]
+const NIGHT = '/theme/images/hero/sumapaz-night.jpg'
+const DAY = '/theme/images/hero/sumapaz-day.jpg'
+// The desktop and the compact copy swap at the breakpoint of `.bd-hero-art` (app/assets/css/pages/home/hero.css)
+const DESKTOP_MEDIA = '(min-width: 1024px)'
+const COMPACT_MEDIA = '(max-width: 1023.98px)'
 
 const ROUTES: readonly FlightRoute[] = [
   { d: 'M -40 560 C 140 420, 300 520, 440 360 S 640 180, 820 120', opacity: 0.55 },
@@ -42,6 +48,26 @@ const COMPACT_ROUTES: readonly FlightRoute[] = [
   { d: 'M -30 90 C 60 70, 130 130, 200 100 S 320 30, 400 60', opacity: 0.35 },
   { d: 'M 40 320 C 100 250, 180 260, 240 200 S 340 170, 400 180', opacity: 0.35 },
 ]
+
+const img = useImage()
+
+function srcset(src: string): string {
+  const widths = props.compact ? [width.value] : [width.value, width.value * 2]
+  return widths.map((w, index) => `${img(src, { width: w, format: 'webp', quality: 80 })} ${index + 1}x`).join(', ')
+}
+
+// The theme's mode (data-theme, which may be stored) is only known to scripts, but the preload scanner reads `media`.
+// So the picture that follows the system scheme loads eagerly, and the other one (the stored mode differs from the system) waits
+// until CSS shows it. A copy hidden by the breakpoint matches no source, so it fetches nothing.
+const pictures = computed<HeroPicture[]>(() => {
+  const screen = props.compact ? COMPACT_MEDIA : DESKTOP_MEDIA
+  const night = srcset(NIGHT)
+  const day = srcset(DAY)
+  return [
+    { id: 'auto', sources: [{ media: `${screen} and (prefers-color-scheme: dark)`, srcset: night }, { media: screen, srcset: day }] },
+    { id: 'alt', sources: [{ media: `${screen} and (prefers-color-scheme: dark)`, srcset: day }, { media: screen, srcset: night }] },
+  ]
+})
 
 const licenseUrl = computed<string>(() => `https://creativecommons.org/licenses/by-sa/4.0/deed.${locale.value}`)
 const width = computed<number>(() => (props.compact ? 390 : 760))
@@ -61,19 +87,29 @@ const flyers = computed<Flyer[]>(() =>
 
 <template>
   <div :class="['bogota-flight', { 'bogota-flight-compact': compact }]">
-    <NuxtImg
-      v-for="photo in PHOTOS"
-      :key="photo.theme"
-      :src="photo.src"
-      :class="['bogota-hero-photo', `bogota-hero-photo-${photo.theme}`]"
-      :sizes="`${width}px`"
-      :densities="compact ? 'x1' : 'x1 x2'"
-      format="webp"
-      loading="lazy"
-      fetchpriority="high"
-      alt=""
-      aria-hidden="true"
-    />
+    <picture
+      v-for="picture in pictures"
+      :key="picture.id"
+      :class="['bogota-hero-picture', `bogota-hero-picture-${picture.id}`]"
+    >
+      <source
+        v-for="source in picture.sources"
+        :key="source.media"
+        :media="source.media"
+        :srcset="source.srcset"
+        type="image/webp"
+      >
+      <img
+        class="bogota-hero-photo"
+        :width="width"
+        :height="height"
+        :loading="picture.id === 'auto' ? 'eager' : 'lazy'"
+        :fetchpriority="picture.id === 'auto' ? 'high' : 'auto'"
+        decoding="async"
+        alt=""
+        aria-hidden="true"
+      >
+    </picture>
     <svg :width="width" :height="height" :viewBox="`0 0 ${width} ${height}`" class="bogota-flight-map" aria-hidden="true" focusable="false">
       <g v-if="!compact" class="bogota-flight-place" fill="var(--ink-muted)">
         <path d="M558 108 H574 M566 100 V116" stroke="var(--ink-muted)" stroke-width="1" />
