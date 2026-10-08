@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { islandSrc } from '~/helpers/islands'
+import { heavyDeclarationJson, islandSrc, parseHeavyDeclaration } from '~/helpers/islands'
 import { resultPath } from '~/helpers/search'
 
 describe('islandSrc', () => {
@@ -37,5 +37,34 @@ describe('resultPath', () => {
     expect(resultPath('/')).toBe('/')
     expect(resultPath('/blog/a/?x=1#top')).toBe('/blog/a?x=1#top')
     expect(resultPath('/blog/a#top')).toBe('/blog/a#top')
+  })
+})
+
+describe('heavy island declaration', () => {
+  const declaration = { tag: 'micelio-mermaid', src: '/_islands/mermaid-BcWd6Buk.js' }
+
+  it('round-trips through the JSON script, with the island\'s own settings beside it', () => {
+    const json = heavyDeclarationJson(declaration, { label: 'Diagram' })
+    expect(JSON.parse(json)).toEqual({ label: 'Diagram', ...declaration })
+    expect(parseHeavyDeclaration(json)).toEqual(declaration)
+  })
+
+  it('escapes < so the text cannot close the script element', () => {
+    expect(heavyDeclarationJson(declaration, { label: '</script><b>' })).not.toContain('<')
+  })
+
+  it('accepts the app base URL in front of the path', () => {
+    expect(parseHeavyDeclaration('{"tag":"micelio-scene","src":"/blog/_islands/scene-1.js"}')).toEqual({ tag: 'micelio-scene', src: '/blog/_islands/scene-1.js' })
+  })
+
+  it('rejects anything but a file of /_islands/ and a micelio-* element', () => {
+    for (const src of ['https://evil.example/_islands/a.js', '//evil.example/_islands/a.js', '/_nuxt/a.js', '/_islands/../a.js', '/_islands/a.css', 'javascript:alert(1)']) {
+      expect(parseHeavyDeclaration(JSON.stringify({ tag: 'micelio-mermaid', src })), src).toBeUndefined()
+    }
+    expect(parseHeavyDeclaration(JSON.stringify({ tag: 'div', src: declaration.src }))).toBeUndefined()
+  })
+
+  it('is undefined for malformed text', () => {
+    for (const text of [null, undefined, '', '{oops', 'null', '[]', '{"tag":1,"src":2}']) expect(parseHeavyDeclaration(text), String(text)).toBeUndefined()
   })
 })

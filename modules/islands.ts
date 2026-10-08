@@ -108,6 +108,21 @@ async function readCache(rootDir: string, outDir: string, manifestFile: string):
   }
 }
 
+// Vite's preload helper would be one shared chunk the entry imports, so a heavy island's chunks would load with its entry (the stray check of
+// docs/performance.md). Modulepreload is off, so every importer gets its own copy of the one-line helper and the entry stays self-contained.
+const PRELOAD_HELPER = '\0vite/preload-helper.js'
+const OWN_HELPER = '\0micelio-islands/preload-helper:'
+const inlinePreloadHelper = {
+  name: 'micelio-islands-preload-helper',
+  enforce: 'pre' as const,
+  resolveId(id: string, importer?: string): string | undefined {
+    return id === PRELOAD_HELPER ? `${OWN_HELPER}${importer ?? ''}` : undefined
+  },
+  load(id: string): string | undefined {
+    return id.startsWith(OWN_HELPER) ? 'export const __vitePreload = load => load()' : undefined
+  },
+}
+
 // Islands (ADR 0006, sections 3 and 6): `app/islands/<id>.ts` are custom elements built on their own, with a hashed file name,
 // served from /_islands/ and added to a page with `useIsland(id)`. They are built in every mode, as a Vite build apart from the app's
 // (which only gains the manifest), and cached by a hash of their sources. Source edits need a restart in `nuxt dev`.
@@ -153,6 +168,7 @@ export default defineNuxtModule({
               logLevel: 'warn',
               publicDir: false,
               define: { __MICELIO_DEV__: JSON.stringify(nuxt.options.dev) },
+              plugins: [inlinePreloadHelper],
               build: {
                 outDir: tmpDir,
                 emptyOutDir: true,

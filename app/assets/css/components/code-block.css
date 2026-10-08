@@ -66,6 +66,10 @@
     user-select: none;
 }
 
+.bd-mermaid {
+    display: block;
+}
+
 .bd-mermaid-diagram {
     padding: var(--space-6);
     overflow-x: auto;

@@ -35,7 +35,16 @@ export interface HeavyIsland {
 export const HEAVY_FEATURES: readonly HeavyFeature[] = ['webgl2', 'wasm', 'worker']
 export const HEAVY_TRIGGERS: readonly HeavyTrigger[] = ['visible', 'interaction']
 
-export const HEAVY_ISLANDS: readonly HeavyIsland[] = []
+export const HEAVY_ISLANDS: readonly HeavyIsland[] = [
+  {
+    id: 'mermaid',
+    entry: 'mermaid',
+    trigger: 'visible',
+    fallback: 'The diagram\'s source in the code block that RichTextBlock renders',
+    features: [],
+    budget: 'mermaid',
+  },
+]
 
 const NAME = /^[a-z][a-z0-9-]*$/
 // `'self'` or an absolute origin with an optional path; never a wildcard, another keyword, a bare path, a space or a `;`

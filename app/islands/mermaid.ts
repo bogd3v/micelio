@@ -1,0 +1,129 @@
+// <micelio-mermaid>: draws the diagram of a Mermaid block (ADR 0006, section 6). The server markup holds the source code
+// block, which stays on any failure. The loader (`loader.ts`) imports this file when a block nears the viewport after load and idle,
+// and Mermaid itself loads on the first draw. It does not share modules with the loader, or the loader would load a chunk at start.
+// The SVG goes into the light DOM once the page has hydrated, so Vue's v-html never sees a mismatch.
+import type { Mermaid } from 'mermaid'
+import type { MermaidTokens } from '../helpers/mermaid'
+import { MERMAID_CONFIG_ID, MERMAID_CSS, MERMAID_TOKENS, mermaidThemeVariables, mermaidTitle, parseMermaidConfig, resolveMermaidOverrides } from '../helpers/mermaid'
+import { whenHydrated } from './lib/hydrated'
+
+const DIAGRAM_CLASS = 'bd-mermaid-diagram'
+const READY_CLASS = 'bd-mermaid-ready'
+const DEFAULT_LABEL = 'Diagram'
+
+let sequence = 0
+let mermaidModule: Promise<Mermaid> | undefined
+// Mermaid is configured globally, so one render at a time
+let queue: Promise<void> = Promise.resolve()
+const drawn = new Set<MicelioMermaid>()
+let observer: MutationObserver | undefined
+
+function loadMermaid(): Promise<Mermaid> {
+  mermaidModule ??= import('mermaid').then(module => module.default)
+  // A failed load is retried by the next block
+  mermaidModule.catch(() => {
+    mermaidModule = undefined
+  })
+  return mermaidModule
+}
+
+function readTokens(): MermaidTokens {
+  const style = getComputedStyle(document.documentElement)
+  return Object.fromEntries(MERMAID_TOKENS.map(name => [name, style.getPropertyValue(`--${name}`).trim()])) as MermaidTokens
+}
+
+function configure(mermaid: Mermaid): void {
+  const style = getComputedStyle(document.documentElement)
+  const config = parseMermaidConfig(document.getElementById(MERMAID_CONFIG_ID)?.textContent)
+  const tokens = readTokens()
+  const dark = document.documentElement.getAttribute('data-scheme') === 'dark'
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: 'strict',
+    suppressErrorRendering: true,
+    theme: 'base',
+    flowchart: { useMaxWidth: false },
+    sequence: { useMaxWidth: false },
+    fontFamily: tokens['font-mono'],
+    themeVariables: mermaidThemeVariables(tokens, dark, resolveMermaidOverrides(config.overrides, role => style.getPropertyValue(`--${role}`))),
+    themeCSS: MERMAID_CSS,
+  })
+}
+
+// A new theme or mode changes data-theme and data-scheme: every drawn diagram is drawn again with the new roles
+function watchTheme(): void {
+  observer ??= new MutationObserver(() => {
+    for (const element of drawn) {
+      if (element.isConnected) element.draw().catch(() => {})
+      else drawn.delete(element)
+    }
+  })
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-scheme'] })
+}
+
+class MicelioMermaid extends HTMLElement {
+  private abort: AbortController | undefined
+  private run = 0
+
+  connectedCallback(): void {
+    if (this.abort || this.classList.contains(READY_CLASS)) return
+    const abort = new AbortController()
+    this.abort = abort
+    this.start(abort.signal).catch(() => {})
+  }
+
+  disconnectedCallback(): void {
+    this.abort?.abort()
+    this.abort = undefined
+    this.run++
+    drawn.delete(this)
+  }
+
+  private async start(signal: AbortSignal): Promise<void> {
+    await whenHydrated()
+    if (signal.aborted) return
+    await this.draw()
+    if (this.classList.contains(READY_CLASS) && !signal.aborted) {
+      drawn.add(this)
+      watchTheme()
+    }
+  }
+
+  draw(): Promise<void> {
+    const current = ++this.run
+    const task = queue.then(() => this.render(current))
+    queue = task.catch(() => {})
+    return task
+  }
+
+  private showSource(): void {
+    this.classList.remove(READY_CLASS)
+    this.querySelector(`.${DIAGRAM_CLASS}`)?.remove()
+  }
+
+  private async render(current: number): Promise<void> {
+    if (current !== this.run) return
+    const source = this.querySelector('code')?.textContent ?? ''
+    try {
+      const mermaid = await loadMermaid()
+      configure(mermaid)
+      const { svg } = await mermaid.render(`bd-mermaid-${++sequence}`, source)
+      if (current !== this.run) return
+      let diagram = this.querySelector<HTMLElement>(`.${DIAGRAM_CLASS}`)
+      if (!diagram) {
+        diagram = document.createElement('div')
+        diagram.className = DIAGRAM_CLASS
+        diagram.setAttribute('role', 'img')
+        diagram.tabIndex = 0
+        this.prepend(diagram)
+      }
+      diagram.setAttribute('aria-label', mermaidTitle(source) ?? parseMermaidConfig(document.getElementById(MERMAID_CONFIG_ID)?.textContent, DEFAULT_LABEL).label)
+      diagram.innerHTML = svg
+      this.classList.add(READY_CLASS)
+    } catch {
+      if (current === this.run) this.showSource()
+    }
+  }
+}
+
+if (!customElements.get('micelio-mermaid')) customElements.define('micelio-mermaid', MicelioMermaid)
