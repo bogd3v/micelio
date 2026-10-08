@@ -1,4 +1,6 @@
 import type { ComputedRef, Ref } from 'vue'
+import type { NavLink } from '~/interfaces'
+import { headerLinks } from '~/helpers/landing'
 
 export interface HeaderStateInput {
   reading: boolean
@@ -12,7 +14,7 @@ export interface HeaderState {
   tracking: ComputedRef<boolean>
   mounted: Ref<boolean>
   shortcut: Ref<string>
-  links: ReturnType<typeof useNavLinks>
+  links: ComputedRef<NavLink[]>
   hud: ReturnType<typeof useThemeHud>
   percent: ComputedRef<number>
   progressStyle: ComputedRef<Record<string, string>>
@@ -29,7 +31,8 @@ export function useHeaderState(props: HeaderStateInput): HeaderState {
   const mounted = useMounted()
   const shortcut = ref('⌘K')
 
-  const links = useNavLinks()
+  const navLinks = useNavLinks()
+  const links = computed(() => __STATIC_BUILD__ ? headerLinks(navLinks.value) : navLinks.value)
   const hud = useThemeHud()
   const percent = computed<number>(() =>
     Math.round(Math.min(100, Math.max(0, props.progress ?? scrolled.value))),

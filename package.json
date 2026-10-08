@@ -29,6 +29,7 @@
     "test:integration": "vitest run -c vitest.config.integration.ts",
     "test:e2e": "playwright test && playwright test -c playwright.modules-off.config.ts && playwright test -c playwright.theme-overrides.config.ts && playwright test -c playwright.home-page.config.ts",
     "test:static": "node scripts/test-static.mjs",
+    "test:landing": "node scripts/test-landing.mjs",
     "test:theme": "playwright test -c playwright.theme.config.ts",
     "test:theme:update": "playwright test -c playwright.theme.config.ts --update-snapshots=changed",
     "perf": "node scripts/perf/measure.mjs --serve"

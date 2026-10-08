@@ -44,7 +44,9 @@ const { accountsOn, searchOn, fediverseOn, tracking, mounted, shortcut, links, h
         <nav class="bd-nav-main" :aria-label="label ?? t('bd.header.nav')">
           <ul class="bd-nav-links">
             <li v-for="link in links" :key="link.id">
+              <a v-if="link.anchor" :href="link.to" class="bd-nav-link">{{ link.label }}</a>
               <NuxtLink
+                v-else
                 :to="link.to"
                 class="bd-nav-link"
                 :aria-current="active === link.id ? 'page' : undefined"

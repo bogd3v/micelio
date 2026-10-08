@@ -2,6 +2,7 @@
 import type { Component } from 'vue'
 import type { PageSection } from '~/interfaces'
 import { heroLeadsPage, knownSections as filterKnown } from '~/helpers/pages'
+import { sectionAnchors } from '~/helpers/landing'
 import SectionHero from '~/components/section/SectionHero.vue'
 import SectionFeatureGrid from '~/components/section/SectionFeatureGrid.vue'
 import SectionMediaShowcase from '~/components/section/SectionMediaShowcase.vue'
@@ -42,9 +43,17 @@ const componentMap: Readonly<Record<PageSection['__component'], Component>> = {
   'section.scene': SectionScene,
 }
 
+const { isLanding, blogEnabled } = useStaticSite()
+// Only a landing needs the modules here; reading them elsewhere would shift the ids useId() gives the sections
+const newsletterOn = __STATIC_BUILD__ && isLanding ? useModule('newsletter') : undefined
+
 const titleLeads = computed<boolean>(() => props.pageTitle !== undefined && !heroLeadsPage(props.sections))
 const heroLeads = computed<boolean>(() => props.pageTitle !== undefined ? heroLeadsPage(props.sections) : Boolean(props.leadHeading))
 const knownSections = computed<PageSection[]>(() => filterKnown(props.sections))
+// A landing's navigation links to its home page's sections by these ids (docs/static-mode.md, "Landing")
+const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLanding
+  ? new Map(sectionAnchors(knownSections.value, { newsletterOn: newsletterOn?.value ?? false, blogEnabled }).map(anchor => [anchor.index, anchor.id]))
+  : new Map())
 </script>
 
 <template>
@@ -56,6 +65,7 @@ const knownSections = computed<PageSection[]>(() => filterKnown(props.sections))
   <component
     :is="componentMap[section.__component]"
     v-for="(section, index) in knownSections"
+    :id="anchorIds.get(index)"
     :key="`${section.__component}-${index}`"
     :section="section"
     v-bind="index === 0 && section.__component === 'section.hero' && heroLeads ? { headingLevel: 1 } : {}"

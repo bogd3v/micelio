@@ -58,10 +58,15 @@ export interface PostCardProps {
 
 export type HeaderSection = 'home' | 'blog' | 'about'
 
+/** `id` is a header section, or a landing's anchor or link. */
 export interface NavLink {
-  id: HeaderSection
+  id: HeaderSection | string
   label: string
   to: string
+  /** A landing's link to a section of the home page: a plain `<a>` (the router would mark every one of them current) */
+  anchor?: boolean
+  /** A landing's link from its hero or call to action */
+  action?: boolean
 }
 
 export type PaletteKind = 'article' | 'topic' | 'action'

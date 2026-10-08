@@ -32,6 +32,7 @@ npm run theme:check  # Contract, hooks, contrast matrix and static budgets of th
 npm run test         # Run unit tests with Vitest (test/*.test.ts)
 npm run test:coverage     # Same tests with coverage of app/ and themes/; fails under the thresholds in vitest.config.ts
 npm run test:integration  # Run API-route integration tests (test/integration/, needs a Nuxt build)
+npm run test:landing      # Generate a landing (home page, no articles) against the mock Strapi and run e2e/landing/ (the default theme, then starter)
 npm run test:e2e          # Run Playwright e2e tests (e2e/, starts mock Strapi + dev server)
 npm run test:theme        # Theme visual regression and axe (e2e/theme/, needs a build with MICELIO_SPECIMEN=1; docs/theme-testing.md)
 npm run test:theme:update # Same with --update-snapshots=changed (baselines are committed from the CI artifact, not made locally)

@@ -27,7 +27,7 @@ const site = useSite()
 const fediverseUser = useFediverseUser()
 const fediverseOn = useModule('fediverse')
 const newsletterOn = useModule('newsletter')
-const { isStatic, menuId } = useStaticSite()
+const { isStatic, blogEnabled, menuId } = useStaticSite()
 
 const year = new Date().getFullYear()
 const sourceUrl = resolveSourceUrl(useRuntimeConfig().public.sourceUrl)
@@ -40,7 +40,7 @@ const socials = computed<SocialLink[]>(() =>
   }),
 )
 const subscriptions = computed<FooterLink[]>(() => [
-  { id: 'rss', label: t('bd.footer.rss'), to: '/feed.xml', external: true },
+  ...(blogEnabled ? [{ id: 'rss', label: t('bd.footer.rss'), to: '/feed.xml', external: true }] : []),
   ...(fediverseOn.value ? [{ id: 'fediverse', label: t('bd.footer.fediverse', { handle: fediverseUser }), to: `${localizePath('/')}#fediverso` }] : []),
   ...(newsletterOn.value ? [{ id: 'newsletter', label: t('bd.footer.newsletter'), to: `${localizePath('/')}#newsletter` }] : []),
 ])
@@ -53,7 +53,10 @@ const subscriptions = computed<FooterLink[]>(() => [
         <ThemeMark :size="32" context="footer" />
       </NuxtLink>
       <nav :id="isStatic ? menuId : undefined" class="bd-foot-nav" :aria-label="label ?? t('bd.footer.navigate')">
-        <NuxtLink v-for="link in sections" :key="link.id" :to="link.to" class="bd-foot-link">{{ link.label }}</NuxtLink>
+        <template v-for="link in sections" :key="link.id">
+          <a v-if="link.anchor" :href="link.to" class="bd-foot-link">{{ link.label }}</a>
+          <NuxtLink v-else :to="link.to" class="bd-foot-link">{{ link.label }}</NuxtLink>
+        </template>
       </nav>
       <BdLangSwitch v-if="isStatic" />
       <ul v-if="socials.length" class="bd-foot-socials" :aria-label="t('bd.footer.social')">

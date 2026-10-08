@@ -17,3 +17,8 @@ export function parseSiteMode(value: unknown): SiteMode {
 export function isStaticMode(mode: SiteMode): boolean {
   return mode === 'static' || mode === 'landing'
 }
+
+/** The value of `runtimeConfig.public.blogEnabled`: only an explicit false turns the blog off (a landing build with no articles; dynamic and static builds never set it). */
+export function isBlogEnabled(value: unknown): boolean {
+  return value !== false
+}

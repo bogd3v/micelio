@@ -80,6 +80,18 @@ Rules:
 - The variables are read at build time and resolved once in `modules/site-mode.ts` into `runtimeConfig.public.newsletterProvider`; a `NUXT_PUBLIC_*` value set at runtime cannot reach a prerendered page and the client never ships the validation code.
 - Dynamic sites are unchanged: the newsletter there is Strapi + SMTP (`/api/newsletter`).
 
+## Landing
+
+`NUXT_PUBLIC_SITE_MODE=landing` is `static` with a content profile (ADR 0006, section 1): the same build, hosting and workflow, a different site.
+
+- **Home page.** Set `homePage` in the site settings: `/` (and `/es`) render that page's sections. The page keeps answering at `/<slug>` with a canonical to `/`.
+- **Navigation comes from the sections.** The header, the footer navigation and the mobile menu (`#bd-site-nav`) list an anchor to every section of the home page that has a title and renders (not the hero, rich text, an empty post list, or a newsletter while that module is off), then the links of the hero and the call to action sections, once each. A link the sections would reject (`#anchor`, `javascript:`) is left out. The ids are `section-<slugified title>`, unique on the page (`section-pricing`, `section-pricing-2`) and set by `SectionRenderer` only in a landing, so each language's page has its own. They are plain `<a href="/#section-...">` links (never marked current), so they work from any page and without JavaScript. The header has room for the first four anchors and the first two hero or call to action links; the footer has all of them. There is no `/about` entry: a landing has no standing about page. A CMS `navigation` field may replace this later.
+- **No blog without articles.** When the build finds no published article in any locale, it has no blog: `modules/static-routes.ts` counts them before the build, sets `runtimeConfig.public.blogEnabled` to `false` (read through `useStaticSite().blogEnabled`; the sitemap and the feed routes read it too) and does not generate or crawl `/blog`, its category, tag and page routes, or `feed*.xml` (they are 404 in the output). The sitemap lists `/`, `/es`, `/privacy` and `/es/privacy`; the blog tab, the footer categories and feed, the RSS `<link>` and the "browse the blog" button of the 404 page are gone. A link to the blog in the content is a dead link the crawler ignores, not a page. A post list section renders nothing when it has no posts. With at least one article the landing keeps its blog exactly like `static`, and the blog link follows the section links in the navigation.
+- **Search.** Pagefind still indexes the home page and the other section pages, and the island is unchanged. The search control without JavaScript is a link: with a blog it goes to the blog list; without one it goes to `#bd-site-nav`, the navigation of the page, which is the way to find content in a landing. With JavaScript it opens the palette either way.
+- **Themes.** Nothing in the page content depends on the theme: `NUXT_PUBLIC_THEME` only changes how it looks.
+
+Try it with `npm run test:landing`: it generates a landing against the mock Strapi (`MOCK_HOME_PAGE=1 MOCK_NO_ARTICLES=1`), runs `e2e/landing/`, then generates it again with `NUXT_PUBLIC_THEME=starter` and checks the same page renders. `LANDING_MOCK_PORT`, `LANDING_APP_PORT`, `LANDING_SKIP_GENERATE=1` and `LANDING_SKIP_THEME=1` change its ports and steps.
+
 ## Headers, 404 and analytics
 
 - Security headers and CSP come from the `_headers` file the build writes into `.output/public`. Cloudflare Pages and Netlify read it. A host without `_headers` support gets the CSP from the `<meta>` fallback only (no framing, HSTS or other header-only protections); configure the same headers at the host.

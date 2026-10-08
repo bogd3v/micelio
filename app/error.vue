@@ -4,6 +4,7 @@ import { pageTitle } from '~/helpers/site'
 const { locale, t } = useI18n()
 const { localizePath } = useLocaleUtils()
 const site = useSite()
+const { blogEnabled } = useStaticSite()
 
 const props = defineProps<{
   error: {
@@ -51,7 +52,7 @@ useSeoMeta({
           <IconsHome />
           {{ t('error.goHome') }}
         </BdButton>
-        <BdButton :href="localizePath('/blog')" variant="secondary">
+        <BdButton v-if="blogEnabled" :href="localizePath('/blog')" variant="secondary">
           <IconsDocumentText />
           {{ t('error.browseBlog') }}
         </BdButton>

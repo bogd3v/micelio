@@ -3,6 +3,7 @@ import { defaultLocale, Locale, type LocalePaths, type RawStrapiArticle } from '
 import { blogPath } from '~/helpers/blog'
 import { CATEGORIES } from '~/helpers/categories'
 import { localizedPath } from '~/helpers/locale'
+import { isBlogEnabled } from '~/helpers/siteMode'
 import { articlePaths, publishedTranslations } from '~/helpers/translations'
 
 export default defineEventHandler(async (event) => {
@@ -25,13 +26,20 @@ export default defineEventHandler(async (event) => {
       return strapiFetch<{ data: RawStrapiArticle[] }>(`/api/articles?${params}`)
     }))
 
-    const staticPages = [
-      { path: '/', changefreq: 'daily', priority: '1.0' },
-      { path: '/blog', changefreq: 'daily', priority: '0.9' },
-      ...CATEGORIES.map(category => ({ path: blogPath({ category, page: 1 }), changefreq: 'daily', priority: '0.6' })),
-      { path: '/about', changefreq: 'weekly', priority: '0.7' },
-      { path: '/privacy', changefreq: 'yearly', priority: '0.3' },
-    ]
+    // A landing with no articles has no blog or about page to list (ADR 0006, section 1)
+    const blogEnabled = isBlogEnabled(config.public.blogEnabled)
+    const staticPages = blogEnabled
+      ? [
+          { path: '/', changefreq: 'daily', priority: '1.0' },
+          { path: '/blog', changefreq: 'daily', priority: '0.9' },
+          ...CATEGORIES.map(category => ({ path: blogPath({ category, page: 1 }), changefreq: 'daily', priority: '0.6' })),
+          { path: '/about', changefreq: 'weekly', priority: '0.7' },
+          { path: '/privacy', changefreq: 'yearly', priority: '0.3' },
+        ]
+      : [
+          { path: '/', changefreq: 'weekly', priority: '1.0' },
+          { path: '/privacy', changefreq: 'yearly', priority: '0.3' },
+        ]
 
     const today = new Date().toISOString().slice(0, 10)
 

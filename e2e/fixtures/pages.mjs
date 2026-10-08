@@ -8,9 +8,11 @@ function link(label, url) {
   return { id: 1, label, url }
 }
 
-function showcaseSections(es) {
+// `landing` is the page of a site with no blog (MOCK_NO_ARTICLES=1): its links go to the privacy page instead of the blog
+function showcaseSections(es, landing) {
   const t = (en, spanish) => (es ? spanish : en)
-  const blog = es ? '/es/blog' : '/blog'
+  const prefix = es ? '/es' : ''
+  const blog = `${prefix}/${landing ? 'privacy' : 'blog'}`
   return [
     {
       id: 1,
@@ -41,7 +43,7 @@ function showcaseSections(es) {
       title: t('A balcony in spring', 'Un balcón en primavera'),
       text: t('Lettuce, basil and **cherry tomatoes**.', 'Lechuga, albahaca y **tomates cherry**.'),
       media: media(104, 'balcony.png'),
-      link: link(t('How to start', 'Cómo empezar'), `${blog}/${t('starting-a-balcony-garden', 'empezar-una-huerta-en-el-balcon')}`),
+      link: link(t('How to start', 'Cómo empezar'), landing ? blog : `${blog}/${t('starting-a-balcony-garden', 'empezar-una-huerta-en-el-balcon')}`),
     },
     {
       id: 4,
@@ -146,7 +148,7 @@ function showcaseSections(es) {
   ]
 }
 
-function showcase(es) {
+function showcase(es, landing = false) {
   return {
     id: es ? 2 : 1,
     documentId: 'page-showcase',
@@ -161,7 +163,7 @@ function showcase(es) {
       metaImage: media(112, 'page-og.png'),
       metaSocial: [],
     },
-    sections: showcaseSections(es),
+    sections: showcaseSections(es, landing),
     localizations: [{ id: es ? 1 : 2, documentId: 'page-showcase', slug: es ? 'showcase' : 'muestra', locale: es ? 'en' : 'es' }],
   }
 }
@@ -206,6 +208,9 @@ const manyLists = {
 /** Mutable: a test may publish a page after a first miss. */
 export const pageFixtures = [showcase(false), showcase(true), partial, manyLists]
 
+// What replaces the showcase pages when there are no articles
+const landingShowcases = [showcase(false, true), showcase(true, true)]
+
 /** Answers GET /api/pages like Strapi: the slug and locale filters, always fully populated. */
 export function findPages(query, getNestedValue) {
   const slug = getNestedValue(query, ['filters', 'slug', '$eq'])
@@ -213,7 +218,8 @@ export function findPages(query, getNestedValue) {
   if (slug === 'broken-page') {
     return { status: 500, body: { data: null, error: { status: 500, name: 'InternalServerError', message: 'Internal Server Error' } } }
   }
-  const data = pageFixtures.filter(page => (!slug || page.slug === slug) && (!locale || page.locale === locale))
+  const pool = process.env.MOCK_NO_ARTICLES === '1' ? pageFixtures.map(page => landingShowcases.find(landing => landing.id === page.id) ?? page) : pageFixtures
+  const data = pool.filter(page => (!slug || page.slug === slug) && (!locale || page.locale === locale))
   // Without a slug it lists (the static build reads every page); with one, the first match
   const pageSize = slug ? 1 : Number(getNestedValue(query, ['pagination', 'pageSize']) ?? 25)
   const page = Number(getNestedValue(query, ['pagination', 'page']) ?? 1)

@@ -8,6 +8,7 @@ const { alternates } = useLocaleAlternates()
 const route = useRoute()
 const { siteUrl } = useSiteUrl()
 const site = useSite()
+const { blogEnabled } = useStaticSite()
 
 const hreflangLinks = computed(() => {
   if (alternates.value?.path === route.path && alternates.value.hreflang === false) return []
@@ -35,7 +36,7 @@ useHead({
   ],
   link: () => [
     ...(site.value.favicon ? [{ rel: 'icon' as const, type: iconType(site.value.favicon.url), href: site.value.favicon.url }] : []),
-    { rel: 'alternate' as const, type: 'application/rss+xml', title: `${site.value.name} RSS Feed`, href: '/feed.xml' },
+    ...(blogEnabled ? [{ rel: 'alternate' as const, type: 'application/rss+xml', title: `${site.value.name} RSS Feed`, href: '/feed.xml' }] : []),
     ...hreflangLinks.value,
   ],
 })

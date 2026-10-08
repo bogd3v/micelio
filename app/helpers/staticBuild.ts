@@ -29,9 +29,9 @@ export function noScriptsViolations(html: string): string[] {
   return [...found]
 }
 
-/** Routes of the files that are not pages: the feeds, the sitemap and robots.txt, in every locale. */
-export function staticFileRoutes(): string[] {
-  const feeds = Object.values(Locale).flatMap(locale => [feedPath(locale), ...CATEGORIES.map(category => feedPath(locale, category))])
+/** Routes of the files that are not pages: the feeds, the sitemap and robots.txt, in every locale. A build with no blog has no feeds. */
+export function staticFileRoutes(blogEnabled = true): string[] {
+  const feeds = blogEnabled ? Object.values(Locale).flatMap(locale => [feedPath(locale), ...CATEGORIES.map(category => feedPath(locale, category))]) : []
   return [...feeds, '/sitemap.xml', '/robots.txt']
 }
 
@@ -50,6 +50,14 @@ export function sectionPageRoute(slug: string, locale: Locale): string {
 
 /** Routes every static site must have, whatever Strapi lists. */
 export const STATIC_INITIAL_ROUTES: readonly string[] = ['/', '/es', '/blog', '/es/blog']
+
+/** What a build with no blog (a landing with no articles) must not generate or crawl: the blog, its filters and its feeds, in every locale. */
+export const BLOG_ROUTES = /^(?:\/es)?(?:\/blog(?:\/|$)|\/feed(?:\.xml|\/))/
+
+/** The routes every build must have: without a blog, only the home pages. */
+export function initialRoutes(blogEnabled: boolean): string[] {
+  return STATIC_INITIAL_ROUTES.filter(route => blogEnabled || !BLOG_ROUTES.test(route))
+}
 
 /**
  * Whether a route's error fails the build: anything but a 404 found by the crawler (a dead link in the content).
