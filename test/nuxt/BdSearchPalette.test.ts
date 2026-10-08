@@ -121,7 +121,7 @@ describe('BdSearchPalette', () => {
     expect(wrapper.emitted('close')).toHaveLength(1)
   })
 
-  it('closes with Esc, the Esc button and the backdrop, and resets when closed', async () => {
+  it('closes with Esc, the Esc button and the backdrop, and resets when it opens again', async () => {
     const wrapper = await mountOpen()
     await wrapper.get('dialog').trigger('cancel')
     await wrapper.get('.bd-palette-esc').trigger('click')
@@ -132,6 +132,9 @@ describe('BdSearchPalette', () => {
     await wrapper.get('input').setValue('li')
     await wrapper.setProps({ open: false })
     expect((wrapper.get('dialog').element as HTMLDialogElement).open).toBe(false)
+    // It keeps its content while it fades out, and starts empty when it opens again
+    expect((wrapper.get('input').element as HTMLInputElement).value).toBe('li')
+    await wrapper.setProps({ open: true })
     expect((wrapper.get('input').element as HTMLInputElement).value).toBe('')
   })
 })

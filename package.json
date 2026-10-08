@@ -27,7 +27,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run -c vitest.config.integration.ts",
-    "test:e2e": "playwright test && playwright test -c playwright.modules-off.config.ts && playwright test -c playwright.theme-overrides.config.ts && playwright test -c playwright.home-page.config.ts && playwright test -c playwright.playground.config.ts && playwright test -c playwright.scene.config.ts",
+    "test:e2e": "playwright test && playwright test -c playwright.modules-off.config.ts && playwright test -c playwright.theme-overrides.config.ts && playwright test -c playwright.home-page.config.ts && playwright test -c playwright.playground.config.ts && playwright test -c playwright.scene.config.ts && playwright test -c playwright.native-ui.config.ts",
     "test:static": "node scripts/test-static.mjs",
     "test:landing": "node scripts/test-landing.mjs",
     "test:theme": "playwright test -c playwright.theme.config.ts",

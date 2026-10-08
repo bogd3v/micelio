@@ -18,30 +18,6 @@
     }
 }
 
-@keyframes bd-sheet-in {
-    from {
-        transform: translateY(40px);
-        opacity: 0;
-    }
-
-    to {
-        transform: none;
-        opacity: 1;
-    }
-}
-
-@keyframes bd-palette-in {
-    from {
-        transform: translateY(-8px);
-        opacity: 0;
-    }
-
-    to {
-        transform: none;
-        opacity: 1;
-    }
-}
-
 @keyframes bd-dash {
     to {
         stroke-dashoffset: -540;

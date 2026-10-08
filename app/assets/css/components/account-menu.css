@@ -52,17 +52,30 @@
     display: none;
 }
 
+/* A popover lives in the top layer, so it cannot be positioned against the toggle:
+   fixed below the header, and next to the toggle where anchor positioning exists */
 .bd-account-panel {
-    position: absolute;
-    top: calc(100% + var(--space-2));
-    right: 0;
-    z-index: 60;
+    position: fixed;
+    inset: calc(var(--bd-header-h) + var(--space-2)) var(--space-4) auto auto;
     min-width: 220px;
+    width: auto;
+    height: auto;
     margin: 0;
     padding: var(--space-2) 0;
+    overflow: visible;
+    color: var(--ink);
     list-style: none;
     background: var(--surface-raised);
     border: 1px solid var(--line-strong);
+}
+
+@supports (anchor-name: --a) {
+    .bd-account-panel {
+        inset: auto;
+        margin-top: var(--space-2);
+        position-area: bottom span-left;
+        position-try-fallbacks: flip-block;
+    }
 }
 
 .bd-account-who {
