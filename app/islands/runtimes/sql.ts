@@ -1,6 +1,7 @@
 // SQL runtime of the playground: SQLite compiled to WebAssembly, in memory, one fresh database per run. The package finds its
 // sqlite3.wasm next to itself, and the islands build emits it under /_islands/runtimes/ (modules/islands.ts).
 import sqlite3InitModule from '@sqlite.org/sqlite-wasm'
+import { splitStatements } from '../../helpers/sqlStatements'
 import { cellLength, formatTable } from '../../helpers/sqlTable'
 import type { SqlCell } from '../../helpers/sqlTable'
 import type { Runtime, RunLimits } from './runtime'
@@ -26,11 +27,14 @@ const LIMITS: Readonly<Record<string, number>> = {
 }
 // All the engine may hold: tables built by a loop stop here with an error
 const HEAP_LIMIT = 64 * 1024 * 1024
+// What `DB.prepare()` throws for a statement that is only whitespace or comments
+const EMPTY_SQL = /empty SQL/i
 
 export default async function load(): Promise<Runtime> {
   const sqlite3 = await sqlite3InitModule()
   const capi = sqlite3.capi as unknown as Record<string, unknown>
   const limit = sqlite3.capi.sqlite3_limit as unknown as (db: unknown, id: number, value: number) => number
+  const complete = sqlite3.capi.sqlite3_complete as unknown as (sql: string) => number
   // Not every build exports it
   if (typeof capi.sqlite3_hard_heap_limit64 === 'function') {
     const heap = capi.sqlite3_hard_heap_limit64 as (bytes: bigint | number) => unknown
@@ -49,25 +53,38 @@ export default async function load(): Promise<Runtime> {
         }
         if (setup.trim()) db.exec(setup)
         const sets: ResultSet[] = []
-        let current: unknown
         let size = 0
-        db.exec({
-          sql: code,
-          rowMode: 'stmt',
-          callback: (statement) => {
-            // A new statement starts a new result set
-            if (statement !== current) {
-              current = statement
-              sets.push({ columns: statement.getColumnNames(), rows: [] })
-              size += 16
+        // One statement at a time (`exec` only reports rows of the first one that has columns): every statement with
+        // columns is a result set, its header shown even when it returns no rows
+        statements: for (const text of splitStatements(code, sql => complete(sql) === 1)) {
+          let statement
+          try {
+            statement = db.prepare(text)
+          } catch (error) {
+            if (error instanceof Error && EMPTY_SQL.test(error.message)) continue
+            throw error
+          }
+          try {
+            if (!statement.columnCount) {
+              while (statement.step()) {
+                // A statement without columns has nothing to show
+              }
+              continue
             }
-            const cells = statement.get([]) as SqlCell[]
-            sets[sets.length - 1]!.rows.push(cells)
-            size += cells.reduce<number>((sum, cell) => sum + cellLength(cell) + 3, 1)
-            // Enough rows for the cap: a query that never ends stops here instead of filling memory
-            if (size > limits.outputBytes * 2) return false
-          },
-        })
+            const set: ResultSet = { columns: statement.getColumnNames([]), rows: [] }
+            sets.push(set)
+            size += 16
+            while (statement.step()) {
+              const cells = statement.get([]) as SqlCell[]
+              set.rows.push(cells)
+              size += cells.reduce<number>((sum, cell) => sum + cellLength(cell) + 3, 1)
+              // Enough rows for the cap: a query that never ends stops here instead of filling memory
+              if (size > limits.outputBytes * 2) break statements
+            }
+          } finally {
+            statement.finalize()
+          }
+        }
         return sets.map(set => formatTable(set.columns, set.rows)).join('\n\n')
       } finally {
         db.close()

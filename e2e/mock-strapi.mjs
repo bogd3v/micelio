@@ -185,6 +185,16 @@ const playgroundsVueEs = [
     code: 'while True:\n    pass',
     caption: 'Un bucle sin fin en Python: se detiene a los 5 segundos.',
   },
+  // SQL again, last so the indexes above stay: a query with no rows shows its header, and every statement its own table (#384)
+  {
+    id: 40,
+    __component: 'shared.playground',
+    runtime: 'sql',
+    setup: 'CREATE TABLE tools (name TEXT, kind TEXT);\nINSERT INTO tools VALUES (\'sqlite\', \'database\'), (\'vite\', \'bundler\');',
+    code: 'SELECT name, kind FROM tools WHERE kind = \'compiler\';\nSELECT count(*) AS total FROM tools;',
+    expectedOutput: 'name | kind\n-----+-----\n\ntotal\n-----\n2',
+    caption: 'Una consulta sin filas y un conteo.',
+  },
 ]
 
 const referencesVueEs = [

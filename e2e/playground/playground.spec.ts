@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { BIG, LOOP, PLAYGROUND_ARTICLE, PLAYGROUND_FREE_ARTICLE, QUERY, openPlayground, playground, probeWorker, resultOf, runButton, stopButton, trackRuntimeRequests, workerUrl } from '../fixtures/playground'
+import { BIG, EMPTY_QUERY, LOOP, PLAYGROUND_ARTICLE, PLAYGROUND_FREE_ARTICLE, QUERY, openPlayground, playground, probeWorker, resultOf, runButton, stopButton, trackRuntimeRequests, workerUrl } from '../fixtures/playground'
 import type { ProbeReport } from '../fixtures/playground'
 
 // The playground island and its Worker in the dynamic site (ADR 0004, worker containment; ADR 0006, section 6), on every browser.
@@ -228,4 +228,11 @@ test.describe('CSP', () => {
       webAssembly: 'allowed',
     })
   })
+})
+
+test('a query with no rows shows its header, and each statement its own table (#384)', async ({ page }) => {
+  await openPlayground(page)
+  await runButton(page, EMPTY_QUERY).click()
+  await expect(resultOf(page, EMPTY_QUERY)).toHaveAttribute('data-state', 'done')
+  expect(await resultOf(page, EMPTY_QUERY).textContent()).toBe('name | kind\n-----+-----\n\ntotal\n-----\n2')
 })
