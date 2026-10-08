@@ -545,6 +545,8 @@ describe('scene', () => {
     expect(wrapper.get('h2').text()).toBe('A scene')
     expect(wrapper.get('.bd-section-text').text()).toBe('Static preview.')
     expect(wrapper.find('canvas').exists()).toBe(false)
+    // The island reads the model from here; static builds rewrite it to /_media/ (ADR 0004)
+    expect(wrapper.get('micelio-scene').attributes('data-model')).toMatch(/\/uploads\/triangle\.glb$/)
   })
 })
 

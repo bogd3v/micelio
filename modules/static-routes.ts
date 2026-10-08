@@ -10,7 +10,7 @@ import { formActionOrigin } from '../app/helpers/newsletterForm'
 import { contentSecurityPolicy, inlineScripts, islandPolicyOptions, workerPolicy } from '../app/helpers/securityHeaders'
 import { isStaticMode } from '../app/helpers/siteMode'
 import type { SiteMode } from '../app/helpers/siteMode'
-import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, failsBuild, headersFile, initialRoutes, injectCspMeta, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
+import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, failsBuild, headersFile, initialRoutes, injectCspMeta, isCopyableMedia, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
 import { HEAVY_ISLANDS } from '../app/islands/heavy'
 import { strapiRequest } from '../server/lib/strapiRequest'
 import type { StrapiRequestConfig } from '../server/lib/strapiRequest'
@@ -184,7 +184,7 @@ export default defineNuxtModule({
       const violations = new Map<string, string[]>()
       const failed: string[] = []
 
-      // Raw <img> and <video> files of Strapi (SVGs, videos) bypass _ipx: copy them into the site so no page asks Strapi at runtime
+      // Raw <img> and <video> files of Strapi (SVGs, videos) and the .glb models of scenes bypass _ipx: copy them into the site so no page asks Strapi at runtime
       // Only Strapi's /uploads/ and the media host: any other path of the Strapi origin (its API, its admin) is not media
       const mediaPrefixes = [
         ...(config.strapiUrl ? [`${new URL(config.strapiUrl).origin}/uploads/`] : []),
@@ -196,8 +196,8 @@ export default defineNuxtModule({
         if (!path) {
           path = (async () => {
             const blob = await ofetch<Blob, 'blob'>(url, { responseType: 'blob', timeout: 60_000 })
-            if (!/^(image|video|audio)\//.test(blob.type)) throw new Error(`${url} is ${blob.type || 'of unknown type'}, not an image, video or audio`)
             const bytes = Buffer.from(await blob.arrayBuffer())
+            if (!isCopyableMedia(blob.type, url, bytes)) throw new Error(`${url} is ${blob.type || 'of unknown type'}, not an image, video, audio or .glb model`)
             // Named by its bytes: a file that changes behind the same URL gets a new name, so /_media/ can be immutable
             const name = mediaFileName(url, createHash('sha256').update(bytes).digest('hex').slice(0, 8))
             await mkdir(join(nitro.options.output.publicDir, '_media'), { recursive: true })

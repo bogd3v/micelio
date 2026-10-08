@@ -129,6 +129,25 @@ describe('media on the CMS origin', () => {
     expect(out).not.toContain('/_media/inline.png')
   })
 
+  it('finds and rewrites the model a scene reads, and only on <micelio-scene>', () => {
+    const page = `<micelio-scene data-model="${origin}/uploads/m.glb?a=1&amp;b=2" data-variant="inline"><img src="${origin}/uploads/p.png"></micelio-scene><div data-model="${origin}/uploads/x.glb"></div>&lt;micelio-scene data-model="${origin}/uploads/code.glb"&gt;`
+    expect(mediaUrlsIn(page, [`${origin}/uploads/`])).toEqual([`${origin}/uploads/m.glb?a=1&b=2`, `${origin}/uploads/p.png`])
+    const out = rewriteMediaUrls(page, new Map([[`${origin}/uploads/m.glb?a=1&b=2`, '/_media/ab-m.glb']]))
+    expect(out).toContain('<micelio-scene data-model="/_media/ab-m.glb" data-variant="inline">')
+    expect(out).toContain(`<div data-model="${origin}/uploads/x.glb">`)
+    expect(out).toContain(`data-model="${origin}/uploads/code.glb"`)
+  })
+
+  it('reads data-model only on <micelio-scene>, and src, poster and href never there', () => {
+    const page = `<img data-model="${origin}/uploads/a.glb" src="${origin}/uploads/i.png"><video data-model="${origin}/uploads/b.glb"></video><micelio-scene src="${origin}/uploads/s.png" poster="${origin}/uploads/p.png" data-model="${origin}/uploads/m.glb"></micelio-scene>`
+    expect(mediaUrlsIn(page, [`${origin}/uploads/`])).toEqual([`${origin}/uploads/i.png`, `${origin}/uploads/m.glb`])
+    const all = new Map([`a.glb`, `i.png`, `b.glb`, `s.png`, `p.png`, `m.glb`].map(name => [`${origin}/uploads/${name}`, `/_media/${name}`]))
+    const out = rewriteMediaUrls(page, all)
+    expect(out).toContain(`<img data-model="${origin}/uploads/a.glb" src="/_media/i.png">`)
+    expect(out).toContain(`<video data-model="${origin}/uploads/b.glb">`)
+    expect(out).toContain(`<micelio-scene src="${origin}/uploads/s.png" poster="${origin}/uploads/p.png" data-model="/_media/m.glb">`)
+  })
+
   it('names the file after a hash and a safe base name', () => {
     expect(mediaFileName(`${origin}/uploads/my logo (1).svg?x=1`, 'abcd1234')).toBe('abcd1234-my_20logo_20_1_.svg')
   })

@@ -1,6 +1,7 @@
 import { CATEGORIES } from './categories'
 import { feedPath } from './feed'
 import { localePrefixSource } from './localePrefix'
+import { isGlb, isGlbUrl, MODEL_MAX_BYTES } from './scene'
 import { SECURITY_HEADERS } from './securityHeaders'
 import { defaultLocale, Locale } from '../interfaces/locale'
 
@@ -79,8 +80,16 @@ export function missingRoutes(required: Iterable<string>, prerendered: Iterable<
 
 // Only real media tags: sanitized Markdown keeps literal quotes, so `&lt;img src="..."&gt;` in a code block must not match
 // `<link rel="icon">` too: the site's favicon comes from Strapi and the static CSP allows no image origin
-const MEDIA_TAG = /<(?:(?:img|video|source|audio)\b|link\b(?=[^>]*\brel="[^"]*\bicon\b))[^>]*>/gi
+// `<micelio-scene data-model>` is the model the scene island fetches (ADR 0006, section 6)
+const MEDIA_TAG = /<(?:(?:img|video|source|audio|micelio-scene)\b|link\b(?=[^>]*\brel="[^"]*\bicon\b))[^>]*>/gi
 const MEDIA_ATTRIBUTE = /(\s(?:src|poster|href)=")([^"]+)(")/g
+const SCENE_ATTRIBUTE = /(\sdata-model=")([^"]+)(")/g
+const SCENE_TAG = /^<micelio-scene\b/i
+
+// A scene's tag carries its model in `data-model` and nothing else; every other media tag its `src`, `poster` or `href`
+function attributesOf(tag: string): RegExp {
+  return SCENE_TAG.test(tag) ? SCENE_ATTRIBUTE : MEDIA_ATTRIBUTE
+}
 
 function decodeAmpersands(value: string): string {
   return value.replaceAll('&amp;', '&')
@@ -93,7 +102,7 @@ function decodeAmpersands(value: string): string {
 export function mediaUrlsIn(html: string, prefixes: readonly string[]): string[] {
   const found = new Set<string>()
   for (const [tag] of html.matchAll(MEDIA_TAG)) {
-    for (const [, , value = ''] of tag.matchAll(MEDIA_ATTRIBUTE)) {
+    for (const [, , value = ''] of tag.matchAll(attributesOf(tag))) {
       const url = decodeAmpersands(value)
       if (prefixes.some(prefix => url.startsWith(prefix))) found.add(url)
     }
@@ -103,10 +112,16 @@ export function mediaUrlsIn(html: string, prefixes: readonly string[]): string[]
 
 /** The same HTML with each URL of `local` (decoded URL to path on the site) replaced by its path, in media tags only. */
 export function rewriteMediaUrls(html: string, local: ReadonlyMap<string, string>): string {
-  return html.replace(MEDIA_TAG, tag => tag.replace(MEDIA_ATTRIBUTE, (match, before: string, value: string, after: string) => {
+  return html.replace(MEDIA_TAG, tag => tag.replace(attributesOf(tag), (match, before: string, value: string, after: string) => {
     const path = local.get(decodeAmpersands(value))
     return path ? `${before}${path}${after}` : match
   }))
+}
+
+/** Whether a response may be copied into /_media/: an image, video or audio, or a binary glTF named `.glb` (checked by its bytes, since hosts send any type for it). */
+export function isCopyableMedia(contentType: string, url: string, bytes: Uint8Array): boolean {
+  if (/^(image|video|audio)\//.test(contentType)) return true
+  return bytes.byteLength <= MODEL_MAX_BYTES && isGlbUrl(new URL(url).pathname) && isGlb(bytes)
 }
 
 /** A file name under /_media/ for a media URL: a short hash of the URL, then its safe base name. */

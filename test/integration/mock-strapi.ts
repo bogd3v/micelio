@@ -4,6 +4,7 @@ import type { RawStrapiArticle, StrapiAuthorRef, StrapiCategoryRef, StrapiLocali
 import type { StrapiRichText } from '~/interfaces/strapi-blocks'
 import { createAuthMock } from '../../e2e/fixtures/auth.mjs'
 import { createDraftsMock } from '../../e2e/fixtures/drafts.mjs'
+import { triangleGlb } from '../../e2e/fixtures/glb.mjs'
 import { findPages } from '../../e2e/fixtures/pages.mjs'
 
 export interface RecordedRequest {
@@ -833,6 +834,11 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     }
 
     if (method === 'GET' && url.pathname.startsWith('/uploads/')) {
+      if (url.pathname.endsWith('.glb')) {
+        res.writeHead(200, { 'Content-Type': 'model/gltf-binary', 'Access-Control-Allow-Origin': '*' })
+        res.end(triangleGlb())
+        return
+      }
       sendPng(res)
       return
     }

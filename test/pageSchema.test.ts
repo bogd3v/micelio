@@ -61,6 +61,16 @@ describe('parseSection', () => {
     expect(parseSection(section(component, invalid[component]), context)).toBeNull()
   })
 
+  it('accepts a .glb model with a query and refuses .gltf, whose buffers live in other files', () => {
+    const scene = (url: string): unknown => parseSection(section('section.scene', { model: { ...image, url } }), context)
+    expect(scene('/uploads/model.glb?v=2')).not.toBeNull()
+    expect(scene('/uploads/model.gltf')).toBeNull()
+    expect(scene('https://media.test/m/model.glb')).not.toBeNull()
+    expect(scene('https://evil.test/model.glb')).toBeNull()
+    expect(scene('https://media.test/api/x?.glb')).toBeNull()
+    expect(scene('/uploads/x?a=.glb')).toBeNull()
+  })
+
   it('drops unknown components, prototype keys and non-objects', () => {
     for (const raw of [{ __component: 'section.carousel' }, { __component: 'shared.rich-text' }, { __component: 'constructor' }, { __component: 'toString' }, {}, null, 'hero', 7]) {
       expect(parseSection(raw, context)).toBeNull()

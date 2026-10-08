@@ -102,6 +102,24 @@ export function islandPolicyOptions(islands: readonly HeavyIsland[]): Pick<Conte
   }
 }
 
+const SCENE_TAG = /<micelio-scene\b[^>]*>/gi
+const SCENE_MODEL = /\sdata-model="([^"]+)"/
+
+/**
+ * Origins the `<micelio-scene data-model>` elements of the HTML fetch their model from, as `connect-src` sources (ADR 0004, amendment of #246).
+ * Only an absolute URL on one of the trusted media origins counts; a site path is `'self'` already.
+ */
+export function sceneModelOrigins(html: string, trusted: readonly string[]): string[] {
+  const allowed = new Set(trusted.map(cspOrigin).filter(Boolean))
+  const found = new Set<string>()
+  for (const [tag] of html.matchAll(SCENE_TAG)) {
+    const value = SCENE_MODEL.exec(tag)?.[1]
+    const origin = value && /^https?:\/\//i.test(value) ? cspOrigin(value.replaceAll('&amp;', '&')) : ''
+    if (origin && allowed.has(origin)) found.add(origin)
+  }
+  return [...found]
+}
+
 /** The islands the HTML renders (their `<micelio-<id>>` element): the pages whose policy they extend. */
 export function islandsInHtml(html: string, islands: readonly HeavyIsland[]): HeavyIsland[] {
   return islands.filter(island => new RegExp(`<micelio-${island.id}[\\s>/]`).test(html))

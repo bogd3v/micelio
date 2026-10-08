@@ -1725,6 +1725,16 @@ describe('security headers', () => {
     expect(hashes.size).toBe(1)
   })
 
+  it('adds the model origin to connect-src on a page with a scene, and only there', async () => {
+    const connect = (policy: string): string => policy.split('; ').find(directive => directive.startsWith('connect-src ')) ?? ''
+    const scene = await fetch('/showcase')
+    const html = await scene.text()
+    expect(html).toContain('<micelio-scene data-model="')
+    expect(connect(scene.headers.get('content-security-policy') ?? '')).toBe(`connect-src 'self' ${new URL(mock.url).origin}`)
+    const other = await fetch('/blog')
+    expect(connect(other.headers.get('content-security-policy') ?? '')).toBe('connect-src \'self\'')
+  })
+
   it('allows images from Strapi and the media host', async () => {
     const policy = (await fetch('/blog')).headers.get('content-security-policy') ?? ''
     const images = policy.split('; ').find(directive => directive.startsWith('img-src ')) ?? ''
