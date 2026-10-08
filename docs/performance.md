@@ -148,6 +148,7 @@ Every heavy island in `app/islands/heavy.ts` needs a budget, under the key its `
 
 | Field | What it is |
 | --- | --- |
+| key | The island's `budget` key, or a variant of it, `<budget>:<name>` (`playground:python`), measured separately on its own fixture: one island whose cost depends on what it runs (a runtime per language) |
 | `page` | Path of a page of the mock site that renders `<micelio-<id>>`; a `visible` island must start below the fold, or it loads before the trigger and fails |
 | `control` | `interaction` only: the CSS selector clicked to start the island (default the element itself) |
 | `ready` | Required: CSS selector of the island's rendered result (`micelio-mermaid svg`, a playground's filled output). The script waits for it, then for 500 ms without a request; an island that loads nothing of `/_islands/` after its trigger fails |
