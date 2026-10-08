@@ -66,7 +66,13 @@ export class WorkerPool {
       settle = resolve
       if (slot.pending > 0) options.onQueued?.()
       slot.pending++
-      slot.tail = slot.tail.then(async () => {
+      const previous = slot.tail
+      slot.tail = (async () => {
+        try {
+          await previous
+        } catch {
+          // A run that failed ahead in the queue must not block the ones behind it
+        }
         try {
           if (cancelled) return resolve(STOPPED)
           options.onBegin?.()
@@ -76,7 +82,7 @@ export class WorkerPool {
         } finally {
           slot.pending--
         }
-      })
+      })()
     })
     return {
       result,

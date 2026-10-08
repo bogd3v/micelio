@@ -84,16 +84,21 @@ class MicelioPlayground extends HTMLElement {
       onStarted: () => this.show('running', this.label('running')),
     })
     this.current = handle
-    handle.result.then((outcome) => {
+    void this.finish(handle)
+  }
+
+  private async finish(handle: RunHandle): Promise<void> {
+    try {
+      const outcome = await handle.result
       if (this.current !== handle) return
       this.current = undefined
       this.busy(false)
       this.render(outcome)
-    }).catch(() => {
+    } catch {
       this.current = undefined
       this.busy(false)
       this.show('error', this.label('unavailable'))
-    })
+    }
   }
 
   private render(outcome: RunResult): void {
