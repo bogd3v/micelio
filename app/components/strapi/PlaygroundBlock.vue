@@ -22,6 +22,7 @@ const caption = computed<string>(() => props.block.caption?.trim() ?? '')
     :data-runtime="runnable ? block.runtime : undefined"
     :aria-label="t('bd.playground.label', { language })"
     :aria-describedby="caption ? `${id}-caption` : undefined"
+    :data-playground-setup="runnable && setup ? setup : undefined"
   >
     <BdCodeBlock :code="block.code" :lang="block.runtime" :code-attrs="{ 'data-playground-code': '' }" />
     <figure v-if="expected" class="bd-playground-expected">
@@ -29,7 +30,6 @@ const caption = computed<string>(() => props.block.caption?.trim() ?? '')
       <pre class="bd-playground-output" tabindex="0">{{ expected }}</pre>
     </figure>
     <template v-if="runnable">
-      <component :is="'template'" v-if="setup" data-playground-setup>{{ setup }}</component>
       <div class="bd-playground-actions">
         <BdButton size="sm" :aria-label="t('bd.playground.runAria')" :aria-controls="`${id}-result`" hidden data-playground-run>{{ t('bd.playground.run') }}</BdButton>
       </div>

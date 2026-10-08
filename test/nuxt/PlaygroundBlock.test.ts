@@ -58,14 +58,14 @@ describe('StrapiPlaygroundBlock', () => {
     expect(wrapper.html()).toContain('&lt;script&gt;')
   })
 
-  it('keeps setup in an inert template: present in the DOM, never visible', async () => {
+  it('keeps setup in a data attribute: available to the island, never visible', async () => {
     const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground({ setup: 'CREATE TABLE t(a);' }) } })
-    const template = wrapper.get('template[data-playground-setup]')
-    expect(template.element.innerHTML + (template.element as HTMLTemplateElement).content.textContent).toContain('CREATE TABLE t(a);')
+    expect(wrapper.get('figure.bd-playground').attributes('data-playground-setup')).toBe('CREATE TABLE t(a);')
     expect(wrapper.text()).not.toContain('CREATE TABLE')
+    expect(wrapper.find('template').exists()).toBe(false)
     expect(wrapper.find('script').exists()).toBe(false)
     const without = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground() } })
-    expect(without.find('[data-playground-setup]').exists()).toBe(false)
+    expect(without.get('figure.bd-playground').attributes('data-playground-setup')).toBeUndefined()
   })
 
   it('renders an unknown language as a plain code block with its output and no run controls', async () => {

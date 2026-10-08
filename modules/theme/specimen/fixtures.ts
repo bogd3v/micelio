@@ -61,6 +61,7 @@ export const PROSE_BLOCKS: StrapiBlock[] = [
     id: 6,
     __component: 'shared.playground',
     runtime: 'sql',
+    setup: 'CREATE TABLE articles (name TEXT);\nINSERT INTO articles VALUES (\'mycelia\'), (\'mycelia\'), (\'mycelia\');',
     code: 'SELECT name, COUNT(*) AS posts\nFROM articles\nGROUP BY name;',
     expectedOutput: 'name   | posts\n-------+------\nmycelia |     3',
     caption: 'Counting posts per author.',
