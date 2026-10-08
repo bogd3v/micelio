@@ -1,6 +1,7 @@
 // SQL runtime of the playground: SQLite compiled to WebAssembly, in memory, one fresh database per run. The package finds its
 // sqlite3.wasm next to itself, and the islands build emits it under /_islands/runtimes/ (modules/islands.ts).
 import sqlite3InitModule from '@sqlite.org/sqlite-wasm'
+import { splitStatements } from '../../helpers/sqlStatements'
 import { cellLength, formatTable } from '../../helpers/sqlTable'
 import type { SqlCell } from '../../helpers/sqlTable'
 import type { Runtime, RunLimits } from './runtime'
@@ -31,6 +32,7 @@ export default async function load(): Promise<Runtime> {
   const sqlite3 = await sqlite3InitModule()
   const capi = sqlite3.capi as unknown as Record<string, unknown>
   const limit = sqlite3.capi.sqlite3_limit as unknown as (db: unknown, id: number, value: number) => number
+  const complete = sqlite3.capi.sqlite3_complete as unknown as (sql: string) => number
   // Not every build exports it
   if (typeof capi.sqlite3_hard_heap_limit64 === 'function') {
     const heap = capi.sqlite3_hard_heap_limit64 as (bytes: bigint | number) => unknown
@@ -49,25 +51,31 @@ export default async function load(): Promise<Runtime> {
         }
         if (setup.trim()) db.exec(setup)
         const sets: ResultSet[] = []
-        let current: unknown
         let size = 0
-        db.exec({
-          sql: code,
-          rowMode: 'stmt',
-          callback: (statement) => {
-            // A new statement starts a new result set
-            if (statement !== current) {
-              current = statement
-              sets.push({ columns: statement.getColumnNames(), rows: [] })
-              size += 16
-            }
-            const cells = statement.get([]) as SqlCell[]
-            sets[sets.length - 1]!.rows.push(cells)
-            size += cells.reduce<number>((sum, cell) => sum + cellLength(cell) + 3, 1)
-            // Enough rows for the cap: a query that never ends stops here instead of filling memory
-            if (size > limits.outputBytes * 2) return false
-          },
-        })
+        let full = false
+        // One statement per exec (`exec` only reports rows of the first statement that has columns): every statement with
+        // columns is a result set, its header filled in even when it returns no rows; empty or comment-only ones run nothing
+        for (const text of splitStatements(code, sql => complete(sql) === 1)) {
+          const set: ResultSet = { columns: [], rows: [] }
+          db.exec({
+            sql: text,
+            rowMode: 'array',
+            columnNames: set.columns,
+            callback: (row: unknown) => {
+              const cells = row as SqlCell[]
+              set.rows.push(cells)
+              size += cells.reduce<number>((sum, cell) => sum + cellLength(cell) + 3, 1)
+              // Enough rows for the cap: a query that never ends stops here instead of filling memory
+              full = size > limits.outputBytes * 2
+              if (full) return false
+            },
+          })
+          if (set.columns.length) {
+            sets.push(set)
+            size += 16
+          }
+          if (full) break
+        }
         return sets.map(set => formatTable(set.columns, set.rows)).join('\n\n')
       } finally {
         db.close()

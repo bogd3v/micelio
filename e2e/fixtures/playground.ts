@@ -10,6 +10,8 @@ export const BIG = 2
 // The JavaScript (QuickJS) playgrounds that follow: code over hidden setup, and a loop that never ends
 export const JS = 3
 export const JS_LOOP = 4
+// After the Python blocks (e2e/playground/python.spec.ts)
+export const EMPTY_QUERY = 7
 
 export function playground(page: Page, index: number): Locator {
   return page.locator('micelio-playground').nth(index)
