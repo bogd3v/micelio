@@ -7,10 +7,11 @@ import qs from 'qs'
 import { defineNuxtModule, useLogger } from 'nuxt/kit'
 import { Locale } from '../app/interfaces/locale'
 import { formActionOrigin } from '../app/helpers/newsletterForm'
-import { contentSecurityPolicy, inlineScripts } from '../app/helpers/securityHeaders'
+import { contentSecurityPolicy, inlineScripts, islandPolicyOptions, workerPolicy } from '../app/helpers/securityHeaders'
 import { isStaticMode } from '../app/helpers/siteMode'
 import type { SiteMode } from '../app/helpers/siteMode'
 import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, failsBuild, headersFile, initialRoutes, injectCspMeta, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
+import { HEAVY_ISLANDS } from '../app/islands/heavy'
 import { strapiRequest } from '../server/lib/strapiRequest'
 import type { StrapiRequestConfig } from '../server/lib/strapiRequest'
 
@@ -67,6 +68,8 @@ export default defineNuxtModule({
     const logger = useLogger('micelio')
     // The newsletter provider receives the form post (ADR 0006, section 5); read as the module that turns the newsletter on reads it
     const newsletterOrigins = [formActionOrigin(process.env.NUXT_PUBLIC_NEWSLETTER_FORM_ACTION)].filter(Boolean)
+    // Runtime overrides apply here too: the Worker may fetch its runtime only from this site's /_islands/runtimes/ (ADR 0004)
+    const siteUrl = process.env.NUXT_PUBLIC_SITE_URL || String(nuxt.options.runtimeConfig.public.siteUrl || '')
     // Nitro skips a route that is a file of public/: the file wins
     const isPublicFile = (route: string): boolean => route !== '/' && existsSync(join(nuxt.options.rootDir, 'public', route))
     // Runtime overrides (NUXT_*) are not applied to the config at build setup
@@ -162,7 +165,8 @@ export default defineNuxtModule({
 
       // Static pages load no Nuxt client and copy their images and media into the site: no image origin is needed
       function staticPolicy(hashes: string[], meta: boolean): string {
-        return contentSecurityPolicy({ scriptHashes: hashes, imageOrigins: [], imageBlobs: false, wasmEval: true, formOrigins: newsletterOrigins, meta })
+        // One policy for every page: the additions of all the heavy islands (ADR 0006, section 6). Pagefind needs WebAssembly on every page
+        return contentSecurityPolicy({ scriptHashes: hashes, imageOrigins: [], imageBlobs: false, formOrigins: newsletterOrigins, meta, ...islandPolicyOptions(HEAVY_ISLANDS), wasmEval: true })
       }
       async function writeHeaders(): Promise<void> {
         const different = scriptHashDisagreements(scriptHashes)
@@ -171,7 +175,9 @@ export default defineNuxtModule({
           throw new Error(`Site mode "${mode}": ${different.length} page(s) have inline scripts that differ from the other pages, so one CSP for /* cannot cover them (ADR 0006, section 7). SHA-256 of their scripts:\n${list}`)
         }
         const hashes = [...scriptHashes.values()][0] ?? []
-        await writeFile(join(nitro.options.output.publicDir, '_headers'), headersFile(staticPolicy(hashes, false)))
+        const worker = workerPolicy(siteUrl, nuxt.options.app.baseURL)
+        if (!worker) throw new Error(`Site mode "${mode}": NUXT_PUBLIC_SITE_URL is unset or not a valid origin, and the playground's Worker needs its own CSP naming it (ADR 0004). Set it to the origin the site is served from.`)
+        await writeFile(join(nitro.options.output.publicDir, '_headers'), headersFile(staticPolicy(hashes, false), worker))
         logger.info(`Wrote _headers (${hashes.length} script hash(es), ${scriptHashes.size} pages)`)
       }
 

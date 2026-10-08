@@ -417,7 +417,21 @@
       "label": "Runnable code, {language}",
       "run": "Run",
       "runAria": "Run the code",
-      "expectedOutput": "Expected output"
+      "expectedOutput": "Expected output",
+      "runSize": "Run ({size} download)",
+      "runSizeAria": "Run the code. It downloads {size} first",
+      "stop": "Stop",
+      "stopAria": "Stop the code",
+      "loading": "Loading the runtime…",
+      "running": "Running…",
+      "empty": "The code ran and printed nothing.",
+      "error": "Error: {message}",
+      "timeout": "Stopped: the code ran for more than {seconds} seconds.",
+      "stopped": "Stopped.",
+      "truncated": "[Output cut at {size}]",
+      "unavailable": "The code could not run in this browser.",
+      "queued": "Waiting for the code above to finish…",
+      "statusDone": "Finished, {lines} lines of output."
     },
     "mermaid": {
       "label": "Diagram"

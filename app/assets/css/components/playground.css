@@ -1,3 +1,7 @@
+micelio-playground {
+    display: block;
+}
+
 .bd-playground {
     display: flex;
     flex-direction: column;
@@ -46,8 +50,21 @@
     display: none;
 }
 
-.bd-playground-actions:has(> [hidden]) {
+.bd-playground-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* No island yet: the actions have nothing to show */
+.bd-playground-actions:not(:has(> :not([hidden]))) {
     display: none;
+}
+
+/* The button stays focusable while a run is in progress; it only stops answering */
+.bd-playground-actions [aria-disabled="true"] {
+    opacity: 0.6;
+    cursor: progress;
 }
 
 /* Empty, the live region stays in the accessibility tree but draws nothing */
@@ -67,6 +84,23 @@
     color: var(--ink);
     background: var(--surface-sunken);
     border: 1px solid var(--line-strong);
+}
+
+.bd-playground-result[data-state="error"] {
+    border-color: var(--danger);
+}
+
+/* The loader marks the element when the island could not be imported; the next press tries again */
+.bd-playground-notice {
+    display: none;
+    margin: 0;
+    font-size: 14px;
+    line-height: 22px;
+    color: var(--danger);
+}
+
+micelio-playground[data-island-error] .bd-playground-notice {
+    display: block;
 }
 
 .bd-playground-caption {

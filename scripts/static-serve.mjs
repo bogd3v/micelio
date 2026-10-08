@@ -10,7 +10,7 @@ const root = resolve(process.argv[2] ?? '.output/public')
 const port = Number(process.env.PORT ?? 3260)
 const host = process.env.HOST ?? '127.0.0.1'
 const compress = process.env.COMPRESS === '1'
-const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.mjs', '.json', '.xml', '.txt', '.svg'])
+const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.mjs', '.json', '.xml', '.txt', '.svg', '.wasm'])
 const compressed = new Map()
 
 const TYPES = {
@@ -22,6 +22,7 @@ const TYPES = {
   '.xml': 'application/xml; charset=utf-8',
   '.txt': 'text/plain; charset=utf-8',
   '.svg': 'image/svg+xml',
+  '.wasm': 'application/wasm',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.webp': 'image/webp',

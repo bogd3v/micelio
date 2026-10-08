@@ -1,5 +1,11 @@
-name: Install Playwright Chromium
-description: Restores the browser from the cache, installs the system libraries, and fails fast when the download or apt hangs. Run after npm ci.
+name: Install Playwright browsers
+description: Restores the browsers (Chromium unless `browsers` lists others) from the cache, installs the system libraries, and fails fast when the download or apt hangs. Run after npm ci.
+
+inputs:
+  browsers:
+    description: Space-separated Playwright browsers to install (chromium, firefox, webkit)
+    required: false
+    default: chromium
 
 runs:
   using: composite
@@ -16,18 +22,19 @@ runs:
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.cache/ms-playwright
-        key: playwright-${{ runner.os }}-${{ steps.version.outputs.version }}-chromium
+        key: playwright-${{ runner.os }}-${{ steps.version.outputs.version }}-${{ inputs.browsers }}
     # Composite steps have no timeout-minutes: `timeout` bounds each attempt (10 minutes), two attempts.
     # A timeout kills npx but not the apt-get it started as root, which keeps the dpkg lock: wait for it before retrying.
-    - name: Install Chromium and system dependencies
+    - name: Install the browsers and system dependencies
       shell: bash
       env:
+        BROWSERS: ${{ inputs.browsers }}
         CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
       run: |
         if [ "${CACHE_HIT}" = "true" ]; then
-          command=(npx playwright install-deps chromium)
+          command=(npx playwright install-deps ${BROWSERS})
         else
-          command=(npx playwright install --with-deps chromium)
+          command=(npx playwright install --with-deps ${BROWSERS})
         fi
         for attempt in 1 2; do
           if timeout 600 "${command[@]}"; then exit 0; fi

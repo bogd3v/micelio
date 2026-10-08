@@ -1,3 +1,5 @@
+import type { HeavyIsland } from '../islands/heavy'
+
 export interface ContentSecurityPolicyOptions {
   scriptHashes: string[]
   imageOrigins: string[]
@@ -7,6 +9,10 @@ export interface ContentSecurityPolicyOptions {
   imageBlobs?: boolean
   /** `'wasm-unsafe-eval'` in `script-src`, for Pagefind's WebAssembly (default false: static builds only; ADR 0004 amendment). */
   wasmEval?: boolean
+  /** `worker-src`: only the pages that render a playground have it (ADR 0004, worker containment). Default none. */
+  workerSources?: string[]
+  /** Extra `connect-src` sources of a heavy island, after `'self'` (ADR 0006, section 6). Default none. */
+  connectSources?: string[]
   /** Extra `form-action` origins: the static newsletter provider (ADR 0004, amendment). Default none. */
   formOrigins?: string[]
 }
@@ -75,8 +81,9 @@ export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): st
     // Videos of page sections (<video>) come from the same origins as the images
     ['media-src', ['\'self\'', ...origins(options.imageOrigins)]],
     ['font-src', ['\'self\'']],
-    ['connect-src', ['\'self\'']],
+    ['connect-src', [...new Set(['\'self\'', ...(options.connectSources ?? [])])]],
     ['frame-src', FRAME_ORIGINS],
+    ...(options.workerSources?.length ? [['worker-src', [...new Set(options.workerSources)]] as [string, string[]]] : []),
     // `report-uri` and `sandbox` are never emitted; a meta ignores `frame-ancestors`
     ...(options.meta ? [] : [['frame-ancestors', ['\'none\'']] as [string, string[]]]),
     ['base-uri', ['\'self\'']],
@@ -84,4 +91,49 @@ export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): st
     ['object-src', ['\'none\'']],
   ]
   return directives.map(([name, values]) => [name, ...values].join(' ')).join('; ')
+}
+
+/** What the heavy islands in use add to a page's policy (ADR 0006, section 6): the options of `contentSecurityPolicy()`. */
+export function islandPolicyOptions(islands: readonly HeavyIsland[]): Pick<ContentSecurityPolicyOptions, 'wasmEval' | 'workerSources' | 'connectSources'> {
+  return {
+    wasmEval: islands.some(island => island.csp?.wasm === true),
+    workerSources: islands.flatMap(island => island.csp?.workerSrc ?? []),
+    connectSources: islands.flatMap(island => island.csp?.connectSrc ?? []),
+  }
+}
+
+/** The islands the HTML renders (their `<micelio-<id>>` element): the pages whose policy they extend. */
+export function islandsInHtml(html: string, islands: readonly HeavyIsland[]): HeavyIsland[] {
+  return islands.filter(island => new RegExp(`<micelio-${island.id}[\\s>/]`).test(html))
+}
+
+/**
+ * Where a Worker may fetch its runtime from: the runtimes folder of this site, as an origin and path (a bare path is not a CSP source).
+ * `undefined` when the site URL is unset or not a safe origin: there is no safe fallback, `'self'` would let the Worker fetch anything of the site.
+ */
+export function runtimesSource(siteUrl: string, baseURL = '/'): string | undefined {
+  const origin = cspOrigin(siteUrl)
+  return origin ? `${origin}${baseURL.replace(/\/+$/, '')}/_islands/runtimes/` : undefined
+}
+
+/**
+ * The policy of the response that serves a Worker script (`/_islands/workers/*`; ADR 0004, worker containment). A Worker takes its
+ * policy from its own response, not from the page: no network except the runtimes folder, and WebAssembly but no `eval()`.
+ * `undefined` without a valid site URL (see `runtimesSource()`): the caller must not serve the Worker without a policy.
+ */
+export function workerPolicy(siteUrl: string, baseURL = '/'): string | undefined {
+  const connect = runtimesSource(siteUrl, baseURL)
+  return connect ? ['default-src \'none\'', 'script-src \'self\' \'wasm-unsafe-eval\'', `connect-src ${connect}`].join('; ') : undefined
+}
+
+/** Whether a request path is a Worker script of the islands. The path is decoded and normalised first, so `/_islands/%77orkers/` and `//_islands/./workers/` count. */
+export function isWorkerScriptPath(path: string, baseURL = '/'): boolean {
+  let pathname: string
+  try {
+    pathname = decodeURIComponent(new URL(`http://localhost${path}`).pathname)
+  } catch {
+    // Not decodable: treat it as a Worker path, so the policy (or the refusal) applies rather than being skipped
+    return /_islands/i.test(path)
+  }
+  return pathname.replace(/\/{2,}/g, '/').startsWith(`${baseURL.replace(/\/+$/, '')}/_islands/workers/`)
 }

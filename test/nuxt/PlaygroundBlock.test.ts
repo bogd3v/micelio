@@ -49,6 +49,34 @@ describe('StrapiPlaygroundBlock', () => {
     expect(run.attributes('aria-controls')).toBe(result.attributes('id'))
   })
 
+  it('ships a hidden Stop button, a polite live region and every string the island shows', async () => {
+    const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground() } })
+    const stop = wrapper.get('[data-playground-stop]')
+    expect(stop.attributes('hidden')).toBeDefined()
+    expect(stop.text()).toBe('Stop')
+    expect(stop.attributes('aria-label')).toBe('Stop the code')
+    // The output can be 64 KB: it is not a live region, a short status next to it is
+    expect(wrapper.get('output[data-playground-result]').attributes('aria-live')).toBeUndefined()
+    const status = wrapper.get('p[data-playground-status]')
+    expect(status.attributes('role')).toBe('status')
+    expect(status.classes()).toContain('bd-sr')
+    expect(status.text()).toBe('')
+    const island = wrapper.get('micelio-playground')
+    expect(island.attributes('data-timeout')).toBe('Stopped: the code ran for more than {seconds} seconds.')
+    expect(island.attributes('data-error')).toBe('Error: {message}')
+    expect(island.attributes('data-save-data-label')).toMatch(/^Run \(.+ download\)$/)
+    expect(island.attributes('data-truncated')).toBe('[Output cut at {size}]')
+    for (const name of ['loading', 'running', 'empty', 'stopped', 'unavailable']) expect(island.attributes(`data-${name}`), name).toBeTruthy()
+    expect(island.find('figure.bd-playground').exists()).toBe(true)
+    expect(island.find('.bd-playground-notice').text()).toBe('The code could not run in this browser.')
+  })
+
+  it('has no Stop button for a language it cannot run', async () => {
+    const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground({ runtime: 'cobol' }) } })
+    expect(wrapper.find('[data-playground-stop]').exists()).toBe(false)
+    expect(wrapper.find('micelio-playground').exists()).toBe(false)
+  })
+
   it('shows the code and output as text, with no script involved', async () => {
     const wrapper = await mountSuspended(StrapiPlaygroundBlock, {
       props: { block: playground({ code: '<script>alert(1)</script>', expectedOutput: '<b>x</b>', setup: 'CREATE TABLE t(a);' }) },

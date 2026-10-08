@@ -157,6 +157,7 @@ export const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_media/*', '/_i
 /** `/pagefind/*` is rebuilt with every generate (`pagefind.js` keeps its name), so it is never immutable. */
 export const REVALIDATED_PATHS: readonly string[] = ['/_ipx/*', '/pagefind/*']
 /** Files copied from Strapi are data, never documents: an SVG opened directly runs nothing and loads nothing. Sent on top of the site policy (repeated policies only tighten). */
+export const WORKERS_PATH = '/_islands/workers/*'
 export const MEDIA_POLICY = 'default-src \'none\'; style-src \'unsafe-inline\'; img-src \'self\' data:; sandbox'
 
 // Cloudflare Pages limits (docs): 100 rules, 2000 characters per line
@@ -168,7 +169,7 @@ function headerName(name: string): string {
 }
 
 /** The `_headers` file (Cloudflare Pages, Netlify): the policy and the fixed security headers on every path, cache rules on assets. Throws over the host limits. */
-export function headersFile(policy: string): string {
+export function headersFile(policy: string, workerPolicy?: string): string {
   const everything = Object.entries({ 'content-security-policy': policy, ...SECURITY_HEADERS })
     .map(([name, value]) => `  ${headerName(name)}: ${value}`)
   const rules = [
@@ -176,6 +177,8 @@ export function headersFile(policy: string): string {
     ...IMMUTABLE_PATHS.map(path => [path, `  Cache-Control: ${IMMUTABLE}`]),
     ...REVALIDATED_PATHS.map(path => [path, `  Cache-Control: ${REVALIDATE}`]),
     ['/_media/*', `  Content-Security-Policy: ${MEDIA_POLICY}`],
+    // A Worker takes its policy from its own response; repeated policies only tighten, so this narrows the site's (ADR 0004)
+    ...(workerPolicy ? [[WORKERS_PATH, `  Content-Security-Policy: ${workerPolicy}`]] : []),
   ]
   // `/_media/*` appears twice on purpose: two rules, two header sets
   const merged = rules.reduce<string[][]>((all, rule) => {

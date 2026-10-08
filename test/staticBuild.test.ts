@@ -182,6 +182,13 @@ describe('static headers', () => {
     ])
   })
 
+  it('gives the Workers their own policy, on top of the site one', () => {
+    const worker = 'default-src \'none\'; connect-src https://example.com/_islands/runtimes/'
+    const rules = headersFile(policy, worker).trim().split('\n\n')
+    expect(rules.at(-1)).toBe(`/_islands/workers/*\n  Content-Security-Policy: ${worker}`)
+    expect(headersFile(policy)).not.toContain('/_islands/workers/')
+  })
+
   it('fails over the Cloudflare Pages line limit', () => {
     expect(() => headersFile('a'.repeat(2000))).toThrow('2000')
   })
