@@ -26,13 +26,16 @@ describe('StrapiPlaygroundBlock', () => {
     const figure = wrapper.get('figure.bd-playground')
     expect(figure.attributes('data-runtime')).toBe(runtime)
     expect(figure.attributes('aria-label')).toBe(`Runnable code, ${label}`)
-    expect(wrapper.get('.bd-code-lang').text()).toBe(label)
+    expect(wrapper.get('.bd-code-lang').text()).toBe(runtime)
+    expect(wrapper.get('code').classes()).toContain(`language-${runtime}`)
+    expect(wrapper.get('code').attributes('data-playground-code')).toBeDefined()
     expect(wrapper.get('.bd-code code').text()).toBe('SELECT 1 AS one;')
-    expect(wrapper.get('.bd-playground-label').text()).toBe('Expected output')
-    const output = wrapper.get('pre.bd-playground-output')
-    expect(output.text()).toBe('one\n---\n1')
-    expect(output.attributes('aria-labelledby')).toBe(wrapper.get('.bd-playground-label').attributes('id'))
-    expect(wrapper.get('figcaption').text()).toBe('The simplest query.')
+    expect(wrapper.get('figure.bd-playground-expected > figcaption').text()).toBe('Expected output')
+    expect(wrapper.get('pre.bd-playground-output').text()).toBe('one\n---\n1')
+    expect(wrapper.get('pre.bd-playground-output').attributes('aria-labelledby')).toBeUndefined()
+    const caption = wrapper.get('figure.bd-playground > figcaption')
+    expect(caption.text()).toBe('The simplest query.')
+    expect(figure.attributes('aria-describedby')).toBe(caption.attributes('id'))
   })
 
   it('ships a hidden Run button and an empty live region for the island', async () => {
@@ -40,9 +43,10 @@ describe('StrapiPlaygroundBlock', () => {
     const run = wrapper.get('[data-playground-run]')
     expect(run.attributes('hidden')).toBeDefined()
     expect(run.text()).toBe('Run')
-    const result = wrapper.get('[data-playground-output]')
+    const result = wrapper.get('output[data-playground-result]')
     expect(result.text()).toBe('')
-    expect(result.attributes('aria-live')).toBe('polite')
+    expect(result.attributes('role')).toBeUndefined()
+    expect(run.attributes('aria-controls')).toBe(result.attributes('id'))
   })
 
   it('shows the code and output as text, with no script involved', async () => {
@@ -52,23 +56,32 @@ describe('StrapiPlaygroundBlock', () => {
     expect(wrapper.find('script').exists()).toBe(false)
     expect(wrapper.find('b').exists()).toBe(false)
     expect(wrapper.html()).toContain('&lt;script&gt;')
-    // `setup` is hidden code: never rendered
+  })
+
+  it('keeps setup in an inert template: present in the DOM, never visible', async () => {
+    const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground({ setup: 'CREATE TABLE t(a);' }) } })
+    const template = wrapper.get('template[data-playground-setup]')
+    expect(template.element.innerHTML + (template.element as HTMLTemplateElement).content.textContent).toContain('CREATE TABLE t(a);')
     expect(wrapper.text()).not.toContain('CREATE TABLE')
+    expect(wrapper.find('script').exists()).toBe(false)
+    const without = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground() } })
+    expect(without.find('[data-playground-setup]').exists()).toBe(false)
   })
 
   it('renders an unknown language as a plain code block with its output and no run controls', async () => {
     const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground({ runtime: 'cobol' }) } })
     expect(wrapper.get('figure.bd-playground').attributes('data-runtime')).toBeUndefined()
     expect(wrapper.get('.bd-code-lang').text()).toBe('cobol')
+    expect(wrapper.find('[data-playground-setup]').exists()).toBe(false)
     expect(wrapper.get('pre.bd-playground-output').text()).toBe('one\n---\n1')
     expect(wrapper.find('[data-playground-run]').exists()).toBe(false)
-    expect(wrapper.find('[data-playground-output]').exists()).toBe(false)
+    expect(wrapper.find('[data-playground-result]').exists()).toBe(false)
   })
 
   it('omits the expected output when there is none', async () => {
     for (const expectedOutput of [undefined, null, '', '  \n']) {
       const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground({ expectedOutput }) } })
-      expect(wrapper.find('.bd-playground-label').exists()).toBe(false)
+      expect(wrapper.find('.bd-playground-expected').exists()).toBe(false)
       expect(wrapper.find('pre.bd-playground-output').exists()).toBe(false)
       expect(wrapper.find('.bd-code').exists()).toBe(true)
     }
@@ -77,7 +90,8 @@ describe('StrapiPlaygroundBlock', () => {
   it('omits the caption when there is none', async () => {
     for (const caption of [undefined, null, ' ']) {
       const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground({ caption }) } })
-      expect(wrapper.find('figcaption').exists()).toBe(false)
+      expect(wrapper.find('figure.bd-playground > figcaption').exists()).toBe(false)
+      expect(wrapper.get('figure.bd-playground').attributes('aria-describedby')).toBeUndefined()
     }
   })
 

@@ -12,6 +12,7 @@ const id = useId()
 const language = computed<string>(() => playgroundLanguage(props.block.runtime))
 const runnable = computed<boolean>(() => isRunnable(props.block))
 const expected = computed<string>(() => playgroundText(props.block.expectedOutput))
+const setup = computed<string>(() => playgroundText(props.block.setup))
 const caption = computed<string>(() => props.block.caption?.trim() ?? '')
 </script>
 
@@ -20,18 +21,20 @@ const caption = computed<string>(() => props.block.caption?.trim() ?? '')
     class="bd-playground not-prose"
     :data-runtime="runnable ? block.runtime : undefined"
     :aria-label="t('bd.playground.label', { language })"
+    :aria-describedby="caption ? `${id}-caption` : undefined"
   >
-    <BdCodeBlock :code="block.code" :lang="language" />
-    <div v-if="expected">
-      <p :id="`${id}-expected`" class="bd-playground-label">{{ t('bd.playground.expectedOutput') }}</p>
-      <pre class="bd-playground-output" tabindex="0" :aria-labelledby="`${id}-expected`">{{ expected }}</pre>
-    </div>
+    <BdCodeBlock :code="block.code" :lang="block.runtime" :code-attrs="{ 'data-playground-code': '' }" />
+    <figure v-if="expected" class="bd-playground-expected">
+      <figcaption class="bd-playground-label">{{ t('bd.playground.expectedOutput') }}</figcaption>
+      <pre class="bd-playground-output" tabindex="0">{{ expected }}</pre>
+    </figure>
     <template v-if="runnable">
+      <component :is="'template'" v-if="setup" data-playground-setup>{{ setup }}</component>
       <div class="bd-playground-actions">
-        <BdButton size="sm" :aria-label="t('bd.playground.runAria')" hidden data-playground-run>{{ t('bd.playground.run') }}</BdButton>
+        <BdButton size="sm" :aria-label="t('bd.playground.runAria')" :aria-controls="`${id}-result`" hidden data-playground-run>{{ t('bd.playground.run') }}</BdButton>
       </div>
-      <div class="bd-playground-result" role="region" :aria-label="t('bd.playground.result')" aria-live="polite" data-playground-output />
+      <output :id="`${id}-result`" class="bd-playground-result" data-playground-result />
     </template>
-    <figcaption v-if="caption" class="bd-playground-caption">{{ caption }}</figcaption>
+    <figcaption v-if="caption" :id="`${id}-caption`" class="bd-playground-caption">{{ caption }}</figcaption>
   </figure>
 </template>

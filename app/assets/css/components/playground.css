@@ -9,7 +9,12 @@
     margin: 0;
 }
 
+.bd-playground-expected {
+    margin: 0;
+}
+
 .bd-playground-label {
+    display: block;
     margin: 0 0 var(--space-2);
     font-family: var(--font-mono);
     font-size: 12px;
@@ -45,12 +50,14 @@
     display: none;
 }
 
-/* An empty live region takes no space until the island fills it */
+/* Empty, the live region stays in the accessibility tree but draws nothing */
 .bd-playground-result:empty {
-    display: none;
+    padding: 0;
+    border: 0;
 }
 
 .bd-playground-result {
+    display: block;
     padding: var(--space-4);
     overflow-x: auto;
     font-family: var(--font-mono);

@@ -415,11 +415,9 @@
     },
     "playground": {
       "label": "Runnable code, {language}",
-      "code": "Code",
       "run": "Run",
       "runAria": "Run the code",
-      "expectedOutput": "Expected output",
-      "result": "Result"
+      "expectedOutput": "Expected output"
     },
     "mermaid": {
       "label": "Diagram"

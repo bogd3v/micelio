@@ -7,10 +7,12 @@ const props = withDefaults(defineProps<{
   lang?: string
   filename?: string
   showCopy?: boolean
+  codeAttrs?: Record<string, string>
 }>(), {
   lang: undefined,
   filename: undefined,
   showCopy: true,
+  codeAttrs: undefined,
 })
 
 const { t } = useI18n()
@@ -53,6 +55,6 @@ onMounted(() => {
         {{ copied ? t('bd.code.copied') : t('bd.code.copy') }}
       </button>
     </div>
-    <pre tabindex="0"><code :class="lang ? `language-${lang}` : undefined"><template v-for="(line, index) in lines" :key="index"><span v-if="line.prompt" class="bd-prompt">$ </span>{{ line.text }}<template v-if="index < lines.length - 1">{{ '\n' }}</template></template></code></pre>
+    <pre tabindex="0"><code v-bind="codeAttrs" :class="lang ? `language-${lang}` : undefined"><template v-for="(line, index) in lines" :key="index"><span v-if="line.prompt" class="bd-prompt">$ </span>{{ line.text }}<template v-if="index < lines.length - 1">{{ '\n' }}</template></template></code></pre>
   </figure>
 </template>

@@ -415,11 +415,9 @@
     },
     "playground": {
       "label": "Código ejecutable, {language}",
-      "code": "Código",
       "run": "Ejecutar",
       "runAria": "Ejecutar el código",
-      "expectedOutput": "Salida esperada",
-      "result": "Resultado"
+      "expectedOutput": "Salida esperada"
     },
     "mermaid": {
       "label": "Diagrama"
