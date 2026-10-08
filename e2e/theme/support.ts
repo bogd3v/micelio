@@ -38,6 +38,12 @@ export async function openPage(page: Page, { path, diagrams = 0 }: ThemePage): P
     }).observe(document, { childList: true, subtree: true })
   })
   await page.goto(path, { waitUntil: 'networkidle' })
+  // Diagrams are drawn when they near the viewport (ADR 0006, section 6): bring each one in, as a reader scrolling would
+  if (diagrams) {
+    const blocks = page.locator('micelio-mermaid')
+    for (let index = 0; index < await blocks.count(); index++) await blocks.nth(index).scrollIntoViewIfNeeded()
+    await page.evaluate(() => window.scrollTo(0, 0))
+  }
   if (diagrams) await page.waitForFunction(count => document.querySelectorAll('.bd-mermaid-diagram svg').length >= count, diagrams)
   await page.evaluate(() => Promise.all([
     document.fonts.ready,

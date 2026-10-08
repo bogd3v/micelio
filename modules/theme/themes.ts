@@ -19,6 +19,7 @@ export interface ThemeManifest extends ThemeData {
   images?: Partial<Record<'favicon' | 'ogImage' | 'profile', string>>
   layout?: Partial<Record<LayoutRegion, string>>
   slots?: Partial<Record<SlotName, SlotOptions>>
+  mermaid?: Record<string, string>
 }
 
 export interface InstalledTheme {

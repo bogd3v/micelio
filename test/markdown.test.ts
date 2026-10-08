@@ -41,7 +41,7 @@ describe('renderMarkdown', () => {
     expect(renderer.renderMarkdown('Use `<div>`')).toContain('<code>&lt;div&gt;</code>')
     expect(renderer.renderMarkdown('```ts\nconst a = 1\n```')).toContain('bd-code')
     expect(renderer.renderMarkdown('```\nplain\n```')).toContain('plain')
-    expect(renderer.renderMarkdown('```mermaid\ngraph TD; A-->B\n```')).toContain('mermaid')
+    expect(renderer.renderMarkdown('```mermaid\ngraph TD; A-->B\n```')).toContain('<micelio-mermaid class="bd-mermaid not-prose">')
   })
 
   it('keeps the copy button hidden until the script shows it', () => {

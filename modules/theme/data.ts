@@ -120,6 +120,17 @@ export function setupData(ctx: ThemeContext): void {
     write: true,
     getContents: () => `const theme = ${JSON.stringify(themeData(), null, 2)}\nexport const { id, modes, fonts, images, layout, slots } = theme\nexport default theme\n`,
   })
+  // Apart from the theme data: only the article's rich text reads it, and the data is in every page's entry
+  nuxt.options.alias['#micelio/theme-mermaid'] = join(nuxt.options.buildDir, 'micelio/theme-mermaid.mjs')
+  addTemplate({
+    filename: 'micelio/theme-mermaid.mjs',
+    write: true,
+    getContents: () => `export default ${JSON.stringify(ctx.load().manifest.mermaid ?? {})}\n`,
+  })
+  addTypeTemplate({
+    filename: 'types/micelio-theme-mermaid.d.ts',
+    getContents: () => `declare module '#micelio/theme-mermaid' {\n  const overrides: Record<string, string>\n  export default overrides\n}\n`,
+  })
   addTypeTemplate({
     filename: 'types/micelio-theme.d.ts',
     getContents: () => `declare module '#micelio/theme' {

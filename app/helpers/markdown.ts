@@ -6,7 +6,7 @@ import { slugify } from './slugify'
 import type { BlockCitations, CalloutTone, CitationIndex, StrapiBlock, StrapiReference } from '../interfaces'
 import { escapeHtml, renderCodeBlockHtml } from './code'
 import { parseCalloutMarker, renderCalloutHtml } from './callout'
-import { renderMermaidBlockHtml } from './mermaid'
+import { MERMAID_ELEMENT, renderMermaidBlockHtml } from './mermaid'
 import { buildCitationIndex, citationBlockKey, CITATION_RULE, splitCitationGroup } from './citations'
 
 export interface MarkdownLabels {
@@ -32,6 +32,7 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'button',
     'sup',
+    MERMAID_ELEMENT,
   ],
   // `hidden` on the copy button is a boolean attribute: the script shows it when the browser can copy
   nonBooleanAttributes: sanitizeHtml.defaults.nonBooleanAttributes.filter(name => name !== 'hidden'),

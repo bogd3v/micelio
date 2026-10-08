@@ -81,7 +81,7 @@ const blockVue = {
 const blockLinux = {
   id: 2,
   __component: 'shared.rich-text',
-  body: '## Basics\n\nStart with SSH key authentication.\n\n```mermaid\nflowchart LR\n  accTitle: SSH login flow\n  A[Client] -->|key| B{Server}\n  B -->|valid| C[Shell]\n  B -->|invalid| D["<img src=x onerror=window.__xss=1>"]\n```\n\n```mermaid\nsequenceDiagram\n  participant C as Client\n  participant S as Server\n  C->>S: Offer public key\n  S-->>C: Challenge\n  Note over C,S: Signed with the private key\n```\n\n```mermaid\nflowchart LR\n  A --> \n```',
+  body: '## Basics\n\nStart with SSH key authentication.\n\nDisable password logins once your key works, so a guessed password never opens the server.\n\nKeep the system updated: enable unattended security upgrades and reboot when the kernel changes.\n\nRun a firewall that allows only the ports you use, and deny everything else by default.\n\nGive every service its own unprivileged user, and keep root for the few tasks that need it.\n\nRead the logs. A server that nobody watches is a server that has already been taken over.\n\n```mermaid\nflowchart LR\n  accTitle: SSH login flow\n  A[Client] -->|key| B{Server}\n  B -->|valid| C[Shell]\n  B -->|invalid| D["<img src=x onerror=window.__xss=1>"]\n```\n\n```mermaid\nsequenceDiagram\n  participant C as Client\n  participant S as Server\n  C->>S: Offer public key\n  S-->>C: Challenge\n  Note over C,S: Signed with the private key\n```\n\n```mermaid\nflowchart LR\n  A --> \n```',
 }
 
 const blockVueEs = {

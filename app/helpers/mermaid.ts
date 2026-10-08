@@ -1,5 +1,8 @@
 import { renderCodeBlockHtml } from './code'
 
+export const MERMAID_ELEMENT = 'micelio-mermaid'
+export const MERMAID_CONFIG_ID = 'micelio-island-mermaid'
+
 export const MERMAID_TOKENS = [
   'surface',
   'surface-raised',
@@ -27,15 +30,57 @@ export const MERMAID_CSS = [
 
 const ACC_TITLE = /^\s*accTitle\s*:\s*(.+?)\s*$/m
 
+/** Server markup of a diagram: the island (`app/islands/mermaid.ts`) upgrades the element; without it the source code block stays. */
 export function renderMermaidBlockHtml(code: string): string {
-  return `<div class="bd-mermaid not-prose">${renderCodeBlockHtml(code, 'mermaid')}</div>\n`
+  return `<${MERMAID_ELEMENT} class="bd-mermaid not-prose">${renderCodeBlockHtml(code, 'mermaid')}</${MERMAID_ELEMENT}>\n`
+}
+
+/** Settings the page hands the island: the accessible label and the theme's `mermaid` overrides (role names). */
+export interface MermaidConfig {
+  label: string
+  overrides: Record<string, string>
+}
+
+// A Mermaid themeVariables name, and a role name: nothing else reaches getComputedStyle or the configuration
+const VARIABLE_NAME = /^[A-Za-z][A-Za-z0-9]*$/
+const ROLE_NAME = /^[a-z][a-z0-9-]*$/
+
+/** Parses the JSON of the config element; anything malformed falls back to the defaults. */
+export function parseMermaidConfig(json: string | null | undefined, fallbackLabel = ''): MermaidConfig {
+  const empty: MermaidConfig = { label: fallbackLabel, overrides: {} }
+  if (!json) return empty
+  try {
+    const data = JSON.parse(json) as Partial<MermaidConfig> | null
+    const overrides = data && typeof data.overrides === 'object' && data.overrides ? data.overrides : {}
+    return {
+      label: typeof data?.label === 'string' && data.label ? data.label : fallbackLabel,
+      overrides: Object.fromEntries(Object.entries(overrides).filter(([name, role]) => VARIABLE_NAME.test(name) && typeof role === 'string' && ROLE_NAME.test(role))),
+    }
+  } catch {
+    return empty
+  }
+}
+
+/** Theme overrides resolved to values: each role is read with `read` (a role without a value is skipped). */
+export function resolveMermaidOverrides(overrides: Record<string, string>, read: (role: string) => string): Record<string, string> {
+  return Object.fromEntries(Object.entries(overrides).flatMap(([name, role]) => {
+    const value = read(role).trim()
+    return value ? [[name, value]] : []
+  }))
 }
 
 export function mermaidTitle(source: string): string | null {
   return source.match(ACC_TITLE)?.[1] ?? null
 }
 
-export function mermaidThemeVariables(tokens: MermaidTokens, dark: boolean): Record<string, string | number | boolean> {
+export function mermaidThemeVariables(tokens: MermaidTokens, dark: boolean, overrides: Record<string, string> = {}): Record<string, string | number | boolean> {
+  return {
+    ...baseThemeVariables(tokens, dark),
+    ...overrides,
+  }
+}
+
+function baseThemeVariables(tokens: MermaidTokens, dark: boolean): Record<string, string | number | boolean> {
   return {
     darkMode: dark,
     background: tokens['surface-sunken'],

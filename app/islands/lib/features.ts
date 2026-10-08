@@ -44,7 +44,7 @@ const CHECKS: Record<HeavyFeature, () => boolean> = {
 
 /** The features of `required` this browser lacks; empty when the island can run. */
 export function missingFeatures(required: readonly HeavyFeature[]): HeavyFeature[] {
-  return required.filter(feature => !CHECKS[feature]())
+  return required.filter(feature => !CHECKS[feature]?.())
 }
 
 /** Test hook: the WebGL2 answer is cached for the page. */

@@ -7,5 +7,6 @@ import { islandSrc } from '~/helpers/islands'
  */
 export function useIsland(id: string): void {
   const src = islandSrc(manifest, id, useRuntimeConfig().app.baseURL)
-  if (src) useHead({ script: [{ src, type: 'module' }] })
+  // The key makes several components of one page add the script once
+  if (src) useHead({ script: [{ key: `island-${id}`, src, type: 'module' }] })
 }
