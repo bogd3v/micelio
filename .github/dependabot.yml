@@ -27,6 +27,14 @@ updates:
         update-types:
           - minor
           - patch
+      # three.js changes its API in every 0.x minor (the scene island): its types move with it
+      three:
+        patterns:
+          - three
+          - "@types/three"
+        update-types:
+          - minor
+          - patch
       lint-and-types:
         patterns:
           - eslint

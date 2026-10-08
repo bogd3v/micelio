@@ -12,7 +12,8 @@ const PAGES = [
   { name: 'privacy', path: '/privacy' },
 ]
 
-const ISLAND = /^\/_islands\/search-[\w-]+\.js$/
+// The search island, and the loader of the heavy islands (the scene of the showcase page)
+const ISLAND = /^\/_islands\/(?:search|loader)-[\w-]+\.js$/
 const BLOG_OR_FEED = /\/blog(?:[/?#]|$)|\/feed(?:\.xml|\/)/
 
 // Titled sections of the fixture, in page order: the post list has no posts and the newsletter module is off, so neither has an anchor

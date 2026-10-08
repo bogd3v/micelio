@@ -53,6 +53,8 @@ describe('heavy island registry', () => {
       expect(validateHeavyIslands([{ ...valid, csp: { connectSrc: [source] } }]), source).toHaveLength(1)
     }
     expect(validateHeavyIslands([{ ...valid, csp: { wasm: false as never } }])[0]).toContain('csp.wasm')
+    expect(validateHeavyIslands([{ ...valid, motion: true }])).toEqual([])
+    expect(validateHeavyIslands([{ ...valid, motion: false as never }])[0]).toContain('motion')
     expect(validateHeavyIslands([{ ...valid, csp: { workerSrc: 'blob:' as never } }])[0]).toContain('must be an array')
   })
 })

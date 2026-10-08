@@ -3,7 +3,7 @@ import qs from 'qs'
 import { aboutBlocks } from './fixtures/about.mjs'
 import { createAuthMock } from './fixtures/auth.mjs'
 import { createDraftsMock } from './fixtures/drafts.mjs'
-import { triangleGlb } from './fixtures/glb.mjs'
+import { noisePng, texturedGlb, triangleGlb } from './fixtures/glb.mjs'
 import { findPages } from './fixtures/pages.mjs'
 
 const author = {
@@ -697,7 +697,13 @@ const server = createServer(async (req, res) => {
     if (url.pathname.endsWith('.glb')) {
       // fetch() from the site's origin needs CORS (a plain <img> does not)
       res.writeHead(200, { 'Content-Type': 'model/gltf-binary', 'Access-Control-Allow-Origin': '*' })
-      res.end(triangleGlb())
+      res.end(url.pathname.endsWith('/textured.glb') ? texturedGlb() : triangleGlb())
+      return
+    }
+    if (url.pathname.endsWith('/triangle-poster.png')) {
+      // The poster of the scenes: an image Chrome counts as an LCP candidate
+      res.writeHead(200, { 'Content-Type': 'image/png' })
+      res.end(noisePng())
       return
     }
     sendPng(res)

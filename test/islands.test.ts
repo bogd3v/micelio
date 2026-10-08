@@ -65,6 +65,8 @@ describe('heavy island declaration', () => {
 
   it('skips on Save-Data unless the island says load', () => {
     expect(parseHeavyDeclaration(JSON.stringify({ ...declaration, saveData: undefined }))?.saveData).toBe('skip')
+    expect(parseHeavyDeclaration(JSON.stringify({ ...declaration, motion: true }))?.motion).toBe(true)
+    expect(parseHeavyDeclaration(JSON.stringify({ ...declaration, motion: 'yes' }))?.motion).toBeUndefined()
     expect(parseHeavyDeclaration(JSON.stringify({ ...declaration, saveData: 'always' }))?.saveData).toBe('skip')
   })
 

@@ -1,11 +1,12 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const state = vi.hoisted(() => ({ missing: [] as string[], saveData: false, entryLoads: 0, visibleLoads: 0, twoLoads: 0, rescanLoads: 0, hydration: Promise.resolve() as Promise<void>, raceLoads: 0 }))
+const state = vi.hoisted(() => ({ missing: [] as string[], saveData: false, reduced: false, entryLoads: 0, visibleLoads: 0, twoLoads: 0, rescanLoads: 0, hydration: Promise.resolve() as Promise<void>, raceLoads: 0, motionLoads: 0 }))
 
 vi.mock('../app/islands/lib/features', () => ({
   missingFeatures: () => state.missing,
   saveData: () => state.saveData,
+  prefersReducedMotion: () => state.reduced,
 }))
 vi.mock('../app/islands/lib/hydrated', () => ({ whenHydrated: () => state.hydration }))
 vi.mock('/_islands/play-1.js', () => {
@@ -29,6 +30,11 @@ vi.mock('/_islands/play-4.js', () => {
 
 vi.mock('/_islands/play-5.js', () => {
   state.raceLoads++
+  return {}
+})
+
+vi.mock('/_islands/play-6.js', () => {
+  state.motionLoads++
   return {}
 })
 
@@ -60,11 +66,13 @@ beforeEach(() => {
   })
   state.missing = []
   state.saveData = false
+  state.reduced = false
   state.entryLoads = 0
   state.visibleLoads = 0
   state.twoLoads = 0
   state.rescanLoads = 0
   state.raceLoads = 0
+  state.motionLoads = 0
   state.hydration = Promise.resolve()
   vi.resetModules()
 })
@@ -202,5 +210,30 @@ describe('loader, visible islands', () => {
     vi.resetModules()
     await import('../app/islands/loader')
     await vi.waitFor(() => expect(state.visibleLoads).toBe(1), { timeout: 3000 })
+  })
+
+  it('keeps an island that animates on its fallback under reduced motion, and loads one that does not', async () => {
+    vi.stubGlobal('IntersectionObserver', undefined)
+    vi.stubGlobal('requestIdleCallback', undefined)
+    state.reduced = true
+    declareVisible({ src: '/_islands/play-6.js', motion: true })
+    vi.resetModules()
+    await import('../app/islands/loader')
+    await new Promise(resolve => setTimeout(resolve, 300))
+    expect(state.motionLoads).toBe(0)
+
+    declareVisible({ src: '/_islands/play-6.js' })
+    vi.resetModules()
+    await import('../app/islands/loader')
+    await vi.waitFor(() => expect(state.motionLoads).toBe(1), { timeout: 3000 })
+  })
+
+  it('leaves the control of an interaction island hidden under reduced motion', async () => {
+    state.reduced = true
+    declare({ motion: true })
+    vi.resetModules()
+    await import('../app/islands/loader')
+    await new Promise(resolve => setTimeout(resolve, 100))
+    expect(document.querySelector<HTMLButtonElement>('[data-play-run]')!.hidden).toBe(true)
   })
 })
