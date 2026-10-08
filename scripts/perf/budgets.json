@@ -178,6 +178,17 @@
             "requests": 4
           }
         },
+        "playground:python": {
+          "page": "/es/blog/guia-vue-composables",
+          "control": "[data-runtime=\"python\"] [data-playground-run]",
+          "ready": "[data-runtime=\"python\"] [data-playground-result][data-state=\"done\"]",
+          "error": {
+            "scriptGzKb": 279.4,
+            "wasmKb": 2810.7,
+            "totalKb": 5644.0,
+            "requests": 8
+          }
+        },
         "playground:javascript": {
           "page": "/es/blog/guia-vue-composables",
           "control": "[data-runtime=\"javascript\"] [data-playground-run]",
@@ -361,6 +372,17 @@
             "wasmKb": 388,
             "totalKb": 451.7,
             "requests": 4
+          }
+        },
+        "playground:python": {
+          "page": "/es/blog/guia-vue-composables",
+          "control": "[data-runtime=\"python\"] [data-playground-run]",
+          "ready": "[data-runtime=\"python\"] [data-playground-result][data-state=\"done\"]",
+          "error": {
+            "scriptGzKb": 279.4,
+            "wasmKb": 3181.4,
+            "totalKb": 6040.3,
+            "requests": 8
           }
         },
         "playground:javascript": {

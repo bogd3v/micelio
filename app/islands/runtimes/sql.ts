@@ -1,10 +1,9 @@
 // SQL runtime of the playground: SQLite compiled to WebAssembly, in memory, one fresh database per run. The package finds its
 // sqlite3.wasm next to itself, and the islands build emits it under /_islands/runtimes/ (modules/islands.ts).
 import sqlite3InitModule from '@sqlite.org/sqlite-wasm'
-import { MAX_OUTPUT_BYTES } from '../../helpers/playgroundRunner'
 import { cellLength, formatTable } from '../../helpers/sqlTable'
 import type { SqlCell } from '../../helpers/sqlTable'
-import type { Runtime } from './runtime'
+import type { Runtime, RunLimits } from './runtime'
 
 interface ResultSet {
   columns: string[]
@@ -42,7 +41,7 @@ export default async function load(): Promise<Runtime> {
     }
   }
   return {
-    run(code: string, setup: string): string {
+    run(code: string, setup: string, limits: RunLimits): string {
       const db = new sqlite3.oo1.DB(':memory:', 'c')
       try {
         for (const [name, value] of Object.entries(LIMITS)) {
@@ -66,7 +65,7 @@ export default async function load(): Promise<Runtime> {
             sets[sets.length - 1]!.rows.push(cells)
             size += cells.reduce<number>((sum, cell) => sum + cellLength(cell) + 3, 1)
             // Enough rows for the cap: a query that never ends stops here instead of filling memory
-            if (size > MAX_OUTPUT_BYTES * 2) return false
+            if (size > limits.outputBytes * 2) return false
           },
         })
         return sets.map(set => formatTable(set.columns, set.rows)).join('\n\n')

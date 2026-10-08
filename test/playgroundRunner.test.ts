@@ -1,10 +1,19 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { capOutput, fillLabel, formatDownload, isWorkerReply, MAX_OUTPUT_BYTES } from '../app/helpers/playgroundRunner'
 import { cellLength, formatCell, formatTable } from '../app/helpers/sqlTable'
 import { NETWORK_GLOBALS, removeNetworkGlobals } from '../app/helpers/workerSandbox'
 import { runtimeDownloads, RUNTIME_FILES, UNUSED_RUNTIME_FILES } from '../app/helpers/playgroundRuntimes'
 
 describe('capOutput', () => {
+  it('cuts a huge string before encoding it', () => {
+    const encode = vi.spyOn(TextEncoder.prototype, 'encode')
+    const { text, truncated } = capOutput('é'.repeat(10_000_000), 64)
+    expect(truncated).toBe(true)
+    expect(text).toBe('é'.repeat(32))
+    expect(encode.mock.calls[0]![0]!.length).toBeLessThanOrEqual(64)
+    encode.mockRestore()
+  })
+
   it('keeps text under the cap as it is', () => {
     expect(capOutput('hello', 64)).toEqual({ text: 'hello', truncated: false })
     expect(capOutput('a'.repeat(64), 64)).toEqual({ text: 'a'.repeat(64), truncated: false })
@@ -130,11 +139,17 @@ describe('runtime files', () => {
     ['runtimes/sqlite3-Con_VOcu.wasm', 3072],
     ['workers/playground-B4P1UfOh.js', 100],
     ['playground-CN2DwJsH.js', 100],
+    ['runtimes/python-CrHlWsp1.js', 1024],
+    ['runtimes/pyodide-5c7Jk5br/pyodide.asm.wasm', 4096],
+    ['runtimes/pyodide-5c7Jk5br/python_stdlib.zip', 2048],
+    ['runtimes/pyodide-5c7Jk5br/pyodide-lock.json', 1024],
   ])
 
   it('adds up what a runtime downloads', () => {
     expect(runtimeDownloads(sizes).sql).toBe(5)
     expect(runtimeDownloads(new Map()).sql).toBe(0)
+    expect(runtimeDownloads(sizes).python).toBe(8)
+    expect(runtimeDownloads(new Map()).python).toBe(0)
   })
 
   it('knows the files the SQLite package emits and nothing loads', () => {

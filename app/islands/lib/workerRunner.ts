@@ -115,6 +115,8 @@ export class WorkerPool {
       }
       let timer: ReturnType<typeof setTimeout> | undefined
       let settled = false
+      // Reader code in the Worker can post a `started` of its own: only the first one starts the clock of the run
+      let started = false
 
       // A Worker that is not idle (timeout, stop, crash) is killed: it may be in a loop that never ends
       function finish(status: RunResult['status'], output = '', truncated = false, keep = false): void {
@@ -136,6 +138,8 @@ export class WorkerPool {
         const reply = event.data
         if (!isWorkerReply(reply) || reply.id !== id) return
         if (reply.type === 'started') {
+          if (started) return
+          started = true
           clearTimeout(timer)
           timer = setTimeout(() => finish('timeout'), this.runMs)
           options.onStarted?.()

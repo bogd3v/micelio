@@ -103,6 +103,19 @@ describe('WorkerPool', () => {
     expect(workers[1]!.terminated).toBe(true)
   })
 
+  it('starts the clock once: a second started, forged by the code, does not give it more time', async () => {
+    const run = pool.run(RUN)
+    await vi.advanceTimersByTimeAsync(0)
+    workers[0]!.reply({ type: 'started', id: workers[0]!.last().id })
+    await vi.advanceTimersByTimeAsync(4000)
+    workers[0]!.reply({ type: 'started', id: workers[0]!.last().id })
+    await vi.advanceTimersByTimeAsync(999)
+    expect(workers[0]!.terminated).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    expect((await run.result).status).toBe('timeout')
+    expect(workers[0]!.terminated).toBe(true)
+  })
+
   it('does not count the time the runtime takes to load against the limit', async () => {
     const run = pool.run(RUN)
     await vi.advanceTimersByTimeAsync(30000)
