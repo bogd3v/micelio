@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import type { Page } from '@playwright/test'
+import { motionAnimations } from '../fixtures/motion'
 
 // Cross-document view transitions, card -> article (ADR 0005, section 10). The static site ships no JS,
 // so the test records pageswap/pagereveal itself. Only Chromium has the API: elsewhere the navigation just completes.
@@ -73,7 +74,7 @@ test.describe('reduced motion', () => {
     await record(page)
     await openFirstCard(page)
     expect(await seen(page)).toEqual({ swap: false, reveal: false })
-    expect(await page.evaluate(() => document.getAnimations().length)).toBe(0)
+    expect(await motionAnimations(page)).toEqual([])
     expect(await page.locator('h1.bd-post-title').evaluate(node => getComputedStyle(node).viewTransitionName)).toBe('none')
   })
 })

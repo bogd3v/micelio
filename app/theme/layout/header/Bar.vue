@@ -32,6 +32,9 @@ const site = useSite()
 const fediverseUser = useFediverseUser()
 const { isStatic } = useStaticSite()
 const { accountsOn, searchOn, fediverseOn, tracking, mounted, shortcut, links, hud, percent, progressStyle } = useHeaderState(props)
+// Static builds have no JS: CSS draws the number (the ternary folds away in dynamic builds, docs/performance.md)
+const isStaticBuild = __STATIC_BUILD__
+const StaticRead = __STATIC_BUILD__ ? defineAsyncComponent(() => import('~/components/layout/ReadPercent.vue')) : undefined
 </script>
 
 <template>
@@ -91,7 +94,7 @@ const { accountsOn, searchOn, fediverseOn, tracking, mounted, shortcut, links, h
           </template>
         </nav>
         <div class="bd-strip-actions">
-          <span class="bd-meta bd-strip-read">{{ t('bd.header.read', { percent }) }}</span>
+          <span class="bd-meta bd-strip-read"><component :is="StaticRead" v-if="isStaticBuild" :percent="percent" /><template v-else>{{ t('bd.header.read', { percent }) }}</template></span>
           <BdThemeSwitch @change="emit('theme', $event)" />
         </div>
       </div>

@@ -1,3 +1,31 @@
+@property --bd-read-count {
+    syntax: "<integer>";
+    inherits: false;
+    initial-value: 0;
+}
+
+@keyframes bd-read-count {
+    from {
+        --bd-read-count: 0;
+    }
+
+    to {
+        --bd-read-count: 100;
+    }
+}
+
+@keyframes bd-back-to-top-in {
+    from {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    to {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
 @keyframes bd-read-bar {
     from {
         transform: scaleX(0);

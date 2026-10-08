@@ -50,7 +50,9 @@ describe('RegionHeader', () => {
     expect(crumbs.attributes('aria-label')).toBe('Breadcrumb')
     expect(crumbs.findAll('a').map(a => a.attributes('href'))).toEqual(['/', '/blog'])
     expect(crumbs.get('[aria-current="page"]').text()).toBe('Linux and open source')
-    expect(wrapper.get('.bd-strip-read').text()).toBe('Read 38 %')
+    // The unit project builds as static: CSS draws the number from data-percent
+    expect(wrapper.get('.bd-strip-read').text()).toBe('Read  %')
+    expect(wrapper.get('.bd-strip-read-num').attributes('data-percent')).toBe('38')
     const progress = wrapper.get('.bd-progress')
     expect(progress.attributes('aria-hidden')).toBe('true')
     expect(progress.attributes('style')).toContain('--bd-read: 0.38')
@@ -61,7 +63,7 @@ describe('RegionHeader', () => {
   it('tracks the scroll itself when no progress is given', async () => {
     const wrapper = await mountSuspended(RegionHeader, { props: { reading: true } })
     expect(wrapper.classes()).toContain('bd-header-auto')
-    expect(wrapper.get('.bd-strip-read').text()).toBe('Read 0 %')
+    expect(wrapper.get('.bd-strip-read-num').attributes('data-percent')).toBe('0')
     expect(wrapper.find('.bd-crumbs [aria-current]').exists()).toBe(false)
   })
 })

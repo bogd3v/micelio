@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { headerSection, isReadingPath, readingPercent } from '~/helpers/header'
+import { headerSection, isReadingPath, readingPercent, splitAroundNumber } from '~/helpers/header'
 
 describe('headerSection', () => {
   it('maps routes to the active section in both locales', () => {
@@ -43,5 +43,16 @@ describe('readingPercent', () => {
 
   it('returns 0 when the page does not scroll', () => {
     expect(readingPercent(0, 800, 1000)).toBe(0)
+  })
+})
+
+describe('splitAroundNumber', () => {
+  it('returns the text before and after the marker', () => {
+    expect(splitAroundNumber('Read \u0001 %', '\u0001')).toEqual(['Read ', ' %'])
+    expect(splitAroundNumber('\u0001 % leído', '\u0001')).toEqual(['', ' % leído'])
+  })
+
+  it('keeps the message when it has no marker', () => {
+    expect(splitAroundNumber('Read', '\u0001')).toEqual(['Read', ''])
   })
 })

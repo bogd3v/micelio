@@ -1,5 +1,8 @@
 <script setup lang="ts">
 const { t } = useI18n()
+// Static builds have no JS: a link shown by a scroll timeline (folds away in dynamic builds, docs/performance.md)
+const isStaticBuild = __STATIC_BUILD__
+const StaticLink = __STATIC_BUILD__ ? defineAsyncComponent(() => import('./BackToTopStatic.vue')) : undefined
 const { y: scrollY } = useWindowScroll()
 const isVisible = computed(() => scrollY.value > 200)
 
@@ -9,7 +12,8 @@ function scrollToTop() {
 </script>
 
 <template>
-  <Transition name="fade">
+  <component :is="StaticLink" v-if="isStaticBuild" />
+  <Transition v-else name="fade">
     <button
       v-if="isVisible"
       class="bd-back-to-top"

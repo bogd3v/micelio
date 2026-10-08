@@ -177,6 +177,30 @@ html {
     transform: translateX(calc(var(--bd-read, 0) * 100%));
 }
 
+/* The number is drawn by CSS: data-percent (kept by the JS fallback), or a counter on the scroll timeline */
+:where(.bd-header[data-layout="bar"]) .bd-strip-read-num::before {
+    content: attr(data-percent);
+}
+
+@supports (animation-timeline: scroll()) {
+    .bd-header-auto:where([data-layout="bar"]) .bd-strip-read-num {
+        animation: bd-read-count linear both;
+        animation-timeline: scroll(root);
+        counter-reset: bd-read-count calc(var(--bd-read-count) + 0); /* calc() rounds: WebKit leaves the interpolated integer fractional */
+    }
+
+    .bd-header-auto:where([data-layout="bar"]) .bd-strip-read-num::before {
+        content: counter(bd-read-count);
+    }
+}
+
+/* A static build without scroll timelines cannot update the number: hide it rather than show a stuck 0 % */
+@supports not (animation-timeline: scroll()) {
+    :where(.bd-header[data-layout="bar"]) .bd-strip-read:has(.bd-strip-read-num) {
+        display: none;
+    }
+}
+
 @supports (animation-timeline: scroll()) {
     .bd-header-auto:where([data-layout="bar"]) .bd-progress-bar {
         animation: bd-read-bar linear both;

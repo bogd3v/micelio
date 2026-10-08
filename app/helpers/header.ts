@@ -24,3 +24,9 @@ export function readingPercent(scrollTop: number, scrollHeight: number, viewport
   if (max <= 0) return 0
   return Math.round(Math.min(100, Math.max(0, (scrollTop / max) * 100)))
 }
+
+/** The text around the number of a translated message, so CSS can draw the number between them. */
+export function splitAroundNumber(message: string, marker: string): [string, string] {
+  const at = message.indexOf(marker)
+  return at < 0 ? [message, ''] : [message.slice(0, at), message.slice(at + marker.length)]
+}
