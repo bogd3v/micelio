@@ -14,6 +14,27 @@
 
 .bd-confirm-card {
     padding: 2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background-color: var(--surface-raised);
+}
+
+.bd-confirm-card[data-status="success"] {
+    border-color: var(--success);
+    background-color: var(--success-soft);
+}
+
+.bd-confirm-card[data-status="error"] {
+    border-color: var(--danger);
+    background-color: var(--danger-soft);
+}
+
+.bd-confirm-card[data-status="success"] .bd-confirm-icon {
+    color: var(--success);
+}
+
+.bd-confirm-card[data-status="error"] .bd-confirm-icon {
+    color: var(--danger);
 }
 
 .bd-confirm-icon {
