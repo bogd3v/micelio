@@ -23,6 +23,10 @@ git commit -s -m "fix(newsletter): …"
 
 This adds a `Signed-off-by: Your Name <you@example.com>` line that must match the commit's author. The `DCO` check fails a pull request with a commit that lacks it; to fix the last commits, run `git rebase --signoff main` and force-push the branch.
 
+## Security issues
+
+Report a vulnerability privately, as [SECURITY.md](SECURITY.md) explains. Never in a public issue, pull request or discussion.
+
 ## Pull requests
 
 - Follow the [engineering standard](docs/engineering-standard.md), which every Micelio repository shares.

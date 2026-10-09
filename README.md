@@ -195,6 +195,10 @@ Translations are in `i18n/locales/`. The project uses `prefix_except_default` st
 
 The active theme is a package in `themes/<id>/` (default `bogota`, chosen at build time with `NUXT_PUBLIC_THEME`; extra theme directories with `MICELIO_THEME_DIRS`). Its colors, type, space and motion are CSS custom properties the build generates from `theme.json` (nothing generated is checked in). The `data-theme="noche" | "dia"` attribute on `<html>` switches between the night and day values. Contract: [ADR 0005](docs/adr/0005-theme-contract.md). Getting started: [How to create a theme](docs/themes/creating-a-theme.md).
 
+## Security
+
+Report a vulnerability privately, as [SECURITY.md](SECURITY.md) explains; the security model is in [docs/security.md](docs/security.md).
+
 ## License
 
 Micelio is free software under the [GNU AGPL-3.0-only](LICENSE). If you run a modified Micelio as a service, you must offer its source to your users: set `NUXT_PUBLIC_SOURCE_URL` to your version's repository, and the footer links to it.
