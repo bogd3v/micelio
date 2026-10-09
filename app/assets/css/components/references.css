@@ -1,11 +1,11 @@
-.bd-refs {
+.myc-refs {
     margin-top: 64px;
     padding-top: var(--space-8);
     border-top: 1px solid var(--line);
     scroll-margin-top: calc(var(--myc-header-h) + var(--space-6));
 }
 
-.bd-refs-head {
+.myc-refs-head {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -14,7 +14,7 @@
     margin-bottom: var(--space-6);
 }
 
-.bd-refs-title {
+.myc-refs-title {
     margin: 0;
     font-family: var(--font-display);
     font-size: 24px;
@@ -22,12 +22,12 @@
     font-weight: 500;
 }
 
-.bd-refs-count {
+.myc-refs-count {
     color: var(--ink-muted);
     text-transform: uppercase;
 }
 
-.bd-refs-list {
+.myc-refs-list {
     display: flex;
     flex-direction: column;
     margin: 0;
@@ -35,7 +35,7 @@
     list-style: none;
 }
 
-.bd-ref {
+.myc-ref {
     display: grid;
     grid-template-columns: 48px minmax(0, 1fr);
     padding: 20px 0;
@@ -44,34 +44,34 @@
     transition: background-color var(--duration-base) var(--ease-standard);
 }
 
-.bd-ref:first-child {
+.myc-ref:first-child {
     border-top: 1px solid var(--line);
 }
 
-.bd-ref:target {
+.myc-ref:target {
     background: var(--link-soft);
     box-shadow: -12px 0 0 var(--link-soft), 12px 0 0 var(--link-soft);
 }
 
-.bd-ref-n {
+.myc-ref-n {
     font-family: var(--font-mono);
     font-size: 13px;
     line-height: 24px;
     color: var(--link);
 }
 
-.bd-ref-body {
+.myc-ref-body {
     display: flex;
     flex-direction: column;
     gap: 6px;
     min-width: 0;
 }
 
-.bd-ref-venue {
+.myc-ref-venue {
     color: var(--ink-muted);
 }
 
-.bd-ref-text {
+.myc-ref-text {
     margin: 0;
     font-size: 15px;
     line-height: 24px;
@@ -79,18 +79,18 @@
     overflow-wrap: anywhere;
 }
 
-.bd-ref-text a {
+.myc-ref-text a {
     color: var(--ink);
     text-decoration: underline;
     text-decoration-color: var(--line-strong);
     text-underline-offset: 3px;
 }
 
-.bd-ref-text a:hover {
+.myc-ref-text a:hover {
     text-decoration-color: var(--link);
 }
 
-.bd-ref-meta {
+.myc-ref-meta {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -100,30 +100,30 @@
     color: var(--ink-muted);
 }
 
-.bd-ref-id {
+.myc-ref-id {
     font-family: var(--font-mono);
     overflow-wrap: anywhere;
 }
 
-.bd-ref-back {
+.myc-ref-back {
     margin-left: auto;
     font-family: var(--font-mono);
     color: var(--ink-muted);
     text-decoration: none;
 }
 
-.bd-ref-back:hover {
+.myc-ref-back:hover {
     color: var(--link);
 }
 
-.bd-refs-note {
+.myc-refs-note {
     margin: var(--space-6) 0 0;
     font-size: 12px;
     color: var(--ink-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-ref {
+    .myc-ref {
         transition: none;
     }
 }

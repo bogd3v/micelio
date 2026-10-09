@@ -1,8 +1,8 @@
-.bd-account {
+.myc-account {
     position: relative;
 }
 
-.bd-account-avatar {
+.myc-account-avatar {
     display: inline-flex;
     flex: none;
     align-items: center;
@@ -17,13 +17,13 @@
     border-radius: var(--radius-full);
 }
 
-.bd-account-editor .bd-account-avatar {
+.myc-account-editor .myc-account-avatar {
     color: var(--warning);
     background: var(--warning-soft);
     border-color: var(--warning);
 }
 
-.bd-account-toggle {
+.myc-account-toggle {
     position: relative;
     padding-left: var(--space-2);
     color: var(--ink);
@@ -31,30 +31,30 @@
     letter-spacing: 0.02em;
 }
 
-.bd-account-toggle[aria-expanded="true"] {
+.myc-account-toggle[aria-expanded="true"] {
     border-color: var(--ink);
 }
 
-.bd-account-name {
+.myc-account-name {
     max-width: 16ch;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.bd-account-compact .bd-account-toggle {
+.myc-account-compact .myc-account-toggle {
     min-width: 44px;
     padding: 0 var(--space-2);
     border-color: transparent;
 }
 
-.bd-account-compact .bd-account-name {
+.myc-account-compact .myc-account-name {
     display: none;
 }
 
 /* A popover lives in the top layer, so it cannot be positioned against the toggle:
    fixed below the header, and next to the toggle where anchor positioning exists */
-.bd-account-panel {
+.myc-account-panel {
     position: fixed;
     inset: calc(var(--myc-header-h) + var(--space-2)) var(--space-4) auto auto;
     min-width: 220px;
@@ -70,7 +70,7 @@
 }
 
 @supports (anchor-name: --a) {
-    .bd-account-panel {
+    .myc-account-panel {
         inset: auto;
         margin-top: var(--space-2);
         position-area: bottom span-left;
@@ -78,7 +78,7 @@
     }
 }
 
-.bd-account-who {
+.myc-account-who {
     padding: var(--space-2) var(--space-4) var(--space-3);
     border-bottom: 1px solid var(--line);
     font: var(--text-meta);
@@ -86,7 +86,7 @@
     overflow-wrap: anywhere;
 }
 
-.bd-account-item {
+.myc-account-item {
     display: flex;
     align-items: center;
     width: 100%;
@@ -101,22 +101,22 @@
     cursor: pointer;
 }
 
-.bd-account-item:hover,
-.bd-account-item:focus-visible {
+.myc-account-item:hover,
+.myc-account-item:focus-visible {
     background: var(--surface-sunken);
 }
 
-.bd-account-item:focus-visible {
+.myc-account-item:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: -2px;
 }
 
-.bd-account-item-drafts {
+.myc-account-item-drafts {
     justify-content: space-between;
     gap: var(--space-3);
 }
 
-.bd-account-badge {
+.myc-account-badge {
     position: absolute;
     top: 2px;
     right: 0;
@@ -126,11 +126,11 @@
     font-size: 10px;
 }
 
-.bd-account-item-signout {
+.myc-account-item-signout {
     border-top: 1px solid var(--line);
 }
 
-.bd-account-signin {
+.myc-account-signin {
     color: var(--ink);
     border-color: var(--line-strong);
 }

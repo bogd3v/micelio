@@ -26,7 +26,7 @@ test('keeps the blog filters but not the page when switching language', async ({
   expect(Object.fromEntries(url.searchParams)).toEqual({ view: 'log', sort: 'oldest', content: '1' })
   expect(url.hash).toBe('#posts')
   await expect(page.getByRole('group', { name: 'Filter by tag' }).getByRole('link', { name: '#Vue' })).toHaveAttribute('aria-current', 'page')
-  const log = page.locator('.bd-log-month')
+  const log = page.locator('.myc-log-month')
   await expect(log.getByRole('link', { name: 'Understanding Vue Composables' })).toBeVisible()
   await expect(log.getByRole('link', { name: 'Linux Server Hardening Guide' })).toHaveCount(0)
 })
@@ -36,14 +36,14 @@ test('shows the reading strip with breadcrumbs and progress on an article', asyn
   const crumbs = page.getByRole('navigation', { name: 'Breadcrumb' })
   await expect(crumbs).toContainText('Software development')
   await expect(page.getByText(/^Read \d+ %$/)).toBeVisible()
-  await expect(page.locator('.bd-progress')).toBeAttached()
-  await expect(page.getByRole('button', { name: /^Search/ }).and(page.locator('.bd-chip'))).toHaveCount(0)
+  await expect(page.locator('.myc-progress')).toBeAttached()
+  await expect(page.getByRole('button', { name: /^Search/ }).and(page.locator('.myc-chip'))).toHaveCount(0)
 })
 
 test('keeps the header on screen while scrolling', async ({ page }) => {
   await page.goto('/blog/understanding-vue-composables', { waitUntil: 'networkidle' })
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
-  await expect(page.locator('.bd-header')).toBeInViewport()
+  await expect(page.locator('.myc-header')).toBeInViewport()
   await expect(page.getByText('Read 100 %')).toBeVisible()
 })
 

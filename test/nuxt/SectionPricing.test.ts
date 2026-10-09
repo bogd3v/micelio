@@ -18,12 +18,12 @@ function section(variant: PricingSection['variant']): PricingSection {
 describe('SectionPricing', () => {
   it.each(['cards', 'table'] as const)('keeps the space between price and period (%s)', async (variant) => {
     const wrapper = await mountSuspended(SectionPricing, { props: { section: section(variant) } })
-    expect(wrapper.get('.bd-section-plan-price').text()).toBe('$5 per season')
+    expect(wrapper.get('.myc-section-plan-price').text()).toBe('$5 per season')
   })
 
   it('marks the recommended plan without a stray separator in the table', async () => {
     const wrapper = await mountSuspended(SectionPricing, { props: { section: section('table') } })
-    const title = wrapper.get('.bd-section-plan-recommended .bd-section-item-title')
+    const title = wrapper.get('.myc-section-plan-recommended .myc-section-item-title')
     expect(title.text().replace(/\s+/g, ' ')).toBe('Gardener Recommended')
   })
 })

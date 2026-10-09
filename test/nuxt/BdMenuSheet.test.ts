@@ -7,11 +7,11 @@ describe('BdMenuSheet', () => {
     const wrapper = await mountSuspended(BdMenuSheet, { props: { open: false, active: 'about' } })
     const dialog = wrapper.get('dialog')
     expect(dialog.attributes('aria-label')).toBe('Menu')
-    const sections = wrapper.get('nav.bd-sheet-nav')
+    const sections = wrapper.get('nav.myc-sheet-nav')
     expect(sections.attributes('aria-label')).toBe('Sections')
     expect(sections.findAll('a').map(a => a.attributes('href'))).toEqual(['/', '/blog', '/about'])
     expect(sections.get('[aria-current="page"]').text()).toContain('About')
-    const topics = wrapper.findAll('.bd-sheet-cat')
+    const topics = wrapper.findAll('.myc-sheet-cat')
     expect(topics.map(a => a.text())).toEqual(['Privacy', 'DIY', 'AI', 'Software', 'Linux', '◆@bogdev'])
     expect(topics[0]!.attributes('href')).toBe('/blog/category/privacidad')
     expect(topics[5]!.attributes('href')).toBe('/#fediverso')
@@ -25,11 +25,11 @@ describe('BdMenuSheet', () => {
     await wrapper.setProps({ open: true })
     expect(dialog.open).toBe(true)
 
-    await wrapper.get('.bd-sheet-close').trigger('click')
-    expect(wrapper.get('.bd-sheet-close').attributes('aria-label')).toBe('Close menu')
+    await wrapper.get('.myc-sheet-close').trigger('click')
+    expect(wrapper.get('.myc-sheet-close').attributes('aria-label')).toBe('Close menu')
     await wrapper.get('dialog').trigger('cancel')
     await wrapper.get('dialog').trigger('click')
-    await wrapper.get('.bd-sheet-panel').trigger('click')
+    await wrapper.get('.myc-sheet-panel').trigger('click')
     expect(wrapper.emitted('close')).toHaveLength(3)
 
     await wrapper.setProps({ open: false })
@@ -38,12 +38,12 @@ describe('BdMenuSheet', () => {
 
   it('closes when the grip is swiped down far enough', async () => {
     const wrapper = await mountSuspended(BdMenuSheet, { props: { open: true } })
-    const grip = wrapper.get('.bd-sheet-grip')
+    const grip = wrapper.get('.myc-sheet-grip')
     const element = grip.element as HTMLElement
     element.setPointerCapture = () => {}
     await grip.trigger('pointerdown', { clientY: 100, pointerId: 1 })
     await grip.trigger('pointermove', { clientY: 140, pointerId: 1 })
-    expect(wrapper.get('.bd-sheet-panel').attributes('style')).toContain('translateY(40px)')
+    expect(wrapper.get('.myc-sheet-panel').attributes('style')).toContain('translateY(40px)')
     await grip.trigger('pointerup', { pointerId: 1 })
     expect(wrapper.emitted('close')).toBeUndefined()
 
@@ -52,9 +52,9 @@ describe('BdMenuSheet', () => {
     await grip.trigger('pointerup', { pointerId: 1 })
     expect(wrapper.emitted('close')).toHaveLength(1)
     // The exit starts from the drag offset; it resets when the sheet opens again
-    expect(wrapper.get('.bd-sheet-panel').attributes('style')).toContain('translateY(120px)')
+    expect(wrapper.get('.myc-sheet-panel').attributes('style')).toContain('translateY(120px)')
     await wrapper.setProps({ open: false })
     await wrapper.setProps({ open: true })
-    expect(wrapper.get('.bd-sheet-panel').attributes('style')).toBeUndefined()
+    expect(wrapper.get('.myc-sheet-panel').attributes('style')).toBeUndefined()
   })
 })

@@ -1,35 +1,35 @@
-.bd-account-page {
+.myc-account-page {
     display: flex;
     flex-direction: column;
     gap: 48px;
     padding: 32px 20px 64px;
 }
 
-.bd-account-card {
+.myc-account-card {
     position: relative;
     padding: 28px 20px;
     background: var(--surface-raised);
     border: 1px solid var(--line);
 }
 
-.bd-account-view {
+.myc-account-view {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
 }
 
-.bd-account-heading {
+.myc-account-heading {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
 }
 
-.bd-account-heading .bd-eyebrow {
+.myc-account-heading .myc-eyebrow {
     margin: 0;
     color: var(--ink-muted);
 }
 
-.bd-account-title {
+.myc-account-title {
     margin: 0;
     font-size: 32px;
     line-height: 40px;
@@ -37,27 +37,27 @@
     text-wrap: balance;
 }
 
-.bd-account-lead {
+.myc-account-lead {
     margin: 0;
     font: 400 16px/26px var(--font-sans);
     color: var(--ink-muted);
     text-wrap: pretty;
 }
 
-.bd-account-lead strong {
+.myc-account-lead strong {
     font-weight: 500;
     color: var(--ink);
 }
 
-.bd-account-icon {
+.myc-account-icon {
     color: var(--link);
 }
 
-.bd-account-icon svg {
+.myc-account-icon svg {
     display: block;
 }
 
-.bd-account-actions {
+.myc-account-actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-4);
@@ -65,12 +65,12 @@
     justify-content: space-between;
 }
 
-.bd-account-actions-start {
+.myc-account-actions-start {
     justify-content: flex-start;
     gap: var(--space-3);
 }
 
-.bd-account-switch {
+.myc-account-switch {
     margin: 0;
     padding-top: 20px;
     font: 400 15px/24px var(--font-sans);
@@ -78,13 +78,13 @@
     border-top: 1px solid var(--line);
 }
 
-.bd-account-text {
+.myc-account-text {
     margin: 0;
     font: 400 15px/24px var(--font-sans);
     color: var(--ink-muted);
 }
 
-.bd-inline {
+.myc-inline {
     padding: 0;
     font: inherit;
     font-size: 15px;
@@ -96,23 +96,23 @@
     cursor: pointer;
 }
 
-.bd-inline:hover {
+.myc-inline:hover {
     color: var(--ink);
 }
 
-.bd-account-facts {
+.myc-account-facts {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     margin: 0;
     border-top: 1px solid var(--line);
 }
 
-.bd-account-facts dt {
+.myc-account-facts dt {
     padding: var(--space-4) 0 var(--space-1);
     color: var(--ink-muted);
 }
 
-.bd-account-facts dd {
+.myc-account-facts dd {
     margin: 0;
     padding: 0 0 var(--space-4);
     font: 400 16px/24px var(--font-sans);
@@ -120,11 +120,11 @@
     overflow-wrap: anywhere;
 }
 
-.bd-account-mono {
+.myc-account-mono {
     font-family: var(--font-mono);
 }
 
-.bd-account-drafts {
+.myc-account-drafts {
     position: relative;
     display: flex;
     gap: var(--space-4);
@@ -136,35 +136,35 @@
     transition: border-color var(--duration-base) var(--ease-standard);
 }
 
-.bd-account-drafts:hover {
+.myc-account-drafts:hover {
     border-color: var(--line-strong);
 }
 
-.bd-account-drafts-icon {
+.myc-account-drafts-icon {
     color: var(--warning);
 }
 
-.bd-account-drafts-body {
+.myc-account-drafts-body {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
 }
 
-.bd-account-drafts-title {
+.myc-account-drafts-title {
     font-weight: 600;
 }
 
-.bd-account-drafts-lead {
+.myc-account-drafts-lead {
     font: 400 14px/22px var(--font-sans);
     color: var(--ink-muted);
 }
 
-.bd-account-drafts-arrow {
+.myc-account-drafts-arrow {
     font-family: var(--font-mono);
     color: var(--link);
 }
 
-.bd-danger {
+.myc-danger {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -172,78 +172,78 @@
     border: 1px solid var(--danger);
 }
 
-.bd-danger-head {
+.myc-danger-head {
     display: flex;
     gap: var(--space-3);
     align-items: flex-start;
 }
 
-.bd-danger-icon {
+.myc-danger-icon {
     flex: none;
     color: var(--danger);
 }
 
-.bd-danger-title {
+.myc-danger-title {
     margin: 0 0 var(--space-1);
     font: 600 17px/24px var(--font-sans);
 }
 
-.bd-danger-lead {
+.myc-danger-lead {
     margin: 0;
     font: 400 14px/22px var(--font-sans);
     color: var(--ink-muted);
 }
 
-.bd-danger-form {
+.myc-danger-form {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
 }
 
-.bd-danger .bd-btn-secondary.bd-danger-open {
+.myc-danger .myc-btn-secondary.myc-danger-open {
     color: var(--danger);
     border-color: var(--danger);
 }
 
-.bd-btn-danger {
+.myc-btn-danger {
     color: var(--surface);
     background: var(--danger);
 }
 
-.bd-btn-danger:hover {
+.myc-btn-danger:hover {
     background: var(--ink);
 }
 
-.bd-btn-danger[disabled] {
+.myc-btn-danger[disabled] {
     opacity: 1;
     color: var(--ink-muted);
     background: var(--surface-sunken);
     border: 1px dashed var(--line-strong);
 }
 
-.bd-account-aside {
+.myc-account-aside {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
 }
 
-.bd-account-aside-head {
+.myc-account-aside-head {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
 }
 
-.bd-account-aside-head .bd-eyebrow {
+.myc-account-aside-head .myc-eyebrow {
     margin: 0;
     color: var(--ink-muted);
 }
 
-.bd-account-aside-title {
+.myc-account-aside-title {
     margin: 0;
     font: 500 24px/32px var(--font-display);
 }
 
-.bd-account-points {
+.myc-account-points {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -252,33 +252,33 @@
     list-style: none;
 }
 
-.bd-account-point {
+.myc-account-point {
     display: flex;
     gap: 14px;
 }
 
-.bd-account-point-icon {
+.myc-account-point-icon {
     flex: none;
     padding-top: 2px;
     color: var(--link);
 }
 
-.bd-account-point-body {
+.myc-account-point-body {
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
-.bd-account-point-title {
+.myc-account-point-title {
     font-weight: 600;
 }
 
-.bd-account-point-text {
+.myc-account-point-text {
     font: 400 15px/24px var(--font-sans);
     color: var(--ink-muted);
 }
 
-.bd-account-privacy {
+.myc-account-privacy {
     align-self: flex-start;
     font: var(--text-meta);
     font-size: 12px;
@@ -288,45 +288,45 @@
     text-decoration: none;
 }
 
-.bd-account-privacy:hover {
+.myc-account-privacy:hover {
     color: var(--ink);
 }
 
 @media (min-width: 768px) {
-    .bd-account-page {
+    .myc-account-page {
         padding: 64px var(--space-inline);
     }
 
-    .bd-account-card {
+    .myc-account-card {
         padding: 40px;
     }
 
-    .bd-account-title {
+    .myc-account-title {
         font-size: 40px;
         line-height: 48px;
     }
 
-    .bd-account-facts {
+    .myc-account-facts {
         grid-template-columns: 160px minmax(0, 1fr);
     }
 
-    .bd-account-facts dt {
+    .myc-account-facts dt {
         padding: 18px 0;
         border-bottom: 1px solid var(--line);
     }
 
-    .bd-account-facts dd {
+    .myc-account-facts dd {
         padding: var(--space-4) 0;
     }
 
-    .bd-account-aside-title {
+    .myc-account-aside-title {
         font-size: 28px;
         line-height: 36px;
     }
 }
 
 @media (min-width: 1024px) {
-    .bd-account-page {
+    .myc-account-page {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         column-gap: var(--space-gutter);
@@ -334,18 +334,18 @@
         padding-block: var(--space-section);
     }
 
-    .bd-account-card {
+    .myc-account-card {
         grid-column: 2 / span 5;
     }
 
-    .bd-account-aside {
+    .myc-account-aside {
         grid-column: 8 / span 4;
         padding-top: 40px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-account-drafts {
+    .myc-account-drafts {
         transition: none;
     }
 }

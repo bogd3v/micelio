@@ -25,17 +25,17 @@ function onGuideClick(event: MouseEvent): void {
 </script>
 
 <template>
-  <section class="bd-home-section bd-open-source bd-reveal" :aria-label="block.eyebrow || undefined">
-    <div class="bd-open-source-main">
-      <p v-if="block.eyebrow" class="bd-eyebrow bd-home-eyebrow">{{ block.eyebrow }}</p>
-      <p v-if="block.text" class="bd-open-source-text">{{ block.text }}</p>
+  <section class="myc-home-section myc-open-source myc-reveal" :aria-label="block.eyebrow || undefined">
+    <div class="myc-open-source-main">
+      <p v-if="block.eyebrow" class="myc-eyebrow myc-home-eyebrow">{{ block.eyebrow }}</p>
+      <p v-if="block.text" class="myc-open-source-text">{{ block.text }}</p>
       <BdCodeBlock v-if="block.code" :code="block.code" lang="shell" />
     </div>
-    <div v-if="block.guide?.length" class="bd-open-source-guide">
-      <h2 v-if="block.guideTitle" class="bd-eyebrow bd-home-eyebrow">{{ block.guideTitle }}</h2>
-      <ul class="bd-guide-list" @click="onGuideClick">
+    <div v-if="block.guide?.length" class="myc-open-source-guide">
+      <h2 v-if="block.guideTitle" class="myc-eyebrow myc-home-eyebrow">{{ block.guideTitle }}</h2>
+      <ul class="myc-guide-list" @click="onGuideClick">
         <li v-for="item in block.guide" :key="item.id">
-          <span class="bd-guide-arrow" aria-hidden="true">→</span>
+          <span class="myc-guide-arrow" aria-hidden="true">→</span>
           <!-- eslint-disable-next-line vue/no-v-html -- sanitized on the server (app/helpers/markdown.ts) -->
           <span v-html="guideHtml(item.html)" />
         </li>

@@ -13,13 +13,13 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="bd-specimen">
-    <header class="bd-specimen-head">
-      <span class="bd-eyebrow">{{ t('specimen.eyebrow') }}</span>
-      <h1 class="bd-heading-1">{{ t('specimen.title') }}</h1>
-      <p class="bd-body-l">{{ t('specimen.lead') }}</p>
-      <nav class="bd-specimen-index" :aria-label="t('specimen.indexLabel')">
-        <a v-for="section in SPECIMEN_SECTIONS" :key="section.id" class="bd-chip" :href="`#${section.id}`">{{ t(section.title) }}</a>
+  <div class="myc-specimen">
+    <header class="myc-specimen-head">
+      <span class="myc-eyebrow">{{ t('specimen.eyebrow') }}</span>
+      <h1 class="myc-heading-1">{{ t('specimen.title') }}</h1>
+      <p class="myc-body-l">{{ t('specimen.lead') }}</p>
+      <nav class="myc-specimen-index" :aria-label="t('specimen.indexLabel')">
+        <a v-for="section in SPECIMEN_SECTIONS" :key="section.id" class="myc-chip" :href="`#${section.id}`">{{ t(section.title) }}</a>
       </nav>
     </header>
 
@@ -27,11 +27,11 @@ useSeoMeta({
       v-for="section in SPECIMEN_SECTIONS"
       :id="section.id"
       :key="section.id"
-      class="bd-specimen-group"
+      class="myc-specimen-group"
       :data-section="section.id"
       :aria-labelledby="`${section.id}-title`"
     >
-      <h2 :id="`${section.id}-title`" class="bd-heading-2 bd-specimen-title">{{ t(section.title) }}</h2>
+      <h2 :id="`${section.id}-title`" class="myc-heading-2 myc-specimen-title">{{ t(section.title) }}</h2>
       <component :is="section.component" v-bind="section.props" />
     </section>
   </div>

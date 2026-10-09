@@ -60,22 +60,22 @@ const resultLabel = computed<string>(() =>
 </script>
 
 <template>
-  <section class="bd-blog-filters" :aria-label="t('blog.filters')">
-    <div v-if="!isStatic" class="bd-blog-search">
-      <label for="bd-blog-q" class="bd-sr">{{ t('blog.search.label') }}</label>
-      <span class="bd-blog-search-prompt" aria-hidden="true">→</span>
+  <section class="myc-blog-filters" :aria-label="t('blog.filters')">
+    <div v-if="!isStatic" class="myc-blog-search">
+      <label for="myc-blog-q" class="myc-sr">{{ t('blog.search.label') }}</label>
+      <span class="myc-blog-search-prompt" aria-hidden="true">→</span>
       <input
-        id="bd-blog-q"
+        id="myc-blog-q"
         v-model="search"
         type="search"
-        class="bd-blog-search-input"
+        class="myc-blog-search-input"
         :placeholder="t('blog.search.placeholder')"
         autocomplete="off"
         enterkeyhint="search"
       >
-      <span class="bd-meta bd-blog-search-count" role="status">{{ resultLabel }}</span>
-      <p class="bd-meta bd-blog-hint">{{ filters.content ? t('blog.search.hintContent') : t('blog.search.hint') }}</p>
-      <label class="bd-blog-content-toggle">
+      <span class="myc-meta myc-blog-search-count" role="status">{{ resultLabel }}</span>
+      <p class="myc-meta myc-blog-hint">{{ filters.content ? t('blog.search.hintContent') : t('blog.search.hint') }}</p>
+      <label class="myc-blog-content-toggle">
         <input
           type="checkbox"
           :checked="filters.content === true"
@@ -85,29 +85,29 @@ const resultLabel = computed<string>(() =>
       </label>
     </div>
 
-    <div class="bd-blog-filter-row">
-      <span class="bd-eyebrow bd-blog-filter-label">{{ t('blog.categories') }}</span>
-      <div class="bd-blog-chips" role="group" :aria-label="t('blog.filterCategory')">
+    <div class="myc-blog-filter-row">
+      <span class="myc-eyebrow myc-blog-filter-label">{{ t('blog.categories') }}</span>
+      <div class="myc-blog-chips" role="group" :aria-label="t('blog.filterCategory')">
         <NuxtLink
           v-for="chip in categoryChips"
           :key="chip.id ?? 'all'"
           :to="filterLocation({ category: chip.id, tag: undefined })"
-          class="bd-chip"
+          class="myc-chip"
           :aria-current="filters.category === chip.id && !filters.tag ? 'page' : undefined"
         >
-          <span class="bd-latest-dot" :style="{ background: chip.color }" aria-hidden="true" />{{ chip.label }}<span class="bd-latest-count">{{ chip.count }}</span>
+          <span class="myc-latest-dot" :style="{ background: chip.color }" aria-hidden="true" />{{ chip.label }}<span class="myc-latest-count">{{ chip.count }}</span>
         </NuxtLink>
       </div>
     </div>
 
-    <div v-if="tags.length" class="bd-blog-filter-row">
-      <span class="bd-eyebrow bd-blog-filter-label">{{ t('blog.tags') }}</span>
-      <div class="bd-blog-chips" role="group" :aria-label="t('blog.filterTag')">
+    <div v-if="tags.length" class="myc-blog-filter-row">
+      <span class="myc-eyebrow myc-blog-filter-label">{{ t('blog.tags') }}</span>
+      <div class="myc-blog-chips" role="group" :aria-label="t('blog.filterTag')">
         <NuxtLink
           v-for="tag in tags"
           :key="tag.slug"
           :to="filterLocation({ category: undefined, tag: filters.tag === tag.slug ? undefined : tag.slug })"
-          class="bd-chip bd-blog-tag"
+          class="myc-chip myc-blog-tag"
           :aria-current="filters.tag === tag.slug ? 'page' : undefined"
         >
           #{{ tag.name }}
@@ -115,14 +115,14 @@ const resultLabel = computed<string>(() =>
       </div>
     </div>
 
-    <div v-if="hasActiveFilters(filters)" class="bd-meta bd-blog-active">
-      <span class="bd-blog-active-label">{{ t('blog.filteringBy') }}</span>
+    <div v-if="hasActiveFilters(filters)" class="myc-meta myc-blog-active">
+      <span class="myc-blog-active-label">{{ t('blog.filteringBy') }}</span>
       <template v-if="isStatic">
         <NuxtLink
           v-for="filter in activeFilters"
           :key="filter.id"
           :to="blogBase"
-          class="bd-chip bd-blog-active-chip"
+          class="myc-chip myc-blog-active-chip"
           :aria-label="t('blog.removeFilter', { label: filter.label })"
         >
           {{ filter.label }} <span aria-hidden="true">✕</span>
@@ -133,13 +133,13 @@ const resultLabel = computed<string>(() =>
           v-for="filter in activeFilters"
           :key="filter.id"
           type="button"
-          class="bd-chip bd-blog-active-chip"
+          class="myc-chip myc-blog-active-chip"
           :aria-label="t('blog.removeFilter', { label: filter.label })"
           @click="emit('remove', filter.id)"
         >
           {{ filter.label }} <span aria-hidden="true">✕</span>
         </button>
-        <button type="button" class="bd-blog-textbtn" @click="emit('clear')">{{ t('blog.clearFilters') }}</button>
+        <button type="button" class="myc-blog-textbtn" @click="emit('clear')">{{ t('blog.clearFilters') }}</button>
       </template>
     </div>
   </section>

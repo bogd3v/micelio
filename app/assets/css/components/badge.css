@@ -1,4 +1,4 @@
-.bd-badge {
+.myc-badge {
     display: inline-flex;
     align-items: center;
     height: 22px;
@@ -9,24 +9,24 @@
     white-space: nowrap;
 }
 
-.bd-badge-reader,
-.bd-badge-modified {
+.myc-badge-reader,
+.myc-badge-modified {
     color: var(--info);
     background: var(--info-soft);
 }
 
-.bd-badge-editor,
-.bd-badge-never-published {
+.myc-badge-editor,
+.myc-badge-never-published {
     color: var(--warning);
     background: var(--warning-soft);
 }
 
-.bd-badge-draft {
+.myc-badge-draft {
     color: var(--surface);
     background: var(--warning);
 }
 
-.bd-count {
+.myc-count {
     display: inline-flex;
     align-items: center;
     justify-content: center;

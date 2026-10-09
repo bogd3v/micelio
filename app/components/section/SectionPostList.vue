@@ -15,20 +15,20 @@ const posts = computed(() => props.section.posts ?? [])
 </script>
 
 <template>
-  <section v-if="posts.length" class="bd-section" data-section="post-list" :data-pagefind-ignore="isStatic ? '' : undefined" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
-    <div class="bd-section-inner">
+  <section v-if="posts.length" class="myc-section" data-section="post-list" :data-pagefind-ignore="isStatic ? '' : undefined" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+    <div class="myc-section-inner">
       <SectionHead :title="section.title" :title-id="titleId" />
-      <ul v-if="section.variant === 'list'" class="bd-section-items">
-        <li v-for="post in posts" :key="post.id" class="bd-section-item">
-          <time v-if="post.publishedAt" class="bd-meta" :datetime="post.publishedAt">{{ formatDotDate(post.publishedAt) }}</time>
-          <component :is="itemLevel" class="bd-section-item-title">
+      <ul v-if="section.variant === 'list'" class="myc-section-items">
+        <li v-for="post in posts" :key="post.id" class="myc-section-item">
+          <time v-if="post.publishedAt" class="myc-meta" :datetime="post.publishedAt">{{ formatDotDate(post.publishedAt) }}</time>
+          <component :is="itemLevel" class="myc-section-item-title">
             <NuxtLink :to="`${localizePath('/blog')}/${post.slug}`">{{ post.title }}</NuxtLink>
           </component>
-          <p v-if="post.description" class="bd-section-item-text">{{ post.description }}</p>
+          <p v-if="post.description" class="myc-section-item-text">{{ post.description }}</p>
         </li>
       </ul>
-      <ul v-else class="bd-section-items">
-        <li v-for="post in posts" :key="post.id" class="bd-section-item">
+      <ul v-else class="myc-section-items">
+        <li v-for="post in posts" :key="post.id" class="myc-section-item">
           <BdPostCard v-bind="toPostCard(post)" :heading-level="itemLevel" />
         </li>
       </ul>

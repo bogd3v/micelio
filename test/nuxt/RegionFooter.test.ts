@@ -37,21 +37,21 @@ describe('RegionFooter', () => {
     }
     unregister = registerEndpoint('/api/site', () => site)
     const wrapper = await mountSuspended(RegionFooter)
-    await vi.waitFor(() => expect(wrapper.get('.bd-foot-legal span').text()).toBe(`© ${new Date().getFullYear()} Micelio · Grace`))
-    expect(wrapper.get('a.bd-foot-brand').attributes('aria-label')).toBe('Micelio, home')
-    expect(wrapper.findAll('a.bd-foot-soc').map(a => a.attributes('href'))).toEqual(['https://gitlab.com/micelio'])
-    expect(wrapper.findAll('details.bd-acc')[2]!.findAll('a.bd-foot-row').at(-1)!.attributes('href')).toBe('https://www.buymeacoffee.com/micelio')
+    await vi.waitFor(() => expect(wrapper.get('.myc-foot-legal span').text()).toBe(`© ${new Date().getFullYear()} Micelio · Grace`))
+    expect(wrapper.get('a.myc-foot-brand').attributes('aria-label')).toBe('Micelio, home')
+    expect(wrapper.findAll('a.myc-foot-soc').map(a => a.attributes('href'))).toEqual(['https://gitlab.com/micelio'])
+    expect(wrapper.findAll('details.myc-acc')[2]!.findAll('a.myc-foot-row').at(-1)!.attributes('href')).toBe('https://www.buymeacoffee.com/micelio')
   })
 
   it('renders the brand, social links and desktop groups', async () => {
     unregister = registerEndpoint('/api/site', () => ({ ...siteFromAppConfig(useAppConfig().site as AppSiteConfig), socialLinks, supportHandle: 'ada' }))
     const wrapper = await mountSuspended(RegionFooter)
-    await vi.waitFor(() => expect(wrapper.findAll('a.bd-foot-soc')).toHaveLength(4))
-    expect(wrapper.get('a.bd-foot-brand').attributes('aria-label')).toBe('Micelio, home')
-    const socials = wrapper.findAll('a.bd-foot-soc')
+    await vi.waitFor(() => expect(wrapper.findAll('a.myc-foot-soc')).toHaveLength(4))
+    expect(wrapper.get('a.myc-foot-brand').attributes('aria-label')).toBe('Micelio, home')
+    const socials = wrapper.findAll('a.myc-foot-soc')
     expect(socials.map(a => a.text())).toEqual(['inLinkedIn↗', 'ghGitHub↗', 'cbCodeberg↗', 'mdMastodon↗'])
     expect(socials.every(a => a.attributes('rel') === 'noopener noreferrer me')).toBe(true)
-    const navs = wrapper.findAll('nav.bd-foot-nav')
+    const navs = wrapper.findAll('nav.myc-foot-nav')
     expect(navs.map(nav => nav.get('h2').text())).toEqual(['Navigate', 'Topics', 'Subscribe'])
     expect(navs[0]!.findAll('a').map(a => a.attributes('href'))).toEqual(['/', '/blog', '/about'])
     expect(navs[1]!.findAll('a')[0]!.attributes('href')).toBe('/blog/category/privacidad')
@@ -65,9 +65,9 @@ describe('RegionFooter', () => {
   describe.each<[string, Component]>([['columns', RegionFooter], ['minimal', RegionFooterMinimal]])('with the neutral app.config defaults (%s)', (_name, Footer) => {
     it('shows the name alone, with no author separator, social links or support link', async () => {
       const wrapper = await mountSuspended(Footer)
-      expect(wrapper.get('.bd-foot-legal span').text()).toBe(`© ${new Date().getFullYear()} Micelio`)
-      expect(wrapper.find('a.bd-foot-soc').exists()).toBe(false)
-      expect(wrapper.find('ul.bd-foot-socials').exists()).toBe(false)
+      expect(wrapper.get('.myc-foot-legal span').text()).toBe(`© ${new Date().getFullYear()} Micelio`)
+      expect(wrapper.find('a.myc-foot-soc').exists()).toBe(false)
+      expect(wrapper.find('ul.myc-foot-socials').exists()).toBe(false)
       expect(wrapper.find('a[href*="buymeacoffee"]').exists()).toBe(false)
     })
   })
@@ -79,22 +79,22 @@ describe('RegionFooter', () => {
     }
     unregister = registerEndpoint('/api/site', () => site)
     const wrapper = await mountSuspended(RegionFooter)
-    await vi.waitFor(() => expect(wrapper.findAll('nav.bd-foot-nav')[2]!.findAll('a').map(a => a.attributes('href'))).toEqual(['/feed.xml']))
-    const subscribe = wrapper.findAll('details.bd-acc')[2]!
-    expect(subscribe.get('.bd-acc-summary').text()).toBe('RSS')
-    expect(subscribe.findAll('a.bd-foot-row').map(a => a.attributes('href'))).toEqual(['/feed.xml'])
+    await vi.waitFor(() => expect(wrapper.findAll('nav.myc-foot-nav')[2]!.findAll('a').map(a => a.attributes('href'))).toEqual(['/feed.xml']))
+    const subscribe = wrapper.findAll('details.myc-acc')[2]!
+    expect(subscribe.get('.myc-acc-summary').text()).toBe('RSS')
+    expect(subscribe.findAll('a.myc-foot-row').map(a => a.attributes('href'))).toEqual(['/feed.xml'])
   })
 
   it('folds the mobile groups with native details, topics open first', async () => {
     unregister = registerEndpoint('/api/site', () => ({ ...siteFromAppConfig(useAppConfig().site as AppSiteConfig), supportHandle: 'ada' }))
     const wrapper = await mountSuspended(RegionFooter)
-    await vi.waitFor(() => expect(wrapper.findAll('details.bd-acc')[2]!.findAll('a.bd-foot-row').at(-1)!.attributes('href')).toBe('https://www.buymeacoffee.com/ada'))
-    const groups = wrapper.findAll('details.bd-acc')
-    expect(groups.map(group => group.get('.bd-acc-label').text())).toEqual(['Topics', 'Navigate', 'Subscribe'])
+    await vi.waitFor(() => expect(wrapper.findAll('details.myc-acc')[2]!.findAll('a.myc-foot-row').at(-1)!.attributes('href')).toBe('https://www.buymeacoffee.com/ada'))
+    const groups = wrapper.findAll('details.myc-acc')
+    expect(groups.map(group => group.get('.myc-acc-label').text())).toEqual(['Topics', 'Navigate', 'Subscribe'])
     expect(groups.map(group => group.attributes('open') !== undefined)).toEqual([true, false, false])
-    expect(groups[0]!.get('.bd-acc-summary').text()).toBe('05')
-    expect(groups[0]!.findAll('a.bd-foot-row')).toHaveLength(5)
-    expect(groups[2]!.findAll('a.bd-foot-row').at(-1)!.attributes('href')).toBe('https://www.buymeacoffee.com/ada')
+    expect(groups[0]!.get('.myc-acc-summary').text()).toBe('05')
+    expect(groups[0]!.findAll('a.myc-foot-row')).toHaveLength(5)
+    expect(groups[2]!.findAll('a.myc-foot-row').at(-1)!.attributes('href')).toBe('https://www.buymeacoffee.com/ada')
   })
 
   it('keeps the panorama decorative', async () => {
@@ -108,7 +108,7 @@ describe('RegionFooter', () => {
 
   it('links to the privacy page next to the copyright', async () => {
     const wrapper = await mountSuspended(RegionFooter)
-    const link = wrapper.get('.bd-foot-legal a.bd-foot-privacy')
+    const link = wrapper.get('.myc-foot-legal a.myc-foot-privacy')
     expect(link.text()).toBe('Privacy and cookies')
     expect(link.attributes('href')).toBe('/privacy')
   })
@@ -116,7 +116,7 @@ describe('RegionFooter', () => {
   describe.each<[string, Component]>([['columns', RegionFooter], ['minimal', RegionFooterMinimal]])('source link (%s)', (_name, Footer) => {
     it('links to the upstream repository by default, next to the privacy link', async () => {
       const wrapper = await mountSuspended(Footer)
-      const link = wrapper.get('.bd-foot-legal a.bd-foot-source')
+      const link = wrapper.get('.myc-foot-legal a.myc-foot-source')
       expect(link.text()).toBe('Source code↗')
       expect(link.attributes('href')).toBe('https://github.com/bogd3v/micelio')
       expect(link.attributes('rel')).toBe('noopener noreferrer')
@@ -128,7 +128,7 @@ describe('RegionFooter', () => {
       config.sourceUrl = 'https://git.example.com/me/micelio'
       try {
         const wrapper = await mountSuspended(Footer)
-        expect(wrapper.get('a.bd-foot-source').attributes('href')).toBe('https://git.example.com/me/micelio')
+        expect(wrapper.get('a.myc-foot-source').attributes('href')).toBe('https://git.example.com/me/micelio')
       } finally {
         config.sourceUrl = original
       }
@@ -140,7 +140,7 @@ describe('RegionFooter', () => {
       config.sourceUrl = value
       try {
         const wrapper = await mountSuspended(Footer)
-        expect(wrapper.get('a.bd-foot-source').attributes('href')).toBe('https://github.com/bogd3v/micelio')
+        expect(wrapper.get('a.myc-foot-source').attributes('href')).toBe('https://github.com/bogd3v/micelio')
       } finally {
         config.sourceUrl = original
       }

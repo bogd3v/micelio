@@ -20,7 +20,7 @@ describe('renderMarkdown', () => {
 
   it('renders GitHub alerts as design system callouts', () => {
     const html = renderer.renderMarkdown('> [!NOTE] Analogy\n> A **recipe**.\n\n> [!WARNING]\n> Careful.\n\n> Plain quote.')
-    expect(html.match(/<aside class="bd-callout[^"]*" role="note"/g)).toHaveLength(2)
+    expect(html.match(/<aside class="myc-callout[^"]*" role="note"/g)).toHaveLength(2)
     expect(html).toContain('<span>◆ </span>Analogy')
     expect(html).toContain('<strong>recipe</strong>')
     expect(html).toContain('<span>▲ </span>Warning')
@@ -39,13 +39,13 @@ describe('renderMarkdown', () => {
 
   it('escapes inline code and renders code and Mermaid blocks', () => {
     expect(renderer.renderMarkdown('Use `<div>`')).toContain('<code>&lt;div&gt;</code>')
-    expect(renderer.renderMarkdown('```ts\nconst a = 1\n```')).toContain('bd-code')
+    expect(renderer.renderMarkdown('```ts\nconst a = 1\n```')).toContain('myc-code')
     expect(renderer.renderMarkdown('```\nplain\n```')).toContain('plain')
-    expect(renderer.renderMarkdown('```mermaid\ngraph TD; A-->B\n```')).toContain('<micelio-mermaid class="bd-mermaid not-prose">')
+    expect(renderer.renderMarkdown('```mermaid\ngraph TD; A-->B\n```')).toContain('<micelio-mermaid class="myc-mermaid not-prose">')
   })
 
   it('keeps the copy button hidden until the script shows it', () => {
-    expect(renderer.renderMarkdown('```ts\nconst a = 1\n```')).toContain('<button type="button" class="bd-code-copy" data-bd-copy hidden></button>')
+    expect(renderer.renderMarkdown('```ts\nconst a = 1\n```')).toContain('<button type="button" class="myc-code-copy" data-myc-copy hidden></button>')
   })
 
   it('removes raw HTML that is not allowed', () => {
@@ -78,14 +78,14 @@ const citingQuote: StrapiQuote = { id: 2, __component: 'shared.quote', body: 'Qu
 describe('renderArticleBlocks', () => {
   it('numbers citations and anchors only the first appearance', () => {
     const [text, quote] = renderArticleBlocks([citingText, citingQuote], references, renderer) as [StrapiRichText, StrapiQuote]
-    const cites = [...text.html!.matchAll(/<sup><a class="bd-cite"( id="[^"]+")? href="([^"]+)" aria-label="([^"]+)"[^>]*>(\[\d\])<\/a><\/sup>/g)]
+    const cites = [...text.html!.matchAll(/<sup><a class="myc-cite"( id="[^"]+")? href="([^"]+)" aria-label="([^"]+)"[^>]*>(\[\d\])<\/a><\/sup>/g)]
     expect(cites.map(cite => cite[4])).toEqual(['[1]', '[2]', '[1]'])
     expect(cites.map(cite => cite[2])).toEqual(['#ref-1', '#ref-2', '#ref-1'])
     expect(cites.map(cite => cite[1])).toEqual([' id="cite-1"', ' id="cite-2"', undefined])
     expect(cites[0]![3]).toBe('Reference 1')
     expect(text.html).toContain('[@missing]')
     expect(text.html).toContain('<code>[@code]</code>')
-    expect(quote.html).toContain('<sup><a class="bd-cite" href="#ref-2"')
+    expect(quote.html).toContain('<sup><a class="myc-cite" href="#ref-2"')
   })
 
   it('accepts an article without blocks', () => {
@@ -96,7 +96,7 @@ describe('renderArticleBlocks', () => {
 describe('renderBlocks', () => {
   it('leaves citations as text outside an article', () => {
     const [text] = renderBlocks([citingText], renderer) as [StrapiRichText]
-    expect(text.html).not.toContain('bd-cite')
+    expect(text.html).not.toContain('myc-cite')
     expect(text.html).toContain('[@lewis-2020]')
   })
 

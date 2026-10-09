@@ -1,4 +1,4 @@
-.bd-input {
+.myc-input {
     flex: 1;
     min-width: 0;
     height: 48px;
@@ -11,32 +11,32 @@
     border-radius: var(--radius-control);
 }
 
-.bd-input::placeholder {
+.myc-input::placeholder {
     color: var(--ink-muted);
 }
 
-.bd-input:focus {
+.myc-input:focus {
     position: relative;
     z-index: 1;
     outline: none;
     box-shadow: var(--glow-link);
 }
 
-.bd-input:focus-visible {
+.myc-input:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
-.bd-input[aria-invalid="true"] {
+.myc-input[aria-invalid="true"] {
     border-color: var(--danger);
 }
 
 @media (forced-colors: active) {
-    .bd-input {
+    .myc-input {
         border-color: FieldText;
     }
 
-    .bd-input:focus {
+    .myc-input:focus {
         outline: 2px solid Highlight;
         outline-offset: 2px;
     }

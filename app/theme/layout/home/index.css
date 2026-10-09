@@ -1,5 +1,5 @@
 /* Introduction and the post list, no hero (ADR 0005, section 5) */
-:where(.bd-home[data-layout="index"]) .bd-home-lede {
+:where(.myc-home[data-layout="index"]) .myc-home-lede {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -7,7 +7,7 @@
     padding: 48px var(--myc-home-gutter) 56px;
 }
 
-:where(.bd-home[data-layout="index"]) .bd-home-lede-title {
+:where(.myc-home[data-layout="index"]) .myc-home-lede-title {
     margin: 0;
     font-size: 40px;
     line-height: 48px;
@@ -15,7 +15,7 @@
     text-wrap: balance;
 }
 
-:where(.bd-home[data-layout="index"]) .bd-home-lede-text {
+:where(.myc-home[data-layout="index"]) .myc-home-lede-text {
     margin: 0;
     max-width: 560px;
     font-size: 16px;
@@ -25,16 +25,16 @@
 }
 
 @media (min-width: 768px) {
-    :where(.bd-home[data-layout="index"]) .bd-home-lede {
+    :where(.myc-home[data-layout="index"]) .myc-home-lede {
         padding: var(--space-section) var(--myc-home-gutter) 64px;
     }
 
-    :where(.bd-home[data-layout="index"]) .bd-home-lede-title {
+    :where(.myc-home[data-layout="index"]) .myc-home-lede-title {
         font-size: 56px;
         line-height: 62px;
     }
 
-    :where(.bd-home[data-layout="index"]) .bd-home-lede-text {
+    :where(.myc-home[data-layout="index"]) .myc-home-lede-text {
         font-size: 19px;
         line-height: 32px;
     }

@@ -8,9 +8,9 @@ const tokens = Object.fromEntries(MERMAID_TOKENS.map(name => [name, `#${name}`])
 describe('renderMermaidBlockHtml', () => {
   it('wraps the source in a mermaid container with the code block as fallback', () => {
     const html = renderMermaidBlockHtml('flowchart LR\n  A --> B')
-    expect(html.startsWith('<micelio-mermaid class="bd-mermaid not-prose"><figure class="bd-code not-prose">')).toBe(true)
+    expect(html.startsWith('<micelio-mermaid class="myc-mermaid not-prose"><figure class="myc-code not-prose">')).toBe(true)
     expect(html.trimEnd().endsWith('</micelio-mermaid>')).toBe(true)
-    expect(html).toContain('<span class="bd-code-lang">mermaid</span>')
+    expect(html).toContain('<span class="myc-code-lang">mermaid</span>')
     expect(html).toContain('<code class="language-mermaid">flowchart LR\n  A --&gt; B</code>')
   })
 

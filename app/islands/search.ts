@@ -26,9 +26,9 @@ function element<K extends keyof HTMLElementTagNameMap>(tag: K, className?: stri
   return node
 }
 
-// Only text nodes and <mark class="bd-mark">: results never go through innerHTML
+// Only text nodes and <mark class="myc-mark">: results never go through innerHTML
 function fill(parent: HTMLElement, segments: TextSegment[]): void {
-  parent.replaceChildren(...segments.map(segment => (segment.match ? element('mark', 'bd-mark', segment.text) : document.createTextNode(segment.text))))
+  parent.replaceChildren(...segments.map(segment => (segment.match ? element('mark', 'myc-mark', segment.text) : document.createTextNode(segment.text))))
 }
 
 class MicelioSearch extends HTMLElement {
@@ -61,7 +61,7 @@ class MicelioSearch extends HTMLElement {
     dialog.addEventListener('click', (event) => {
       if (event.target === dialog) dialog.close()
     })
-    this.querySelector('.bd-palette-esc')?.addEventListener('click', () => dialog.close())
+    this.querySelector('.myc-palette-esc')?.addEventListener('click', () => dialog.close())
     input.addEventListener('input', () => this.search())
     input.addEventListener('keydown', event => this.onKeydown(event))
   }
@@ -188,11 +188,11 @@ class MicelioSearch extends HTMLElement {
   }
 
   private render(term: string, data: PagefindResultData[]): void {
-    const group = element('div', 'bd-palette-group')
+    const group = element('div', 'myc-palette-group')
     group.setAttribute('role', 'group')
-    group.setAttribute('aria-labelledby', 'bd-palette-group-results')
-    const heading = element('div', 'bd-eyebrow bd-palette-heading', this.label('groupResults'))
-    heading.id = 'bd-palette-group-results'
+    group.setAttribute('aria-labelledby', 'myc-palette-group-results')
+    const heading = element('div', 'myc-eyebrow myc-palette-heading', this.label('groupResults'))
+    heading.id = 'myc-palette-group-results'
     heading.setAttribute('role', 'presentation')
     group.append(heading)
 
@@ -203,25 +203,25 @@ class MicelioSearch extends HTMLElement {
     })
     data = safe.map(({ item }) => item)
     this.options = safe.map(({ item, path }, index) => {
-      const link = element('a', 'bd-result')
-      link.id = `bd-result-${index}`
+      const link = element('a', 'myc-result')
+      link.id = `myc-result-${index}`
       link.href = path
       link.tabIndex = -1
       link.setAttribute('role', 'option')
       link.setAttribute('aria-selected', 'false')
-      const kind = element('span', 'bd-eyebrow bd-result-kind', this.label(item.meta.kind === 'page' ? 'kindPage' : 'kindArticle'))
+      const kind = element('span', 'myc-eyebrow myc-result-kind', this.label(item.meta.kind === 'page' ? 'kindPage' : 'kindArticle'))
       kind.setAttribute('aria-hidden', 'true')
-      const text = element('span', 'bd-result-text')
-      const title = element('span', 'bd-result-label')
+      const text = element('span', 'myc-result-text')
+      const title = element('span', 'myc-result-label')
       fill(title, highlightSegments(plainText(item.meta.title ?? '') || item.url, term))
       text.append(title)
       const excerpt = excerptSegments(item.excerpt)
       if (excerpt.length) {
-        const snippet = element('span', 'bd-result-snippet')
+        const snippet = element('span', 'myc-result-snippet')
         fill(snippet, excerpt)
         text.append(snippet)
       }
-      const arrow = element('span', 'bd-meta bd-result-hint', '→')
+      const arrow = element('span', 'myc-meta myc-result-hint', '→')
       arrow.setAttribute('aria-hidden', 'true')
       link.append(kind, text, arrow)
       link.addEventListener('mousemove', () => this.activate(index))
@@ -241,7 +241,7 @@ class MicelioSearch extends HTMLElement {
 
   private activate(index: number): void {
     if (index === this.active) return
-    this.options[this.active]?.classList.remove('bd-result-active')
+    this.options[this.active]?.classList.remove('myc-result-active')
     this.options[this.active]?.setAttribute('aria-selected', 'false')
     this.active = index
     const option = this.options[index]
@@ -249,7 +249,7 @@ class MicelioSearch extends HTMLElement {
       this.input.removeAttribute('aria-activedescendant')
       return
     }
-    option.classList.add('bd-result-active')
+    option.classList.add('myc-result-active')
     option.setAttribute('aria-selected', 'true')
     this.input.setAttribute('aria-activedescendant', option.id)
     option.scrollIntoView({ block: 'nearest' })

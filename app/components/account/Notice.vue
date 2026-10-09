@@ -17,11 +17,11 @@ defineExpose({ focus })
 <template>
   <div
     ref="rootRef"
-    :class="['bd-notice', `bd-notice-${props.tone}`]"
+    :class="['myc-notice', `myc-notice-${props.tone}`]"
     :role="props.tone === 'error' ? 'alert' : 'status'"
     tabindex="-1"
   >
-    <span class="bd-notice-mark" aria-hidden="true">{{ props.tone === 'error' ? '✕' : '◆' }}</span>
+    <span class="myc-notice-mark" aria-hidden="true">{{ props.tone === 'error' ? '✕' : '◆' }}</span>
     <span><slot /></span>
   </div>
 </template>

@@ -1,4 +1,4 @@
-.bd-btn {
+.myc-btn {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -15,52 +15,52 @@
     transition: background-color var(--duration-base) var(--ease-standard), color var(--duration-base) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard), border-color var(--duration-base) var(--ease-standard);
 }
 
-.bd-btn-sm {
+.myc-btn-sm {
     height: 36px;
     padding: 0 var(--space-4);
     font-size: 14px;
 }
 
-.bd-btn-sm::after,
-.bd-btn-text::after {
+.myc-btn-sm::after,
+.myc-btn-text::after {
     content: "";
     position: absolute;
     inset: -4px 0;
 }
 
-.bd-btn-text::after {
+.myc-btn-text::after {
     inset: -12px -4px;
 }
 
-.bd-btn-primary {
+.myc-btn-primary {
     background: var(--ink);
     color: var(--on-ink);
 }
 
-.bd-btn-primary:hover {
+.myc-btn-primary:hover {
     background: var(--ink-muted);
 }
 
-.bd-btn-secondary {
+.myc-btn-secondary {
     background: transparent;
     color: var(--ink);
     border-color: var(--line-strong);
 }
 
-.bd-btn-secondary:hover {
+.myc-btn-secondary:hover {
     border-color: var(--ink);
 }
 
-.bd-btn-accent {
+.myc-btn-accent {
     background: var(--accent);
     color: var(--on-accent);
 }
 
-.bd-btn-accent:hover {
+.myc-btn-accent:hover {
     box-shadow: var(--glow-accent);
 }
 
-.bd-btn-text {
+.myc-btn-text {
     height: auto;
     padding: 0 0 var(--space-1);
     background: transparent;
@@ -69,47 +69,47 @@
     border-bottom: 1px solid var(--line-strong);
 }
 
-.bd-btn-text:hover {
+.myc-btn-text:hover {
     border-bottom-color: var(--accent);
 }
 
-.bd-btn-arrow {
+.myc-btn-arrow {
     display: inline-block;
     transition: transform var(--duration-base) var(--ease-standard);
 }
 
-.bd-btn:hover .bd-btn-arrow {
+.myc-btn:hover .myc-btn-arrow {
     transform: translateX(4px);
 }
 
-.bd-btn[disabled] {
+.myc-btn[disabled] {
     opacity: 0.4;
     cursor: not-allowed;
     box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-btn,
-    .bd-btn-arrow {
+    .myc-btn,
+    .myc-btn-arrow {
         transition: none;
     }
 
-    .bd-btn:hover .bd-btn-arrow {
+    .myc-btn:hover .myc-btn-arrow {
         transform: none;
     }
 }
 
 @media (forced-colors: active) {
-    .bd-btn:not(.bd-btn-text) {
+    .myc-btn:not(.myc-btn-text) {
         border-color: ButtonText;
     }
 
-    .bd-btn:not(.bd-btn-text):hover {
+    .myc-btn:not(.myc-btn-text):hover {
         border-color: Highlight;
     }
 
-    .bd-btn:disabled,
-    .bd-btn[aria-disabled="true"] {
+    .myc-btn:disabled,
+    .myc-btn[aria-disabled="true"] {
         border-color: GrayText;
         color: GrayText;
     }

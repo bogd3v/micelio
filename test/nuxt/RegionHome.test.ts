@@ -9,7 +9,7 @@ describe('RegionHomeShowcase', () => {
     const wrapper = await mountSuspended(RegionHome, {
       props: { total: 0, counts: {}, topics: [] },
     })
-    expect(wrapper.find('.bd-home').attributes('data-layout')).toBe('showcase')
+    expect(wrapper.find('.myc-home').attributes('data-layout')).toBe('showcase')
     expect(wrapper.find('#latest').exists()).toBe(true)
   })
 
@@ -29,7 +29,7 @@ describe('RegionHomeShowcase', () => {
         },
       },
     })
-    const featured = wrapper.find('.bd-home-featured')
+    const featured = wrapper.find('.myc-home-featured')
     expect(featured.exists()).toBe(true)
     expect(featured.attributes('aria-label')).toBeTruthy()
     expect(featured.findAll('article')).toHaveLength(1)
@@ -39,6 +39,6 @@ describe('RegionHomeShowcase', () => {
     const wrapper = await mountSuspended(RegionHome, {
       props: { total: 0, counts: {}, topics: [] },
     })
-    expect(wrapper.find('.bd-home-featured').exists()).toBe(false)
+    expect(wrapper.find('.myc-home-featured').exists()).toBe(false)
   })
 })

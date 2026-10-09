@@ -58,7 +58,7 @@ Shadow and glow roles. A `value` may be `none`, and may be one string or one val
 | --- | --- | --- | --- | --- |
 | `shadow-raised` | required | Shadow of a raised card (CTA and pricing sections). | none | none |
 | `shadow-overlay` | required | Shadow of the slider arrow buttons. | none | none |
-| `glow-accent` | required | Glow of the accent button on hover (`bd-btn-accent`); may be `none`. | none | none |
+| `glow-accent` | required | Glow of the accent button on hover (`myc-btn-accent`); may be `none`. | none | none |
 | `glow-link` | optional, core default `none` | Glow on focused and hovered interactive surfaces. | none | none |
 
 ## `spacing`
@@ -85,7 +85,7 @@ Corner radii.
 | Role | Required | Purpose | As text or control on | As background for |
 | --- | --- | --- | --- | --- |
 | `radius-control` | required | Corners of buttons, fields and chips. | none | none |
-| `radius-card` | required | Corners of article cards (`bd-card`). | none | none |
+| `radius-card` | required | Corners of article cards (`myc-card`). | none | none |
 | `radius-full` | required | Fully rounded corners: avatars and the account menu button. | none | none |
 
 ## `size`

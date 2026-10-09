@@ -6,8 +6,8 @@ import type { Mermaid } from 'mermaid'
 import type { MermaidTokens } from '../helpers/mermaid'
 import { MERMAID_CONFIG_ID, MERMAID_CSS, MERMAID_TOKENS, mermaidThemeVariables, mermaidTitle, parseMermaidConfig, resolveMermaidOverrides } from '../helpers/mermaid'
 
-const DIAGRAM_CLASS = 'bd-mermaid-diagram'
-const READY_CLASS = 'bd-mermaid-ready'
+const DIAGRAM_CLASS = 'myc-mermaid-diagram'
+const READY_CLASS = 'myc-mermaid-ready'
 const DEFAULT_LABEL = 'Diagram'
 
 let sequence = 0
@@ -133,7 +133,7 @@ class MicelioMermaid extends HTMLElement {
     try {
       const mermaid = await loadMermaid()
       configure(mermaid)
-      const { svg } = await mermaid.render(`bd-mermaid-${++sequence}`, source)
+      const { svg } = await mermaid.render(`myc-mermaid-${++sequence}`, source)
       if (current !== this.run) return
       let diagram = this.querySelector<HTMLElement>(`.${DIAGRAM_CLASS}`)
       if (!diagram) {

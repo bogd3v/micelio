@@ -17,11 +17,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <section v-if="open" class="bd-privacy-notice" role="region" :aria-label="t('privacy.notice.label')">
-    <p class="bd-privacy-notice-text">
-      <span class="bd-privacy-notice-mark" aria-hidden="true">◆ </span>{{ t('privacy.notice.text') }}
+  <section v-if="open" class="myc-privacy-notice" role="region" :aria-label="t('privacy.notice.label')">
+    <p class="myc-privacy-notice-text">
+      <span class="myc-privacy-notice-mark" aria-hidden="true">◆ </span>{{ t('privacy.notice.text') }}
       <NuxtLink :to="localizePath('/privacy')">{{ t('privacy.notice.more') }}</NuxtLink>
     </p>
-    <BdButton size="sm" class="bd-privacy-notice-ok" @click="close">{{ t('privacy.notice.ok') }}</BdButton>
+    <BdButton size="sm" class="myc-privacy-notice-ok" @click="close">{{ t('privacy.notice.ok') }}</BdButton>
   </section>
 </template>

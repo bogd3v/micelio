@@ -1,4 +1,4 @@
-.bd-tag {
+.myc-tag {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
@@ -12,7 +12,7 @@
     text-decoration: none;
 }
 
-.bd-tag-dot {
+.myc-tag-dot {
     width: 8px;
     height: 8px;
     border-radius: var(--radius-xs);
@@ -20,26 +20,26 @@
     flex: none;
 }
 
-.bd-tag-privacidad .bd-tag-dot {
+.myc-tag-privacidad .myc-tag-dot {
     background: var(--category-1);
 }
 
-.bd-tag-diy .bd-tag-dot {
+.myc-tag-diy .myc-tag-dot {
     background: var(--category-2);
 }
 
-.bd-tag-ia .bd-tag-dot {
+.myc-tag-ia .myc-tag-dot {
     background: var(--category-3);
 }
 
-.bd-tag-software .bd-tag-dot {
+.myc-tag-software .myc-tag-dot {
     background: var(--category-4);
 }
 
-.bd-tag-linux .bd-tag-dot {
+.myc-tag-linux .myc-tag-dot {
     background: var(--category-5);
 }
 
-a.bd-tag:hover {
+a.myc-tag:hover {
     color: var(--ink);
 }

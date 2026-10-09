@@ -14,6 +14,6 @@ test('jumps to the projects and opens the search from the guide', async ({ page 
   await page.getByRole('link', { name: 'See projects' }).click()
   await expect(page).toHaveURL(/#projects$/)
   await expect(page.locator('#projects')).toBeInViewport()
-  await page.locator('.bd-guide-list').getByRole('link', { name: 'search' }).click()
+  await page.locator('.myc-guide-list').getByRole('link', { name: 'search' }).click()
   await expect(page.getByRole('dialog')).toBeVisible()
 })

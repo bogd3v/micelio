@@ -1,47 +1,47 @@
 /* Faq section: native details, in one list or two columns */
-[data-section="faq"] .bd-section-items {
+[data-section="faq"] .myc-section-items {
     display: block;
     max-width: var(--measure);
 }
 
-[data-section="faq"][data-variant="two-columns"] .bd-section-items {
+[data-section="faq"][data-variant="two-columns"] .myc-section-items {
     max-width: none;
     column-width: 22rem;
     column-gap: var(--space-8);
 }
 
-[data-section="faq"] .bd-section-item {
+[data-section="faq"] .myc-section-item {
     break-inside: avoid;
     border-bottom: 1px solid var(--line);
 }
 
-.bd-section-question {
+.myc-section-question {
     padding-block: var(--space-4);
     font: var(--text-heading-3);
     cursor: pointer;
 }
 
-.bd-section-question:focus-visible {
+.myc-section-question:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
-.bd-section-answer {
+.myc-section-answer {
     padding-bottom: var(--space-4);
     color: var(--ink-muted);
     font: var(--text-body);
 }
 
-.bd-section-answer > :first-child {
+.myc-section-answer > :first-child {
     margin-top: 0;
 }
 
-.bd-section-answer > :last-child {
+.myc-section-answer > :last-child {
     margin-bottom: 0;
 }
 
 @media (forced-colors: active) {
-    [data-section="faq"] .bd-section-item {
+    [data-section="faq"] .myc-section-item {
         border-color: CanvasText;
     }
 }

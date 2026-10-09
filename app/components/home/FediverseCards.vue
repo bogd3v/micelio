@@ -60,9 +60,9 @@ function bracket(from: number, to: number, middle: number): string {
 </script>
 
 <template>
-  <div class="bd-fedi-cards" role="region" :aria-label="t('home.fediverse.cardsLabel')" tabindex="0">
-    <article class="bd-fedi-explain">
-      <div class="bd-fedi-art">
+  <div class="myc-fedi-cards" role="region" :aria-label="t('home.fediverse.cardsLabel')" tabindex="0">
+    <article class="myc-fedi-explain">
+      <div class="myc-fedi-art">
         <svg viewBox="0 0 320 128" aria-hidden="true" focusable="false">
           <g font-family="JetBrains Mono, monospace" font-size="10" letter-spacing=".08em" text-anchor="middle" fill="var(--ink-muted)">
             <text x="44" y="122">{{ t('home.fediverse.cards.mail.yours').toUpperCase() }}</text>
@@ -76,18 +76,18 @@ function bracket(from: number, to: number, middle: number): string {
               <path :d="`M32 ${row + 6} H64`" stroke="var(--ink-muted)" stroke-width="1" />
             </g>
           </g>
-          <path class="bd-flight-route" d="M84 46 Q160 -4 236 46" fill="none" stroke="var(--link)" stroke-width="1.3" />
+          <path class="myc-flight-route" d="M84 46 Q160 -4 236 46" fill="none" stroke="var(--link)" stroke-width="1.3" />
           <path d="M152 18 Q156 12 160 17 Q164 12 168 18" fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-linecap="round" />
           <rect x="149" y="24" width="22" height="15" fill="var(--surface-raised)" stroke="var(--ink)" stroke-width="1.2" />
           <path d="M149 24 L160 33 L171 24" fill="none" stroke="var(--ink)" stroke-width="1.2" />
         </svg>
       </div>
-      <h3 class="bd-fedi-card-title">{{ t('home.fediverse.cards.mail.title') }}</h3>
-      <p class="bd-fedi-card-text">{{ t('home.fediverse.cards.mail.text') }}</p>
+      <h3 class="myc-fedi-card-title">{{ t('home.fediverse.cards.mail.title') }}</h3>
+      <p class="myc-fedi-card-text">{{ t('home.fediverse.cards.mail.text') }}</p>
     </article>
 
-    <article class="bd-fedi-explain">
-      <div class="bd-fedi-art">
+    <article class="myc-fedi-explain">
+      <div class="myc-fedi-art">
         <svg viewBox="0 0 320 128" aria-hidden="true" focusable="false">
           <g font-family="JetBrains Mono, monospace" text-anchor="middle">
             <text x="160" y="26" font-size="10" letter-spacing=".08em" fill="var(--ink-muted)">{{ t('home.fediverse.cards.address.caption').toUpperCase() }}</text>
@@ -106,12 +106,12 @@ function bracket(from: number, to: number, middle: number): string {
           <path :d="domainBracket" fill="none" stroke="var(--link)" stroke-width="1" />
         </svg>
       </div>
-      <h3 class="bd-fedi-card-title">{{ t('home.fediverse.cards.address.title') }}</h3>
-      <p class="bd-fedi-card-text">{{ t('home.fediverse.cards.address.text', { user, server: domain.replace(/^@/, '') }) }}</p>
+      <h3 class="myc-fedi-card-title">{{ t('home.fediverse.cards.address.title') }}</h3>
+      <p class="myc-fedi-card-text">{{ t('home.fediverse.cards.address.text', { user, server: domain.replace(/^@/, '') }) }}</p>
     </article>
 
-    <article class="bd-fedi-explain">
-      <div class="bd-fedi-art">
+    <article class="myc-fedi-explain">
+      <div class="myc-fedi-art">
         <svg viewBox="0 0 320 128" aria-hidden="true" focusable="false">
           <path
             v-for="link in appLinks"
@@ -130,8 +130,8 @@ function bracket(from: number, to: number, middle: number): string {
           </g>
         </svg>
       </div>
-      <h3 class="bd-fedi-card-title">{{ t('home.fediverse.cards.apps.title') }}</h3>
-      <p class="bd-fedi-card-text">{{ t('home.fediverse.cards.apps.text') }}</p>
+      <h3 class="myc-fedi-card-title">{{ t('home.fediverse.cards.apps.title') }}</h3>
+      <p class="myc-fedi-card-text">{{ t('home.fediverse.cards.apps.text') }}</p>
     </article>
   </div>
 </template>

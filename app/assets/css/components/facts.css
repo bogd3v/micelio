@@ -1,18 +1,18 @@
-.bd-facts {
+.myc-facts {
     display: grid;
     grid-template-columns: 120px minmax(0, 1fr);
     margin: 0;
     border-top: 1px solid var(--line);
 }
 
-.bd-facts dt,
-.bd-facts dd {
+.myc-facts dt,
+.myc-facts dd {
     margin: 0;
     padding: var(--space-3) 0;
     border-bottom: 1px solid var(--line);
 }
 
-.bd-facts dt {
+.myc-facts dt {
     padding-right: var(--space-4);
     font: 400 12px/22px var(--font-mono);
     letter-spacing: 0.08em;
@@ -20,29 +20,29 @@
     color: var(--ink-muted);
 }
 
-.bd-facts dd {
+.myc-facts dd {
     font-size: 15px;
     line-height: 22px;
     overflow-wrap: anywhere;
 }
 
-.bd-facts dd.font-mono {
+.myc-facts dd.font-mono {
     font-size: 14px;
 }
 
-.bd-facts-link {
+.myc-facts-link {
     color: var(--link);
     text-decoration: none;
 }
 
-.bd-facts-link:hover {
+.myc-facts-link:hover {
     color: var(--ink);
     text-decoration: underline;
     text-underline-offset: 4px;
 }
 
 @media (min-width: 768px) {
-    .bd-facts {
+    .myc-facts {
         grid-template-columns: 150px minmax(0, 1fr);
     }
 }

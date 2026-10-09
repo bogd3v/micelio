@@ -28,19 +28,19 @@ describe('BlogFediverseBar', () => {
     await mountSuspended(BlogCommentSection, { props: { slug: 'rag', documentId: 'doc-fedi' } })
     const wrapper = await mountSuspended(BlogFediverseBar, { props: { slug: 'rag', documentId: 'doc-fedi' } })
     await flushPromises()
-    const stats = wrapper.get('.bd-fedi-bar-stats').text().replace(/\s+/g, ' ')
+    const stats = wrapper.get('.myc-fedi-bar-stats').text().replace(/\s+/g, ' ')
     expect(stats).toContain('4 likes')
     expect(stats).toContain('1 boost')
     expect(stats).toContain('2 replies')
-    expect(wrapper.get('.bd-fedi-bar-link').attributes('href')).toBe('#comments')
+    expect(wrapper.get('.myc-fedi-bar-link').attributes('href')).toBe('#comments')
   })
 
   it('hides the counters when the stats service fails but keeps the reply block', async () => {
     const wrapper = await mountSuspended(BlogFediverseBar, { props: { slug: 'down', documentId: 'doc-down' } })
     await flushPromises()
-    expect(wrapper.findAll('.bd-fedi-bar-count')).toHaveLength(0)
-    expect(wrapper.get('.bd-fedi-bar-stats').text()).toBe('◆ On the fediverse')
-    expect(wrapper.find('button[aria-controls="bd-fedi-reply"]').exists()).toBe(true)
+    expect(wrapper.findAll('.myc-fedi-bar-count')).toHaveLength(0)
+    expect(wrapper.get('.myc-fedi-bar-stats').text()).toBe('◆ On the fediverse')
+    expect(wrapper.find('button[aria-controls="myc-fedi-reply"]').exists()).toBe(true)
   })
 
   it('opens the reply block with the article address, copy and open on the instance', async () => {
@@ -48,8 +48,8 @@ describe('BlogFediverseBar', () => {
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
     const open = vi.spyOn(window, 'open').mockReturnValue(null)
     const wrapper = await mountSuspended(BlogFediverseBar, { props: { slug: 'rag', documentId: 'doc-fedi' } })
-    const toggle = wrapper.get('button[aria-controls="bd-fedi-reply"]')
-    const panel = wrapper.get('#bd-fedi-reply')
+    const toggle = wrapper.get('button[aria-controls="myc-fedi-reply"]')
+    const panel = wrapper.get('#myc-fedi-reply')
 
     expect(toggle.attributes('aria-expanded')).toBe('false')
     expect(panel.attributes('style')).toContain('display: none')
@@ -57,18 +57,18 @@ describe('BlogFediverseBar', () => {
     expect(toggle.attributes('aria-expanded')).toBe('true')
     expect(panel.attributes('style') ?? '').not.toContain('display: none')
 
-    expect(wrapper.get('.bd-fedi-reply-address').text()).toBe('https://api.bogdev.com.co/fediverse/articles/doc-fedi')
-    await wrapper.get('.bd-fedi-reply-url button').trigger('click')
+    expect(wrapper.get('.myc-fedi-reply-address').text()).toBe('https://api.bogdev.com.co/fediverse/articles/doc-fedi')
+    await wrapper.get('.myc-fedi-reply-url button').trigger('click')
     await flushPromises()
     expect(writeText).toHaveBeenCalledWith('https://api.bogdev.com.co/fediverse/articles/doc-fedi')
-    expect(wrapper.get('.bd-fedi-reply-url button').text()).toBe('Copied ✓')
+    expect(wrapper.get('.myc-fedi-reply-url button').text()).toBe('Copied ✓')
 
     await wrapper.get('form').trigger('submit')
-    expect(wrapper.get('#bd-fedi-article-hint').text()).toContain('Type your instance')
+    expect(wrapper.get('#myc-fedi-article-hint').text()).toContain('Type your instance')
     expect(open).not.toHaveBeenCalled()
 
     await wrapper.get('input').setValue('@ana@Mastodon.Social')
-    expect(wrapper.get('#bd-fedi-article-hint').text()).toBe('The article will open on mastodon.social')
+    expect(wrapper.get('#myc-fedi-article-hint').text()).toBe('The article will open on mastodon.social')
     await wrapper.get('form').trigger('submit')
     expect(open).toHaveBeenCalledWith(
       'https://mastodon.social/authorize_interaction?uri=https%3A%2F%2Fapi.bogdev.com.co%2Ffediverse%2Farticles%2Fdoc-fedi',

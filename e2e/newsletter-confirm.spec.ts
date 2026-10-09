@@ -10,7 +10,7 @@ async function expectRoleStyles(card: Locator): Promise<void> {
     el.parentElement!.append(probe)
     const pick = (s: CSSStyleDeclaration, color: string): string[] => [s.borderTopLeftRadius, s.borderTopColor, s.backgroundColor, color]
     const card = getComputedStyle(el)
-    const icon = getComputedStyle(el.querySelector('.bd-confirm-icon')!)
+    const icon = getComputedStyle(el.querySelector('.myc-confirm-icon')!)
     const role = getComputedStyle(probe)
     const result = { actual: pick(card, icon.color), roles: pick(role, role.color) }
     probe.remove()
@@ -26,7 +26,7 @@ test('confirms a subscription from the link in the email', async ({ page }) => {
 
   await expect(page.getByRole('heading', { level: 1, name: 'Subscription Confirmed!' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Browse Blog' })).toHaveAttribute('href', '/blog')
-  await expectRoleStyles(page.locator('.bd-confirm-card'))
+  await expectRoleStyles(page.locator('.myc-confirm-card'))
 })
 
 test('explains an invalid confirmation link', async ({ page }) => {
@@ -34,5 +34,5 @@ test('explains an invalid confirmation link', async ({ page }) => {
 
   await expect(page.getByRole('heading', { level: 1, name: 'Confirmation Failed' })).toBeVisible()
   await expect(page.getByText('The confirmation link is invalid or has expired.')).toBeVisible()
-  await expectRoleStyles(page.locator('.bd-confirm-card'))
+  await expectRoleStyles(page.locator('.myc-confirm-card'))
 })

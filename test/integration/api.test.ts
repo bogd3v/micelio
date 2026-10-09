@@ -1915,7 +1915,7 @@ describe('theme specimen (built only with MICELIO_SPECIMEN=1)', () => {
     expect(files.length).toBeGreaterThan(0)
     for (const file of files) {
       const source = readFileSync(join(dir, file), 'utf8')
-      for (const needle of ['bd-specimen', 'ThemeSpecimenPage', 'Every component, state and layout region']) {
+      for (const needle of ['myc-specimen', 'ThemeSpecimenPage', 'Every component, state and layout region']) {
         expect(source.includes(needle), `${file} contains ${needle}`).toBe(false)
       }
     }

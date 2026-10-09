@@ -1,4 +1,4 @@
-.bd-iconbtn {
+.myc-iconbtn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -12,16 +12,16 @@
     transition: color var(--duration-base) var(--ease-standard);
 }
 
-.bd-iconbtn:hover {
+.myc-iconbtn:hover {
     color: var(--link);
 }
 
-.bd-iconbtn svg {
+.myc-iconbtn svg {
     display: block;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-iconbtn {
+    .myc-iconbtn {
         transition: none;
     }
 }

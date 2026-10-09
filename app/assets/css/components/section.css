@@ -1,5 +1,5 @@
 /* Page sections (#244): the shared parts. Items, hero, logos, pricing and faq have their own files. */
-.bd-section {
+.myc-section {
     position: relative;
     padding-block: var(--space-section);
     color: var(--ink);
@@ -7,21 +7,21 @@
 }
 
 /* space-inline is the side margin and centers the container on wide screens */
-.bd-section-inner {
+.myc-section-inner {
     display: grid;
     gap: var(--space-8);
     min-width: 0;
     padding-inline: var(--space-inline);
 }
 
-.bd-section-head {
+.myc-section-head {
     display: grid;
     gap: var(--space-3);
     max-width: var(--measure);
     min-width: 0;
 }
 
-.bd-section-title {
+.myc-section-title {
     margin: 0;
     font: var(--text-heading-1);
     letter-spacing: var(--tracking-heading-1);
@@ -29,29 +29,29 @@
     text-wrap: balance;
 }
 
-.bd-section-text {
+.myc-section-text {
     margin: 0;
     color: var(--ink-muted);
     font: var(--text-body-l);
     text-wrap: pretty;
 }
 
-.bd-section-text > :first-child {
+.myc-section-text > :first-child {
     margin-top: 0;
 }
 
-.bd-section-text > :last-child {
+.myc-section-text > :last-child {
     margin-bottom: 0;
 }
 
-.bd-section-actions {
+.myc-section-actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-3) var(--space-4);
 }
 
-.bd-section-media {
+.myc-section-media {
     margin: 0;
     min-width: 0;
     overflow: hidden;
@@ -59,24 +59,24 @@
     background: var(--surface-sunken);
 }
 
-.bd-section-media :is(img, picture, video) {
+.myc-section-media :is(img, picture, video) {
     display: block;
     width: 100%;
     height: auto;
 }
 
 /* Covers its box when the box, not the file, sets the shape */
-.bd-section-media :is(img, video) {
+.myc-section-media :is(img, video) {
     object-fit: cover;
 }
 
-.bd-section-icon {
+.myc-section-icon {
     width: var(--space-8);
     height: var(--space-8);
     margin-bottom: var(--space-3);
 }
 
-.bd-section-icon img {
+.myc-section-icon img {
     display: block;
     width: 100%;
     height: 100%;
@@ -84,7 +84,7 @@
 }
 
 /* The items: a list, a grid, definitions or a table, whichever the section is */
-.bd-section-items {
+.myc-section-items {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
     gap: var(--space-gutter);
@@ -93,43 +93,43 @@
     list-style: none;
 }
 
-.bd-section-item {
+.myc-section-item {
     min-width: 0;
 }
 
-.bd-section-item-title {
+.myc-section-item-title {
     margin: 0;
     font: var(--text-heading-3);
     overflow-wrap: anywhere;
 }
 
-.bd-section-item-text {
+.myc-section-item-text {
     margin: var(--space-2) 0 0;
     color: var(--ink-muted);
     font: var(--text-body);
 }
 
 /* Cards: the items that sit on a raised surface */
-[data-section="feature-grid"] .bd-section-item,
-[data-section="testimonials"][data-variant="grid"] .bd-section-item,
-[data-section="pricing"][data-variant="cards"] .bd-section-item,
-[data-section="stats"][data-variant="cards"] .bd-section-item {
+[data-section="feature-grid"] .myc-section-item,
+[data-section="testimonials"][data-variant="grid"] .myc-section-item,
+[data-section="pricing"][data-variant="cards"] .myc-section-item,
+[data-section="stats"][data-variant="cards"] .myc-section-item {
     padding: var(--space-6);
     background: var(--surface-raised);
     border: 1px solid var(--line);
     border-radius: var(--radius-card);
 }
 
-.bd-section-item:focus-within {
+.myc-section-item:focus-within {
     border-color: var(--line-strong);
 }
 
 /* Feature grid */
-[data-section="feature-grid"][data-variant="list"] .bd-section-items {
+[data-section="feature-grid"][data-variant="list"] .myc-section-items {
     grid-template-columns: minmax(0, 1fr);
 }
 
-[data-section="feature-grid"][data-variant="list"] .bd-section-item {
+[data-section="feature-grid"][data-variant="list"] .myc-section-item {
     padding-inline: 0;
     background: none;
     border-width: 0 0 1px;
@@ -137,51 +137,51 @@
 }
 
 @media (min-width: 900px) {
-    [data-section="feature-grid"][data-variant="bento"] .bd-section-items {
+    [data-section="feature-grid"][data-variant="bento"] .myc-section-items {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
-    [data-section="feature-grid"][data-variant="bento"] .bd-section-item:nth-child(4n + 1),
-    [data-section="feature-grid"][data-variant="bento"] .bd-section-item:nth-child(4n + 4) {
+    [data-section="feature-grid"][data-variant="bento"] .myc-section-item:nth-child(4n + 1),
+    [data-section="feature-grid"][data-variant="bento"] .myc-section-item:nth-child(4n + 4) {
         grid-column: span 2;
     }
 }
 
 /* Media showcase */
-[data-section="media-showcase"] .bd-section-inner {
+[data-section="media-showcase"] .myc-section-inner {
     align-items: center;
 }
 
 @media (min-width: 900px) {
-    [data-section="media-showcase"]:is([data-variant="left"], [data-variant="right"]) .bd-section-inner {
+    [data-section="media-showcase"]:is([data-variant="left"], [data-variant="right"]) .myc-section-inner {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: var(--space-12);
     }
 
-    [data-section="media-showcase"][data-variant="right"] .bd-section-media {
+    [data-section="media-showcase"][data-variant="right"] .myc-section-media {
         order: 2;
     }
 }
 
 /* Stats */
-[data-section="stats"] .bd-section-items {
+[data-section="stats"] .myc-section-items {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
 }
 
-[data-section="stats"] .bd-section-item {
+[data-section="stats"] .myc-section-item {
     display: grid;
     gap: var(--space-1);
     margin: 0;
 }
 
-.bd-section-stat-value {
+.myc-section-stat-value {
     margin: 0;
     font: var(--text-display-l);
     letter-spacing: var(--tracking-display-l);
     color: var(--ink);
 }
 
-.bd-section-stat-label {
+.myc-section-stat-label {
     margin: 0;
     color: var(--ink-muted);
     font: var(--text-body);
@@ -194,21 +194,21 @@
     margin: 0;
 }
 
-[data-section="testimonials"][data-variant="single"] .bd-section-items {
+[data-section="testimonials"][data-variant="single"] .myc-section-items {
     grid-template-columns: minmax(0, var(--measure));
 }
 
-.bd-section-quote {
+.myc-section-quote {
     margin: 0;
     font: var(--text-body-l);
     text-wrap: pretty;
 }
 
-.bd-section-quote p {
+.myc-section-quote p {
     margin: 0;
 }
 
-.bd-section-author {
+.myc-section-author {
     display: flex;
     align-items: center;
     gap: var(--space-3);
@@ -216,19 +216,19 @@
     font: var(--text-body-s);
 }
 
-.bd-section-author strong {
+.myc-section-author strong {
     color: var(--ink);
     font-weight: 600;
 }
 
-.bd-section-author .bd-section-media {
+.myc-section-author .myc-section-media {
     flex: none;
     width: var(--space-8);
     border-radius: var(--radius-full);
 }
 
 /* Cta */
-[data-section="cta"] .bd-section-inner {
+[data-section="cta"] .myc-section-inner {
     justify-items: start;
 }
 
@@ -236,16 +236,16 @@
     background: var(--surface-sunken);
 }
 
-[data-section="cta"][data-variant="banner"] .bd-section-inner {
+[data-section="cta"][data-variant="banner"] .myc-section-inner {
     justify-items: center;
     text-align: center;
 }
 
-[data-section="cta"][data-variant="banner"] .bd-section-actions {
+[data-section="cta"][data-variant="banner"] .myc-section-actions {
     justify-content: center;
 }
 
-[data-section="cta"][data-variant="card"] .bd-section-inner {
+[data-section="cta"][data-variant="card"] .myc-section-inner {
     margin-inline: var(--space-inline);
     padding: var(--space-8);
     background: var(--surface-raised);
@@ -255,32 +255,32 @@
 }
 
 /* Post list */
-[data-section="post-list"] .bd-section-items {
+[data-section="post-list"] .myc-section-items {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
 }
 
-[data-section="post-list"][data-variant="list"] .bd-section-items {
+[data-section="post-list"][data-variant="list"] .myc-section-items {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
 }
 
-[data-section="post-list"][data-variant="list"] .bd-section-item {
+[data-section="post-list"][data-variant="list"] .myc-section-item {
     display: grid;
     gap: var(--space-1);
     padding-block: var(--space-4);
     border-bottom: 1px solid var(--line);
 }
 
-[data-section="post-list"][data-variant="list"] .bd-section-item-text {
+[data-section="post-list"][data-variant="list"] .myc-section-item-text {
     margin: 0;
 }
 
 /* Newsletter */
-[data-section="newsletter"] .bd-news {
+[data-section="newsletter"] .myc-news {
     max-width: var(--measure);
 }
 
-[data-section="newsletter"][data-variant="inline"] .bd-news {
+[data-section="newsletter"][data-variant="inline"] .myc-news {
     max-width: none;
     padding: 0;
     background: none;
@@ -288,18 +288,18 @@
 }
 
 /* Gallery */
-[data-section="gallery"] .bd-section-items {
+[data-section="gallery"] .myc-section-items {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
     gap: var(--space-4);
 }
 
-[data-section="gallery"][data-variant="masonry"] .bd-section-items {
+[data-section="gallery"][data-variant="masonry"] .myc-section-items {
     display: block;
     column-width: 14rem;
     column-gap: var(--space-4);
 }
 
-[data-section="gallery"][data-variant="masonry"] .bd-section-item {
+[data-section="gallery"][data-variant="masonry"] .myc-section-item {
     break-inside: avoid;
     margin-bottom: var(--space-4);
 }
@@ -314,12 +314,12 @@ micelio-scene {
     background: var(--surface-sunken);
 }
 
-[data-section="scene"][data-variant="inline"] .bd-section-inner {
+[data-section="scene"][data-variant="inline"] .myc-section-inner {
     justify-items: stretch;
 }
 
 /* Behind the section's content: the scene fills the section and its head sits on a panel at the foot of it */
-[data-section="scene"][data-variant="background"] .bd-section-inner {
+[data-section="scene"][data-variant="background"] .myc-section-inner {
     position: relative;
     isolation: isolate;
     align-content: end;
@@ -333,7 +333,7 @@ micelio-scene {
     border-radius: 0;
 }
 
-[data-section="scene"][data-variant="background"] micelio-scene .bd-section-media,
+[data-section="scene"][data-variant="background"] micelio-scene .myc-section-media,
 [data-section="scene"][data-variant="background"] micelio-scene :is(picture, img) {
     width: 100%;
     height: 100%;
@@ -342,7 +342,7 @@ micelio-scene {
 
 /* The poster can be any image, so the head never reads against it: it sits on the surface role, opaque enough that ink and ink-muted
    keep 4.5:1 over a black or a white poster in every mode of the installed themes (test/sceneScrim.test.ts reads this percentage) */
-[data-section="scene"][data-variant="background"] .bd-section-head {
+[data-section="scene"][data-variant="background"] .myc-section-head {
     justify-self: start;
     box-sizing: border-box;
     max-width: min(100%, 34rem);
@@ -353,7 +353,7 @@ micelio-scene {
 }
 
 @media (forced-colors: active) {
-    .bd-section-item {
+    .myc-section-item {
         border-color: CanvasText;
     }
 }

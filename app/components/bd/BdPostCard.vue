@@ -67,8 +67,8 @@ const imageSize = computed<{ width: number, height: number }>(() =>
 </script>
 
 <template>
-  <article :class="['bd-card', { 'bd-card-featured': featured }]" :style="categoryStyle">
-    <div v-if="image" class="bd-card-media bd-post-media" :style="mediaStyle">
+  <article :class="['myc-card', { 'myc-card-featured': featured }]" :style="categoryStyle">
+    <div v-if="image" class="myc-card-media myc-post-media" :style="mediaStyle">
       <NuxtImg
         :src="image"
         :alt="imageAlt"
@@ -80,24 +80,24 @@ const imageSize = computed<{ width: number, height: number }>(() =>
         decoding="async"
       />
     </div>
-    <div v-else class="bd-card-media bd-card-media-empty" aria-hidden="true" />
-    <div class="bd-card-body">
-      <span v-if="featured" class="bd-eyebrow bd-card-eyebrow">{{ eyebrowText }}</span>
-      <div v-if="category || date || read" class="bd-card-meta">
+    <div v-else class="myc-card-media myc-card-media-empty" aria-hidden="true" />
+    <div class="myc-card-body">
+      <span v-if="featured" class="myc-eyebrow myc-card-eyebrow">{{ eyebrowText }}</span>
+      <div v-if="category || date || read" class="myc-card-meta">
         <BdCategoryTag v-if="category" :category="category" />
-        <span class="bd-card-meta-end">
-          <span v-if="read" class="bd-meta bd-read-mark"><span aria-hidden="true">✓</span> {{ t('bd.card.read') }}</span>
-          <time v-if="date" class="bd-meta" :datetime="dateTime">{{ date }}</time>
+        <span class="myc-card-meta-end">
+          <span v-if="read" class="myc-meta myc-read-mark"><span aria-hidden="true">✓</span> {{ t('bd.card.read') }}</span>
+          <time v-if="date" class="myc-meta" :datetime="dateTime">{{ date }}</time>
         </span>
       </div>
-      <component :is="featured ? 'h2' : headingLevel" class="bd-card-title bd-post-title" :style="titleStyle">
-        <NuxtLink :to="href" class="bd-card-link">{{ title }}</NuxtLink>
+      <component :is="featured ? 'h2' : headingLevel" class="myc-card-title myc-post-title" :style="titleStyle">
+        <NuxtLink :to="href" class="myc-card-link">{{ title }}</NuxtLink>
       </component>
-      <p v-if="snippet" class="bd-card-excerpt bd-card-snippet"><BdHighlight :text="snippet" :query="highlight" /></p>
-      <p v-else-if="excerpt" class="bd-card-excerpt">{{ excerpt }}</p>
-      <div class="bd-card-foot">
-        <span class="bd-meta">{{ byline }}</span>
-        <span class="bd-card-more" aria-hidden="true">{{ moreText }} <span class="bd-card-arrow">→</span></span>
+      <p v-if="snippet" class="myc-card-excerpt myc-card-snippet"><BdHighlight :text="snippet" :query="highlight" /></p>
+      <p v-else-if="excerpt" class="myc-card-excerpt">{{ excerpt }}</p>
+      <div class="myc-card-foot">
+        <span class="myc-meta">{{ byline }}</span>
+        <span class="myc-card-more" aria-hidden="true">{{ moreText }} <span class="myc-card-arrow">→</span></span>
       </div>
     </div>
   </article>

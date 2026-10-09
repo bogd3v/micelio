@@ -9,7 +9,7 @@ async function supportsTimelines(page: import('@playwright/test').Page): Promise
 }
 
 async function count(page: import('@playwright/test').Page): Promise<number> {
-  return Number(await page.locator('.bd-strip-read-num').evaluate(el => getComputedStyle(el).getPropertyValue('--myc-read-count')))
+  return Number(await page.locator('.myc-strip-read-num').evaluate(el => getComputedStyle(el).getPropertyValue('--myc-read-count')))
 }
 
 test('the reading percentage follows the scroll with no script on the page', async ({ page }) => {
@@ -26,8 +26,8 @@ test('the reading percentage follows the scroll with no script on the page', asy
 
 test('the translated words stay around the number', async ({ page }) => {
   await page.goto('/es/blog/guia-vue-composables', { waitUntil: 'networkidle' })
-  await expect(page.locator('.bd-strip-read')).toContainText('Leído')
-  await expect(page.locator('.bd-strip-read-num')).toHaveAttribute('data-percent', '0')
+  await expect(page.locator('.myc-strip-read')).toContainText('Leído')
+  await expect(page.locator('.myc-strip-read-num')).toHaveAttribute('data-percent', '0')
 })
 
 test('back to top is a link that shows past 200px', async ({ page }) => {
@@ -45,7 +45,7 @@ test('back to top is a link that shows past 200px', async ({ page }) => {
 test('without scroll timelines the read indicator is hidden instead of stuck at 0 %', async ({ page }) => {
   await page.goto(ARTICLE, { waitUntil: 'networkidle' })
   test.skip(await supportsTimelines(page), 'needs a browser without scroll timelines (STATIC_BROWSERS=firefox)')
-  await expect(page.locator('.bd-strip-read')).toBeHidden()
+  await expect(page.locator('.myc-strip-read')).toBeHidden()
 })
 
 test.describe('reduced motion', () => {

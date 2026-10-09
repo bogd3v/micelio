@@ -1,4 +1,4 @@
-.bd-back-to-top {
+.myc-back-to-top {
     position: fixed;
     right: 1.5rem;
     bottom: calc(var(--myc-tabbar-h) + 1.5rem);
@@ -16,45 +16,45 @@
 }
 
 /* Static builds have no JS: the link is hidden, and only a scroll timeline shows it past 200px */
-.bd-back-to-top[data-static] {
+.myc-back-to-top[data-static] {
     opacity: 0;
     visibility: hidden;
 }
 
 /* A step at 200px keeps the link visible for reduced motion; the fade is motion */
 @supports (animation-timeline: scroll()) {
-    .bd-back-to-top[data-static] {
-        animation: bd-back-to-top-in linear both;
+    .myc-back-to-top[data-static] {
+        animation: myc-back-to-top-in linear both;
         animation-timeline: scroll(root);
         animation-range: 200px 201px;
     }
 
     @media (prefers-reduced-motion: no-preference) {
-        .bd-back-to-top[data-static] {
+        .myc-back-to-top[data-static] {
             animation-range: 200px 240px;
         }
     }
 }
 
 @media (hover: hover) {
-    .bd-back-to-top:hover {
+    .myc-back-to-top:hover {
         color: var(--on-accent);
         background-color: var(--accent);
         scale: 1.1;
     }
 }
 
-.bd-back-to-top .bd-icon {
+.myc-back-to-top .myc-icon {
     width: 1.5rem;
     height: 1.5rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-back-to-top {
+    .myc-back-to-top {
         transition: none;
     }
 
-    .bd-back-to-top:hover {
+    .myc-back-to-top:hover {
         scale: none;
     }
 }

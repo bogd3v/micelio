@@ -20,17 +20,17 @@ describe('alternatePaths', () => {
 })
 
 describe('rewriteLangLinks', () => {
-  const anchors = '<a href="/es" class="bd-seg" data-bd-lang="es">ES</a><a aria-current="true" data-bd-lang="en" href="/blog/a" class="bd-seg">EN</a><a href="/about">About</a>'
+  const anchors = '<a href="/es" class="myc-seg" data-myc-lang="es">ES</a><a aria-current="true" data-myc-lang="en" href="/blog/a" class="myc-seg">EN</a><a href="/about">About</a>'
 
   it('sets the href of each language link from the alternates', () => {
     expect(rewriteLangLinks(anchors, alternatePaths(head))).toBe(
-      '<a href="/es/blog/guia-a?x=1&amp;y=2" class="bd-seg" data-bd-lang="es">ES</a><a aria-current="true" data-bd-lang="en" href="/blog/a" class="bd-seg">EN</a><a href="/about">About</a>',
+      '<a href="/es/blog/guia-a?x=1&amp;y=2" class="myc-seg" data-myc-lang="es">ES</a><a aria-current="true" data-myc-lang="en" href="/blog/a" class="myc-seg">EN</a><a href="/about">About</a>',
     )
   })
 
   it('keeps the fallback of a language without an alternate', () => {
     expect(rewriteLangLinks(anchors, { en: '/blog/a' })).toBe(
-      '<a href="/es" class="bd-seg" data-bd-lang="es">ES</a><a aria-current="true" data-bd-lang="en" href="/blog/a" class="bd-seg">EN</a><a href="/about">About</a>',
+      '<a href="/es" class="myc-seg" data-myc-lang="es">ES</a><a aria-current="true" data-myc-lang="en" href="/blog/a" class="myc-seg">EN</a><a href="/about">About</a>',
     )
   })
 

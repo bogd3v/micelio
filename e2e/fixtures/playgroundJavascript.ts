@@ -49,7 +49,7 @@ export function registerJavascriptTests(): void {
     expect(loaded).toEqual([])
     await runButton(page, JS).click()
     await expect(resultOf(page, JS)).toHaveAttribute('data-state', 'done', { timeout: RUN_WAIT })
-    const expected = await page.locator('micelio-playground').nth(JS).locator('.bd-playground-output').textContent()
+    const expected = await page.locator('micelio-playground').nth(JS).locator('.myc-playground-output').textContent()
     expect(await resultOf(page, JS).textContent()).toBe(expected)
     expect(loaded.some(path => path.startsWith('/_islands/runtimes/javascript-'))).toBe(true)
     expect(loaded.some(path => path.endsWith('.wasm'))).toBe(true)

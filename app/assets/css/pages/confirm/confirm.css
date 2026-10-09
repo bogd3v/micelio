@@ -1,4 +1,4 @@
-.bd-confirm-page {
+.myc-confirm-page {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6,68 +6,68 @@
     padding-inline: 1rem;
 }
 
-.bd-confirm-body {
+.myc-confirm-body {
     width: 100%;
     max-width: 28rem;
     text-align: center;
 }
 
-.bd-confirm-card {
+.myc-confirm-card {
     padding: 2rem;
     border: 1px solid var(--line);
     border-radius: var(--radius-card);
     background-color: var(--surface-raised);
 }
 
-.bd-confirm-card[data-status="success"] {
+.myc-confirm-card[data-status="success"] {
     border-color: var(--success);
     background-color: var(--success-soft);
 }
 
-.bd-confirm-card[data-status="error"] {
+.myc-confirm-card[data-status="error"] {
     border-color: var(--danger);
     background-color: var(--danger-soft);
 }
 
-.bd-confirm-card[data-status="success"] .bd-confirm-icon {
+.myc-confirm-card[data-status="success"] .myc-confirm-icon {
     color: var(--success);
 }
 
-.bd-confirm-card[data-status="error"] .bd-confirm-icon {
+.myc-confirm-card[data-status="error"] .myc-confirm-icon {
     color: var(--danger);
 }
 
-.bd-confirm-icon {
+.myc-confirm-icon {
     width: 4rem;
     height: 4rem;
     margin-bottom: 1rem;
 }
 
-.bd-confirm-loading {
+.myc-confirm-loading {
     width: 3rem;
     height: 3rem;
     color: var(--link);
-    animation: bd-spin 1s linear infinite;
+    animation: myc-spin 1s linear infinite;
 }
 
-.bd-confirm-title {
+.myc-confirm-title {
     margin-bottom: 0.5rem;
     font-size: 1.5rem;
     font-weight: 600;
     line-height: calc(2 / 1.5);
 }
 
-.bd-confirm-text {
+.myc-confirm-text {
     margin-bottom: 1.5rem;
     color: var(--ink-muted);
 }
 
-.bd-confirm-status {
+.myc-confirm-status {
     color: var(--ink-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-confirm-loading {
+    .myc-confirm-loading {
         animation-duration: 4s;
     }
 }

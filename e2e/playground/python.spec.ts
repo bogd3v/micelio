@@ -15,7 +15,7 @@ test('nothing of Python loads until Run is pressed, then it runs the code and sh
   expect(loaded).toEqual([])
   await runButton(page, PYTHON).click()
   await expect(resultOf(page, PYTHON)).toHaveAttribute('data-state', 'done', { timeout: 90_000 })
-  const expected = await playground(page, PYTHON).locator('.bd-playground-output').textContent()
+  const expected = await playground(page, PYTHON).locator('.myc-playground-output').textContent()
   expect(await resultOf(page, PYTHON).textContent()).toBe(expected)
   const files = loaded.filter(isPyodide).map(path => path.split('/').pop())
   expect(files.filter(name => name?.endsWith('.wasm'))).toEqual(['pyodide.asm.wasm'])

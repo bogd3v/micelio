@@ -1,5 +1,5 @@
 /* Image carousel (SliderBlock). Its controls sit on photos, so they keep fixed white and black scrims */
-.bd-slider {
+.myc-slider {
     /* Through custom properties, like the utilities they replace, so color-mix() resolves the same */
     --myc-slider-white: #fff;
     --myc-slider-black: #000;
@@ -8,16 +8,16 @@
     user-select: none;
 }
 
-.bd-slider-media {
+.myc-slider-media {
     position: relative;
 }
 
-.bd-slider-frame {
+.myc-slider-frame {
     position: relative;
     aspect-ratio: 16 / 10;
 }
 
-.bd-slider-slide {
+.myc-slider-slide {
     position: absolute;
     inset: 0;
     z-index: 0;
@@ -25,24 +25,24 @@
     transition: opacity 0.7s var(--ease-emphasized);
 }
 
-.bd-slider-slide-active {
+.myc-slider-slide-active {
     z-index: 10;
     opacity: 1;
 }
 
-/* Matches .bd-prose .bd-fig-media img, which sets height: auto */
-.bd-slider-frame img.bd-slider-img {
+/* Matches .myc-prose .myc-fig-media img, which sets height: auto */
+.myc-slider-frame img.myc-slider-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
 /* The active slide is scaled up slightly (zoom only, no pan) */
-.bd-slider-img-zoom {
+.myc-slider-img-zoom {
     scale: 1.05;
 }
 
-.bd-slider-scrim {
+.myc-slider-scrim {
     position: absolute;
     inset-inline: 0;
     bottom: 0;
@@ -52,7 +52,7 @@
     pointer-events: none;
 }
 
-.bd-slider-arrow {
+.myc-slider-arrow {
     position: absolute;
     top: 50%;
     z-index: 30;
@@ -72,49 +72,49 @@
     transition: all 0.3s var(--ease-emphasized);
 }
 
-.bd-slider-prev {
+.myc-slider-prev {
     left: 1rem;
 }
 
-.bd-slider-next {
+.myc-slider-next {
     right: 1rem;
 }
 
-:root:not([data-scheme="light"]) .bd-slider-arrow {
+:root:not([data-scheme="light"]) .myc-slider-arrow {
     color: var(--myc-slider-white);
     background-color: color-mix(in oklab, var(--myc-slider-dark) 90%, transparent);
 }
 
 @media (hover: hover) {
-    .bd-slider-media:hover .bd-slider-arrow {
+    .myc-slider-media:hover .myc-slider-arrow {
         opacity: 1;
     }
 }
 
-.bd-slider-arrow:focus-visible {
+.myc-slider-arrow:focus-visible {
     opacity: 1;
 }
 
 @media (hover: hover) {
-    .bd-slider-arrow:hover {
+    .myc-slider-arrow:hover {
         background-color: var(--myc-slider-white);
         scale: 1.1;
     }
 }
 
-.bd-slider-arrow:focus-visible,
-.bd-slider-dot:focus-visible {
+.myc-slider-arrow:focus-visible,
+.myc-slider-dot:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px color-mix(in oklab, var(--myc-slider-white) 50%, transparent), 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
-.bd-slider-arrow .bd-icon,
-.bd-slider-arrow svg {
+.myc-slider-arrow .myc-icon,
+.myc-slider-arrow svg {
     width: 1.25rem;
     height: 1.25rem;
 }
 
-.bd-slider-dots {
+.myc-slider-dots {
     position: absolute;
     inset-inline: 0;
     bottom: 0;
@@ -126,13 +126,13 @@
     padding: 1.25rem;
 }
 
-.bd-slider-dot-list {
+.myc-slider-dot-list {
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-.bd-slider-dot {
+.myc-slider-dot {
     position: relative;
     width: 1.5rem;
     height: 0.25rem;
@@ -141,51 +141,51 @@
     transition: all 0.3s var(--ease-emphasized);
 }
 
-.bd-slider-dot-active {
+.myc-slider-dot-active {
     width: 2.5rem;
 }
 
-.bd-slider-dot:focus-visible {
+.myc-slider-dot:focus-visible {
     box-shadow: 0 0 0 2px transparent, 0 0 0 4px color-mix(in oklab, var(--myc-slider-white) 50%, transparent);
 }
 
 @media (hover: hover) {
-    .bd-slider-dot:not(.bd-slider-dot-active):hover {
+    .myc-slider-dot:not(.myc-slider-dot-active):hover {
         width: 2rem;
     }
 }
 
-.bd-slider-dot-track,
-.bd-slider-dot-hover,
-.bd-slider-dot-fill {
+.myc-slider-dot-track,
+.myc-slider-dot-hover,
+.myc-slider-dot-fill {
     position: absolute;
     inset: 0;
     border-radius: calc(infinity * 1px);
 }
 
-.bd-slider-dot-track {
+.myc-slider-dot-track {
     background-color: color-mix(in oklab, var(--myc-slider-white) 30%, transparent);
 }
 
-.bd-slider-dot-fill {
+.myc-slider-dot-fill {
     right: auto;
     background-color: var(--myc-slider-white);
     transition: all 0.1s linear;
 }
 
-.bd-slider-dot-hover {
+.myc-slider-dot-hover {
     background-color: color-mix(in oklab, var(--myc-slider-white) 60%, transparent);
     opacity: 0;
     transition: opacity 0.15s var(--ease-emphasized);
 }
 
 @media (hover: hover) {
-    .bd-slider-dot-hover:hover {
+    .myc-slider-dot-hover:hover {
         opacity: 1;
     }
 }
 
-.bd-slider-count {
+.myc-slider-count {
     position: absolute;
     top: 1rem;
     right: 1rem;
@@ -195,12 +195,12 @@
 }
 
 @media (hover: hover) {
-    .bd-slider-media:hover .bd-slider-count {
+    .myc-slider-media:hover .myc-slider-count {
         opacity: 1;
     }
 }
 
-.bd-slider-count-text {
+.myc-slider-count-text {
     padding: 0.25rem 0.625rem;
     border-radius: calc(infinity * 1px);
     color: color-mix(in oklab, var(--myc-slider-white) 90%, transparent);
@@ -215,16 +215,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-slider *,
-    .bd-slider *::before,
-    .bd-slider *::after {
+    .myc-slider *,
+    .myc-slider *::before,
+    .myc-slider *::after {
         transition: none;
     }
 }
 
 @media (forced-colors: active) {
-    .bd-slider-arrow:focus-visible,
-    .bd-slider-dot:focus-visible {
+    .myc-slider-arrow:focus-visible,
+    .myc-slider-dot:focus-visible {
         outline: 2px solid Highlight;
         outline-offset: 2px;
     }

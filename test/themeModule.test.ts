@@ -15,7 +15,7 @@ function theme(root: string, folder: string, manifest: object = { id: folder }):
 }
 
 function tmp(): string {
-  return mkdtempSync(join(tmpdir(), 'bd-themes-'))
+  return mkdtempSync(join(tmpdir(), 'myc-themes-'))
 }
 
 describe('theme validation at discovery', () => {
@@ -64,14 +64,14 @@ describe('theme validation at discovery', () => {
 
 describe('theme discovery', () => {
   it('finds the themes of the repository and of MICELIO_THEME_DIRS', () => {
-    const extra = mkdtempSync(join(tmpdir(), 'bd-themes-'))
+    const extra = mkdtempSync(join(tmpdir(), 'myc-themes-'))
     theme(extra, 'minimal')
     const ids = discoverThemes(themeRoots(process.cwd(), extra)).map(found => found.id)
     expect(ids).toEqual(['bogota', 'starter', 'minimal'])
   })
 
   it('accepts a directory that is itself a theme, and skips missing ones', () => {
-    const extra = mkdtempSync(join(tmpdir(), 'bd-themes-'))
+    const extra = mkdtempSync(join(tmpdir(), 'myc-themes-'))
     theme(extra, 'inner')
     expect(discoverThemes([join(extra, 'inner'), join(extra, 'missing')]).map(found => found.id)).toEqual(['inner'])
   })

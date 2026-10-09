@@ -43,7 +43,7 @@ describe('ThemeHero', () => {
     const wrapper = await mountSuspended(ThemeHero)
     expect(wrapper.get('.bogota-flight-place text').text()).toBe('Sumapaz NP · Frailejones')
     expect(wrapper.findAll('.bogota-flight-place rect')).toHaveLength(1)
-    expect(wrapper.findAll('.bd-flight-route')).toHaveLength(3)
+    expect(wrapper.findAll('.myc-flight-route')).toHaveLength(3)
     expect(wrapper.findAll('.bogota-flyer')).toHaveLength(9)
   })
 

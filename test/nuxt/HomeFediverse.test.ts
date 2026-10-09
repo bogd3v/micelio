@@ -13,19 +13,19 @@ describe('HomeFediverse', () => {
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
     const wrapper = await mountSuspended(HomeFediverse)
     expect(wrapper.attributes('id')).toBe('fediverso')
-    expect(wrapper.get('.bd-fedi-handle').text()).toBe('@bogdev@api.bogdev.com.co')
-    await wrapper.get('.bd-fedi-copy button').trigger('click')
+    expect(wrapper.get('.myc-fedi-handle').text()).toBe('@bogdev@api.bogdev.com.co')
+    await wrapper.get('.myc-fedi-copy button').trigger('click')
     await flushPromises()
     expect(writeText).toHaveBeenCalledWith('@bogdev@api.bogdev.com.co')
-    expect(wrapper.get('.bd-fedi-copy button').text()).toBe('Copied ✓')
-    expect(wrapper.get('.bd-fedi-copy [aria-live="polite"]').text()).toBe('@bogdev@api.bogdev.com.co copied')
+    expect(wrapper.get('.myc-fedi-copy button').text()).toBe('Copied ✓')
+    expect(wrapper.get('.myc-fedi-copy [aria-live="polite"]').text()).toBe('@bogdev@api.bogdev.com.co copied')
   })
 
   it('explains invalid instances and opens the follow flow for valid ones', async () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null)
     const wrapper = await mountSuspended(HomeFediverse)
     const input = wrapper.get('input')
-    const hint = (): string => wrapper.get('#bd-fedi-hint').text()
+    const hint = (): string => wrapper.get('#myc-fedi-hint').text()
 
     await wrapper.get('form').trigger('submit')
     expect(hint()).toContain('Type your instance')
@@ -50,7 +50,7 @@ describe('HomeFediverse', () => {
 
   it('shows the Mastodon logo with an accessible name and its own gradient', async () => {
     const wrapper = await mountSuspended(HomeFediverse)
-    const logo = wrapper.get('.bd-masto-logo')
+    const logo = wrapper.get('.myc-masto-logo')
     expect(logo.attributes('role')).toBe('img')
     expect(logo.attributes('aria-label')).toBe('Mastodon logo')
     const gradient = logo.get('linearGradient').attributes('id')
@@ -70,7 +70,7 @@ describe('HomeFediverse', () => {
   })
 
   it('points to joinmastodon.org in the page language', async () => {
-    const link = (await mountSuspended(HomeFediverse)).get('.bd-fedi-join a')
+    const link = (await mountSuspended(HomeFediverse)).get('.myc-fedi-join a')
     expect(link.attributes()).toMatchObject({
       'href': 'https://joinmastodon.org/servers',
       'target': '_blank',
@@ -79,20 +79,20 @@ describe('HomeFediverse', () => {
     })
 
     const spanish = await mountSuspended(HomeFediverse, { route: '/es' })
-    expect(spanish.get('.bd-fedi-join a').attributes('href')).toBe('https://joinmastodon.org/es/servers')
-    expect(spanish.get('.bd-masto-logo').attributes('aria-label')).toBe('Logo de Mastodon')
+    expect(spanish.get('.myc-fedi-join a').attributes('href')).toBe('https://joinmastodon.org/es/servers')
+    expect(spanish.get('.myc-masto-logo').attributes('aria-label')).toBe('Logo de Mastodon')
     await useNuxtApp().$i18n.setLocale('en')
   })
 
   it('lists the steps to join, what happens after following and a glossary', async () => {
     const wrapper = await mountSuspended(HomeFediverse)
-    expect(wrapper.findAll('.bd-fedi-join li').map(step => step.text())).toEqual([
+    expect(wrapper.findAll('.myc-fedi-join li').map(step => step.text())).toEqual([
       '01Pick a server on joinmastodon.org. Any will do: from every server you can follow everyone.',
       '02Sign up with your email. It is free and ad-free.',
       '03Come back here, type your server and press “Follow”.',
     ])
-    expect(wrapper.findAll('.bd-fedi-step-title').map(step => step.text())).toEqual(['Follow', 'Read it in your home feed', 'Reply or like it'])
-    expect(wrapper.get('.bd-fedi-step-text').text()).toContain('@bogdev@api.bogdev.com.co')
-    expect(wrapper.findAll('.bd-fedi-glossary dt').map(term => term.text())).toEqual(['Fediverse', 'Server or instance', 'Follow', 'Boost'])
+    expect(wrapper.findAll('.myc-fedi-step-title').map(step => step.text())).toEqual(['Follow', 'Read it in your home feed', 'Reply or like it'])
+    expect(wrapper.get('.myc-fedi-step-text').text()).toContain('@bogdev@api.bogdev.com.co')
+    expect(wrapper.findAll('.myc-fedi-glossary dt').map(term => term.text())).toEqual(['Fediverse', 'Server or instance', 'Follow', 'Boost'])
   })
 })

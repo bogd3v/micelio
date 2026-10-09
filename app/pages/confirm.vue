@@ -43,23 +43,23 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="bd-confirm-page">
-    <div class="bd-confirm-body">
-      <div v-if="status === 'loading'" class="bd-confirm-card">
-        <IconsArrowPath class="bd-confirm-icon bd-confirm-loading" />
-        <p class="bd-confirm-status">{{ t("common.loading") }}</p>
+  <div class="myc-confirm-page">
+    <div class="myc-confirm-body">
+      <div v-if="status === 'loading'" class="myc-confirm-card">
+        <IconsArrowPath class="myc-confirm-icon myc-confirm-loading" />
+        <p class="myc-confirm-status">{{ t("common.loading") }}</p>
       </div>
 
       <div
         v-else-if="status === 'success'"
-        class="bd-confirm-card"
+        class="myc-confirm-card"
         data-status="success"
       >
-        <IconsCheckCircle class="bd-confirm-icon" />
-        <h1 class="bd-confirm-title font-display">
+        <IconsCheckCircle class="myc-confirm-icon" />
+        <h1 class="myc-confirm-title font-display">
           {{ t("confirm.successTitle") }}
         </h1>
-        <p class="bd-confirm-text">{{ successMessage }}</p>
+        <p class="myc-confirm-text">{{ successMessage }}</p>
         <BdButton href="/blog">
           {{ t("confirm.browseBlog") }}
         </BdButton>
@@ -67,14 +67,14 @@ useSeoMeta({
 
       <div
         v-else
-        class="bd-confirm-card"
+        class="myc-confirm-card"
         data-status="error"
       >
-        <IconsXCircle class="bd-confirm-icon" />
-        <h1 class="bd-confirm-title font-display">
+        <IconsXCircle class="myc-confirm-icon" />
+        <h1 class="myc-confirm-title font-display">
           {{ t("confirm.errorTitle") }}
         </h1>
-        <p class="bd-confirm-text">{{ errorMessage }}</p>
+        <p class="myc-confirm-text">{{ errorMessage }}</p>
         <BdButton href="/" variant="secondary">
           {{ t("confirm.goHome") }}
         </BdButton>

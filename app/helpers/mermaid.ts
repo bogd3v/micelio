@@ -32,7 +32,7 @@ const ACC_TITLE = /^\s*accTitle\s*:\s*(.+?)\s*$/m
 
 /** Server markup of a diagram: the island (`app/islands/mermaid.ts`) upgrades the element; without it the source code block stays. */
 export function renderMermaidBlockHtml(code: string): string {
-  return `<${MERMAID_ELEMENT} class="bd-mermaid not-prose">${renderCodeBlockHtml(code, 'mermaid')}</${MERMAID_ELEMENT}>\n`
+  return `<${MERMAID_ELEMENT} class="myc-mermaid not-prose">${renderCodeBlockHtml(code, 'mermaid')}</${MERMAID_ELEMENT}>\n`
 }
 
 /** Settings the page hands the island: the accessible label and the theme's `mermaid` overrides (role names). */

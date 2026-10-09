@@ -1,44 +1,44 @@
-.bd-prose {
+.myc-prose {
     font-size: 17px;
     line-height: 28px;
     color: var(--ink);
 }
 
-.bd-prose p {
+.myc-prose p {
     margin: 0 0 24px;
     text-wrap: pretty;
 }
 
-.bd-prose :where(h2, h3, h4) {
+.myc-prose :where(h2, h3, h4) {
     font-family: var(--font-display);
     text-wrap: balance;
 }
 
-.bd-prose h2 {
+.myc-prose h2 {
     margin: 64px 0 16px;
     font-size: 28px;
     line-height: 36px;
     font-weight: 500;
 }
 
-.bd-prose h3 {
+.myc-prose h3 {
     margin: 48px 0 12px;
     font-size: 22px;
     line-height: 30px;
     font-weight: 500;
 }
 
-.bd-prose h4 {
+.myc-prose h4 {
     margin: 32px 0 8px;
     font: var(--text-heading-3);
 }
 
-.bd-prose > :first-child > :first-child,
-.bd-prose > :first-child > :first-child > :first-child {
+.myc-prose > :first-child > :first-child,
+.myc-prose > :first-child > :first-child > :first-child {
     margin-top: 0;
 }
 
-.bd-prose ul {
+.myc-prose ul {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
@@ -47,12 +47,12 @@
     list-style: none;
 }
 
-.bd-prose ul > li {
+.myc-prose ul > li {
     position: relative;
     padding-left: 26px;
 }
 
-.bd-prose ul > li::before {
+.myc-prose ul > li::before {
     content: "◆";
     position: absolute;
     left: 0;
@@ -60,39 +60,39 @@
     color: var(--link);
 }
 
-.bd-prose ol {
+.myc-prose ol {
     margin: 0 0 32px;
     padding-left: var(--space-6);
 }
 
-.bd-prose ol > li {
+.myc-prose ol > li {
     margin-bottom: var(--space-3);
     padding-left: var(--space-1);
 }
 
-.bd-prose ol > li::marker {
+.myc-prose ol > li::marker {
     font-family: var(--font-mono);
     font-size: 14px;
     color: var(--link);
 }
 
-.bd-prose strong {
+.myc-prose strong {
     font-weight: 600;
 }
 
-.bd-prose a {
+.myc-prose a {
     color: var(--link);
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 4px;
 }
 
-.bd-prose a:hover {
+.myc-prose a:hover {
     color: var(--ink);
     text-decoration-color: var(--link);
 }
 
-.bd-prose :not(pre) > code {
+.myc-prose :not(pre) > code {
     padding: 1px 6px;
     font-family: var(--font-mono);
     font-size: 0.88em;
@@ -100,14 +100,14 @@
     border: 1px solid var(--line);
 }
 
-.bd-prose blockquote {
+.myc-prose blockquote {
     margin: 32px 0;
     padding-left: 20px;
     color: var(--ink-muted);
     border-left: 2px solid var(--line-strong);
 }
 
-.bd-prose img {
+.myc-prose img {
     display: block;
     max-width: 100%;
     height: auto;
@@ -115,13 +115,13 @@
     border: 1px solid var(--line);
 }
 
-.bd-prose hr {
+.myc-prose hr {
     margin: 48px 0;
     border: 0;
     border-top: 1px solid var(--line);
 }
 
-.bd-prose table {
+.myc-prose table {
     width: 100%;
     margin: 32px 0;
     font-size: 15px;
@@ -129,32 +129,32 @@
     border-collapse: collapse;
 }
 
-.bd-prose :where(th, td) {
+.myc-prose :where(th, td) {
     padding: var(--space-2) var(--space-3);
     text-align: left;
     border-bottom: 1px solid var(--line);
 }
 
-.bd-prose th {
+.myc-prose th {
     font: 500 12px/16px var(--font-mono);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-muted);
 }
 
-.bd-prose :where(.bd-code, .bd-callout, .bd-mermaid) {
+.myc-prose :where(.myc-code, .myc-callout, .myc-mermaid) {
     margin: 32px 0;
 }
 
-.bd-prose .bd-mermaid .bd-code {
+.myc-prose .myc-mermaid .myc-code {
     margin: 0;
 }
 
-.bd-prose .bd-callout-body p:last-child {
+.myc-prose .myc-callout-body p:last-child {
     margin-bottom: 0;
 }
 
-.bd-prose .bd-cite {
+.myc-prose .myc-cite {
     margin-left: 2px;
     font-family: var(--font-mono);
     font-size: 12px;
@@ -164,26 +164,26 @@
     scroll-margin-top: calc(var(--myc-header-h) + var(--space-6));
 }
 
-.bd-prose .bd-cite:hover {
+.myc-prose .myc-cite:hover {
     color: var(--link);
     text-decoration: underline;
 }
 
-.bd-prose .bd-cite:target {
+.myc-prose .myc-cite:target {
     background: var(--link-soft);
     outline: 4px solid var(--link-soft);
 }
 
 @media (min-width: 768px) {
-    .bd-prose {
+    .myc-prose {
         font: var(--text-body-l);
     }
 
-    .bd-prose h2 {
+    .myc-prose h2 {
         font: var(--text-heading-1);
     }
 
-    .bd-prose h3 {
+    .myc-prose h3 {
         font: var(--text-heading-2);
     }
 }

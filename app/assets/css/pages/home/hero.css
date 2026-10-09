@@ -1,17 +1,17 @@
-.bd-hero {
+.myc-hero {
     position: relative;
     display: flex;
     flex-direction: column;
     padding: 48px var(--myc-home-gutter) 0;
 }
 
-.bd-hero-art {
+.myc-hero-art {
     position: relative;
     display: none;
     overflow: hidden;
 }
 
-.bd-hero-copy {
+.myc-hero-copy {
     position: relative;
     z-index: 2;
     display: flex;
@@ -19,13 +19,13 @@
     gap: 28px;
 }
 
-.bd-hero-eyebrow {
+.myc-hero-eyebrow {
     display: none;
     margin: 0;
     color: var(--ink-muted);
 }
 
-.bd-hero-place {
+.myc-hero-place {
     display: flex;
     gap: var(--space-2);
     margin: 0;
@@ -34,11 +34,11 @@
     color: var(--ink-muted);
 }
 
-.bd-hero-diamond {
+.myc-hero-diamond {
     color: var(--link);
 }
 
-.bd-hero-title {
+.myc-hero-title {
     margin: 0;
     font-size: 44px;
     line-height: 50px;
@@ -48,7 +48,7 @@
     text-wrap: balance;
 }
 
-.bd-hero-lead {
+.myc-hero-lead {
     margin: 0;
     max-width: 520px;
     font-size: 16px;
@@ -57,22 +57,22 @@
     text-wrap: pretty;
 }
 
-.bd-hero-actions {
+.myc-hero-actions {
     display: flex;
     align-items: center;
     gap: var(--space-4);
 }
 
-.bd-hero-about {
+.myc-hero-about {
     display: none;
 }
 
-.bd-flight-route {
+.myc-flight-route {
     stroke-dasharray: 2 7;
-    animation: bd-dash 40s linear infinite;
+    animation: myc-dash 40s linear infinite;
 }
 
-.bd-hero-art-compact {
+.myc-hero-art-compact {
     position: relative;
     flex: none;
     overflow: hidden;
@@ -82,7 +82,7 @@
 }
 
 @media (min-width: 1024px) {
-    .bd-hero {
+    .myc-hero {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         column-gap: var(--space-gutter);
@@ -91,7 +91,7 @@
         padding: 112px var(--myc-home-gutter) var(--space-section);
     }
 
-    .bd-hero-art {
+    .myc-hero-art {
         position: absolute;
         top: 0;
         right: 0;
@@ -101,38 +101,38 @@
         height: 720px;
     }
 
-    .bd-hero-art-compact,
-    .bd-hero-place {
+    .myc-hero-art-compact,
+    .myc-hero-place {
         display: none;
     }
 
-    .bd-hero-copy {
+    .myc-hero-copy {
         grid-column: span 7;
         gap: var(--space-8);
     }
 
-    .bd-hero-eyebrow {
+    .myc-hero-eyebrow {
         display: block;
     }
 
-    .bd-hero-title {
+    .myc-hero-title {
         font-size: 72px;
         line-height: 76px;
         font-stretch: 125%;
     }
 
-    .bd-hero-lead {
+    .myc-hero-lead {
         font-size: 19px;
         line-height: 32px;
     }
 
-    .bd-hero-about {
+    .myc-hero-about {
         display: inline-flex;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-flight-route {
+    .myc-flight-route {
         animation: none;
     }
 }

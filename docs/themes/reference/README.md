@@ -6,5 +6,5 @@ Reference of theme contract v1, generated from the code. To change it, change th
 
 - [Roles](roles.md): every role of `theme.json`, its purpose, default and contrast rules, and the type scale.
 - [Layout](layout.md): regions and their variants.
-- [Hooks](hooks.md): the `bd-*` classes and `data-*` attributes a theme may style.
+- [Hooks](hooks.md): the `myc-*` classes and `data-*` attributes a theme may style.
 - [Slots](slots.md): the components a theme may replace, with their props and defaults.

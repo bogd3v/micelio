@@ -1,61 +1,61 @@
 /* Logo cloud: a wrapped row, or a CSS-only marquee while motion is welcome and no logo is a link (a moving link is hard to hit and to focus) */
-.bd-section-logo-track {
+.myc-section-logo-track {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-6);
 }
 
-.bd-section-logo-track .bd-section-items {
+.myc-section-logo-track .myc-section-items {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-6) var(--space-8);
 }
 
-.bd-section-logo-track .bd-section-item {
+.myc-section-logo-track .myc-section-item {
     display: flex;
     align-items: center;
 }
 
-.bd-section-logo-track .bd-section-media {
+.myc-section-logo-track .myc-section-media {
     width: auto;
     height: var(--space-8);
     background: none;
     border-radius: 0;
 }
 
-.bd-section-logo-track .bd-section-media img {
+.myc-section-logo-track .myc-section-media img {
     width: auto;
     height: 100%;
     object-fit: contain;
 }
 
 /* The loop copy is only for the marquee */
-.bd-section-logo-track[data-variant="marquee"] > .bd-section-items + .bd-section-items {
+.myc-section-logo-track[data-variant="marquee"] > .myc-section-items + .myc-section-items {
     display: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    .bd-section-logo-track[data-variant="marquee"]:not(:has(a)) {
+    .myc-section-logo-track[data-variant="marquee"]:not(:has(a)) {
         flex-wrap: nowrap;
         gap: 0;
         width: max-content;
-        animation: bd-section-marquee 40s linear infinite;
+        animation: myc-section-marquee 40s linear infinite;
     }
 
-    .bd-section-logo-track[data-variant="marquee"]:not(:has(a)) > .bd-section-items {
+    .myc-section-logo-track[data-variant="marquee"]:not(:has(a)) > .myc-section-items {
         flex-wrap: nowrap;
         flex: none;
         gap: var(--space-8);
         padding-inline-end: var(--space-8);
     }
 
-    .bd-section-logo-track[data-variant="marquee"]:not(:has(a)) > .bd-section-items + .bd-section-items {
+    .myc-section-logo-track[data-variant="marquee"]:not(:has(a)) > .myc-section-items + .myc-section-items {
         display: flex;
     }
 
     /* Pointing at a logo or tabbing to its link stops the lane */
-    [data-section="logo-cloud"]:is(:hover, :focus-within) .bd-section-logo-track[data-variant="marquee"]:not(:has(a)) {
+    [data-section="logo-cloud"]:is(:hover, :focus-within) .myc-section-logo-track[data-variant="marquee"]:not(:has(a)) {
         animation-play-state: paused;
     }
 }

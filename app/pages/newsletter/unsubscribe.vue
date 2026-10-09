@@ -46,11 +46,11 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="bd-unsubscribe">
-    <div class="bd-account-card">
-      <span class="bd-corner bd-corner-tl" aria-hidden="true" />
-      <span class="bd-corner bd-corner-br" aria-hidden="true" />
-      <div v-if="status === 'done'" class="bd-account-view">
+  <div class="myc-unsubscribe">
+    <div class="myc-account-card">
+      <span class="myc-corner myc-corner-tl" aria-hidden="true" />
+      <span class="myc-corner myc-corner-br" aria-hidden="true" />
+      <div v-if="status === 'done'" class="myc-account-view">
         <AccountHeading ref="headingRef" :eyebrow="t('newsletter.unsubscribe.eyebrow')" :title="t('newsletter.unsubscribe.doneTitle')">
           {{ t('newsletter.unsubscribe.doneLead') }}
         </AccountHeading>
@@ -58,10 +58,10 @@ useSeoMeta({
           <BdButton :href="localizePath('/blog')" arrow>{{ t('newsletter.unsubscribe.blog') }}</BdButton>
         </div>
       </div>
-      <div v-else-if="status === 'invalid'" class="bd-account-view">
+      <div v-else-if="status === 'invalid'" class="myc-account-view">
         <AccountHeading :eyebrow="t('newsletter.unsubscribe.eyebrow')" :title="t('newsletter.unsubscribe.invalidTitle')">
           <i18n-t v-if="contactEmail" keypath="newsletter.unsubscribe.invalidLead" scope="global">
-            <template #email><a :href="`mailto:${contactEmail}`" class="bd-inline">{{ contactEmail }}</a></template>
+            <template #email><a :href="`mailto:${contactEmail}`" class="myc-inline">{{ contactEmail }}</a></template>
           </i18n-t>
           <template v-else>{{ t('newsletter.unsubscribe.invalidLeadNoContact') }}</template>
         </AccountHeading>
@@ -69,7 +69,7 @@ useSeoMeta({
           <BdButton :href="localizePath('/blog')" variant="secondary">{{ t('newsletter.unsubscribe.blog') }}</BdButton>
         </div>
       </div>
-      <form v-else class="bd-account-view" @submit.prevent="unsubscribe">
+      <form v-else class="myc-account-view" @submit.prevent="unsubscribe">
         <AccountHeading :eyebrow="t('newsletter.unsubscribe.eyebrow')" :title="t('newsletter.unsubscribe.title')">
           {{ t('newsletter.unsubscribe.lead') }}
         </AccountHeading>

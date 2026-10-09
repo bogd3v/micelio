@@ -6,7 +6,7 @@ import { SLOT_NAMES } from '../modules/theme/data'
 import { resolveSlots, slotStyles } from '../modules/theme/slots'
 
 function tmp(): string {
-  return mkdtempSync(join(tmpdir(), 'bd-slots-'))
+  return mkdtempSync(join(tmpdir(), 'myc-slots-'))
 }
 
 function slotsDir(dir: string, files: string[]): void {

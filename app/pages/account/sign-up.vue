@@ -95,8 +95,8 @@ async function resend(): Promise<void> {
 
 <template>
   <AccountShell>
-    <div v-if="sentTo" class="bd-account-view">
-      <div class="bd-account-icon">
+    <div v-if="sentTo" class="myc-account-view">
+      <div class="myc-account-icon">
         <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><rect x="6" y="14" width="44" height="30" /><path d="M6 14 L28 32 L50 14" /><path d="M40 6 Q46 2 52 6" stroke-linecap="round" /></svg>
       </div>
       <AccountHeading ref="headingRef" :eyebrow="t('account.eyebrow.checkEmail')" :title="t('account.checkEmail.title')">
@@ -106,18 +106,18 @@ async function resend(): Promise<void> {
       </AccountHeading>
       <AccountNotice v-if="notice">{{ notice }}</AccountNotice>
       <AccountNotice v-if="error" ref="errorRef" tone="error">{{ error }}</AccountNotice>
-      <p class="bd-account-text">{{ t('account.checkEmail.notArrived') }}</p>
-      <div class="bd-account-actions bd-account-actions-start">
+      <p class="myc-account-text">{{ t('account.checkEmail.notArrived') }}</p>
+      <div class="myc-account-actions myc-account-actions-start">
         <BdButton variant="secondary" @click="resend">{{ t('account.checkEmail.resend') }}</BdButton>
       </div>
     </div>
-    <form v-else class="bd-account-view" novalidate @submit.prevent="submit">
+    <form v-else class="myc-account-view" novalidate @submit.prevent="submit">
       <AccountHeading :eyebrow="t('account.eyebrow.register')" :title="t('account.register.title')">
         {{ t('account.register.lead') }}
       </AccountHeading>
       <AccountNotice v-if="error" ref="errorRef" tone="error">{{ error }}</AccountNotice>
       <AccountField
-        id="bd-reg-user"
+        id="myc-reg-user"
         ref="usernameRef"
         v-model="username"
         :label="t('account.register.username')"
@@ -126,7 +126,7 @@ async function resend(): Promise<void> {
         :error="errors.username"
       />
       <AccountField
-        id="bd-reg-mail"
+        id="myc-reg-mail"
         ref="emailRef"
         v-model="email"
         type="email"
@@ -135,7 +135,7 @@ async function resend(): Promise<void> {
         :error="errors.email"
       />
       <AccountPasswordField
-        id="bd-reg-pw"
+        id="myc-reg-pw"
         ref="passwordRef"
         v-model="password"
         :label="t('account.register.password')"
@@ -144,28 +144,28 @@ async function resend(): Promise<void> {
         :error="errors.password"
         meter
       />
-      <div class="bd-form-row">
-        <label class="bd-check">
+      <div class="myc-form-row">
+        <label class="myc-check">
           <input
             ref="privacyRef"
             v-model="acceptPrivacy"
             type="checkbox"
             :aria-invalid="errors.privacy ? 'true' : undefined"
-            :aria-describedby="errors.privacy ? 'bd-reg-terms-err' : undefined"
+            :aria-describedby="errors.privacy ? 'myc-reg-terms-err' : undefined"
           >
           <i18n-t keypath="account.register.privacy" tag="span" scope="global">
             <template #site>{{ site.name }}</template>
             <template #link><NuxtLink :to="localizePath('/privacy')">{{ t('account.register.privacyLink') }}</NuxtLink></template>
           </i18n-t>
         </label>
-        <span v-if="errors.privacy" id="bd-reg-terms-err" class="bd-err" role="alert"><span aria-hidden="true">✕</span>{{ errors.privacy }}</span>
+        <span v-if="errors.privacy" id="myc-reg-terms-err" class="myc-err" role="alert"><span aria-hidden="true">✕</span>{{ errors.privacy }}</span>
       </div>
       <div>
         <BdButton type="submit" arrow>{{ t('account.register.submit') }}</BdButton>
       </div>
-      <p class="bd-account-switch">
+      <p class="myc-account-switch">
         {{ t('account.register.hasAccount') }}
-        <NuxtLink :to="localizePath('/account/sign-in')" class="bd-inline">{{ t('account.register.signIn') }}</NuxtLink>
+        <NuxtLink :to="localizePath('/account/sign-in')" class="myc-inline">{{ t('account.register.signIn') }}</NuxtLink>
       </p>
     </form>
   </AccountShell>

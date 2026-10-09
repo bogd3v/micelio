@@ -1,9 +1,9 @@
-:where(.bd-home[data-layout="showcase"]) .bd-home-featured {
+:where(.myc-home[data-layout="showcase"]) .myc-home-featured {
     padding: 16px var(--myc-home-gutter) 80px;
 }
 
 @media (min-width: 768px) {
-    :where(.bd-home[data-layout="showcase"]) .bd-home-featured {
+    :where(.myc-home[data-layout="showcase"]) .myc-home-featured {
         padding-bottom: var(--space-section);
     }
 }

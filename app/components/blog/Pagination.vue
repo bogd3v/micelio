@@ -26,27 +26,27 @@ function linkTo(page: number): RouteLocationRaw {
 </script>
 
 <template>
-  <nav class="bd-blog-pagination" :aria-label="t('blog.pagination.label')">
+  <nav class="myc-blog-pagination" :aria-label="t('blog.pagination.label')">
     <NuxtLink
       v-if="current > 1"
       :to="linkTo(current - 1)"
-      class="bd-page bd-page-step"
+      class="myc-page myc-page-step"
       :aria-label="t('common.ariaPrevPage')"
     >
-      ← <span class="bd-page-step-label">{{ t('blog.pagination.previous') }}</span>
+      ← <span class="myc-page-step-label">{{ t('blog.pagination.previous') }}</span>
     </NuxtLink>
-    <span v-else class="bd-page bd-page-step" aria-disabled="true">
-      ← <span class="bd-page-step-label">{{ t('blog.pagination.previous') }}</span>
+    <span v-else class="myc-page myc-page-step" aria-disabled="true">
+      ← <span class="myc-page-step-label">{{ t('blog.pagination.previous') }}</span>
     </span>
 
-    <div class="bd-page-center">
-      <ol class="bd-page-list">
+    <div class="myc-page-center">
+      <ol class="myc-page-list">
         <li v-for="(item, index) in items" :key="index">
-          <span v-if="item === 'gap'" class="bd-meta bd-page-gap" aria-hidden="true">…</span>
+          <span v-if="item === 'gap'" class="myc-meta myc-page-gap" aria-hidden="true">…</span>
           <NuxtLink
             v-else
             :to="linkTo(item)"
-            class="bd-page"
+            class="myc-page"
             :aria-current="item === current ? 'page' : undefined"
             :aria-label="t('blog.pagination.page', { page: item })"
           >
@@ -54,21 +54,21 @@ function linkTo(page: number): RouteLocationRaw {
           </NuxtLink>
         </li>
       </ol>
-      <span class="bd-meta bd-page-status">
-        {{ status }}<span class="bd-page-size"> · {{ t('blog.pagination.perPage', { count: pageSize }) }}</span>
+      <span class="myc-meta myc-page-status">
+        {{ status }}<span class="myc-page-size"> · {{ t('blog.pagination.perPage', { count: pageSize }) }}</span>
       </span>
     </div>
 
     <NuxtLink
       v-if="current < pageCount"
       :to="linkTo(current + 1)"
-      class="bd-page bd-page-step"
+      class="myc-page myc-page-step"
       :aria-label="t('common.ariaNextPage')"
     >
-      <span class="bd-page-step-label">{{ t('blog.pagination.next') }}</span> →
+      <span class="myc-page-step-label">{{ t('blog.pagination.next') }}</span> →
     </NuxtLink>
-    <span v-else class="bd-page bd-page-step" aria-disabled="true">
-      <span class="bd-page-step-label">{{ t('blog.pagination.next') }}</span> →
+    <span v-else class="myc-page myc-page-step" aria-disabled="true">
+      <span class="myc-page-step-label">{{ t('blog.pagination.next') }}</span> →
     </span>
   </nav>
 </template>

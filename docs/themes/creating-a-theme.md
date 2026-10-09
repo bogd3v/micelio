@@ -6,7 +6,7 @@ What a theme can change, in order of preference (ADR 0005, section 5):
 
 1. **Roles** in `theme.json`: colors per mode, shadows, space, radius, sizes, motion and the type scale.
 2. **Layout variants**: structure chosen per region from a closed list. The core implements two for every region (see "Layout").
-3. **Public hooks**: `bd-*` classes and `data-*` attributes listed in `app/theme/hooks.json`, styled from `theme.css`.
+3. **Public hooks**: `myc-*` classes and `data-*` attributes listed in `app/theme/hooks.json`, styled from `theme.css`.
 4. **Slots**: Vue components for what CSS cannot express (logo, hero, divider and so on). They are optional; the core has defaults.
 
 The reference of roles, layout variants, hooks and slots is generated from the contract: [reference/](reference/README.md).
@@ -135,7 +135,7 @@ Primitives may be used in the theme's own CSS and slots, never in the core.
 
 The regions and the variants the core implements for each, with what each one renders and the hooks that exist only in it, are in [reference/layout.md](reference/layout.md). Naming any other variant (a typo) fails validation with the list of known ones. An omitted region uses the first variant (the default).
 
-The core styles every variant from your roles, and your own rules for variants you do not use are optional. But `/_theme` shows every variant and CI captures them, so review them. With `MICELIO_SPECIMEN=1` the page renders the variants your theme does not use next to the active one. The core scopes each variant's CSS by `data-layout`. In `theme.css` select the hook together with the variant (`.bd-header[data-layout="centered"] .bd-nav-link`) when a rule is meant for one of them. Some variants remove features of the page, not only restyle it; the descriptions in [reference/layout.md](reference/layout.md) say which.
+The core styles every variant from your roles, and your own rules for variants you do not use are optional. But `/_theme` shows every variant and CI captures them, so review them. With `MICELIO_SPECIMEN=1` the page renders the variants your theme does not use next to the active one. The core scopes each variant's CSS by `data-layout`. In `theme.css` select the hook together with the variant (`.myc-header[data-layout="centered"] .myc-nav-link`) when a rule is meant for one of them. Some variants remove features of the page, not only restyle it; the descriptions in [reference/layout.md](reference/layout.md) say which.
 
 ### Fonts
 
@@ -167,7 +167,7 @@ All three are optional files of `images/` (png, jpg, webp, avif, gif or svg). Th
 Two custom properties of the core are part of what a theme author works with, and both were renamed from their former BogDev prefix before any theme package was published (ADR 0005, amendment of 2026-10-08):
 
 - `--myc-header-h`: the height of the header. The core sets it for each header variant, and anchors, sticky sidebars and the account menu offset themselves by it; read it in your own sticky or anchored rules instead of hard-coding a height.
-- `--myc-read`: the reading progress of an article, from 0 to 1, set inline on `.bd-progress`. The core moves `.bd-progress-track` by it, and that is where the `ThemeProgressMarker` slot renders, so a slot follows the progress with no code of its own.
+- `--myc-read`: the reading progress of an article, from 0 to 1, set inline on `.myc-progress`. The core moves `.myc-progress-track` by it, and that is where the `ThemeProgressMarker` slot renders, so a slot follows the progress with no code of its own.
 
 The other `--myc-*` properties are internal and can change in any release.
 
@@ -189,7 +189,7 @@ Rules (`modules/theme/island.ts`, `slots.ts`):
 
 Plain CSS, imported into the layer `myc.theme`: after the core's components, layout and pages and before animations and utilities (`app/assets/css/main.css`). A theme rule restyles a hook without raising specificity. The same rules apply to `theme.css`, `sections.css`, `fonts.css`, `font-fallbacks.css` and `slots/*.css`, following local `@import`s (`modules/theme/css-rules.ts`):
 
-- Select only public hooks, listed with their states and layout variants in [reference/hooks.md](reference/hooks.md): a `bd-*` class or a `data-*` attribute that is not in `app/theme/hooks.json` fails, and so does an attribute selector on `class` that matches `bd-`. Every other `bd-*` class is internal and may change in any release.
+- Select only public hooks, listed with their states and layout variants in [reference/hooks.md](reference/hooks.md): a `myc-*` class or a `data-*` attribute that is not in `app/theme/hooks.json` fails, and so does an attribute selector on `class` that matches `myc-`. Every other `myc-*` class is internal and may change in any release.
 - A theme's own attributes start with `data-<id>-`; its own classes should carry the id as prefix (`my-theme-mark`).
 - No `!important`.
 - No remote `@import`, and no `@import` that leaves the theme folder or points to a missing file.
@@ -198,9 +198,19 @@ Plain CSS, imported into the layer `myc.theme`: after the core's components, lay
 
 Hooks are validated by the build and by `theme:check`. `npm run lint` does not check them.
 
+### A theme written for the `bd-` prefix
+
+Until the rename of #420 the core's classes, ids and `data-*` attributes started with `bd-`. A theme kept outside the repository (`MICELIO_THEME_DIRS`) that selects them fails `theme:check` with `".bd-card" was renamed ".myc-card"`. The fix is one command, run in the theme's folder; it changes nothing but the prefix, though it rewrites any `bd-` word, so review the diff before committing:
+
+```bash
+find . -type f \( -name '*.css' -o -name '*.vue' -o -name '*.ts' -o -name '*.json' \) -not -path '*/node_modules/*' -not -path '*/.git/*' -exec perl -pi -e 's/\bbd-/myc-/g' {} +
+```
+
+The old names are explained by the validator for one release line only. The roles, token names, mode ids and the `data-theme`, `data-scheme`, `data-layout`, `data-variant`, `data-section`, `data-level` and `data-mode` attributes did not change.
+
 ### `sections.css`
 
-Optional. The style of the page sections (the `bd-section-*` hooks and `data-section` / `data-variant`, [reference/hooks.md](reference/hooks.md)) goes here, not in `theme.css`: `theme.css` loads on every page, `sections.css` only on pages that render sections, in the same chunk as the core section CSS and after it, in the layer `myc.theme`. Same rules as `theme.css`, and its gzipped size counts toward the same 25 KB budget. Without it the sections still render, styled from your roles by the core. Every theme styles every section and variant (ADR 0005, section 11), and `/_theme` shows them.
+Optional. The style of the page sections (the `myc-section-*` hooks and `data-section` / `data-variant`, [reference/hooks.md](reference/hooks.md)) goes here, not in `theme.css`: `theme.css` loads on every page, `sections.css` only on pages that render sections, in the same chunk as the core section CSS and after it, in the layer `myc.theme`. Same rules as `theme.css`, and its gzipped size counts toward the same 25 KB budget. Without it the sections still render, styled from your roles by the core. Every theme styles every section and variant (ADR 0005, section 11), and `/_theme` shows them.
 
 ## 5. Messages
 
@@ -208,7 +218,7 @@ Optional. The style of the page sections (the `bd-section-*` hooks and `data-sec
 
 ### The source link
 
-The footer shows a link to the site's source code (`bd-foot-source`, from `runtimeConfig.public.sourceUrl`). The AGPL (section 13) requires it: a theme may restyle it but must keep it visible in every footer layout and mode.
+The footer shows a link to the site's source code (`myc-foot-source`, from `runtimeConfig.public.sourceUrl`). The AGPL (section 13) requires it: a theme may restyle it but must keep it visible in every footer layout and mode.
 
 ### What slots may use, and the license of a theme
 

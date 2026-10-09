@@ -1,30 +1,30 @@
-.bd-wide {
+.myc-wide {
     font-family: var(--font-display);
     font-stretch: 125%;
 }
 
-.bd-eyebrow {
+.myc-eyebrow {
     text-transform: uppercase;
 }
 
-.bd-stretch {
+.myc-stretch {
     transition: font-stretch var(--duration-slow) var(--ease-standard);
 }
 
-.bd-stretch:hover,
-a:hover > .bd-stretch,
-a:focus-visible > .bd-stretch {
+.myc-stretch:hover,
+a:hover > .myc-stretch,
+a:focus-visible > .myc-stretch {
     font-stretch: 125%;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-stretch {
+    .myc-stretch {
         transition: none;
     }
 
-    .bd-stretch:hover,
-    a:hover > .bd-stretch,
-    a:focus-visible > .bd-stretch {
+    .myc-stretch:hover,
+    a:hover > .myc-stretch,
+    a:focus-visible > .myc-stretch {
         font-stretch: inherit;
     }
 }

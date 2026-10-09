@@ -10,12 +10,12 @@ export function buildSegmentedCss(modes: ModeDefinition[]): string {
   const scopes = modes.map(({ id }) => ({ id, scope: `[data-theme="${id}"]` }))
   scopes.push({ id: modes[0]!.id, scope: ':root:not([data-theme])' })
   const selectors = (pick: (id: string) => string, suffix = ''): string => scopes.map(({ id, scope }) => `${scope} ${pick(id)}${suffix}`).join(',\n')
-  const pressed = selectors(id => `.bd-seg[data-mode="${id}"]`)
+  const pressed = selectors(id => `.myc-seg[data-mode="${id}"]`)
   const rules = [`${pressed} {\n  background: var(--ink);\n  color: var(--on-ink);\n}`]
-  // Same as .bd-seg[aria-pressed="true"] in segmented.css, which these selectors outrank
+  // Same as .myc-seg[aria-pressed="true"] in segmented.css, which these selectors outrank
   rules.push(`@media (forced-colors: active) {\n${pressed} {\n  background: Highlight;\n  color: HighlightText;\n}\n}`)
   if (modes.length > 1) {
-    const idle = (id: string): string => `.bd-seg[data-mode]:not([data-mode="${id}"])`
+    const idle = (id: string): string => `.myc-seg[data-mode]:not([data-mode="${id}"])`
     rules.push(`${selectors(idle)} {\n  background: transparent;\n  color: var(--ink-muted);\n}`)
     rules.push(`${selectors(idle, ':hover')} {\n  color: var(--ink);\n}`)
   }

@@ -56,45 +56,45 @@ function select(id: TopicFilter['id']): void {
 </script>
 
 <template>
-  <section id="latest" class="bd-home-section bd-reveal" aria-labelledby="latest-title">
-    <div class="bd-home-head">
-      <div class="bd-home-heading">
-        <p class="bd-eyebrow bd-home-eyebrow" aria-live="polite">{{ eyebrow }}</p>
-        <h2 id="latest-title" class="bd-home-title bd-stretch">{{ t('home.latest.title') }}</h2>
+  <section id="latest" class="myc-home-section myc-reveal" aria-labelledby="latest-title">
+    <div class="myc-home-head">
+      <div class="myc-home-heading">
+        <p class="myc-eyebrow myc-home-eyebrow" aria-live="polite">{{ eyebrow }}</p>
+        <h2 id="latest-title" class="myc-home-title myc-stretch">{{ t('home.latest.title') }}</h2>
       </div>
-      <div class="bd-latest-filters" role="group" :aria-label="t('home.latest.filters')">
+      <div class="myc-latest-filters" role="group" :aria-label="t('home.latest.filters')">
         <template v-for="filter in filters" :key="filter.id">
           <NuxtLink
             v-if="isStatic"
             :to="filter.id === 'all' ? localizePath('/blog') : blogPath({ category: filter.id, page: 1 }, localizePath('/blog'))"
-            class="bd-chip"
+            class="myc-chip"
           >
-            <span class="bd-latest-dot" :style="{ background: filter.color }" aria-hidden="true" />{{ filter.label }}<span class="bd-latest-count">{{ filter.count }}</span>
+            <span class="myc-latest-dot" :style="{ background: filter.color }" aria-hidden="true" />{{ filter.label }}<span class="myc-latest-count">{{ filter.count }}</span>
           </NuxtLink>
           <button
             v-else
             type="button"
-            class="bd-chip"
+            class="myc-chip"
             :aria-pressed="(selected ?? 'all') === filter.id ? 'true' : 'false'"
             @click="select(filter.id)"
           >
-            <span class="bd-latest-dot" :style="{ background: filter.color }" aria-hidden="true" />{{ filter.label }}<span class="bd-latest-count">{{ filter.count }}</span>
+            <span class="myc-latest-dot" :style="{ background: filter.color }" aria-hidden="true" />{{ filter.label }}<span class="myc-latest-count">{{ filter.count }}</span>
           </button>
         </template>
       </div>
     </div>
 
-    <div class="bd-latest-grid" :aria-busy="status === 'pending'">
+    <div class="myc-latest-grid" :aria-busy="status === 'pending'">
       <BdPostCard v-for="post in posts" :key="post.id" v-bind="toPostCard(post)" :transition="post.slug !== featuredSlug" />
-      <NuxtLink v-if="!selected && posts.length" :to="localizePath('/blog')" class="bd-latest-archive">
-        <span class="bd-eyebrow bd-home-eyebrow">{{ t('home.latest.archive') }}</span>
-        <span class="bd-latest-archive-title bd-wide">{{ t('home.latest.archiveTitle') }} <span class="bd-card-arrow" aria-hidden="true">→</span></span>
-        <span class="bd-meta bd-home-eyebrow">{{ t('home.latest.archiveMeta') }}</span>
+      <NuxtLink v-if="!selected && posts.length" :to="localizePath('/blog')" class="myc-latest-archive">
+        <span class="myc-eyebrow myc-home-eyebrow">{{ t('home.latest.archive') }}</span>
+        <span class="myc-latest-archive-title myc-wide">{{ t('home.latest.archiveTitle') }} <span class="myc-card-arrow" aria-hidden="true">→</span></span>
+        <span class="myc-meta myc-home-eyebrow">{{ t('home.latest.archiveMeta') }}</span>
       </NuxtLink>
-      <ThemeEmptyState v-if="!posts.length" class="bd-latest-empty" :style="{ '--empty-accent': emptyColor }">
-        <h3 class="bd-latest-empty-title">{{ emptyTitle }}</h3>
-        <p class="bd-meta bd-home-eyebrow bd-latest-empty-note">{{ themeMessage('latest.emptyNote', 'home.latest.emptyNote') }}</p>
-        <button v-if="selected" type="button" class="bd-chip" @click="select('all')">
+      <ThemeEmptyState v-if="!posts.length" class="myc-latest-empty" :style="{ '--empty-accent': emptyColor }">
+        <h3 class="myc-latest-empty-title">{{ emptyTitle }}</h3>
+        <p class="myc-meta myc-home-eyebrow myc-latest-empty-note">{{ themeMessage('latest.emptyNote', 'home.latest.emptyNote') }}</p>
+        <button v-if="selected" type="button" class="myc-chip" @click="select('all')">
           {{ t('home.latest.showAll') }} <span aria-hidden="true">→</span>
         </button>
       </ThemeEmptyState>

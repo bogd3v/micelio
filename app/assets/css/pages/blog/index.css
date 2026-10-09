@@ -1,18 +1,18 @@
-.bd-blog-head {
+.myc-blog-head {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
     padding: 48px var(--myc-home-gutter) 32px;
 }
 
-.bd-blog-title {
+.myc-blog-title {
     margin: 0;
     font-size: 40px;
     line-height: 48px;
     font-weight: 300;
 }
 
-.bd-blog-lead {
+.myc-blog-lead {
     margin: 0;
     max-width: 560px;
     font-size: 16px;
@@ -21,7 +21,7 @@
     text-wrap: pretty;
 }
 
-.bd-blog-textbtn {
+.myc-blog-textbtn {
     min-height: 44px;
     padding: 0;
     font: 500 12px/16px var(--font-mono);
@@ -33,25 +33,25 @@
     cursor: pointer;
 }
 
-.bd-blog-textbtn:hover {
+.myc-blog-textbtn:hover {
     color: var(--ink);
 }
 
-.bd-blog-body {
+.myc-blog-body {
     display: flex;
     flex-direction: column;
     gap: 64px;
     padding: 0 var(--myc-home-gutter) 64px;
 }
 
-.bd-blog-main {
+.myc-blog-main {
     display: flex;
     flex-direction: column;
     gap: var(--space-8);
     scroll-margin-top: calc(var(--myc-header-h) + var(--space-6));
 }
 
-.bd-blog-pagination {
+.myc-blog-pagination {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
@@ -60,39 +60,39 @@
     border-top: 1px solid var(--line);
 }
 
-.bd-blog :where(.bd-page, .bd-blog-recent, .bd-blog-aside-link, .bd-blog-textbtn):focus-visible {
+.myc-blog :where(.myc-page, .myc-blog-recent, .myc-blog-aside-link, .myc-blog-textbtn):focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
 @media (min-width: 768px) {
-    .bd-blog-head {
+    .myc-blog-head {
         padding: var(--space-section) var(--myc-home-gutter) 48px;
     }
 
-    .bd-blog-title {
+    .myc-blog-title {
         font-size: 48px;
         line-height: 54px;
     }
 
-    .bd-blog-lead {
+    .myc-blog-lead {
         font-size: 19px;
         line-height: 32px;
     }
 
-    .bd-blog-body {
+    .myc-blog-body {
         padding-bottom: var(--space-section);
     }
 
-    .bd-blog-main {
+    .myc-blog-main {
         gap: 48px;
     }
 
-    .bd-blog-empty {
+    .myc-blog-empty {
         min-height: 360px;
     }
 
-    .bd-blog-pagination {
+    .myc-blog-pagination {
         display: flex;
         justify-content: space-between;
         padding-top: var(--space-6);
@@ -100,29 +100,29 @@
 }
 
 @media (min-width: 1024px) {
-    .bd-blog-body {
+    .myc-blog-body {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         column-gap: var(--space-gutter);
         align-items: start;
     }
 
-    .bd-blog-main {
+    .myc-blog-main {
         grid-column: span 9;
     }
 
-    .bd-blog-head {
+    .myc-blog-head {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
         column-gap: var(--space-gutter);
         align-items: end;
     }
 
-    .bd-blog-head > * {
+    .myc-blog-head > * {
         grid-column: 1;
     }
 
-    .bd-blog-head > .bd-blog-controls {
+    .myc-blog-head > .myc-blog-controls {
         grid-column: 2;
         grid-row: 1 / span 3;
         flex-direction: column;

@@ -1,4 +1,4 @@
-.bd-news {
+.myc-news {
     position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -12,7 +12,7 @@
     container-type: inline-size;
 }
 
-.bd-news h3 {
+.myc-news h3 {
     margin: 0;
     font-family: var(--font-display);
     font-stretch: 125%;
@@ -23,30 +23,30 @@
     text-wrap: balance;
 }
 
-.bd-news p {
+.myc-news p {
     margin: 0;
     color: var(--ink-muted);
 }
 
-.bd-news-eyebrow {
+.myc-news-eyebrow {
     color: var(--accent);
 }
 
-.bd-news-label {
+.myc-news-label {
     color: var(--ink-muted);
 }
 
-.bd-news-row {
+.myc-news-row {
     display: flex;
     gap: 0;
 }
 
 @container (max-width: 440px) {
-    .bd-news-row {
+    .myc-news-row {
         flex-direction: column;
     }
 
-    .bd-news .bd-input {
+    .myc-news .myc-input {
         flex: none;
         width: 100%;
         height: 56px;
@@ -55,32 +55,32 @@
         border-bottom: 0;
     }
 
-    .bd-news-row .bd-btn {
+    .myc-news-row .myc-btn {
         flex: none;
         width: 100%;
         height: 56px;
     }
 }
 
-.bd-news .bd-news-msg {
+.myc-news .myc-news-msg {
     font-family: var(--font-mono);
     font-size: 13px;
     line-height: 20px;
 }
 
-.bd-news .bd-news-msg:empty {
+.myc-news .myc-news-msg:empty {
     position: absolute;
 }
 
-.bd-news .bd-news-msg-success {
+.myc-news .myc-news-msg-success {
     color: var(--link);
 }
 
-.bd-news .bd-news-msg-error {
+.myc-news .myc-news-msg-error {
     color: var(--danger);
 }
 
-.bd-news .bd-news-note {
+.myc-news .myc-news-note {
     font-family: var(--font-mono);
     font-size: 13px;
     line-height: 20px;

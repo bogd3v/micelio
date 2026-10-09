@@ -15,5 +15,5 @@ export interface UseStaticSite {
 export function useStaticSite(): UseStaticSite {
   const { siteMode, blogEnabled } = useRuntimeConfig().public
   const mode = parseSiteMode(siteMode)
-  return { isStatic: isStaticMode(mode), isLanding: mode === 'landing', blogEnabled: isBlogEnabled(blogEnabled), menuId: 'bd-site-nav' }
+  return { isStatic: isStaticMode(mode), isLanding: mode === 'landing', blogEnabled: isBlogEnabled(blogEnabled), menuId: 'myc-site-nav' }
 }

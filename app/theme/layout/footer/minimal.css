@@ -1,5 +1,5 @@
 /* One compact row: mark, links and socials, then the legal line (ADR 0005, section 5) */
-.bd-foot:where([data-layout="minimal"]) {
+.myc-foot:where([data-layout="minimal"]) {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -8,7 +8,7 @@
     border-top: 1px solid var(--line);
 }
 
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-main {
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-main {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -16,21 +16,21 @@
     padding: 40px 20px 32px;
 }
 
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-brand {
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-brand {
     display: inline-flex;
     align-items: center;
     color: var(--ink);
     text-decoration: none;
 }
 
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-nav {
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-nav {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: var(--space-2) var(--space-6);
 }
 
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-socials {
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-socials {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -40,9 +40,9 @@
     list-style: none;
 }
 
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-link,
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-soc,
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-privacy {
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-link,
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-soc,
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-privacy {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
@@ -52,18 +52,18 @@
     transition: color var(--duration-base) var(--ease-standard);
 }
 
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-link:hover,
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-soc:hover,
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-privacy:hover {
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-link:hover,
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-soc:hover,
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-privacy:hover {
     color: var(--ink);
 }
 
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-privacy {
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-privacy {
     text-decoration: underline;
     text-underline-offset: 3px;
 }
 
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-credits {
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-credits {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -76,20 +76,20 @@
     border-top: 1px solid var(--line);
 }
 
-:where(.bd-foot[data-layout="minimal"]) .bd-foot-legal {
+:where(.myc-foot[data-layout="minimal"]) .myc-foot-legal {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0;
 }
 
-:where(.bd-foot[data-layout="minimal"]) :where(.bd-foot-brand, .bd-foot-soc, .bd-foot-link, .bd-foot-privacy):focus-visible {
+:where(.myc-foot[data-layout="minimal"]) :where(.myc-foot-brand, .myc-foot-soc, .myc-foot-link, .myc-foot-privacy):focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
 @media (min-width: 768px) {
-    :where(.bd-foot[data-layout="minimal"]) .bd-foot-main {
+    :where(.myc-foot[data-layout="minimal"]) .myc-foot-main {
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: space-between;
@@ -97,7 +97,7 @@
         padding: 32px var(--space-inline);
     }
 
-    :where(.bd-foot[data-layout="minimal"]) .bd-foot-credits {
+    :where(.myc-foot[data-layout="minimal"]) .myc-foot-credits {
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: space-between;
@@ -106,30 +106,30 @@
         text-align: left;
     }
 
-    :where(.bd-foot[data-layout="minimal"]) .bd-foot-legal {
+    :where(.myc-foot[data-layout="minimal"]) .myc-foot-legal {
         display: block;
     }
 
-    :where(.bd-foot[data-layout="minimal"]) .bd-foot-privacy {
+    :where(.myc-foot[data-layout="minimal"]) .myc-foot-privacy {
         display: inline;
         min-height: 0;
     }
 
-    :where(.bd-foot[data-layout="minimal"]) .bd-foot-privacy::before {
+    :where(.myc-foot[data-layout="minimal"]) .myc-foot-privacy::before {
         content: " · ";
         display: inline-block;
         white-space: pre;
     }
 
-    :where(.bd-foot[data-layout="minimal"]) .bd-foot-credits .bd-foot-link {
+    :where(.myc-foot[data-layout="minimal"]) .myc-foot-credits .myc-foot-link {
         min-height: 0;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    :where(.bd-foot[data-layout="minimal"]) .bd-foot-soc,
-    :where(.bd-foot[data-layout="minimal"]) .bd-foot-link,
-    :where(.bd-foot[data-layout="minimal"]) .bd-foot-privacy {
+    :where(.myc-foot[data-layout="minimal"]) .myc-foot-soc,
+    :where(.myc-foot[data-layout="minimal"]) .myc-foot-link,
+    :where(.myc-foot[data-layout="minimal"]) .myc-foot-privacy {
         transition: none;
     }
 }

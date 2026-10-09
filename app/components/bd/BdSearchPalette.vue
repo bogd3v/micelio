@@ -197,53 +197,53 @@ onBeforeUnmount(() => clearTimeout(debounceTimer))
 <template>
   <dialog
     ref="dialogRef"
-    class="bd-palette"
+    class="myc-palette"
     :aria-label="t('bd.search.dialog', { site: site.name })"
     @cancel="onCancel"
     @close="open && close()"
     @click="onDialogClick"
   >
-    <div class="bd-palette-panel">
-      <div class="bd-palette-bar">
-        <label for="bd-palette-input" class="bd-sr">{{ t('bd.search.placeholder') }}</label>
-        <span class="bd-palette-prompt" aria-hidden="true">→</span>
+    <div class="myc-palette-panel">
+      <div class="myc-palette-bar">
+        <label for="myc-palette-input" class="myc-sr">{{ t('bd.search.placeholder') }}</label>
+        <span class="myc-palette-prompt" aria-hidden="true">→</span>
         <input
-          id="bd-palette-input"
+          id="myc-palette-input"
           ref="inputRef"
           v-model="query"
-          class="bd-palette-input"
+          class="myc-palette-input"
           type="search"
           role="combobox"
           autocomplete="off"
           spellcheck="false"
           aria-autocomplete="list"
-          aria-controls="bd-palette-list"
+          aria-controls="myc-palette-list"
           :aria-expanded="options.length > 0 ? 'true' : 'false'"
           :aria-activedescendant="activeId"
           :placeholder="t('bd.search.placeholder')"
           @keydown="onKeydown"
         >
-        <button type="button" class="bd-chip bd-palette-esc" :aria-label="t('bd.search.close')" @click="close">Esc</button>
+        <button type="button" class="myc-chip myc-palette-esc" :aria-label="t('bd.search.close')" @click="close">Esc</button>
       </div>
 
-      <label class="bd-meta bd-palette-content">
+      <label class="myc-meta myc-palette-content">
         <input v-model="inContent" type="checkbox">
         {{ t('bd.search.content') }}
       </label>
 
-      <p v-if="!searching" class="bd-meta bd-palette-note">{{ t('bd.search.minLength', { count: MIN_SEARCH_LENGTH }) }}</p>
-      <p v-else-if="loading" class="bd-meta bd-palette-note">{{ t('bd.search.loading') }}</p>
-      <p v-else-if="empty" class="bd-meta bd-palette-note">{{ t('bd.search.empty', { query: trimmed }) }}</p>
+      <p v-if="!searching" class="myc-meta myc-palette-note">{{ t('bd.search.minLength', { count: MIN_SEARCH_LENGTH }) }}</p>
+      <p v-else-if="loading" class="myc-meta myc-palette-note">{{ t('bd.search.loading') }}</p>
+      <p v-else-if="empty" class="myc-meta myc-palette-note">{{ t('bd.search.empty', { query: trimmed }) }}</p>
 
-      <div id="bd-palette-list" class="bd-palette-list" role="listbox" :aria-label="t('bd.search.dialog', { site: site.name })">
+      <div id="myc-palette-list" class="myc-palette-list" role="listbox" :aria-label="t('bd.search.dialog', { site: site.name })">
         <div
           v-for="group in groups"
           :key="group.kind"
           role="group"
-          :aria-labelledby="`bd-palette-group-${group.kind}`"
-          class="bd-palette-group"
+          :aria-labelledby="`myc-palette-group-${group.kind}`"
+          class="myc-palette-group"
         >
-          <div :id="`bd-palette-group-${group.kind}`" class="bd-eyebrow bd-palette-heading" role="presentation">
+          <div :id="`myc-palette-group-${group.kind}`" class="myc-eyebrow myc-palette-heading" role="presentation">
             {{ t(`bd.search.groups.${group.kind}`) }}
           </div>
           <div
@@ -252,25 +252,25 @@ onBeforeUnmount(() => clearTimeout(debounceTimer))
             :key="option.id"
             role="option"
             :aria-selected="option.id === activeId ? 'true' : 'false'"
-            :class="['bd-result', { 'bd-result-active': option.id === activeId }]"
+            :class="['myc-result', { 'myc-result-active': option.id === activeId }]"
             @click="run(option)"
             @mousemove="activeIndex = indexOf(option)"
           >
-            <span class="bd-eyebrow bd-result-kind" aria-hidden="true">{{ t(`bd.search.kinds.${option.kind}`) }}</span>
-            <span v-if="option.color" class="bd-result-dot" :style="{ background: option.color }" aria-hidden="true" />
-            <span class="bd-result-text">
-              <span class="bd-result-label"><BdHighlight :text="option.label" :query="option.kind === 'article' ? trimmed : undefined" /></span>
-              <span v-if="option.snippet" class="bd-result-snippet"><BdHighlight :text="option.snippet" :query="trimmed" /></span>
+            <span class="myc-eyebrow myc-result-kind" aria-hidden="true">{{ t(`bd.search.kinds.${option.kind}`) }}</span>
+            <span v-if="option.color" class="myc-result-dot" :style="{ background: option.color }" aria-hidden="true" />
+            <span class="myc-result-text">
+              <span class="myc-result-label"><BdHighlight :text="option.label" :query="option.kind === 'article' ? trimmed : undefined" /></span>
+              <span v-if="option.snippet" class="myc-result-snippet"><BdHighlight :text="option.snippet" :query="trimmed" /></span>
             </span>
-            <span v-if="option.hint" class="bd-meta bd-result-hint">{{ option.hint }}</span>
-            <span v-else class="bd-meta bd-result-hint" aria-hidden="true">→</span>
+            <span v-if="option.hint" class="myc-meta myc-result-hint">{{ option.hint }}</span>
+            <span v-else class="myc-meta myc-result-hint" aria-hidden="true">→</span>
           </div>
         </div>
       </div>
 
-      <p class="bd-sr" role="status" aria-live="polite">{{ announcement }}</p>
+      <p class="myc-sr" role="status" aria-live="polite">{{ announcement }}</p>
 
-      <div class="bd-meta bd-palette-foot" aria-hidden="true">
+      <div class="myc-meta myc-palette-foot" aria-hidden="true">
         <span>{{ t('bd.search.help') }}</span>
         <span v-if="searching && !loading">{{ t('bd.search.results', { count: matchCount }, matchCount) }}</span>
       </div>

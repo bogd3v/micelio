@@ -29,24 +29,24 @@ const countLabel = computed<string>(() => t('home.guide.count', { count: padCoun
 <template>
   <NuxtLink
     :to="blogPath({ category: props.category, page: 1 }, localizePath('/blog'))"
-    :class="['bd-guide-card', { 'bd-guide-pillar': pillar }]"
+    :class="['myc-guide-card', { 'myc-guide-pillar': pillar }]"
   >
-    <div class="bd-guide-head">
+    <div class="myc-guide-head">
       <BdCategoryTag :category="category" />
-      <span class="bd-meta bd-guide-label">{{ label }}</span>
+      <span class="myc-meta myc-guide-label">{{ label }}</span>
     </div>
-    <div class="bd-guide-art">
+    <div class="myc-guide-art">
       <ThemeIllustration :category="category" :size="200" />
     </div>
-    <h3 class="bd-guide-title">{{ t(`home.guide.topics.${category}.title`) }}</h3>
-    <p v-if="pillar" class="bd-guide-description">{{ t(`home.guide.topics.${category}.description`) }}</p>
-    <div class="bd-guide-species">
-      <p v-if="caption(category)" class="bd-guide-bird">{{ caption(category)!.name }} · <i>{{ caption(category)!.scientific }}</i></p>
-      <p v-if="pillar && note" class="bd-guide-note">{{ note }}</p>
+    <h3 class="myc-guide-title">{{ t(`home.guide.topics.${category}.title`) }}</h3>
+    <p v-if="pillar" class="myc-guide-description">{{ t(`home.guide.topics.${category}.description`) }}</p>
+    <div class="myc-guide-species">
+      <p v-if="caption(category)" class="myc-guide-bird">{{ caption(category)!.name }} · <i>{{ caption(category)!.scientific }}</i></p>
+      <p v-if="pillar && note" class="myc-guide-note">{{ note }}</p>
     </div>
-    <div class="bd-meta bd-guide-foot">
-      <span><span v-if="pillar" class="bd-guide-foot-pillar">{{ label }} · </span>{{ countLabel }}</span>
-      <span class="bd-card-arrow" aria-hidden="true">→</span>
+    <div class="myc-meta myc-guide-foot">
+      <span><span v-if="pillar" class="myc-guide-foot-pillar">{{ label }} · </span>{{ countLabel }}</span>
+      <span class="myc-card-arrow" aria-hidden="true">→</span>
     </div>
   </NuxtLink>
 </template>

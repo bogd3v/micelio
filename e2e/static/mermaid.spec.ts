@@ -17,7 +17,7 @@ function trackRequests(page: Page): string[] {
 async function drawDiagrams(page: Page): Promise<void> {
   const blocks = page.locator('micelio-mermaid')
   for (let index = 0; index < await blocks.count(); index++) await blocks.nth(index).scrollIntoViewIfNeeded()
-  await expect(page.locator('.bd-mermaid-diagram svg')).toHaveCount(2)
+  await expect(page.locator('.myc-mermaid-diagram svg')).toHaveCount(2)
 }
 
 test('the page declares the island and loads only the loader', async ({ request }) => {
@@ -48,13 +48,13 @@ test('nothing of Mermaid loads until a block is near, and then the diagrams are 
   expect(paths.filter(path => path.startsWith('/_islands/chunks/')).length).toBeGreaterThan(0)
   expect(paths.filter(path => /^\/_nuxt\/.*\.m?js$/.test(path))).toEqual([])
   await expect(page.getByRole('img', { name: 'SSH login flow' }).locator('svg')).toBeVisible()
-  await expect(page.locator('.bd-mermaid-diagram').nth(1)).toHaveAttribute('aria-label', 'Diagram')
+  await expect(page.locator('.myc-mermaid-diagram').nth(1)).toHaveAttribute('aria-label', 'Diagram')
 })
 
 test('a diagram that cannot be parsed keeps its source', async ({ page }) => {
   await page.goto(ARTICLE, { waitUntil: 'networkidle' })
   await drawDiagrams(page)
-  const broken = page.locator('micelio-mermaid:not(.bd-mermaid-ready)')
+  const broken = page.locator('micelio-mermaid:not(.myc-mermaid-ready)')
   await expect(broken).toHaveCount(1)
   await expect(broken.locator('code')).toBeVisible()
 })

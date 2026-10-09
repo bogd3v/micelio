@@ -18,7 +18,7 @@ export const HooksSchema = z.strictObject({
   $comment: z.string().optional(),
   contract: z.literal(1),
   attributes: z.record(z.string().regex(/^data-[a-z-]+$/), Hook),
-  classes: z.record(z.string().regex(/^bd-[a-z0-9-]+$/), Hook),
+  classes: z.record(z.string().regex(/^myc-[a-z0-9-]+$/), Hook),
 })
 
 export interface Hooks {
@@ -28,8 +28,8 @@ export interface Hooks {
 
 export function parseHooks(raw: unknown): Hooks {
   const hooks = HooksSchema.parse(raw)
-  // A state that is a bare class ("bd-card-featured") is a hook too: it is documented as one
-  const states = Object.values(hooks.classes).flatMap(hook => (typeof hook === 'string' ? [] : hook.states ?? [])).filter(state => /^bd-[a-z0-9-]+$/.test(state))
+  // A state that is a bare class ("myc-card-featured") is a hook too: it is documented as one
+  const states = Object.values(hooks.classes).flatMap(hook => (typeof hook === 'string' ? [] : hook.states ?? [])).filter(state => /^myc-[a-z0-9-]+$/.test(state))
   return { classes: new Set([...Object.keys(hooks.classes), ...states]), attributes: new Set(Object.keys(hooks.attributes)) }
 }
 

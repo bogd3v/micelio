@@ -1,18 +1,18 @@
-.bd-article-after {
+.myc-article-after {
     display: flex;
     flex-direction: column;
     gap: var(--space-8);
     margin-top: var(--space-12);
 }
 
-.bd-article-tags {
+.myc-article-tags {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-3);
 }
 
-.bd-author-card {
+.myc-author-card {
     display: flex;
     align-items: flex-start;
     gap: var(--space-6);
@@ -21,23 +21,23 @@
     border: 1px solid var(--line);
 }
 
-.bd-author-card-body {
+.myc-author-card-body {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
 }
 
-.bd-author-card-name {
+.myc-author-card-name {
     margin: 0;
     font: var(--text-heading-3);
 }
 
-.bd-author-card-bio {
+.myc-author-card-bio {
     margin: 0;
     color: var(--ink-muted);
 }
 
-.bd-author-card-link {
+.myc-author-card-link {
     display: inline-flex;
     align-items: center;
     align-self: flex-start;
@@ -46,11 +46,11 @@
     text-decoration: none;
 }
 
-.bd-author-card-link:hover {
+.myc-author-card-link:hover {
     color: var(--ink);
 }
 
-.bd-coffee {
+.myc-coffee {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -60,13 +60,13 @@
     border: 1px solid var(--line);
 }
 
-.bd-coffee-cup {
+.myc-coffee-cup {
     display: block;
     flex: none;
     overflow: visible;
 }
 
-.bd-coffee-body {
+.myc-coffee-body {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -74,42 +74,42 @@
     min-width: 0;
 }
 
-.bd-coffee-title {
+.myc-coffee-title {
     margin: 0;
     font: var(--text-heading-2);
 }
 
-.bd-coffee-text {
+.myc-coffee-text {
     margin: 0;
     color: var(--ink-muted);
     text-wrap: pretty;
 }
 
-.bd-coffee-handle {
+.myc-coffee-handle {
     margin: 0;
     font-size: 12px;
     text-transform: uppercase;
     color: var(--ink-muted);
 }
 
-.bd-coffee-button {
+.myc-coffee-button {
     flex: none;
 }
 
-.bd-steam {
-    animation: bd-steam 3.6s ease-out infinite;
+.myc-steam {
+    animation: myc-steam 3.6s ease-out infinite;
     transform-box: fill-box;
 }
 
-.bd-steam-2 {
+.myc-steam-2 {
     animation-delay: -1.2s;
 }
 
-.bd-steam-3 {
+.myc-steam-3 {
     animation-delay: -2.4s;
 }
 
-.bd-share {
+.myc-share {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -118,11 +118,11 @@
     border-top: 1px solid var(--line);
 }
 
-.bd-share .bd-eyebrow {
+.myc-share .myc-eyebrow {
     flex-basis: 100%;
 }
 
-.bd-share-link {
+.myc-share-link {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
@@ -137,37 +137,37 @@
     transition: color var(--duration-base) var(--ease-standard);
 }
 
-.bd-share-link:hover {
+.myc-share-link:hover {
     color: var(--ink);
 }
 
-.bd-copy-link {
+.myc-copy-link {
     display: inline-flex;
 }
 
-.bd-related-news {
+.myc-related-news {
     max-width: none;
 }
 
-.bd-related-grid {
+.myc-related-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-8);
     align-items: start;
 }
 
-.bd-article-page :where(.bd-toc-link, .bd-article-toc-summary, .bd-share-link, .bd-author-card-link, .bd-comment-instance-link, .bd-blog-textbtn):focus-visible {
+.myc-article-page :where(.myc-toc-link, .myc-article-toc-summary, .myc-share-link, .myc-author-card-link, .myc-comment-instance-link, .myc-blog-textbtn):focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
 @media (min-width: 768px) {
-    .bd-author-card,
-    .bd-coffee {
+    .myc-author-card,
+    .myc-coffee {
         padding: var(--space-8);
     }
 
-    .bd-coffee {
+    .myc-coffee {
         flex-direction: row;
         align-items: center;
         gap: var(--space-8);
@@ -175,26 +175,26 @@
 }
 
 @media (min-width: 1024px) {
-    .bd-related-grid {
+    .myc-related-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    .bd-related-news {
+    .myc-related-news {
         grid-column: span 2;
     }
 
-    .bd-related-solo .bd-related-news {
+    .myc-related-solo .myc-related-news {
         grid-column: 1 / -1;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-steam {
+    .myc-steam {
         animation: none;
         opacity: 0.6;
     }
 
-    .bd-share-link {
+    .myc-share-link {
         transition: none;
     }
 }

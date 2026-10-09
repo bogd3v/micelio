@@ -12,9 +12,9 @@ describe('BdCodeBlock', () => {
     const wrapper = await mountSuspended(BdCodeBlock, {
       props: { code: '$ ollama run llama3.2\n>>> hola\n', lang: 'bash', filename: 'terminal' },
     })
-    expect(wrapper.get('.bd-code-lang').text()).toBe('bash')
+    expect(wrapper.get('.myc-code-lang').text()).toBe('bash')
     expect(wrapper.text()).toContain('terminal')
-    expect(wrapper.findAll('.bd-prompt')).toHaveLength(1)
+    expect(wrapper.findAll('.myc-prompt')).toHaveLength(1)
     expect(wrapper.get('code').text()).toBe('$ ollama run llama3.2\n>>> hola')
   })
 
@@ -22,7 +22,7 @@ describe('BdCodeBlock', () => {
     const writeText = vi.fn().mockResolvedValue(undefined)
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } })
     const wrapper = await mountSuspended(BdCodeBlock, { props: { code: '$ npm install\n$ npm run dev' } })
-    const button = wrapper.get('button.bd-code-copy')
+    const button = wrapper.get('button.myc-code-copy')
     expect(button.text()).toBe('Copy')
     expect(button.attributes('aria-label')).toBe('Copy code')
     await button.trigger('click')

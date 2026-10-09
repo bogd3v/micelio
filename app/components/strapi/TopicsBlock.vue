@@ -37,26 +37,26 @@ function label(topic: StrapiTopic): string {
 </script>
 
 <template>
-  <section class="bd-home-section bd-reveal" :aria-label="block.title || block.eyebrow || undefined">
-    <div v-if="block.eyebrow || block.title || block.intro" class="bd-home-head">
-      <div class="bd-home-heading">
-        <p v-if="block.eyebrow" class="bd-eyebrow bd-home-eyebrow">{{ block.eyebrow }}</p>
-        <h2 v-if="block.title" class="bd-home-title bd-stretch">{{ block.title }}</h2>
+  <section class="myc-home-section myc-reveal" :aria-label="block.title || block.eyebrow || undefined">
+    <div v-if="block.eyebrow || block.title || block.intro" class="myc-home-head">
+      <div class="myc-home-heading">
+        <p v-if="block.eyebrow" class="myc-eyebrow myc-home-eyebrow">{{ block.eyebrow }}</p>
+        <h2 v-if="block.title" class="myc-home-title myc-stretch">{{ block.title }}</h2>
       </div>
-      <p v-if="block.intro" class="bd-home-intro">{{ block.intro }}</p>
+      <p v-if="block.intro" class="myc-home-intro">{{ block.intro }}</p>
     </div>
 
-    <div class="bd-topic-grid">
+    <div class="myc-topic-grid">
       <StrapiTopicCard v-for="topic in pillars" :key="topic.id" :topic="topic" :label="label(topic)" pillar />
 
-      <p v-if="others.length" class="bd-meta bd-topic-more">
+      <p v-if="others.length" class="myc-meta myc-topic-more">
         <span :id="alsoWriteId">{{ t('about.alsoWrite') }}</span>
         <span aria-hidden="true">{{ t('about.swipe') }}</span>
       </p>
       <div
         v-if="others.length"
         ref="othersRef"
-        class="bd-topic-others"
+        class="myc-topic-others"
         :role="scrolls ? 'group' : undefined"
         :tabindex="scrolls ? 0 : undefined"
         :aria-labelledby="scrolls ? alsoWriteId : undefined"
@@ -65,7 +65,7 @@ function label(topic: StrapiTopic): string {
       </div>
     </div>
 
-    <p v-if="block.footnoteLabel || block.footnote" class="bd-meta bd-topic-footnote">
+    <p v-if="block.footnoteLabel || block.footnote" class="myc-meta myc-topic-footnote">
       <span v-if="block.footnoteLabel">{{ block.footnoteLabel }}</span>
       <span v-if="block.footnote"><span aria-hidden="true">→ </span>{{ block.footnote }}</span>
     </p>

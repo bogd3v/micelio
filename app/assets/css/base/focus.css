@@ -1,12 +1,12 @@
-:where(.bd-btn, .bd-tag, .bd-code-copy, .bd-brand, .bd-nav-link, .bd-seg, .bd-chip, .bd-iconbtn, .bd-strip-link):focus-visible,
-.bd-card:has(.bd-card-link:focus-visible) {
+:where(.myc-btn, .myc-tag, .myc-code-copy, .myc-brand, .myc-nav-link, .myc-seg, .myc-chip, .myc-iconbtn, .myc-strip-link):focus-visible,
+.myc-card:has(.myc-card-link:focus-visible) {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
 @media (forced-colors: active) {
-    :where(.bd-btn, .bd-tag, .bd-code-copy, .bd-brand, .bd-nav-link, .bd-seg, .bd-chip, .bd-iconbtn, .bd-strip-link):focus-visible,
-    .bd-card:has(.bd-card-link:focus-visible) {
+    :where(.myc-btn, .myc-tag, .myc-code-copy, .myc-brand, .myc-nav-link, .myc-seg, .myc-chip, .myc-iconbtn, .myc-strip-link):focus-visible,
+    .myc-card:has(.myc-card-link:focus-visible) {
         outline: 2px solid Highlight;
         outline-offset: 2px;
     }

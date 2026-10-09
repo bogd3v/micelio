@@ -1,11 +1,11 @@
-.bd-fedi-bar {
+.myc-fedi-bar {
     display: flex;
     flex-direction: column;
     background: var(--surface-raised);
     border: 1px solid var(--line);
 }
 
-.bd-fedi-bar-head {
+.myc-fedi-bar-head {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -14,7 +14,7 @@
     padding: var(--space-2) var(--space-2) var(--space-2) 20px;
 }
 
-.bd-fedi-bar-stats {
+.myc-fedi-bar-stats {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -24,22 +24,22 @@
     color: var(--ink-muted);
 }
 
-.bd-fedi-bar-count {
+.myc-fedi-bar-count {
     color: var(--ink);
 }
 
-.bd-fedi-bar-link {
+.myc-fedi-bar-link {
     color: inherit;
     text-decoration: none;
 }
 
-.bd-fedi-bar-link:hover {
+.myc-fedi-bar-link:hover {
     color: var(--ink);
     text-decoration: underline;
     text-underline-offset: 4px;
 }
 
-.bd-fedi-reply {
+.myc-fedi-reply {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -47,13 +47,13 @@
     border-top: 1px solid var(--line);
 }
 
-.bd-fedi-reply-text {
+.myc-fedi-reply-text {
     margin: 0;
     font-size: 15px;
     line-height: 24px;
 }
 
-.bd-fedi-reply-url {
+.myc-fedi-reply-url {
     display: flex;
     align-items: center;
     gap: var(--space-3);
@@ -65,10 +65,10 @@
     border: 1px solid var(--line);
 }
 
-.bd-fedi-reply-address {
+.myc-fedi-reply-address {
     flex-grow: 1;
 }
 
-.bd-fedi-reply-url .bd-chip {
+.myc-fedi-reply-url .myc-chip {
     flex: none;
 }

@@ -15,8 +15,8 @@ const caption = computed<string>(() => mediaCaption(props.block))
 </script>
 
 <template>
-  <figure class="bd-fig">
-    <div class="bd-fig-media">
+  <figure class="myc-fig">
+    <div class="myc-fig-media">
       <NuxtImg
         :src="src"
         :alt="block.file.alternativeText || 'Media'"
@@ -27,8 +27,8 @@ const caption = computed<string>(() => mediaCaption(props.block))
       />
     </div>
     <figcaption v-if="caption || block.credit">
-      <span v-if="caption || figureNumber" class="bd-fig-cap">
-        <span v-if="figureNumber" class="bd-fig-n">{{ t('bd.figure.number', { n: formatFigureNumber(figureNumber) }) }}</span>
+      <span v-if="caption || figureNumber" class="myc-fig-cap">
+        <span v-if="figureNumber" class="myc-fig-n">{{ t('bd.figure.number', { n: formatFigureNumber(figureNumber) }) }}</span>
         {{ caption }}
       </span>
       <BdFigureCredit v-if="block.credit" :credit="block.credit" />

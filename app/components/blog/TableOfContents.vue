@@ -31,13 +31,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <nav v-if="headings.length" class="bd-toc" :aria-label="t('post.toc')">
-    <p class="bd-eyebrow bd-toc-title">{{ t('post.toc') }}</p>
+  <nav v-if="headings.length" class="myc-toc" :aria-label="t('post.toc')">
+    <p class="myc-eyebrow myc-toc-title">{{ t('post.toc') }}</p>
     <a
       v-for="heading in headings"
       :key="heading.id"
       :href="`#${heading.id}`"
-      :class="['bd-toc-link', { 'bd-toc-sub': heading.level === 3 }]"
+      :class="['myc-toc-link', { 'myc-toc-sub': heading.level === 3 }]"
       :aria-current="activeId === heading.id ? 'true' : undefined"
       @click="activeId = heading.id"
     >

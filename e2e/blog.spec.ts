@@ -37,7 +37,7 @@ test('filters by tag from the chips built from the real tags', async ({ page }) 
 
 test('opens the blog filtered by a tag from an article', async ({ page }) => {
   await page.goto('/blog/understanding-vue-composables', { waitUntil: 'networkidle' })
-  const tags = page.locator('.bd-article-tags')
+  const tags = page.locator('.myc-article-tags')
   await expect(tags.getByRole('link')).toHaveText(['#Vue', '#TypeScript'])
   await tags.getByRole('link', { name: '#TypeScript' }).click()
   await expect(page).toHaveURL(/\/blog\/tag\/typescript$/)
@@ -63,7 +63,7 @@ test('searches titles from three letters and keeps the term in the URL', async (
 test('shows the empty state and clears the filters', async ({ page }) => {
   await page.goto('/blog/category/privacidad', { waitUntil: 'networkidle' })
   await expect(page.getByRole('heading', { name: 'No articles found', level: 2 })).toBeVisible()
-  await page.locator('.bd-blog-empty').getByRole('button', { name: 'Clear filters' }).click()
+  await page.locator('.myc-blog-empty').getByRole('button', { name: 'Clear filters' }).click()
   await expect(page).toHaveURL(/\/blog$/)
   await expect(page.getByRole('heading', { name: 'Understanding Vue Composables', level: 3 })).toBeVisible()
 })
@@ -97,35 +97,35 @@ test('switches to the log view, grouped by month, and keeps it in the URL', asyn
 
   const february = page.getByRole('region', { name: 'February 2026' })
   await expect(february.getByRole('link', { name: 'Understanding Vue Composables' })).toBeVisible()
-  await expect(february.locator('.bd-log-month-count')).toHaveText('01 article')
+  await expect(february.locator('.myc-log-month-count')).toHaveText('01 article')
   await expect(page.getByRole('region', { name: 'January 2026' }).getByRole('link', { name: 'Linux Server Hardening Guide' })).toBeVisible()
-  await expect(page.locator('.bd-card')).toHaveCount(0)
+  await expect(page.locator('.myc-card')).toHaveCount(0)
 
   await page.reload({ waitUntil: 'networkidle' })
   await expect(views.getByRole('button', { name: 'Log' })).toHaveAttribute('aria-pressed', 'true')
-  await expect(page.locator('.bd-log-month')).toHaveCount(2)
+  await expect(page.locator('.myc-log-month')).toHaveCount(2)
 })
 
 test('keeps the log view while filtering', async ({ page }) => {
   await page.goto('/blog?view=log', { waitUntil: 'networkidle' })
   await page.getByRole('group', { name: 'Filter by category' }).getByRole('link', { name: /Linux/ }).click()
   await expect(page).toHaveURL(/\/blog\/category\/linux\?view=log$/)
-  await expect(page.locator('.bd-log-row')).toHaveCount(1)
-  await expect(page.locator('.bd-log-row').getByRole('link', { name: 'Linux Server Hardening Guide' })).toBeVisible()
+  await expect(page.locator('.myc-log-row')).toHaveCount(1)
+  await expect(page.locator('.myc-log-row').getByRole('link', { name: 'Linux Server Hardening Guide' })).toBeVisible()
 })
 
 test('names the months in Spanish and shows the fediverse counts in the log', async ({ page }) => {
   await page.goto('/es/blog?view=log', { waitUntil: 'networkidle' })
   await expect(page.getByRole('group', { name: 'Vista' }).getByRole('button', { name: 'Bitácora' })).toHaveAttribute('aria-pressed', 'true')
   const month = page.getByRole('region', { name: 'febrero 2026' })
-  await expect(month.locator('.bd-log-month-count')).toHaveText('01 artículo')
-  await expect(month.locator('.bd-log-stats')).toHaveText(/◆\s+7 me gusta\s+·\s+3 impulsos/)
+  await expect(month.locator('.myc-log-month-count')).toHaveText('01 artículo')
+  await expect(month.locator('.myc-log-stats')).toHaveText(/◆\s+7 me gusta\s+·\s+3 impulsos/)
 })
 
 test('sorts the blog from the select and keeps the order in the URL', async ({ page }) => {
   await page.goto('/blog', { waitUntil: 'networkidle' })
   const sort = page.getByLabel('Sort')
-  const titles = page.locator('.bd-blog-grid .bd-card-title')
+  const titles = page.locator('.myc-blog-grid .myc-card-title')
   await expect(sort).toHaveValue('recent')
   await expect(titles).toHaveText(['Understanding Vue Composables', 'Linux Server Hardening Guide'])
 
@@ -156,20 +156,20 @@ test('searches the article body from the blog and keeps it in the URL', async ({
   await page.goto('/blog', { waitUntil: 'networkidle' })
   await page.getByRole('searchbox', { name: 'Search articles' }).fill('ssh')
   await expect(page).toHaveURL(/search=ssh/)
-  await expect(page.locator('.bd-card')).toHaveCount(0)
+  await expect(page.locator('.myc-card')).toHaveCount(0)
 
   await page.getByRole('checkbox', { name: 'Also search the content' }).check()
   await expect(page).toHaveURL(/content=1/)
-  await expect(page.locator('.bd-blog-hint')).toHaveText('3 letters minimum · searches titles, summaries and content')
-  const card = page.locator('.bd-card')
+  await expect(page.locator('.myc-blog-hint')).toHaveText('3 letters minimum · searches titles, summaries and content')
+  const card = page.locator('.myc-card')
   await expect(card).toHaveCount(1)
   await expect(card.getByRole('link', { name: 'Linux Server Hardening Guide' })).toBeVisible()
-  await expect(card.locator('.bd-card-snippet')).toHaveText('Start with SSH key authentication before anything else.')
-  await expect(card.locator('.bd-card-snippet mark')).toHaveText('SSH')
+  await expect(card.locator('.myc-card-snippet')).toHaveText('Start with SSH key authentication before anything else.')
+  await expect(card.locator('.myc-card-snippet mark')).toHaveText('SSH')
 
   await page.reload({ waitUntil: 'networkidle' })
   await expect(page.getByRole('checkbox', { name: 'Also search the content' })).toBeChecked()
-  await expect(page.locator('.bd-card')).toHaveCount(1)
+  await expect(page.locator('.myc-card')).toHaveCount(1)
 })
 
 test('replaces the category with the tag: one filter per URL', async ({ page }) => {

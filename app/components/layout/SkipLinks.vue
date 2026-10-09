@@ -18,14 +18,14 @@ function skipToSearch() {
 
 <template>
   <div
-    class="bd-skip-links"
+    class="myc-skip-links"
     role="navigation"
     :aria-label="t('common.ariaSkipLinks')"
   >
-    <div class="bd-skip-links-bar">
+    <div class="myc-skip-links-bar">
       <a
         href="#main-content"
-        class="bd-skip-link"
+        class="myc-skip-link"
         @click.prevent="skipToContent"
       >
         {{ t('common.skipToMain') }}
@@ -33,7 +33,7 @@ function skipToSearch() {
       <a
         v-if="searchOn && !isStatic"
         href="#search"
-        class="bd-skip-link"
+        class="myc-skip-link"
         @click.prevent="skipToSearch"
       >
         {{ t('common.skipToSearch') }}

@@ -13,7 +13,7 @@ async function signInAsReader(page: Page, baseURL: string | undefined): Promise<
 test.describe('search palette', () => {
   test('keeps focus inside, closes with Escape and returns focus to the opener', async ({ page }) => {
     await page.goto('/', { waitUntil: 'networkidle' })
-    const opener = page.getByRole('button', { name: 'Search', exact: true }).and(page.locator('.bd-chip'))
+    const opener = page.getByRole('button', { name: 'Search', exact: true }).and(page.locator('.myc-chip'))
     const palette = page.getByRole('dialog', { name: 'Search BogDev' })
     await opener.click()
     await expect(palette).toBeVisible()
@@ -96,7 +96,7 @@ test.describe('account menu popover', () => {
           for (const sheet of Array.from(document.styleSheets)) {
             for (let i = sheet.cssRules.length - 1; i >= 0; i--) {
               const rule = sheet.cssRules[i]!
-              if (rule instanceof CSSSupportsRule && rule.cssText.includes('.bd-account-panel')) sheet.deleteRule(i)
+              if (rule instanceof CSSSupportsRule && rule.cssText.includes('.myc-account-panel')) sheet.deleteRule(i)
             }
           }
         })
@@ -172,7 +172,7 @@ test.describe('motion allowed', () => {
     await expect(palette.getByRole('option', { name: /Understanding Vue Composables/ })).toBeVisible()
     // Escape would clear a search field before the dialog closes: close it with the Esc button
     await palette.getByRole('button', { name: 'Close search' }).click()
-    expect(await page.locator('#bd-palette-input').inputValue()).toBe('composables')
+    expect(await page.locator('#myc-palette-input').inputValue()).toBe('composables')
     await expect(palette).toBeHidden()
     await page.keyboard.press('ControlOrMeta+k')
     await expect(input).toHaveValue('')

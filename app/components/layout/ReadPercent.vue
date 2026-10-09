@@ -12,5 +12,5 @@ const text = computed<[string, string]>(() => splitAroundNumber(t('bd.header.rea
 </script>
 
 <template>
-  {{ text[0] }}<span class="bd-strip-read-num" :data-percent="props.percent" />{{ text[1] }}
+  {{ text[0] }}<span class="myc-strip-read-num" :data-percent="props.percent" />{{ text[1] }}
 </template>

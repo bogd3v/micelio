@@ -15,7 +15,7 @@ Read `AGENTS.md` (code style, CSS architecture) and the specimen page (`/_theme`
 
 ## CSS
 
-- A reusable block is a `.bd-*` file in `app/assets/css/components/`; page-only styles go in `pages/<page>/`; register each new file in `main.css` with its layer, next to its folder group.
+- A reusable block is a `.myc-*` file in `app/assets/css/components/`; page-only styles go in `pages/<page>/`; register each new file in `main.css` with its layer, next to its folder group.
 - Keep a block's `@media`, `@container` and `prefers-reduced-motion` rules in its own file, and files under ~500 lines.
 - When splitting or moving CSS, prove nothing changed: compare computed styles before and after (`verify-change`, `compare-styles.mjs`).
 

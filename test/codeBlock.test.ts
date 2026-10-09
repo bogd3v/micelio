@@ -27,10 +27,10 @@ describe('renderCodeBlockHtml', () => {
 
   it('renders the design system markup with an inactive copy button', () => {
     const html = renderCodeBlockHtml('$ echo "<hola>"', 'bash')
-    expect(html).toContain('<figure class="bd-code not-prose">')
-    expect(html).toContain('<span class="bd-code-lang">bash</span>')
-    expect(html).toContain('<button type="button" class="bd-code-copy" data-bd-copy hidden></button>')
-    expect(html).toContain('<code class="language-bash"><span class="bd-prompt">$ </span>echo &quot;&lt;hola&gt;&quot;</code>')
+    expect(html).toContain('<figure class="myc-code not-prose">')
+    expect(html).toContain('<span class="myc-code-lang">bash</span>')
+    expect(html).toContain('<button type="button" class="myc-code-copy" data-myc-copy hidden></button>')
+    expect(html).toContain('<code class="language-bash"><span class="myc-prompt">$ </span>echo &quot;&lt;hola&gt;&quot;</code>')
   })
 
   it('strips unsafe characters from the language', () => {
@@ -41,7 +41,7 @@ describe('renderCodeBlockHtml', () => {
 
   it('omits the language label when there is none', () => {
     const html = renderCodeBlockHtml('x', '')
-    expect(html).not.toContain('bd-code-lang')
+    expect(html).not.toContain('myc-code-lang')
     expect(html).toContain('<code>x</code>')
   })
 })

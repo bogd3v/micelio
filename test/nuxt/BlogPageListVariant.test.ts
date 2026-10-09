@@ -19,7 +19,7 @@ describe('the blog page with the list post list variant', () => {
   it('hides the grid and log switch but keeps the sort control', async () => {
     const wrapper = await mountSuspended(BlogPage, { route: '/blog?view=log' })
     await flushPromises()
-    expect(wrapper.find('.bd-blog-views').exists()).toBe(false)
-    expect(wrapper.find('.bd-sort, #bd-blog-sort').exists()).toBe(true)
+    expect(wrapper.find('.myc-blog-views').exists()).toBe(false)
+    expect(wrapper.find('.myc-sort, #myc-blog-sort').exists()).toBe(true)
   })
 })

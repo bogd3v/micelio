@@ -10,7 +10,7 @@ import { discoverThemes, themeRoots } from '../modules/theme/themes'
 // Black and white posters are the extremes, so the text keeps AA over every poster when it does over those two.
 const root = fileURLToPath(new URL('..', import.meta.url))
 const css = readFileSync(fileURLToPath(new URL('../app/assets/css/components/section.css', import.meta.url)), 'utf8')
-const rule = /\[data-section="scene"\]\[data-variant="background"\] \.bd-section-head \{[^}]*background: color-mix\(in srgb, var\(--surface\) (\d+)%, transparent\)/.exec(css)
+const rule = /\[data-section="scene"\]\[data-variant="background"\] \.myc-section-head \{[^}]*background: color-mix\(in srgb, var\(--surface\) (\d+)%, transparent\)/.exec(css)
 const alpha = Number(rule?.[1]) / 100
 const POSTERS: Record<string, Rgb> = { black: { r: 0, g: 0, b: 0 }, white: { r: 1, g: 1, b: 1 } }
 const installed = discoverThemes(themeRoots(root, ''))

@@ -15,13 +15,13 @@ describe('a single-mode theme', () => {
   it('hides the theme action in the search palette', async () => {
     const wrapper = await mountSuspended(BdSearchPalette, { props: { open: false } })
     await wrapper.setProps({ open: true })
-    const labels = wrapper.findAll('[role="option"] .bd-result-label').map(node => node.text())
+    const labels = wrapper.findAll('[role="option"] .myc-result-label').map(node => node.text())
     expect(labels.some(label => label.includes('theme'))).toBe(false)
   })
 
   it('drops the bd-theme item from the privacy page', async () => {
     const wrapper = await mountSuspended(PrivacyPage)
-    const keys = wrapper.findAll('.bd-privacy-keys .bd-privacy-key').map(node => node.text())
+    const keys = wrapper.findAll('.myc-privacy-keys .myc-privacy-key').map(node => node.text())
     expect(keys).toEqual(['micelio-privacy-notice', 'micelio-read-articles'])
   })
 })

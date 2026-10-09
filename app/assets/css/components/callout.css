@@ -1,4 +1,4 @@
-.bd-callout {
+.myc-callout {
     position: relative;
     display: grid;
     gap: var(--space-2);
@@ -8,7 +8,7 @@
     max-width: 68ch;
 }
 
-.bd-callout::before {
+.myc-callout::before {
     content: "";
     position: absolute;
     top: -1px;
@@ -19,7 +19,7 @@
     border-left: 2px solid var(--tone);
 }
 
-.bd-callout-label {
+.myc-callout-label {
     font-family: var(--font-mono);
     font-size: 12px;
     line-height: 16px;
@@ -29,22 +29,22 @@
     color: var(--tone);
 }
 
-.bd-callout-body {
+.myc-callout-body {
     color: var(--ink);
 }
 
-.bd-callout-body p {
+.myc-callout-body p {
     margin: 0;
 }
 
-.bd-callout-note {
+.myc-callout-note {
     --tone: var(--info);
 }
 
-.bd-callout-warning {
+.myc-callout-warning {
     --tone: var(--warning);
 }
 
-.bd-callout-danger {
+.myc-callout-danger {
     --tone: var(--danger);
 }

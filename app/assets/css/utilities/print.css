@@ -49,63 +49,63 @@
         --glow-link: none;
     }
 
-    .bd-header,
-    .bd-tabbar,
-    .bd-sheet,
-    .bd-palette,
-    .bd-foot,
-    .bd-skip-links,
-    .bd-back-to-top,
-    .bd-privacy-notice,
-    .bd-comments,
-    .bd-news,
-    .bd-share,
-    .bd-article-share,
-    .bd-article-actions,
-    .bd-article-toc,
-    .bd-fedi-bar,
-    .bd-coffee,
-    .bd-related,
-    .bd-code-copy,
-    .bd-progress {
+    .myc-header,
+    .myc-tabbar,
+    .myc-sheet,
+    .myc-palette,
+    .myc-foot,
+    .myc-skip-links,
+    .myc-back-to-top,
+    .myc-privacy-notice,
+    .myc-comments,
+    .myc-news,
+    .myc-share,
+    .myc-article-share,
+    .myc-article-actions,
+    .myc-article-toc,
+    .myc-fedi-bar,
+    .myc-coffee,
+    .myc-related,
+    .myc-code-copy,
+    .myc-progress {
         display: none !important;
     }
 
-    .bd-reveal {
+    .myc-reveal {
         animation: none;
         opacity: 1;
         transform: none;
     }
 
-    .bd-prose a[href^="http"]::after {
+    .myc-prose a[href^="http"]::after {
         content: " (" attr(href) ")";
         font-size: 0.85em;
         word-break: break-all;
         color: var(--ink-muted);
     }
 
-    .bd-prose h1,
-    .bd-prose h2,
-    .bd-prose h3,
-    .bd-prose h4,
-    .bd-prose h5,
-    .bd-prose h6 {
+    .myc-prose h1,
+    .myc-prose h2,
+    .myc-prose h3,
+    .myc-prose h4,
+    .myc-prose h5,
+    .myc-prose h6 {
         break-after: avoid;
     }
 
-    .bd-code,
-    .bd-prose pre,
-    .bd-prose figure,
-    .bd-fig,
-    .bd-callout,
-    .bd-mermaid-diagram,
-    .bd-quote,
-    .bd-prose blockquote {
+    .myc-code,
+    .myc-prose pre,
+    .myc-prose figure,
+    .myc-fig,
+    .myc-callout,
+    .myc-mermaid-diagram,
+    .myc-quote,
+    .myc-prose blockquote {
         break-inside: avoid;
     }
 
-    .bd-prose pre,
-    .bd-code pre {
+    .myc-prose pre,
+    .myc-code pre {
         white-space: pre-wrap;
         overflow: visible;
     }

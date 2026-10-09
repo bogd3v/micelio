@@ -21,25 +21,25 @@ const posts: PostListItem[] = [
 describe('BlogLog', () => {
   it('groups the posts by month with a heading and a count', async () => {
     const wrapper = await mountSuspended(BlogLog, { props: { posts } })
-    const months = wrapper.findAll('.bd-log-month')
+    const months = wrapper.findAll('.myc-log-month')
     expect(months).toHaveLength(2)
     expect(months[0]!.get('h2').text()).toBe('September 2026')
-    expect(months[0]!.get('.bd-log-month-count').text()).toBe('02 articles')
+    expect(months[0]!.get('.myc-log-month-count').text()).toBe('02 articles')
     expect(months[1]!.get('h2').text()).toBe('August 2026')
-    expect(months[1]!.get('.bd-log-month-count').text()).toBe('01 article')
+    expect(months[1]!.get('.myc-log-month-count').text()).toBe('01 article')
     expect(months[0]!.attributes('aria-labelledby')).toBe(months[0]!.get('h2').attributes('id'))
   })
 
   it('lists date, category, linked title and excerpt for each post', async () => {
     const wrapper = await mountSuspended(BlogLog, { props: { posts } })
-    const row = wrapper.findAll('.bd-log-row')[0]!
+    const row = wrapper.findAll('.myc-log-row')[0]!
     expect(row.get('time').text()).toBe('12.09.2026')
     expect(row.get('time').attributes('datetime')).toBe('2026-09-12T10:00:00.000Z')
-    expect(row.find('.bd-tag-ia').exists()).toBe(true)
-    expect(row.get('.bd-log-link').attributes('href')).toBe('/blog/rag')
-    expect(row.get('.bd-log-link').text()).toBe('RAG explained')
-    expect(row.get('.bd-log-excerpt').text()).toBe('How retrieval helps.')
-    expect(wrapper.findAll('.bd-log-row')[1]!.find('.bd-tag').exists()).toBe(false)
+    expect(row.find('.myc-tag-ia').exists()).toBe(true)
+    expect(row.get('.myc-log-link').attributes('href')).toBe('/blog/rag')
+    expect(row.get('.myc-log-link').text()).toBe('RAG explained')
+    expect(row.get('.myc-log-excerpt').text()).toBe('How retrieval helps.')
+    expect(wrapper.findAll('.myc-log-row')[1]!.find('.myc-tag').exists()).toBe(false)
   })
 
   it('shows fediverse likes and boosts on federated articles with one request', async () => {
@@ -47,7 +47,7 @@ describe('BlogLog', () => {
     const wrapper = await mountSuspended(BlogLog, { props: { posts, federated: true } })
     await flushPromises()
     expect(requested).toEqual(['doc-rag,doc-vue,doc-linux'])
-    const stats = wrapper.findAll('.bd-log-stats')
+    const stats = wrapper.findAll('.myc-log-stats')
     expect(stats).toHaveLength(1)
     expect(stats[0]!.text().replace(/\s+/g, ' ')).toBe('◆ 4 likes · 1 boost')
   })
@@ -57,17 +57,17 @@ describe('BlogLog', () => {
     const wrapper = await mountSuspended(BlogLog, { props: { posts } })
     await flushPromises()
     expect(requested).toEqual([])
-    expect(wrapper.find('.bd-log-stats').exists()).toBe(false)
+    expect(wrapper.find('.myc-log-stats').exists()).toBe(false)
   })
 
   it('marks the posts already read in this browser', async () => {
     localStorage.setItem('micelio-read-articles', '["doc-linux"]')
-    useState('bd-read-articles-loaded').value = false
+    useState('myc-read-articles-loaded').value = false
     const wrapper = await mountSuspended(BlogLog, { props: { posts } })
     await flushPromises()
-    const marks = wrapper.findAll('.bd-log-row').map(row => row.find('.bd-read-mark').exists())
+    const marks = wrapper.findAll('.myc-log-row').map(row => row.find('.myc-read-mark').exists())
     expect(marks).toEqual([false, false, true])
-    expect(wrapper.get('.bd-read-mark').text()).toBe('✓ Read')
+    expect(wrapper.get('.myc-read-mark').text()).toBe('✓ Read')
     localStorage.clear()
   })
 })

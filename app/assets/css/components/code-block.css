@@ -1,10 +1,10 @@
-.bd-code {
+.myc-code {
     margin: 0;
     background: var(--surface-sunken);
     border: 1px solid var(--line);
 }
 
-.bd-code-head {
+.myc-code-head {
     display: flex;
     align-items: center;
     gap: var(--space-3);
@@ -16,13 +16,13 @@
     color: var(--ink-muted);
 }
 
-.bd-code-lang {
+.myc-code-lang {
     color: var(--link);
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
 
-.bd-code-copy {
+.myc-code-copy {
     position: relative;
     margin-left: auto;
     font: 500 12px/1 var(--font-mono);
@@ -35,22 +35,22 @@
 }
 
 /* Safety net: a copy button without its label (no script) shows nothing */
-.bd-code-copy:empty {
+.myc-code-copy:empty {
     display: none;
 }
 
-.bd-code-copy::after {
+.myc-code-copy::after {
     content: "";
     position: absolute;
     inset: -10px -4px;
 }
 
-.bd-code-copy:hover {
+.myc-code-copy:hover {
     color: var(--ink);
     border-color: var(--ink);
 }
 
-.bd-code pre {
+.myc-code pre {
     margin: 0;
     padding: var(--space-4);
     overflow-x: auto;
@@ -61,41 +61,41 @@
     background: transparent;
 }
 
-.bd-code .bd-prompt {
+.myc-code .myc-prompt {
     color: var(--accent);
     user-select: none;
 }
 
-.bd-mermaid {
+.myc-mermaid {
     display: block;
 }
 
-.bd-mermaid-diagram {
+.myc-mermaid-diagram {
     padding: var(--space-6);
     overflow-x: auto;
     background: var(--surface-sunken);
     border: 1px solid var(--line);
 }
 
-.bd-mermaid-diagram svg {
+.myc-mermaid-diagram svg {
     display: block;
     max-width: none;
     height: auto;
     margin: 0 auto;
 }
 
-.bd-code pre:focus-visible,
-.bd-mermaid-diagram:focus-visible {
+.myc-code pre:focus-visible,
+.myc-mermaid-diagram:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
-.bd-mermaid-ready .bd-code {
+.myc-mermaid-ready .myc-code {
     display: none;
 }
 
 @media (min-width: 768px) {
-    .bd-mermaid-diagram svg {
+    .myc-mermaid-diagram svg {
         max-width: 100%;
     }
 }

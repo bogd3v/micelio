@@ -17,10 +17,10 @@ const newsletterOn = useModule('newsletter')
 </script>
 
 <template>
-  <div class="bd-home" data-layout="showcase">
+  <div class="myc-home" data-layout="showcase">
     <HomeHero :total="total" />
 
-    <section v-if="featuredPost" class="bd-home-featured bd-reveal" :aria-label="t('bd.card.featured')">
+    <section v-if="featuredPost" class="myc-home-featured myc-reveal" :aria-label="t('bd.card.featured')">
       <BdPostCard v-bind="toPostCard(featuredPost)" featured priority />
     </section>
 

@@ -29,7 +29,7 @@ Use it to make a theme or change how one looks. Not for core components, pages o
 
 - Roles only: primitive colors (`--mirla`...) and `{name}` references live inside the theme, never in the core.
 - Layout variants come from the closed list; a typo fails with the known ones.
-- Select only public hooks (`bd-*` classes and `data-*` attributes in `hooks.md`); other `bd-*` classes are internal.
+- Select only public hooks (`myc-*` classes and `data-*` attributes in `hooks.md`); other `myc-*` classes are internal.
 - Own attributes `data-<id>-*` (checked). Own classes `<id>-*` (review by hand).
 - No `!important`; no remote `@import`; `url()` only to `/fonts/...` or `/theme/images/...` or `#fragment`.
 - Slots: only the listed names, no `<style>` (CSS goes in `slots/*.css`), static unless `"island": true` in `theme.json`.
@@ -44,7 +44,7 @@ Use it to make a theme or change how one looks. Not for core components, pages o
 
 Each issue has a `kind`: `contract`, `contrast` or `budget`. Contract errors in `theme.json` (roles, shape) skip that theme's CSS, contrast and budget checks; fix them first and the rest show up. A `theme.json` that does not parse, or an `id` that differs from the folder, aborts the whole run with a top-level `"error"` and no `kind`.
 
-- `contract`: shape or role problem in `theme.json` (`misses the role "focus" in "color"`: add that role, see `roles.md`; a mode missing in a per-mode value; an unknown layout variant), and also package, slot and CSS problems, named by file (`theme.css: ".bd-nothing" is not a public hook`: use a hook from `hooks.md`; `!important`: select the hook instead, themes sit in a cascade layer).
+- `contract`: shape or role problem in `theme.json` (`misses the role "focus" in "color"`: add that role, see `roles.md`; a mode missing in a per-mode value; an unknown layout variant), and also package, slot and CSS problems, named by file (`theme.css: ".myc-nothing" is not a public hook`: use a hook from `hooks.md`; `!important`: select the hook instead, themes sit in a cascade layer).
 - `contrast`: raise or lower the role; the message carries a passing value.
 - `budget`: CSS size, font families or font file size (100 KB warning, 150.8 KB error). Warnings do not fail.
 
@@ -53,7 +53,7 @@ Real output (trimmed). `demo-err` was a scratch theme (made with `theme:new`, ke
 ```
 $ npm run theme:check -- demo-err
 demo-err: 2 error(s)
-  error: theme "demo-err": theme.css: ".bd-nothing" is not a public hook (internal bd-* classes can change in any release)
+  error: theme "demo-err": theme.css: ".myc-nothing" is not a public hook (internal myc-* classes can change in any release)
   error: theme "demo-err": theme.css: !important on "color" is not allowed (themes sit in a cascade layer instead)
 
 $ MICELIO_THEME_DIRS=test/fixtures/themes npm run theme:check -- low-contrast --json

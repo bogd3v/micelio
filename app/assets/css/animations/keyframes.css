@@ -4,7 +4,7 @@
     initial-value: 0;
 }
 
-@keyframes bd-read-count {
+@keyframes myc-read-count {
     from {
         --myc-read-count: 0;
     }
@@ -14,7 +14,7 @@
     }
 }
 
-@keyframes bd-back-to-top-in {
+@keyframes myc-back-to-top-in {
     from {
         opacity: 0;
         visibility: hidden;
@@ -26,7 +26,7 @@
     }
 }
 
-@keyframes bd-read-bar {
+@keyframes myc-read-bar {
     from {
         transform: scaleX(0);
     }
@@ -36,7 +36,7 @@
     }
 }
 
-@keyframes bd-read-track {
+@keyframes myc-read-track {
     from {
         transform: translateX(0);
     }
@@ -46,13 +46,13 @@
     }
 }
 
-@keyframes bd-dash {
+@keyframes myc-dash {
     to {
         stroke-dashoffset: -540;
     }
 }
 
-@keyframes bd-in {
+@keyframes myc-in {
     from {
         transform: translateY(1.25rem);
     }
@@ -62,7 +62,7 @@
     }
 }
 
-@keyframes bd-focus {
+@keyframes myc-focus {
     0%,
     100% {
         opacity: 0.45;
@@ -74,7 +74,7 @@
     }
 }
 
-@keyframes bd-steam {
+@keyframes myc-steam {
     0% {
         opacity: 0;
         transform: translateY(6px);
@@ -90,7 +90,7 @@
     }
 }
 
-@keyframes bd-wipe {
+@keyframes myc-wipe {
     from {
         clip-path: circle(0 at var(--vt-x, 92%) var(--vt-y, 110px));
     }
@@ -121,7 +121,7 @@
     }
 }
 
-@keyframes bd-privacy-notice-in {
+@keyframes myc-privacy-notice-in {
     from {
         opacity: 0;
         translate: 0 12px;
@@ -133,7 +133,7 @@
     }
 }
 
-@keyframes bd-spin {
+@keyframes myc-spin {
     to {
         transform: rotate(360deg);
     }

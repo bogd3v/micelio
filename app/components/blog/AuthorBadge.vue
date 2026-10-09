@@ -17,7 +17,7 @@ const pixels = computed<number>(() => (props.size === 'lg' ? 64 : 44))
 </script>
 
 <template>
-  <span :class="['bd-avatar', `bd-avatar-${size}`]" aria-hidden="true">
+  <span :class="['myc-avatar', `myc-avatar-${size}`]" aria-hidden="true">
     <NuxtImg
       v-if="avatarUrl"
       :src="avatarUrl"

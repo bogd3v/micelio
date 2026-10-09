@@ -8,26 +8,26 @@ const TONES: CalloutTone[] = ['note', 'warning', 'danger']
 </script>
 
 <template>
-  <div class="bd-specimen-stack">
+  <div class="myc-specimen-stack">
     <div>
-      <h3 class="bd-specimen-label">{{ t('specimen.prose.article') }}</h3>
-      <p class="bd-body-s">{{ t('specimen.prose.note') }}</p>
-      <div class="bd-prose">
+      <h3 class="myc-specimen-label">{{ t('specimen.prose.article') }}</h3>
+      <p class="myc-body-s">{{ t('specimen.prose.note') }}</p>
+      <div class="myc-prose">
         <StrapiBlocksRenderer :blocks="PROSE_BLOCKS" />
       </div>
     </div>
 
     <div>
-      <h3 class="bd-specimen-label">{{ t('specimen.prose.callouts') }}</h3>
-      <div class="bd-specimen-stack">
+      <h3 class="myc-specimen-label">{{ t('specimen.prose.callouts') }}</h3>
+      <div class="myc-specimen-stack">
         <BdCallout v-for="tone in TONES" :key="tone" :tone="tone">{{ t('specimen.prose.calloutBody') }}</BdCallout>
         <BdCallout tone="note" :title="t('specimen.prose.customTitle')">{{ t('specimen.prose.calloutBody') }}</BdCallout>
       </div>
     </div>
 
     <div>
-      <h3 class="bd-specimen-label">{{ t('specimen.prose.code') }}</h3>
-      <div class="bd-specimen-stack">
+      <h3 class="myc-specimen-label">{{ t('specimen.prose.code') }}</h3>
+      <div class="myc-specimen-stack">
         <BdCodeBlock :code="SHELL_SAMPLE" lang="bash" />
         <BdCodeBlock :code="TS_SAMPLE" lang="ts" filename="slugify.ts" />
         <BdCodeBlock :code="TS_SAMPLE" :show-copy="false" />

@@ -107,7 +107,7 @@
     transition: opacity var(--duration-slow) var(--ease-standard);
 }
 
-.bd-foot:hover .bogota-copeton {
+.myc-foot:hover .bogota-copeton {
     opacity: 0.42;
 }
 
@@ -117,7 +117,7 @@
     opacity: 0.45;
 }
 
-[data-theme="dia"] .bd-foot:hover .bogota-copeton {
+[data-theme="dia"] .myc-foot:hover .bogota-copeton {
     opacity: 0.6;
 }
 

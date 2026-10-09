@@ -24,24 +24,24 @@ const showActions = computed<boolean>(() => Boolean((props.canReply && !props.co
 </script>
 
 <template>
-  <article :class="['bd-comment', { 'bd-comment-fediverse': fediverse }]">
+  <article :class="['myc-comment', { 'myc-comment-fediverse': fediverse }]">
     <BlogAuthorBadge :author="{ name }" />
-    <div class="bd-comment-body">
-      <header class="bd-comment-head">
-        <span class="bd-comment-name">{{ name }}</span>
-        <span v-if="fediverse" class="bd-comment-badge bd-comment-badge-fediverse">
+    <div class="myc-comment-body">
+      <header class="myc-comment-head">
+        <span class="myc-comment-name">{{ name }}</span>
+        <span v-if="fediverse" class="myc-comment-badge myc-comment-badge-fediverse">
           <span aria-hidden="true">◆</span> {{ fediverseLabel }}
         </span>
-        <span v-if="comment.isAdminComment" class="bd-comment-badge bd-comment-badge-author">{{ t('comments.authorBadge') }}</span>
-        <time class="bd-meta bd-comment-date" :datetime="comment.createdAt">{{ formatDotDate(comment.createdAt) }}</time>
+        <span v-if="comment.isAdminComment" class="myc-comment-badge myc-comment-badge-author">{{ t('comments.authorBadge') }}</span>
+        <time class="myc-meta myc-comment-date" :datetime="comment.createdAt">{{ formatDotDate(comment.createdAt) }}</time>
       </header>
-      <p v-if="comment.removed" class="bd-comment-text bd-comment-removed">{{ t('comments.removed') }}</p>
-      <p v-else class="bd-comment-text">{{ comment.content }}</p>
-      <div v-if="showActions" class="bd-comment-actions">
-        <button v-if="canReply && !comment.blockedThread" type="button" class="bd-blog-textbtn" @click="emit('reply', comment)">{{ t('comments.reply') }}</button>
+      <p v-if="comment.removed" class="myc-comment-text myc-comment-removed">{{ t('comments.removed') }}</p>
+      <p v-else class="myc-comment-text">{{ comment.content }}</p>
+      <div v-if="showActions" class="myc-comment-actions">
+        <button v-if="canReply && !comment.blockedThread" type="button" class="myc-blog-textbtn" @click="emit('reply', comment)">{{ t('comments.reply') }}</button>
         <a
           v-if="comment.fediverseUri"
-          class="bd-meta bd-comment-instance-link"
+          class="myc-meta myc-comment-instance-link"
           :href="comment.fediverseUri"
           target="_blank"
           rel="noopener noreferrer nofollow ugc"

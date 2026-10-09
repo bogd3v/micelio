@@ -71,7 +71,7 @@ test('closes the sheet when swiped down', async ({ page }) => {
   await page.getByRole('navigation', { name: 'Bottom navigation' }).getByRole('button', { name: 'Menu' }).click()
   const sheet = page.getByRole('dialog', { name: 'Menu' })
   await expect(sheet).toBeVisible()
-  const grip = await sheet.locator('.bd-sheet-handle').boundingBox()
+  const grip = await sheet.locator('.myc-sheet-handle').boundingBox()
   const x = grip!.x + grip!.width / 2
   const y = grip!.y + grip!.height / 2
   await page.mouse.move(x, y)

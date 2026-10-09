@@ -17,7 +17,7 @@ function scrollToTop() {
   <Transition v-else name="fade">
     <button
       v-if="isVisible"
-      class="bd-back-to-top"
+      class="myc-back-to-top"
       :aria-label="t('common.backToTop')"
       @click="scrollToTop"
     >

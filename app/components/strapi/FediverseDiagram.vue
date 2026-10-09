@@ -3,7 +3,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <svg class="bd-fedi-diagram" width="400" height="220" viewBox="0 0 400 220" role="img" :aria-label="t('about.diagram.label')">
+  <svg class="myc-fedi-diagram" width="400" height="220" viewBox="0 0 400 220" role="img" :aria-label="t('about.diagram.label')">
     <g font-family="JetBrains Mono, monospace" letter-spacing=".08em" text-anchor="middle">
       <rect x="0.5" y="80.5" width="120" height="60" fill="var(--surface-raised)" stroke="var(--line-strong)" />
       <text x="60" y="108" font-size="12" font-weight="500" fill="var(--ink)">{{ t('about.diagram.source') }}</text>
@@ -21,8 +21,8 @@ const { t } = useI18n()
       <path d="M121 120 Q200 160 278 178" />
     </g>
     <g fill="none" stroke="var(--link)" stroke-opacity=".6" stroke-width="1.2">
-      <path class="bd-flight-route" d="M278 50 Q200 76 121 104" />
-      <path class="bd-flight-route" d="M278 172 Q200 144 121 116" />
+      <path class="myc-flight-route" d="M278 50 Q200 76 121 104" />
+      <path class="myc-flight-route" d="M278 172 Q200 144 121 116" />
     </g>
   </svg>
 </template>

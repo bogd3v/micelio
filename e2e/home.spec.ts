@@ -39,7 +39,7 @@ test('filters the latest articles by topic and shows the empty nest', async ({ p
 
 test('links every field guide topic to its blog filter', async ({ page }) => {
   await page.goto('/')
-  const hrefs = await page.locator('.bd-guide-card').evaluateAll(cards => cards.map(card => card.getAttribute('href')))
+  const hrefs = await page.locator('.myc-guide-card').evaluateAll(cards => cards.map(card => card.getAttribute('href')))
   expect(hrefs).toEqual(['privacidad', 'diy', 'ia', 'software', 'linux'].map(slug => `/blog/category/${slug}`))
 })
 
@@ -48,7 +48,7 @@ test.describe('with reduced motion', () => {
 
   test('keeps the hero art still', async ({ page }) => {
     await page.goto('/')
-    const art = page.locator('.bd-hero-art').first()
+    const art = page.locator('.myc-hero-art').first()
     await expect(art).toBeAttached()
     const running = await art.evaluate(node => node.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').length)
     expect(running).toBe(0)
@@ -82,7 +82,7 @@ test('explains the fediverse on desktop with the cards side by side', async ({ p
   expect(new Set(tops).size).toBe(1)
   await expect(section.getByText('How it works', { exact: true })).toBeHidden()
   await expect(section.getByRole('link', { name: 'Pick a server on joinmastodon.org (opens in a new tab)' })).toHaveAttribute('href', 'https://joinmastodon.org/servers')
-  await expect(section.locator('.bd-fedi-glossary dt')).toHaveText(['Fediverse', 'Server or instance', 'Follow', 'Boost'])
+  await expect(section.locator('.myc-fedi-glossary dt')).toHaveText(['Fediverse', 'Server or instance', 'Follow', 'Boost'])
 })
 
 test('slides through the fediverse cards on mobile', async ({ page }) => {

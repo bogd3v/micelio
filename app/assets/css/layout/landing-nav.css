@@ -1,11 +1,11 @@
 /* A landing's header lists section anchors and the links of its hero and call to action (docs/static-mode.md, "Landing") */
-.bd-nav-links > li[data-kind] > .bd-nav-link {
+.myc-nav-links > li[data-kind] > .myc-nav-link {
     white-space: nowrap;
 }
 
 /* Below desktop width only the first two anchors fit; the footer and the menu have all of them */
 @media (max-width: 1279.98px) {
-    .bd-nav-links > li[data-kind="anchor"]:nth-child(n+3) {
+    .myc-nav-links > li[data-kind="anchor"]:nth-child(n+3) {
         display: none;
     }
 }

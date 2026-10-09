@@ -47,37 +47,37 @@ const subscriptions = computed<FooterLink[]>(() => [
 </script>
 
 <template>
-  <footer class="bd-foot" data-layout="minimal">
-    <div class="bd-foot-main">
-      <NuxtLink :to="localizePath('/')" class="bd-foot-brand" :aria-label="t('bd.header.home', { site: site.name })">
+  <footer class="myc-foot" data-layout="minimal">
+    <div class="myc-foot-main">
+      <NuxtLink :to="localizePath('/')" class="myc-foot-brand" :aria-label="t('bd.header.home', { site: site.name })">
         <ThemeMark :size="32" context="footer" />
       </NuxtLink>
-      <nav :id="isStatic ? menuId : undefined" class="bd-foot-nav" :aria-label="label ?? t('bd.footer.navigate')">
+      <nav :id="isStatic ? menuId : undefined" class="myc-foot-nav" :aria-label="label ?? t('bd.footer.navigate')">
         <template v-for="link in sections" :key="link.id">
-          <a v-if="link.anchor" :href="link.to" class="bd-foot-link">{{ link.label }}</a>
-          <NuxtLink v-else :to="link.to" class="bd-foot-link">{{ link.label }}</NuxtLink>
+          <a v-if="link.anchor" :href="link.to" class="myc-foot-link">{{ link.label }}</a>
+          <NuxtLink v-else :to="link.to" class="myc-foot-link">{{ link.label }}</NuxtLink>
         </template>
       </nav>
       <BdLangSwitch v-if="isStatic" />
-      <ul v-if="socials.length" class="bd-foot-socials" :aria-label="t('bd.footer.social')">
+      <ul v-if="socials.length" class="myc-foot-socials" :aria-label="t('bd.footer.social')">
         <li v-for="social in socials" :key="social.id">
-          <a :href="social.href" class="bd-foot-soc" target="_blank" rel="noopener noreferrer me">
+          <a :href="social.href" class="myc-foot-soc" target="_blank" rel="noopener noreferrer me">
             <span>{{ social.label }}</span>
-            <span class="bd-foot-soc-arrow" aria-hidden="true">↗</span>
+            <span class="myc-foot-soc-arrow" aria-hidden="true">↗</span>
           </a>
         </li>
       </ul>
     </div>
 
-    <div class="bd-meta bd-foot-credits">
-      <span class="bd-foot-legal">
+    <div class="myc-meta myc-foot-credits">
+      <span class="myc-foot-legal">
         <span>© {{ year }} {{ site.name }}<template v-if="site.author.name"> · {{ site.author.name }}</template></span>
-        <NuxtLink :to="localizePath('/privacy')" class="bd-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
-        <a :href="sourceUrl" class="bd-foot-privacy bd-foot-source" target="_blank" rel="noopener noreferrer">{{ t('bd.footer.source') }}<span aria-hidden="true">↗</span></a>
+        <NuxtLink :to="localizePath('/privacy')" class="myc-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
+        <a :href="sourceUrl" class="myc-foot-privacy myc-foot-source" target="_blank" rel="noopener noreferrer">{{ t('bd.footer.source') }}<span aria-hidden="true">↗</span></a>
       </span>
       <template v-for="link in subscriptions" :key="link.id">
-        <a v-if="link.external" :href="link.to" class="bd-foot-link" target="_blank" rel="noopener noreferrer">{{ link.label }}<span aria-hidden="true">↗</span></a>
-        <NuxtLink v-else :to="link.to" class="bd-foot-link">{{ link.label }}</NuxtLink>
+        <a v-if="link.external" :href="link.to" class="myc-foot-link" target="_blank" rel="noopener noreferrer">{{ link.label }}<span aria-hidden="true">↗</span></a>
+        <NuxtLink v-else :to="link.to" class="myc-foot-link">{{ link.label }}</NuxtLink>
       </template>
     </div>
   </footer>

@@ -9,9 +9,9 @@ const ORIGIN = 'https://bogdev.com.co'
 async function sectionStylesheets(request: APIRequestContext, path: string): Promise<number> {
   const html = await (await request.get(path)).text()
   const hrefs = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(match => match[1]!)
-  let count = [...html.matchAll(/<style[^>]*>([^]*?)<\/style>/g)].filter(match => match[1]!.includes('bd-section-logo-track')).length
+  let count = [...html.matchAll(/<style[^>]*>([^]*?)<\/style>/g)].filter(match => match[1]!.includes('myc-section-logo-track')).length
   for (const href of hrefs) {
-    if ((await (await request.get(href)).text()).includes('bd-section-logo-track')) count++
+    if ((await (await request.get(href)).text()).includes('myc-section-logo-track')) count++
   }
   return count
 }

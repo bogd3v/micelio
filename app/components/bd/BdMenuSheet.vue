@@ -95,74 +95,74 @@ watch(() => route.fullPath, () => {
 <template>
   <dialog
     ref="dialogRef"
-    class="bd-sheet"
+    class="myc-sheet"
     :aria-label="t('bd.mobile.menu')"
     @cancel="onCancel"
     @close="open && close()"
     @click="onDialogClick"
   >
-    <div class="bd-sheet-panel" :style="panelStyle" :data-dragging="dragOffset > 0 ? '' : undefined">
+    <div class="myc-sheet-panel" :style="panelStyle" :data-dragging="dragOffset > 0 ? '' : undefined">
       <div
-        class="bd-sheet-grip"
+        class="myc-sheet-grip"
         @pointerdown="onDragStart"
         @pointermove="onDragMove"
         @pointerup="onDragEnd"
         @pointercancel="onDragEnd"
       >
-        <span class="bd-sheet-handle" aria-hidden="true" />
-        <div class="bd-sheet-head">
-          <span class="bd-eyebrow bd-sheet-label">{{ t('bd.mobile.menu') }}</span>
-          <button type="button" class="bd-iconbtn bd-sheet-close" :aria-label="t('bd.mobile.close')" @click="close">
+        <span class="myc-sheet-handle" aria-hidden="true" />
+        <div class="myc-sheet-head">
+          <span class="myc-eyebrow myc-sheet-label">{{ t('bd.mobile.menu') }}</span>
+          <button type="button" class="myc-iconbtn myc-sheet-close" :aria-label="t('bd.mobile.close')" @click="close">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M6 6 L18 18 M18 6 L6 18" /></svg>
           </button>
         </div>
       </div>
 
-      <nav class="bd-sheet-nav" :aria-label="t('bd.mobile.sections')">
+      <nav class="myc-sheet-nav" :aria-label="t('bd.mobile.sections')">
         <NuxtLink
           v-for="section in sections"
           :key="section.id"
           :to="section.to"
-          class="bd-sheet-link bd-wide"
+          class="myc-sheet-link myc-wide"
           :aria-current="active === section.id ? 'page' : undefined"
         >
-          {{ section.label }} <span aria-hidden="true" class="bd-sheet-arrow">→</span>
+          {{ section.label }} <span aria-hidden="true" class="myc-sheet-arrow">→</span>
         </NuxtLink>
       </nav>
 
       <NuxtLink
         v-if="accountsOn"
         :to="localizePath(user ? '/account' : '/account/sign-in')"
-        class="bd-sheet-link bd-sheet-account bd-wide"
+        class="myc-sheet-link myc-sheet-account myc-wide"
       >
-        {{ user ? t('bd.header.account') : t('bd.header.signIn') }} <span aria-hidden="true" class="bd-sheet-arrow">→</span>
+        {{ user ? t('bd.header.account') : t('bd.header.signIn') }} <span aria-hidden="true" class="myc-sheet-arrow">→</span>
       </NuxtLink>
       <NuxtLink
         v-if="draftsOn && isEditor"
         :to="localizePath('/drafts')"
-        class="bd-sheet-link bd-sheet-drafts bd-wide"
+        class="myc-sheet-link myc-sheet-drafts myc-wide"
       >
-        {{ t('bd.header.drafts') }} <span aria-hidden="true" class="bd-sheet-arrow">→</span>
+        {{ t('bd.header.drafts') }} <span aria-hidden="true" class="myc-sheet-arrow">→</span>
       </NuxtLink>
 
-      <section class="bd-sheet-group" aria-labelledby="bd-sheet-topics">
-        <h2 id="bd-sheet-topics" class="bd-eyebrow bd-sheet-label">{{ t('bd.mobile.topics') }}</h2>
-        <div class="bd-sheet-topics">
-          <NuxtLink v-for="topic in topics" :key="topic.slug" :to="topic.to" class="bd-sheet-cat">
-            <span class="bd-sheet-dot" :style="{ background: topic.color }" aria-hidden="true" />{{ topic.label }}
+      <section class="myc-sheet-group" aria-labelledby="myc-sheet-topics">
+        <h2 id="myc-sheet-topics" class="myc-eyebrow myc-sheet-label">{{ t('bd.mobile.topics') }}</h2>
+        <div class="myc-sheet-topics">
+          <NuxtLink v-for="topic in topics" :key="topic.slug" :to="topic.to" class="myc-sheet-cat">
+            <span class="myc-sheet-dot" :style="{ background: topic.color }" aria-hidden="true" />{{ topic.label }}
           </NuxtLink>
-          <NuxtLink v-if="fediverseOn" :to="`${localizePath('/')}#fediverso`" class="bd-sheet-cat" :aria-label="t('bd.header.fediverse', { handle: fediverseUser })" @click="close">
-            <span class="bd-sheet-mark" aria-hidden="true">◆</span>{{ fediverseUser }}
+          <NuxtLink v-if="fediverseOn" :to="`${localizePath('/')}#fediverso`" class="myc-sheet-cat" :aria-label="t('bd.header.fediverse', { handle: fediverseUser })" @click="close">
+            <span class="myc-sheet-mark" aria-hidden="true">◆</span>{{ fediverseUser }}
           </NuxtLink>
         </div>
       </section>
 
-      <div class="bd-sheet-settings">
-        <div v-if="modes.length > 1" class="bd-sheet-row">
+      <div class="myc-sheet-settings">
+        <div v-if="modes.length > 1" class="myc-sheet-row">
           <span>{{ t('bd.mobile.theme') }}</span>
           <BdThemeSwitch />
         </div>
-        <div class="bd-sheet-row">
+        <div class="myc-sheet-row">
           <span>{{ t('bd.mobile.language') }}</span>
           <BdLangSwitch />
         </div>

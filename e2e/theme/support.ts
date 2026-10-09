@@ -44,7 +44,7 @@ export async function openPage(page: Page, { path, diagrams = 0 }: ThemePage): P
     for (let index = 0; index < await blocks.count(); index++) await blocks.nth(index).scrollIntoViewIfNeeded()
     await page.evaluate(() => window.scrollTo(0, 0))
   }
-  if (diagrams) await page.waitForFunction(count => document.querySelectorAll('.bd-mermaid-diagram svg').length >= count, diagrams)
+  if (diagrams) await page.waitForFunction(count => document.querySelectorAll('.myc-mermaid-diagram svg').length >= count, diagrams)
   await page.evaluate(() => Promise.all([
     document.fonts.ready,
     ...Array.from(document.images, image => image.complete ? null : new Promise((resolve) => { image.onload = image.onerror = resolve })),
@@ -53,5 +53,5 @@ export async function openPage(page: Page, { path, diagrams = 0 }: ThemePage): P
 
 /** What changes with the clock: dates and the footer year */
 export function volatile(page: Page): Locator[] {
-  return [page.locator('time'), page.locator('.bd-foot-legal > span:first-child')]
+  return [page.locator('time'), page.locator('.myc-foot-legal > span:first-child')]
 }

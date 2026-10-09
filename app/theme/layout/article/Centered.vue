@@ -31,24 +31,24 @@ useMarkAsRead(prose, readDocumentId)
 </script>
 
 <template>
-  <div class="bd-article-page" data-layout="centered">
-    <header class="bd-article-head">
-      <div class="bd-article-kicker">
+  <div class="myc-article-page" data-layout="centered">
+    <header class="myc-article-head">
+      <div class="myc-article-kicker">
         <BdCategoryTag v-if="category" :category="category" />
-        <time v-if="publishedDate" class="bd-meta" :datetime="post.publishedAt ?? undefined">{{ publishedDate }}</time>
-        <span v-if="post.readTime" class="bd-meta">{{ t("blog.readTime", { minutes: post.readTime }) }}</span>
+        <time v-if="publishedDate" class="myc-meta" :datetime="post.publishedAt ?? undefined">{{ publishedDate }}</time>
+        <span v-if="post.readTime" class="myc-meta">{{ t("blog.readTime", { minutes: post.readTime }) }}</span>
       </div>
-      <h1 class="bd-article-title bd-post-title bd-wide" :style="{ '--myc-vt-title': names.title }" :data-pagefind-meta="isStatic ? 'title' : undefined">{{ post.title }}</h1>
-      <p v-if="post.description" class="bd-article-lead" :data-pagefind-body="isStatic ? '' : undefined">{{ post.description }}</p>
-      <div class="bd-article-byline">
-        <div class="bd-article-author">
+      <h1 class="myc-article-title myc-post-title myc-wide" :style="{ '--myc-vt-title': names.title }" :data-pagefind-meta="isStatic ? 'title' : undefined">{{ post.title }}</h1>
+      <p v-if="post.description" class="myc-article-lead" :data-pagefind-body="isStatic ? '' : undefined">{{ post.description }}</p>
+      <div class="myc-article-byline">
+        <div class="myc-article-author">
           <BlogAuthorBadge :author="post.author" />
-          <div class="bd-article-author-text">
-            <span class="bd-article-author-name">{{ post.author?.name || t("post.anonymous") }}</span>
-            <span v-if="hud.city" class="bd-meta bd-home-eyebrow bd-article-place">{{ [hud.city, hud.coords].filter(Boolean).join(" · ") }}</span>
+          <div class="myc-article-author-text">
+            <span class="myc-article-author-name">{{ post.author?.name || t("post.anonymous") }}</span>
+            <span v-if="hud.city" class="myc-meta myc-home-eyebrow myc-article-place">{{ [hud.city, hud.coords].filter(Boolean).join(" · ") }}</span>
           </div>
         </div>
-        <div v-if="!draft" class="bd-article-actions">
+        <div v-if="!draft" class="myc-article-actions">
           <BlogCopyLinkButton :url="shareUrl" />
           <BdButton :href="mastodonUrl" variant="text" size="sm" target="_blank" rel="noopener noreferrer" :aria-label="t('post.shareOn', { network: 'Mastodon' })">
             Mastodon <span aria-hidden="true">↗</span>
@@ -58,8 +58,8 @@ useMarkAsRead(prose, readDocumentId)
       <BlogFediverseBar v-if="federated" :slug="post.slug" :document-id="post.documentId" />
     </header>
 
-    <figure v-if="coverUrl" class="bd-article-figure">
-      <div class="bd-article-cover bd-post-media" :style="{ '--myc-vt-media': names.media }">
+    <figure v-if="coverUrl" class="myc-article-figure">
+      <div class="myc-article-cover myc-post-media" :style="{ '--myc-vt-media': names.media }">
         <NuxtImg
           :src="coverUrl"
           :alt="post.cover?.alternativeText || post.title"
@@ -71,33 +71,33 @@ useMarkAsRead(prose, readDocumentId)
           decoding="async"
         />
       </div>
-      <figcaption v-if="post.coverCredit" class="bd-article-cover-credit">
+      <figcaption v-if="post.coverCredit" class="myc-article-cover-credit">
         <BdFigureCredit :credit="post.coverCredit" />
       </figcaption>
     </figure>
-    <div v-else class="bd-article-cover bd-article-cover-empty" aria-hidden="true" />
+    <div v-else class="myc-article-cover myc-article-cover-empty" aria-hidden="true" />
 
-    <div class="bd-article-body">
-      <details v-if="headings.length" class="bd-article-toc">
-        <summary class="bd-article-toc-summary">{{ t("post.toc") }}</summary>
+    <div class="myc-article-body">
+      <details v-if="headings.length" class="myc-article-toc">
+        <summary class="myc-article-toc-summary">{{ t("post.toc") }}</summary>
         <BlogTableOfContents :headings="headings" />
       </details>
 
-      <article class="bd-article-content" :data-pagefind-body="isStatic ? '' : undefined" :data-pagefind-meta="isStatic ? 'kind:article' : undefined">
-        <div ref="prose" class="bd-prose">
+      <article class="myc-article-content" :data-pagefind-body="isStatic ? '' : undefined" :data-pagefind-meta="isStatic ? 'kind:article' : undefined">
+        <div ref="prose" class="myc-prose">
           <StrapiBlocksRenderer :blocks="post.blocks" />
         </div>
 
         <BlogReferences :entries="references" />
 
-        <div class="bd-article-after" :data-pagefind-ignore="isStatic ? '' : undefined">
-          <div v-if="post.tags?.length" class="bd-article-tags">
-            <span class="bd-eyebrow bd-home-eyebrow">{{ t("post.tags") }}</span>
+        <div class="myc-article-after" :data-pagefind-ignore="isStatic ? '' : undefined">
+          <div v-if="post.tags?.length" class="myc-article-tags">
+            <span class="myc-eyebrow myc-home-eyebrow">{{ t("post.tags") }}</span>
             <NuxtLink
               v-for="tag in post.tags"
               :key="tag.slug"
               :to="blogPath({ tag: tag.slug, page: 1 }, localizePath('/blog'))"
-              class="bd-chip bd-blog-tag"
+              class="myc-chip myc-blog-tag"
             >
               #{{ tag.name }}
             </NuxtLink>
@@ -108,7 +108,7 @@ useMarkAsRead(prose, readDocumentId)
         </div>
       </article>
 
-      <BlogShareButtons v-if="!draft" class="bd-article-share" :title="post.title" :url="shareUrl" />
+      <BlogShareButtons v-if="!draft" class="myc-article-share" :title="post.title" :url="shareUrl" />
     </div>
 
     <template v-if="!draft">
