@@ -4,8 +4,9 @@
 // browser has the island's features and the page has hydrated, the control is shown, and its first press imports the entry and
 // then presses it again, now that the entry listens.
 // Keep it free of modules an island entry also imports: modules/islands.ts fails the build when they share one.
-import type { HeavyFeature } from './heavy'
-import { HEAVY_SCAN_EVENT, HEAVY_SCRIPT_PREFIX, heavyTag, parseHeavyDeclaration } from '../helpers/islands'
+import { HEAVY_SCAN_EVENT, HEAVY_SCRIPT_PREFIX } from './lib/constants'
+import type { HeavyFeature } from './types'
+import { heavyTag, parseHeavyDeclaration } from '../helpers/islands'
 import type { HeavyDeclaration } from '../helpers/islands'
 import { missingFeatures, prefersReducedMotion, saveData } from './lib/features'
 import { whenHydrated } from './lib/hydrated'

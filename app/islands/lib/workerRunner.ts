@@ -1,7 +1,8 @@
 // Runs code in dedicated Workers, one per runtime and page (ADR 0004, worker containment). A Worker stays loaded between runs, so a
 // runtime downloads once for every playground of the page; a run that times out or is stopped terminates it, and the next run starts a new one.
-import { capOutput, isWorkerReply, LOAD_TIMEOUT_MS, RUN_TIMEOUT_MS } from '../../helpers/playgroundRunner'
-import type { RunResult, WorkerRequest } from '../../helpers/playgroundRunner'
+import { LOAD_TIMEOUT_MS, RUN_TIMEOUT_MS } from '../runtimes/constants'
+import type { RunResult, WorkerRequest } from '../types'
+import { capOutput, isWorkerReply } from '../../helpers/playgroundRunner'
 
 /** The part of `Worker` the runner uses; tests pass a fake. */
 export interface WorkerLike {

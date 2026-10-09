@@ -2,8 +2,9 @@
 // button and imports this module on its first press; defining the element upgrades the markup of PlaygroundBlock: it starts the
 // Worker (ADR 0004, worker containment), writes the output and handles Stop. Strings come from the server in data attributes.
 // The output is always written with textContent. It shares no module with the loader.
-import { fillLabel, formatDownload, MAX_OUTPUT_BYTES, RUN_TIMEOUT_MS } from '../helpers/playgroundRunner'
-import type { RunResult } from '../helpers/playgroundRunner'
+import { MAX_OUTPUT_BYTES, RUN_TIMEOUT_MS } from './runtimes/constants'
+import type { RunResult } from './types'
+import { fillLabel, formatDownload } from '../helpers/playgroundRunner'
 import { WorkerPool } from './lib/workerRunner'
 import type { RunHandle } from './lib/workerRunner'
 

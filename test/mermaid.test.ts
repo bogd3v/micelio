@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { MermaidTokens } from '../app/helpers/mermaid'
-import { HEAVY_SCRIPT_PREFIX } from '../app/helpers/islands'
+import { HEAVY_SCRIPT_PREFIX } from '../app/islands/lib/constants'
 import { MERMAID_CONFIG_ID, MERMAID_TOKENS, mermaidThemeVariables, mermaidTitle, parseMermaidConfig, renderMermaidBlockHtml, resolveMermaidOverrides } from '../app/helpers/mermaid'
 
 const tokens = Object.fromEntries(MERMAID_TOKENS.map(name => [name, `#${name}`])) as MermaidTokens

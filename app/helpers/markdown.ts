@@ -6,7 +6,8 @@ import { slugify } from './slugify'
 import type { BlockCitations, CalloutTone, CitationIndex, StrapiBlock, StrapiReference } from '../interfaces'
 import { escapeHtml, renderCodeBlockHtml } from './code'
 import { parseCalloutMarker, renderCalloutHtml } from './callout'
-import { MERMAID_ELEMENT, renderMermaidBlockHtml } from './mermaid'
+import { MERMAID_ELEMENT } from '../islands/constants'
+import { renderMermaidBlockHtml } from './mermaid'
 import { buildCitationIndex, citationBlockKey, CITATION_RULE, splitCitationGroup } from './citations'
 
 export interface MarkdownLabels {

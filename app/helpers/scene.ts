@@ -1,7 +1,6 @@
 // Models of the `scene` section (ADR 0006, section 6; ADR 0004 amendment of #246): binary glTF (.glb) only.
 
-/** Largest model the build copies and the island fetches. */
-export const MODEL_MAX_BYTES = 20 * 1024 * 1024
+import { MODEL_MAX_BYTES } from '../islands/constants'
 
 const GLB_PATH = /\.glb$/i
 // 'glTF' as a little-endian uint32

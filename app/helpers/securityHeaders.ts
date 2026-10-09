@@ -1,4 +1,4 @@
-import type { HeavyIsland } from '../islands/heavy'
+import type { HeavyIsland } from '../islands/types'
 
 export interface ContentSecurityPolicyOptions {
   scriptHashes: string[]

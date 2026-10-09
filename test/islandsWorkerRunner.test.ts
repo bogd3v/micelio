@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { WorkerReply, WorkerRequest } from '../app/helpers/playgroundRunner'
+import type { WorkerReply, WorkerRequest } from '../app/islands/types'
 import { WorkerPool } from '../app/islands/lib/workerRunner'
 import type { WorkerLike } from '../app/islands/lib/workerRunner'
 

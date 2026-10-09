@@ -1,6 +1,6 @@
+import { MERMAID_ELEMENT } from '../islands/constants'
 import { renderCodeBlockHtml } from './code'
 
-export const MERMAID_ELEMENT = 'micelio-mermaid'
 export const MERMAID_CONFIG_ID = 'micelio-island-mermaid'
 
 export const MERMAID_TOKENS = [

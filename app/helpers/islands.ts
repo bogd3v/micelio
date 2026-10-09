@@ -10,11 +10,6 @@ export function islandSrc(manifest: IslandManifest, id: string, baseURL = '/'): 
   return `${baseURL.replace(/\/+$/, '')}${ISLANDS_PATH}${file}`
 }
 
-/** A page that renders a heavy island declares it in a JSON script with this id prefix; `app/islands/loader.ts` reads them. */
-export const HEAVY_SCRIPT_PREFIX = 'micelio-island-'
-/** Dispatched on `document` when a client-side navigation renders a heavy island. */
-export const HEAVY_SCAN_EVENT = 'micelio:heavy-scan'
-
 export interface HeavyDeclaration {
   /** The registry id; the element it upgrades is `heavyTag(id)`. */
   id: string

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { contentSecurityPolicy, cspOrigin, inlineScripts, islandPolicyOptions, islandsInHtml, isWorkerScriptPath, runtimesSource, sceneModelOrigins, workerPolicy } from '../app/helpers/securityHeaders'
-import { HEAVY_ISLANDS } from '../app/islands/heavy'
-import type { HeavyIsland } from '../app/islands/heavy'
+import { HEAVY_ISLANDS } from '../app/islands/lib/constants'
+import type { HeavyIsland } from '../app/islands/types'
 
 describe('inlineScripts', () => {
   it('returns the content of executable inline scripts only', () => {

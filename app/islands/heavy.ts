@@ -1,84 +1,13 @@
-// Registry of heavy islands (ADR 0006, section 6). Data only: modules/islands.ts does not build it as an entry,
-// and each `entry` is a sibling file `app/islands/<entry>.ts`.
-
-/** What an island needs from the browser; one it lacks leaves the server fallback in place. */
-export type HeavyFeature = 'webgl2' | 'wasm' | 'worker'
-
-/** `visible`: near the viewport, after load and idle. `interaction`: a click or key on the island's control. */
-export type HeavyTrigger = 'visible' | 'interaction'
-
-/** What `Save-Data` does to a `visible` island: `skip` keeps the fallback (the default), `load` loads it anyway. An `interaction` island always loads. */
-export type HeavySaveData = 'load' | 'skip'
-
-/**
- * CSP additions for the responses of the pages that render the island (ADR 0004, ADR 0006).
- * Sources are `'self'` or absolute `https://` origins with an optional path (`http://` only for localhost).
- */
-export interface HeavyCsp {
-  connectSrc?: string[]
-  workerSrc?: string[]
-  /** Adds `'wasm-unsafe-eval'` to `script-src`. */
-  wasm?: true
-}
-
-export interface HeavyIsland {
-  /** Block or section the island belongs to (`mermaid`, `playground`, `scene`). */
-  id: string
-  /** File name, without extension, in `app/islands/`. */
-  entry: string
-  trigger: HeavyTrigger
-  /** What the server markup shows without the island: a poster, the source code, the diagram's source. */
-  fallback: string
-  features: HeavyFeature[]
-  saveData?: HeavySaveData
-  /** `interaction` only, required: attribute selector (`[data-playground-run]`), inside the element, of the control whose press loads the island. */
-  control?: string
-  /** The island animates: under `prefers-reduced-motion: reduce` the loader never imports it and the fallback stays (ADR 0006, amendment of #246). */
-  motion?: true
-  csp?: HeavyCsp
-  /** Key under `islands` in `scripts/perf/budgets.json`. */
-  budget: string
-}
+// Validation of the heavy island registry (ADR 0006, section 6); the registry is `HEAVY_ISLANDS` in `lib/constants.ts`, its types in `types.ts`.
+// modules/islands.ts does not build these three files as entries, and each `entry` is a sibling file `app/islands/<entry>.ts`.
+import type { HeavyFeature, HeavyIsland, HeavySaveData, HeavyTrigger } from './types'
 
 export const HEAVY_FEATURES: readonly HeavyFeature[] = ['webgl2', 'wasm', 'worker']
 export const HEAVY_TRIGGERS: readonly HeavyTrigger[] = ['visible', 'interaction']
 export const HEAVY_SAVE_DATA: readonly HeavySaveData[] = ['load', 'skip']
 
-export const HEAVY_ISLANDS: readonly HeavyIsland[] = [
-  {
-    id: 'mermaid',
-    entry: 'mermaid',
-    trigger: 'visible',
-    fallback: 'The diagram\'s source in the code block that RichTextBlock renders',
-    features: [],
-    // A diagram is the article's content, not decoration (ADR 0006, amendment of #247 PR 3)
-    saveData: 'load',
-    budget: 'mermaid',
-  },
-  {
-    id: 'playground',
-    entry: 'playground',
-    trigger: 'interaction',
-    fallback: 'the highlighted code and its expected output',
-    features: ['wasm', 'worker'],
-    control: '[data-playground-run]',
-    // The page may start a Worker of its own origin. Only the Worker compiles WebAssembly, under its own policy, workerPolicy() (ADR 0004)
-    csp: { workerSrc: ['\'self\''] },
-    budget: 'playground',
-  },
-  {
-    id: 'scene',
-    entry: 'scene',
-    trigger: 'visible',
-    fallback: 'the poster, with the scene\'s alt text',
-    features: ['webgl2'],
-    // Decoration: Save-Data keeps the poster
-    saveData: 'skip',
-    motion: true,
-    budget: 'scene',
-  },
-]
-
+// Files of app/islands/ that are not islands
+const RESERVED_ENTRIES = new Set(['heavy', 'types', 'constants'])
 // A control is an attribute selector of ours, never free CSS
 export const CONTROL = /^\[data-[a-z][a-z-]*\]$/
 const NAME = /^[a-z][a-z0-9-]*$/
@@ -100,7 +29,7 @@ export function validateHeavyIslands(islands: readonly HeavyIsland[]): string[] 
     if (!NAME.test(island.id)) errors.push(`${label}: id must be lowercase letters, digits and hyphens`)
     if (ids.has(island.id)) errors.push(`${label}: duplicate id`)
     ids.add(island.id)
-    if (!NAME.test(island.entry) || island.entry === 'heavy') errors.push(`${label}: entry must name a file of app/islands/`)
+    if (!NAME.test(island.entry) || RESERVED_ENTRIES.has(island.entry)) errors.push(`${label}: entry must name a file of app/islands/`)
     if (!HEAVY_TRIGGERS.includes(island.trigger)) errors.push(`${label}: unknown trigger "${String(island.trigger)}"`)
     if (!island.fallback.trim()) errors.push(`${label}: fallback must describe what the server renders`)
     if (island.saveData !== undefined && !HEAVY_SAVE_DATA.includes(island.saveData)) errors.push(`${label}: unknown saveData "${String(island.saveData)}"`)

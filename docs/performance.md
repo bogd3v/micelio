@@ -136,7 +136,7 @@ Dynamic mode, production build of `main` at `9aa9c3f`, against the e2e mock:
 
 Each mode of `scripts/perf/budgets.json` can have an `islands` section (ADR 0006, section 6): the bytes an island sends once it is used, apart from the page budgets. `search` has its own metrics: `measure.mjs --mode static` enforces them on what a browser loads when the palette opens (see "Static builds"), and `e2e/static/search.spec.ts` on the files of the build (`npm run test:static`).
 
-Every heavy island in `app/islands/heavy.ts` needs a budget, under the key its `budget` names, in at least one mode; `measure.mjs` refuses to start when an island has none or a budget has no island (`scripts/perf/islands.mjs`, tested in `test/perfIslands.test.ts`). In each mode that budgets it, the script loads the fixture page once, checks that no file of `/_islands/` loaded before the trigger and that the HTML does not declare the island's entry, fires the trigger and measures every file of `/_islands/` requested from then on (the entry, its chunks, workers and runtimes, including what a worker fetches):
+Every heavy island in `app/islands/lib/constants.ts` needs a budget, under the key its `budget` names, in at least one mode; `measure.mjs` refuses to start when an island has none or a budget has no island (`scripts/perf/islands.mjs`, tested in `test/perfIslands.test.ts`). In each mode that budgets it, the script loads the fixture page once, checks that no file of `/_islands/` loaded before the trigger and that the HTML does not declare the island's entry, fires the trigger and measures every file of `/_islands/` requested from then on (the entry, its chunks, workers and runtimes, including what a worker fetches):
 
 ```json
 "islands": {

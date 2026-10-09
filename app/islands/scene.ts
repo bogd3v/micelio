@@ -3,7 +3,8 @@
 // reduced motion, Save-Data or without WebGL2); Three.js and the model load on the first start. The canvas lives in a shadow root.
 // It does not import `lib/features`, `lib/trigger` or `lib/hydrated`, which the loader shares: the checks below repeat the cheap ones,
 // because an element created by a client-side navigation upgrades by itself.
-import { glbProblem, isGlb, MODEL_MAX_BYTES, modelSource } from '../helpers/scene'
+import { MODEL_MAX_BYTES } from './constants'
+import { glbProblem, isGlb, modelSource } from '../helpers/scene'
 import type { SceneView } from './lib/sceneEngine'
 
 const STYLE = `

@@ -49,7 +49,7 @@ const pages = pagesToMeasure(args.pages)
 // A recorded exception applies to every mode unless it names one
 const exception = budgets.themes?.[theme] && [budgets.themes[theme].mode ?? budgetMode].flat().includes(budgetMode) ? budgets.themes[theme] : undefined
 // The heavy registry is TypeScript; every island in it needs a budget, and every heavy budget an island
-const { HEAVY_ISLANDS } = await createJiti(import.meta.url).import('../../app/islands/heavy.ts')
+const { HEAVY_ISLANDS } = await createJiti(import.meta.url).import('../../app/islands/lib/constants.ts')
 const budgetErrors = islandBudgetErrors(HEAVY_ISLANDS, budgets.modes)
 if (budgetErrors.length) throw new Error(`budgets.json:\n${budgetErrors.join('\n')}`)
 const heavyIslands = HEAVY_ISLANDS.flatMap(island => budgetKeysOf(island, modeBudgets.islands).map(key => ({ island, key })))

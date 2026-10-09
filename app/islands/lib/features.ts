@@ -1,5 +1,5 @@
 // Browser capabilities a heavy island checks before it loads (ADR 0006, section 6).
-import type { HeavyFeature } from '../heavy'
+import type { HeavyFeature } from '../types'
 
 interface NetworkInformation {
   saveData?: boolean

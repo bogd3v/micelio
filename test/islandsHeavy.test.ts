@@ -1,8 +1,9 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { HEAVY_ISLANDS, validateHeavyIslands } from '../app/islands/heavy'
-import type { HeavyIsland } from '../app/islands/heavy'
+import { HEAVY_ISLANDS } from '../app/islands/lib/constants'
+import { validateHeavyIslands } from '../app/islands/heavy'
+import type { HeavyIsland } from '../app/islands/types'
 
 const valid: HeavyIsland = {
   id: 'mermaid',
