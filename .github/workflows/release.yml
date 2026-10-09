@@ -1,37 +1,191 @@
 name: Release
 
+# Only the maintainer runs it (ADR 0010). It defaults to a dry run: it prints the version and the
+# notes it would publish and changes nothing.
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Print the version and the notes without tagging or publishing
+        type: boolean
+        default: true
+      release_candidate:
+        description: Release a candidate (vX.Y.Z-rc.N) that moves neither X.Y nor latest
+        type: boolean
+        default: false
+      cms_line:
+        description: "micelio-cms release line it was tested with, e.g. 0.1 (required to publish)"
+        type: string
+        default: ''
+      upgrade_notes:
+        description: Upgrade notes for the release body (required when a pull request is breaking)
+        type: string
+        default: ''
 
 permissions:
   contents: write
+  packages: write
+  actions: read
 
 concurrency:
   group: release
   cancel-in-progress: false
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE: ghcr.io/${{ github.repository }}
+  BUILDER_IMAGE: ghcr.io/${{ github.repository }}-builder
+
 jobs:
   release:
-    name: Create a dated release
+    name: Release
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Tag main and publish the release notes
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Compute the next version
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RC: ${{ inputs.release_candidate }}
+        run: |
+          if [ "$RC" = true ]; then
+            node scripts/release/version.mjs --rc > plan.json
+          else
+            node scripts/release/version.mjs > plan.json
+          fi
+          cat plan.json
+          {
+            echo "tag=$(jq -r .tag plan.json)"
+            echo "version=$(jq -r .version plan.json)"
+            echo "previous=$(jq -r '.previous // empty' plan.json)"
+            echo "bump=$(jq -r '.bump // empty' plan.json)"
+            echo "prerelease=$(jq -r .prerelease plan.json)"
+            echo "breaking=$(jq -r .breaking plan.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate the release notes
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
+          TAG: ${{ steps.plan.outputs.tag }}
+          PREVIOUS: ${{ steps.plan.outputs.previous }}
+          CMS_LINE: ${{ inputs.cms_line }}
+          UPGRADE_NOTES: ${{ inputs.upgrade_notes }}
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          base="v$(date -u +%Y.%m.%d)"
-          tag="$base"
-          n=1
-          while gh api "repos/$REPO/git/ref/tags/$tag" >/dev/null 2>&1; do
-            n=$((n + 1))
-            tag="$base.$n"
+          contract=$(grep -oP 'CONTRACT_VERSION = \K\d+' modules/theme/contract.ts)
+          node_range=$(node -p "require('./package.json').engines.node")
+          args=(-f tag_name="$TAG" -f target_commitish="$GITHUB_SHA" -f configuration_file_path=.github/release.yml)
+          if [ -n "$PREVIOUS" ]; then args+=(-f previous_tag_name="$PREVIOUS"); fi
+          gh api -X POST "repos/$REPO/releases/generate-notes" "${args[@]}" -q .body > generated.md
+          {
+            echo "## Upgrade notes"
+            echo
+            echo "${UPGRADE_NOTES:-No manual steps.}"
+            echo
+            echo "## Compatibility"
+            echo
+            echo "- Theme contract: $contract"
+            echo "- Tested with micelio-cms release line: ${CMS_LINE:-_not stated_}"
+            echo "- Node: $node_range"
+            echo
+            cat generated.md
+          } > release-notes.md
+          cat release-notes.md
+          {
+            echo "### Release \`$TAG\` ($([ "$DRY_RUN" = true ] && echo 'dry run' || echo 'publishing'))"
+            echo
+            cat release-notes.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Nothing is changed until every check passes. In a dry run a failed check is a warning.
+      - name: Check the release can be published
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ steps.plan.outputs.tag }}
+          VERSION: ${{ steps.plan.outputs.version }}
+          BREAKING: ${{ steps.plan.outputs.breaking }}
+          CMS_LINE: ${{ inputs.cms_line }}
+          UPGRADE_NOTES: ${{ inputs.upgrade_notes }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          failed=0
+          fail() {
+            failed=1
+            if [ "$DRY_RUN" = true ]; then echo "::warning::$1"; else echo "::error::$1"; fi
+          }
+          # package.json holds the version being released; a candidate carries the version it precedes
+          expected="${VERSION%%-rc.*}"
+          [[ "$CMS_LINE" =~ ^[0-9]+\.[0-9]+$ && "$CMS_LINE" = "${expected%.*}" ]] \
+            || fail "cms_line must be the MAJOR.MINOR of this release (${expected%.*}), the line micelio-cms was tested with."
+          if [ "$BREAKING" != 0 ] && [ -z "$UPGRADE_NOTES" ]; then
+            fail "$BREAKING breaking pull request(s) since the last release: set upgrade_notes."
+          fi
+          actual=$(node -p "require('./package.json').version")
+          [ "$actual" = "$expected" ] || fail "package.json says $actual but this release is $expected. Merge a chore(release) pull request that sets it."
+          if gh api "repos/$REPO/git/ref/tags/$TAG" >/dev/null 2>&1; then fail "The tag $TAG already exists. A published version never changes."; fi
+          passed=$(gh run list --repo "$REPO" --workflow deploy.yml --branch main --event push --commit "$GITHUB_SHA" --status success --json conclusion -q 'length')
+          [ "$passed" -ge 1 ] || fail "CI/CD Pipeline has not passed on $GITHUB_SHA."
+          short="${GITHUB_SHA::7}"
+          for image in "$IMAGE" "$BUILDER_IMAGE"; do
+            if ! docker buildx imagetools inspect "$image:$short" >/dev/null 2>&1; then
+              fail "$image:$short does not exist. Wait for the pipeline of this commit."
+            elif docker buildx imagetools inspect "$image:$VERSION" >/dev/null 2>&1; then
+              # Left by an earlier run that stopped before the release: fine only if it is this commit's image
+              [ "$(docker buildx imagetools inspect "$image:$VERSION" --format '{{json .Manifest.Digest}}')" = "$(docker buildx imagetools inspect "$image:$short" --format '{{json .Manifest.Digest}}')" ] \
+                || fail "$image:$VERSION already exists and is not this commit's image. A published version never changes."
+            fi
           done
-          gh api -X POST "repos/$REPO/releases/generate-notes" \
-            -f tag_name="$tag" \
-            -f target_commitish="$GITHUB_SHA" \
-            -f configuration_file_path=.github/release.yml \
-            -q .body > release-notes.md
-          gh release create "$tag" --repo "$REPO" --target "$GITHUB_SHA" --title "$tag" --notes-file release-notes.md
-          echo "Released $tag at $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$failed" = 1 ] && [ "$DRY_RUN" != true ]; then exit 1; fi
+
+      # A manifest copy of the image already built and tested for this commit: nothing is rebuilt
+      - name: Tag the images
+        if: ${{ !inputs.dry_run }}
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+          PRERELEASE: ${{ steps.plan.outputs.prerelease }}
+        run: |
+          short="${GITHUB_SHA::7}"
+          tags=("$VERSION")
+          if [ "$PRERELEASE" != true ]; then
+            tags+=("${VERSION%.*}" latest)
+          fi
+          for image in "$IMAGE" "$BUILDER_IMAGE"; do
+            args=()
+            for tag in "${tags[@]}"; do args+=(--tag "$image:$tag"); done
+            docker buildx imagetools create "${args[@]}" "$image:$short"
+          done
+
+      - name: Tag main and publish the release
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ steps.plan.outputs.tag }}
+          PRERELEASE: ${{ steps.plan.outputs.prerelease }}
+        run: |
+          flags=()
+          if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
+          gh release create "$TAG" --repo "$REPO" --target "$GITHUB_SHA" --title "$TAG" --notes-file release-notes.md "${flags[@]}"
+          echo "Released $TAG at $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"

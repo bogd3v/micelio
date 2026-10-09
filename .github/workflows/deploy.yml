@@ -350,7 +350,7 @@ jobs:
           echo "theme quality matrix: ${RESULT}"
           test "${RESULT}" = "success"
 
-  # Built while the tests run; only the commit tag is pushed, and deploy promotes it to latest
+  # Built while the tests run; only the commit tag is pushed, and deploy promotes it to edge (releases add X.Y.Z, X.Y and latest: release.yml)
   build-and-push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
@@ -535,15 +535,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # A manifest copy: the tested image becomes latest without rebuilding it
-      - name: Tag the image as latest
+      # A manifest copy: the tested image becomes edge without rebuilding it. latest is moved only by a release.
+      - name: Tag the image as edge
         run: |
           image="${REGISTRY}/${IMAGE_NAME}"
-          docker buildx imagetools create --tag "${image}:latest" "${image}:${GITHUB_SHA::7}"
+          docker buildx imagetools create --tag "${image}:edge" "${image}:${GITHUB_SHA::7}"
           builder="${REGISTRY}/${BUILDER_IMAGE_NAME}"
-          docker buildx imagetools create --tag "${builder}:latest" "${builder}:${GITHUB_SHA::7}"
+          docker buildx imagetools create --tag "${builder}:edge" "${builder}:${GITHUB_SHA::7}"
 
-      # Dokploy does not watch GHCR: it only redeploys (pulling :latest) when asked.
+      # Dokploy does not watch GHCR: it only redeploys (pulling :edge) when asked.
       - name: Trigger Dokploy deployment
         env:
           DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
