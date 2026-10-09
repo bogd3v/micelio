@@ -59,7 +59,7 @@ async function submit(): Promise<void> {
         :error="fieldError"
       />
       <div class="myc-account-actions">
-        <BdButton type="submit" arrow>{{ t('account.recover.submit') }}</BdButton>
+        <MycButton type="submit" arrow>{{ t('account.recover.submit') }}</MycButton>
       </div>
       <p class="myc-account-switch">
         <NuxtLink :to="localizePath('/account/sign-in')" class="myc-inline">{{ t('account.recover.back') }}</NuxtLink>

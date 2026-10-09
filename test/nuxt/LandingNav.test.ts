@@ -1,7 +1,7 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
-import BdSearchTrigger from '~/components/bd/BdSearchTrigger.vue'
-import BdTabBar from '~/components/bd/BdTabBar.vue'
+import MycSearchTrigger from '~/components/myc/MycSearchTrigger.vue'
+import MycTabBar from '~/components/myc/MycTabBar.vue'
 import SectionRenderer from '~/components/section/SectionRenderer.vue'
 import Header from '~/theme/layout/header/Bar.vue'
 import Footer from '~/theme/layout/footer/Columns.vue'
@@ -39,16 +39,16 @@ describe('landing without a blog', () => {
 
   it('has no blog tab, and the search tab goes to the site navigation', async () => {
     setBuild('landing', false)
-    const wrapper = await mountSuspended(BdTabBar)
+    const wrapper = await mountSuspended(MycTabBar)
     expect(wrapper.findAll('a.myc-tab').map(link => link.attributes('href'))).toEqual(['/', '/#myc-site-nav', '#myc-site-nav'])
   })
 
   it('sends the search control to the site navigation, not to a blog list', async () => {
     setBuild('landing', false)
-    const wrapper = await mountSuspended(BdSearchTrigger)
+    const wrapper = await mountSuspended(MycSearchTrigger)
     expect(wrapper.get('a').attributes('href')).toBe('/#myc-site-nav')
     setBuild('landing', true)
-    expect((await mountSuspended(BdSearchTrigger)).get('a').attributes('href')).toBe('/blog')
+    expect((await mountSuspended(MycSearchTrigger)).get('a').attributes('href')).toBe('/blog')
   })
 
   it('shows anchors to the titled sections in the header, once the home page has loaded', async () => {

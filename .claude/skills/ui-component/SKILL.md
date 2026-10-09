@@ -1,6 +1,6 @@
 ---
 name: ui-component
-description: Build or change a Vue component or page of the Micelio frontend following its design system (Bd* components, design tokens, layered CSS), i18n, accessibility and SEO conventions. Use for any new component, page, visual change or CSS refactor.
+description: Build or change a Vue component or page of the Micelio frontend following its design system (Myc* components, design tokens, layered CSS), i18n, accessibility and SEO conventions. Use for any new component, page, visual change or CSS refactor.
 ---
 
 # UI component
@@ -9,7 +9,7 @@ Read `AGENTS.md` (code style, CSS architecture) and the specimen page (`/_theme`
 
 ## Design system
 
-- Reuse `app/components/bd/` (`BdButton`, `BdCategoryTag`, `BdCallout`, `BdCodeBlock`…) before writing a new element; buttons and button-like links are always `<BdButton>`.
+- Reuse `app/components/myc/` (`MycButton`, `MycCategoryTag`, `MycCallout`, `MycCodeBlock`…) before writing a new element; buttons and button-like links are always `<MycButton>`.
 - Colors, spacing and type come from the tokens (`var(--…)`) declared in the active theme's `theme.json` (`themes/bogota/theme.json`); the build generates the CSS from it, so no generated file is checked in. `npm run tokens` prints it.
 - Themes are `data-theme="noche" | "dia"` on `<html>`; check both.
 

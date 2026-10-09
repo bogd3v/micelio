@@ -27,8 +27,8 @@ const url = computed<string>(() => `https://www.buymeacoffee.com/${username.valu
       <p class="myc-coffee-text">{{ t('buyMeACoffee.description') }}</p>
       <p class="myc-meta myc-coffee-handle">buymeacoffee.com/{{ username }}</p>
     </div>
-    <BdButton :href="url" class="myc-coffee-button" target="_blank" rel="noopener noreferrer">
+    <MycButton :href="url" class="myc-coffee-button" target="_blank" rel="noopener noreferrer">
       {{ t('buyMeACoffee.button') }} <span aria-hidden="true">↗</span>
-    </BdButton>
+    </MycButton>
   </section>
 </template>

@@ -139,7 +139,7 @@ onMounted(() => {
                 <span class="myc-meta myc-drafts-article-meta">{{ [row.path, row.author].filter(Boolean).join(' · ') }}</span>
               </span>
             </td>
-            <td><BdCategoryTag v-if="row.category" :category="row.category" /></td>
+            <td><MycCategoryTag v-if="row.category" :category="row.category" /></td>
             <td class="myc-meta myc-drafts-muted">{{ row.language }}</td>
             <td class="myc-meta myc-drafts-muted"><time :datetime="row.editedAt">{{ row.edited }}</time></td>
             <td class="myc-drafts-action">
@@ -160,7 +160,7 @@ onMounted(() => {
             </span>
             <span class="myc-drafts-card-title">{{ row.title }}</span>
             <span class="myc-drafts-card-row">
-              <BdCategoryTag v-if="row.category" :category="row.category" />
+              <MycCategoryTag v-if="row.category" :category="row.category" />
               <time class="myc-meta myc-drafts-muted" :datetime="row.editedAt">{{ row.edited }}</time>
             </span>
             <span class="myc-meta myc-drafts-card-cta" aria-hidden="true">{{ t('drafts.review') }} →</span>

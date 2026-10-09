@@ -240,10 +240,10 @@ onUnmounted(stopAutoplay)
 
     <figcaption v-if="hasFigcaption" aria-live="polite">
       <span v-if="activeCaption || figureNumber" class="myc-fig-cap">
-        <span v-if="figureNumber" class="myc-fig-n">{{ t('bd.figure.number', { n: formatFigureNumber(figureNumber) }) }}</span>
+        <span v-if="figureNumber" class="myc-fig-n">{{ t('myc.figure.number', { n: formatFigureNumber(figureNumber) }) }}</span>
         {{ activeCaption }}
       </span>
-      <BdFigureCredit v-if="activeSlide?.credit" :key="currentIndex" :credit="activeSlide.credit" />
+      <MycFigureCredit v-if="activeSlide?.credit" :key="currentIndex" :credit="activeSlide.credit" />
     </figcaption>
   </figure>
 </template>

@@ -11,16 +11,16 @@ const VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'accent', 'text']
     <div v-for="size in (['md', 'sm'] as const)" :key="size">
       <h3 class="myc-specimen-label">{{ t('specimen.controls.buttons', { size }) }}</h3>
       <div class="myc-specimen-row">
-        <BdButton v-for="variant in VARIANTS" :key="variant" :variant="variant" :size="size">{{ t(`specimen.controls.variants.${variant}`) }}</BdButton>
-        <BdButton variant="accent" :size="size" arrow>{{ t('specimen.controls.arrow') }}</BdButton>
-        <BdButton href="#controls" variant="secondary" :size="size">{{ t('specimen.controls.link') }}</BdButton>
+        <MycButton v-for="variant in VARIANTS" :key="variant" :variant="variant" :size="size">{{ t(`specimen.controls.variants.${variant}`) }}</MycButton>
+        <MycButton variant="accent" :size="size" arrow>{{ t('specimen.controls.arrow') }}</MycButton>
+        <MycButton href="#controls" variant="secondary" :size="size">{{ t('specimen.controls.link') }}</MycButton>
       </div>
     </div>
 
     <div>
       <h3 class="myc-specimen-label">{{ t('specimen.controls.disabled') }}</h3>
       <div class="myc-specimen-row">
-        <BdButton v-for="variant in VARIANTS" :key="variant" :variant="variant" disabled>{{ t(`specimen.controls.variants.${variant}`) }}</BdButton>
+        <MycButton v-for="variant in VARIANTS" :key="variant" :variant="variant" disabled>{{ t(`specimen.controls.variants.${variant}`) }}</MycButton>
       </div>
       <p class="myc-body-s">{{ t('specimen.controls.interactive') }}</p>
     </div>
@@ -28,10 +28,10 @@ const VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'accent', 'text']
     <div>
       <h3 class="myc-specimen-label">{{ t('specimen.controls.switches') }}</h3>
       <div class="myc-specimen-row">
-        <BdThemeSwitch />
-        <BdLangSwitch />
-        <BdAccountMenu />
-        <span class="myc-specimen-logo"><BdMastodonLogo label="Mastodon" /></span>
+        <MycThemeSwitch />
+        <MycLangSwitch />
+        <MycAccountMenu />
+        <span class="myc-specimen-logo"><MycMastodonLogo label="Mastodon" /></span>
       </div>
     </div>
 

@@ -34,7 +34,7 @@ useMarkAsRead(prose, readDocumentId)
   <div class="myc-article-page" data-layout="aside">
     <header class="myc-article-head">
       <div class="myc-article-kicker">
-        <BdCategoryTag v-if="category" :category="category" />
+        <MycCategoryTag v-if="category" :category="category" />
         <time v-if="publishedDate" class="myc-meta" :datetime="post.publishedAt ?? undefined">{{ publishedDate }}</time>
         <span v-if="post.readTime" class="myc-meta">{{ t("blog.readTime", { minutes: post.readTime }) }}</span>
       </div>
@@ -50,9 +50,9 @@ useMarkAsRead(prose, readDocumentId)
         </div>
         <div v-if="!draft" class="myc-article-actions">
           <BlogCopyLinkButton :url="shareUrl" />
-          <BdButton :href="mastodonUrl" variant="text" size="sm" target="_blank" rel="noopener noreferrer" :aria-label="t('post.shareOn', { network: 'Mastodon' })">
+          <MycButton :href="mastodonUrl" variant="text" size="sm" target="_blank" rel="noopener noreferrer" :aria-label="t('post.shareOn', { network: 'Mastodon' })">
             Mastodon <span aria-hidden="true">↗</span>
-          </BdButton>
+          </MycButton>
         </div>
       </div>
       <BlogFediverseBar v-if="federated" :slug="post.slug" :document-id="post.documentId" />
@@ -72,7 +72,7 @@ useMarkAsRead(prose, readDocumentId)
         />
       </div>
       <figcaption v-if="post.coverCredit" class="myc-article-cover-credit">
-        <BdFigureCredit :credit="post.coverCredit" />
+        <MycFigureCredit :credit="post.coverCredit" />
       </figcaption>
     </figure>
     <div v-else class="myc-article-cover myc-article-cover-empty" aria-hidden="true" />

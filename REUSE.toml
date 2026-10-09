@@ -88,6 +88,6 @@ SPDX-License-Identifier = "MIT"
 
 # The Mastodon logo, a trademark used only to link to Mastodon
 [[annotations]]
-path = "app/components/bd/BdMastodonLogo.vue"
+path = "app/components/myc/MycMastodonLogo.vue"
 SPDX-FileCopyrightText = ["2026 Alejandro Ramirez Garcia and the Micelio contributors", "Mastodon gGmbH"]
 SPDX-License-Identifier = "AGPL-3.0-only WITH LicenseRef-Micelio-Theme-exception AND LicenseRef-Mastodon-Trademark"

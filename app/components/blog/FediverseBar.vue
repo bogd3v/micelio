@@ -89,7 +89,7 @@ function copyArticleUrl(): void {
             :aria-invalid="error ? 'true' : undefined"
             aria-describedby="myc-fedi-article-hint"
           >
-          <BdButton type="submit" arrow>{{ t('post.fediverse.open') }}</BdButton>
+          <MycButton type="submit" arrow>{{ t('post.fediverse.open') }}</MycButton>
         </div>
         <p id="myc-fedi-article-hint" :class="['myc-meta myc-fedi-hint', { 'myc-fedi-hint-error': error }]" role="status">{{ hint }}</p>
       </form>

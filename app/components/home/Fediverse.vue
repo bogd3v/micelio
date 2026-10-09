@@ -49,7 +49,7 @@ function copyHandle(): void {
   <section id="fediverso" class="myc-home-section myc-fedi myc-reveal" aria-labelledby="fediverse-title">
     <div class="myc-fedi-head">
       <div class="myc-home-heading">
-        <BdMastodonLogo class="myc-fedi-logo" :label="t('home.fediverse.logo')" />
+        <MycMastodonLogo class="myc-fedi-logo" :label="t('home.fediverse.logo')" />
         <p class="myc-eyebrow myc-home-eyebrow">{{ t('home.fediverse.eyebrow') }}</p>
         <h2 id="fediverse-title" class="myc-home-title myc-stretch">{{ t('home.fediverse.title') }}</h2>
       </div>
@@ -111,7 +111,7 @@ function copyHandle(): void {
             :aria-invalid="error ? 'true' : undefined"
             aria-describedby="myc-fedi-hint"
           >
-          <BdButton type="submit" arrow>{{ t('home.fediverse.follow') }}</BdButton>
+          <MycButton type="submit" arrow>{{ t('home.fediverse.follow') }}</MycButton>
         </div>
         <p id="myc-fedi-hint" :class="['myc-meta myc-fedi-hint', { 'myc-fedi-hint-error': error }]" role="status">{{ hint }}</p>
       </form>

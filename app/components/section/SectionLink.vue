@@ -4,7 +4,7 @@ import { resolveSectionLink } from '~/helpers/links'
 
 const props = defineProps<{
   link?: PageLink | null
-  /** A button variant renders a BdButton; without it, a plain link */
+  /** A button variant renders a MycButton; without it, a plain link */
   variant?: ButtonVariant
   arrow?: boolean
 }>()
@@ -18,7 +18,7 @@ const rel = computed<string | undefined>(() => target.value?.external && !target
 
 <template>
   <template v-if="link && target">
-    <BdButton v-if="variant" :href="target.href" :variant="variant" :arrow="arrow" :rel="rel">{{ link.label }}</BdButton>
+    <MycButton v-if="variant" :href="target.href" :variant="variant" :arrow="arrow" :rel="rel">{{ link.label }}</MycButton>
     <NuxtLink v-else :to="target.href" :rel="rel">{{ link.label }}</NuxtLink>
   </template>
 </template>

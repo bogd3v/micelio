@@ -2,9 +2,9 @@ import { afterEach, describe, it, expect } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { Category } from '~/interfaces'
-import BdTabBar from '~/components/bd/BdTabBar.vue'
-import BdThemeSwitch from '~/components/bd/BdThemeSwitch.vue'
-import BdLangSwitch from '~/components/bd/BdLangSwitch.vue'
+import MycTabBar from '~/components/myc/MycTabBar.vue'
+import MycThemeSwitch from '~/components/myc/MycThemeSwitch.vue'
+import MycLangSwitch from '~/components/myc/MycLangSwitch.vue'
 import BlogFilters from '~/components/blog/Filters.vue'
 import CopyLinkButton from '~/components/blog/CopyLinkButton.vue'
 import SkipLinks from '~/components/layout/SkipLinks.vue'
@@ -32,13 +32,13 @@ describe('static fallbacks', () => {
 
   describe('tab bar', () => {
     it('keeps buttons in dynamic', async () => {
-      const wrapper = await mountSuspended(BdTabBar)
+      const wrapper = await mountSuspended(MycTabBar)
       expect(wrapper.findAll('button.myc-tab')).toHaveLength(2)
     })
 
     it('links search to the blog and the menu to the footer navigation in static', async () => {
       setMode('static')
-      const wrapper = await mountSuspended(BdTabBar)
+      const wrapper = await mountSuspended(MycTabBar)
       expect(wrapper.find('button').exists()).toBe(false)
       const links = wrapper.findAll('a.myc-tab')
       expect(links.map(link => link.attributes('href'))).toEqual(['/', '/blog', '/blog', '#myc-site-nav'])
@@ -87,7 +87,7 @@ describe('static fallbacks', () => {
   describe('language and theme switches', () => {
     it('renders the language options as links in static', async () => {
       setMode('static')
-      const wrapper = await mountSuspended(BdLangSwitch)
+      const wrapper = await mountSuspended(MycLangSwitch)
       expect(wrapper.findAll('button')).toHaveLength(0)
       const links = wrapper.findAll('a')
       expect(links.map(link => link.attributes('href'))).toEqual(['/es', '/'])
@@ -97,14 +97,14 @@ describe('static fallbacks', () => {
 
     it('falls back to the blog of the other language on blog pages, until the build rewrites the href', async () => {
       setMode('static')
-      const wrapper = await mountSuspended(BdLangSwitch, { route: '/blog/what-is-solarpunk' })
+      const wrapper = await mountSuspended(MycLangSwitch, { route: '/blog/what-is-solarpunk' })
       expect(wrapper.findAll('a').map(link => link.attributes('href'))).toEqual(['/es/blog', '/blog/what-is-solarpunk'])
     })
 
     it('hides the theme switch in static', async () => {
-      expect((await mountSuspended(BdThemeSwitch)).findAll('button').length).toBeGreaterThan(1)
+      expect((await mountSuspended(MycThemeSwitch)).findAll('button').length).toBeGreaterThan(1)
       setMode('static')
-      expect((await mountSuspended(BdThemeSwitch)).find('button').exists()).toBe(false)
+      expect((await mountSuspended(MycThemeSwitch)).find('button').exists()).toBe(false)
     })
   })
 

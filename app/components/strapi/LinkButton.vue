@@ -12,7 +12,7 @@ const target = computed(() => resolveLink(props.link.url, localizePath))
 </script>
 
 <template>
-  <BdButton
+  <MycButton
     :href="target.href"
     :variant="link.variant"
     :arrow="link.variant === 'primary' && !target.external"
@@ -20,5 +20,5 @@ const target = computed(() => resolveLink(props.link.url, localizePath))
     :rel="target.external ? 'noopener noreferrer' : undefined"
   >
     {{ link.label }}<span v-if="target.external" aria-hidden="true"> ↗</span>
-  </BdButton>
+  </MycButton>
 </template>

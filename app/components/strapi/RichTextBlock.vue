@@ -16,7 +16,7 @@ useCodeBlockCopy(root)
 
 // Diagrams are drawn by `app/islands/mermaid.ts` (ADR 0006, section 6); the page carries its label and the theme's overrides
 if (props.block.html?.includes(`<${MERMAID_ELEMENT}`)) {
-  const config: MermaidConfig = { label: t('bd.mermaid.label'), overrides: mermaidOverrides }
+  const config: MermaidConfig = { label: t('myc.mermaid.label'), overrides: mermaidOverrides }
   useHeavyIsland('mermaid', config)
 }
 </script>

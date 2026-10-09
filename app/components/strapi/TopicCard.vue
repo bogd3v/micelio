@@ -13,7 +13,7 @@ const caption = useIllustrationCaption()
 <template>
   <article :class="['myc-topic', { 'myc-topic-pillar': pillar }]">
     <div class="myc-topic-head">
-      <BdCategoryTag :category="topic.category" />
+      <MycCategoryTag :category="topic.category" />
       <span class="myc-meta myc-topic-label">{{ label }}</span>
     </div>
     <div class="myc-topic-art"><ThemeIllustration :category="topic.category" :size="200" /></div>

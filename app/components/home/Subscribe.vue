@@ -7,11 +7,11 @@ const feedCommand = computed<string>(() => `$ curl -s ${siteUrl.value}/feed.xml`
 
 <template>
   <section id="newsletter" class="myc-home-section myc-subscribe myc-reveal">
-    <BdNewsletterForm id="nl-home" class="myc-subscribe-form" />
+    <MycNewsletterForm id="nl-home" class="myc-subscribe-form" />
     <div class="myc-subscribe-rss">
       <p class="myc-eyebrow myc-home-eyebrow">{{ t('home.rss.title') }}</p>
       <p class="myc-home-intro">{{ t('home.rss.description') }}</p>
-      <BdCodeBlock lang="shell" :code="feedCommand" />
+      <MycCodeBlock lang="shell" :code="feedCommand" />
     </div>
   </section>
 </template>

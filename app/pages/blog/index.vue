@@ -147,7 +147,7 @@ useHead(() => ({
       ? [{
           rel: 'alternate' as const,
           type: 'application/rss+xml',
-          title: t('blog.feeds.title', { site: site.value.name, category: t(`bd.categories.${filters.value.category}`) }),
+          title: t('blog.feeds.title', { site: site.value.name, category: t(`myc.categories.${filters.value.category}`) }),
           href: `${siteUrl.value}${feedPath(locale.value, filters.value.category)}`,
         }]
       : []),

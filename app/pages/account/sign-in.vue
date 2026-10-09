@@ -68,7 +68,7 @@ onMounted(async () => {
         autocomplete="current-password"
       />
       <div class="myc-account-actions">
-        <BdButton type="submit" arrow>{{ t('account.signIn.submit') }}</BdButton>
+        <MycButton type="submit" arrow>{{ t('account.signIn.submit') }}</MycButton>
         <NuxtLink :to="localizePath('/account/forgot-password')" class="myc-inline">{{ t('account.signIn.forgot') }}</NuxtLink>
       </div>
       <p class="myc-account-switch">

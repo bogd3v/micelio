@@ -20,8 +20,8 @@ const newsletterOn = useModule('newsletter')
   <div class="myc-home" data-layout="showcase">
     <HomeHero :total="total" />
 
-    <section v-if="featuredPost" class="myc-home-featured myc-reveal" :aria-label="t('bd.card.featured')">
-      <BdPostCard v-bind="toPostCard(featuredPost)" featured priority />
+    <section v-if="featuredPost" class="myc-home-featured myc-reveal" :aria-label="t('myc.card.featured')">
+      <MycPostCard v-bind="toPostCard(featuredPost)" featured priority />
     </section>
 
     <HomeLatest :featured-slug="featuredPost?.slug" :total="total" :counts="counts" />

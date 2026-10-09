@@ -48,14 +48,14 @@ useSeoMeta({
       </p>
 
       <div class="myc-error-actions">
-        <BdButton @click="handleError">
+        <MycButton @click="handleError">
           <IconsHome />
           {{ t('error.goHome') }}
-        </BdButton>
-        <BdButton v-if="blogEnabled" :href="localizePath('/blog')" variant="secondary">
+        </MycButton>
+        <MycButton v-if="blogEnabled" :href="localizePath('/blog')" variant="secondary">
           <IconsDocumentText />
           {{ t('error.browseBlog') }}
-        </BdButton>
+        </MycButton>
       </div>
 
       <div class="myc-error-help">

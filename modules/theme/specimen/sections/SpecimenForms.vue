@@ -27,16 +27,16 @@ const weakPassword = ref('abc')
           <label for="specimen-disabled" class="myc-label">{{ t('specimen.forms.disabled') }}</label>
           <input id="specimen-disabled" class="myc-field" type="text" disabled :value="t('specimen.forms.disabledValue')">
         </div>
-        <BdButton type="submit">{{ t('specimen.forms.submit') }}</BdButton>
+        <MycButton type="submit">{{ t('specimen.forms.submit') }}</MycButton>
       </form>
     </div>
 
     <div>
       <h3 class="myc-specimen-label">{{ t('specimen.forms.newsletter') }}</h3>
       <div class="myc-specimen-grid">
-        <BdNewsletterForm id="specimen-news-idle" />
-        <BdNewsletterForm id="specimen-news-error" status="error" :message="t('specimen.forms.newsletterError')" />
-        <BdNewsletterForm id="specimen-news-success" status="success" :message="t('specimen.forms.newsletterSuccess')" />
+        <MycNewsletterForm id="specimen-news-idle" />
+        <MycNewsletterForm id="specimen-news-error" status="error" :message="t('specimen.forms.newsletterError')" />
+        <MycNewsletterForm id="specimen-news-success" status="success" :message="t('specimen.forms.newsletterSuccess')" />
       </div>
     </div>
   </div>

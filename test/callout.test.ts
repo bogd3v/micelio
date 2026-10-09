@@ -16,7 +16,7 @@ describe('parseCalloutMarker', () => {
 })
 
 describe('renderCalloutHtml', () => {
-  it('mirrors BdCallout and escapes the heading', () => {
+  it('mirrors MycCallout and escapes the heading', () => {
     const html = renderCalloutHtml('danger', '<b>Ojo</b>', '<p>Texto</p>')
     expect(html).toContain('class="myc-callout myc-callout-danger not-prose" role="alert"')
     expect(html).toContain('<span aria-hidden="true">✕ </span>&lt;b&gt;Ojo&lt;/b&gt;')

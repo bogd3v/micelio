@@ -60,9 +60,9 @@ useSeoMeta({
           {{ t("confirm.successTitle") }}
         </h1>
         <p class="myc-confirm-text">{{ successMessage }}</p>
-        <BdButton href="/blog">
+        <MycButton href="/blog">
           {{ t("confirm.browseBlog") }}
-        </BdButton>
+        </MycButton>
       </div>
 
       <div
@@ -75,9 +75,9 @@ useSeoMeta({
           {{ t("confirm.errorTitle") }}
         </h1>
         <p class="myc-confirm-text">{{ errorMessage }}</p>
-        <BdButton href="/" variant="secondary">
+        <MycButton href="/" variant="secondary">
           {{ t("confirm.goHome") }}
-        </BdButton>
+        </MycButton>
       </div>
     </div>
   </div>

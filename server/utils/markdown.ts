@@ -14,7 +14,7 @@ export function markdownRenderer(locale: Locale | string | undefined): MarkdownR
   if (!renderer) {
     const messages = MESSAGES[key]!
     renderer = createMarkdownRenderer({
-      callout: (tone: CalloutTone) => messages.bd.callout[tone],
+      callout: (tone: CalloutTone) => messages.myc.callout[tone],
       cite: (n: number) => messages.post.references.citeLabel.replace('{n}', String(n)),
     })
     renderers.set(key, renderer)

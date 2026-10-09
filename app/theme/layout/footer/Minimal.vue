@@ -40,26 +40,26 @@ const socials = computed<SocialLink[]>(() =>
   }),
 )
 const subscriptions = computed<FooterLink[]>(() => [
-  ...(blogEnabled ? [{ id: 'rss', label: t('bd.footer.rss'), to: '/feed.xml', external: true }] : []),
-  ...(fediverseOn.value ? [{ id: 'fediverse', label: t('bd.footer.fediverse', { handle: fediverseUser }), to: `${localizePath('/')}#fediverso` }] : []),
-  ...(newsletterOn.value ? [{ id: 'newsletter', label: t('bd.footer.newsletter'), to: `${localizePath('/')}#newsletter` }] : []),
+  ...(blogEnabled ? [{ id: 'rss', label: t('myc.footer.rss'), to: '/feed.xml', external: true }] : []),
+  ...(fediverseOn.value ? [{ id: 'fediverse', label: t('myc.footer.fediverse', { handle: fediverseUser }), to: `${localizePath('/')}#fediverso` }] : []),
+  ...(newsletterOn.value ? [{ id: 'newsletter', label: t('myc.footer.newsletter'), to: `${localizePath('/')}#newsletter` }] : []),
 ])
 </script>
 
 <template>
   <footer class="myc-foot" data-layout="minimal">
     <div class="myc-foot-main">
-      <NuxtLink :to="localizePath('/')" class="myc-foot-brand" :aria-label="t('bd.header.home', { site: site.name })">
+      <NuxtLink :to="localizePath('/')" class="myc-foot-brand" :aria-label="t('myc.header.home', { site: site.name })">
         <ThemeMark :size="32" context="footer" />
       </NuxtLink>
-      <nav :id="isStatic ? menuId : undefined" class="myc-foot-nav" :aria-label="label ?? t('bd.footer.navigate')">
+      <nav :id="isStatic ? menuId : undefined" class="myc-foot-nav" :aria-label="label ?? t('myc.footer.navigate')">
         <template v-for="link in sections" :key="link.id">
           <a v-if="link.anchor" :href="link.to" class="myc-foot-link">{{ link.label }}</a>
           <NuxtLink v-else :to="link.to" class="myc-foot-link">{{ link.label }}</NuxtLink>
         </template>
       </nav>
-      <BdLangSwitch v-if="isStatic" />
-      <ul v-if="socials.length" class="myc-foot-socials" :aria-label="t('bd.footer.social')">
+      <MycLangSwitch v-if="isStatic" />
+      <ul v-if="socials.length" class="myc-foot-socials" :aria-label="t('myc.footer.social')">
         <li v-for="social in socials" :key="social.id">
           <a :href="social.href" class="myc-foot-soc" target="_blank" rel="noopener noreferrer me">
             <span>{{ social.label }}</span>
@@ -72,8 +72,8 @@ const subscriptions = computed<FooterLink[]>(() => [
     <div class="myc-meta myc-foot-credits">
       <span class="myc-foot-legal">
         <span>© {{ year }} {{ site.name }}<template v-if="site.author.name"> · {{ site.author.name }}</template></span>
-        <NuxtLink :to="localizePath('/privacy')" class="myc-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
-        <a :href="sourceUrl" class="myc-foot-privacy myc-foot-source" target="_blank" rel="noopener noreferrer">{{ t('bd.footer.source') }}<span aria-hidden="true">↗</span></a>
+        <NuxtLink :to="localizePath('/privacy')" class="myc-foot-privacy">{{ t('myc.footer.privacy') }}</NuxtLink>
+        <a :href="sourceUrl" class="myc-foot-privacy myc-foot-source" target="_blank" rel="noopener noreferrer">{{ t('myc.footer.source') }}<span aria-hidden="true">↗</span></a>
       </span>
       <template v-for="link in subscriptions" :key="link.id">
         <a v-if="link.external" :href="link.to" class="myc-foot-link" target="_blank" rel="noopener noreferrer">{{ link.label }}<span aria-hidden="true">↗</span></a>

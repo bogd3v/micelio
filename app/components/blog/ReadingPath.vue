@@ -27,7 +27,7 @@ const next = computed<ReadingPathStep | undefined>(() =>
   currentIndex.value === -1 ? undefined : steps.value[currentIndex.value + 1],
 )
 const readCount = computed<number>(() => steps.value.filter(step => isRead(step.documentId)).length)
-const title = computed<string>(() => t('blog.path.title', { category: t(`bd.categoryShort.${props.category}`) }))
+const title = computed<string>(() => t('blog.path.title', { category: t(`myc.categoryShort.${props.category}`) }))
 const progress = computed<string>(() =>
   t('blog.path.progress', { read: padCount(readCount.value), total: padCount(steps.value.length) }),
 )
@@ -56,7 +56,7 @@ function stepHref(step: ReadingPathStep): string {
           {{ step.title }}
         </NuxtLink>
         <span v-if="isRead(step.documentId)" class="myc-meta myc-read-mark myc-path-read">
-          <span aria-hidden="true">✓</span><span class="myc-sr">{{ t('bd.card.read') }}</span>
+          <span aria-hidden="true">✓</span><span class="myc-sr">{{ t('myc.card.read') }}</span>
         </span>
       </li>
     </ol>

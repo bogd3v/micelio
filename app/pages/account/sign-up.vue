@@ -108,7 +108,7 @@ async function resend(): Promise<void> {
       <AccountNotice v-if="error" ref="errorRef" tone="error">{{ error }}</AccountNotice>
       <p class="myc-account-text">{{ t('account.checkEmail.notArrived') }}</p>
       <div class="myc-account-actions myc-account-actions-start">
-        <BdButton variant="secondary" @click="resend">{{ t('account.checkEmail.resend') }}</BdButton>
+        <MycButton variant="secondary" @click="resend">{{ t('account.checkEmail.resend') }}</MycButton>
       </div>
     </div>
     <form v-else class="myc-account-view" novalidate @submit.prevent="submit">
@@ -161,7 +161,7 @@ async function resend(): Promise<void> {
         <span v-if="errors.privacy" id="myc-reg-terms-err" class="myc-err" role="alert"><span aria-hidden="true">✕</span>{{ errors.privacy }}</span>
       </div>
       <div>
-        <BdButton type="submit" arrow>{{ t('account.register.submit') }}</BdButton>
+        <MycButton type="submit" arrow>{{ t('account.register.submit') }}</MycButton>
       </div>
       <p class="myc-account-switch">
         {{ t('account.register.hasAccount') }}

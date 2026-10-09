@@ -99,7 +99,7 @@ async function submit(): Promise<void> {
       />
       <div class="myc-account-actions myc-account-actions-start">
         <button type="submit" class="myc-btn myc-btn-danger" :disabled="!canSubmit">{{ t('account.delete.submit') }}</button>
-        <BdButton variant="secondary" @click="cancel">{{ t('account.delete.cancel') }}</BdButton>
+        <MycButton variant="secondary" @click="cancel">{{ t('account.delete.cancel') }}</MycButton>
       </div>
     </form>
   </section>

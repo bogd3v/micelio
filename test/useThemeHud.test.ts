@@ -32,7 +32,7 @@ describe('useThemeHud', () => {
       'theme.hud.altitude': 'C',
       'theme.hud.madeIn': 'D',
       'theme.hud.other': 'E',
-      'bd.header.hud.city': 'F',
+      'myc.header.hud.city': 'F',
     })
     expect(useThemeHud().value).toEqual({ city: 'A', coords: 'B', altitude: 'C', madeIn: 'D' })
   })

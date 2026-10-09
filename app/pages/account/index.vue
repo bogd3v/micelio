@@ -53,7 +53,7 @@ async function signOut(): Promise<void> {
         <span class="myc-account-drafts-arrow" aria-hidden="true">→</span>
       </NuxtLink>
       <div class="myc-account-actions myc-account-actions-start">
-        <BdButton variant="secondary" @click="signOut">{{ t('account.profile.signOut') }}</BdButton>
+        <MycButton variant="secondary" @click="signOut">{{ t('account.profile.signOut') }}</MycButton>
       </div>
       <AccountDangerZone :username="user.username" />
     </div>

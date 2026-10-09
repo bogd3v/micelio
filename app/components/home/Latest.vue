@@ -39,7 +39,7 @@ const filters = computed<TopicFilter[]>(() => [
   { id: 'all', label: t('home.latest.all'), color: 'var(--ink-muted)', count: padCount(props.total) },
   ...CATEGORIES.map(category => ({
     id: category,
-    label: t(`bd.categoryShort.${category}`),
+    label: t(`myc.categoryShort.${category}`),
     color: categoryColor(category),
     count: padCount(props.counts[category] ?? 0),
   })),
@@ -85,7 +85,7 @@ function select(id: TopicFilter['id']): void {
     </div>
 
     <div class="myc-latest-grid" :aria-busy="status === 'pending'">
-      <BdPostCard v-for="post in posts" :key="post.id" v-bind="toPostCard(post)" :transition="post.slug !== featuredSlug" />
+      <MycPostCard v-for="post in posts" :key="post.id" v-bind="toPostCard(post)" :transition="post.slug !== featuredSlug" />
       <NuxtLink v-if="!selected && posts.length" :to="localizePath('/blog')" class="myc-latest-archive">
         <span class="myc-eyebrow myc-home-eyebrow">{{ t('home.latest.archive') }}</span>
         <span class="myc-latest-archive-title myc-wide">{{ t('home.latest.archiveTitle') }} <span class="myc-card-arrow" aria-hidden="true">→</span></span>
