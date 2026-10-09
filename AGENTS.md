@@ -154,7 +154,7 @@ function handleClick() {
 - No utility classes in templates: every class is a `bd-*` class in its layer, or one of the core helpers (`font-display`, `font-mono`, `not-prose`). `npm run lint` fails otherwise (`scripts/check-classes.mjs`; ADR 0005, section 3)
 - Icons are inline SVG components in `app/components/icons/` (`<IconsHome />`), sized by the parent's CSS
 - Cards take their corners from `border-radius: var(--radius-card)`; if they animate, use `var(--duration-*)` and `var(--ease-*)` and transition only the properties that change
-- Use `<BdButton>` (`app/components/bd/`) for buttons and button-styled links; the `Bd*` components mirror the BogDev design system (see `docs/design/DESIGN.md`)
+- Use `<BdButton>` (`app/components/bd/`) for buttons and button-styled links; the `Bd*` components mirror the design system shown by the specimen page (`/_theme`) and `docs/themes/reference/`
 - Use `.input-field` for form inputs
 - Use `font-display` class for display fonts (Archivo)
 - Use `font-mono` class for monospace fonts

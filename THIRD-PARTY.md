@@ -42,7 +42,7 @@ The curated display fonts in `app/assets/fonts/display/` are subset from the var
 
 | Material | Files | Source and license |
 | --- | --- | --- |
-| Photo of the Sumapaz páramo by Danielfjio, cropped and color graded | `themes/bogota/images/hero/sumapaz-day.jpg`, `sumapaz-night.jpg`, `docs/design/assets/sumapaz-foto-*.jpg`, `docs/design/assets/articulo-foto-sumapaz.jpg` | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Paisaje_Sumapaz,_Colombia.jpg), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The modified versions are also CC BY-SA 4.0; credit is shown on the site. Details in `docs/design/assets/CREDITOS.md` |
+| Photo of the Sumapaz páramo | `themes/bogota/images/hero/sumapaz-day.jpg`, `sumapaz-night.jpg` | Original: [Paisaje Sumapaz, Colombia.jpg](https://commons.wikimedia.org/wiki/File:Paisaje_Sumapaz,_Colombia.jpg), Parque Nacional Natural Sumapaz, 1 October 2016, by Danielfjio (own work, Wiki Loves Earth 2019), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Changes: crop, sky extension, color grade toward the Salmona tones (day), night grade with added moon and stars (night), fade into the background color. The modified versions are also CC BY-SA 4.0 (ShareAlike). Visible credit in the hero footer: "FOTO: DANIELFJIO · WIKIMEDIA COMMONS · CC BY-SA 4.0 · RECORTADA Y ETALONADA", linking to the file page and the license |
 | Heroicons | `app/components/icons/*.vue` | [Heroicons](https://heroicons.com), MIT, Tailwind Labs (`app/components/icons/LICENSE-heroicons`) |
 
 ## Logos and trademarks
@@ -51,7 +51,7 @@ Logos of other projects are used only to link to them, unmodified, and remain tr
 
 | Logo | Files | Owner |
 | --- | --- | --- |
-| Mastodon | `app/components/bd/BdMastodonLogo.vue`, `docs/design/assets/mastodon-logo-purple.svg` | Mastodon gGmbH, [trademark policy](https://joinmastodon.org/trademark) |
+| Mastodon | `app/components/bd/BdMastodonLogo.vue` | Mastodon gGmbH, [trademark policy](https://joinmastodon.org/trademark) |
 
 ## Names and marks of Micelio and BogDev
 

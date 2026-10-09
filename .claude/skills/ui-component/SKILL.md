@@ -5,7 +5,7 @@ description: Build or change a Vue component or page of the Micelio frontend fol
 
 # UI component
 
-Read `AGENTS.md` (code style, CSS architecture) and `docs/design/DESIGN.md` (BogDev design system) before writing markup.
+Read `AGENTS.md` (code style, CSS architecture) and the specimen page (`/_theme`, built with `MICELIO_SPECIMEN=1`, see `docs/theme-testing.md`) and `docs/themes/reference/` (the living reference of the design system) before writing markup.
 
 ## Design system
 
