@@ -31,4 +31,4 @@ Report a vulnerability privately, as [SECURITY.md](SECURITY.md) explains. Never 
 
 - Follow the [engineering standard](docs/engineering-standard.md), which every Micelio repository shares.
 - Commits, PR titles and descriptions in English, with a conventional prefix (`feat`, `fix`, `docs`, `refactor`, `style`, `test`, `ci`, `perf`, `chore`).
-- Run `npm run lint`, `npm run typecheck` and `npm run test` before opening the PR.
+- Run `npm run check` (types, lint and tests with coverage) before opening the PR.

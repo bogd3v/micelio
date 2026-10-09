@@ -18,6 +18,7 @@ description: Branch, commit and open a pull request in the Micelio frontend the 
 
 ## Pull request
 
+- `npm run check` passes locally before opening it (standard, section 15); `.nvmrc` is the Node version source for CI and local.
 - Title in English with the same prefix: `fix(security): …`, `docs: …`. The prefix sets the release label automatically (`PR labels` workflow); a title without one ends up in "Other changes".
 - Body in English, sections as needed:
   - `## Problem`: what was wrong, with evidence (error, PR number, measurement).
