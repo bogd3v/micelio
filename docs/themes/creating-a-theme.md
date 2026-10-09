@@ -27,7 +27,7 @@ cp -r test/fixtures/themes/minimal themes/my-theme
 
 Then edit `themes/my-theme/theme.json`:
 
-- `id` must equal the folder name and match `^[a-z0-9-]+$` (the build fails otherwise).
+- `id` must equal the folder name and match `^[a-z0-9-]+$` (the build fails otherwise). `myc` and `micelio` are reserved for the core, and `bd` too until the transition messages are removed (ADR 0005, amendment of 2026-10-08): a theme's own `<id>-*` classes must not be confusable with the core's.
 - `$schema` points to `../../../../themes/theme.schema.json` in the fixture; inside `themes/` change it to `../theme.schema.json`. The schema gives autocomplete and is generated from `modules/theme/contract.ts` (`npm run theme:schema`).
 - `"contract": 1` is required; any other value fails.
 - `name` is optional.

@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-03
-**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice), 2026-10-06 (#238, #263, #306, #239), 2026-10-07 (#244, #276, #307)
+**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice), 2026-10-06 (#238, #263, #306, #239), 2026-10-07 (#244, #276, #307), 2026-10-08 (#416)
 **Deciders:** BogDev maintainer
 
 ## Context
@@ -158,6 +158,37 @@ A theme's own classes, inside its slots, use its id as prefix (`bogota-`). The v
 `theme.json` declares `"contract": 1`. The contract is defined once, with zod, in the theme module (section 4). A build module validates every installed theme before Nuxt builds, and the build fails, naming the theme and the problem, when a theme declares an unknown contract version, misses a role in any mode, declares an invalid or duplicate mode, references a missing font or primitive, ships a slot outside the list, names an unknown layout region or variant, selects something that is not a public hook, or breaks a rule of `theme.css` above. A breaking change to roles, modes, layout variants, hooks, slots or package layout is `contract: 2` with a migration note; adding an optional role, layout variant, hook or slot with a core default stays in v1.
 
 **Amendment (2026-10-06, #324):** removing a requirement that no installed theme can depend on stays in v1. `space-16`, `space-24`, `category-6` and `category-6-soft` are no longer required roles: the core never read them (it has five categories, `Category` in `app/interfaces/design.ts`), and a theme that still declares them keeps validating, because an extra name in a group is a theme primitive. `ThemeDivider`'s `placement` narrows to `'footer'`: the core is the only caller and only ever passed `footer`, so a slot that still accepts `'section'` keeps working. Reintroducing a sixth category or a larger space step is an optional role with a core default, also in v1.
+
+**Amendment (2026-10-08, #416): the core prefix is `myc`, and `micelio` where a name is seen outside the code.** `bd` was BogDev's prefix, and the core carries no site. Every `bd` name of the core is renamed before the first theme package is published (#313), one to one and with no other change. The short prefix, from *mycelium*, is for names that repeat in every file and every page. The full name is for the few that a visitor, an operator or the privacy page sees, as the code already does with `#micelio/…`, `MICELIO_*`, `micelio-search` and `X-Micelio-Client-IP`.
+
+| Surface | Before | After | Count today |
+| --- | --- | --- | --- |
+| Classes, public hooks included | `bd-*` | `myc-*` | 735 classes, 206 names in `hooks.json` |
+| Custom properties of the core | `--bd-*` | `--myc-*` | 14 names and patterns |
+| Cascade layers | `bd.reset` … `bd.utilities`, `bd.theme` | `myc.reset` … `myc.utilities`, `myc.theme` | 9 |
+| Design-system components | `app/components/bd/Bd*.vue` | `app/components/myc/Myc*.vue` | 20 |
+| View-transition names | `bd-post-media-<slug>`, `bd-post-title-<slug>` | `myc-post-media-<slug>`, `myc-post-title-<slug>` | 2 patterns |
+| Element ids, internal attributes, Nuxt state keys | `id="bd-…"`, `data-bd-lang`, `data-bd-copy`, `useState('bd-…')` | `myc-…`, `data-myc-…` | Internal |
+| Visitor storage | `bd-theme`, `bd-read-articles`, `bd-privacy-notice` | `micelio-theme`, `micelio-read-articles`, `micelio-privacy-notice` | 3 keys |
+| Session cookie (ADR-0003) | `bd_session` | `micelio_session` | 1 |
+
+What does not change: the core helpers that predate the prefix (`card`, `font-display`, `font-mono`, `not-prose`), the public attributes (`data-theme`, `data-scheme`, `data-layout`, `data-variant`, `data-section`, `data-level`, `data-mode`), the roles, the design token names, the mode ids and the Strapi slugs. A theme's own classes keep its id as prefix (`bogota-`).
+
+**One to one.** `bd-post-card` becomes `myc-post-card` and nothing else: no class is added, removed, merged or restyled in the same change, so the rename can be proven instead of reviewed line by line.
+
+**It stays in contract v1.** This section and `hooks.json` say that renaming a hook is contract 2. That rule protects themes that live outside the core, and none has been published: the registry opens with #313, and `bogota` and `starter` are renamed in the same pull request as the core. By the reasoning of the #324 amendment, a change no published theme can depend on stays in v1. The condition is the order: the rename merges before #313 publishes `bogota@1.0.0`. After that it is contract 2, with both names selectable for one release line. `docs/themes/contract-changelog.md` (#308) records the rename as part of 1.0.
+
+**A theme kept outside the repository** (`MICELIO_THEME_DIRS`) fails validation after the rename. The validator names the fix for every selector it rejects (`".bd-card" was renamed ".myc-card"`) for one release line, and `docs/themes/creating-a-theme.md` gives the one-line replacement.
+
+**Reserved ids.** `THEME_ID` accepts any `[a-z0-9-]+`, so a theme could be called `myc` and its own classes (`<id>-*`) could not be told apart from the core's. The validator rejects `myc` and `micelio` as theme ids, and `bd` until the transition messages above are removed.
+
+**A visitor loses nothing.** The init script and `migrateStoredMode` already move `devbog-theme` and `devbog-color-mode` into the current key; `bd-theme` joins that chain behind `micelio-theme`, read only and removed once the new key is written. The read-articles and privacy-notice keys move the same way on first load. The session moves on the server (ADR-0003, amendment of the same date). Every fallback is removed one release line later; until then the inline init script carries one more key, and its CSP hash changes with it (ADR-0004).
+
+**The privacy page tells the truth in the same pull request.** Its inventory names each cookie and storage key (`en` and `es` messages), so the names change there together with the code.
+
+**Proof, with real numbers in the pull request.** For both themes, every mode and the three widths: identical computed styles of every element before and after (`compare-styles.mjs --scope all --states`); the visual baselines of `test:theme` pass without regenerating any; `theme:check`, `lint:classes`, `lint:schema` and `lint:reference` pass with the regenerated schema and reference; and the performance budgets hold, with the change in CSS and HTML bytes recorded in `docs/performance.md` (each name is one byte longer before compression).
+
+**What is left out.** `docs/design/` is BogDev's redesign specification and design handoff, not documentation of the core. It leaves the repository in its own pull request before the classes are renamed, so nothing in it is renamed. The tracker paths `/bd.js` and `/api/bd` keep their names: they are defaults of the operator interface (`umamiScriptPath`, `NUXT_UMAMI_COLLECT_PATH`) that must match each site's Umami configuration, so a new default would make every operator change both sides, and the path tells a visitor nothing. They are the one place where `bd` remains. Where this record or ADR-0002 to ADR-0008 says `bd-`, read the new name.
 
 ### 7. Theme authoring
 

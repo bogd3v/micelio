@@ -1,7 +1,7 @@
 import { cpSync, existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { parseArgs } from 'node:util'
-import { THEME_ID } from './contract'
+import { THEME_ID, themeIdProblem } from './contract'
 
 const STARTER_ID = 'starter'
 const USAGE = 'Usage: npm run theme:new -- <id> [--name "Theme name"]'
@@ -54,6 +54,8 @@ function renameStarter(target: string, id: string, name: string): void {
 /** Copy the starter theme to `target` and rename it to `id` (and optional `name`). Throws a clear message on bad input; a failed copy leaves nothing behind. */
 export function scaffoldTheme(source: string, target: string, id: string, installed: string[], name: string = id): void {
   if (!THEME_ID.test(id)) throw new Error(`Invalid theme id "${id}": it must match ${THEME_ID} (lowercase letters, digits and hyphens).`)
+  const idProblem = themeIdProblem(id)
+  if (idProblem) throw new Error(`Invalid theme id "${id}": ${idProblem}.`)
   // eslint-disable-next-line no-control-regex
   if (!name.trim() || name.includes('*/') || /[\u0000-\u001f\u007f]/.test(name)) throw new Error('Invalid theme name: it must not be empty, contain "*/" or control characters.')
   if (installed.includes(id)) throw new Error(`Theme "${id}" is already installed (installed: ${installed.join(', ')}). Pick another id.`)

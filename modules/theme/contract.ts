@@ -11,6 +11,16 @@ export const CONTRACT_VERSION = 1
 /** The init script stays under 2 KB (ADR 0004: it is inline on every page). */
 export const MAX_MODES = 6
 export const THEME_ID = /^[a-z0-9-]+$/
+/** Ids no theme may take: its own `<id>-*` classes could not be told apart from the core's (ADR 0005, amendment of 2026-10-08). */
+const RESERVED_THEME_IDS: readonly string[] = ['myc', 'micelio', 'bd']
+
+/** Why `id` cannot be a theme id, or `null` when it can. `bd` stays reserved until the transition messages are removed (#422). */
+export function themeIdProblem(id: string): string | null {
+  if (!THEME_ID.test(id)) return `"id" must match ${THEME_ID}`
+  if (id === 'bd') return '"id" "bd" is reserved: it was the core prefix before the rename to "myc", and stays reserved until the transition messages are removed'
+  if (RESERVED_THEME_IDS.includes(id)) return `"id" "${id}" is reserved for the core: a theme's own classes (<id>-*) must not be confusable with the core's`
+  return null
+}
 export const FONT_FILE = /^[\w.-]+\.woff2$/
 const MODE_ID = /^[\w-]+$/
 const NAME = /^[\w-]+$/
@@ -109,7 +119,7 @@ const Layout = z.strictObject(
 export const ThemeSchema = z.strictObject({
   $schema: z.string().optional(),
   contract: z.literal(CONTRACT_VERSION, { error: iss => `declares contract ${JSON.stringify(iss.input)}, this build implements contract ${CONTRACT_VERSION}` }),
-  id: z.string().regex(THEME_ID, { error: `"id" must match ${THEME_ID}` }).describe('The folder name.'),
+  id: z.string().regex(THEME_ID, { error: `"id" must match ${THEME_ID}` }).refine(id => !RESERVED_THEME_IDS.includes(id), { error: iss => themeIdProblem(String(iss.input)) ?? 'reserved id' }).describe('The folder name.'),
   name: z.string().optional(),
   modes: Modes,
   fonts: z.array(Font).optional(),

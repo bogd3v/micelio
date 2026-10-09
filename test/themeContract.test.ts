@@ -69,6 +69,26 @@ describe('the fixture themes', () => {
   })
 })
 
+describe('reserved theme ids', () => {
+  it.each(['myc', 'micelio', 'bd'])('rejects the id "%s" with its reason', (id) => {
+    const manifest = { ...minimal(), id }
+    expect(contractProblems(manifest).join('\n')).toMatch(new RegExp(`"id" "${id}" is reserved`))
+  })
+
+  it('names the transition as the reason for "bd"', () => {
+    expect(contractProblems({ ...minimal(), id: 'bd' }).join('\n')).toContain('transition messages')
+  })
+
+  it('reports a malformed id once', () => {
+    const problems = contractProblems({ ...minimal(), id: 'Bad_Id' }).filter(problem => problem.includes('"id" must match'))
+    expect(problems).toHaveLength(1)
+  })
+
+  it.each(['bogota', 'starter', 'bd-like', 'mycelium'])('accepts the id "%s"', (id) => {
+    expect(contractProblems({ ...minimal(), id }).filter(problem => problem.includes('"id"'))).toEqual([])
+  })
+})
+
 describe('contract validation', () => {
   it('rejects an unknown contract version', () => {
     const problems = problemsOf(install('future', m => (m.contract = 2)))
