@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, delimiter, join, resolve } from 'node:path'
 import type { ThemeData } from './tokens.mjs'
-import { FONT_FILE, THEME_ID } from './contract'
+import { FONT_FILE, themeIdProblem } from './contract'
 import type { LayoutRegion, SlotName, SlotOptions } from './data'
 
 export const DEFAULT_THEME = 'bogota'
@@ -62,7 +62,8 @@ function loadTheme(dir: string): InstalledTheme {
   } catch (error) {
     throw new Error(`Cannot read ${file}: ${(error as Error).message}`, { cause: error })
   }
-  if (typeof manifest.id !== 'string' || !THEME_ID.test(manifest.id)) throw new Error(`${file}: "id" must match ${THEME_ID}`)
+  const idProblem = typeof manifest.id === 'string' ? themeIdProblem(manifest.id) : '"id" must be a string'
+  if (idProblem) throw new Error(`${file}: ${idProblem}`)
   if (manifest.id !== basename(dir)) throw new Error(`${file}: "id" is "${manifest.id}" but the folder is "${basename(dir)}"`)
   for (const font of manifest.fonts ?? []) {
     if (typeof font.file !== 'string' || !FONT_FILE.test(font.file)) throw new Error(`${file}: font file "${font.file}" must match ${FONT_FILE}`)

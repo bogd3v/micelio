@@ -40,3 +40,5 @@ The cookie protects the token from scripts but not from cross-site requests, so 
 - Every new state-changing route must call `assertSameOrigin()` and `preventCaching()`.
 - The e2e suite checks that the JWT never reaches page JavaScript.
 - Strapi only needs to be reachable from the frontend server, not from browsers.
+
+**Amendment (2026-10-08, #416):** the session cookie is `micelio_session`, with the same attributes (`httpOnly`, `Secure`, `SameSite=Lax`, 7 days). For one release line the server reads `micelio_session` and falls back to `bd_session`; a request that carries only the old cookie gets the session re-issued under the new name and the old cookie cleared, so nobody is signed out. The old name is never written again, and the fallback is removed in the next release line, after every `bd_session` has expired. The reason is in ADR-0005 (amendment of the same date): the core carries no site's prefix.
