@@ -12,7 +12,7 @@ import { HEAVY_ISLANDS, validateHeavyIslands } from '../app/islands/heavy'
 import { runtimesImportingWorkers, sharedWithLoader } from './lib/islands-graph'
 import { dropPyodideCopies, pyodideAssets } from './lib/pyodide-assets'
 import { isStaticMode } from '../app/helpers/siteMode'
-import type { SiteMode } from '../app/helpers/siteMode'
+import type { SiteMode } from '../app/interfaces/site'
 import type { BuiltChunk } from './lib/islands-graph'
 import type { IslandManifest } from '../app/helpers/islands'
 

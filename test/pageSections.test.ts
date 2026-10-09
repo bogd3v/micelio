@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { heroLeadsPage, knownSections, PAGE_SLUG_PATTERN } from '~/helpers/pages'
+import { heroLeadsPage, knownSections } from '~/helpers/pages'
+import { PAGE_SLUG_PATTERN } from '~/constants/pages'
 import type { PageSection } from '~/interfaces'
 
 const hero = { __component: 'section.hero', variant: 'centered', title: 'Hi' } as PageSection

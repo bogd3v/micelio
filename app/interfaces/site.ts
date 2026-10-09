@@ -86,3 +86,18 @@ export type SiteSettings = Partial<Omit<Site, 'author' | 'modules' | 'theme'>> &
   modules?: Partial<SiteModules>
   theme?: ThemeSettings
 }
+
+/** The `site` block of app.config.ts: the fallback when Strapi has no value. */
+export interface AppSiteConfig {
+  name: string
+  description: string
+  url: string
+  author: { name: string, url: string }
+  favicon?: SiteImage
+  socialLinks: SocialLink[]
+  support: { buyMeACoffee: string }
+  privacy: { contactEmail: string, updatedAt: string }
+}
+
+/** How a site is built (ADR 0006, section 1). `SITE_MODES` in `helpers/siteMode.ts` lists them. */
+export type SiteMode = 'dynamic' | 'static' | 'landing'

@@ -1,4 +1,4 @@
-import { LEGACY_SESSION_COOKIE, SESSION_COOKIE } from '~/helpers/auth'
+import { LEGACY_SESSION_COOKIE, SESSION_COOKIE } from '~/constants/auth'
 
 export default defineNuxtPlugin(async () => {
   const { resolved, refresh } = useAuth()

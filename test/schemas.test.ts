@@ -3,7 +3,7 @@ import { deleteAccountSchema, emailSchema, loginSchema, registerSchema, resetPas
 import { guestCommentSchema } from '../server/schemas/comments'
 import { subscribeSchema } from '../server/schemas/newsletter'
 import { commentsQuerySchema, DEFAULT_PAGE_SIZE, listLocaleQuerySchema, localeQuerySchema, MAX_PAGE_SIZE, postsQuerySchema, readingPathQuerySchema, searchQuerySchema } from '../server/schemas/query'
-import { COMMENT_LIMITS } from '../app/helpers/comments'
+import { COMMENT_LIMITS } from '../app/constants/comments'
 
 describe('auth schemas', () => {
   it('trims the login identifier and keeps the password as typed', () => {

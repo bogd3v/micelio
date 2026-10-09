@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type { Category } from '~/interfaces'
+import type { Category, PostTransitionNames } from '~/interfaces'
 import { categoryColor } from '~/helpers/categories'
-import type { PostTransitionNames } from '~/helpers/postTransition'
 import { postTransitionNames } from '~/helpers/postTransition'
 
 const props = withDefaults(defineProps<{

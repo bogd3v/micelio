@@ -228,6 +228,7 @@ app/
 ├── assets/css/          # Global styles (see CSS Architecture)
 ├── components/          # Vue components (auto-imported)
 ├── composables/         # Composables (auto-imported)
+├── constants/           # Shared constants by domain
 ├── helpers/             # Pure logic without framework imports, unit-tested
 ├── interfaces/          # TypeScript interfaces
 ├── islands/             # Heavy client-side islands and their loader

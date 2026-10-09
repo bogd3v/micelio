@@ -1,5 +1,5 @@
 import type { SearchPostResult } from '~/interfaces'
-import { MIN_SEARCH_LENGTH } from '~/helpers/search'
+import { MIN_SEARCH_LENGTH } from '~/constants/search'
 import { searchQuerySchema } from '../schemas/query'
 
 const PALETTE_RESULTS = 10

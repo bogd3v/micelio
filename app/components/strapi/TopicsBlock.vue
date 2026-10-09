@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { StrapiTopic, StrapiTopics } from '~/interfaces'
-import { CATEGORIES, CATEGORY_INFO } from '~/helpers/categories'
+import { CATEGORIES, CATEGORY_INFO } from '~/constants/categories'
 import { padCount } from '~/helpers/search'
 
 const props = defineProps<{

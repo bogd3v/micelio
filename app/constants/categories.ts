@@ -1,0 +1,16 @@
+import type { Category, CategoryInfo } from '../interfaces/design'
+
+// Category is an enum, which a constants file may not import at runtime: the slugs are asserted to it instead
+// (they are the enum's values; test/categories.test.ts checks the list against the enum)
+
+/** The categories in display order; a category's color role is its position here (`categoryColor`). */
+export const CATEGORIES: readonly Category[] = ['privacidad', 'diy', 'ia', 'software', 'linux'] as Category[]
+
+/** Per-category data: the pillar (1 or 2) of the two that have one, else null. */
+export const CATEGORY_INFO: Readonly<Record<Category, CategoryInfo>> = {
+  privacidad: { pillar: 1 },
+  diy: { pillar: 2 },
+  ia: { pillar: null },
+  software: { pillar: null },
+  linux: { pillar: null },
+}

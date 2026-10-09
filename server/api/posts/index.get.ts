@@ -1,7 +1,7 @@
 import qs from 'qs'
 import { defaultLocale } from '~/interfaces'
 import type { RawStrapiArticle, StrapiPaginatedResponse } from '~/interfaces'
-import { MIN_SEARCH_LENGTH } from '~/helpers/search'
+import { MIN_SEARCH_LENGTH } from '~/constants/search'
 import { postsQuerySchema } from '../../schemas/query'
 
 const RANKING_TIMEOUT_MS = 3000

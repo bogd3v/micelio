@@ -1,7 +1,7 @@
 import { addTypeTemplate, defineNuxtModule, useLogger } from 'nuxt/kit'
 import { formFieldName, hiddenFields, providerHost, validFormAction } from '../app/helpers/newsletterForm'
 import { isStaticMode, SITE_MODES } from '../app/helpers/siteMode'
-import type { SiteMode } from '../app/helpers/siteMode'
+import type { SiteMode } from '../app/interfaces/site'
 
 const BUILD_SITE_MODE_MODULE = '#micelio/build-site-mode'
 

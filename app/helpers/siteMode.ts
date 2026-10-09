@@ -1,6 +1,7 @@
-/** How a site is built (ADR 0006, section 1). */
-export const SITE_MODES = ['dynamic', 'static', 'landing'] as const
-export type SiteMode = typeof SITE_MODES[number]
+import type { SiteMode } from '../interfaces/site'
+
+/** The site modes (ADR 0006, section 1). */
+export const SITE_MODES = ['dynamic', 'static', 'landing'] as const satisfies readonly SiteMode[]
 
 export const DEFAULT_SITE_MODE: SiteMode = 'dynamic'
 

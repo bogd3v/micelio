@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { isValidEmail } from '~/helpers/auth'
 import { Locale } from '~/interfaces/locale'
-import { PAGE_SLUG_PATTERN } from '~/helpers/pages'
+import { PAGE_SLUG_PATTERN } from '~/constants/pages'
 import { DISPLAY_FONTS, SITE_MODULES, SOCIAL_NETWORKS } from '~/interfaces/site'
 import type { SiteModules, SiteSettings } from '~/interfaces/site'
 

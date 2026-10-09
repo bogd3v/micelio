@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { absoluteUrl, ALL_MODULES_ON, defaultOgImageUrl, fediverseUser, iconType, mergeSite, pageTitle, resolveSiteImage, resolveSiteMedia, siteFromAppConfig, personStructuredData, siteLogoUrl, xHandle } from '../app/helpers/site'
-import type { AppSiteConfig } from '../app/helpers/site'
+import type { AppSiteConfig } from '../app/interfaces/site'
 import { parseSiteSettings } from '../server/schemas/site'
 import { Locale } from '../app/interfaces/locale'
 

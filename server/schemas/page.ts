@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { Locale } from '~/interfaces/locale'
 import type { Page, PageSection, PageSeo, PostListSection } from '~/interfaces'
 
-import { PAGE_SLUG_PATTERN } from '~/helpers/pages'
+import { PAGE_SLUG_PATTERN } from '~/constants/pages'
 import { isGlbUrl } from '~/helpers/scene'
 
 export { PAGE_SLUG_PATTERN }

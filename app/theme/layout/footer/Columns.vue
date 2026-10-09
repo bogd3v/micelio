@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { blogPath } from '~/helpers/blog'
-import { CATEGORIES, categoryColor } from '~/helpers/categories'
-import { FOOTER_SOCIALS } from '~/helpers/site'
+import { categoryColor } from '~/helpers/categories'
+import { CATEGORIES } from '~/constants/categories'
+import { FOOTER_SOCIALS } from '~/constants/site'
 import { resolveSourceUrl } from '~/helpers/source'
 
 defineOptions({ name: 'RegionFooterColumns' })

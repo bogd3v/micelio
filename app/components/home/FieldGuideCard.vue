@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { blogPath } from '~/helpers/blog'
 import type { Category } from '~/interfaces'
-import { CATEGORY_INFO } from '~/helpers/categories'
+import { CATEGORY_INFO } from '~/constants/categories'
 import { padCount } from '~/helpers/search'
 
 const props = defineProps<{

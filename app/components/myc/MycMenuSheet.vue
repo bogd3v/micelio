@@ -2,7 +2,8 @@
 import { blogPath } from '~/helpers/blog'
 import type { HeaderSection } from '~/interfaces'
 import { modes } from '#micelio/theme'
-import { CATEGORIES, categoryColor } from '~/helpers/categories'
+import { categoryColor } from '~/helpers/categories'
+import { CATEGORIES } from '~/constants/categories'
 
 const SWIPE_CLOSE_DISTANCE = 80
 

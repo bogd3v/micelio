@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FOOTER_SOCIALS } from '~/helpers/site'
+import { FOOTER_SOCIALS } from '~/constants/site'
 import { resolveSourceUrl } from '~/helpers/source'
 
 defineOptions({ name: 'RegionFooterMinimal' })

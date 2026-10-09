@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MIN_SEARCH_LENGTH } from '~/helpers/search'
+import { MIN_SEARCH_LENGTH } from '~/constants/search'
 
 // Server markup of the static search palette; `app/islands/search.ts` upgrades it (ADR 0006, sections 3 and 4).
 // It holds every string the island shows, so the island has none of its own.

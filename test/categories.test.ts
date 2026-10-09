@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { Category } from '~/interfaces/design'
-import { CATEGORIES, CATEGORY_INFO, categoryOrder, isCategory } from '~/helpers/categories'
+import { categoryOrder, isCategory } from '~/helpers/categories'
+import { CATEGORIES, CATEGORY_INFO } from '~/constants/categories'
 
 describe('categories', () => {
   it('lists the five categories with the pillars first', () => {

@@ -1,18 +1,6 @@
 import { defaultLocale } from '../interfaces/locale'
 import { SITE_MODULES } from '../interfaces/site'
-import type { Site, SiteImage, SiteModules, SiteSettings, SocialLink, SocialNetwork } from '../interfaces/site'
-
-/** The `site` block of app.config.ts: the fallback when Strapi has no value. */
-export interface AppSiteConfig {
-  name: string
-  description: string
-  url: string
-  author: { name: string, url: string }
-  favicon?: SiteImage
-  socialLinks: SocialLink[]
-  support: { buyMeACoffee: string }
-  privacy: { contactEmail: string, updatedAt: string }
-}
+import type { AppSiteConfig, Site, SiteImage, SiteModules, SiteSettings, SocialLink } from '../interfaces/site'
 
 export const ALL_MODULES_ON: Readonly<SiteModules> = Object.freeze(
   Object.fromEntries(SITE_MODULES.map(module => [module, true])) as SiteModules,
@@ -106,17 +94,6 @@ export function xHandle(links: readonly SocialLink[]): string | null {
 export function fediverseUser(handle: string): string {
   const user = handle.replace(/^@/, '').split('@')[0]
   return user ? `@${user}` : ''
-}
-
-/** How the footer lists each network. X is left out: its link only feeds twitter:site. */
-export const FOOTER_SOCIALS: Readonly<Partial<Record<SocialNetwork, { label: string, abbr: string }>>> = {
-  linkedin: { label: 'LinkedIn', abbr: 'in' },
-  github: { label: 'GitHub', abbr: 'gh' },
-  gitlab: { label: 'GitLab', abbr: 'gl' },
-  codeberg: { label: 'Codeberg', abbr: 'cb' },
-  mastodon: { label: 'Mastodon', abbr: 'md' },
-  bluesky: { label: 'Bluesky', abbr: 'bs' },
-  website: { label: 'Website', abbr: 'www' },
 }
 
 const ICON_TYPES: Readonly<Record<string, string>> = {

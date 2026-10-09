@@ -1,10 +1,9 @@
 import type { ComputedRef } from 'vue'
 import { images } from '#micelio/theme'
-import type { Site } from '~/interfaces'
+import type { Site, AppSiteConfig } from '~/interfaces'
 import { fallbackModules } from '~/helpers/modules'
 import { parseSiteMode } from '~/helpers/siteMode'
 import { siteFromAppConfig } from '~/helpers/site'
-import type { AppSiteConfig } from '~/helpers/site'
 
 function fetchSite(): { defaults: Site, request: ReturnType<typeof useAsyncData<Site>> } {
   const { locale } = useI18n()

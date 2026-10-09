@@ -1,11 +1,6 @@
 import type { AuthErrorCode, AuthNotice, AuthUser, PasswordStrength, StrapiAuthUser } from '../interfaces/auth'
 
 export const MIN_PASSWORD_LENGTH = 10
-export const SESSION_COOKIE = 'micelio_session'
-/** The pre-rename session cookie: read and cleared, never written. */
-// TODO(#422): remove the bd_session fallback
-export const LEGACY_SESSION_COOKIE = 'bd_session'
-export const SESSION_MAX_AGE = 60 * 60 * 24 * 7
 export const EDITOR_ROLE_TYPE = 'editor'
 
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/i

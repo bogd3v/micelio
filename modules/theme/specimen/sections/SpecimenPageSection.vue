@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PageSectionKind } from '~/interfaces'
 import SectionRenderer from '~/components/section/SectionRenderer.vue'
-import { TRUSTED_MEDIA_PREFIX } from '~/helpers/trustedMedia'
+import { TRUSTED_MEDIA_PREFIX } from '~/constants/media'
 import { PAGE_SECTIONS } from '../fixtures'
 
 // One group per section kind: every variant goes through the real SectionRenderer

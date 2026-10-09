@@ -5,7 +5,7 @@ import ThemeIllustration from '~~/themes/bogota/slots/ThemeIllustration.vue'
 import DefaultIllustration from '~/theme/defaults/ThemeIllustration.vue'
 import { useIllustrationCaption } from '~/composables/useIllustrationCaption'
 import { useCategoryLabel } from '~/composables/useCategoryLabel'
-import { CATEGORIES } from '~/helpers/categories'
+import { CATEGORIES } from '~/constants/categories'
 import { Category } from '~/interfaces/design'
 
 describe('ThemeIllustration (Bogotá)', () => {

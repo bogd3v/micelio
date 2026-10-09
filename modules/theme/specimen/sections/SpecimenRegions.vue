@@ -2,7 +2,7 @@
 import { layout } from '#micelio/theme'
 import { variants as alternates } from '#micelio/specimen-variants'
 import type { Category, FieldGuideTopic } from '~/interfaces'
-import { CATEGORIES } from '~/helpers/categories'
+import { CATEGORIES } from '~/constants/categories'
 import { ARTICLE, FEATURED_POST, POSTS } from '../fixtures'
 
 const { t } = useI18n()

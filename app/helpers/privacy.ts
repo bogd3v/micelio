@@ -1,4 +1,4 @@
-import { SESSION_COOKIE, SESSION_MAX_AGE } from './auth'
+import { SESSION_COOKIE, SESSION_MAX_AGE } from '../constants/auth'
 import { READ_STORAGE_KEY } from './readArticles'
 import { THEME_STORAGE_KEY } from './theme'
 

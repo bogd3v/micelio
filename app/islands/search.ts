@@ -1,7 +1,8 @@
 // <micelio-search>: upgrades the complete server markup of MycSearchIsland into the static search palette (ADR 0006, sections 3 and 4).
 // Strings come from the server in data attributes; Pagefind (JS, WASM, index) loads when the palette first opens.
 import { excerptSegments, plainText } from '../helpers/excerpt'
-import { cycleIndex, highlightSegments, MIN_SEARCH_LENGTH, resultPath } from '../helpers/search'
+import { cycleIndex, highlightSegments, resultPath } from '../helpers/search'
+import { MIN_SEARCH_LENGTH } from '../constants/search'
 import type { TextSegment } from '../interfaces/design'
 
 interface PagefindResultData {
