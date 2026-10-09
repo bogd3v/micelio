@@ -3,6 +3,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 
+// Caution: also matches any other text spelled `bd.theme`, `bd.layout`… (an i18n key, for example); none existed when it ran
 const LAYER = /\bbd\.(reset|settings|base|components|layout|pages|theme|animations|utilities)\b/g
 const PROPERTY = /--bd-/g
 // Decision records and the performance history say what was true when written, so they are not rewritten (ADR 0005, amendment of 2026-10-08)

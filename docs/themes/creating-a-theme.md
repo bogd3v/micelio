@@ -167,7 +167,7 @@ All three are optional files of `images/` (png, jpg, webp, avif, gif or svg). Th
 Two custom properties of the core are part of what a theme author works with, and both were renamed from their former BogDev prefix before any theme package was published (ADR 0005, amendment of 2026-10-08):
 
 - `--myc-header-h`: the height of the header. The core sets it for each header variant, and anchors, sticky sidebars and the account menu offset themselves by it; read it in your own sticky or anchored rules instead of hard-coding a height.
-- `--myc-read`: the reading progress of an article, set on `.bd-progress`. Bogotá's `ThemeProgressMarker` slot reads it.
+- `--myc-read`: the reading progress of an article, from 0 to 1, set inline on `.bd-progress`. The core moves `.bd-progress-track` by it, and that is where the `ThemeProgressMarker` slot renders, so a slot follows the progress with no code of its own.
 
 The other `--myc-*` properties are internal and can change in any release.
 
