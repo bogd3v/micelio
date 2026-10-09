@@ -67,6 +67,8 @@ Each page has two groups of limits in `scripts/perf/budgets.json`:
 - `error`: transferred sizes, third-party requests, CLS, LCP and the accessibility score. Going over them fails CI.
 - `warn`: TBT and the performance score. They depend on the machine running Lighthouse, so going over them is reported but does not fail CI.
 
+A Lighthouse run that comes back empty (no performance score, or a metric audit without value) is not recorded: `scripts/perf/lighthouse-samples.mjs` retries it, up to as many extra attempts as `runs`. If every attempt is empty the page fails with `Lighthouse returned no data for <url>`, which is a measurement failure and not a budget breach, and its Lighthouse limits are not compared. Rerun the job; a real regression still fails with the budget message.
+
 The first limits are the baseline plus 5 % for sizes, plus 0.02 for CLS, and the baseline accessibility score. When a change makes a page lighter, lower its limits in the same PR. Raising a limit needs a reason in the PR description.
 
 ### Per theme and site mode

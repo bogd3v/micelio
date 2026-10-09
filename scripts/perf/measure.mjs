@@ -12,6 +12,7 @@ import { createJiti } from 'jiti'
 import lighthouse from 'lighthouse'
 import { generateStatic } from '../lib/static-generate.mjs'
 import { checkFouc } from './fouc.mjs'
+import { collectSamples } from './lighthouse-samples.mjs'
 import { budgetKeysOf, ISLANDS_PREFIX, islandBudgetErrors, islandElement, islandMetrics, islandProblems, isStrayRequest } from './islands.mjs'
 
 const ROOT = new URL('../../', import.meta.url).pathname
@@ -344,30 +345,14 @@ async function measureSearchIsland(browser, url, declaredScripts) {
   }
 }
 
-function median(values) {
-  const sorted = [...values].sort((a, b) => a - b)
-  return sorted[Math.floor(sorted.length / 2)]
-}
-
+/** Lighthouse metrics of a page, or `null` when every attempt came back empty (see collectSamples) */
 async function measureLighthouse(url) {
-  const samples = []
-  for (let i = 0; i < runs; i++) {
-    const result = await lighthouse(url, {
-      port: DEBUG_PORT,
-      output: 'json',
-      logLevel: 'error',
-      onlyCategories: ['performance', 'accessibility'],
-    })
-    const { audits, categories } = result.lhr
-    samples.push({
-      lcpMs: Math.round(audits['largest-contentful-paint'].numericValue),
-      tbtMs: Math.round(audits['total-blocking-time'].numericValue),
-      cls: Math.round(audits['cumulative-layout-shift'].numericValue * 1000) / 1000,
-      performance: Math.round(categories.performance.score * 100),
-      accessibility: Math.round(categories.accessibility.score * 100),
-    })
-  }
-  return Object.fromEntries(Object.keys(samples[0]).map(key => [key, median(samples.map(s => s[key]))]))
+  return collectSamples(async () => (await lighthouse(url, {
+    port: DEBUG_PORT,
+    output: 'json',
+    logLevel: 'error',
+    onlyCategories: ['performance', 'accessibility'],
+  })).lhr, runs)
 }
 
 const HIGHER_IS_BETTER = new Set(['performance', 'accessibility'])
@@ -423,7 +408,9 @@ try {
     const url = new URL(path, base).href
     await fetch(url)
     const { html, stylesheets, declaredScripts, ...weight } = await measureWeight(url)
-    const metrics = { ...weight, ...(await observeLoad(browser, url, declaredScripts)), ...(await measureLighthouse(url)) }
+    const lighthouseMetrics = await measureLighthouse(url)
+    const metrics = { ...weight, ...(await observeLoad(browser, url, declaredScripts)), ...lighthouseMetrics }
+    if (!lighthouseMetrics) problems.push({ level: 'error', page: name, noPrefix: true, message: `Lighthouse returned no data for ${url} after ${runs * 2} attempts; this is a measurement failure, not a budget breach` })
     problems.push(...compare(name, metrics, limitsFor(name, 'error'), 'error'), ...compare(name, metrics, limitsFor(name, 'warn'), 'warn'))
     for (const message of checkFouc(html, url, stylesheets)) problems.push({ level: 'error', page: name, message })
     // The run proves nothing if the font never reached the page (a theme using it itself emits nothing)
@@ -460,7 +447,7 @@ try {
   if (args.out) writeFileSync(args.out, JSON.stringify({ theme, mode, ...(displayFont && { displayFont }), pages: report, ...(Object.keys(islands).length && { islands }) }, null, 2) + '\n')
   const lines = problems.map((p) => {
     const prefix = `${p.level === 'error' ? 'ERROR' : 'warn '} [${label}] ${p.page}:`
-    if (p.message) return `${prefix} ${p.page.startsWith('island ') ? '' : 'FOUC: '}${p.message}`
+    if (p.message) return `${prefix} ${p.page.startsWith('island ') || p.noPrefix ? '' : 'FOUC: '}${p.message}`
     const verb = HIGHER_IS_BETTER.has(p.metric) ? 'is below' : 'exceeds'
     return `${prefix} ${p.metric} ${p.value} ${verb} the budget of ${p.limit}`
   })
