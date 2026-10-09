@@ -6,7 +6,7 @@
     gap: 20px;
     max-width: var(--measure);
     margin: 0 auto;
-    padding: 40px var(--bd-home-gutter) 32px;
+    padding: 40px var(--myc-home-gutter) 32px;
     text-align: center;
 }
 
@@ -77,7 +77,7 @@
     gap: var(--space-3);
     max-width: 960px;
     margin: 0 auto;
-    padding: 0 var(--bd-home-gutter);
+    padding: 0 var(--myc-home-gutter);
 }
 
 :where(.bd-article-page[data-layout="centered"]) .bd-article-cover-credit {
@@ -102,7 +102,7 @@
 :where(.bd-article-page[data-layout="centered"]) .bd-article-cover-empty {
     max-width: 960px;
     margin: 0 auto;
-    background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--bd-scan) 3px 4px);
+    background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--myc-scan) 3px 4px);
 }
 
 :where(.bd-article-page[data-layout="centered"]) .bd-article-body {
@@ -111,7 +111,7 @@
     gap: var(--space-8);
     max-width: var(--measure);
     margin: 0 auto;
-    padding: var(--space-8) var(--bd-home-gutter) 64px;
+    padding: var(--space-8) var(--myc-home-gutter) 64px;
 }
 
 :where(.bd-article-page[data-layout="centered"]) .bd-article-toc {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// The bird rides the track by the --bd-read custom property of .bd-progress (CSS only), so `progress` is not read
+// The bird rides the track by the --myc-read custom property of .bd-progress (CSS only), so `progress` is not read
 defineProps<{
   progress?: number
 }>()

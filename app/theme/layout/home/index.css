@@ -4,7 +4,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-4);
-    padding: 48px var(--bd-home-gutter) 56px;
+    padding: 48px var(--myc-home-gutter) 56px;
 }
 
 :where(.bd-home[data-layout="index"]) .bd-home-lede-title {
@@ -26,7 +26,7 @@
 
 @media (min-width: 768px) {
     :where(.bd-home[data-layout="index"]) .bd-home-lede {
-        padding: var(--space-section) var(--bd-home-gutter) 64px;
+        padding: var(--space-section) var(--myc-home-gutter) 64px;
     }
 
     :where(.bd-home[data-layout="index"]) .bd-home-lede-title {

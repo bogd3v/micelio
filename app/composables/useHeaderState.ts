@@ -37,7 +37,7 @@ export function useHeaderState(props: HeaderStateInput): HeaderState {
   const percent = computed<number>(() =>
     Math.round(Math.min(100, Math.max(0, props.progress ?? scrolled.value))),
   )
-  const progressStyle = computed<Record<string, string>>(() => ({ '--bd-read': String(percent.value / 100) }))
+  const progressStyle = computed<Record<string, string>>(() => ({ '--myc-read': String(percent.value / 100) }))
 
   onMounted(() => {
     if (!/Mac|iPhone|iPad/.test(navigator.platform)) shortcut.value = 'Ctrl K'

@@ -1,10 +1,10 @@
 /* Logo centered above the navigation (ADR 0005, section 5); sticky like the bar */
 :root {
-    --bd-header-h: 64px;
+    --myc-header-h: 64px;
 }
 
 html {
-    scroll-padding-top: calc(var(--bd-header-h) + var(--space-4));
+    scroll-padding-top: calc(var(--myc-header-h) + var(--space-4));
 }
 
 .bd-header:where([data-layout="centered"]) {
@@ -176,14 +176,14 @@ html {
 :where(.bd-header[data-layout="centered"]) .bd-progress-bar {
     height: 100%;
     background: var(--link);
-    transform: scaleX(var(--bd-read, 0));
+    transform: scaleX(var(--myc-read, 0));
     transform-origin: left;
 }
 
 :where(.bd-header[data-layout="centered"]) .bd-progress-track {
     position: absolute;
     inset: 0;
-    transform: translateX(calc(var(--bd-read, 0) * 100%));
+    transform: translateX(calc(var(--myc-read, 0) * 100%));
 }
 
 /* The number is drawn by CSS: data-percent (kept by the JS fallback), or a counter on the scroll timeline */
@@ -195,7 +195,7 @@ html {
     .bd-header-auto:where([data-layout="centered"]) .bd-strip-read-num {
         animation: bd-read-count linear both;
         animation-timeline: scroll(root);
-        counter-reset: bd-read-count calc(var(--bd-read-count) + 0); /* calc() rounds: WebKit leaves the interpolated integer fractional */
+        counter-reset: bd-read-count calc(var(--myc-read-count) + 0); /* calc() rounds: WebKit leaves the interpolated integer fractional */
     }
 
     .bd-header-auto:where([data-layout="centered"]) .bd-strip-read-num::before {
@@ -224,7 +224,7 @@ html {
 
 @media (min-width: 768px) {
     :root {
-        --bd-header-h: 152px;
+        --myc-header-h: 152px;
     }
 
     :where(.bd-header[data-layout="centered"]) .bd-header-inner {

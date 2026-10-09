@@ -81,7 +81,7 @@ export function slotProblems(source: string, file: string, island: boolean): str
   const { descriptor, errors } = parse(source, { filename: file })
   if (errors.length) return [`${file}: cannot parse the component: ${errors[0]!.message}`]
   const problems: string[] = []
-  if (descriptor.styles.length) problems.push(`${file}: has a <style> block; a slot's CSS goes in slots/*.css, which is imported into the bd.theme layer and checked against the hooks (a <style> block is bundled outside the layer)`)
+  if (descriptor.styles.length) problems.push(`${file}: has a <style> block; a slot's CSS goes in slots/*.css, which is imported into the myc.theme layer and checked against the hooks (a <style> block is bundled outside the layer)`)
   if (island) return problems
   const found = new Set<string>()
   if (descriptor.template?.ast) directives(descriptor.template.ast as unknown as TemplateNode, found)

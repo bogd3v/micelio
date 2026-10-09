@@ -9,7 +9,7 @@ async function supportsTimelines(page: import('@playwright/test').Page): Promise
 }
 
 async function count(page: import('@playwright/test').Page): Promise<number> {
-  return Number(await page.locator('.bd-strip-read-num').evaluate(el => getComputedStyle(el).getPropertyValue('--bd-read-count')))
+  return Number(await page.locator('.bd-strip-read-num').evaluate(el => getComputedStyle(el).getPropertyValue('--myc-read-count')))
 }
 
 test('the reading percentage follows the scroll with no script on the page', async ({ page }) => {

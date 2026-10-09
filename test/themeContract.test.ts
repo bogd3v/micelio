@@ -261,7 +261,7 @@ describe('the island rule', () => {
     expect(problems(slot('<i />', 'const state = { mounted: true, updated: 1 }'))).toBe('')
   })
 
-  it('rejects a <style> block in every slot, island or not, because it would bypass the bd.theme layer', () => {
+  it('rejects a <style> block in every slot, island or not, because it would bypass the myc.theme layer', () => {
     const files = { 'slots/ThemeMark.vue': '<template><i /></template><style>i { top: 0 }</style>' }
     expect(problems(files)).toMatch(/slots\/ThemeMark\.vue: has a <style> block/)
     expect(problems(files, (m) => {

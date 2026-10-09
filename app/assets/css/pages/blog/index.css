@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-    padding: 48px var(--bd-home-gutter) 32px;
+    padding: 48px var(--myc-home-gutter) 32px;
 }
 
 .bd-blog-title {
@@ -41,14 +41,14 @@
     display: flex;
     flex-direction: column;
     gap: 64px;
-    padding: 0 var(--bd-home-gutter) 64px;
+    padding: 0 var(--myc-home-gutter) 64px;
 }
 
 .bd-blog-main {
     display: flex;
     flex-direction: column;
     gap: var(--space-8);
-    scroll-margin-top: calc(var(--bd-header-h) + var(--space-6));
+    scroll-margin-top: calc(var(--myc-header-h) + var(--space-6));
 }
 
 .bd-blog-pagination {
@@ -67,7 +67,7 @@
 
 @media (min-width: 768px) {
     .bd-blog-head {
-        padding: var(--space-section) var(--bd-home-gutter) 48px;
+        padding: var(--space-section) var(--myc-home-gutter) 48px;
     }
 
     .bd-blog-title {

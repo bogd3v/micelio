@@ -1,9 +1,9 @@
 /* Image carousel (SliderBlock). Its controls sit on photos, so they keep fixed white and black scrims */
 .bd-slider {
     /* Through custom properties, like the utilities they replace, so color-mix() resolves the same */
-    --bd-slider-white: #fff;
-    --bd-slider-black: #000;
-    --bd-slider-dark: oklch(20.5% 0 none);
+    --myc-slider-white: #fff;
+    --myc-slider-black: #000;
+    --myc-slider-dark: oklch(20.5% 0 none);
     -webkit-user-select: none;
     user-select: none;
 }
@@ -48,7 +48,7 @@
     bottom: 0;
     z-index: 20;
     height: 8rem;
-    background-image: linear-gradient(to top in oklab, color-mix(in oklab, var(--bd-slider-black) 60%, transparent) 0%, color-mix(in oklab, var(--bd-slider-black) 20%, transparent) 50%, transparent 100%);
+    background-image: linear-gradient(to top in oklab, color-mix(in oklab, var(--myc-slider-black) 60%, transparent) 0%, color-mix(in oklab, var(--myc-slider-black) 20%, transparent) 50%, transparent 100%);
     pointer-events: none;
 }
 
@@ -62,8 +62,8 @@
     width: 2.75rem;
     height: 2.75rem;
     border-radius: calc(infinity * 1px);
-    color: var(--bd-slider-dark);
-    background-color: color-mix(in oklab, var(--bd-slider-white) 90%, transparent);
+    color: var(--myc-slider-dark);
+    background-color: color-mix(in oklab, var(--myc-slider-white) 90%, transparent);
     box-shadow: var(--shadow-overlay);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
@@ -81,8 +81,8 @@
 }
 
 :root:not([data-scheme="light"]) .bd-slider-arrow {
-    color: var(--bd-slider-white);
-    background-color: color-mix(in oklab, var(--bd-slider-dark) 90%, transparent);
+    color: var(--myc-slider-white);
+    background-color: color-mix(in oklab, var(--myc-slider-dark) 90%, transparent);
 }
 
 @media (hover: hover) {
@@ -97,7 +97,7 @@
 
 @media (hover: hover) {
     .bd-slider-arrow:hover {
-        background-color: var(--bd-slider-white);
+        background-color: var(--myc-slider-white);
         scale: 1.1;
     }
 }
@@ -105,7 +105,7 @@
 .bd-slider-arrow:focus-visible,
 .bd-slider-dot:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px color-mix(in oklab, var(--bd-slider-white) 50%, transparent), 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--myc-slider-white) 50%, transparent), 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 .bd-slider-arrow .bd-icon,
@@ -146,7 +146,7 @@
 }
 
 .bd-slider-dot:focus-visible {
-    box-shadow: 0 0 0 2px transparent, 0 0 0 4px color-mix(in oklab, var(--bd-slider-white) 50%, transparent);
+    box-shadow: 0 0 0 2px transparent, 0 0 0 4px color-mix(in oklab, var(--myc-slider-white) 50%, transparent);
 }
 
 @media (hover: hover) {
@@ -164,17 +164,17 @@
 }
 
 .bd-slider-dot-track {
-    background-color: color-mix(in oklab, var(--bd-slider-white) 30%, transparent);
+    background-color: color-mix(in oklab, var(--myc-slider-white) 30%, transparent);
 }
 
 .bd-slider-dot-fill {
     right: auto;
-    background-color: var(--bd-slider-white);
+    background-color: var(--myc-slider-white);
     transition: all 0.1s linear;
 }
 
 .bd-slider-dot-hover {
-    background-color: color-mix(in oklab, var(--bd-slider-white) 60%, transparent);
+    background-color: color-mix(in oklab, var(--myc-slider-white) 60%, transparent);
     opacity: 0;
     transition: opacity 0.15s var(--ease-emphasized);
 }
@@ -203,8 +203,8 @@
 .bd-slider-count-text {
     padding: 0.25rem 0.625rem;
     border-radius: calc(infinity * 1px);
-    color: color-mix(in oklab, var(--bd-slider-white) 90%, transparent);
-    background-color: color-mix(in oklab, var(--bd-slider-black) 40%, transparent);
+    color: color-mix(in oklab, var(--myc-slider-white) 90%, transparent);
+    background-color: color-mix(in oklab, var(--myc-slider-black) 40%, transparent);
     font-family: var(--font-mono);
     font-size: 0.75rem;
     font-variant-numeric: tabular-nums;

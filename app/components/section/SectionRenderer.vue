@@ -73,12 +73,12 @@ const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLand
 </template>
 
 <style>
-@layer bd.reset, bd.settings, bd.base, bd.components, bd.layout, bd.pages, bd.theme, bd.animations, bd.utilities;
-@import "~/assets/css/components/section.css" layer(bd.components);
-@import "~/assets/css/components/section-hero.css" layer(bd.components);
-@import "~/assets/css/components/section-logos.css" layer(bd.components);
-@import "~/assets/css/components/section-pricing.css" layer(bd.components);
-@import "~/assets/css/components/section-faq.css" layer(bd.components);
-@import "~/assets/css/animations/section-marquee.css" layer(bd.animations);
-@import "#build/micelio/sections.css" layer(bd.theme);
+@layer myc.reset, myc.settings, myc.base, myc.components, myc.layout, myc.pages, myc.theme, myc.animations, myc.utilities;
+@import "~/assets/css/components/section.css" layer(myc.components);
+@import "~/assets/css/components/section-hero.css" layer(myc.components);
+@import "~/assets/css/components/section-logos.css" layer(myc.components);
+@import "~/assets/css/components/section-pricing.css" layer(myc.components);
+@import "~/assets/css/components/section-faq.css" layer(myc.components);
+@import "~/assets/css/animations/section-marquee.css" layer(myc.animations);
+@import "#build/micelio/sections.css" layer(myc.theme);
 </style>

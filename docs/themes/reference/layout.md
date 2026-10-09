@@ -11,7 +11,7 @@ Component `RegionHeader`. The root element carries `data-layout="<variant>"`.
 | Variant | Description | Hooks only in this variant |
 | --- | --- | --- |
 | `bar` (default) | Logo, navigation and actions in one sticky row. | none |
-| `centered` | Logo centered above the navigation; sets `--bd-header-h` to 152px on desktop (64px on mobile). | none |
+| `centered` | Logo centered above the navigation; sets `--myc-header-h` to 152px on desktop (64px on mobile). | none |
 
 ## `home`
 

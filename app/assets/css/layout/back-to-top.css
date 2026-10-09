@@ -1,7 +1,7 @@
 .bd-back-to-top {
     position: fixed;
     right: 1.5rem;
-    bottom: calc(var(--bd-tabbar-h) + 1.5rem);
+    bottom: calc(var(--myc-tabbar-h) + 1.5rem);
     z-index: 50;
     display: flex;
     align-items: center;

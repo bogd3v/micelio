@@ -474,7 +474,7 @@
       {
         "name": "nav-height",
         "value": "72px",
-        "usage": "Row height of the bar header; the centered header uses --bd-header-h instead."
+        "usage": "Row height of the bar header; the centered header uses --myc-header-h instead."
       }
     ]
   },

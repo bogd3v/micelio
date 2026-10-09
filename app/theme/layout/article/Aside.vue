@@ -38,7 +38,7 @@ useMarkAsRead(prose, readDocumentId)
         <time v-if="publishedDate" class="bd-meta" :datetime="post.publishedAt ?? undefined">{{ publishedDate }}</time>
         <span v-if="post.readTime" class="bd-meta">{{ t("blog.readTime", { minutes: post.readTime }) }}</span>
       </div>
-      <h1 class="bd-article-title bd-post-title bd-wide" :style="{ '--bd-vt-title': names.title }" :data-pagefind-meta="isStatic ? 'title' : undefined">{{ post.title }}</h1>
+      <h1 class="bd-article-title bd-post-title bd-wide" :style="{ '--myc-vt-title': names.title }" :data-pagefind-meta="isStatic ? 'title' : undefined">{{ post.title }}</h1>
       <p v-if="post.description" class="bd-article-lead" :data-pagefind-body="isStatic ? '' : undefined">{{ post.description }}</p>
       <div class="bd-article-byline">
         <div class="bd-article-author">
@@ -59,7 +59,7 @@ useMarkAsRead(prose, readDocumentId)
     </header>
 
     <figure v-if="coverUrl" class="bd-article-figure">
-      <div class="bd-article-cover bd-post-media" :style="{ '--bd-vt-media': names.media }">
+      <div class="bd-article-cover bd-post-media" :style="{ '--myc-vt-media': names.media }">
         <NuxtImg
           :src="coverUrl"
           :alt="post.cover?.alternativeText || post.title"

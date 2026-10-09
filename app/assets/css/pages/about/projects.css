@@ -108,7 +108,7 @@
     padding: var(--space-6);
     text-align: center;
     background-color: var(--surface-sunken);
-    background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--bd-scan) 3px 4px);
+    background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--myc-scan) 3px 4px);
     border: 1px solid var(--line);
 }
 

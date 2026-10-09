@@ -23,7 +23,7 @@ export const REGION_VARIANTS: Record<LayoutRegion, RegionVariants> = {
 export const VARIANT_DESCRIPTIONS: Record<LayoutRegion, Record<string, string>> = {
   header: {
     bar: 'Logo, navigation and actions in one sticky row.',
-    centered: 'Logo centered above the navigation; sets `--bd-header-h` to 152px on desktop (64px on mobile).',
+    centered: 'Logo centered above the navigation; sets `--myc-header-h` to 152px on desktop (64px on mobile).',
   },
   home: {
     showcase: 'Hero, featured article, latest articles and topic guide.',
