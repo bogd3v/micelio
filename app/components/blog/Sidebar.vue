@@ -47,7 +47,7 @@ function clearHistory(): void {
       <button v-if="readCount > 0" type="button" class="myc-blog-textbtn" @click="clearHistory">{{ t('blog.read.clear') }}</button>
     </section>
     <section class="myc-blog-aside-group" aria-labelledby="myc-blog-subscribe">
-      <h2 id="myc-blog-subscribe" class="myc-eyebrow myc-home-eyebrow">{{ t('bd.footer.subscribe') }}</h2>
+      <h2 id="myc-blog-subscribe" class="myc-eyebrow myc-home-eyebrow">{{ t('myc.footer.subscribe') }}</h2>
       <a :href="feedPath(locale)" class="myc-blog-aside-link" target="_blank" rel="noopener noreferrer">{{ t('blog.rss') }} <span aria-hidden="true">↗</span></a>
       <div class="myc-blog-feeds">
         <p id="myc-blog-feeds-label" class="myc-blog-feeds-label">{{ t('blog.feeds.label') }}</p>
@@ -58,9 +58,9 @@ function clearHistory(): void {
               class="myc-blog-feed-link"
               target="_blank"
               rel="noopener noreferrer"
-              :aria-label="t('blog.feeds.aria', { category: t(`bd.categoryShort.${slug}`) })"
+              :aria-label="t('blog.feeds.aria', { category: t(`myc.categoryShort.${slug}`) })"
             >
-              {{ t(`bd.categoryShort.${slug}`) }} <span aria-hidden="true">↗</span>
+              {{ t(`myc.categoryShort.${slug}`) }} <span aria-hidden="true">↗</span>
             </a>
           </li>
         </ul>

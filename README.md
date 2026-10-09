@@ -145,7 +145,7 @@ Set the variables from `.env.example` in the production environment (Dokploy) wi
 │   ├── app.config.ts          # Neutral fallbacks for the site identity (the CMS site settings win)
 │   ├── assets/css/            # Global styles by layer (see AGENTS.md, CSS Architecture)
 │   ├── components/            # Auto-imported, grouped by feature
-│   │   ├── bd/                # BogDev design system: BdButton, BdSearchPalette…
+│   │   ├── myc/               # Micelio design system: MycButton, MycSearchPalette…
 │   │   ├── blog/              # Article view, comments, filters, pagination
 │   │   ├── account/           # Account pages: shell, fields, notices
 │   │   ├── drafts/            # Draft list and preview

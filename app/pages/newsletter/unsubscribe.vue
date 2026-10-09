@@ -55,7 +55,7 @@ useSeoMeta({
           {{ t('newsletter.unsubscribe.doneLead') }}
         </AccountHeading>
         <div>
-          <BdButton :href="localizePath('/blog')" arrow>{{ t('newsletter.unsubscribe.blog') }}</BdButton>
+          <MycButton :href="localizePath('/blog')" arrow>{{ t('newsletter.unsubscribe.blog') }}</MycButton>
         </div>
       </div>
       <div v-else-if="status === 'invalid'" class="myc-account-view">
@@ -66,7 +66,7 @@ useSeoMeta({
           <template v-else>{{ t('newsletter.unsubscribe.invalidLeadNoContact') }}</template>
         </AccountHeading>
         <div>
-          <BdButton :href="localizePath('/blog')" variant="secondary">{{ t('newsletter.unsubscribe.blog') }}</BdButton>
+          <MycButton :href="localizePath('/blog')" variant="secondary">{{ t('newsletter.unsubscribe.blog') }}</MycButton>
         </div>
       </div>
       <form v-else class="myc-account-view" @submit.prevent="unsubscribe">
@@ -75,7 +75,7 @@ useSeoMeta({
         </AccountHeading>
         <AccountNotice v-if="error" ref="errorRef" tone="error">{{ error }}</AccountNotice>
         <div>
-          <BdButton type="submit">{{ t('newsletter.unsubscribe.submit') }}</BdButton>
+          <MycButton type="submit">{{ t('newsletter.unsubscribe.submit') }}</MycButton>
         </div>
       </form>
     </div>

@@ -20,17 +20,17 @@ const TONES: CalloutTone[] = ['note', 'warning', 'danger']
     <div>
       <h3 class="myc-specimen-label">{{ t('specimen.prose.callouts') }}</h3>
       <div class="myc-specimen-stack">
-        <BdCallout v-for="tone in TONES" :key="tone" :tone="tone">{{ t('specimen.prose.calloutBody') }}</BdCallout>
-        <BdCallout tone="note" :title="t('specimen.prose.customTitle')">{{ t('specimen.prose.calloutBody') }}</BdCallout>
+        <MycCallout v-for="tone in TONES" :key="tone" :tone="tone">{{ t('specimen.prose.calloutBody') }}</MycCallout>
+        <MycCallout tone="note" :title="t('specimen.prose.customTitle')">{{ t('specimen.prose.calloutBody') }}</MycCallout>
       </div>
     </div>
 
     <div>
       <h3 class="myc-specimen-label">{{ t('specimen.prose.code') }}</h3>
       <div class="myc-specimen-stack">
-        <BdCodeBlock :code="SHELL_SAMPLE" lang="bash" />
-        <BdCodeBlock :code="TS_SAMPLE" lang="ts" filename="slugify.ts" />
-        <BdCodeBlock :code="TS_SAMPLE" :show-copy="false" />
+        <MycCodeBlock :code="SHELL_SAMPLE" lang="bash" />
+        <MycCodeBlock :code="TS_SAMPLE" lang="ts" filename="slugify.ts" />
+        <MycCodeBlock :code="TS_SAMPLE" :show-copy="false" />
       </div>
     </div>
   </div>

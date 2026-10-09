@@ -228,9 +228,9 @@ onMounted(() => {
           <button v-if="federated" type="button" class="myc-blog-textbtn" aria-controls="myc-fedi-reply" @click="openReply">
             {{ t('comments.replyFromFediverse') }} <span aria-hidden="true">↗</span>
           </button>
-          <BdButton type="submit" arrow :disabled="submitting">
+          <MycButton type="submit" arrow :disabled="submitting">
             {{ submitting ? t('comments.posting') : (replyingTo ? t('comments.postReply') : t('comments.postComment')) }}
-          </BdButton>
+          </MycButton>
         </div>
       </form>
     </div>

@@ -38,7 +38,7 @@ function escapeXml(value: string): string {
 }
 
 function categoryMessage(message: string, siteName: string, locale: FeedLocale, category: Category): string {
-  return message.replace('{site}', siteName).replace('{category}', MESSAGES[locale].bd.categories[category])
+  return message.replace('{site}', siteName).replace('{category}', MESSAGES[locale].myc.categories[category])
 }
 
 function channelTitle(siteName: string, locale: FeedLocale, category?: Category): string {

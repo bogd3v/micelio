@@ -14,7 +14,7 @@ useAccountPage(() => t('account.meta.confirmed'))
         {{ t('account.confirmed.lead') }}
       </AccountHeading>
       <div>
-        <BdButton :href="localizePath('/account/sign-in')" arrow>{{ t('account.confirmed.signIn') }}</BdButton>
+        <MycButton :href="localizePath('/account/sign-in')" arrow>{{ t('account.confirmed.signIn') }}</MycButton>
       </div>
     </div>
   </AccountShell>

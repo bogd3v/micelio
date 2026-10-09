@@ -42,14 +42,14 @@ const categoryChips = computed<{ id: Category | undefined, label: string, color:
   { id: undefined, label: t('blog.all'), color: 'var(--ink-muted)', count: padCount(props.total) },
   ...CATEGORIES.map(category => ({
     id: category,
-    label: t(`bd.categoryShort.${category}`),
+    label: t(`myc.categoryShort.${category}`),
     color: categoryColor(category),
     count: padCount(props.counts[category] ?? 0),
   })),
 ])
 const activeFilters = computed<ActiveFilter[]>(() => {
   const active: ActiveFilter[] = []
-  if (props.filters.category) active.push({ id: 'category', label: t(`bd.categoryShort.${props.filters.category}`) })
+  if (props.filters.category) active.push({ id: 'category', label: t(`myc.categoryShort.${props.filters.category}`) })
   if (props.filters.tag) active.push({ id: 'tag', label: `#${tagLabel(props.tags, props.filters.tag)}` })
   if (props.filters.search) active.push({ id: 'search', label: `«${props.filters.search}»` })
   return active

@@ -23,7 +23,7 @@ const newsletterOn = useModule('newsletter')
     <header class="myc-home-lede">
       <h1 class="myc-home-lede-title myc-wide">{{ site.name }}</h1>
       <p v-if="site.description" class="myc-home-lede-text">{{ site.description }}</p>
-      <BdButton :href="localizePath('/about')" variant="text" arrow>{{ t('nav.about') }}</BdButton>
+      <MycButton :href="localizePath('/about')" variant="text" arrow>{{ t('nav.about') }}</MycButton>
     </header>
 
     <HomeLatest :total="total" :counts="counts" />

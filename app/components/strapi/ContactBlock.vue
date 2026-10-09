@@ -45,7 +45,7 @@ const extraLink = computed(() =>
         {{ block.extraLink.label }} <span v-if="extraLink.external" aria-hidden="true">↗</span>
       </NuxtLink>
     </div>
-    <nav v-if="block.socials?.length" class="myc-contact-list" :aria-label="t('bd.footer.social')">
+    <nav v-if="block.socials?.length" class="myc-contact-list" :aria-label="t('myc.footer.social')">
       <a
         v-for="social in block.socials"
         :key="social.id"

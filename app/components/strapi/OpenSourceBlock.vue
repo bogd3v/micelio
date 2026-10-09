@@ -29,7 +29,7 @@ function onGuideClick(event: MouseEvent): void {
     <div class="myc-open-source-main">
       <p v-if="block.eyebrow" class="myc-eyebrow myc-home-eyebrow">{{ block.eyebrow }}</p>
       <p v-if="block.text" class="myc-open-source-text">{{ block.text }}</p>
-      <BdCodeBlock v-if="block.code" :code="block.code" lang="shell" />
+      <MycCodeBlock v-if="block.code" :code="block.code" lang="shell" />
     </div>
     <div v-if="block.guide?.length" class="myc-open-source-guide">
       <h2 v-if="block.guideTitle" class="myc-eyebrow myc-home-eyebrow">{{ block.guideTitle }}</h2>

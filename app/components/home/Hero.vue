@@ -25,8 +25,8 @@ const eyebrow = computed<string>(() => t('home.hero.eyebrow', { count: padCount(
       <h1 class="myc-hero-title myc-wide">{{ t('home.hero.title') }}</h1>
       <p class="myc-hero-lead">{{ themeMessage('hero.subtitle', 'home.hero.subtitle') }}</p>
       <div class="myc-hero-actions">
-        <BdButton href="#latest" arrow>{{ t('home.hero.read') }}</BdButton>
-        <BdButton :href="localizePath('/about')" variant="text" class="myc-hero-about">{{ t('nav.about') }}</BdButton>
+        <MycButton href="#latest" arrow>{{ t('home.hero.read') }}</MycButton>
+        <MycButton :href="localizePath('/about')" variant="text" class="myc-hero-about">{{ t('nav.about') }}</MycButton>
       </div>
     </div>
     <ThemeHero class="myc-hero-art-compact" compact />

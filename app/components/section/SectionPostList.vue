@@ -29,7 +29,7 @@ const posts = computed(() => props.section.posts ?? [])
       </ul>
       <ul v-else class="myc-section-items">
         <li v-for="post in posts" :key="post.id" class="myc-section-item">
-          <BdPostCard v-bind="toPostCard(post)" :heading-level="itemLevel" />
+          <MycPostCard v-bind="toPostCard(post)" :heading-level="itemLevel" />
         </li>
       </ul>
     </div>

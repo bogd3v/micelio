@@ -51,7 +51,7 @@ Logos of other projects are used only to link to them, unmodified, and remain tr
 
 | Logo | Files | Owner |
 | --- | --- | --- |
-| Mastodon | `app/components/bd/BdMastodonLogo.vue` | Mastodon gGmbH, [trademark policy](https://joinmastodon.org/trademark) |
+| Mastodon | `app/components/myc/MycMastodonLogo.vue` | Mastodon gGmbH, [trademark policy](https://joinmastodon.org/trademark) |
 
 ## Names and marks of Micelio and BogDev
 

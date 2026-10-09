@@ -6,7 +6,7 @@ export function useCategoryLabel(): (category: CategoryLike | null | undefined) 
 
   return function categoryLabel(category: CategoryLike | null | undefined): string {
     if (!category) return ''
-    if (isCategory(category.slug)) return t(`bd.categories.${category.slug}`)
+    if (isCategory(category.slug)) return t(`myc.categories.${category.slug}`)
     return category.name ?? category.slug ?? ''
   }
 }

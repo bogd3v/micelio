@@ -10,10 +10,10 @@ const { t } = useI18n()
     <div>
       <h3 class="myc-specimen-label">{{ t('specimen.labels.categories') }}</h3>
       <div class="myc-specimen-row">
-        <BdCategoryTag v-for="category in CATEGORIES" :key="category" :category="category" />
+        <MycCategoryTag v-for="category in CATEGORIES" :key="category" :category="category" />
       </div>
       <div class="myc-specimen-row">
-        <BdCategoryTag v-for="category in CATEGORIES" :key="category" :category="category" href="#labels" />
+        <MycCategoryTag v-for="category in CATEGORIES" :key="category" :category="category" href="#labels" />
       </div>
     </div>
 
@@ -36,9 +36,9 @@ const { t } = useI18n()
     <div>
       <h3 class="myc-specimen-label">{{ t('specimen.labels.text') }}</h3>
       <p class="myc-body">
-        <BdHighlight :text="t('specimen.labels.highlightText')" :query="t('specimen.labels.highlightQuery')" />
+        <MycHighlight :text="t('specimen.labels.highlightText')" :query="t('specimen.labels.highlightQuery')" />
       </p>
-      <p class="myc-meta"><BdFigureCredit :credit="CREDIT" /></p>
+      <p class="myc-meta"><MycFigureCredit :credit="CREDIT" /></p>
     </div>
   </div>
 </template>

@@ -20,7 +20,7 @@ const toPostCard = usePostCard()
     <template v-else>
       <h2 class="myc-sr">{{ t("blog.listTitle") }}</h2>
       <div class="myc-blog-grid">
-        <BdPostCard
+        <MycPostCard
           v-for="(post, index) in posts"
           :key="post.id"
           v-bind="toPostCard(post)"

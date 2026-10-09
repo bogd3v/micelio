@@ -8,7 +8,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const MARKER = '\u0001'
-const text = computed<[string, string]>(() => splitAroundNumber(t('bd.header.read', { percent: MARKER }), MARKER))
+const text = computed<[string, string]>(() => splitAroundNumber(t('myc.header.read', { percent: MARKER }), MARKER))
 </script>
 
 <template>

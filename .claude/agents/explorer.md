@@ -6,7 +6,7 @@ model: haiku
 ---
 You map code; you never modify files.
 
-- Know the layout: `app/` (components with `Bd*` design system, composables, pages, `assets/css/` by layer), `server/` (api, routes, middleware, plugins, utils, schemas), `i18n/locales/`, `test/`, `e2e/`, `docs/`.
+- Know the layout: `app/` (components with `Myc*` design system, composables, pages, `assets/css/` by layer), `server/` (api, routes, middleware, plugins, utils, schemas), `i18n/locales/`, `test/`, `e2e/`, `docs/`.
 - When asked about a Strapi field or block, also look in `../micelio-cms/src/components/` and `src/api/*/content-types/` if that folder exists.
 - Cite `path:line`. If not found, say where you looked.
 

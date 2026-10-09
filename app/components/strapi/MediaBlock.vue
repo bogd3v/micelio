@@ -28,10 +28,10 @@ const caption = computed<string>(() => mediaCaption(props.block))
     </div>
     <figcaption v-if="caption || block.credit">
       <span v-if="caption || figureNumber" class="myc-fig-cap">
-        <span v-if="figureNumber" class="myc-fig-n">{{ t('bd.figure.number', { n: formatFigureNumber(figureNumber) }) }}</span>
+        <span v-if="figureNumber" class="myc-fig-n">{{ t('myc.figure.number', { n: formatFigureNumber(figureNumber) }) }}</span>
         {{ caption }}
       </span>
-      <BdFigureCredit v-if="block.credit" :credit="block.credit" />
+      <MycFigureCredit v-if="block.credit" :credit="block.credit" />
     </figcaption>
   </figure>
 </template>

@@ -55,7 +55,7 @@ async function submit(): Promise<void> {
       <AccountHeading :eyebrow="t('account.eyebrow.reset')" :title="t('account.reset.title')" />
       <AccountNotice tone="error">{{ t('account.reset.missingCode') }}</AccountNotice>
       <div>
-        <BdButton :href="localizePath('/account/forgot-password')" variant="secondary">{{ t('account.reset.requestNew') }}</BdButton>
+        <MycButton :href="localizePath('/account/forgot-password')" variant="secondary">{{ t('account.reset.requestNew') }}</MycButton>
       </div>
     </div>
     <form v-else class="myc-account-view" novalidate @submit.prevent="submit">
@@ -86,7 +86,7 @@ async function submit(): Promise<void> {
         :toggle="false"
       />
       <div>
-        <BdButton type="submit" arrow>{{ t('account.reset.submit') }}</BdButton>
+        <MycButton type="submit" arrow>{{ t('account.reset.submit') }}</MycButton>
       </div>
     </form>
   </AccountShell>

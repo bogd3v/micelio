@@ -32,7 +32,7 @@ const countLabel = computed<string>(() => t('home.guide.count', { count: padCoun
     :class="['myc-guide-card', { 'myc-guide-pillar': pillar }]"
   >
     <div class="myc-guide-head">
-      <BdCategoryTag :category="category" />
+      <MycCategoryTag :category="category" />
       <span class="myc-meta myc-guide-label">{{ label }}</span>
     </div>
     <div class="myc-guide-art">

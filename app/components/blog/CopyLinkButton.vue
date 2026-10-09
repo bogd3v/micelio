@@ -21,7 +21,7 @@ function copyLink(): void {
 
 <template>
   <span v-if="!isStatic" class="myc-copy-link">
-    <BdButton v-if="variant === 'button'" variant="secondary" size="sm" @click="copyLink">{{ label }}</BdButton>
+    <MycButton v-if="variant === 'button'" variant="secondary" size="sm" @click="copyLink">{{ label }}</MycButton>
     <button v-else type="button" class="myc-share-link" @click="copyLink">{{ label }}</button>
     <span class="myc-sr" aria-live="polite">{{ copied ? t('post.linkCopied') : '' }}</span>
   </span>

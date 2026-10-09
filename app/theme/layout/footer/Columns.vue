@@ -56,20 +56,20 @@ const topics = computed<FooterLink[]>(() =>
   blogEnabled
     ? CATEGORIES.map(slug => ({
         id: slug,
-        label: t(`bd.categories.${slug}`),
+        label: t(`myc.categories.${slug}`),
         to: blogPath({ category: slug, page: 1 }, localizePath('/blog')),
         color: categoryColor(slug),
       }))
     : [],
 )
 const subscriptions = computed<FooterLink[]>(() => [
-  ...(blogEnabled ? [{ id: 'rss', label: t('bd.footer.rss'), to: '/feed.xml', external: true }] : []),
-  ...(fediverseOn.value ? [{ id: 'fediverse', label: t('bd.footer.fediverse', { handle: fediverseUser }), to: `${localizePath('/')}#fediverso` }] : []),
-  ...(newsletterOn.value ? [{ id: 'newsletter', label: t('bd.footer.newsletter'), to: `${localizePath('/')}#newsletter` }] : []),
+  ...(blogEnabled ? [{ id: 'rss', label: t('myc.footer.rss'), to: '/feed.xml', external: true }] : []),
+  ...(fediverseOn.value ? [{ id: 'fediverse', label: t('myc.footer.fediverse', { handle: fediverseUser }), to: `${localizePath('/')}#fediverso` }] : []),
+  ...(newsletterOn.value ? [{ id: 'newsletter', label: t('myc.footer.newsletter'), to: `${localizePath('/')}#newsletter` }] : []),
   ...(supportOn.value && site.value.supportHandle
     ? [{
         id: 'coffee',
-        label: t('bd.footer.coffee'),
+        label: t('myc.footer.coffee'),
         to: `https://www.buymeacoffee.com/${site.value.supportHandle}`,
         external: true,
         mobileOnly: true,
@@ -78,22 +78,22 @@ const subscriptions = computed<FooterLink[]>(() => [
 ])
 const topicGroup = computed<FooterGroup>(() => ({
   id: 'topics',
-  label: t('bd.footer.topics'),
+  label: t('myc.footer.topics'),
   summary: String(topics.value.length).padStart(2, '0'),
   open: true,
   links: topics.value,
 }))
 const navigateGroup = computed<FooterGroup>(() => ({
   id: 'navigate',
-  label: t('bd.footer.navigate'),
+  label: t('myc.footer.navigate'),
   summary: String(sections.value.length).padStart(2, '0'),
   open: isStatic,
   links: sections.value,
 }))
 const subscribeGroup = computed<FooterGroup>(() => ({
   id: 'subscribe',
-  label: t('bd.footer.subscribe'),
-  summary: fediverseOn.value ? t('bd.footer.subscribeSummary') : t('bd.footer.subscribeSummaryRss'),
+  label: t('myc.footer.subscribe'),
+  summary: fediverseOn.value ? t('myc.footer.subscribeSummary') : t('myc.footer.subscribeSummaryRss'),
   open: false,
   links: subscriptions.value,
 }))
@@ -116,11 +116,11 @@ function scrollToTop(): void {
   <footer class="myc-foot" data-layout="columns">
     <div class="myc-foot-main">
       <div class="myc-foot-brand-col">
-        <NuxtLink :to="localizePath('/')" class="myc-foot-brand myc-wide" :aria-label="t('bd.header.home', { site: site.name })">
+        <NuxtLink :to="localizePath('/')" class="myc-foot-brand myc-wide" :aria-label="t('myc.header.home', { site: site.name })">
           <ThemeMark :size="56" context="footer" />
         </NuxtLink>
-        <p class="myc-foot-tagline">{{ t('bd.footer.tagline') }}</p>
-        <ul v-if="socials.length" class="myc-foot-socials" :aria-label="t('bd.footer.social')">
+        <p class="myc-foot-tagline">{{ t('myc.footer.tagline') }}</p>
+        <ul v-if="socials.length" class="myc-foot-socials" :aria-label="t('myc.footer.social')">
           <li v-for="social in socials" :key="social.id">
             <a :href="social.href" class="myc-foot-soc" target="_blank" rel="noopener noreferrer me">
               <span class="myc-foot-soc-abbr" aria-hidden="true">{{ social.abbr }}</span>
@@ -188,7 +188,7 @@ function scrollToTop(): void {
           </div>
         </details>
         <div v-if="isStatic" class="myc-acc-body">
-          <BdLangSwitch />
+          <MycLangSwitch />
         </div>
       </div>
     </div>
@@ -198,8 +198,8 @@ function scrollToTop(): void {
     <div class="myc-meta myc-foot-credits">
       <span class="myc-foot-legal">
         <span>© {{ year }} {{ site.name }}<template v-if="site.author.name"> · {{ site.author.name }}</template></span>
-        <NuxtLink :to="localizePath('/privacy')" class="myc-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
-        <a :href="sourceUrl" class="myc-foot-privacy myc-foot-source" target="_blank" rel="noopener noreferrer">{{ t('bd.footer.source') }}<span aria-hidden="true">↗</span></a>
+        <NuxtLink :to="localizePath('/privacy')" class="myc-foot-privacy">{{ t('myc.footer.privacy') }}</NuxtLink>
+        <a :href="sourceUrl" class="myc-foot-privacy myc-foot-source" target="_blank" rel="noopener noreferrer">{{ t('myc.footer.source') }}<span aria-hidden="true">↗</span></a>
       </span>
       <span v-if="hud.madeIn">{{ hud.madeIn }} <span v-if="hud.coords" class="myc-foot-diamond" aria-hidden="true">◆</span> {{ hud.coords }}</span>
       <span v-if="te('theme.divider.credit')">{{ t('theme.divider.credit') }}</span>

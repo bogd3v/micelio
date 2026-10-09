@@ -38,15 +38,15 @@ onMounted(() => {
       @menu="isMobileMenuOpen = true"
     />
 
-    <BdMenuSheet
+    <MycMenuSheet
       v-if="!isStatic"
       :open="isMobileMenuOpen"
       :active="active"
       @close="isMobileMenuOpen = false"
     />
 
-    <LazyBdSearchIsland v-if="searchOn && isStatic" />
-    <BdSearchPalette v-if="searchOn && !isStatic" :open="isSearchOpen" @close="isSearchOpen = false" />
+    <LazyMycSearchIsland v-if="searchOn && isStatic" />
+    <MycSearchPalette v-if="searchOn && !isStatic" :open="isSearchOpen" @close="isSearchOpen = false" />
 
     <main id="main-content" class="myc-app-main" role="main">
       <slot />
@@ -54,9 +54,9 @@ onMounted(() => {
 
     <RegionFooter />
 
-    <BdPrivacyNotice />
+    <MycPrivacyNotice />
 
-    <BdTabBar
+    <MycTabBar
       :active="active"
       :menu-open="isMobileMenuOpen"
       @search="isSearchOpen = true"

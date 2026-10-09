@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import BdFigureCredit from '~/components/bd/BdFigureCredit.vue'
+import MycFigureCredit from '~/components/myc/MycFigureCredit.vue'
 import StrapiMediaBlock from '~/components/strapi/MediaBlock.vue'
 import StrapiSliderBlock from '~/components/strapi/SliderBlock.vue'
 import StrapiBlocksRenderer from '~/components/strapi/BlocksRenderer.vue'
@@ -18,9 +18,9 @@ const photo: StrapiImageCredit = {
 
 const illustration: StrapiImageCredit = { kind: 'illustration', author: 'Alejandro Ramírez', source: 'BogDev', license: 'own-work' }
 
-describe('BdFigureCredit', () => {
+describe('MycFigureCredit', () => {
   it('links author, source and license', async () => {
-    const wrapper = await mountSuspended(BdFigureCredit, { props: { credit: photo } })
+    const wrapper = await mountSuspended(MycFigureCredit, { props: { credit: photo } })
     expect(wrapper.text()).toBe('Photo Danielfjio · Wikimedia Commons · CC BY-SA 4.0 · cropped')
     expect(wrapper.get('.myc-credit-k').text()).toBe('Photo')
     const links = wrapper.findAll('a')
@@ -34,7 +34,7 @@ describe('BdFigureCredit', () => {
   })
 
   it('shows own work without links', async () => {
-    const wrapper = await mountSuspended(BdFigureCredit, { props: { credit: illustration } })
+    const wrapper = await mountSuspended(MycFigureCredit, { props: { credit: illustration } })
     expect(wrapper.text()).toBe('Illustration Alejandro Ramírez · BogDev · own work')
     expect(wrapper.find('a').exists()).toBe(false)
   })

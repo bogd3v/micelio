@@ -32,8 +32,8 @@ const post = computed<PostListItem | undefined>(() =>
       </h2>
     </div>
     <div :class="['myc-related-grid', { 'myc-related-solo': !post }]">
-      <BdPostCard v-if="post" v-bind="toPostCard(post)" />
-      <BdNewsletterForm v-if="newsletterOn" id="nl-article" class="myc-related-news" />
+      <MycPostCard v-if="post" v-bind="toPostCard(post)" />
+      <MycNewsletterForm v-if="newsletterOn" id="nl-article" class="myc-related-news" />
     </div>
   </section>
 </template>

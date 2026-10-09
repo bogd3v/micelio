@@ -4,8 +4,8 @@ export function useCodeBlockCopy(target: Ref<HTMLElement | null>): void {
   const { t } = useI18n()
 
   function setLabel(button: HTMLButtonElement, copied: boolean): void {
-    button.textContent = copied ? t('bd.code.copied') : t('bd.code.copy')
-    button.setAttribute('aria-label', copied ? t('bd.code.copied') : t('bd.code.copyAria'))
+    button.textContent = copied ? t('myc.code.copied') : t('myc.code.copy')
+    button.setAttribute('aria-label', copied ? t('myc.code.copied') : t('myc.code.copyAria'))
   }
 
   function prepare(): void {

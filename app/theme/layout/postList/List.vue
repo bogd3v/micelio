@@ -34,17 +34,17 @@ function postCategory(post: PostListItem): Category | undefined {
           <h3 class="myc-post-row-title">
             <NuxtLink :to="`${localizePath('/blog')}/${post.slug}`" class="myc-post-row-link">{{ post.title }}</NuxtLink>
           </h3>
-          <p v-if="post.snippet" class="myc-post-row-excerpt"><BdHighlight :text="post.snippet" :query="highlight" /></p>
+          <p v-if="post.snippet" class="myc-post-row-excerpt"><MycHighlight :text="post.snippet" :query="highlight" /></p>
           <p v-else-if="post.description" class="myc-post-row-excerpt">{{ post.description }}</p>
         </div>
         <div class="myc-meta myc-post-row-meta">
-          <BdCategoryTag v-if="postCategory(post)" :category="postCategory(post)!" />
+          <MycCategoryTag v-if="postCategory(post)" :category="postCategory(post)!" />
           <span v-if="postStats(post)">
             <span aria-hidden="true">◆</span>
             {{ postStats(post)!.likes }} {{ t('post.fediverse.likes', postStats(post)!.likes) }}
             · {{ postStats(post)!.boosts }} {{ t('post.fediverse.boosts', postStats(post)!.boosts) }}
           </span>
-          <span v-if="isRead(post.documentId)" class="myc-read-mark"><span aria-hidden="true">✓</span> {{ t('bd.card.read') }}</span>
+          <span v-if="isRead(post.documentId)" class="myc-read-mark"><span aria-hidden="true">✓</span> {{ t('myc.card.read') }}</span>
         </div>
       </li>
     </ol>

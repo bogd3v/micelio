@@ -15,10 +15,10 @@ const { t } = useI18n()
     <div>
       <h3 class="myc-specimen-label">{{ t('specimen.states.loading') }}</h3>
       <div class="myc-specimen-row">
-        <BdButton disabled aria-busy="true">
+        <MycButton disabled aria-busy="true">
           <IconsArrowPath />
           {{ t('specimen.states.loadingLabel') }}
-        </BdButton>
+        </MycButton>
       </div>
     </div>
 
@@ -41,14 +41,14 @@ const { t } = useI18n()
           <h4 class="myc-error-title font-display">{{ t('error.pageNotFound') }}</h4>
           <p class="myc-error-text">{{ t('error.notExist') }}</p>
           <div class="myc-error-actions">
-            <BdButton href="/">
+            <MycButton href="/">
               <IconsHome />
               {{ t('error.goHome') }}
-            </BdButton>
-            <BdButton href="/blog" variant="secondary">
+            </MycButton>
+            <MycButton href="/blog" variant="secondary">
               <IconsDocumentText />
               {{ t('error.browseBlog') }}
-            </BdButton>
+            </MycButton>
           </div>
         </div>
       </div>
