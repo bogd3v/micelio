@@ -29,7 +29,7 @@ npm run preview      # Preview production build locally
 # Type checking and linting
 npm run check        # The fast part of CI before a PR: typecheck, lint and test:coverage (standard, section 15)
 npm run typecheck    # Run Nuxt type checking
-npm run lint         # Run ESLint (flat config, @nuxt/eslint), the primitives and class checks, and the theme schema and reference drift checks
+npm run lint         # Run ESLint (flat config, @nuxt/eslint), the primitives, class and placement checks, and the theme schema and reference drift checks
 npm run theme:schema # Regenerate themes/theme.schema.json from modules/theme/contract.ts (run it after changing the contract)
 npm run theme:reference # Regenerate docs/themes/reference/ from the contract (run it after changing roles, layout variants, hooks or slots)
 npm run theme:new -- <id> # New theme: copies themes/starter/ to themes/<id>/ and renames it ([--name "Name"])
@@ -103,7 +103,7 @@ Branches, commits, signed-off commits (`git commit -s`), PR titles and descripti
 - Use `defineProps<T>()` with generic syntax for component props
 - Use `defineEmits<{ event: [paramType] }>()` for emits
 - Prefer interfaces over types for object shapes
-- Export interfaces from `app/interfaces/` directory
+- Place a type or constant by its reach (standard, section 4): in the file that uses it; next to its function when only that function's callers import it; in the feature folder's `types.ts` or `constants.ts` when several files of `modules/theme/`, `app/islands/` or `server/lib/` share it; in `app/interfaces/<domain>.ts` or `app/constants/<domain>.ts` when several features share it or it crosses a boundary. Shared files hold declarations only, and a domain file past ~200 lines becomes a folder with an `index.ts`. `npm run lint:placement` checks it
 
 ### Vue Component Guidelines
 
