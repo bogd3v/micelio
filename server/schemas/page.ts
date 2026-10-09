@@ -5,7 +5,6 @@ import type { Page, PageSection, PageSeo, PostListSection } from '~/interfaces'
 import { PAGE_SLUG_PATTERN } from '~/constants/pages'
 import { isGlbUrl } from '~/helpers/scene'
 
-export { PAGE_SLUG_PATTERN }
 export const POST_LIST_MIN = 1
 export const POST_LIST_MAX = 12
 const POST_LIST_DEFAULT = 3
