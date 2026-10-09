@@ -58,12 +58,10 @@ path = ["themes/bogota/fonts/jetbrains-mono-latin-var.woff2", "themes/bogota/fon
 SPDX-FileCopyrightText = "The JetBrains Mono Project Authors"
 SPDX-License-Identifier = "OFL-1.1"
 
-# Photo of the Sumapaz páramo by Danielfjio (Wikimedia Commons), cropped and color graded (docs/design/assets/CREDITOS.md)
+# Photo of the Sumapaz páramo by Danielfjio (Wikimedia Commons), cropped and color graded
 [[annotations]]
 path = [
   "themes/bogota/images/hero/sumapaz-*.jpg",
-  "docs/design/assets/sumapaz-foto-*.jpg",
-  "docs/design/assets/articulo-foto-sumapaz.jpg",
 ]
 SPDX-FileCopyrightText = ["Danielfjio", "2026 Alejandro Ramirez Garcia (modifications)"]
 SPDX-License-Identifier = "CC-BY-SA-4.0"
@@ -89,11 +87,6 @@ SPDX-FileCopyrightText = "Tailwind Labs, Inc."
 SPDX-License-Identifier = "MIT"
 
 # The Mastodon logo, a trademark used only to link to Mastodon
-[[annotations]]
-path = "docs/design/assets/mastodon-logo-purple.svg"
-SPDX-FileCopyrightText = "Mastodon gGmbH"
-SPDX-License-Identifier = "LicenseRef-Mastodon-Trademark"
-
 [[annotations]]
 path = "app/components/bd/BdMastodonLogo.vue"
 SPDX-FileCopyrightText = ["2026 Alejandro Ramirez Garcia and the Micelio contributors", "Mastodon gGmbH"]

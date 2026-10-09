@@ -32,7 +32,7 @@ describe('mermaidTitle', () => {
 })
 
 describe('mermaidThemeVariables', () => {
-  it('builds the palette from the design tokens as DESIGN.md section 7 maps them', () => {
+  it('builds the palette from the design tokens as the theme roles map them', () => {
     const variables = mermaidThemeVariables(tokens, true)
     expect(variables).toMatchObject({
       darkMode: true,
