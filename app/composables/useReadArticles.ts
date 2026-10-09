@@ -10,8 +10,8 @@ interface ReadArticles {
 
 export function useReadArticles(): ReadArticles {
   const { isStatic } = useStaticSite()
-  const ids = useState<string[]>('bd-read-articles', () => [])
-  const loaded = useState<boolean>('bd-read-articles-loaded', () => false)
+  const ids = useState<string[]>('myc-read-articles', () => [])
+  const loaded = useState<boolean>('myc-read-articles-loaded', () => false)
 
   const count = computed<number>(() => ids.value.length)
 

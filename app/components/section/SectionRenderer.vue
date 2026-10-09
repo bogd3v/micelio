@@ -57,9 +57,9 @@ const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLand
 </script>
 
 <template>
-  <section v-if="titleLeads" class="bd-section" data-section="title">
-    <div class="bd-section-inner">
-      <h1 class="bd-section-title">{{ pageTitle }}</h1>
+  <section v-if="titleLeads" class="myc-section" data-section="title">
+    <div class="myc-section-inner">
+      <h1 class="myc-section-title">{{ pageTitle }}</h1>
     </div>
   </section>
   <component

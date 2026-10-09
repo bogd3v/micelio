@@ -43,14 +43,14 @@ async function submit(): Promise<void> {
 
 <template>
   <AccountShell>
-    <form class="bd-account-view" novalidate @submit.prevent="submit">
+    <form class="myc-account-view" novalidate @submit.prevent="submit">
       <AccountHeading :eyebrow="t('account.eyebrow.recover')" :title="t('account.recover.title')">
         {{ t('account.recover.lead') }}
       </AccountHeading>
       <AccountNotice v-if="sent" ref="noticeRef">{{ t('account.recover.sent') }}</AccountNotice>
       <AccountNotice v-if="error" ref="errorRef" tone="error">{{ error }}</AccountNotice>
       <AccountField
-        id="bd-rec-mail"
+        id="myc-rec-mail"
         ref="emailRef"
         v-model="email"
         type="email"
@@ -58,11 +58,11 @@ async function submit(): Promise<void> {
         autocomplete="email"
         :error="fieldError"
       />
-      <div class="bd-account-actions">
+      <div class="myc-account-actions">
         <BdButton type="submit" arrow>{{ t('account.recover.submit') }}</BdButton>
       </div>
-      <p class="bd-account-switch">
-        <NuxtLink :to="localizePath('/account/sign-in')" class="bd-inline">{{ t('account.recover.back') }}</NuxtLink>
+      <p class="myc-account-switch">
+        <NuxtLink :to="localizePath('/account/sign-in')" class="myc-inline">{{ t('account.recover.back') }}</NuxtLink>
       </p>
     </form>
   </AccountShell>

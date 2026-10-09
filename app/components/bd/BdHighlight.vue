@@ -12,7 +12,7 @@ const segments = computed<TextSegment[]>(() => highlightSegments(props.text, pro
 
 <template>
   <template v-for="(segment, index) in segments" :key="index">
-    <mark v-if="segment.match" class="bd-mark">{{ segment.text }}</mark>
+    <mark v-if="segment.match" class="myc-mark">{{ segment.text }}</mark>
     <template v-else>{{ segment.text }}</template>
   </template>
 </template>

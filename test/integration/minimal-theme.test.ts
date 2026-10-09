@@ -29,7 +29,7 @@ describe('a build with the minimal fixture theme', () => {
     for (const path of ['/', '/blog', '/privacy']) {
       const html = await (await fetch(path)).text()
       expect(html, path).not.toContain('data-mode=')
-      expect(html, path).toContain('bd-header')
+      expect(html, path).toContain('myc-header')
     }
   })
 
@@ -37,20 +37,20 @@ describe('a build with the minimal fixture theme', () => {
     const html = await (await fetch('/')).text()
     expect(html).not.toContain('bogota-')
     // ThemeMark default
-    expect(html).toMatch(/<a [^>]*class="[^"]*bd-brand"[^>]*><span aria-hidden="true">[^<]+<\/span><\/a>/)
+    expect(html).toMatch(/<a [^>]*class="[^"]*myc-brand"[^>]*><span aria-hidden="true">[^<]+<\/span><\/a>/)
   })
 
   it('shows no place line, which a theme provides through its messages', async () => {
     const html = await (await fetch('/')).text()
-    for (const hook of ['bd-hud"', 'bd-hero-place']) expect(html).not.toContain(hook)
+    for (const hook of ['myc-hud"', 'myc-hero-place']) expect(html).not.toContain(hook)
     for (const place of ['4.61°N', 'Made in Bogot', '2,640 m a.s.l.']) expect(html).not.toContain(place)
   })
 
   it('draws no progress marker and no bird on the coffee cup on an article', async () => {
     const html = await (await fetch('/blog/understanding-vue-composables')).text()
-    expect(html).toContain('class="bd-progress-bar"')
-    expect(html).toContain('bd-coffee-cup')
-    for (const art of ['bd-progress-track', 'bogota-', 'bd-perch']) expect(html).not.toContain(art)
+    expect(html).toContain('class="myc-progress-bar"')
+    expect(html).toContain('myc-coffee-cup')
+    for (const art of ['myc-progress-track', 'bogota-', 'myc-perch']) expect(html).not.toContain(art)
   })
 
   it('uses the core\'s neutral texts where Bogota brings its own', async () => {

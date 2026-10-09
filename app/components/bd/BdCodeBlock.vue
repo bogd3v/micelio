@@ -40,14 +40,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <figure class="bd-code not-prose">
-    <div class="bd-code-head">
-      <span v-if="lang" class="bd-code-lang">{{ lang }}</span>
+  <figure class="myc-code not-prose">
+    <div class="myc-code-head">
+      <span v-if="lang" class="myc-code-lang">{{ lang }}</span>
       <span v-if="filename">{{ filename }}</span>
       <button
         v-if="showCopy && canCopy"
         type="button"
-        class="bd-code-copy"
+        class="myc-code-copy"
         :aria-label="copied ? t('bd.code.copied') : t('bd.code.copyAria')"
         aria-live="polite"
         @click="copy"
@@ -55,6 +55,6 @@ onMounted(() => {
         {{ copied ? t('bd.code.copied') : t('bd.code.copy') }}
       </button>
     </div>
-    <pre tabindex="0"><code v-bind="codeAttrs" :class="lang ? `language-${lang}` : undefined"><template v-for="(line, index) in lines" :key="index"><span v-if="line.prompt" class="bd-prompt">$ </span>{{ line.text }}<template v-if="index < lines.length - 1">{{ '\n' }}</template></template></code></pre>
+    <pre tabindex="0"><code v-bind="codeAttrs" :class="lang ? `language-${lang}` : undefined"><template v-for="(line, index) in lines" :key="index"><span v-if="line.prompt" class="myc-prompt">$ </span>{{ line.text }}<template v-if="index < lines.length - 1">{{ '\n' }}</template></template></code></pre>
   </figure>
 </template>

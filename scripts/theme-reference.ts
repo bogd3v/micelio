@@ -130,7 +130,7 @@ function layout(): string {
   }
   return page(
     'Layout',
-    'Regions of the site and the variants the core implements, chosen under `layout` in `theme.json`. An omitted region uses its default, the first variant. A name outside this list fails validation. Every installed theme styles every variant. In `theme.css`, select a hook together with the variant (`.bd-header[data-layout="centered"] .bd-nav-link`) when a rule is meant for one of them. Hooks that appear in every variant of their region are in [hooks.md](hooks.md).',
+    'Regions of the site and the variants the core implements, chosen under `layout` in `theme.json`. An omitted region uses its default, the first variant. A name outside this list fails validation. Every installed theme styles every variant. In `theme.css`, select a hook together with the variant (`.myc-header[data-layout="centered"] .myc-nav-link`) when a rule is meant for one of them. Hooks that appear in every variant of their region are in [hooks.md](hooks.md).',
     body,
   )
 }
@@ -160,7 +160,7 @@ function hooksPage(): string {
   body.push(`## General classes\n\nThese appear in every layout variant.\n\n${table(['Class', 'Describes', 'States'], classRows(general))}`)
   return page(
     'Hooks',
-    `Public styling hooks of contract v${CONTRACT_VERSION}, from \`app/theme/hooks.json\`. A theme's \`theme.css\` and slot CSS may select only these \`bd-*\` classes and core \`data-*\` attributes; every other one is internal and can change in any release. Adding a hook stays in contract v${CONTRACT_VERSION}; removing or renaming one is a contract change. A state is a class or attribute the hook takes.`,
+    `Public styling hooks of contract v${CONTRACT_VERSION}, from \`app/theme/hooks.json\`. A theme's \`theme.css\` and slot CSS may select only these \`myc-*\` classes and core \`data-*\` attributes; every other one is internal and can change in any release. Adding a hook stays in contract v${CONTRACT_VERSION}; removing or renaming one is a contract change. A state is a class or attribute the hook takes.`,
     body,
   )
 }
@@ -187,7 +187,7 @@ function index(): string {
     [[
       '- [Roles](roles.md): every role of `theme.json`, its purpose, default and contrast rules, and the type scale.',
       '- [Layout](layout.md): regions and their variants.',
-      '- [Hooks](hooks.md): the `bd-*` classes and `data-*` attributes a theme may style.',
+      '- [Hooks](hooks.md): the `myc-*` classes and `data-*` attributes a theme may style.',
       '- [Slots](slots.md): the components a theme may replace, with their props and defaults.',
     ].join('\n')],
   )

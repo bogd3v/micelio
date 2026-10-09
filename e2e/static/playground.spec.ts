@@ -13,7 +13,7 @@ test('runs the code with no Vue on the page, and nothing of the runtime loads be
   expect(loaded).toEqual([])
   await runButton(page, QUERY).click()
   await expect(resultOf(page, QUERY)).toHaveAttribute('data-state', 'done', { timeout: 45_000 })
-  const expected = await page.locator('micelio-playground').nth(QUERY).locator('.bd-playground-output').textContent()
+  const expected = await page.locator('micelio-playground').nth(QUERY).locator('.myc-playground-output').textContent()
   expect(await resultOf(page, QUERY).textContent()).toBe(expected)
   expect(loaded.some(path => path.startsWith('/_islands/playground-'))).toBe(true)
   expect(loaded.some(path => path.endsWith('.wasm'))).toBe(true)

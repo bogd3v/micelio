@@ -33,15 +33,15 @@ describe('static fallbacks', () => {
   describe('tab bar', () => {
     it('keeps buttons in dynamic', async () => {
       const wrapper = await mountSuspended(BdTabBar)
-      expect(wrapper.findAll('button.bd-tab')).toHaveLength(2)
+      expect(wrapper.findAll('button.myc-tab')).toHaveLength(2)
     })
 
     it('links search to the blog and the menu to the footer navigation in static', async () => {
       setMode('static')
       const wrapper = await mountSuspended(BdTabBar)
       expect(wrapper.find('button').exists()).toBe(false)
-      const links = wrapper.findAll('a.bd-tab')
-      expect(links.map(link => link.attributes('href'))).toEqual(['/', '/blog', '/blog', '#bd-site-nav'])
+      const links = wrapper.findAll('a.myc-tab')
+      expect(links.map(link => link.attributes('href'))).toEqual(['/', '/blog', '/blog', '#myc-site-nav'])
       expect(links.map(link => link.text())).toEqual(['Home', 'Blog', 'Search', 'Menu'])
       expect(links.some(link => link.attributes('aria-haspopup'))).toBe(false)
     })
@@ -50,37 +50,37 @@ describe('static fallbacks', () => {
   describe('header', () => {
     it('keeps the search button, shortcut and theme switch in dynamic', async () => {
       const wrapper = await mountSuspended(Header, { props: { active: 'home' } })
-      expect(wrapper.find('button.bd-chip[aria-keyshortcuts]').exists()).toBe(true)
-      expect(wrapper.findAll('button.bd-iconbtn')).toHaveLength(2)
+      expect(wrapper.find('button.myc-chip[aria-keyshortcuts]').exists()).toBe(true)
+      expect(wrapper.findAll('button.myc-iconbtn')).toHaveLength(2)
       expect(wrapper.find('[aria-label="Color theme"]').exists()).toBe(true)
     })
 
     it('has search and menu links, no theme switch and no dead buttons in static', async () => {
       setMode('static')
       const wrapper = await mountSuspended(Header, { props: { active: 'home' } })
-      const search = wrapper.get('a.bd-chip[href="/blog"]')
+      const search = wrapper.get('a.myc-chip[href="/blog"]')
       expect(search.text()).toBe('Search')
       expect(search.attributes('aria-keyshortcuts')).toBeUndefined()
-      expect(wrapper.get('a.bd-iconbtn[aria-label="Search"]').attributes('href')).toBe('/blog')
-      expect(wrapper.get('a.bd-iconbtn[aria-label="Menu"]').attributes('href')).toBe('#bd-site-nav')
+      expect(wrapper.get('a.myc-iconbtn[aria-label="Search"]').attributes('href')).toBe('/blog')
+      expect(wrapper.get('a.myc-iconbtn[aria-label="Menu"]').attributes('href')).toBe('#myc-site-nav')
       expect(wrapper.find('[aria-label="Color theme"]').exists()).toBe(false)
-      expect(wrapper.findAll('button.bd-seg')).toHaveLength(0)
+      expect(wrapper.findAll('button.myc-seg')).toHaveLength(0)
     })
   })
 
   describe('footer', () => {
     it('has the navigation anchor, open sections, language links and a top link in static only', async () => {
       const dynamic = await mountSuspended(Footer)
-      expect(dynamic.find('#bd-site-nav').exists()).toBe(false)
-      expect(dynamic.find('button.bd-foot-top').exists()).toBe(true)
+      expect(dynamic.find('#myc-site-nav').exists()).toBe(false)
+      expect(dynamic.find('button.myc-foot-top').exists()).toBe(true)
 
       setMode('static')
       const wrapper = await mountSuspended(Footer)
-      const nav = wrapper.get('#bd-site-nav')
+      const nav = wrapper.get('#myc-site-nav')
       expect(nav.findAll('details').map(details => details.attributes('open') !== undefined)).toEqual([true, true, false])
-      expect(nav.findAll('a.bd-seg').map(link => link.attributes('hreflang'))).toEqual(['es', 'en'])
+      expect(nav.findAll('a.myc-seg').map(link => link.attributes('hreflang'))).toEqual(['es', 'en'])
       expect(wrapper.find('button').exists()).toBe(false)
-      expect(wrapper.get('a.bd-foot-top').attributes('href')).toBe('#main-content')
+      expect(wrapper.get('a.myc-foot-top').attributes('href')).toBe('#main-content')
     })
   })
 
@@ -128,7 +128,7 @@ describe('static fallbacks', () => {
     it('keeps the search input and the removable chips as buttons in dynamic', async () => {
       const wrapper = await mountSuspended(BlogFilters, { props })
       expect(wrapper.find('input[type="search"]').exists()).toBe(true)
-      expect(wrapper.find('button.bd-blog-active-chip').exists()).toBe(true)
+      expect(wrapper.find('button.myc-blog-active-chip').exists()).toBe(true)
     })
 
     it('has no search input and links the active chip back to the blog in static', async () => {
@@ -136,7 +136,7 @@ describe('static fallbacks', () => {
       const wrapper = await mountSuspended(BlogFilters, { props })
       expect(wrapper.find('input').exists()).toBe(false)
       expect(wrapper.find('button').exists()).toBe(false)
-      const chip = wrapper.get('a.bd-blog-active-chip')
+      const chip = wrapper.get('a.myc-blog-active-chip')
       expect(chip.attributes('href')).toBe('/blog')
       expect(chip.attributes('aria-label')).toBe('Remove filter Software')
     })
@@ -154,24 +154,24 @@ describe('static fallbacks', () => {
       setMode('static')
       const wrapper = await mountSuspended(HeaderCentered, { props: { active: 'home' } })
       expect(wrapper.find('button').exists()).toBe(false)
-      expect(wrapper.get('a.bd-iconbtn[aria-label="Menu"]').attributes('href')).toBe('#bd-site-nav')
-      expect(wrapper.get('a.bd-chip[href="/blog"]').text()).toBe('Search')
+      expect(wrapper.get('a.myc-iconbtn[aria-label="Menu"]').attributes('href')).toBe('#myc-site-nav')
+      expect(wrapper.get('a.myc-chip[href="/blog"]').text()).toBe('Search')
     })
 
     it('puts the anchor and the language links in the minimal footer in static only', async () => {
-      expect((await mountSuspended(FooterMinimal)).find('.bd-lang').exists()).toBe(false)
+      expect((await mountSuspended(FooterMinimal)).find('.myc-lang').exists()).toBe(false)
       setMode('static')
       const wrapper = await mountSuspended(FooterMinimal)
-      expect(wrapper.find('nav#bd-site-nav').exists()).toBe(true)
-      expect(wrapper.findAll('.bd-lang a').map(link => link.attributes('data-bd-lang'))).toEqual(['es', 'en'])
+      expect(wrapper.find('nav#myc-site-nav').exists()).toBe(true)
+      expect(wrapper.findAll('.myc-lang a').map(link => link.attributes('data-myc-lang'))).toEqual(['es', 'en'])
     })
 
     it('links the home topic chips to the blog and its categories in static', async () => {
       setMode('static')
       const wrapper = await mountSuspended(HomeLatest, { props: { total: 1, counts: {} } })
       await flushPromises()
-      expect(wrapper.find('.bd-latest-filters button').exists()).toBe(false)
-      const hrefs = wrapper.findAll('.bd-latest-filters a.bd-chip').map(chip => chip.attributes('href'))
+      expect(wrapper.find('.myc-latest-filters button').exists()).toBe(false)
+      const hrefs = wrapper.findAll('.myc-latest-filters a.myc-chip').map(chip => chip.attributes('href'))
       expect(hrefs[0]).toBe('/blog')
       expect(hrefs[1]).toBe('/blog/category/privacidad')
     })
@@ -180,10 +180,10 @@ describe('static fallbacks', () => {
       setMode('static')
       const wrapper = await mountSuspended(BlogPage, { route: '/blog/category/ia' })
       await flushPromises()
-      expect(wrapper.find('.bd-blog-controls').exists()).toBe(false)
+      expect(wrapper.find('.myc-blog-controls').exists()).toBe(false)
       expect(wrapper.find('input[type="search"]').exists()).toBe(false)
-      expect(wrapper.find('.bd-blog-empty button').exists()).toBe(false)
-      expect(wrapper.get('.bd-blog-empty a.bd-chip').attributes('href')).toBe('/blog')
+      expect(wrapper.find('.myc-blog-empty button').exists()).toBe(false)
+      expect(wrapper.get('.myc-blog-empty a.myc-chip').attributes('href')).toBe('/blog')
     })
 
     it('sends the search link of the open-source guide to the blog in static', async () => {
@@ -192,9 +192,9 @@ describe('static fallbacks', () => {
         __component: 'about.open-source',
         guide: [{ id: 1, text: 'Search', html: '<a href="#search">Search</a>' }],
       } as unknown as StrapiOpenSource
-      expect((await mountSuspended(OpenSourceBlock, { props: { block } })).get('.bd-guide-list a').attributes('href')).toBe('#search')
+      expect((await mountSuspended(OpenSourceBlock, { props: { block } })).get('.myc-guide-list a').attributes('href')).toBe('#search')
       setMode('static')
-      expect((await mountSuspended(OpenSourceBlock, { props: { block } })).get('.bd-guide-list a').attributes('href')).toBe('/blog')
+      expect((await mountSuspended(OpenSourceBlock, { props: { block } })).get('.myc-guide-list a').attributes('href')).toBe('/blog')
     })
 
     it('drops the slider controls in static', async () => {

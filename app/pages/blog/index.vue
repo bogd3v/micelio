@@ -173,27 +173,27 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="bd-blog">
-    <header class="bd-blog-head">
-      <p class="bd-eyebrow bd-home-eyebrow">{{ eyebrow }}</p>
-      <h1 class="bd-blog-title bd-wide">{{ t("nav.blog") }}</h1>
-      <p class="bd-blog-lead">{{ t("blog.exploreArticles") }}</p>
-      <div v-if="!isStatic" class="bd-blog-controls">
-        <div v-if="viewSwitch" class="bd-seg-group bd-blog-views" role="group" :aria-label="t('blog.view.label')">
+  <div class="myc-blog">
+    <header class="myc-blog-head">
+      <p class="myc-eyebrow myc-home-eyebrow">{{ eyebrow }}</p>
+      <h1 class="myc-blog-title myc-wide">{{ t("nav.blog") }}</h1>
+      <p class="myc-blog-lead">{{ t("blog.exploreArticles") }}</p>
+      <div v-if="!isStatic" class="myc-blog-controls">
+        <div v-if="viewSwitch" class="myc-seg-group myc-blog-views" role="group" :aria-label="t('blog.view.label')">
           <button
             v-for="option in VIEWS"
             :key="option"
             type="button"
-            class="bd-seg"
+            class="myc-seg"
             :aria-pressed="view === option ? 'true' : 'false'"
             @click="selectView(option)"
           >
             {{ t(`blog.view.${option}`) }}
           </button>
         </div>
-        <div class="bd-blog-sort">
-          <label for="bd-blog-sort" class="bd-eyebrow bd-home-eyebrow">{{ t("blog.sort.label") }}</label>
-          <select id="bd-blog-sort" class="bd-select" :value="sort" @change="selectSort">
+        <div class="myc-blog-sort">
+          <label for="myc-blog-sort" class="myc-eyebrow myc-home-eyebrow">{{ t("blog.sort.label") }}</label>
+          <select id="myc-blog-sort" class="myc-select" :value="sort" @change="selectSort">
             <option v-for="option in sortOptions" :key="option" :value="option">{{ t(`blog.sort.${option}`) }}</option>
           </select>
         </div>
@@ -212,20 +212,20 @@ useSeoMeta({
       @clear="clearFilters"
     />
 
-    <div class="bd-blog-body">
-      <div id="posts" class="bd-blog-main" :aria-busy="status === 'pending'">
+    <div class="myc-blog-body">
+      <div id="posts" class="myc-blog-main" :aria-busy="status === 'pending'">
         <RegionPostList v-if="posts.length" :posts="posts" :view="view" :federated="federated" :highlight="filters.search" />
 
-        <ThemeEmptyState v-else class="bd-latest-empty bd-blog-empty">
-          <h2 class="bd-latest-empty-title">{{ t("blog.noPosts") }}</h2>
-          <p class="bd-meta bd-home-eyebrow bd-latest-empty-note">
+        <ThemeEmptyState v-else class="myc-latest-empty myc-blog-empty">
+          <h2 class="myc-latest-empty-title">{{ t("blog.noPosts") }}</h2>
+          <p class="myc-meta myc-home-eyebrow myc-latest-empty-note">
             {{ filtered ? t("blog.tryAdjustingFilters") : t("blog.noArticlesYet") }}
           </p>
           <template v-if="filtered">
-            <NuxtLink v-if="isStatic" :to="blogBase" class="bd-chip">
+            <NuxtLink v-if="isStatic" :to="blogBase" class="myc-chip">
               {{ t("blog.clearFilters") }} <span aria-hidden="true">→</span>
             </NuxtLink>
-            <button v-else type="button" class="bd-chip" @click="clearFilters">
+            <button v-else type="button" class="myc-chip" @click="clearFilters">
               {{ t("blog.clearFilters") }} <span aria-hidden="true">→</span>
             </button>
           </template>

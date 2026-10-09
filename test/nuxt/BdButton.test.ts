@@ -7,8 +7,8 @@ describe('BdButton', () => {
     const wrapper = await mountSuspended(BdButton, { slots: { default: () => 'Leer' } })
     expect(wrapper.element.tagName).toBe('BUTTON')
     expect(wrapper.attributes('type')).toBe('button')
-    expect(wrapper.classes()).toEqual(['bd-btn', 'bd-btn-primary'])
-    expect(wrapper.find('.bd-btn-arrow').exists()).toBe(false)
+    expect(wrapper.classes()).toEqual(['myc-btn', 'myc-btn-primary'])
+    expect(wrapper.find('.myc-btn-arrow').exists()).toBe(false)
   })
 
   it('applies variant, size, type and arrow', async () => {
@@ -17,9 +17,9 @@ describe('BdButton', () => {
       slots: { default: () => 'Suscribirme' },
     })
     expect(wrapper.attributes('type')).toBe('submit')
-    expect(wrapper.classes()).toContain('bd-btn-accent')
-    expect(wrapper.classes()).toContain('bd-btn-sm')
-    expect(wrapper.get('.bd-btn-arrow').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.classes()).toContain('myc-btn-accent')
+    expect(wrapper.classes()).toContain('myc-btn-sm')
+    expect(wrapper.get('.myc-btn-arrow').attributes('aria-hidden')).toBe('true')
   })
 
   it('renders a link when href is given', async () => {
@@ -29,7 +29,7 @@ describe('BdButton', () => {
     })
     expect(wrapper.element.tagName).toBe('A')
     expect(wrapper.attributes('href')).toBe('/blog')
-    expect(wrapper.classes()).toContain('bd-btn-secondary')
+    expect(wrapper.classes()).toContain('myc-btn-secondary')
   })
 
   it('emits native clicks and respects disabled', async () => {

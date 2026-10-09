@@ -23,28 +23,28 @@ const note = computed<string>(() => {
 </script>
 
 <template>
-  <section v-if="entries.length" id="references" class="bd-refs" aria-labelledby="references-title">
-    <div class="bd-refs-head">
-      <h2 id="references-title" class="bd-refs-title">{{ t('post.references.title') }}</h2>
-      <span class="bd-meta bd-refs-count">{{ t('post.references.count', { n: entries.length }, entries.length) }}</span>
+  <section v-if="entries.length" id="references" class="myc-refs" aria-labelledby="references-title">
+    <div class="myc-refs-head">
+      <h2 id="references-title" class="myc-refs-title">{{ t('post.references.title') }}</h2>
+      <span class="myc-meta myc-refs-count">{{ t('post.references.count', { n: entries.length }, entries.length) }}</span>
     </div>
-    <ol class="bd-refs-list">
-      <li v-for="item in items" :id="`ref-${item.number}`" :key="item.reference.key" class="bd-ref">
-        <span class="bd-ref-n" aria-hidden="true">[{{ item.number }}]</span>
-        <div class="bd-ref-body">
-          <span v-if="item.venue" class="bd-eyebrow bd-ref-venue">{{ item.venue }}</span>
-          <p class="bd-ref-text">
+    <ol class="myc-refs-list">
+      <li v-for="item in items" :id="`ref-${item.number}`" :key="item.reference.key" class="myc-ref">
+        <span class="myc-ref-n" aria-hidden="true">[{{ item.number }}]</span>
+        <div class="myc-ref-body">
+          <span v-if="item.venue" class="myc-eyebrow myc-ref-venue">{{ item.venue }}</span>
+          <p class="myc-ref-text">
             <template v-for="(segment, index) in item.segments" :key="index">
               <a v-if="segment.kind === 'title' && segment.href" :href="segment.href" target="_blank" rel="noopener noreferrer">{{ segment.text }}</a>
               <em v-else-if="segment.kind === 'container'">{{ segment.text }}</em>
               <template v-else>{{ segment.text }}</template>
             </template>
           </p>
-          <div class="bd-ref-meta">
-            <span v-if="item.identifier" class="bd-ref-id">{{ item.identifier.text }}</span>
+          <div class="myc-ref-meta">
+            <span v-if="item.identifier" class="myc-ref-id">{{ item.identifier.text }}</span>
             <a
               v-if="item.cited"
-              class="bd-ref-back"
+              class="myc-ref-back"
               :href="`#cite-${item.number}`"
               :aria-label="t('post.references.backLabel', { n: item.number })"
             >↩ {{ t('post.references.back') }}</a>
@@ -52,6 +52,6 @@ const note = computed<string>(() => {
         </div>
       </li>
     </ol>
-    <p class="bd-meta bd-refs-note">{{ note }}</p>
+    <p class="myc-meta myc-refs-note">{{ note }}</p>
   </section>
 </template>

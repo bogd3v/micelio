@@ -15,7 +15,7 @@ for (const entry of MOTION_PAGES) {
 
 test('the theme switch changes the mode without animations', async ({ page }) => {
   await open(page, MOTION_PAGES[0]!)
-  const other = page.locator('.bd-seg[data-mode][aria-pressed="false"]:visible').first()
+  const other = page.locator('.myc-seg[data-mode][aria-pressed="false"]:visible').first()
   test.skip(!(await other.count()), 'the theme has a single mode')
   const before = await page.locator('html').getAttribute('data-theme')
   await other.click()

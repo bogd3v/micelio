@@ -1,9 +1,9 @@
-html.bd-vt-theme::view-transition-old(root) {
+html.myc-vt-theme::view-transition-old(root) {
     animation: none;
 }
 
-html.bd-vt-theme::view-transition-new(root) {
-    animation: bd-wipe 720ms var(--ease-standard);
+html.myc-vt-theme::view-transition-new(root) {
+    animation: myc-wipe 720ms var(--ease-standard);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -31,11 +31,11 @@ html.bd-vt-theme::view-transition-new(root) {
     }
 
     /* --myc-vt-* are set inline on the first occurrence of a post per page; the theme wipe keeps the root snapshot whole */
-    html:not(.bd-vt-theme) .bd-post-media {
+    html:not(.myc-vt-theme) .myc-post-media {
         view-transition-name: var(--myc-vt-media);
     }
 
-    html:not(.bd-vt-theme) .bd-post-title {
+    html:not(.myc-vt-theme) .myc-post-title {
         view-transition-name: var(--myc-vt-title);
     }
 

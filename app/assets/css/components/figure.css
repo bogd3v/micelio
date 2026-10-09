@@ -1,17 +1,17 @@
-.bd-fig {
+.myc-fig {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
     margin: 40px 0 48px;
 }
 
-.bd-fig-media {
+.myc-fig-media {
     overflow: hidden;
     background: var(--surface-sunken);
     border: 1px solid var(--line);
 }
 
-.bd-prose .bd-fig-media img {
+.myc-prose .myc-fig-media img {
     display: block;
     width: 100%;
     height: auto;
@@ -19,7 +19,7 @@
     border: 0;
 }
 
-.bd-fig figcaption {
+.myc-fig figcaption {
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -27,14 +27,14 @@
     border-left: 2px solid var(--line-strong);
 }
 
-.bd-fig-cap {
+.myc-fig-cap {
     font-size: 14px;
     line-height: 22px;
     color: var(--ink-muted);
     text-wrap: pretty;
 }
 
-.bd-fig-n {
+.myc-fig-n {
     margin-right: 6px;
     font-family: var(--font-mono);
     font-size: 12px;
@@ -43,7 +43,7 @@
     color: var(--ink);
 }
 
-.bd-credit {
+.myc-credit {
     font-family: var(--font-mono);
     font-size: 12px;
     line-height: 20px;
@@ -51,15 +51,15 @@
     color: var(--ink-muted);
 }
 
-.bd-credit-k {
+.myc-credit-k {
     margin-right: 4px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ink);
 }
 
-.bd-credit a,
-.bd-prose .bd-credit a {
+.myc-credit a,
+.myc-prose .myc-credit a {
     white-space: nowrap;
     color: var(--ink-muted);
     text-decoration: underline;
@@ -67,8 +67,8 @@
     text-underline-offset: 3px;
 }
 
-.bd-credit a:hover,
-.bd-prose .bd-credit a:hover {
+.myc-credit a:hover,
+.myc-prose .myc-credit a:hover {
     color: var(--ink);
     text-decoration-color: var(--link);
 }

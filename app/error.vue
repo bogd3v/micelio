@@ -28,26 +28,26 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="bd-error-page">
-    <div class="bd-error-body">
-      <div class="bd-error-code">
-        <span class="bd-error-code-text font-display">
+  <div class="myc-error-page">
+    <div class="myc-error-body">
+      <div class="myc-error-code">
+        <span class="myc-error-code-text font-display">
           {{ error.statusCode || 404 }}
         </span>
       </div>
 
-      <h1 class="bd-error-title font-display">
+      <h1 class="myc-error-title font-display">
         {{ error.statusCode === 404 ? t('error.pageNotFound') : t('error.somethingWentWrong') }}
       </h1>
 
-      <p class="bd-error-text">
+      <p class="myc-error-text">
         {{ error.statusCode === 404
           ? t('error.notExist')
           : t('error.unexpected')
         }}
       </p>
 
-      <div class="bd-error-actions">
+      <div class="myc-error-actions">
         <BdButton @click="handleError">
           <IconsHome />
           {{ t('error.goHome') }}
@@ -58,7 +58,7 @@ useSeoMeta({
         </BdButton>
       </div>
 
-      <div class="bd-error-help">
+      <div class="myc-error-help">
         <p>
           {{ t('error.contactSupport') }}
         </p>

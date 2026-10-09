@@ -29,5 +29,5 @@ export function parseCalloutMarker(text: string): CalloutMarker | null {
 
 export function renderCalloutHtml(tone: CalloutTone, heading: string, bodyHtml: string): string {
   const role = tone === 'danger' ? 'alert' : 'note'
-  return `<aside class="bd-callout bd-callout-${tone} not-prose" role="${role}"><span class="bd-callout-label"><span aria-hidden="true">${CALLOUT_GLYPHS[tone]} </span>${escapeHtml(heading)}</span><div class="bd-callout-body">${bodyHtml}</div></aside>\n`
+  return `<aside class="myc-callout myc-callout-${tone} not-prose" role="${role}"><span class="myc-callout-label"><span aria-hidden="true">${CALLOUT_GLYPHS[tone]} </span>${escapeHtml(heading)}</span><div class="myc-callout-body">${bodyHtml}</div></aside>\n`
 }

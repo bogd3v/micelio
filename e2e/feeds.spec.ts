@@ -34,9 +34,9 @@ test('serves well-formed feeds per category and language', async ({ page }) => {
 
 test('links the category feeds from the blog and the filtered page head', async ({ page }) => {
   await page.goto('/es/blog/category/linux', { waitUntil: 'networkidle' })
-  const feeds = page.locator('.bd-blog-feeds')
+  const feeds = page.locator('.myc-blog-feeds')
   await expect(feeds.getByRole('link', { name: 'Feed RSS de Linux' })).toHaveAttribute('href', '/es/feed/linux.xml')
-  await expect(page.locator('.bd-blog-aside').getByRole('link', { name: /RSS · feed completo/ })).toHaveAttribute('href', '/es/feed.xml')
+  await expect(page.locator('.myc-blog-aside').getByRole('link', { name: /RSS · feed completo/ })).toHaveAttribute('href', '/es/feed.xml')
   const alternate = page.locator('head link[rel="alternate"][type="application/rss+xml"][href$="/es/feed/linux.xml"]')
   await expect(alternate).toHaveCount(1)
   await expect(alternate).toHaveAttribute('title', 'BogDev RSS · Linux y código abierto')

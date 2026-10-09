@@ -1,4 +1,4 @@
-.bd-notice {
+.myc-notice {
     display: flex;
     gap: 10px;
     align-items: flex-start;
@@ -8,37 +8,37 @@
     border: 1px solid var(--line);
 }
 
-.bd-notice:focus {
+.myc-notice:focus {
     outline: none;
 }
 
-.bd-notice:focus-visible {
+.myc-notice:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
-.bd-notice-info {
+.myc-notice-info {
     background: var(--info-soft);
     border-color: var(--info);
 }
 
-.bd-notice-info .bd-notice-mark {
+.myc-notice-info .myc-notice-mark {
     color: var(--info);
 }
 
-.bd-notice-error {
+.myc-notice-error {
     background: var(--danger-soft);
     border-color: var(--danger);
 }
 
-.bd-notice-error .bd-notice-mark {
+.myc-notice-error .myc-notice-mark {
     color: var(--danger);
 }
 
-.bd-notice a {
+.myc-notice a {
     color: var(--link);
 }
 
-.bd-notice a:hover {
+.myc-notice a:hover {
     color: var(--ink);
 }

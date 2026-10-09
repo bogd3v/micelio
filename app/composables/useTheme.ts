@@ -17,7 +17,7 @@ export interface UseTheme {
 
 export function useTheme(): UseTheme {
   const { t, te } = useNuxtApp().$i18n
-  const state = useState<ThemeMode>('bd-theme', () => modes[0]?.id ?? '')
+  const state = useState<ThemeMode>('myc-theme', () => modes[0]?.id ?? '')
 
   const theme = computed<ThemeMode>(() => state.value)
   const nextTheme = computed<ThemeMode>(() => nextMode(modes, state.value))
@@ -47,7 +47,7 @@ export function useTheme(): UseTheme {
       root.style.setProperty('--vt-y', `${rect.top + rect.height / 2}px`)
     }
 
-    root.classList.add('bd-vt-theme')
+    root.classList.add('myc-vt-theme')
     const transition = document.startViewTransition(() => sync(next))
     void clearWhenFinished(transition, root)
   }
@@ -58,7 +58,7 @@ export function useTheme(): UseTheme {
     } catch {
       // The update failed: still remove the class
     } finally {
-      root.classList.remove('bd-vt-theme')
+      root.classList.remove('myc-vt-theme')
     }
   }
 

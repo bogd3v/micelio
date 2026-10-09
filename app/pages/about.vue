@@ -48,8 +48,8 @@ useHead({
 </script>
 
 <template>
-  <div class="bd-about">
+  <div class="myc-about">
     <StrapiBlocksRenderer v-if="about?.blocks?.length" :blocks="about.blocks" />
-    <p v-else class="bd-meta bd-home-eyebrow bd-about-empty">{{ t("about.contentNotAvailable") }}</p>
+    <p v-else class="myc-meta myc-home-eyebrow myc-about-empty">{{ t("about.contentNotAvailable") }}</p>
   </div>
 </template>

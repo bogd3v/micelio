@@ -20,24 +20,24 @@ function isFediverseHandle(value: string): boolean {
 </script>
 
 <template>
-  <section class="bd-profile">
-    <div class="bd-profile-copy">
-      <p v-if="block.eyebrow" class="bd-eyebrow bd-home-eyebrow">{{ block.eyebrow }}</p>
-      <h1 class="bd-profile-title bd-wide">{{ block.title }}</h1>
-      <p v-if="block.lead" class="bd-profile-lead">{{ block.lead }}</p>
+  <section class="myc-profile">
+    <div class="myc-profile-copy">
+      <p v-if="block.eyebrow" class="myc-eyebrow myc-home-eyebrow">{{ block.eyebrow }}</p>
+      <h1 class="myc-profile-title myc-wide">{{ block.title }}</h1>
+      <p v-if="block.lead" class="myc-profile-lead">{{ block.lead }}</p>
     </div>
 
-    <figure class="bd-plate-figure">
-      <div class="bd-plate">
-        <span class="bd-corner bd-corner-tl" aria-hidden="true" />
-        <span class="bd-corner bd-corner-br" aria-hidden="true" />
-        <span v-if="block.plateLabel" class="bd-meta bd-plate-label">{{ block.plateLabel }}</span>
-        <span v-if="block.plateCoordinates" class="bd-meta bd-plate-coords">{{ block.plateCoordinates }}</span>
+    <figure class="myc-plate-figure">
+      <div class="myc-plate">
+        <span class="myc-corner myc-corner-tl" aria-hidden="true" />
+        <span class="myc-corner myc-corner-br" aria-hidden="true" />
+        <span v-if="block.plateLabel" class="myc-meta myc-plate-label">{{ block.plateLabel }}</span>
+        <span v-if="block.plateCoordinates" class="myc-meta myc-plate-coords">{{ block.plateCoordinates }}</span>
         <NuxtImg
           v-if="photoUrl"
           :src="photoUrl"
           :alt="block.photo?.alternativeText || block.title"
-          class="bd-plate-photo"
+          class="myc-plate-photo"
           width="480"
           height="440"
           format="webp"
@@ -48,7 +48,7 @@ function isFediverseHandle(value: string): boolean {
           v-else-if="images.profile"
           :src="images.profile"
           :alt="themeMessage('profile.alt')"
-          class="bd-plate-mascot"
+          class="myc-plate-mascot"
           width="586"
           height="433"
           loading="eager"
@@ -56,20 +56,20 @@ function isFediverseHandle(value: string): boolean {
           decoding="async"
         >
       </div>
-      <figcaption v-if="block.caption" class="bd-meta bd-plate-caption">{{ block.caption }}</figcaption>
+      <figcaption v-if="block.caption" class="myc-meta myc-plate-caption">{{ block.caption }}</figcaption>
     </figure>
 
-    <dl v-if="block.facts?.length" class="bd-facts bd-profile-facts">
+    <dl v-if="block.facts?.length" class="myc-facts myc-profile-facts">
       <template v-for="fact in block.facts" :key="fact.id">
         <dt>{{ fact.label }}</dt>
         <dd :class="{ 'font-mono': fact.mono }">
-          <NuxtLink v-if="isFediverseHandle(fact.value)" :to="fediverseLink" class="bd-facts-link">{{ fact.value }}</NuxtLink>
+          <NuxtLink v-if="isFediverseHandle(fact.value)" :to="fediverseLink" class="myc-facts-link">{{ fact.value }}</NuxtLink>
           <template v-else>{{ fact.value }}</template>
         </dd>
       </template>
     </dl>
 
-    <div v-if="block.links?.length" class="bd-profile-actions">
+    <div v-if="block.links?.length" class="myc-profile-actions">
       <StrapiLinkButton v-for="link in block.links" :key="link.id" :link="link" />
     </div>
   </section>

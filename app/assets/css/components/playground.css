@@ -2,22 +2,22 @@ micelio-playground {
     display: block;
 }
 
-.bd-playground {
+.myc-playground {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
     margin: 40px 0 48px;
 }
 
-.bd-playground .bd-code {
+.myc-playground .myc-code {
     margin: 0;
 }
 
-.bd-playground-expected {
+.myc-playground-expected {
     margin: 0;
 }
 
-.bd-playground-label {
+.myc-playground-label {
     display: block;
     margin: 0 0 var(--space-2);
     font-family: var(--font-mono);
@@ -27,7 +27,7 @@ micelio-playground {
     color: var(--ink-muted);
 }
 
-.bd-playground-output {
+.myc-playground-output {
     margin: 0;
     padding: var(--space-4);
     overflow-x: auto;
@@ -40,40 +40,40 @@ micelio-playground {
     border-left: 2px solid var(--accent);
 }
 
-.bd-playground-output:focus-visible {
+.myc-playground-output:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
 /* `hidden` wins over the button's display until the island reveals it */
-.bd-playground-actions [hidden] {
+.myc-playground-actions [hidden] {
     display: none;
 }
 
-.bd-playground-actions {
+.myc-playground-actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
 }
 
 /* No island yet: the actions have nothing to show */
-.bd-playground-actions:not(:has(> :not([hidden]))) {
+.myc-playground-actions:not(:has(> :not([hidden]))) {
     display: none;
 }
 
 /* The button stays focusable while a run is in progress; it only stops answering */
-.bd-playground-actions [aria-disabled="true"] {
+.myc-playground-actions [aria-disabled="true"] {
     opacity: 0.6;
     cursor: progress;
 }
 
 /* Empty, the live region stays in the accessibility tree but draws nothing */
-.bd-playground-result:empty {
+.myc-playground-result:empty {
     padding: 0;
     border: 0;
 }
 
-.bd-playground-result {
+.myc-playground-result {
     display: block;
     padding: var(--space-4);
     overflow-x: auto;
@@ -86,12 +86,12 @@ micelio-playground {
     border: 1px solid var(--line-strong);
 }
 
-.bd-playground-result[data-state="error"] {
+.myc-playground-result[data-state="error"] {
     border-color: var(--danger);
 }
 
 /* The loader marks the element when the island could not be imported; the next press tries again */
-.bd-playground-notice {
+.myc-playground-notice {
     display: none;
     margin: 0;
     font-size: 14px;
@@ -99,11 +99,11 @@ micelio-playground {
     color: var(--danger);
 }
 
-micelio-playground[data-island-error] .bd-playground-notice {
+micelio-playground[data-island-error] .myc-playground-notice {
     display: block;
 }
 
-.bd-playground-caption {
+.myc-playground-caption {
     padding-left: var(--space-3);
     border-left: 2px solid var(--line-strong);
     font-size: 14px;
@@ -113,12 +113,12 @@ micelio-playground[data-island-error] .bd-playground-notice {
 }
 
 @media (max-width: 767px) {
-    .bd-playground {
+    .myc-playground {
         margin: 32px 0 40px;
     }
 
-    .bd-playground-output,
-    .bd-playground-result {
+    .myc-playground-output,
+    .myc-playground-result {
         padding: var(--space-3);
         font-size: 13px;
     }

@@ -14,37 +14,37 @@ describe('theme CSS rules', () => {
   const problems = (css: string): string[] => checkCss(css, 'theme.css', ctx).problems
 
   it('accepts public hooks, element selectors inside them, and the theme\'s own classes and attributes', () => {
-    expect(problems('.bd-prose h2 { color: red } .bd-card:hover .bd-card-title { top: 0 } .sample-mark { top: 0 } [data-sample-open] { top: 0 }')).toEqual([])
-    expect(problems('[data-theme="dia"] .bd-header[data-layout="bar"] { top: 0 } [data-scheme="dark"] .bd-seg[data-mode="a"] { top: 0 }')).toEqual([])
+    expect(problems('.myc-prose h2 { color: red } .myc-card:hover .myc-card-title { top: 0 } .sample-mark { top: 0 } [data-sample-open] { top: 0 }')).toEqual([])
+    expect(problems('[data-theme="dia"] .myc-header[data-layout="bar"] { top: 0 } [data-scheme="dark"] .myc-seg[data-mode="a"] { top: 0 }')).toEqual([])
   })
 
-  it('accepts the class states of a hook, not other bd-* classes', () => {
-    expect(problems('.bd-section-plan-recommended { top: 0 } .bd-card.bd-card-featured { top: 0 }')).toEqual([])
-    expect(problems('.bd-section-plan-nope { top: 0 }')).toHaveLength(1)
+  it('accepts the class states of a hook, not other myc-* classes', () => {
+    expect(problems('.myc-section-plan-recommended { top: 0 } .myc-card.myc-card-featured { top: 0 }')).toEqual([])
+    expect(problems('.myc-section-plan-nope { top: 0 }')).toHaveLength(1)
   })
 
-  it('rejects an internal bd-* class anywhere in a selector, including :is(), :not(), nesting and at-rules', () => {
+  it('rejects an internal myc-* class anywhere in a selector, including :is(), :not(), nesting and at-rules', () => {
     for (const css of [
-      '.bd-secret { top: 0 }',
-      '.bd-header:is(.bd-secret) { top: 0 }',
-      '.bd-header:not(.bd-secret) { top: 0 }',
-      '.bd-header { .bd-secret { top: 0 } }',
-      '@media (min-width: 10px) { .bd-secret { top: 0 } }',
-      '@scope (.bd-header) to (.bd-secret) { a { top: 0 } }',
+      '.myc-secret { top: 0 }',
+      '.myc-header:is(.myc-secret) { top: 0 }',
+      '.myc-header:not(.myc-secret) { top: 0 }',
+      '.myc-header { .myc-secret { top: 0 } }',
+      '@media (min-width: 10px) { .myc-secret { top: 0 } }',
+      '@scope (.myc-header) to (.myc-secret) { a { top: 0 } }',
     ]) {
-      expect(problems(css).join(), css).toContain('".bd-secret" is not a public hook')
+      expect(problems(css).join(), css).toContain('".myc-secret" is not a public hook')
     }
   })
 
   it('walks every nested selector list, including nth-child of, ::slotted() and :host()', () => {
     for (const css of [
-      'li:nth-child(2n of .bd-secret) { top: 0 }',
-      '.x::slotted(.bd-secret) { top: 0 }',
-      ':host(.bd-secret) { top: 0 }',
-      '.x:where(.bd-secret) { top: 0 }',
-      '.x:has(> .bd-secret) { top: 0 }',
+      'li:nth-child(2n of .myc-secret) { top: 0 }',
+      '.x::slotted(.myc-secret) { top: 0 }',
+      ':host(.myc-secret) { top: 0 }',
+      '.x:where(.myc-secret) { top: 0 }',
+      '.x:has(> .myc-secret) { top: 0 }',
     ]) {
-      expect(problems(css).join(), css).toContain('".bd-secret" is not a public hook')
+      expect(problems(css).join(), css).toContain('".myc-secret" is not a public hook')
     }
   })
 
@@ -52,19 +52,27 @@ describe('theme CSS rules', () => {
     expect(problems(':host { top: 0 }')).toEqual([])
   })
 
-  it('flags a class attribute selector that matches bd- classes', () => {
-    expect(problems('[class*="bd-card"] { top: 0 }').join()).toContain('matches internal bd-* classes')
-    expect(problems('[class^=bd-] { top: 0 }').join()).toContain('matches internal bd-* classes')
+  it('names the new class for a selector written with the old bd- prefix', () => {
+    expect(problems('.bd-card { top: 0 }')).toEqual(['theme.css: ".bd-card" was renamed ".myc-card" (ADR 0005, amendment of 2026-10-08)'])
+    expect(problems('.bd-nothing { top: 0 }').join()).toContain('".bd-nothing" was renamed ".myc-nothing"; ".myc-nothing" is not a public hook either')
+    expect(problems('.myc-header:is(.bd-seg) { top: 0 }').join()).toContain('".bd-seg" was renamed ".myc-seg"')
+    expect(problems('[data-bd-lang] { top: 0 }')).toEqual(['theme.css: "[data-bd-lang]" was renamed "[data-myc-lang]" (ADR 0005, amendment of 2026-10-08)'])
+    expect(problems('[class*="bd-card"] { top: 0 }').join()).toContain('were renamed from bd-* to myc-*')
+  })
+
+  it('flags a class attribute selector that matches myc- classes', () => {
+    expect(problems('[class*="myc-card"] { top: 0 }').join()).toContain('matches internal myc-* classes')
+    expect(problems('[class^=myc-] { top: 0 }').join()).toContain('matches internal myc-* classes')
     expect(problems('[class~="sample-mark"] { top: 0 }')).toEqual([])
   })
 
   it('lowercases attribute names before the data- check', () => {
-    expect(problems('[DATA-BD-COPY] { top: 0 }').join()).toContain('"[data-bd-copy]" is not a public hook')
+    expect(problems('[DATA-MYC-COPY] { top: 0 }').join()).toContain('"[data-myc-copy]" is not a public hook')
     expect(problems('[DATA-LAYOUT="bar"] { top: 0 }')).toEqual([])
   })
 
   it('rejects a core data-* attribute that is not a hook', () => {
-    expect(problems('[data-bd-copy] { top: 0 }').join()).toContain('"[data-bd-copy]" is not a public hook')
+    expect(problems('[data-myc-copy] { top: 0 }').join()).toContain('"[data-myc-copy]" is not a public hook')
     expect(problems('.sample-x[data-other-theme-flag] { top: 0 }').join()).toContain('data-sample-')
   })
 
@@ -119,7 +127,7 @@ describe('theme CSS rules', () => {
 
 describe('theme CSS files', () => {
   it('rejects a symlinked stylesheet, even when it points inside the theme', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'bd-css-'))
+    const dir = mkdtempSync(join(tmpdir(), 'myc-css-'))
     mkdirSync(join(dir, 'slots'))
     writeFileSync(join(dir, 'real.css'), '.sample-x { top: 0 }')
     symlinkSync(join(dir, 'real.css'), join(dir, 'theme.css'))
@@ -128,16 +136,16 @@ describe('theme CSS files', () => {
   })
 
   it('rejects a symlink to a file outside the theme', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'bd-css-'))
-    const outside = mkdtempSync(join(tmpdir(), 'bd-outside-'))
+    const dir = mkdtempSync(join(tmpdir(), 'myc-css-'))
+    const outside = mkdtempSync(join(tmpdir(), 'myc-outside-'))
     writeFileSync(join(outside, 'x.css'), '.sample-x { top: 0 }')
     symlinkSync(join(outside, 'x.css'), join(dir, 'theme.css'))
     expect(checkThemeCss({ themeId: 'sample', themeDir: dir, hooks })).toEqual(['theme.css is a symlink; copy the file instead'])
   })
 
   it('rejects an @import that goes through a symlinked folder', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'bd-css-'))
-    const outside = mkdtempSync(join(tmpdir(), 'bd-outside-'))
+    const dir = mkdtempSync(join(tmpdir(), 'myc-css-'))
+    const outside = mkdtempSync(join(tmpdir(), 'myc-outside-'))
     writeFileSync(join(outside, 'x.css'), '.sample-x { top: 0 }')
     symlinkSync(outside, join(dir, 'lib'))
     writeFileSync(join(dir, 'theme.css'), '@import "./lib/x.css";')
@@ -147,8 +155,8 @@ describe('theme CSS files', () => {
 
 describe('hooks.json', () => {
   it('parses and lists the hooks Bogota uses', () => {
-    expect(hooks.classes.has('bd-foot')).toBe(true)
-    expect(hooks.classes.has('bd-hero-art')).toBe(true)
+    expect(hooks.classes.has('myc-foot')).toBe(true)
+    expect(hooks.classes.has('myc-hero-art')).toBe(true)
     expect(hooks.attributes.has('data-layout')).toBe(true)
   })
 
@@ -178,7 +186,7 @@ describe('hooks.json', () => {
   it('accepts the section hooks in theme CSS', () => {
     const ctx = { themeId: 'sample', themeDir: '/theme', hooks }
     const problems = (css: string): string[] => checkCss(css, 'theme.css', ctx).problems
-    expect(problems('.bd-section[data-section="hero"][data-variant="split"] .bd-section-title { top: 0 }')).toEqual([])
+    expect(problems('.myc-section[data-section="hero"][data-variant="split"] .myc-section-title { top: 0 }')).toEqual([])
   })
 
   it('names only variants the core implements in every layouts entry and in data-layout', () => {

@@ -31,38 +31,38 @@ async function drawDiagrams(page: Page): Promise<void> {
   await page.goto(ARTICLE, { waitUntil: 'networkidle' })
   const blocks = page.locator('micelio-mermaid')
   for (let index = 0; index < await blocks.count(); index++) await blocks.nth(index).scrollIntoViewIfNeeded()
-  await expect(page.locator('.bd-mermaid-diagram svg')).toHaveCount(2)
+  await expect(page.locator('.myc-mermaid-diagram svg')).toHaveCount(2)
 }
 
 test('renders flowcharts and sequence diagrams as labelled images', async ({ page }) => {
   await drawDiagrams(page)
-  const diagrams = page.locator('.bd-mermaid-diagram')
+  const diagrams = page.locator('.myc-mermaid-diagram')
   await expect(diagrams).toHaveCount(2)
   await expect(page.getByRole('img', { name: 'SSH login flow' }).locator('svg')).toBeVisible()
   await expect(diagrams.nth(1)).toHaveAttribute('aria-label', 'Diagram')
   await expect(diagrams.nth(1).locator('svg')).toContainText('Offer public key')
-  await expect(page.locator('.bd-mermaid-ready figure.bd-code')).toHaveCount(2)
-  await expect(page.locator('.bd-mermaid-ready figure.bd-code').first()).toBeHidden()
+  await expect(page.locator('.myc-mermaid-ready figure.myc-code')).toHaveCount(2)
+  await expect(page.locator('.myc-mermaid-ready figure.myc-code').first()).toBeHidden()
 })
 
 test('keeps the source visible when a diagram cannot be parsed', async ({ page }) => {
   await drawDiagrams(page)
-  const broken = page.locator('micelio-mermaid:not(.bd-mermaid-ready)')
+  const broken = page.locator('micelio-mermaid:not(.myc-mermaid-ready)')
   await expect(broken).toHaveCount(1)
   await broken.scrollIntoViewIfNeeded()
-  await expect(broken.locator('.bd-code-lang')).toHaveText('mermaid')
+  await expect(broken.locator('.myc-code-lang')).toHaveText('mermaid')
   await expect(broken.locator('code')).toBeVisible()
-  await expect(broken.locator('.bd-mermaid-diagram')).toHaveCount(0)
+  await expect(broken.locator('.myc-mermaid-diagram')).toHaveCount(0)
 })
 
 test('does not run markup from the diagram source', async ({ page }) => {
   await drawDiagrams(page)
-  const handlers = await page.locator('.bd-mermaid-diagram').evaluateAll(diagrams =>
+  const handlers = await page.locator('.myc-mermaid-diagram').evaluateAll(diagrams =>
     diagrams.flatMap(diagram => Array.from(diagram.querySelectorAll('*')))
       .flatMap(element => element.getAttributeNames().filter(name => name.startsWith('on'))),
   )
   expect(handlers).toEqual([])
-  await expect(page.locator('.bd-mermaid-diagram script')).toHaveCount(0)
+  await expect(page.locator('.myc-mermaid-diagram script')).toHaveCount(0)
   expect(await page.evaluate(() => (window as unknown as { __xss?: number }).__xss)).toBeUndefined()
 })
 
@@ -103,7 +103,7 @@ test('downloads Mermaid only on articles with diagrams, and only near the block'
   expect(await mermaidScripts(scripts)).toEqual([])
 
   await page.locator('micelio-mermaid').first().scrollIntoViewIfNeeded()
-  await expect(page.locator('.bd-mermaid-diagram svg').first()).toBeVisible()
+  await expect(page.locator('.myc-mermaid-diagram svg').first()).toBeVisible()
   expect((await mermaidScripts(scripts)).length).toBeGreaterThan(0)
 })
 
@@ -114,5 +114,5 @@ test('draws a diagram on a page reached by navigating, without a reload', async 
   const blocks = page.locator('micelio-mermaid')
   await expect(blocks).toHaveCount(3)
   for (let index = 0; index < 3; index++) await blocks.nth(index).scrollIntoViewIfNeeded()
-  await expect(page.locator('.bd-mermaid-diagram svg')).toHaveCount(2)
+  await expect(page.locator('.myc-mermaid-diagram svg')).toHaveCount(2)
 })

@@ -7,33 +7,33 @@ import { READ_STORAGE_KEY } from '~/helpers/readArticles'
 describe('BlogSidebar reading history', () => {
   beforeEach(() => {
     localStorage.clear()
-    useState('bd-read-articles').value = []
-    useState('bd-read-articles-loaded').value = false
+    useState('myc-read-articles').value = []
+    useState('myc-read-articles-loaded').value = false
   })
 
   it('hides the section while nothing has been read', async () => {
     const wrapper = await mountSuspended(BlogSidebar, { props: { recentPosts: [] } })
     await flushPromises()
-    expect(wrapper.find('#bd-blog-read').exists()).toBe(false)
+    expect(wrapper.find('#myc-blog-read').exists()).toBe(false)
   })
 
   it('counts the read articles and clears the history', async () => {
     localStorage.setItem(READ_STORAGE_KEY, '["doc-rag","doc-vue"]')
     const wrapper = await mountSuspended(BlogSidebar, { props: { recentPosts: [] } })
     await flushPromises()
-    expect(wrapper.get('#bd-blog-read').text()).toBe('Your reading')
-    expect(wrapper.get('.bd-blog-read-note').text()).toBe('02 articles read · kept in your browser')
+    expect(wrapper.get('#myc-blog-read').text()).toBe('Your reading')
+    expect(wrapper.get('.myc-blog-read-note').text()).toBe('02 articles read · kept in your browser')
 
-    await wrapper.get('button.bd-blog-textbtn').trigger('click')
+    await wrapper.get('button.myc-blog-textbtn').trigger('click')
     expect(localStorage.getItem(READ_STORAGE_KEY)).toBeNull()
-    expect(wrapper.get('.bd-blog-read-note').text()).toBe('History cleared')
-    expect(wrapper.find('button.bd-blog-textbtn').exists()).toBe(false)
+    expect(wrapper.get('.myc-blog-read-note').text()).toBe('History cleared')
+    expect(wrapper.find('button.myc-blog-textbtn').exists()).toBe(false)
   })
 
   it('links the full feed and one feed per category', async () => {
     const wrapper = await mountSuspended(BlogSidebar, { props: { recentPosts: [] } })
-    expect(wrapper.get('.bd-blog-feeds-label').text()).toBe('One feed per category:')
-    const links = wrapper.findAll('.bd-blog-feed-link')
+    expect(wrapper.get('.myc-blog-feeds-label').text()).toBe('One feed per category:')
+    const links = wrapper.findAll('.myc-blog-feed-link')
     expect(links.map(link => link.attributes('href'))).toEqual([
       '/feed/privacidad.xml', '/feed/diy.xml', '/feed/ia.xml', '/feed/software.xml', '/feed/linux.xml',
     ])

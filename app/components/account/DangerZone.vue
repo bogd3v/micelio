@@ -53,43 +53,43 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <section class="bd-danger" aria-labelledby="bd-del-t">
-    <div class="bd-danger-head">
-      <span class="bd-danger-icon">
+  <section class="myc-danger" aria-labelledby="myc-del-t">
+    <div class="myc-danger-head">
+      <span class="myc-danger-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path d="M4 7 H20 M9 7 V4 H15 V7 M6 7 L7 20 H17 L18 7 M10 11 V16 M14 11 V16" /></svg>
       </span>
       <div>
-        <h2 id="bd-del-t" class="bd-danger-title">{{ t('account.delete.title') }}</h2>
-        <p class="bd-danger-lead">{{ t('account.delete.lead') }}</p>
+        <h2 id="myc-del-t" class="myc-danger-title">{{ t('account.delete.title') }}</h2>
+        <p class="myc-danger-lead">{{ t('account.delete.lead') }}</p>
       </div>
     </div>
     <div v-if="!open">
       <button
         ref="openRef"
         type="button"
-        class="bd-btn bd-btn-secondary bd-danger-open"
+        class="myc-btn myc-btn-secondary myc-danger-open"
         aria-expanded="false"
-        aria-controls="bd-del-form"
+        aria-controls="myc-del-form"
         @click="show"
       >
         {{ t('account.delete.open') }}
       </button>
     </div>
-    <form v-else id="bd-del-form" class="bd-danger-form" novalidate @submit.prevent="submit">
+    <form v-else id="myc-del-form" class="myc-danger-form" novalidate @submit.prevent="submit">
       <AccountField
-        id="bd-del-in"
+        id="myc-del-in"
         ref="confirmRef"
         v-model="confirmText"
         autocomplete="off"
       >
         <template #label>
           <i18n-t keypath="account.delete.confirmUsername" scope="global">
-            <template #username><span class="bd-account-mono">{{ username }}</span></template>
+            <template #username><span class="myc-account-mono">{{ username }}</span></template>
           </i18n-t>
         </template>
       </AccountField>
       <AccountPasswordField
-        id="bd-del-pw"
+        id="myc-del-pw"
         ref="passwordRef"
         v-model="password"
         :label="t('account.delete.password')"
@@ -97,8 +97,8 @@ async function submit(): Promise<void> {
         :error="error"
         :toggle="false"
       />
-      <div class="bd-account-actions bd-account-actions-start">
-        <button type="submit" class="bd-btn bd-btn-danger" :disabled="!canSubmit">{{ t('account.delete.submit') }}</button>
+      <div class="myc-account-actions myc-account-actions-start">
+        <button type="submit" class="myc-btn myc-btn-danger" :disabled="!canSubmit">{{ t('account.delete.submit') }}</button>
         <BdButton variant="secondary" @click="cancel">{{ t('account.delete.cancel') }}</BdButton>
       </div>
     </form>

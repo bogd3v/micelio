@@ -19,8 +19,8 @@ function partLabel(part: CreditPart): string {
 </script>
 
 <template>
-  <span class="bd-credit">
-    <span class="bd-credit-k">{{ t(`bd.figure.kind.${credit.kind}`) }}</span>
+  <span class="myc-credit">
+    <span class="myc-credit-k">{{ t(`bd.figure.kind.${credit.kind}`) }}</span>
     <template v-for="(part, index) in parts" :key="part.role">
       <template v-if="index > 0"> · </template>
       <template v-else>{{ ' ' }}</template>

@@ -14,7 +14,7 @@ async function render(text: string, query?: string): Promise<HTMLElement> {
 describe('BdHighlight', () => {
   it('wraps each match in a mark', async () => {
     const element = await render('RAG explained: rag in practice', 'rag')
-    expect(Array.from(element.querySelectorAll('mark.bd-mark')).map(mark => mark.textContent)).toEqual(['RAG', 'rag'])
+    expect(Array.from(element.querySelectorAll('mark.myc-mark')).map(mark => mark.textContent)).toEqual(['RAG', 'rag'])
     expect(element.textContent).toBe('RAG explained: rag in practice')
   })
 

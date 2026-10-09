@@ -10,8 +10,8 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-  <div v-if="title || text" class="bd-section-head">
-    <component :is="`h${level}`" v-if="title" :id="titleId" class="bd-section-title">{{ title }}</component>
-    <p v-if="text" class="bd-section-text">{{ text }}</p>
+  <div v-if="title || text" class="myc-section-head">
+    <component :is="`h${level}`" v-if="title" :id="titleId" class="myc-section-title">{{ title }}</component>
+    <p v-if="text" class="myc-section-text">{{ text }}</p>
   </div>
 </template>

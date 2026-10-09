@@ -63,6 +63,6 @@ test('switches instantly with reduced motion', async ({ browser }) => {
   await page.goto('/', { waitUntil: 'networkidle' })
   await page.getByRole('group', { name: 'Color theme' }).getByRole('button', { name: 'Night' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'noche')
-  expect(await page.evaluate(() => document.documentElement.classList.contains('bd-vt-theme'))).toBe(false)
+  expect(await page.evaluate(() => document.documentElement.classList.contains('myc-vt-theme'))).toBe(false)
   await page.close()
 })

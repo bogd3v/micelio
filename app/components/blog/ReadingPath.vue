@@ -31,7 +31,7 @@ const title = computed<string>(() => t('blog.path.title', { category: t(`bd.cate
 const progress = computed<string>(() =>
   t('blog.path.progress', { read: padCount(readCount.value), total: padCount(steps.value.length) }),
 )
-const headingId = computed<string>(() => `bd-path-${props.category}${props.currentDocumentId ? '-article' : ''}`)
+const headingId = computed<string>(() => `myc-path-${props.category}${props.currentDocumentId ? '-article' : ''}`)
 
 function stepHref(step: ReadingPathStep): string {
   return `${localizePath('/blog')}/${step.slug}`
@@ -39,32 +39,32 @@ function stepHref(step: ReadingPathStep): string {
 </script>
 
 <template>
-  <section v-if="visible" :class="['bd-path', { 'bd-path-article': currentDocumentId }]" :aria-labelledby="headingId">
-    <h2 :id="headingId" class="bd-eyebrow bd-home-eyebrow">{{ title }}</h2>
-    <ol class="bd-path-list">
+  <section v-if="visible" :class="['myc-path', { 'myc-path-article': currentDocumentId }]" :aria-labelledby="headingId">
+    <h2 :id="headingId" class="myc-eyebrow myc-home-eyebrow">{{ title }}</h2>
+    <ol class="myc-path-list">
       <li
         v-for="(step, index) in steps"
         :key="step.documentId"
-        :class="['bd-path-step', { 'bd-path-step-current': index === currentIndex }]"
+        :class="['myc-path-step', { 'myc-path-step-current': index === currentIndex }]"
       >
-        <span class="bd-path-number" aria-hidden="true">{{ padCount(index + 1) }}</span>
+        <span class="myc-path-number" aria-hidden="true">{{ padCount(index + 1) }}</span>
         <NuxtLink
           :to="stepHref(step)"
-          class="bd-path-link"
+          class="myc-path-link"
           :aria-current="index === currentIndex ? 'page' : undefined"
         >
           {{ step.title }}
         </NuxtLink>
-        <span v-if="isRead(step.documentId)" class="bd-meta bd-read-mark bd-path-read">
-          <span aria-hidden="true">✓</span><span class="bd-sr">{{ t('bd.card.read') }}</span>
+        <span v-if="isRead(step.documentId)" class="myc-meta myc-read-mark myc-path-read">
+          <span aria-hidden="true">✓</span><span class="myc-sr">{{ t('bd.card.read') }}</span>
         </span>
       </li>
     </ol>
-    <p class="bd-meta bd-path-progress">{{ progress }}</p>
-    <NuxtLink v-if="next" :to="stepHref(next)" class="bd-path-next">
-      <span class="bd-eyebrow bd-home-eyebrow">{{ t('blog.path.next') }}</span>
-      <span class="bd-path-next-title">{{ next.title }} <span aria-hidden="true">→</span></span>
+    <p class="myc-meta myc-path-progress">{{ progress }}</p>
+    <NuxtLink v-if="next" :to="stepHref(next)" class="myc-path-next">
+      <span class="myc-eyebrow myc-home-eyebrow">{{ t('blog.path.next') }}</span>
+      <span class="myc-path-next-title">{{ next.title }} <span aria-hidden="true">→</span></span>
     </NuxtLink>
-    <p v-else-if="currentDocumentId" class="bd-meta bd-path-progress">{{ t('blog.path.done') }}</p>
+    <p v-else-if="currentDocumentId" class="myc-meta myc-path-progress">{{ t('blog.path.done') }}</p>
   </section>
 </template>

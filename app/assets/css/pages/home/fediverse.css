@@ -1,27 +1,27 @@
-.bd-fedi-head {
+.myc-fedi-head {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
 }
 
-.bd-fedi-logo {
+.myc-fedi-logo {
     display: block;
     width: 52px;
     height: 55px;
     margin-bottom: 20px;
 }
 
-.bd-fedi-intro {
+.myc-fedi-intro {
     margin: 0;
     color: var(--ink-muted);
     text-wrap: pretty;
 }
 
-.bd-fedi-intro-long {
+.myc-fedi-intro-long {
     display: none;
 }
 
-.bd-fedi-how {
+.myc-fedi-how {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -29,13 +29,13 @@
     margin-bottom: -20px;
 }
 
-.bd-fedi-swipe {
+.myc-fedi-swipe {
     font-size: 11px;
     text-transform: uppercase;
     color: var(--ink-muted);
 }
 
-.bd-fedi-cards {
+.myc-fedi-cards {
     display: flex;
     gap: var(--space-3);
     margin: 0 calc(-1 * var(--myc-home-gutter));
@@ -46,11 +46,11 @@
     scrollbar-width: none;
 }
 
-.bd-fedi-cards::-webkit-scrollbar {
+.myc-fedi-cards::-webkit-scrollbar {
     display: none;
 }
 
-.bd-fedi-explain {
+.myc-fedi-explain {
     display: flex;
     flex: none;
     flex-direction: column;
@@ -62,7 +62,7 @@
     scroll-snap-align: start;
 }
 
-.bd-fedi-art {
+.myc-fedi-art {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -71,44 +71,44 @@
     border-bottom: 1px solid var(--line);
 }
 
-.bd-fedi-art svg {
+.myc-fedi-art svg {
     display: block;
     width: 100%;
     max-width: 320px;
 }
 
-.bd-fedi-card-title {
+.myc-fedi-card-title {
     margin: 0;
     font-size: 19px;
     line-height: 26px;
     font-weight: 600;
 }
 
-.bd-fedi-card-text {
+.myc-fedi-card-text {
     margin: 0;
     font-size: 15px;
     line-height: 24px;
     color: var(--ink-muted);
 }
 
-.bd-fedi-card-heading {
+.myc-fedi-card-heading {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-.bd-fedi-card-heading .bd-eyebrow {
+.myc-fedi-card-heading .myc-eyebrow {
     margin: 0;
 }
 
-.bd-fedi-action-title {
+.myc-fedi-action-title {
     margin: 0;
     font-size: 20px;
     line-height: 28px;
     font-weight: 600;
 }
 
-.bd-fedi-join {
+.myc-fedi-join {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -117,11 +117,11 @@
     border: 1px dashed var(--line-strong);
 }
 
-.bd-fedi-join-eyebrow {
+.myc-fedi-join-eyebrow {
     color: var(--accent);
 }
 
-.bd-fedi-join-steps {
+.myc-fedi-join-steps {
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -132,19 +132,19 @@
     line-height: 24px;
 }
 
-.bd-fedi-join-steps li {
+.myc-fedi-join-steps li {
     display: flex;
     gap: 14px;
 }
 
-.bd-fedi-join-number {
+.myc-fedi-join-number {
     flex: none;
     width: 24px;
     font: 400 13px/24px var(--font-mono);
     color: var(--accent);
 }
 
-.bd-fedi-join-link {
+.myc-fedi-join-link {
     display: inline-block;
     align-self: flex-start;
     padding-block: 14px;
@@ -152,7 +152,7 @@
     text-decoration: none;
 }
 
-.bd-fedi-card {
+.myc-fedi-card {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -163,44 +163,44 @@
     border: 1px solid var(--line);
 }
 
-.bd-fedi-accent {
+.myc-fedi-accent {
     color: var(--link);
 }
 
-.bd-fedi-label {
+.myc-fedi-label {
     margin: 0;
     font-size: 15px;
     line-height: 24px;
     color: var(--ink-muted);
 }
 
-.bd-fedi-form {
+.myc-fedi-form {
     display: flex;
     flex-direction: column;
     gap: 10px;
     margin: 0;
 }
 
-.bd-fedi-row {
+.myc-fedi-row {
     display: flex;
 }
 
-.bd-fedi-row .bd-btn {
+.myc-fedi-row .myc-btn {
     flex: none;
 }
 
-.bd-fedi-hint {
+.myc-fedi-hint {
     margin: 0;
     font-size: 12px;
     text-transform: uppercase;
     color: var(--ink-muted);
 }
 
-.bd-fedi-hint-error {
+.myc-fedi-hint-error {
     color: var(--danger);
 }
 
-.bd-fedi-copy {
+.myc-fedi-copy {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
@@ -208,36 +208,36 @@
     border-top: 1px solid var(--line);
 }
 
-.bd-fedi-handle {
+.myc-fedi-handle {
     margin: 0;
     font-size: 19px;
     line-height: 26px;
     overflow-wrap: anywhere;
 }
 
-.bd-fedi-user {
+.myc-fedi-user {
     color: var(--ink);
 }
 
-.bd-fedi-domain {
+.myc-fedi-domain {
     color: var(--ink-muted);
 }
 
-.bd-fedi-note {
+.myc-fedi-note {
     margin: 0;
     font-size: 12px;
     text-transform: uppercase;
     color: var(--ink-muted);
 }
 
-.bd-fedi-after,
-.bd-fedi-glossary {
+.myc-fedi-after,
+.myc-fedi-glossary {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
 }
 
-.bd-fedi-after-steps {
+.myc-fedi-after-steps {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -246,52 +246,52 @@
     list-style: none;
 }
 
-.bd-fedi-after-steps li {
+.myc-fedi-after-steps li {
     display: flex;
     flex: 1;
     gap: 14px;
 }
 
-.bd-fedi-after-steps svg {
+.myc-fedi-after-steps svg {
     display: block;
     flex: none;
 }
 
-.bd-fedi-step-title {
+.myc-fedi-step-title {
     margin: 0 0 var(--space-1);
     font-weight: 600;
 }
 
-.bd-fedi-step-text {
+.myc-fedi-step-text {
     margin: 0;
     font-size: 15px;
     line-height: 24px;
     color: var(--ink-muted);
 }
 
-.bd-fedi-glossary {
+.myc-fedi-glossary {
     padding-top: var(--space-8);
     border-top: 1px solid var(--line);
 }
 
-.bd-fedi-glossary dl {
+.myc-fedi-glossary dl {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-6) var(--space-8);
     margin: 0;
 }
 
-.bd-fedi-glossary dl > div {
+.myc-fedi-glossary dl > div {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
 }
 
-.bd-fedi-glossary dt {
+.myc-fedi-glossary dt {
     color: var(--ink);
 }
 
-.bd-fedi-glossary dd {
+.myc-fedi-glossary dd {
     margin: 0;
     font-size: 14px;
     line-height: 22px;
@@ -299,31 +299,31 @@
 }
 
 @media (min-width: 768px) {
-    .bd-fedi-head {
+    .myc-fedi-head {
         gap: var(--space-8);
     }
 
-    .bd-fedi-logo {
+    .myc-fedi-logo {
         width: 64px;
         height: 67px;
         margin-bottom: var(--space-6);
     }
 
-    .bd-fedi-intro {
+    .myc-fedi-intro {
         font-size: 17px;
         line-height: 28px;
     }
 
-    .bd-fedi-intro-short,
-    .bd-fedi-how {
+    .myc-fedi-intro-short,
+    .myc-fedi-how {
         display: none;
     }
 
-    .bd-fedi-intro-long {
+    .myc-fedi-intro-long {
         display: inline;
     }
 
-    .bd-fedi-cards {
+    .myc-fedi-cards {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: var(--space-8);
@@ -332,37 +332,37 @@
         overflow: visible;
     }
 
-    .bd-fedi-explain {
+    .myc-fedi-explain {
         width: auto;
         padding: var(--space-6);
     }
 
-    .bd-fedi-join,
-    .bd-fedi-card {
+    .myc-fedi-join,
+    .myc-fedi-card {
         padding: var(--space-8);
     }
 
-    .bd-fedi-handle {
+    .myc-fedi-handle {
         font-size: 26px;
         line-height: 34px;
     }
 
-    .bd-fedi-after {
+    .myc-fedi-after {
         gap: 20px;
     }
 
-    .bd-fedi-after-steps {
+    .myc-fedi-after-steps {
         flex-direction: row;
         gap: var(--space-8);
     }
 
-    .bd-fedi-glossary dl {
+    .myc-fedi-glossary dl {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (min-width: 1024px) {
-    .bd-fedi {
+    .myc-fedi {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         column-gap: var(--space-gutter);
@@ -370,7 +370,7 @@
         align-items: start;
     }
 
-    .bd-fedi-head {
+    .myc-fedi-head {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         grid-column: 1 / -1;
@@ -378,29 +378,29 @@
         align-items: end;
     }
 
-    .bd-fedi-head .bd-home-heading {
+    .myc-fedi-head .myc-home-heading {
         grid-column: span 6;
     }
 
-    .bd-fedi-intro {
+    .myc-fedi-intro {
         grid-column: 7 / span 6;
     }
 
-    .bd-fedi-cards,
-    .bd-fedi-after,
-    .bd-fedi-glossary {
+    .myc-fedi-cards,
+    .myc-fedi-after,
+    .myc-fedi-glossary {
         grid-column: 1 / -1;
     }
 
-    .bd-fedi-join {
+    .myc-fedi-join {
         grid-column: span 5;
     }
 
-    .bd-fedi-card {
+    .myc-fedi-card {
         grid-column: 6 / span 7;
     }
 
-    .bd-fedi-glossary dl {
+    .myc-fedi-glossary dl {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }

@@ -6,7 +6,7 @@ model: sonnet
 ---
 Load the `ui-component` skill and read the specimen page (`/_theme`, built with `MICELIO_SPECIMEN=1`, see `docs/theme-testing.md`) and `docs/themes/reference/` before writing markup.
 
-- Reuse `Bd*` components (`BdButton`…) and `.bd-*` blocks; a new block gets its own file in the right `assets/css/` layer plus its `@import` in `main.css`. Never add rules to `main.css`.
+- Reuse `Bd*` components (`BdButton`…) and `.myc-*` blocks; a new block gets its own file in the right `assets/css/` layer plus its `@import` in `main.css`. Never add rules to `main.css`.
 - Colors only from semantic roles (ADR 0005), never primitives; no utility classes in templates. `npm run lint` enforces both.
 - Role values live in `themes/<id>/theme.json`; the build generates the CSS (`npm run tokens` prints it). Nothing generated is checked in.
 - Accessibility: semantic HTML, `aria-label` on icon-only controls, focus ring, contrast, `prefers-reduced-motion`. SEO: `useSeoMeta()` on pages.

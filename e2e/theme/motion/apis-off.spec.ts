@@ -20,7 +20,7 @@ async function hiddenByMotion(page: Page): Promise<string[]> {
       const rect = element.getBoundingClientRect()
       if (!rect.width || !rect.height) continue
       const label = `${element.tagName.toLowerCase()}${typeof element.className === 'string' && element.className ? `.${element.className.trim().split(/\s+/).join('.')}` : ''}`
-      const exempt = element.closest('.bd-sr, .bd-skip, [aria-hidden="true"]')
+      const exempt = element.closest('.myc-sr, .myc-skip, [aria-hidden="true"]')
       if (style.visibility === 'hidden' && !exempt) {
         // A broken image (the mock's CORS block) is hidden by Firefox, with the media box that holds only it
         const brokenImage = element.matches('img') || (element.querySelector('img') && !element.textContent?.trim())
@@ -29,8 +29,8 @@ async function hiddenByMotion(page: Page): Promise<string[]> {
       }
       if (Number(style.opacity) === 0 && !exempt) found.push(`${label}: opacity 0`)
       // Reveal and parallax layers move by a transform only: it must be gone without the timeline
-      if (element.matches('.bd-reveal, .bd-guide-card') && (style.transform !== 'none' || style.translate !== 'none' || style.scale !== 'none' || style.animationName !== 'none')) found.push(`${label}: transform ${style.transform}, translate ${style.translate}, scale ${style.scale}, animation ${style.animationName}`)
-      if (element.matches('.bd-reveal') && (rect.left > width || rect.right < 0)) found.push(`${label}: outside the page`)
+      if (element.matches('.myc-reveal, .myc-guide-card') && (style.transform !== 'none' || style.translate !== 'none' || style.scale !== 'none' || style.animationName !== 'none')) found.push(`${label}: transform ${style.transform}, translate ${style.translate}, scale ${style.scale}, animation ${style.animationName}`)
+      if (element.matches('.myc-reveal') && (rect.left > width || rect.right < 0)) found.push(`${label}: outside the page`)
     }
     return found
   })
@@ -56,7 +56,7 @@ for (const entry of MOTION_PAGES) {
     await scrollThrough(page)
     expect(await hiddenByMotion(page)).toEqual([])
     // Every reveal and focus item reads as it does at rest
-    expect(await page.locator('.bd-reveal').evaluateAll(items => items.map(item => getComputedStyle(item).opacity).filter(opacity => opacity !== '1'))).toEqual([])
+    expect(await page.locator('.myc-reveal').evaluateAll(items => items.map(item => getComputedStyle(item).opacity).filter(opacity => opacity !== '1'))).toEqual([])
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
     // The specimen shows every hero variant, each with its own h1
     if (entry.name !== 'specimen') await expect(page.locator('main h1')).toHaveCount(1)
@@ -67,14 +67,14 @@ for (const entry of MOTION_PAGES) {
 
 test('the home has reveal items to check', async ({ page }) => {
   await open(page, MOTION_PAGES[0]!)
-  expect(await page.locator('.bd-reveal').count()).toBeGreaterThan(0)
+  expect(await page.locator('.myc-reveal').count()).toBeGreaterThan(0)
 })
 
 test('the header progress needs no scroll timeline', async ({ page }) => {
   await open(page, MOTION_PAGES[2]!)
   await scrollThrough(page)
-  const bar = page.locator('.bd-progress-bar').first()
-  expect(await page.locator('.bd-progress-bar').count()).toBeGreaterThan(0)
+  const bar = page.locator('.myc-progress-bar').first()
+  expect(await page.locator('.myc-progress-bar').count()).toBeGreaterThan(0)
   expect(await bar.evaluate(element => getComputedStyle(element).animationName)).toBe('none')
 })
 
@@ -82,7 +82,7 @@ test('the theme switch changes the mode without view transitions', async ({ page
   await open(page, MOTION_PAGES[0]!)
   const html = page.locator('html')
   const before = await html.getAttribute('data-theme')
-  const other = page.locator('.bd-seg[data-mode][aria-pressed="false"]:visible').first()
+  const other = page.locator('.myc-seg[data-mode][aria-pressed="false"]:visible').first()
   test.skip(!(await other.count()), 'the theme has a single mode')
   await other.click()
   await expect(html).not.toHaveAttribute('data-theme', before!)

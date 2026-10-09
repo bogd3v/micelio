@@ -38,7 +38,7 @@ test('toggles with the shortcut and returns focus to the header button', async (
   await page.keyboard.press('ControlOrMeta+k')
   await expect(palette).toBeHidden()
 
-  const trigger = page.getByRole('button', { name: 'Search', exact: true }).and(page.locator('.bd-chip'))
+  const trigger = page.getByRole('button', { name: 'Search', exact: true }).and(page.locator('.myc-chip'))
   await trigger.click()
   await expect(palette).toBeVisible()
   await page.keyboard.press('Escape')
@@ -109,6 +109,6 @@ test('also searches the article body and highlights the match in the snippet', a
 
   await palette.getByRole('checkbox', { name: 'Also search the content' }).check()
   await expect(articles.getByRole('option')).toHaveText([/Understanding Vue Composables/])
-  await expect(articles.locator('.bd-result-snippet')).toHaveText('Composables let you share stateful logic across components.')
-  await expect(articles.locator('.bd-result-snippet mark')).toHaveText('stateful')
+  await expect(articles.locator('.myc-result-snippet')).toHaveText('Composables let you share stateful logic across components.')
+  await expect(articles.locator('.myc-result-snippet mark')).toHaveText('stateful')
 })

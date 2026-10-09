@@ -1,4 +1,4 @@
-.bd-draft-strip {
+.myc-draft-strip {
     position: relative;
     z-index: 9;
     padding: 14px var(--myc-home-gutter);
@@ -6,7 +6,7 @@
     border-bottom: 1px solid var(--warning);
 }
 
-.bd-draft-strip-inner {
+.myc-draft-strip-inner {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -14,7 +14,7 @@
     gap: var(--space-3) var(--space-6);
 }
 
-.bd-draft-strip-text {
+.myc-draft-strip-text {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -25,12 +25,12 @@
     color: var(--ink);
 }
 
-.bd-draft-strip-edited {
+.myc-draft-strip-edited {
     color: var(--ink-muted);
     text-transform: uppercase;
 }
 
-.bd-draft-strip-links {
+.myc-draft-strip-links {
     display: flex;
     flex: none;
     flex-wrap: wrap;
@@ -38,7 +38,7 @@
     gap: var(--space-2) 20px;
 }
 
-.bd-draft-strip-link {
+.myc-draft-strip-link {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
@@ -48,16 +48,16 @@
     text-underline-offset: 3px;
 }
 
-.bd-draft-strip-link:hover {
+.myc-draft-strip-link:hover {
     color: var(--ink-muted);
 }
 
 @media (min-width: 1024px) {
-    .bd-draft-strip-inner {
+    .myc-draft-strip-inner {
         flex-wrap: nowrap;
     }
 
-    .bd-draft-strip-text {
+    .myc-draft-strip-text {
         flex: 1 1 0;
         min-width: 0;
     }

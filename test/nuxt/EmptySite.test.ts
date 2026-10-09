@@ -19,7 +19,7 @@ describe('the app.config.ts defaults', () => {
 describe('BlogBuyMeACoffee without a handle', () => {
   it('renders nothing', async () => {
     const wrapper = await mountSuspended(BlogBuyMeACoffee)
-    expect(wrapper.find('.bd-coffee').exists()).toBe(false)
+    expect(wrapper.find('.myc-coffee').exists()).toBe(false)
     expect(wrapper.find('a').exists()).toBe(false)
   })
 })
@@ -27,8 +27,8 @@ describe('BlogBuyMeACoffee without a handle', () => {
 describe('BlogAuthorCard', () => {
   it('shows the active theme\'s bio (Bogota keeps BogDev\'s text) and the author name', async () => {
     const wrapper = await mountSuspended(BlogAuthorCard, { props: { author: { name: 'Ada' } } })
-    expect(wrapper.get('.bd-author-card-name').text()).toBe('Ada')
-    expect(wrapper.get('.bd-author-card-bio').text()).toBe('Exploring privacy, DIY, AI, software and Linux from Bogotá.')
+    expect(wrapper.get('.myc-author-card-name').text()).toBe('Ada')
+    expect(wrapper.get('.myc-author-card-bio').text()).toBe('Exploring privacy, DIY, AI, software and Linux from Bogotá.')
   })
 })
 
@@ -37,7 +37,7 @@ describe('the privacy page without contact email or date', () => {
     const wrapper = await mountSuspended(PrivacyPage)
     await flushPromises()
     expect(wrapper.find('a[href^="mailto:"]').exists()).toBe(false)
-    expect(wrapper.get('.bd-privacy-updated').text()).toBe('Legal')
+    expect(wrapper.get('.myc-privacy-updated').text()).toBe('Legal')
     expect(wrapper.get('#rights p').text()).not.toContain('Write to')
     expect(wrapper.get('#rights p').text()).not.toContain('{email}')
   })

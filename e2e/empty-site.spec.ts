@@ -24,21 +24,21 @@ for (const path of PAGES) {
 
 test('the footer shows the neutral name without author, social links or support', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' })
-  const footer = page.locator('footer.bd-foot')
-  await expect(footer.locator('.bd-foot-legal span').first()).toHaveText(`© ${new Date().getFullYear()} Micelio`)
-  await expect(footer.locator('a.bd-foot-soc')).toHaveCount(0)
+  const footer = page.locator('footer.myc-foot')
+  await expect(footer.locator('.myc-foot-legal span').first()).toHaveText(`© ${new Date().getFullYear()} Micelio`)
+  await expect(footer.locator('a.myc-foot-soc')).toHaveCount(0)
   await expect(footer.locator('a[href*="buymeacoffee"]')).toHaveCount(0)
 })
 
 test('the privacy page has no contact link and no date', async ({ page }) => {
   await page.goto('/privacy', { waitUntil: 'networkidle' })
   await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0)
-  await expect(page.locator('.bd-privacy-updated')).toHaveText('Legal')
+  await expect(page.locator('.myc-privacy-updated')).toHaveText('Legal')
 })
 
 test('an article has no support section', async ({ page }) => {
   await page.goto('/blog/linux-server-hardening-guide', { waitUntil: 'networkidle' })
-  await expect(page.locator('.bd-coffee')).toHaveCount(0)
+  await expect(page.locator('.myc-coffee')).toHaveCount(0)
   await expect(page.locator('a[href*="buymeacoffee"]')).toHaveCount(0)
 })
 

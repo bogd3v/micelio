@@ -10,7 +10,7 @@ export function useCodeBlockCopy(target: Ref<HTMLElement | null>): void {
 
   function prepare(): void {
     const canCopy = !!navigator.clipboard
-    target.value?.querySelectorAll<HTMLButtonElement>('[data-bd-copy]').forEach((button) => {
+    target.value?.querySelectorAll<HTMLButtonElement>('[data-myc-copy]').forEach((button) => {
       setLabel(button, false)
       button.setAttribute('aria-live', 'polite')
       button.hidden = !canCopy
@@ -18,12 +18,12 @@ export function useCodeBlockCopy(target: Ref<HTMLElement | null>): void {
   }
 
   async function onClick(event: MouseEvent): Promise<void> {
-    const button = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-bd-copy]')
-    const code = button?.closest('.bd-code')?.querySelector('code')
+    const button = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-myc-copy]')
+    const code = button?.closest('.myc-code')?.querySelector('code')
     if (!button || !code) return
 
     const clone = code.cloneNode(true) as HTMLElement
-    clone.querySelectorAll('.bd-prompt').forEach(prompt => prompt.remove())
+    clone.querySelectorAll('.myc-prompt').forEach(prompt => prompt.remove())
 
     try {
       await navigator.clipboard.writeText(clone.textContent ?? '')

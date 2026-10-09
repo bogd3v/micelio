@@ -25,9 +25,9 @@ export function escapeHtml(text: string): string {
 export function renderCodeBlockHtml(code: string, lang: string): string {
   const safeLang = lang.replace(/[^\w-]/g, '')
   const body = splitCodeLines(code)
-    .map(line => (line.prompt ? `<span class="bd-prompt">$ </span>` : '') + escapeHtml(line.text))
+    .map(line => (line.prompt ? `<span class="myc-prompt">$ </span>` : '') + escapeHtml(line.text))
     .join('\n')
-  const langLabel = safeLang ? `<span class="bd-code-lang">${safeLang}</span>` : ''
+  const langLabel = safeLang ? `<span class="myc-code-lang">${safeLang}</span>` : ''
   const codeClass = safeLang ? ` class="language-${safeLang}"` : ''
-  return `<figure class="bd-code not-prose"><div class="bd-code-head">${langLabel}<button type="button" class="bd-code-copy" data-bd-copy hidden></button></div><pre tabindex="0"><code${codeClass}>${body}</code></pre></figure>\n`
+  return `<figure class="myc-code not-prose"><div class="myc-code-head">${langLabel}<button type="button" class="myc-code-copy" data-myc-copy hidden></button></div><pre tabindex="0"><code${codeClass}>${body}</code></pre></figure>\n`
 }

@@ -6,14 +6,14 @@ html {
     scroll-padding-top: calc(var(--myc-header-h) + var(--space-4));
 }
 
-.bd-header:where([data-layout="bar"]) {
+.myc-header:where([data-layout="bar"]) {
     position: sticky;
     top: 0;
     z-index: 50;
     background: var(--surface);
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-header-inner {
+:where(.myc-header[data-layout="bar"]) .myc-header-inner {
     display: flex;
     align-items: center;
     gap: var(--space-6);
@@ -25,12 +25,12 @@ html {
     box-sizing: border-box;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-nav {
+:where(.myc-header[data-layout="bar"]) .myc-nav {
     height: 64px;
     border-bottom: 1px solid var(--line);
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-brand {
+:where(.myc-header[data-layout="bar"]) .myc-brand {
     display: inline-flex;
     align-items: center;
     gap: var(--space-3);
@@ -43,13 +43,13 @@ html {
     text-decoration: none;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-nav-main,
-:where(.bd-header[data-layout="bar"]) .bd-nav .bd-nav-lang,
-:where(.bd-header[data-layout="bar"]) .bd-strip {
+:where(.myc-header[data-layout="bar"]) .myc-nav-main,
+:where(.myc-header[data-layout="bar"]) .myc-nav .myc-nav-lang,
+:where(.myc-header[data-layout="bar"]) .myc-strip {
     display: none;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-nav-links {
+:where(.myc-header[data-layout="bar"]) .myc-nav-links {
     display: flex;
     gap: var(--space-6);
     margin: 0;
@@ -57,7 +57,7 @@ html {
     list-style: none;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-nav-link {
+:where(.myc-header[data-layout="bar"]) .myc-nav-link {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -68,12 +68,12 @@ html {
     transition: color var(--duration-base) var(--ease-standard);
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-nav-link:hover,
-:where(.bd-header[data-layout="bar"]) .bd-nav-link[aria-current="page"] {
+:where(.myc-header[data-layout="bar"]) .myc-nav-link:hover,
+:where(.myc-header[data-layout="bar"]) .myc-nav-link[aria-current="page"] {
     color: var(--ink);
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-nav-link[aria-current="page"]::after {
+:where(.myc-header[data-layout="bar"]) .myc-nav-link[aria-current="page"]::after {
     content: "";
     position: absolute;
     left: 0;
@@ -83,24 +83,24 @@ html {
     background: var(--accent);
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-nav-mobile {
+:where(.myc-header[data-layout="bar"]) .myc-nav-mobile {
     display: flex;
     align-items: center;
     margin-left: auto;
     margin-right: calc(-1 * var(--space-3));
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-strip {
+:where(.myc-header[data-layout="bar"]) .myc-strip {
     height: 64px;
     border-bottom: 1px solid var(--line);
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-strip .bd-header-inner {
+:where(.myc-header[data-layout="bar"]) .myc-strip .myc-header-inner {
     justify-content: space-between;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-hud,
-:where(.bd-header[data-layout="bar"]) .bd-crumbs {
+:where(.myc-header[data-layout="bar"]) .myc-hud,
+:where(.myc-header[data-layout="bar"]) .myc-crumbs {
     display: flex;
     align-items: center;
     gap: var(--space-4);
@@ -110,15 +110,15 @@ html {
     white-space: nowrap;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-hud-mark {
+:where(.myc-header[data-layout="bar"]) .myc-hud-mark {
     color: var(--link);
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-hud-extra {
+:where(.myc-header[data-layout="bar"]) .myc-hud-extra {
     display: none;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-strip-link {
+:where(.myc-header[data-layout="bar"]) .myc-strip-link {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
@@ -127,34 +127,34 @@ html {
     transition: color var(--duration-base) var(--ease-standard);
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-strip-link:hover,
-:where(.bd-header[data-layout="bar"]) .bd-crumbs-current {
+:where(.myc-header[data-layout="bar"]) .myc-strip-link:hover,
+:where(.myc-header[data-layout="bar"]) .myc-crumbs-current {
     color: var(--ink);
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-crumbs-current {
+:where(.myc-header[data-layout="bar"]) .myc-crumbs-current {
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-strip-actions {
+:where(.myc-header[data-layout="bar"]) .myc-strip-actions {
     display: flex;
     align-items: center;
     gap: var(--space-3);
 }
 
 /* A theme without a place line leaves the actions alone in the strip */
-:where(.bd-header[data-layout="bar"]) .bd-strip-actions:only-child {
+:where(.myc-header[data-layout="bar"]) .myc-strip-actions:only-child {
     margin-left: auto;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-strip-read {
+:where(.myc-header[data-layout="bar"]) .myc-strip-read {
     color: var(--ink-muted);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-progress {
+:where(.myc-header[data-layout="bar"]) .myc-progress {
     position: absolute;
     left: 0;
     right: 0;
@@ -164,51 +164,51 @@ html {
     pointer-events: none;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-progress-bar {
+:where(.myc-header[data-layout="bar"]) .myc-progress-bar {
     height: 100%;
     background: var(--link);
     transform: scaleX(var(--myc-read, 0));
     transform-origin: left;
 }
 
-:where(.bd-header[data-layout="bar"]) .bd-progress-track {
+:where(.myc-header[data-layout="bar"]) .myc-progress-track {
     position: absolute;
     inset: 0;
     transform: translateX(calc(var(--myc-read, 0) * 100%));
 }
 
 /* The number is drawn by CSS: data-percent (kept by the JS fallback), or a counter on the scroll timeline */
-:where(.bd-header[data-layout="bar"]) .bd-strip-read-num::before {
+:where(.myc-header[data-layout="bar"]) .myc-strip-read-num::before {
     content: attr(data-percent);
 }
 
 @supports (animation-timeline: scroll()) {
-    .bd-header-auto:where([data-layout="bar"]) .bd-strip-read-num {
-        animation: bd-read-count linear both;
+    .myc-header-auto:where([data-layout="bar"]) .myc-strip-read-num {
+        animation: myc-read-count linear both;
         animation-timeline: scroll(root);
-        counter-reset: bd-read-count calc(var(--myc-read-count) + 0); /* calc() rounds: WebKit leaves the interpolated integer fractional */
+        counter-reset: myc-read-count calc(var(--myc-read-count) + 0); /* calc() rounds: WebKit leaves the interpolated integer fractional */
     }
 
-    .bd-header-auto:where([data-layout="bar"]) .bd-strip-read-num::before {
-        content: counter(bd-read-count);
+    .myc-header-auto:where([data-layout="bar"]) .myc-strip-read-num::before {
+        content: counter(myc-read-count);
     }
 }
 
 /* A static build without scroll timelines cannot update the number: hide it rather than show a stuck 0 % */
 @supports not (animation-timeline: scroll()) {
-    :where(.bd-header[data-layout="bar"]) .bd-strip-read:has(.bd-strip-read-num) {
+    :where(.myc-header[data-layout="bar"]) .myc-strip-read:has(.myc-strip-read-num) {
         display: none;
     }
 }
 
 @supports (animation-timeline: scroll()) {
-    .bd-header-auto:where([data-layout="bar"]) .bd-progress-bar {
-        animation: bd-read-bar linear both;
+    .myc-header-auto:where([data-layout="bar"]) .myc-progress-bar {
+        animation: myc-read-bar linear both;
         animation-timeline: scroll(root);
     }
 
-    .bd-header-auto:where([data-layout="bar"]) .bd-progress-track {
-        animation: bd-read-track linear both;
+    .myc-header-auto:where([data-layout="bar"]) .myc-progress-track {
+        animation: myc-read-track linear both;
         animation-timeline: scroll(root);
     }
 }
@@ -218,49 +218,49 @@ html {
         --myc-header-h: 136px;
     }
 
-    :where(.bd-header[data-layout="bar"]) .bd-header-inner {
+    :where(.myc-header[data-layout="bar"]) .myc-header-inner {
         padding: 0 var(--space-6);
     }
 
-    :where(.bd-header[data-layout="bar"]) .bd-nav {
+    :where(.myc-header[data-layout="bar"]) .myc-nav {
         height: var(--nav-height);
     }
 
-    :where(.bd-header[data-layout="bar"]) .bd-nav-main {
+    :where(.myc-header[data-layout="bar"]) .myc-nav-main {
         display: block;
         margin-left: auto;
     }
 
-    :where(.bd-header[data-layout="bar"]) .bd-nav .bd-nav-lang {
+    :where(.myc-header[data-layout="bar"]) .myc-nav .myc-nav-lang {
         display: inline-flex;
     }
 
-    :where(.bd-header[data-layout="bar"]) .bd-strip {
+    :where(.myc-header[data-layout="bar"]) .myc-strip {
         display: block;
     }
 
-    :where(.bd-header[data-layout="bar"]) .bd-nav-mobile {
+    :where(.myc-header[data-layout="bar"]) .myc-nav-mobile {
         display: none;
     }
 }
 
 @media (min-width: 1024px) {
-    :where(.bd-header[data-layout="bar"]) .bd-header-inner {
+    :where(.myc-header[data-layout="bar"]) .myc-header-inner {
         padding: 0 var(--space-8);
     }
 
-    :where(.bd-header[data-layout="bar"]) .bd-hud-extra {
+    :where(.myc-header[data-layout="bar"]) .myc-hud-extra {
         display: inline;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    :where(.bd-header[data-layout="bar"]) .bd-progress {
+    :where(.myc-header[data-layout="bar"]) .myc-progress {
         display: none;
     }
 
-    :where(.bd-header[data-layout="bar"]) .bd-nav-link,
-    :where(.bd-header[data-layout="bar"]) .bd-strip-link {
+    :where(.myc-header[data-layout="bar"]) .myc-nav-link,
+    :where(.myc-header[data-layout="bar"]) .myc-strip-link {
         transition: none;
     }
 }

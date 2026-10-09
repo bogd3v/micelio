@@ -18,11 +18,11 @@ const unavailable = computed<boolean>(() => props.kind === 'newsletter' && !news
 </script>
 
 <template>
-  <p v-if="unavailable" class="bd-body-s">{{ t('specimen.pageSections.newsletterOff') }}</p>
-  <div v-else class="bd-specimen-stack">
+  <p v-if="unavailable" class="myc-body-s">{{ t('specimen.pageSections.newsletterOff') }}</p>
+  <div v-else class="myc-specimen-stack">
     <div v-for="entry in entries" :key="entry.variant" :data-specimen-variant="entry.variant || undefined">
-      <h3 class="bd-specimen-label">{{ entry.variant || t('specimen.pageSections.noVariant') }}</h3>
-      <div class="bd-specimen-frame">
+      <h3 class="myc-specimen-label">{{ entry.variant || t('specimen.pageSections.noVariant') }}</h3>
+      <div class="myc-specimen-frame">
         <SectionRenderer :sections="[entry.section]" />
       </div>
     </div>

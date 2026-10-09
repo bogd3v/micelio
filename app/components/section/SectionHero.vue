@@ -11,12 +11,12 @@ const titleId = useId()
 </script>
 
 <template>
-  <section class="bd-section" data-section="hero" :data-variant="section.variant" :aria-labelledby="titleId">
+  <section class="myc-section" data-section="hero" :data-variant="section.variant" :aria-labelledby="titleId">
     <!-- A background cannot hold controls: a video has no place here (it has no poster either), so the text sits on the surface -->
     <SectionMedia v-if="section.variant === 'full-bleed' && !section.media?.mime?.startsWith('video/')" :media="section.media" sizes="100vw" eager />
-    <div class="bd-section-inner">
+    <div class="myc-section-inner">
       <SectionHead :title="section.title" :text="section.text" :title-id="titleId" :level="headingLevel" />
-      <div v-if="section.primaryLink || section.secondaryLink" class="bd-section-actions">
+      <div v-if="section.primaryLink || section.secondaryLink" class="myc-section-actions">
         <SectionLink :link="section.primaryLink" variant="primary" arrow />
         <SectionLink :link="section.secondaryLink" variant="secondary" />
       </div>

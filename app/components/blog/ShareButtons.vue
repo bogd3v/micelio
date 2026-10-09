@@ -13,12 +13,12 @@ const linkedinUrl = computed<string>(() => `https://www.linkedin.com/sharing/sha
 </script>
 
 <template>
-  <aside class="bd-share" :aria-label="t('post.share')">
-    <p class="bd-eyebrow bd-home-eyebrow">{{ t('post.share') }}</p>
-    <a :href="mastodonUrl" class="bd-share-link" target="_blank" rel="noopener noreferrer" :aria-label="t('post.shareOn', { network: 'Mastodon' })">
+  <aside class="myc-share" :aria-label="t('post.share')">
+    <p class="myc-eyebrow myc-home-eyebrow">{{ t('post.share') }}</p>
+    <a :href="mastodonUrl" class="myc-share-link" target="_blank" rel="noopener noreferrer" :aria-label="t('post.shareOn', { network: 'Mastodon' })">
       Mastodon <span aria-hidden="true">↗</span>
     </a>
-    <a :href="linkedinUrl" class="bd-share-link" target="_blank" rel="noopener noreferrer" :aria-label="t('post.shareOn', { network: 'LinkedIn' })">
+    <a :href="linkedinUrl" class="myc-share-link" target="_blank" rel="noopener noreferrer" :aria-label="t('post.shareOn', { network: 'LinkedIn' })">
       LinkedIn <span aria-hidden="true">↗</span>
     </a>
     <BlogCopyLinkButton :url="url" variant="link" />

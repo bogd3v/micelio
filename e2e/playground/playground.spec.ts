@@ -24,7 +24,7 @@ test('nothing of the runtime loads until Run is pressed, then it runs the code a
   expect(loaded).toEqual([])
   await runButton(page, QUERY).click()
   await expect(resultOf(page, QUERY)).toHaveAttribute('data-state', 'done')
-  const expected = await playground(page, QUERY).locator('.bd-playground-output').textContent()
+  const expected = await playground(page, QUERY).locator('.myc-playground-output').textContent()
   expect(await resultOf(page, QUERY).textContent()).toBe(expected)
   expect(loaded.some(path => path.startsWith('/_islands/playground-'))).toBe(true)
   expect(loaded.some(path => path.startsWith('/_islands/workers/'))).toBe(true)

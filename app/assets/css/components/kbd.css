@@ -1,4 +1,4 @@
-.bd-kbd {
+.myc-kbd {
     display: inline-flex;
     align-items: center;
     height: 22px;
@@ -10,7 +10,7 @@
 }
 
 @media (forced-colors: active) {
-    .bd-kbd {
+    .myc-kbd {
         border-color: CanvasText;
     }
 }

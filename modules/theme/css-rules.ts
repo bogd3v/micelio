@@ -6,6 +6,11 @@ import type { Hooks } from './hooks'
 
 // ADR 0005, sections 4 and 5: a theme's CSS selects public hooks only and loads nothing from outside its package
 
+// TODO(#422): remove the bd- transition messages after one release line
+/** The prefix the core used before the rename; a theme written for it gets the new name in the message. */
+const LEGACY_PREFIX = 'bd-'
+const MYC_PREFIX = 'myc-'
+
 const REMOTE = /^([a-z][a-z0-9+.-]*:)?\/\//i
 
 export interface CssRuleContext {
@@ -22,15 +27,23 @@ function selectorProblems(node: unknown, ctx: CssRuleContext, found: Set<string>
   }
   if (!node || typeof node !== 'object') return
   const component = node as Record<string, unknown>
-  if (component.type === 'class' && typeof component.name === 'string' && component.name.startsWith('bd-') && !ctx.hooks.classes.has(component.name)) {
-    found.add(`".${component.name}" is not a public hook (internal bd-* classes can change in any release)`)
+  if (component.type === 'class' && typeof component.name === 'string' && component.name.startsWith(LEGACY_PREFIX)) {
+    const renamed = `${MYC_PREFIX}${component.name.slice(LEGACY_PREFIX.length)}`
+    const notHook = ctx.hooks.classes.has(renamed) ? '' : `; ".${renamed}" is not a public hook either`
+    found.add(`".${component.name}" was renamed ".${renamed}"${notHook} (ADR 0005, amendment of 2026-10-08)`)
+  } else if (component.type === 'class' && typeof component.name === 'string' && component.name.startsWith(MYC_PREFIX) && !ctx.hooks.classes.has(component.name)) {
+    found.add(`".${component.name}" is not a public hook (internal myc-* classes can change in any release)`)
   } else if (component.type === 'attribute' && typeof component.name === 'string') {
     const name = component.name.toLowerCase()
     const operation = component.operation as { value?: unknown } | null
-    if (name.startsWith('data-') && !ctx.hooks.attributes.has(name) && !name.startsWith(`data-${ctx.themeId}-`)) {
+    if (name.startsWith(`data-${LEGACY_PREFIX}`)) {
+      found.add(`"[${name}]" was renamed "[data-${MYC_PREFIX}${name.slice(`data-${LEGACY_PREFIX}`.length)}]" (ADR 0005, amendment of 2026-10-08)`)
+    } else if (name.startsWith('data-') && !ctx.hooks.attributes.has(name) && !name.startsWith(`data-${ctx.themeId}-`)) {
       found.add(`"[${name}]" is not a public hook (a theme's own attributes start with data-${ctx.themeId}-)`)
     } else if (name === 'class' && typeof operation?.value === 'string' && /\bbd-/i.test(operation.value)) {
-      found.add(`[class …"${operation.value}"] matches internal bd-* classes; select a public hook class instead`)
+      found.add(`[class …"${operation.value}"] matches classes that were renamed from bd-* to myc-*; select a public hook class instead (ADR 0005, amendment of 2026-10-08)`)
+    } else if (name === 'class' && typeof operation?.value === 'string' && /\bmyc-/i.test(operation.value)) {
+      found.add(`[class …"${operation.value}"] matches internal myc-* classes; select a public hook class instead`)
     }
   }
   for (const value of Object.values(component)) selectorProblems(value, ctx, found)

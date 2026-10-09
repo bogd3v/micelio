@@ -7,9 +7,9 @@ describe('BdCategoryTag', () => {
   it('shows the translated category name with its color class', async () => {
     const wrapper = await mountSuspended(BdCategoryTag, { props: { category: Category.Privacy } })
     expect(wrapper.element.tagName).toBe('SPAN')
-    expect(wrapper.classes()).toContain('bd-tag-privacidad')
+    expect(wrapper.classes()).toContain('myc-tag-privacidad')
     expect(wrapper.text()).toBe('Privacy')
-    expect(wrapper.get('.bd-tag-dot').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.get('.myc-tag-dot').attributes('aria-hidden')).toBe('true')
   })
 
   it('renders a link and accepts a custom label', async () => {

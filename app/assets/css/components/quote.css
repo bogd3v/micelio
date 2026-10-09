@@ -1,5 +1,5 @@
-/* Element + class to match .bd-prose blockquote and p, and win by order */
-blockquote.bd-quote {
+/* Element + class to match .myc-prose blockquote and p, and win by order */
+blockquote.myc-quote {
     margin-block: 2rem;
     padding-left: 1.5rem;
     border-color: var(--link);
@@ -8,14 +8,14 @@ blockquote.bd-quote {
     font-style: italic;
 }
 
-p.bd-quote-text {
+p.myc-quote-text {
     margin-bottom: 0.5rem;
     color: var(--ink);
     font-size: 1.25rem;
     line-height: calc(1.75 / 1.25);
 }
 
-cite.bd-quote-cite {
+cite.myc-quote-cite {
     color: var(--ink-muted);
     font-size: 0.875rem;
     font-style: normal;

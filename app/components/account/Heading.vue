@@ -14,9 +14,9 @@ defineExpose({ focus })
 </script>
 
 <template>
-  <div class="bd-account-heading">
-    <p class="bd-eyebrow">{{ eyebrow }}</p>
-    <h1 ref="titleRef" class="bd-account-title bd-wide" tabindex="-1">{{ title }}</h1>
-    <p v-if="$slots.default" class="bd-account-lead"><slot /></p>
+  <div class="myc-account-heading">
+    <p class="myc-eyebrow">{{ eyebrow }}</p>
+    <h1 ref="titleRef" class="myc-account-title myc-wide" tabindex="-1">{{ title }}</h1>
+    <p v-if="$slots.default" class="myc-account-lead"><slot /></p>
   </div>
 </template>

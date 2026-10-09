@@ -8,7 +8,7 @@ import type { ThemeContext } from '../modules/theme/context'
 const ctx = { id: 'sample' } as unknown as ThemeContext
 
 function fonts(files: string[]): { source: string, target: string } {
-  const root = mkdtempSync(join(tmpdir(), 'bd-fonts-'))
+  const root = mkdtempSync(join(tmpdir(), 'myc-fonts-'))
   const source = join(root, 'fonts')
   mkdirSync(source)
   for (const file of files) writeFileSync(join(source, file), 'x')

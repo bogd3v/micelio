@@ -23,25 +23,25 @@ test('shows three tabs on mobile, without search', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/', { waitUntil: 'networkidle' })
   const tabs = page.getByRole('navigation', { name: 'Bottom navigation' })
-  await expect(tabs.locator('.bd-tab')).toHaveCount(3)
+  await expect(tabs.locator('.myc-tab')).toHaveCount(3)
   await expect(tabs.getByRole('button', { name: 'Search' })).toHaveCount(0)
 })
 
 test('reads an article without comments, support or fediverse', async ({ page }) => {
   await page.goto('/blog/linux-server-hardening-guide', { waitUntil: 'networkidle' })
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-  await expect(page.locator('#comments, .bd-coffee, .bd-fedi-bar, .bd-related-news')).toHaveCount(0)
+  await expect(page.locator('#comments, .myc-coffee, .myc-fedi-bar, .myc-related-news')).toHaveCount(0)
 })
 
 test('leaves the fediverse sort out of the blog', async ({ page }) => {
   await page.goto('/blog', { waitUntil: 'networkidle' })
-  await expect(page.locator('#bd-blog-sort option')).toHaveText(['Newest', 'Oldest'])
+  await expect(page.locator('#myc-blog-sort option')).toHaveText(['Newest', 'Oldest'])
 })
 
 test('describes no cookies and no personal data on the privacy page', async ({ page }) => {
   await page.goto('/privacy', { waitUntil: 'networkidle' })
   await expect(page.getByRole('heading', { name: 'No cookies' })).toBeVisible()
-  await expect(page.locator('.bd-privacy-table')).toHaveCount(0)
+  await expect(page.locator('.myc-privacy-table')).toHaveCount(0)
   await expect(page.locator('#data')).toContainText('this site has no accounts, newsletter or comments')
 })
 

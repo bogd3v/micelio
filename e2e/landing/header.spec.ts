@@ -6,7 +6,7 @@ for (const width of [768, 1024, 1280, 1440]) {
   test(`no landing link of the header wraps at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 })
     await page.goto('/')
-    const links = page.locator('.bd-nav-links > li:visible > .bd-nav-link')
+    const links = page.locator('.myc-nav-links > li:visible > .myc-nav-link')
     const count = await links.count()
     expect(count).toBeGreaterThanOrEqual(width >= 1280 ? 6 : 4)
     const boxes = await links.evaluateAll(items => items.map(item => ({ height: item.getBoundingClientRect().height, line: Number.parseFloat(getComputedStyle(item).lineHeight) || 0, right: item.getBoundingClientRect().right })))

@@ -49,7 +49,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="bogota-panorama">
-    <div class="bd-meta bogota-panorama-hint">
+    <div class="myc-meta bogota-panorama-hint">
       <span>{{ t('theme.divider.title') }}</span>
       <span aria-hidden="true">{{ t('theme.divider.swipe') }} →</span>
     </div>

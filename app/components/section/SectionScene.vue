@@ -23,8 +23,8 @@ const modelUrl = computed<string>(() => isTrustedMedia(props.section.model.url, 
 </script>
 
 <template>
-  <section class="bd-section" data-section="scene" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
-    <div class="bd-section-inner">
+  <section class="myc-section" data-section="scene" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+    <div class="myc-section-inner">
       <micelio-scene :data-model="modelUrl">
         <SectionMedia :media="poster" sizes="100vw xl:1100px" :eager="eager" />
       </micelio-scene>

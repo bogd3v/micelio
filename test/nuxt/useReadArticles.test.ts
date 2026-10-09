@@ -21,8 +21,8 @@ async function mountReader(): Promise<ReadArticles> {
 describe('useReadArticles', () => {
   beforeEach(() => {
     localStorage.clear()
-    useState('bd-read-articles').value = []
-    useState('bd-read-articles-loaded').value = false
+    useState('myc-read-articles').value = []
+    useState('myc-read-articles-loaded').value = false
   })
 
   afterEach(() => {

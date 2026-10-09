@@ -30,13 +30,13 @@ defineExpose({ focus })
 </script>
 
 <template>
-  <div class="bd-form-row">
-    <label :for="id" class="bd-label"><slot name="label">{{ label }}</slot></label>
+  <div class="myc-form-row">
+    <label :for="id" class="myc-label"><slot name="label">{{ label }}</slot></label>
     <input
       :id="id"
       ref="inputRef"
       v-model="model"
-      class="bd-field"
+      class="myc-field"
       :type="type"
       :autocomplete="autocomplete"
       :aria-invalid="error ? 'true' : undefined"
@@ -44,7 +44,7 @@ defineExpose({ focus })
       spellcheck="false"
       autocapitalize="none"
     >
-    <span v-if="help" :id="`${id}-help`" class="bd-help">{{ help }}</span>
-    <span v-if="error" :id="`${id}-err`" class="bd-err" role="alert"><span aria-hidden="true">✕</span>{{ error }}</span>
+    <span v-if="help" :id="`${id}-help`" class="myc-help">{{ help }}</span>
+    <span v-if="error" :id="`${id}-err`" class="myc-err" role="alert"><span aria-hidden="true">✕</span>{{ error }}</span>
   </div>
 </template>

@@ -34,16 +34,16 @@ async function mountSection(documentId: string, federated = false) {
 describe('BlogCommentSection', () => {
   it('labels fediverse replies with the handle and a link to their instance, and marks the author', async () => {
     const wrapper = await mountSection('doc-thread')
-    const items = wrapper.findAll('.bd-comment')
+    const items = wrapper.findAll('.myc-comment')
     expect(items).toHaveLength(3)
 
     const [blog, fediverse, author] = items
-    expect(blog!.find('.bd-comment-badge').exists()).toBe(false)
-    expect(blog!.find('.bd-comment-instance-link').exists()).toBe(false)
+    expect(blog!.find('.myc-comment-badge').exists()).toBe(false)
+    expect(blog!.find('.myc-comment-instance-link').exists()).toBe(false)
 
-    expect(fediverse!.classes()).toContain('bd-comment-fediverse')
-    expect(fediverse!.get('.bd-comment-badge-fediverse').text()).toBe('◆ Fediverse · @bea@mastodon.social')
-    const link = fediverse!.get('.bd-comment-instance-link')
+    expect(fediverse!.classes()).toContain('myc-comment-fediverse')
+    expect(fediverse!.get('.myc-comment-badge-fediverse').text()).toBe('◆ Fediverse · @bea@mastodon.social')
+    const link = fediverse!.get('.myc-comment-instance-link')
     expect(link.attributes()).toMatchObject({
       href: 'https://mastodon.social/users/bea/statuses/1',
       target: '_blank',
@@ -51,13 +51,13 @@ describe('BlogCommentSection', () => {
     })
     expect(link.text()).toContain('View on their instance')
 
-    expect(author!.get('.bd-comment-badge-author').text()).toBe('Author')
-    expect(author!.find('.bd-comment-badge-fediverse').exists()).toBe(false)
+    expect(author!.get('.myc-comment-badge-author').text()).toBe('Author')
+    expect(author!.find('.myc-comment-badge-fediverse').exists()).toBe(false)
   })
 
   it('shows the content as plain text', async () => {
     const wrapper = await mountSection('doc-thread')
-    const text = wrapper.findAll('.bd-comment-text')[1]!
+    const text = wrapper.findAll('.myc-comment-text')[1]!
     expect(text.text()).toBe('<b>Sent</b> from Mastodon.')
     expect(text.find('b').exists()).toBe(false)
   })
@@ -76,12 +76,12 @@ describe('BlogCommentSection', () => {
     await buttons[2]!.trigger('click')
     expect(buttons[2]!.attributes('aria-pressed')).toBe('true')
     expect(buttons[0]!.attributes('aria-pressed')).toBe('false')
-    expect(wrapper.findAll('.bd-comment-group')).toHaveLength(1)
+    expect(wrapper.findAll('.myc-comment-group')).toHaveLength(1)
     expect(wrapper.text()).toContain('<b>Sent</b> from Mastodon.')
     expect(wrapper.text()).toContain('Thanks, Bea!')
 
     await buttons[1]!.trigger('click')
-    expect(wrapper.findAll('.bd-comment-group')).toHaveLength(1)
+    expect(wrapper.findAll('.myc-comment-group')).toHaveLength(1)
     expect(wrapper.text()).toContain('Left from the blog form.')
     expect(wrapper.text()).not.toContain('Thanks, Bea!')
   })
@@ -89,14 +89,14 @@ describe('BlogCommentSection', () => {
   it('says so when no fediverse reply has arrived yet', async () => {
     const wrapper = await mountSection('doc-blog-only', true)
     await wrapper.get('[role="group"]').findAll('button')[2]!.trigger('click')
-    expect(wrapper.findAll('.bd-comment')).toHaveLength(0)
-    expect(wrapper.get('.bd-comments-empty').text()).toBe('No replies from the fediverse on this article yet.')
+    expect(wrapper.findAll('.myc-comment')).toHaveLength(0)
+    expect(wrapper.get('.myc-comments-empty').text()).toBe('No replies from the fediverse on this article yet.')
   })
 
   it('explains how fediverse replies are moderated', async () => {
     const wrapper = await mountSection('doc-blog-only', true)
-    const note = wrapper.get('.bd-comments-moderation')
-    expect(note.get('#bd-comments-moderation-title').text()).toBe('Moderation')
+    const note = wrapper.get('.myc-comments-moderation')
+    expect(note.get('#myc-comments-moderation-title').text()).toBe('Moderation')
     expect(note.findAll('li').map(item => item.text().replace(/\s+/g, ' '))).toEqual([
       '✓ Fediverse replies are published after review',
       '✓ If its author edits it on Mastodon, it goes back to review',
@@ -108,24 +108,24 @@ describe('BlogCommentSection', () => {
   it('leaves the origin filter and the moderation note out of non-federated articles', async () => {
     const wrapper = await mountSection('doc-thread')
     expect(wrapper.find('[role="group"]').exists()).toBe(false)
-    expect(wrapper.find('.bd-comments-moderation').exists()).toBe(false)
-    expect(wrapper.findAll('.bd-comment')).toHaveLength(3)
+    expect(wrapper.find('.myc-comments-moderation').exists()).toBe(false)
+    expect(wrapper.findAll('.myc-comment')).toHaveLength(3)
   })
 
   it('offers replying from Mastodon only on federated articles and opens the fediverse reply block', async () => {
     const plain = await mountSection('doc-blog-only')
-    expect(plain.find('button[aria-controls="bd-fedi-reply"]').exists()).toBe(false)
-    expect(plain.get('.bd-comments-intro').text()).toBe('Leave a comment or reply to other readers.')
+    expect(plain.find('button[aria-controls="myc-fedi-reply"]').exists()).toBe(false)
+    expect(plain.get('.myc-comments-intro').text()).toBe('Leave a comment or reply to other readers.')
 
     const bar = await mountSuspended(BlogFediverseBar, { props: { slug: 'doc-thread', documentId: 'doc-thread' } })
     const federated = await mountSection('doc-thread', true)
-    expect(federated.get('.bd-comments-intro').text()).toContain('both conversations come together in this thread')
-    expect(bar.get('button[aria-controls="bd-fedi-reply"]').attributes('aria-expanded')).toBe('false')
+    expect(federated.get('.myc-comments-intro').text()).toContain('both conversations come together in this thread')
+    expect(bar.get('button[aria-controls="myc-fedi-reply"]').attributes('aria-expanded')).toBe('false')
 
-    const reply = federated.get('.bd-comment-submit button[aria-controls="bd-fedi-reply"]')
+    const reply = federated.get('.myc-comment-submit button[aria-controls="myc-fedi-reply"]')
     expect(reply.text()).toContain('Have a Mastodon account? Reply from there')
     await reply.trigger('click')
     await flushPromises()
-    expect(bar.get('button[aria-controls="bd-fedi-reply"]').attributes('aria-expanded')).toBe('true')
+    expect(bar.get('button[aria-controls="myc-fedi-reply"]').attributes('aria-expanded')).toBe('true')
   })
 })

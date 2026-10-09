@@ -54,7 +54,7 @@ test('the pages render their content without JavaScript', async ({ browser }) =>
   await page.goto('/blog/understanding-vue-composables')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Understanding Vue Composables')
   await page.goto('/blog')
-  await expect(page.locator('.bd-blog-grid .bd-card-title').first()).toBeVisible()
+  await expect(page.locator('.myc-blog-grid .myc-card-title').first()).toBeVisible()
   await context.close()
 })
 
@@ -104,12 +104,12 @@ for (const { path, ...expected } of LANGUAGE_LINKS) {
     const page = await context.newPage()
     expect((await page.goto(path))?.status()).toBe(200)
     for (const [code, href] of Object.entries(expected)) {
-      for (const link of await page.locator(`a[data-bd-lang="${code}"]`).all()) {
+      for (const link of await page.locator(`a[data-myc-lang="${code}"]`).all()) {
         expect(await link.getAttribute('href')).toBe(href)
       }
     }
-    await expect(page.locator('button:visible:not(form.bd-news[method="post"][action] button)')).toHaveCount(0)
-    await expect(page.locator('#bd-site-nav')).toHaveCount(1)
+    await expect(page.locator('button:visible:not(form.myc-news[method="post"][action] button)')).toHaveCount(0)
+    await expect(page.locator('#myc-site-nav')).toHaveCount(1)
     await context.close()
   })
 }

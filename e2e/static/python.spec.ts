@@ -16,7 +16,7 @@ test('nothing of Python loads before Run, then it runs the code with no Vue on t
   expect(loaded).toEqual([])
   await runButton(page, PYTHON).click()
   await expect(resultOf(page, PYTHON)).toHaveAttribute('data-state', 'done', { timeout: 60_000 })
-  const expected = await playground(page, PYTHON).locator('.bd-playground-output').textContent()
+  const expected = await playground(page, PYTHON).locator('.myc-playground-output').textContent()
   expect(await resultOf(page, PYTHON).textContent()).toBe(expected)
   expect(loaded.filter(isPyodide).map(path => path.split('/').pop())).toEqual(expect.arrayContaining(['pyodide.mjs', 'pyodide.asm.mjs', 'pyodide.asm.wasm', 'python_stdlib.zip', 'pyodide-lock.json']))
 })

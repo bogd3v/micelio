@@ -709,7 +709,7 @@
       "fontWeight": 300,
       "letterSpacing": "-0.02em",
       "sample": "Soberanía digital",
-      "usage": "Titular del artículo destacado en la portada. Una vez por vista. Con font-stretch 125% (clase bd-wide)."
+      "usage": "Titular del artículo destacado en la portada. Una vez por vista. Con font-stretch 125% (clase myc-wide)."
      },
      {
       "name": "display-l",

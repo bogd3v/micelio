@@ -33,7 +33,7 @@ const PHOTO_SOURCE_URL = 'https://commons.wikimedia.org/wiki/File:Paisaje_Sumapa
 
 const NIGHT = '/theme/images/hero/sumapaz-night.jpg'
 const DAY = '/theme/images/hero/sumapaz-day.jpg'
-// The desktop and the compact copy swap at the breakpoint of `.bd-hero-art` (app/assets/css/pages/home/hero.css)
+// The desktop and the compact copy swap at the breakpoint of `.myc-hero-art` (app/assets/css/pages/home/hero.css)
 const DESKTOP_MEDIA = '(min-width: 1024px)'
 const COMPACT_MEDIA = '(max-width: 1023.98px)'
 
@@ -119,7 +119,7 @@ const flyers = computed<Flyer[]>(() =>
       <path
         v-for="(route, index) in routes"
         :key="`route-${index}`"
-        class="bd-flight-route"
+        class="myc-flight-route"
         :d="route.d"
         fill="none"
         stroke="var(--link)"
@@ -138,7 +138,7 @@ const flyers = computed<Flyer[]>(() =>
         <path d="M1 9 Q6 1 11 8 Q16 1 21 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
     </div>
-    <i18n-t keypath="theme.hero.figure.caption" tag="p" class="bd-meta bogota-flight-caption" scope="global">
+    <i18n-t keypath="theme.hero.figure.caption" tag="p" class="myc-meta bogota-flight-caption" scope="global">
       <template #author>
         <a
           :href="PHOTO_SOURCE_URL"

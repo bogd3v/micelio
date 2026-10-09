@@ -88,7 +88,7 @@ describe('buildTokensCss', () => {
   })
 
   it('writes the roles only: the typography classes live in the core', () => {
-    expect(css).not.toContain('.bd-meta')
+    expect(css).not.toContain('.myc-meta')
   })
 
   it('writes motion roles and resolves aliases in single-value tokens', () => {
@@ -168,13 +168,13 @@ describe('scripts/build-tokens.mjs', () => {
   it('prints the roles of a theme, or writes them to a file', () => {
     const printed = execFileSync('node', [SCRIPT, BOGOTA], { encoding: 'utf8' })
     expect(printed).toBe(buildTokensCss(JSON.parse(readFileSync(BOGOTA, 'utf8'))))
-    const out = join(mkdtempSync(join(tmpdir(), 'bd-tokens-')), 'roles.css')
+    const out = join(mkdtempSync(join(tmpdir(), 'myc-tokens-')), 'roles.css')
     execFileSync('node', [SCRIPT, BOGOTA, out])
     expect(readFileSync(out, 'utf8')).toBe(printed)
   })
 
   it('fails on a theme without modes', () => {
-    const bad = join(mkdtempSync(join(tmpdir(), 'bd-tokens-')), 'theme.json')
+    const bad = join(mkdtempSync(join(tmpdir(), 'myc-tokens-')), 'theme.json')
     writeFileSync(bad, JSON.stringify({ ...fixture, modes: [] }))
     expect(() => execFileSync('node', [SCRIPT, bad], { stdio: 'pipe' })).toThrow()
   })
@@ -200,8 +200,8 @@ describe('Bogotá\'s theme.json', () => {
     const styles = (data.type?.groups ?? []).flatMap(group => group.styles.map(style => style.name))
     expect(styles).toHaveLength(11)
     for (const style of styles) {
-      expect(block(typography, `.bd-${style} {`)).toContain(`font: var(--text-${style});`)
-      expect(block(typography, `.bd-${style} {`)).toContain(`letter-spacing: var(--tracking-${style});`)
+      expect(block(typography, `.myc-${style} {`)).toContain(`font: var(--text-${style});`)
+      expect(block(typography, `.myc-${style} {`)).toContain(`letter-spacing: var(--tracking-${style});`)
     }
   })
 

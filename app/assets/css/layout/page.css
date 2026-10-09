@@ -1,22 +1,22 @@
-.bd-home,
-.bd-blog,
-.bd-article-page,
-.bd-about,
-.bd-drafts-page,
-.bd-draft-strip,
-.bd-privacy {
+.myc-home,
+.myc-blog,
+.myc-article-page,
+.myc-about,
+.myc-drafts-page,
+.myc-draft-strip,
+.myc-privacy {
     --myc-home-gutter: var(--space-inline);
     --myc-scan: color-mix(in oklab, var(--ink-muted) 7%, transparent);
     overflow-x: clip;
 }
 
 /* App shell: the footer stays at the bottom of short pages */
-.bd-app {
+.myc-app {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
-.bd-app-main {
+.myc-app-main {
     flex: 1;
 }

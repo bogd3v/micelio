@@ -4,7 +4,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <a class="bd-back-to-top" data-static href="#" :aria-label="t('common.backToTop')">
+  <a class="myc-back-to-top" data-static href="#" :aria-label="t('common.backToTop')">
     <IconsChevronUp />
   </a>
 </template>

@@ -56,7 +56,7 @@ Illustration of a category on the topic cards of the home guide and of topic blo
 
 ## `ThemeProgressMarker`
 
-Marker that travels along the reading-progress bar of an article, inside `bd-progress`; the slot renders its own `bd-progress-track` lane.
+Marker that travels along the reading-progress bar of an article, inside `myc-progress`; the slot renders its own `myc-progress-track` lane.
 
 | Prop | Type | Required | Description |
 | --- | --- | --- | --- |

@@ -49,7 +49,7 @@ test('registers, confirms, signs in and signs out without exposing the JWT', asy
   await signIn(page, user.email, user.password)
   await expect(page).toHaveURL(/\/account$/)
   await expect(page.getByRole('heading', { level: 1, name: 'My account' })).toBeVisible()
-  await expect(page.locator('.bd-account-facts')).toContainText(user.email)
+  await expect(page.locator('.myc-account-facts')).toContainText(user.email)
 
   expect(await page.evaluate(() => document.cookie)).not.toContain('micelio_session')
   const session = (await page.context().cookies()).find(cookie => cookie.name === 'micelio_session')
@@ -58,7 +58,7 @@ test('registers, confirms, signs in and signs out without exposing the JWT', asy
   for (const body of authBodies) expect(body).not.toContain(session!.value)
 
   await page.reload({ waitUntil: 'networkidle' })
-  await expect(page.locator('.bd-account-facts')).toContainText(user.email)
+  await expect(page.locator('.myc-account-facts')).toContainText(user.email)
 
   await page.goto('/blog', { waitUntil: 'networkidle' })
   const toggle = page.getByRole('button', { name: `Your account menu, ${user.username}` }).first()
@@ -68,17 +68,17 @@ test('registers, confirms, signs in and signs out without exposing the JWT', asy
   await page.getByRole('button', { name: 'Sign out' }).click()
 
   await expect(page).toHaveURL(/\/account\/sign-in\?notice=signed-out$/)
-  await expect(page.locator('.bd-notice')).toHaveText(/You signed out\./)
+  await expect(page.locator('.myc-notice')).toHaveText(/You signed out\./)
   expect((await page.context().cookies()).some(cookie => cookie.name === 'micelio_session')).toBe(false)
-  await expect(page.locator('.bd-strip').getByRole('link', { name: 'Sign in' })).toBeVisible()
+  await expect(page.locator('.myc-strip').getByRole('link', { name: 'Sign in' })).toBeVisible()
 })
 
 test('shows the editor role and the drafts entry', async ({ page }) => {
   await page.goto('/account/sign-in', { waitUntil: 'networkidle' })
   await signIn(page, testUsers.editor.username, testUsers.editor.password)
   await expect(page).toHaveURL(/\/account$/)
-  await expect(page.locator('.bd-badge')).toHaveText('Editor')
-  await expect(page.locator('.bd-account-drafts')).toHaveAttribute('href', '/drafts')
+  await expect(page.locator('.myc-badge')).toHaveText('Editor')
+  await expect(page.locator('.myc-account-drafts')).toHaveAttribute('href', '/drafts')
   await page.getByRole('button', { name: `Your account menu, ${testUsers.editor.username}` }).first().click()
   await expect(page.getByRole('link', { name: 'Drafts, 2 to review' })).toBeVisible()
 })
@@ -91,7 +91,7 @@ for (const [label, identifier, password, message] of [
   test(`moves focus to the error for ${label}`, async ({ page }) => {
     await page.goto('/account/sign-in', { waitUntil: 'networkidle' })
     await signIn(page, identifier, password)
-    const alert = page.locator('#bd-login-err')
+    const alert = page.locator('#myc-login-err')
     await expect(alert).toHaveText(new RegExp(message.replace(/[.?]/g, '\\$&')))
     await expect(alert).toHaveAttribute('role', 'alert')
     await expect(alert).toBeFocused()
@@ -147,11 +147,11 @@ test('deletes the account only with the right password', async ({ page }) => {
   await page.getByLabel('Your password').fill(user.password)
   await page.getByRole('button', { name: 'Delete forever' }).click()
   await expect(page).toHaveURL(/\/account\/sign-in\?notice=account-deleted$/)
-  await expect(page.locator('.bd-notice')).toHaveText(/We deleted your account and your data\./)
+  await expect(page.locator('.myc-notice')).toHaveText(/We deleted your account and your data\./)
   expect((await page.context().cookies()).some(cookie => cookie.name === 'micelio_session')).toBe(false)
 
   await signIn(page, user.username, user.password)
-  await expect(page.locator('#bd-login-err')).toBeFocused()
+  await expect(page.locator('#myc-login-err')).toBeFocused()
 })
 
 test('marks the account pages as noindex', async ({ page }) => {
@@ -169,13 +169,13 @@ test('validates the sign-up form and focuses the first invalid field', async ({ 
   const username = page.getByLabel('Nombre de usuario', { exact: true })
   await expect(username).toBeFocused()
   await expect(username).toHaveAttribute('aria-invalid', 'true')
-  await expect(username).toHaveAttribute('aria-describedby', 'bd-reg-user-help bd-reg-user-err')
-  await expect(page.locator('#bd-reg-mail-err')).toHaveText(/Escribe un correo válido/)
-  await expect(page.locator('#bd-reg-terms-err')).toHaveText(/Marca la casilla/)
+  await expect(username).toHaveAttribute('aria-describedby', 'myc-reg-user-help myc-reg-user-err')
+  await expect(page.locator('#myc-reg-mail-err')).toHaveText(/Escribe un correo válido/)
+  await expect(page.locator('#myc-reg-terms-err')).toHaveText(/Marca la casilla/)
 
   const password = page.getByLabel('Contraseña', { exact: true })
   await password.fill('frase con espacio')
-  await expect(page.locator('#bd-reg-pw-meter')).toHaveText('Fuerza: muy buena')
+  await expect(page.locator('#myc-reg-pw-meter')).toHaveText('Fuerza: muy buena')
   await expect(password).toHaveAttribute('type', 'password')
   await page.getByRole('button', { name: 'Mostrar' }).click()
   await expect(password).toHaveAttribute('type', 'text')
@@ -186,13 +186,13 @@ test('recovers the password without revealing the account', async ({ page }) => 
   await page.goto('/account/forgot-password', { waitUntil: 'networkidle' })
   await page.getByLabel('Email', { exact: true }).fill('nadie@example.com')
   await page.getByRole('button', { name: 'Send link' }).click()
-  await expect(page.locator('.bd-notice')).toHaveText(/If there's an account with that email/)
+  await expect(page.locator('.myc-notice')).toHaveText(/If there's an account with that email/)
 })
 
 test('shows the sign-in entry in the mobile header and menu sheet', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/', { waitUntil: 'networkidle' })
-  await expect(page.locator('.bd-nav-mobile').getByRole('link', { name: 'Sign in to your account' })).toHaveAttribute('href', '/account/sign-in?redirect=/')
-  await page.locator('.bd-nav-mobile').getByRole('button', { name: 'Open menu' }).click()
+  await expect(page.locator('.myc-nav-mobile').getByRole('link', { name: 'Sign in to your account' })).toHaveAttribute('href', '/account/sign-in?redirect=/')
+  await page.locator('.myc-nav-mobile').getByRole('button', { name: 'Open menu' }).click()
   await expect(page.getByRole('dialog').getByRole('link', { name: /Sign in/ })).toHaveAttribute('href', '/account/sign-in')
 })

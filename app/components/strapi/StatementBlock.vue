@@ -7,11 +7,11 @@ defineProps<{
 </script>
 
 <template>
-  <section class="bd-home-section bd-about-split bd-reveal">
-    <p v-if="block.eyebrow" class="bd-eyebrow bd-home-eyebrow bd-about-split-label">{{ block.eyebrow }}</p>
-    <div class="bd-about-split-body">
-      <p class="bd-statement bd-wide">{{ block.statement }}</p>
-      <p v-if="block.body" class="bd-statement-body">{{ block.body }}</p>
+  <section class="myc-home-section myc-about-split myc-reveal">
+    <p v-if="block.eyebrow" class="myc-eyebrow myc-home-eyebrow myc-about-split-label">{{ block.eyebrow }}</p>
+    <div class="myc-about-split-body">
+      <p class="myc-statement myc-wide">{{ block.statement }}</p>
+      <p v-if="block.body" class="myc-statement-body">{{ block.body }}</p>
     </div>
   </section>
 </template>

@@ -136,7 +136,7 @@ onUnmounted(stopAutoplay)
 
 <template>
   <figure
-    class="bd-fig bd-slider"
+    class="myc-fig myc-slider"
     tabindex="0"
     role="region"
     aria-roledescription="carousel"
@@ -144,19 +144,19 @@ onUnmounted(stopAutoplay)
     @keydown="onKeydown"
   >
     <div
-      class="bd-fig-media bd-slider-media"
+      class="myc-fig-media myc-slider-media"
       @mouseenter="isPaused = true"
       @mouseleave="isPaused = false"
       @touchstart.passive="onTouchStart"
       @touchmove.passive="onTouchMove"
       @touchend.passive="onTouchEnd"
     >
-      <div class="bd-slider-frame">
+      <div class="myc-slider-frame">
         <div
           v-for="(slide, index) in slides"
           :key="index"
-          class="bd-slider-slide"
-          :class="{ 'bd-slider-slide-active': index === currentIndex }"
+          class="myc-slider-slide"
+          :class="{ 'myc-slider-slide-active': index === currentIndex }"
           role="group"
           :aria-roledescription="hasMultiple ? 'slide' : undefined"
           :aria-label="`${index + 1} ${t('common.of', 'of')} ${totalSlides}`"
@@ -169,21 +169,21 @@ onUnmounted(stopAutoplay)
             format="webp"
             loading="lazy"
             draggable="false"
-            class="bd-slider-img"
-            :class="{ 'bd-slider-img-zoom': index === currentIndex && !prefersReducedMotion }"
+            class="myc-slider-img"
+            :class="{ 'myc-slider-img-zoom': index === currentIndex && !prefersReducedMotion }"
           />
         </div>
       </div>
 
       <div
         v-if="hasMultiple"
-        class="bd-slider-scrim"
+        class="myc-slider-scrim"
       />
 
       <template v-if="hasMultiple">
         <button
           :aria-label="t('common.ariaPrevSlide', 'Previous slide')"
-          class="bd-slider-arrow bd-slider-prev"
+          class="myc-slider-arrow myc-slider-prev"
           @click="prev"
         >
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,7 +192,7 @@ onUnmounted(stopAutoplay)
         </button>
         <button
           :aria-label="t('common.ariaNextSlide', 'Next slide')"
-          class="bd-slider-arrow bd-slider-next"
+          class="myc-slider-arrow myc-slider-next"
           @click="next"
         >
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,26 +203,26 @@ onUnmounted(stopAutoplay)
 
       <div
         v-if="hasMultiple"
-        class="bd-slider-dots"
+        class="myc-slider-dots"
       >
-        <div class="bd-slider-dot-list">
+        <div class="myc-slider-dot-list">
           <button
             v-for="(_, index) in slides"
             :key="index"
             :aria-label="`${t('common.goToSlide', 'Go to slide')} ${index + 1}`"
-            class="bd-slider-dot"
-            :class="{ 'bd-slider-dot-active': index === currentIndex }"
+            class="myc-slider-dot"
+            :class="{ 'myc-slider-dot-active': index === currentIndex }"
             @click="goTo(index)"
           >
-            <span class="bd-slider-dot-track" />
+            <span class="myc-slider-dot-track" />
             <span
               v-if="index === currentIndex"
-              class="bd-slider-dot-fill"
+              class="myc-slider-dot-fill"
               :style="{ width: `${progress}%` }"
             />
             <span
               v-else
-              class="bd-slider-dot-hover"
+              class="myc-slider-dot-hover"
             />
           </button>
         </div>
@@ -230,17 +230,17 @@ onUnmounted(stopAutoplay)
 
       <div
         v-if="hasMultiple"
-        class="bd-slider-count"
+        class="myc-slider-count"
       >
-        <span class="bd-slider-count-text">
+        <span class="myc-slider-count-text">
           {{ String(currentIndex + 1).padStart(2, '0') }} / {{ String(totalSlides).padStart(2, '0') }}
         </span>
       </div>
     </div>
 
     <figcaption v-if="hasFigcaption" aria-live="polite">
-      <span v-if="activeCaption || figureNumber" class="bd-fig-cap">
-        <span v-if="figureNumber" class="bd-fig-n">{{ t('bd.figure.number', { n: formatFigureNumber(figureNumber) }) }}</span>
+      <span v-if="activeCaption || figureNumber" class="myc-fig-cap">
+        <span v-if="figureNumber" class="myc-fig-n">{{ t('bd.figure.number', { n: formatFigureNumber(figureNumber) }) }}</span>
         {{ activeCaption }}
       </span>
       <BdFigureCredit v-if="activeSlide?.credit" :key="currentIndex" :credit="activeSlide.credit" />

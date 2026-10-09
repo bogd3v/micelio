@@ -10,7 +10,7 @@ describe('BlogPagination', () => {
     })
     const nav = wrapper.get('nav')
     expect(nav.attributes('aria-label')).toBe('Pagination')
-    const pages = wrapper.findAll('.bd-page-list a')
+    const pages = wrapper.findAll('.myc-page-list a')
     expect(pages.map(page => page.text())).toEqual(['01', '02', '03'])
     expect(pages.map(page => page.attributes('href'))).toEqual([
       '/blog/category/linux',
@@ -20,12 +20,12 @@ describe('BlogPagination', () => {
     expect(pages[1]!.attributes('aria-current')).toBe('page')
     expect(wrapper.get('a[aria-label="Previous page"]').attributes('href')).toBe('/blog/category/linux')
     expect(wrapper.get('a[aria-label="Next page"]').attributes('href')).toBe('/blog/category/linux/page/3')
-    expect(wrapper.get('.bd-page-status').text()).toBe('Page 02 of 03 · 6 per page')
+    expect(wrapper.get('.myc-page-status').text()).toBe('Page 02 of 03 · 6 per page')
   })
 
   it('disables the steps on a single page', async () => {
     const wrapper = await mountSuspended(BlogPagination, { props: { filters: { page: 1 }, totalPages: 1, pageSize: 6 } })
     expect(wrapper.findAll('[aria-disabled="true"]')).toHaveLength(2)
-    expect(wrapper.findAll('a.bd-page-step')).toHaveLength(0)
+    expect(wrapper.findAll('a.myc-page-step')).toHaveLength(0)
   })
 })

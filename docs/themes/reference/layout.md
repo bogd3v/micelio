@@ -2,7 +2,7 @@
 
 # Layout
 
-Regions of the site and the variants the core implements, chosen under `layout` in `theme.json`. An omitted region uses its default, the first variant. A name outside this list fails validation. Every installed theme styles every variant. In `theme.css`, select a hook together with the variant (`.bd-header[data-layout="centered"] .bd-nav-link`) when a rule is meant for one of them. Hooks that appear in every variant of their region are in [hooks.md](hooks.md).
+Regions of the site and the variants the core implements, chosen under `layout` in `theme.json`. An omitted region uses its default, the first variant. A name outside this list fails validation. Every installed theme styles every variant. In `theme.css`, select a hook together with the variant (`.myc-header[data-layout="centered"] .myc-nav-link`) when a rule is meant for one of them. Hooks that appear in every variant of their region are in [hooks.md](hooks.md).
 
 ## `header`
 
@@ -19,8 +19,8 @@ Component `RegionHome`. The root element carries `data-layout="<variant>"`.
 
 | Variant | Description | Hooks only in this variant |
 | --- | --- | --- |
-| `showcase` (default) | Hero, featured article, latest articles and topic guide. | `bd-home-featured`, `bd-hero`, `bd-hero-art`, `bd-hero-place`, `bd-hero-copy`, `bd-hero-title`, `bd-hero-lead`, `bd-hero-actions`, `bd-guide-grid`, `bd-guide-card`, `bd-subscribe`, `bd-fedi` |
-| `index` | Site name, description and a link to the about page, then the latest articles; no hero. | `bd-home-lede`, `bd-home-lede-title`, `bd-home-lede-text` |
+| `showcase` (default) | Hero, featured article, latest articles and topic guide. | `myc-home-featured`, `myc-hero`, `myc-hero-art`, `myc-hero-place`, `myc-hero-copy`, `myc-hero-title`, `myc-hero-lead`, `myc-hero-actions`, `myc-guide-grid`, `myc-guide-card`, `myc-subscribe`, `myc-fedi` |
+| `index` | Site name, description and a link to the about page, then the latest articles; no hero. | `myc-home-lede`, `myc-home-lede-title`, `myc-home-lede-text` |
 
 ## `postList`
 
@@ -28,8 +28,8 @@ Component `RegionPostList`. The root element carries `data-layout="<variant>"`.
 
 | Variant | Description | Hooks only in this variant |
 | --- | --- | --- |
-| `grid` (default) | Cards in a grid, with the grid and log view switch. | `bd-blog-grid` |
-| `list` | Rows with date, title and excerpt; hides the view switch. | `bd-post-rows`, `bd-post-row`, `bd-post-row-date`, `bd-post-row-title`, `bd-post-row-link`, `bd-post-row-excerpt`, `bd-post-row-meta` |
+| `grid` (default) | Cards in a grid, with the grid and log view switch. | `myc-blog-grid` |
+| `list` | Rows with date, title and excerpt; hides the view switch. | `myc-post-rows`, `myc-post-row`, `myc-post-row-date`, `myc-post-row-title`, `myc-post-row-link`, `myc-post-row-excerpt`, `myc-post-row-meta` |
 
 ## `article`
 
@@ -38,7 +38,7 @@ Component `RegionArticle`. The root element carries `data-layout="<variant>"`.
 | Variant | Description | Hooks only in this variant |
 | --- | --- | --- |
 | `aside` (default) | Table of contents and share buttons in side columns. | none |
-| `centered` | One column, with the table of contents collapsed in a `<details>` above the text; the share buttons, comments and related articles follow the text. | `bd-article-toc-summary` |
+| `centered` | One column, with the table of contents collapsed in a `<details>` above the text; the share buttons, comments and related articles follow the text. | `myc-article-toc-summary` |
 
 ## `footer`
 
@@ -46,5 +46,5 @@ Component `RegionFooter`. The root element carries `data-layout="<variant>"`.
 
 | Variant | Description | Hooks only in this variant |
 | --- | --- | --- |
-| `columns` (default) | Brand column and link columns (accordions on small screens), the support link, the `ThemeDivider` slot and the "made in" line. | `bd-foot-brand-col`, `bd-foot-tagline`, `bd-foot-heading`, `bd-foot-accordions`, `bd-acc`, `bd-foot-row` |
+| `columns` (default) | Brand column and link columns (accordions on small screens), the support link, the `ThemeDivider` slot and the "made in" line. | `myc-foot-brand-col`, `myc-foot-tagline`, `myc-foot-heading`, `myc-foot-accordions`, `myc-acc`, `myc-foot-row` |
 | `minimal` | A single row; leaves out the support link, the `ThemeDivider` slot and the "made in" line. | none |

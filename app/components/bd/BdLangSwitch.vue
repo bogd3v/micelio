@@ -30,13 +30,13 @@ async function select(next: Locale): Promise<void> {
 </script>
 
 <template>
-  <div class="bd-seg-group bd-lang" role="group" :aria-label="t('bd.header.language')">
+  <div class="myc-seg-group myc-lang" role="group" :aria-label="t('bd.header.language')">
     <template v-for="option in options" :key="option">
       <NuxtLink
         v-if="isStatic"
         :to="staticHref(option)"
-        :data-bd-lang="option"
-        class="bd-seg"
+        :data-myc-lang="option"
+        class="myc-seg"
         :lang="option"
         :hreflang="option"
         :aria-label="t(`bd.header.languages.${option}`)"
@@ -47,7 +47,7 @@ async function select(next: Locale): Promise<void> {
       <button
         v-else
         type="button"
-        class="bd-seg"
+        class="myc-seg"
         :lang="option"
         :aria-label="t(`bd.header.languages.${option}`)"
         :aria-pressed="locale === option ? 'true' : 'false'"

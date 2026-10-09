@@ -55,28 +55,28 @@ const topics: FieldGuideTopic[] = CATEGORIES.map((category, index) => ({ categor
 </script>
 
 <template>
-  <div class="bd-specimen-stack">
+  <div class="myc-specimen-stack">
     <div>
-      <h3 class="bd-specimen-label">{{ t('specimen.regions.active') }}</h3>
-      <dl class="bd-specimen-variants">
+      <h3 class="myc-specimen-label">{{ t('specimen.regions.active') }}</h3>
+      <dl class="myc-specimen-variants">
         <template v-for="[region, variant] in regions" :key="region">
           <dt>{{ region }}</dt>
           <dd><code>{{ variant }}</code></dd>
         </template>
       </dl>
-      <p class="bd-body-s">{{ t('specimen.regions.chrome') }}</p>
+      <p class="myc-body-s">{{ t('specimen.regions.chrome') }}</p>
     </div>
 
     <div v-for="{ region, variant, component, view, props } in chrome" :key="component">
-      <h3 class="bd-specimen-label">{{ t(`specimen.regions.${region}Variant`, { variant: t(`specimen.regions.variantNames.${variant}`) }) }}</h3>
-      <div ref="copies" class="bd-specimen-frame">
+      <h3 class="myc-specimen-label">{{ t(`specimen.regions.${region}Variant`, { variant: t(`specimen.regions.variantNames.${variant}`) }) }}</h3>
+      <div ref="copies" class="myc-specimen-frame">
         <component :is="view" v-bind="props" />
       </div>
     </div>
 
     <div v-for="{ region, variant, component, view } in content" :key="component">
-      <h3 class="bd-specimen-label">{{ t(`specimen.regions.${region}Variant`, { variant: t(`specimen.regions.variantNames.${variant}`) }) }}</h3>
-      <div ref="copies" class="bd-specimen-frame">
+      <h3 class="myc-specimen-label">{{ t(`specimen.regions.${region}Variant`, { variant: t(`specimen.regions.variantNames.${variant}`) }) }}</h3>
+      <div ref="copies" class="myc-specimen-frame">
         <component :is="view" v-if="region === 'postList'" :posts="POSTS" view="grid" :federated="false" />
         <component :is="view" v-else-if="region === 'home'" :featured-post="FEATURED_POST" :total="POSTS.length" :counts="counts" :topics="topics" />
         <component :is="view" v-else :post="ARTICLE" share-url="https://example.com/blog/specimen" draft />
@@ -84,25 +84,25 @@ const topics: FieldGuideTopic[] = CATEGORIES.map((category, index) => ({ categor
     </div>
 
     <div>
-      <h3 class="bd-specimen-label">{{ t('specimen.regions.postList') }}</h3>
-      <div class="bd-specimen-frame">
+      <h3 class="myc-specimen-label">{{ t('specimen.regions.postList') }}</h3>
+      <div class="myc-specimen-frame">
         <RegionPostList :posts="POSTS" view="grid" :federated="false" />
       </div>
-      <div class="bd-specimen-frame">
+      <div class="myc-specimen-frame">
         <RegionPostList :posts="POSTS" view="log" :federated="false" />
       </div>
     </div>
 
     <div>
-      <h3 class="bd-specimen-label">{{ t('specimen.regions.home') }}</h3>
-      <div class="bd-specimen-frame">
+      <h3 class="myc-specimen-label">{{ t('specimen.regions.home') }}</h3>
+      <div class="myc-specimen-frame">
         <RegionHome :featured-post="FEATURED_POST" :total="POSTS.length" :counts="counts" :topics="topics" />
       </div>
     </div>
 
     <div>
-      <h3 class="bd-specimen-label">{{ t('specimen.regions.article') }}</h3>
-      <div class="bd-specimen-frame">
+      <h3 class="myc-specimen-label">{{ t('specimen.regions.article') }}</h3>
+      <div class="myc-specimen-frame">
         <RegionArticle :post="ARTICLE" share-url="https://example.com/blog/specimen" draft />
       </div>
     </div>

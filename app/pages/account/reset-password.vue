@@ -51,14 +51,14 @@ async function submit(): Promise<void> {
 
 <template>
   <AccountShell>
-    <div v-if="!code" class="bd-account-view">
+    <div v-if="!code" class="myc-account-view">
       <AccountHeading :eyebrow="t('account.eyebrow.reset')" :title="t('account.reset.title')" />
       <AccountNotice tone="error">{{ t('account.reset.missingCode') }}</AccountNotice>
       <div>
         <BdButton :href="localizePath('/account/forgot-password')" variant="secondary">{{ t('account.reset.requestNew') }}</BdButton>
       </div>
     </div>
-    <form v-else class="bd-account-view" novalidate @submit.prevent="submit">
+    <form v-else class="myc-account-view" novalidate @submit.prevent="submit">
       <AccountHeading :eyebrow="t('account.eyebrow.reset')" :title="t('account.reset.title')">
         {{ t('account.reset.lead') }}
       </AccountHeading>
@@ -67,7 +67,7 @@ async function submit(): Promise<void> {
         <NuxtLink v-if="codeExpired" :to="localizePath('/account/forgot-password')">{{ t('account.reset.requestNew') }}</NuxtLink>
       </AccountNotice>
       <AccountPasswordField
-        id="bd-new-pw"
+        id="myc-new-pw"
         ref="passwordRef"
         v-model="password"
         :label="t('account.reset.password')"
@@ -77,7 +77,7 @@ async function submit(): Promise<void> {
         meter
       />
       <AccountPasswordField
-        id="bd-new-pw2"
+        id="myc-new-pw2"
         ref="confirmationRef"
         v-model="confirmation"
         :label="t('account.reset.confirm')"

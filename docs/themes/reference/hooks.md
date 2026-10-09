@@ -2,7 +2,7 @@
 
 # Hooks
 
-Public styling hooks of contract v1, from `app/theme/hooks.json`. A theme's `theme.css` and slot CSS may select only these `bd-*` classes and core `data-*` attributes; every other one is internal and can change in any release. Adding a hook stays in contract v1; removing or renaming one is a contract change. A state is a class or attribute the hook takes.
+Public styling hooks of contract v1, from `app/theme/hooks.json`. A theme's `theme.css` and slot CSS may select only these `myc-*` classes and core `data-*` attributes; every other one is internal and can change in any release. Adding a hook stays in contract v1; removing or renaming one is a contract change. A state is a class or attribute the hook takes.
 
 ## Attributes
 
@@ -11,111 +11,111 @@ Public styling hooks of contract v1, from `app/theme/hooks.json`. A theme's `the
 | `data-theme` | `<html>`: id of the active mode (the micelio-theme value). | the ids of the theme's modes |
 | `data-scheme` | `<html>`: lightness of the active mode. | `dark`, `light` |
 | `data-layout` | The root element of a layout region: the variant it renders. | `bar`, `centered`, `showcase`, `index`, `grid`, `list`, `aside`, `columns`, `minimal` |
-| `data-mode` | A button of the mode switch: the mode it selects (.bd-seg). | the ids of the theme's modes |
-| `data-level` | Password strength meter: how many bars are lit (.bd-meter). | `1`, `2`, `3`, `4` |
-| `data-section` | The root of a page section: the section it renders (.bd-section). | `hero`, `feature-grid`, `media-showcase`, `stats`, `logo-cloud`, `testimonials`, `pricing`, `faq`, `cta`, `post-list`, `newsletter`, `rich-text`, `gallery`, `scene` |
+| `data-mode` | A button of the mode switch: the mode it selects (.myc-seg). | the ids of the theme's modes |
+| `data-level` | Password strength meter: how many bars are lit (.myc-meter). | `1`, `2`, `3`, `4` |
+| `data-section` | The root of a page section: the section it renders (.myc-section). | `hero`, `feature-grid`, `media-showcase`, `stats`, `logo-cloud`, `testimonials`, `pricing`, `faq`, `cta`, `post-list`, `newsletter`, `rich-text`, `gallery`, `scene` |
 | `data-variant` | The root of a page section: the variant it renders, always read together with data-section (ADR 0005, section 11). rich-text has none. | `hero: centered, split, full-bleed`, `feature-grid: grid, list, bento`, `media-showcase: left, right, stacked`, `stats: row, cards`, `logo-cloud: row, marquee`, `testimonials: single, grid`, `pricing: cards, table`, `faq: list, two-columns`, `cta: banner, card`, `post-list: cards, list`, `newsletter: inline, card`, `gallery: grid, masonry`, `scene: background, inline` |
 
 ## Classes of `header`
 
 | Class | Describes | States | Variants |
 | --- | --- | --- | --- |
-| `bd-header` | Site header. | `bd-header-reading`, `bd-header-auto` | every variant |
-| `bd-nav` | Main row of the header: logo, navigation and actions in bar; logo above the navigation in centered. |  | every variant |
-| `bd-header-inner` | Width-limited content of a header row. |  | every variant |
-| `bd-brand` | Link around the ThemeMark in the header. |  | every variant |
-| `bd-nav-main` | Primary navigation landmark. |  | every variant |
-| `bd-nav-links` | List of the navigation links. |  | every variant |
-| `bd-nav-link` | A navigation link. | `[aria-current]`, `:hover` | every variant |
-| `bd-nav-lang` | Language switch in the header. |  | every variant |
-| `bd-nav-mobile` | Actions shown on small screens. |  | every variant |
-| `bd-strip` | Second row of the header: breadcrumbs or HUD, and actions. |  | every variant |
-| `bd-strip-actions` | Actions at the end of the strip. |  | every variant |
-| `bd-progress` | Reading progress bar of the header on articles. |  | every variant |
-| `bd-progress-bar` | Filled part of the progress bar. |  | every variant |
-| `bd-progress-track` | Lane a ThemeProgressMarker travels along (the slot renders it); moved by the --myc-read custom property of .bd-progress. |  | every variant |
-| `bd-hud` | Place line of the header strip; rendered only when the theme has theme.hud messages. |  | every variant |
+| `myc-header` | Site header. | `myc-header-reading`, `myc-header-auto` | every variant |
+| `myc-nav` | Main row of the header: logo, navigation and actions in bar; logo above the navigation in centered. |  | every variant |
+| `myc-header-inner` | Width-limited content of a header row. |  | every variant |
+| `myc-brand` | Link around the ThemeMark in the header. |  | every variant |
+| `myc-nav-main` | Primary navigation landmark. |  | every variant |
+| `myc-nav-links` | List of the navigation links. |  | every variant |
+| `myc-nav-link` | A navigation link. | `[aria-current]`, `:hover` | every variant |
+| `myc-nav-lang` | Language switch in the header. |  | every variant |
+| `myc-nav-mobile` | Actions shown on small screens. |  | every variant |
+| `myc-strip` | Second row of the header: breadcrumbs or HUD, and actions. |  | every variant |
+| `myc-strip-actions` | Actions at the end of the strip. |  | every variant |
+| `myc-progress` | Reading progress bar of the header on articles. |  | every variant |
+| `myc-progress-bar` | Filled part of the progress bar. |  | every variant |
+| `myc-progress-track` | Lane a ThemeProgressMarker travels along (the slot renders it); moved by the --myc-read custom property of .myc-progress. |  | every variant |
+| `myc-hud` | Place line of the header strip; rendered only when the theme has theme.hud messages. |  | every variant |
 
 ## Classes of `home`
 
 | Class | Describes | States | Variants |
 | --- | --- | --- | --- |
-| `bd-home` | Home page content. |  | every variant |
-| `bd-home-featured` | The featured article of the home. |  | `showcase` |
-| `bd-home-lede` | Introduction of the home: site name, description and a link to the about page. |  | `index` |
-| `bd-home-lede-title` | Site name, the h1 of the index home. |  | `index` |
-| `bd-home-lede-text` | Site description under the title. |  | `index` |
-| `bd-hero` | Hero of the home. |  | `showcase` |
-| `bd-hero-art` | Box that holds the ThemeHero slot. |  | `showcase` |
-| `bd-hero-place` | Place line of the hero; rendered only when the theme has theme.hud messages. |  | `showcase` |
-| `bd-hero-copy` | Text column of the hero. |  | `showcase` |
-| `bd-hero-title` | Title of the hero. |  | `showcase` |
-| `bd-hero-lead` | Lead paragraph of the hero. |  | `showcase` |
-| `bd-hero-actions` | Buttons of the hero. |  | `showcase` |
-| `bd-latest-grid` | Grid of the latest articles on the home. |  | every variant |
-| `bd-guide-grid` | Grid of the topic cards on the home. |  | `showcase` |
-| `bd-guide-card` | A topic card of the home. |  | `showcase` |
-| `bd-subscribe` | Newsletter section of the home. |  | `showcase` |
-| `bd-fedi` | Fediverse section of the home. |  | `showcase` |
+| `myc-home` | Home page content. |  | every variant |
+| `myc-home-featured` | The featured article of the home. |  | `showcase` |
+| `myc-home-lede` | Introduction of the home: site name, description and a link to the about page. |  | `index` |
+| `myc-home-lede-title` | Site name, the h1 of the index home. |  | `index` |
+| `myc-home-lede-text` | Site description under the title. |  | `index` |
+| `myc-hero` | Hero of the home. |  | `showcase` |
+| `myc-hero-art` | Box that holds the ThemeHero slot. |  | `showcase` |
+| `myc-hero-place` | Place line of the hero; rendered only when the theme has theme.hud messages. |  | `showcase` |
+| `myc-hero-copy` | Text column of the hero. |  | `showcase` |
+| `myc-hero-title` | Title of the hero. |  | `showcase` |
+| `myc-hero-lead` | Lead paragraph of the hero. |  | `showcase` |
+| `myc-hero-actions` | Buttons of the hero. |  | `showcase` |
+| `myc-latest-grid` | Grid of the latest articles on the home. |  | every variant |
+| `myc-guide-grid` | Grid of the topic cards on the home. |  | `showcase` |
+| `myc-guide-card` | A topic card of the home. |  | `showcase` |
+| `myc-subscribe` | Newsletter section of the home. |  | `showcase` |
+| `myc-fedi` | Fediverse section of the home. |  | `showcase` |
 
 ## Classes of `postList`
 
 | Class | Describes | States | Variants |
 | --- | --- | --- | --- |
-| `bd-blog` | The article list page. |  | every variant |
-| `bd-blog-head` | Title and lead of the list page. |  | every variant |
-| `bd-blog-title` | Title of the list page. |  | every variant |
-| `bd-blog-lead` | Lead of the list page. |  | every variant |
-| `bd-blog-controls` | View and sort controls (the view switch only with the grid variant). |  | every variant |
-| `bd-blog-filters` | Search and category filters. |  | every variant |
-| `bd-blog-grid` | The grid of article cards. |  | `grid` |
-| `bd-post-rows` | The ordered list of article rows. |  | `list` |
-| `bd-post-row` | An article row: date, title, excerpt and meta. |  | `list` |
-| `bd-post-row-date` | Date of a row. |  | `list` |
-| `bd-post-row-title` | Title (h3) of a row; it holds the link that covers the row. |  | `list` |
-| `bd-post-row-link` | Link of a row title; its ::after covers the whole row. |  | `list` |
-| `bd-post-row-excerpt` | Excerpt or search snippet of a row. |  | `list` |
-| `bd-post-row-meta` | Category, fediverse stats and read mark of a row. |  | `list` |
+| `myc-blog` | The article list page. |  | every variant |
+| `myc-blog-head` | Title and lead of the list page. |  | every variant |
+| `myc-blog-title` | Title of the list page. |  | every variant |
+| `myc-blog-lead` | Lead of the list page. |  | every variant |
+| `myc-blog-controls` | View and sort controls (the view switch only with the grid variant). |  | every variant |
+| `myc-blog-filters` | Search and category filters. |  | every variant |
+| `myc-blog-grid` | The grid of article cards. |  | `grid` |
+| `myc-post-rows` | The ordered list of article rows. |  | `list` |
+| `myc-post-row` | An article row: date, title, excerpt and meta. |  | `list` |
+| `myc-post-row-date` | Date of a row. |  | `list` |
+| `myc-post-row-title` | Title (h3) of a row; it holds the link that covers the row. |  | `list` |
+| `myc-post-row-link` | Link of a row title; its ::after covers the whole row. |  | `list` |
+| `myc-post-row-excerpt` | Excerpt or search snippet of a row. |  | `list` |
+| `myc-post-row-meta` | Category, fediverse stats and read mark of a row. |  | `list` |
 
 ## Classes of `article`
 
 | Class | Describes | States | Variants |
 | --- | --- | --- | --- |
-| `bd-article-page` | An article page. |  | every variant |
-| `bd-article-head` | Title block of an article. |  | every variant |
-| `bd-article-kicker` | Category and date line. |  | every variant |
-| `bd-article-title` | Title of an article. |  | every variant |
-| `bd-article-lead` | Description under the title. |  | every variant |
-| `bd-article-byline` | Author and actions. |  | every variant |
-| `bd-article-figure` | Cover figure. |  | every variant |
-| `bd-article-cover` | Cover image box. |  | every variant |
-| `bd-article-body` | Table of contents, content and share column. |  | every variant |
-| `bd-article-toc` | Table of contents: a column (aside) or a collapsed details (centered). |  | every variant |
-| `bd-article-toc-summary` | Summary that opens the collapsed table of contents. |  | `centered` |
-| `bd-article-content` | The article element. |  | every variant |
-| `bd-article-after` | Tags, reading path and author after the content. |  | every variant |
-| `bd-article-share` | Share buttons: a column beside the text (aside) or a row after it (centered). |  | every variant |
+| `myc-article-page` | An article page. |  | every variant |
+| `myc-article-head` | Title block of an article. |  | every variant |
+| `myc-article-kicker` | Category and date line. |  | every variant |
+| `myc-article-title` | Title of an article. |  | every variant |
+| `myc-article-lead` | Description under the title. |  | every variant |
+| `myc-article-byline` | Author and actions. |  | every variant |
+| `myc-article-figure` | Cover figure. |  | every variant |
+| `myc-article-cover` | Cover image box. |  | every variant |
+| `myc-article-body` | Table of contents, content and share column. |  | every variant |
+| `myc-article-toc` | Table of contents: a column (aside) or a collapsed details (centered). |  | every variant |
+| `myc-article-toc-summary` | Summary that opens the collapsed table of contents. |  | `centered` |
+| `myc-article-content` | The article element. |  | every variant |
+| `myc-article-after` | Tags, reading path and author after the content. |  | every variant |
+| `myc-article-share` | Share buttons: a column beside the text (aside) or a row after it (centered). |  | every variant |
 
 ## Classes of `footer`
 
 | Class | Describes | States | Variants |
 | --- | --- | --- | --- |
-| `bd-foot` | Site footer. |  | every variant |
-| `bd-foot-main` | Brand and links of the footer: columns in columns, one row in minimal. |  | every variant |
-| `bd-foot-brand-col` | Column with the mark, tagline and social links. |  | `columns` |
-| `bd-foot-brand` | Link around the ThemeMark in the footer. |  | every variant |
-| `bd-foot-tagline` | Short description under the footer mark. |  | `columns` |
-| `bd-foot-socials` | List of social links. |  | every variant |
-| `bd-foot-soc` | A social link. |  | every variant |
-| `bd-foot-nav` | A column of links (columns) or the row of links (minimal). |  | every variant |
-| `bd-foot-heading` | Heading of a column. |  | `columns` |
-| `bd-foot-link` | A link of a column (columns) or of the footer row (minimal). |  | every variant |
-| `bd-foot-accordions` | The columns as accordions on small screens. |  | `columns` |
-| `bd-acc` | An accordion (details). | `[open]` | `columns` |
-| `bd-foot-row` | A link row inside an accordion. |  | `columns` |
-| `bd-foot-credits` | Legal line at the bottom of the footer. |  | every variant |
-| `bd-foot-legal` | Copyright, privacy link and source link. |  | every variant |
-| `bd-foot-source` | Link to the source code of the site, required by the AGPL (section 13): restyle it, do not hide it. |  | every variant |
+| `myc-foot` | Site footer. |  | every variant |
+| `myc-foot-main` | Brand and links of the footer: columns in columns, one row in minimal. |  | every variant |
+| `myc-foot-brand-col` | Column with the mark, tagline and social links. |  | `columns` |
+| `myc-foot-brand` | Link around the ThemeMark in the footer. |  | every variant |
+| `myc-foot-tagline` | Short description under the footer mark. |  | `columns` |
+| `myc-foot-socials` | List of social links. |  | every variant |
+| `myc-foot-soc` | A social link. |  | every variant |
+| `myc-foot-nav` | A column of links (columns) or the row of links (minimal). |  | every variant |
+| `myc-foot-heading` | Heading of a column. |  | `columns` |
+| `myc-foot-link` | A link of a column (columns) or of the footer row (minimal). |  | every variant |
+| `myc-foot-accordions` | The columns as accordions on small screens. |  | `columns` |
+| `myc-acc` | An accordion (details). | `[open]` | `columns` |
+| `myc-foot-row` | A link row inside an accordion. |  | `columns` |
+| `myc-foot-credits` | Legal line at the bottom of the footer. |  | every variant |
+| `myc-foot-legal` | Copyright, privacy link and source link. |  | every variant |
+| `myc-foot-source` | Link to the source code of the site, required by the AGPL (section 13): restyle it, do not hide it. |  | every variant |
 
 ## General classes
 
@@ -123,116 +123,116 @@ These appear in every layout variant.
 
 | Class | Describes | States |
 | --- | --- | --- |
-| `bd-app` | The page shell: header, main and footer. |  |
-| `bd-app-main` | The main landmark. |  |
-| `bd-wide` | Display text that takes the heading tracking and width. |  |
-| `bd-eyebrow` | Small uppercase label above a title. |  |
-| `bd-meta` | Metadata text: dates, counts, coordinates. |  |
-| `bd-sr` | Visually hidden text for screen readers. |  |
-| `bd-reveal` | A block that fades in when scrolled into view. |  |
-| `bd-post-media` | Cover of a post (card, featured card, article): the element that takes part in the card to article view transition. The core sets its view-transition-name; do not set one. |  |
-| `bd-post-title` | Title of a post (card, featured card, article h1): the element that takes part in the card to article view transition. The core sets its view-transition-name; do not set one. |  |
-| `bd-seg-group` | Group of segmented buttons: the mode switch and the language switch. |  |
-| `bd-seg` | A segmented button. | `[aria-pressed]`, `[aria-current]`, `[data-mode]` |
-| `bd-lang` | The language switch. |  |
-| `bd-iconbtn` | Button or link that holds only an icon. |  |
-| `bd-chip` | Small pill: a filter, a tag link, a shortcut. | `:hover`, `[aria-pressed]`, `[aria-current]` |
-| `bd-kbd` | Keyboard shortcut hint. |  |
-| `bd-home-section` | A home page section (also used by the about page blocks). |  |
-| `bd-home-head` | Heading block of a section. |  |
-| `bd-home-heading` | Eyebrow and title of a section. |  |
-| `bd-home-eyebrow` | Eyebrow of a section. |  |
-| `bd-home-title` | Title of a section. |  |
-| `bd-home-intro` | Introduction text of a section. |  |
-| `bd-blog-pagination` | Pagination landmark. |  |
-| `bd-blog-aside` | Sidebar of the list page. |  |
-| `bd-page` | A pagination control. |  |
-| `bd-page-step` | Previous and next link. | `[aria-disabled]` |
-| `bd-page-list` | The page numbers. |  |
-| `bd-card` | An article card. | `bd-card-featured`, `:hover`, `:focus-within` |
-| `bd-card-media` | Cover image of a card. |  |
-| `bd-card-body` | Text area of a card. |  |
-| `bd-card-eyebrow` | Category line of a card. |  |
-| `bd-card-meta` | Date and reading time of a card. |  |
-| `bd-card-title` | Title of a card. |  |
-| `bd-card-excerpt` | Excerpt of a card. |  |
-| `bd-card-foot` | Footer of a card. |  |
-| `bd-card-arrow` | Arrow that marks a link to more. |  |
-| `bd-latest-empty` | Empty state of an article list. |  |
-| `bd-toc` | Table of contents. |  |
-| `bd-toc-title` | Title of the table of contents. |  |
-| `bd-toc-link` | A link of the table of contents. | `[aria-current]` |
-| `bd-toc-sub` | A nested (h3) link. |  |
-| `bd-prose` | Rich text of an article: headings, paragraphs, lists, tables, blockquotes (element selectors are allowed inside). |  |
-| `bd-callout` | A callout block. | `bd-callout-note`, `bd-callout-warning`, `bd-callout-danger` |
-| `bd-callout-label` | Label of a callout. |  |
-| `bd-callout-body` | Content of a callout. |  |
-| `bd-code` | A code block (figure). |  |
-| `bd-code-head` | Language and copy button of a code block. |  |
-| `bd-code-lang` | Language label. |  |
-| `bd-code-copy` | Copy button. |  |
-| `bd-quote` | A quotation block. |  |
-| `bd-playground` | A runnable code block: the code, its expected output and the result of running it. |  |
-| `bd-playground-output` | Expected output of a runnable code block. |  |
-| `bd-fig` | A figure block. |  |
-| `bd-fig-media` | Media of a figure. |  |
-| `bd-fig-cap` | Caption of a figure. |  |
-| `bd-credit` | Credit line of an image. |  |
-| `bd-refs` | List of references of an article. |  |
-| `bd-author-card` | Author card after an article. |  |
-| `bd-comments` | Comment section. |  |
-| `bd-comment-list` | List of comments. |  |
-| `bd-comment` | A comment. |  |
-| `bd-comment-form` | The comment form. |  |
-| `bd-related` | Related articles. |  |
-| `bd-related-grid` | Grid of related articles. |  |
-| `bd-section` | Root of a page section (a `<section>`). Select it with data-section and data-variant: .bd-section[data-section="hero"][data-variant="split"]. | `[data-section]`, `[data-variant]` |
-| `bd-section-inner` | Width-limited content of a section. |  |
-| `bd-section-head` | Eyebrow, title and text of a section. |  |
-| `bd-section-title` | Title of a section (a heading). |  |
-| `bd-section-text` | Introduction or body text of a section (Markdown, server-rendered). |  |
-| `bd-section-media` | Image, video or poster of a section: the hero image, the showcase media, a scene poster. |  |
-| `bd-section-actions` | Buttons and links of a section (hero, cta, media-showcase). |  |
-| `bd-section-items` | The list of items: features, stats, logos, testimonials, plans, questions, gallery images, posts. |  |
-| `bd-section-item` | One item of bd-section-items. | `:hover`, `:focus-within` |
-| `bd-section-item-title` | Title of an item: feature title, plan heading. |  |
-| `bd-section-item-text` | Description of an item. |  |
-| `bd-section-icon` | Icon of a feature. |  |
-| `bd-section-stat-value` | Figure of a stat. |  |
-| `bd-section-stat-label` | Caption of a stat. |  |
-| `bd-section-logo-track` | Lane that holds the logos of logo-cloud; the marquee variant animates it (only with prefers-reduced-motion: no-preference). | `[data-variant="marquee"]` |
-| `bd-section-quote` | Quotation of a testimonial. |  |
-| `bd-section-author` | Name, role and avatar of a testimonial. |  |
-| `bd-section-plan` | A pricing plan, also a bd-section-item. | `bd-section-plan-recommended` |
-| `bd-section-plan-price` | Price and billing period of a plan. |  |
-| `bd-section-plan-features` | List of the features of a plan. |  |
-| `bd-section-question` | Question of an faq item (the `<summary>` of a native `<details>`). |  |
-| `bd-section-answer` | Answer of an faq item. |  |
-| `bd-btn` | A button or a link styled as one. | `bd-btn-primary`, `bd-btn-secondary`, `bd-btn-accent`, `bd-btn-text`, `bd-btn-sm`, `:hover`, `:disabled` |
-| `bd-btn-arrow` | Arrow inside a button. |  |
-| `bd-tag` | A category tag. |  |
-| `bd-tag-dot` | Colored dot of a tag. |  |
-| `bd-badge` | A small status label. |  |
-| `bd-avatar` | An author avatar. |  |
-| `bd-notice` | A message box. | `bd-notice-error`, `bd-notice-info` |
-| `bd-input` | A text input. | `:focus-visible`, `[aria-invalid]` |
-| `bd-select` | A select. |  |
-| `bd-form` | A form. |  |
-| `bd-field` | A labelled field. |  |
-| `bd-label` | A field label. |  |
-| `bd-help` | Help text of a field. |  |
-| `bd-err` | Error text of a field. |  |
-| `bd-meter` | Password strength meter. | `[data-level]` |
-| `bd-news` | Newsletter form. |  |
-| `bd-news-row` | Input and button row of the newsletter form. |  |
-| `bd-news-msg` | Status message of the newsletter form. | `bd-news-msg-success`, `bd-news-msg-error` |
-| `bd-corner` | Decorative corner mark. |  |
-| `bd-tabbar` | Bottom tab bar on small screens. |  |
-| `bd-tab` | A tab of the tab bar. | `[aria-current]` |
-| `bd-sheet` | Menu sheet on small screens. |  |
-| `bd-sheet-panel` | Panel of the menu sheet. |  |
-| `bd-sheet-link` | A link of the menu sheet. |  |
-| `bd-palette` | Search palette dialog. |  |
-| `bd-palette-panel` | Panel of the search palette. |  |
-| `bd-result` | A search result. | `bd-result-active` |
-| `bd-back-to-top` | Back to top button. |  |
+| `myc-app` | The page shell: header, main and footer. |  |
+| `myc-app-main` | The main landmark. |  |
+| `myc-wide` | Display text that takes the heading tracking and width. |  |
+| `myc-eyebrow` | Small uppercase label above a title. |  |
+| `myc-meta` | Metadata text: dates, counts, coordinates. |  |
+| `myc-sr` | Visually hidden text for screen readers. |  |
+| `myc-reveal` | A block that fades in when scrolled into view. |  |
+| `myc-post-media` | Cover of a post (card, featured card, article): the element that takes part in the card to article view transition. The core sets its view-transition-name; do not set one. |  |
+| `myc-post-title` | Title of a post (card, featured card, article h1): the element that takes part in the card to article view transition. The core sets its view-transition-name; do not set one. |  |
+| `myc-seg-group` | Group of segmented buttons: the mode switch and the language switch. |  |
+| `myc-seg` | A segmented button. | `[aria-pressed]`, `[aria-current]`, `[data-mode]` |
+| `myc-lang` | The language switch. |  |
+| `myc-iconbtn` | Button or link that holds only an icon. |  |
+| `myc-chip` | Small pill: a filter, a tag link, a shortcut. | `:hover`, `[aria-pressed]`, `[aria-current]` |
+| `myc-kbd` | Keyboard shortcut hint. |  |
+| `myc-home-section` | A home page section (also used by the about page blocks). |  |
+| `myc-home-head` | Heading block of a section. |  |
+| `myc-home-heading` | Eyebrow and title of a section. |  |
+| `myc-home-eyebrow` | Eyebrow of a section. |  |
+| `myc-home-title` | Title of a section. |  |
+| `myc-home-intro` | Introduction text of a section. |  |
+| `myc-blog-pagination` | Pagination landmark. |  |
+| `myc-blog-aside` | Sidebar of the list page. |  |
+| `myc-page` | A pagination control. |  |
+| `myc-page-step` | Previous and next link. | `[aria-disabled]` |
+| `myc-page-list` | The page numbers. |  |
+| `myc-card` | An article card. | `myc-card-featured`, `:hover`, `:focus-within` |
+| `myc-card-media` | Cover image of a card. |  |
+| `myc-card-body` | Text area of a card. |  |
+| `myc-card-eyebrow` | Category line of a card. |  |
+| `myc-card-meta` | Date and reading time of a card. |  |
+| `myc-card-title` | Title of a card. |  |
+| `myc-card-excerpt` | Excerpt of a card. |  |
+| `myc-card-foot` | Footer of a card. |  |
+| `myc-card-arrow` | Arrow that marks a link to more. |  |
+| `myc-latest-empty` | Empty state of an article list. |  |
+| `myc-toc` | Table of contents. |  |
+| `myc-toc-title` | Title of the table of contents. |  |
+| `myc-toc-link` | A link of the table of contents. | `[aria-current]` |
+| `myc-toc-sub` | A nested (h3) link. |  |
+| `myc-prose` | Rich text of an article: headings, paragraphs, lists, tables, blockquotes (element selectors are allowed inside). |  |
+| `myc-callout` | A callout block. | `myc-callout-note`, `myc-callout-warning`, `myc-callout-danger` |
+| `myc-callout-label` | Label of a callout. |  |
+| `myc-callout-body` | Content of a callout. |  |
+| `myc-code` | A code block (figure). |  |
+| `myc-code-head` | Language and copy button of a code block. |  |
+| `myc-code-lang` | Language label. |  |
+| `myc-code-copy` | Copy button. |  |
+| `myc-quote` | A quotation block. |  |
+| `myc-playground` | A runnable code block: the code, its expected output and the result of running it. |  |
+| `myc-playground-output` | Expected output of a runnable code block. |  |
+| `myc-fig` | A figure block. |  |
+| `myc-fig-media` | Media of a figure. |  |
+| `myc-fig-cap` | Caption of a figure. |  |
+| `myc-credit` | Credit line of an image. |  |
+| `myc-refs` | List of references of an article. |  |
+| `myc-author-card` | Author card after an article. |  |
+| `myc-comments` | Comment section. |  |
+| `myc-comment-list` | List of comments. |  |
+| `myc-comment` | A comment. |  |
+| `myc-comment-form` | The comment form. |  |
+| `myc-related` | Related articles. |  |
+| `myc-related-grid` | Grid of related articles. |  |
+| `myc-section` | Root of a page section (a `<section>`). Select it with data-section and data-variant: .myc-section[data-section="hero"][data-variant="split"]. | `[data-section]`, `[data-variant]` |
+| `myc-section-inner` | Width-limited content of a section. |  |
+| `myc-section-head` | Eyebrow, title and text of a section. |  |
+| `myc-section-title` | Title of a section (a heading). |  |
+| `myc-section-text` | Introduction or body text of a section (Markdown, server-rendered). |  |
+| `myc-section-media` | Image, video or poster of a section: the hero image, the showcase media, a scene poster. |  |
+| `myc-section-actions` | Buttons and links of a section (hero, cta, media-showcase). |  |
+| `myc-section-items` | The list of items: features, stats, logos, testimonials, plans, questions, gallery images, posts. |  |
+| `myc-section-item` | One item of myc-section-items. | `:hover`, `:focus-within` |
+| `myc-section-item-title` | Title of an item: feature title, plan heading. |  |
+| `myc-section-item-text` | Description of an item. |  |
+| `myc-section-icon` | Icon of a feature. |  |
+| `myc-section-stat-value` | Figure of a stat. |  |
+| `myc-section-stat-label` | Caption of a stat. |  |
+| `myc-section-logo-track` | Lane that holds the logos of logo-cloud; the marquee variant animates it (only with prefers-reduced-motion: no-preference). | `[data-variant="marquee"]` |
+| `myc-section-quote` | Quotation of a testimonial. |  |
+| `myc-section-author` | Name, role and avatar of a testimonial. |  |
+| `myc-section-plan` | A pricing plan, also a myc-section-item. | `myc-section-plan-recommended` |
+| `myc-section-plan-price` | Price and billing period of a plan. |  |
+| `myc-section-plan-features` | List of the features of a plan. |  |
+| `myc-section-question` | Question of an faq item (the `<summary>` of a native `<details>`). |  |
+| `myc-section-answer` | Answer of an faq item. |  |
+| `myc-btn` | A button or a link styled as one. | `myc-btn-primary`, `myc-btn-secondary`, `myc-btn-accent`, `myc-btn-text`, `myc-btn-sm`, `:hover`, `:disabled` |
+| `myc-btn-arrow` | Arrow inside a button. |  |
+| `myc-tag` | A category tag. |  |
+| `myc-tag-dot` | Colored dot of a tag. |  |
+| `myc-badge` | A small status label. |  |
+| `myc-avatar` | An author avatar. |  |
+| `myc-notice` | A message box. | `myc-notice-error`, `myc-notice-info` |
+| `myc-input` | A text input. | `:focus-visible`, `[aria-invalid]` |
+| `myc-select` | A select. |  |
+| `myc-form` | A form. |  |
+| `myc-field` | A labelled field. |  |
+| `myc-label` | A field label. |  |
+| `myc-help` | Help text of a field. |  |
+| `myc-err` | Error text of a field. |  |
+| `myc-meter` | Password strength meter. | `[data-level]` |
+| `myc-news` | Newsletter form. |  |
+| `myc-news-row` | Input and button row of the newsletter form. |  |
+| `myc-news-msg` | Status message of the newsletter form. | `myc-news-msg-success`, `myc-news-msg-error` |
+| `myc-corner` | Decorative corner mark. |  |
+| `myc-tabbar` | Bottom tab bar on small screens. |  |
+| `myc-tab` | A tab of the tab bar. | `[aria-current]` |
+| `myc-sheet` | Menu sheet on small screens. |  |
+| `myc-sheet-panel` | Panel of the menu sheet. |  |
+| `myc-sheet-link` | A link of the menu sheet. |  |
+| `myc-palette` | Search palette dialog. |  |
+| `myc-palette-panel` | Panel of the search palette. |  |
+| `myc-result` | A search result. | `myc-result-active` |
+| `myc-back-to-top` | Back to top button. |  |

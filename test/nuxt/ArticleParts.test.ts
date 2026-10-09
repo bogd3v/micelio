@@ -26,7 +26,7 @@ describe('BlogTableOfContents', () => {
     const links = wrapper.findAll('a')
     expect(links.map(link => link.attributes('href'))).toEqual(['#que-es', '#retrieval'])
     expect(links[0]!.attributes('aria-current')).toBe('true')
-    expect(links[1]!.classes()).toContain('bd-toc-sub')
+    expect(links[1]!.classes()).toContain('myc-toc-sub')
     await links[1]!.trigger('click')
     expect(links[1]!.attributes('aria-current')).toBe('true')
   })
@@ -55,13 +55,13 @@ describe('BlogCopyLinkButton', () => {
 describe('BlogCommentSection', () => {
   it('shows replies under their comment with dotted dates', async () => {
     const wrapper = await mountSuspended(BlogCommentSection, { props: { slug: 'rag', documentId: 'doc-rag' } })
-    await vi.waitFor(() => expect(wrapper.findAll('.bd-comment')).toHaveLength(2))
-    expect(wrapper.get('.bd-home-eyebrow').text()).toBe('Conversation · 2 comments')
-    const group = wrapper.get('.bd-comment-group')
-    expect(group.get('.bd-comment-name').text()).toBe('Ana Reader')
-    expect(group.get('.bd-comment-thread .bd-comment-name').text()).toBe('Alejandro Ramirez')
-    expect(group.get('.bd-comment-date').text()).toBe('03.02.2026')
-    expect(group.get('.bd-comment-thread').find('button').exists()).toBe(false)
+    await vi.waitFor(() => expect(wrapper.findAll('.myc-comment')).toHaveLength(2))
+    expect(wrapper.get('.myc-home-eyebrow').text()).toBe('Conversation · 2 comments')
+    const group = wrapper.get('.myc-comment-group')
+    expect(group.get('.myc-comment-name').text()).toBe('Ana Reader')
+    expect(group.get('.myc-comment-thread .myc-comment-name').text()).toBe('Alejandro Ramirez')
+    expect(group.get('.myc-comment-date').text()).toBe('03.02.2026')
+    expect(group.get('.myc-comment-thread').find('button').exists()).toBe(false)
   })
 })
 
@@ -82,9 +82,9 @@ describe('StrapiRichTextBlock', () => {
 describe('StrapiQuoteBlock', () => {
   it('renders the server HTML and the source', async () => {
     const wrapper = await mountSuspended(StrapiQuoteBlock, {
-      props: { block: { id: 2, __component: 'shared.quote', body: 'Quoted', html: 'Quoted <sup><a class="bd-cite" href="#ref-2">[2]</a></sup>', title: 'Ji' } },
+      props: { block: { id: 2, __component: 'shared.quote', body: 'Quoted', html: 'Quoted <sup><a class="myc-cite" href="#ref-2">[2]</a></sup>', title: 'Ji' } },
     })
-    expect(wrapper.get('blockquote sup > a.bd-cite').text()).toBe('[2]')
+    expect(wrapper.get('blockquote sup > a.myc-cite').text()).toBe('[2]')
     expect(wrapper.get('cite').text()).toBe('— Ji')
   })
 })
@@ -106,17 +106,17 @@ describe('BlogReferences', () => {
     })
     expect(wrapper.get('section').attributes('id')).toBe('references')
     expect(wrapper.get('h2').text()).toBe('References')
-    expect(wrapper.get('.bd-refs-count').text()).toBe('3 sources · APA 7')
-    const items = wrapper.findAll('li.bd-ref')
+    expect(wrapper.get('.myc-refs-count').text()).toBe('3 sources · APA 7')
+    const items = wrapper.findAll('li.myc-ref')
     expect(items.map(item => item.attributes('id'))).toEqual(['ref-1', 'ref-2', 'ref-3'])
-    expect(items[0]!.get('.bd-ref-venue').text()).toBe('NEURIPS 2020')
-    expect(items[1]!.get('.bd-ref-text').text()).toBe('Ji, Z., et al. (2023). Survey of Hallucination. ACM Computing Surveys, 55(12).')
-    expect(items[1]!.get('.bd-ref-text a').attributes()).toMatchObject({ href: 'https://doi.org/10.1145/3571730', target: '_blank' })
+    expect(items[0]!.get('.myc-ref-venue').text()).toBe('NEURIPS 2020')
+    expect(items[1]!.get('.myc-ref-text').text()).toBe('Ji, Z., et al. (2023). Survey of Hallucination. ACM Computing Surveys, 55(12).')
+    expect(items[1]!.get('.myc-ref-text a').attributes()).toMatchObject({ href: 'https://doi.org/10.1145/3571730', target: '_blank' })
     expect(items[1]!.get('em').text()).toBe('ACM Computing Surveys')
-    expect(items[1]!.get('.bd-ref-id').text()).toBe('doi.org/10.1145/3571730')
-    expect(items[0]!.get('.bd-ref-back').attributes('href')).toBe('#cite-1')
-    expect(items[2]!.find('.bd-ref-back').exists()).toBe(false)
-    expect(wrapper.get('.bd-refs-note').text()).toBe('Links open the original source in a new tab. Accessed on 11.09.2026.')
+    expect(items[1]!.get('.myc-ref-id').text()).toBe('doi.org/10.1145/3571730')
+    expect(items[0]!.get('.myc-ref-back').attributes('href')).toBe('#cite-1')
+    expect(items[2]!.find('.myc-ref-back').exists()).toBe(false)
+    expect(wrapper.get('.myc-refs-note').text()).toBe('Links open the original source in a new tab. Accessed on 11.09.2026.')
   })
 
   it('renders nothing without references', async () => {

@@ -47,27 +47,27 @@ const labels = computed<Record<string, string | undefined>>(() => runnable.value
 <template>
   <component :is="runnable ? 'micelio-playground' : 'div'" v-bind="labels">
     <figure
-      class="bd-playground not-prose"
+      class="myc-playground not-prose"
       :data-runtime="runnable ? block.runtime : undefined"
       :aria-label="t('bd.playground.label', { language })"
       :aria-describedby="caption ? `${id}-caption` : undefined"
       :data-playground-setup="runnable && setup ? setup : undefined"
     >
       <BdCodeBlock :code="block.code" :lang="block.runtime" :code-attrs="{ 'data-playground-code': '' }" />
-      <figure v-if="expected" class="bd-playground-expected">
-        <figcaption class="bd-playground-label">{{ t('bd.playground.expectedOutput') }}</figcaption>
-        <pre class="bd-playground-output" tabindex="0">{{ expected }}</pre>
+      <figure v-if="expected" class="myc-playground-expected">
+        <figcaption class="myc-playground-label">{{ t('bd.playground.expectedOutput') }}</figcaption>
+        <pre class="myc-playground-output" tabindex="0">{{ expected }}</pre>
       </figure>
       <template v-if="runnable">
-        <div class="bd-playground-actions">
+        <div class="myc-playground-actions">
           <BdButton size="sm" :aria-label="t('bd.playground.runAria')" :aria-controls="`${id}-result`" hidden data-playground-run>{{ t('bd.playground.run') }}</BdButton>
           <BdButton size="sm" variant="secondary" :aria-label="t('bd.playground.stopAria')" :aria-controls="`${id}-result`" hidden data-playground-stop>{{ t('bd.playground.stop') }}</BdButton>
         </div>
-        <p class="bd-playground-notice" role="alert">{{ t('bd.playground.unavailable') }}</p>
-        <output :id="`${id}-result`" class="bd-playground-result" data-playground-result />
-        <p class="bd-sr" role="status" data-playground-status />
+        <p class="myc-playground-notice" role="alert">{{ t('bd.playground.unavailable') }}</p>
+        <output :id="`${id}-result`" class="myc-playground-result" data-playground-result />
+        <p class="myc-sr" role="status" data-playground-status />
       </template>
-      <figcaption v-if="caption" :id="`${id}-caption`" class="bd-playground-caption">{{ caption }}</figcaption>
+      <figcaption v-if="caption" :id="`${id}-caption`" class="myc-playground-caption">{{ caption }}</figcaption>
     </figure>
   </component>
 </template>

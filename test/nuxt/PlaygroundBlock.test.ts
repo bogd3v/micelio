@@ -23,17 +23,17 @@ describe('StrapiPlaygroundBlock', () => {
     ['javascript', 'JavaScript'],
   ])('renders %s with its language, code, expected output and caption', async (runtime, label) => {
     const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground({ runtime }) } })
-    const figure = wrapper.get('figure.bd-playground')
+    const figure = wrapper.get('figure.myc-playground')
     expect(figure.attributes('data-runtime')).toBe(runtime)
     expect(figure.attributes('aria-label')).toBe(`Runnable code, ${label}`)
-    expect(wrapper.get('.bd-code-lang').text()).toBe(runtime)
+    expect(wrapper.get('.myc-code-lang').text()).toBe(runtime)
     expect(wrapper.get('code').classes()).toContain(`language-${runtime}`)
     expect(wrapper.get('code').attributes('data-playground-code')).toBeDefined()
-    expect(wrapper.get('.bd-code code').text()).toBe('SELECT 1 AS one;')
-    expect(wrapper.get('figure.bd-playground-expected > figcaption').text()).toBe('Expected output')
-    expect(wrapper.get('pre.bd-playground-output').text()).toBe('one\n---\n1')
-    expect(wrapper.get('pre.bd-playground-output').attributes('aria-labelledby')).toBeUndefined()
-    const caption = wrapper.get('figure.bd-playground > figcaption')
+    expect(wrapper.get('.myc-code code').text()).toBe('SELECT 1 AS one;')
+    expect(wrapper.get('figure.myc-playground-expected > figcaption').text()).toBe('Expected output')
+    expect(wrapper.get('pre.myc-playground-output').text()).toBe('one\n---\n1')
+    expect(wrapper.get('pre.myc-playground-output').attributes('aria-labelledby')).toBeUndefined()
+    const caption = wrapper.get('figure.myc-playground > figcaption')
     expect(caption.text()).toBe('The simplest query.')
     expect(figure.attributes('aria-describedby')).toBe(caption.attributes('id'))
   })
@@ -59,7 +59,7 @@ describe('StrapiPlaygroundBlock', () => {
     expect(wrapper.get('output[data-playground-result]').attributes('aria-live')).toBeUndefined()
     const status = wrapper.get('p[data-playground-status]')
     expect(status.attributes('role')).toBe('status')
-    expect(status.classes()).toContain('bd-sr')
+    expect(status.classes()).toContain('myc-sr')
     expect(status.text()).toBe('')
     const island = wrapper.get('micelio-playground')
     expect(island.attributes('data-timeout')).toBe('Stopped: the code ran for more than {seconds} seconds.')
@@ -67,8 +67,8 @@ describe('StrapiPlaygroundBlock', () => {
     expect(island.attributes('data-save-data-label')).toMatch(/^Run \(.+ download\)$/)
     expect(island.attributes('data-truncated')).toBe('[Output cut at {size}]')
     for (const name of ['loading', 'running', 'empty', 'stopped', 'unavailable']) expect(island.attributes(`data-${name}`), name).toBeTruthy()
-    expect(island.find('figure.bd-playground').exists()).toBe(true)
-    expect(island.find('.bd-playground-notice').text()).toBe('The code could not run in this browser.')
+    expect(island.find('figure.myc-playground').exists()).toBe(true)
+    expect(island.find('.myc-playground-notice').text()).toBe('The code could not run in this browser.')
   })
 
   it('has no Stop button for a language it cannot run', async () => {
@@ -88,20 +88,20 @@ describe('StrapiPlaygroundBlock', () => {
 
   it('keeps setup in a data attribute: available to the island, never visible', async () => {
     const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground({ setup: 'CREATE TABLE t(a);' }) } })
-    expect(wrapper.get('figure.bd-playground').attributes('data-playground-setup')).toBe('CREATE TABLE t(a);')
+    expect(wrapper.get('figure.myc-playground').attributes('data-playground-setup')).toBe('CREATE TABLE t(a);')
     expect(wrapper.text()).not.toContain('CREATE TABLE')
     expect(wrapper.find('template').exists()).toBe(false)
     expect(wrapper.find('script').exists()).toBe(false)
     const without = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground() } })
-    expect(without.get('figure.bd-playground').attributes('data-playground-setup')).toBeUndefined()
+    expect(without.get('figure.myc-playground').attributes('data-playground-setup')).toBeUndefined()
   })
 
   it('renders an unknown language as a plain code block with its output and no run controls', async () => {
     const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground({ runtime: 'cobol' }) } })
-    expect(wrapper.get('figure.bd-playground').attributes('data-runtime')).toBeUndefined()
-    expect(wrapper.get('.bd-code-lang').text()).toBe('cobol')
+    expect(wrapper.get('figure.myc-playground').attributes('data-runtime')).toBeUndefined()
+    expect(wrapper.get('.myc-code-lang').text()).toBe('cobol')
     expect(wrapper.find('[data-playground-setup]').exists()).toBe(false)
-    expect(wrapper.get('pre.bd-playground-output').text()).toBe('one\n---\n1')
+    expect(wrapper.get('pre.myc-playground-output').text()).toBe('one\n---\n1')
     expect(wrapper.find('[data-playground-run]').exists()).toBe(false)
     expect(wrapper.find('[data-playground-result]').exists()).toBe(false)
   })
@@ -109,23 +109,23 @@ describe('StrapiPlaygroundBlock', () => {
   it('omits the expected output when there is none', async () => {
     for (const expectedOutput of [undefined, null, '', '  \n']) {
       const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground({ expectedOutput }) } })
-      expect(wrapper.find('.bd-playground-expected').exists()).toBe(false)
-      expect(wrapper.find('pre.bd-playground-output').exists()).toBe(false)
-      expect(wrapper.find('.bd-code').exists()).toBe(true)
+      expect(wrapper.find('.myc-playground-expected').exists()).toBe(false)
+      expect(wrapper.find('pre.myc-playground-output').exists()).toBe(false)
+      expect(wrapper.find('.myc-code').exists()).toBe(true)
     }
   })
 
   it('omits the caption when there is none', async () => {
     for (const caption of [undefined, null, ' ']) {
       const wrapper = await mountSuspended(StrapiPlaygroundBlock, { props: { block: playground({ caption }) } })
-      expect(wrapper.find('figure.bd-playground > figcaption').exists()).toBe(false)
-      expect(wrapper.get('figure.bd-playground').attributes('aria-describedby')).toBeUndefined()
+      expect(wrapper.find('figure.myc-playground > figcaption').exists()).toBe(false)
+      expect(wrapper.get('figure.myc-playground').attributes('aria-describedby')).toBeUndefined()
     }
   })
 
   it('is dispatched by the blocks renderer', async () => {
     const blocks: StrapiBlock[] = [playground()]
     const wrapper = await mountSuspended(StrapiBlocksRenderer, { props: { blocks } })
-    expect(wrapper.find('figure.bd-playground').exists()).toBe(true)
+    expect(wrapper.find('figure.myc-playground').exists()).toBe(true)
   })
 })

@@ -11,7 +11,7 @@ describe('BdPrivacyNotice', () => {
   it('shows a labelled region with a link to the privacy page', async () => {
     const wrapper = await mountSuspended(BdPrivacyNotice)
     await flushPromises()
-    const region = wrapper.get('section.bd-privacy-notice')
+    const region = wrapper.get('section.myc-privacy-notice')
     expect(region.attributes('role')).toBe('region')
     expect(region.attributes('aria-label')).toBe('Privacy notice')
     expect(region.text()).toContain('No tracking cookies. We count visits anonymously with Umami.')

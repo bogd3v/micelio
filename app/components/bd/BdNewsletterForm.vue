@@ -20,7 +20,7 @@ const props = withDefaults(defineProps<{
   buttonLabel: undefined,
   status: 'idle',
   message: undefined,
-  id: 'bd-news-email',
+  id: 'myc-news-email',
   hideHeading: false,
 })
 
@@ -82,16 +82,16 @@ watch(() => [props.status, props.message] as const, ([status, message]) => {
     :placeholder="placeholderText"
     :button-label="buttonText"
   />
-  <form v-else class="bd-news" novalidate :aria-busy="submitting" @submit.prevent="handleSubmit">
-    <span v-if="!hideHeading" class="bd-eyebrow bd-news-eyebrow">{{ eyebrowText }}</span>
+  <form v-else class="myc-news" novalidate :aria-busy="submitting" @submit.prevent="handleSubmit">
+    <span v-if="!hideHeading" class="myc-eyebrow myc-news-eyebrow">{{ eyebrowText }}</span>
     <h3 v-if="!hideHeading">{{ titleText }}</h3>
     <p v-if="!hideHeading || description">{{ descriptionText }}</p>
-    <label :for="id" class="bd-eyebrow bd-news-label">{{ t('bd.newsletter.label') }}</label>
-    <div class="bd-news-row">
+    <label :for="id" class="myc-eyebrow myc-news-label">{{ t('bd.newsletter.label') }}</label>
+    <div class="myc-news-row">
       <input
         :id="id"
         v-model="email"
-        class="bd-input"
+        class="myc-input"
         type="email"
         name="email"
         autocomplete="email"
@@ -109,7 +109,7 @@ watch(() => [props.status, props.message] as const, ([status, message]) => {
       :id="messageId"
       role="status"
       aria-live="polite"
-      :class="['bd-news-msg', { 'bd-news-msg-success': currentStatus === 'success', 'bd-news-msg-error': currentStatus === 'error' }]"
+      :class="['myc-news-msg', { 'myc-news-msg-success': currentStatus === 'success', 'myc-news-msg-error': currentStatus === 'error' }]"
     >{{ feedback }}</p>
   </form>
 </template>

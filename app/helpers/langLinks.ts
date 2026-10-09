@@ -1,7 +1,7 @@
 /** Static language links: SSR renders them before the page knows its translations, so the head's hreflang links fill them in. */
 
 const LINK_TAG = /<link\b[^>]*>/g
-const LANG_ANCHOR = /<a\b[^>]*\sdata-bd-lang="([\w-]+)"[^>]*>/g
+const LANG_ANCHOR = /<a\b[^>]*\sdata-myc-lang="([\w-]+)"[^>]*>/g
 
 function attribute(tag: string, name: string): string | undefined {
   return new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1]
@@ -24,9 +24,9 @@ export function alternatePaths(head: string): Record<string, string> {
   return paths
 }
 
-/** Sets the href of every `data-bd-lang` anchor that has an alternate; the others keep the fallback they were rendered with. */
+/** Sets the href of every `data-myc-lang` anchor that has an alternate; the others keep the fallback they were rendered with. */
 export function rewriteLangLinks(html: string, paths: Record<string, string>): string {
-  if (!html.includes('data-bd-lang=')) return html
+  if (!html.includes('data-myc-lang=')) return html
   return html.replace(LANG_ANCHOR, (tag, lang: string) => {
     const path = paths[lang]
     if (!path) return tag

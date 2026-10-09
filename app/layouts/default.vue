@@ -25,7 +25,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="bd-app">
+  <div class="myc-app">
     <LayoutSkipLinks />
     <LayoutBackToTop />
 
@@ -48,7 +48,7 @@ onMounted(() => {
     <LazyBdSearchIsland v-if="searchOn && isStatic" />
     <BdSearchPalette v-if="searchOn && !isStatic" :open="isSearchOpen" @close="isSearchOpen = false" />
 
-    <main id="main-content" class="bd-app-main" role="main">
+    <main id="main-content" class="myc-app-main" role="main">
       <slot />
     </main>
 

@@ -29,33 +29,33 @@ const placeholders = { count: '{count}', query: '{query}' }
     :data-kind-article="t('bd.search.kinds.article')"
     :data-kind-page="t('bd.search.kinds.page')"
   >
-    <dialog class="bd-palette" :aria-label="dialogLabel">
-      <div class="bd-palette-panel">
-        <div class="bd-palette-bar">
-          <label for="bd-palette-input" class="bd-sr">{{ t('bd.search.placeholderStatic') }}</label>
-          <span class="bd-palette-prompt" aria-hidden="true">→</span>
+    <dialog class="myc-palette" :aria-label="dialogLabel">
+      <div class="myc-palette-panel">
+        <div class="myc-palette-bar">
+          <label for="myc-palette-input" class="myc-sr">{{ t('bd.search.placeholderStatic') }}</label>
+          <span class="myc-palette-prompt" aria-hidden="true">→</span>
           <input
-            id="bd-palette-input"
-            class="bd-palette-input"
+            id="myc-palette-input"
+            class="myc-palette-input"
             type="search"
             role="combobox"
             autocomplete="off"
             spellcheck="false"
             aria-autocomplete="list"
-            aria-controls="bd-palette-list"
+            aria-controls="myc-palette-list"
             aria-expanded="false"
             :placeholder="t('bd.search.placeholderStatic')"
           >
-          <button type="button" class="bd-chip bd-palette-esc" :aria-label="t('bd.search.close')">Esc</button>
+          <button type="button" class="myc-chip myc-palette-esc" :aria-label="t('bd.search.close')">Esc</button>
         </div>
 
-        <p class="bd-meta bd-palette-note" data-search-note>{{ t('bd.search.minLengthStatic', { count: MIN_SEARCH_LENGTH }) }}</p>
+        <p class="myc-meta myc-palette-note" data-search-note>{{ t('bd.search.minLengthStatic', { count: MIN_SEARCH_LENGTH }) }}</p>
 
-        <div id="bd-palette-list" class="bd-palette-list" role="listbox" :aria-label="dialogLabel" />
+        <div id="myc-palette-list" class="myc-palette-list" role="listbox" :aria-label="dialogLabel" />
 
-        <p class="bd-sr" role="status" aria-live="polite" />
+        <p class="myc-sr" role="status" aria-live="polite" />
 
-        <div class="bd-meta bd-palette-foot" aria-hidden="true">
+        <div class="myc-meta myc-palette-foot" aria-hidden="true">
           <span>{{ t('bd.search.help') }}</span>
           <span data-search-count />
         </div>

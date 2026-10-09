@@ -12,9 +12,9 @@ const PAGES = [
 for (const { path, privacy } of PAGES) {
   test(`${path}: the newsletter is a plain form to the provider`, async ({ request }) => {
     const html = await (await request.get(path)).text()
-    const form = /<form class="bd-news[^"]*"[^>]*>[\s\S]*?<\/form>/.exec(html)?.[0] ?? ''
+    const form = /<form class="myc-news[^"]*"[^>]*>[\s\S]*?<\/form>/.exec(html)?.[0] ?? ''
     expect(form).toContain(`method="post" action="${receiver}/subscribe"`)
-    expect(form).toMatch(/<input id="[^"]+" class="bd-input" type="email" name="email" autocomplete="email" required/)
+    expect(form).toMatch(/<input id="[^"]+" class="myc-input" type="email" name="email" autocomplete="email" required/)
     expect(form).toMatch(/<label for="[^"]+"/)
     expect(form).toMatch(/<button[^>]*type="submit"/)
     expect(form).toContain(`href="${privacy}"`)
@@ -36,7 +36,7 @@ test('without JavaScript the form posts the email to the provider and follows it
   const violations: string[] = []
   page.on('console', message => message.text().includes('Content Security Policy') && violations.push(message.text()))
   await page.goto('/')
-  const email = page.locator('form.bd-news input[type="email"]').first()
+  const email = page.locator('form.myc-news input[type="email"]').first()
   await email.fill('reader@example.com')
   // Enter in the field is the native submit
   await email.press('Enter')

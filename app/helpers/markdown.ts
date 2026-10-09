@@ -43,7 +43,7 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
     'img': ['src', 'alt', 'title', 'width', 'height', 'loading', 'decoding'],
     'code': ['class'],
     'pre': ['class', 'tabindex'],
-    'button': ['type', 'class', 'data-bd-copy', 'hidden'],
+    'button': ['type', 'class', 'data-myc-copy', 'hidden'],
     'aside': ['role'],
     '*': ['id', 'class'],
   },
@@ -71,7 +71,7 @@ function createCitationExtension(state: CitationState, citeLabel: (n: number) =>
     const anchored = state.citations?.anchored.includes(key) && !state.emitted.has(key)
     if (anchored) state.emitted.add(key)
     const id = anchored ? ` id="cite-${n}"` : ''
-    return `<sup><a class="bd-cite"${id} href="#ref-${n}" aria-label="${escapeHtml(citeLabel(n))}">[${n}]</a></sup>`
+    return `<sup><a class="myc-cite"${id} href="#ref-${n}" aria-label="${escapeHtml(citeLabel(n))}">[${n}]</a></sup>`
   }
 
   return {

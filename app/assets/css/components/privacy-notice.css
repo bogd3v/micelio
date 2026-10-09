@@ -1,4 +1,4 @@
-.bd-privacy-notice {
+.myc-privacy-notice {
     position: fixed;
     left: 12px;
     right: 12px;
@@ -14,7 +14,7 @@
     border: 1px solid var(--line);
 }
 
-.bd-privacy-notice-text {
+.myc-privacy-notice-text {
     margin: 0;
     flex-grow: 1;
     font-size: 14px;
@@ -22,27 +22,27 @@
     color: var(--ink-muted);
 }
 
-.bd-privacy-notice-mark {
+.myc-privacy-notice-mark {
     font-family: var(--font-mono);
     color: var(--link);
 }
 
-.bd-privacy-notice a {
+.myc-privacy-notice a {
     color: var(--link);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
 
-.bd-privacy-notice a:hover {
+.myc-privacy-notice a:hover {
     color: var(--ink);
 }
 
-.bd-privacy-notice a:focus-visible {
+.myc-privacy-notice a:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
-.bd-privacy-notice .bd-privacy-notice-ok {
+.myc-privacy-notice .myc-privacy-notice-ok {
     flex: none;
     align-self: flex-end;
     height: 40px;
@@ -53,7 +53,7 @@
 }
 
 @media (min-width: 768px) {
-    .bd-privacy-notice {
+    .myc-privacy-notice {
         left: 24px;
         right: auto;
         bottom: 24px;
@@ -63,13 +63,13 @@
         padding: 14px 14px 14px 18px;
     }
 
-    .bd-privacy-notice .bd-privacy-notice-ok {
+    .myc-privacy-notice .myc-privacy-notice-ok {
         align-self: center;
     }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    .bd-privacy-notice {
-        animation: bd-privacy-notice-in 360ms var(--ease-standard) both;
+    .myc-privacy-notice {
+        animation: myc-privacy-notice-in 360ms var(--ease-standard) both;
     }
 }

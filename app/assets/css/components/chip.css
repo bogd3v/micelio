@@ -1,4 +1,4 @@
-.bd-chip {
+.myc-chip {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
@@ -16,35 +16,35 @@
     transition: border-color var(--duration-base) var(--ease-standard), color var(--duration-base) var(--ease-standard);
 }
 
-.bd-chip:hover {
+.myc-chip:hover {
     border-color: var(--line-strong);
     color: var(--ink);
 }
 
-.bd-chip[aria-pressed="true"],
-.bd-chip[aria-current] {
+.myc-chip[aria-pressed="true"],
+.myc-chip[aria-current] {
     color: var(--ink);
     background: var(--surface-raised);
     border-color: var(--ink);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-chip {
+    .myc-chip {
         transition: none;
     }
 }
 
 @media (forced-colors: active) {
-    .bd-chip {
+    .myc-chip {
         border-color: ButtonText;
     }
 
-    .bd-chip:hover {
+    .myc-chip:hover {
         border-color: Highlight;
     }
 
-    .bd-chip[aria-pressed="true"],
-    .bd-chip[aria-current] {
+    .myc-chip[aria-pressed="true"],
+    .myc-chip[aria-current] {
         background: Highlight;
         color: HighlightText;
         border-color: Highlight;

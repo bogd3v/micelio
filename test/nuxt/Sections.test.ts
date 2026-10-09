@@ -142,7 +142,7 @@ async function render(section: PageSection, route?: string) {
 }
 
 function root(wrapper: Awaited<ReturnType<typeof render>>) {
-  return wrapper.get('section.bd-section')
+  return wrapper.get('section.myc-section')
 }
 
 describe('SectionRenderer', () => {
@@ -157,7 +157,7 @@ describe('SectionRenderer', () => {
     const wrapper = await mountSuspended(SectionRenderer, {
       props: { sections: [sections.cta('banner'), { __component: 'section.carousel' } as unknown as PageSection, sections.richText()] },
     })
-    const rendered = wrapper.findAll('section.bd-section')
+    const rendered = wrapper.findAll('section.myc-section')
     expect(rendered.map(node => node.attributes('data-section'))).toEqual(['cta', 'rich-text'])
   })
 
@@ -173,7 +173,7 @@ describe('SectionRenderer', () => {
 
   it('labels each section with its heading', async () => {
     const wrapper = await render(sections.cta('banner'))
-    const heading = wrapper.get('h2.bd-section-title')
+    const heading = wrapper.get('h2.myc-section-title')
     expect(root(wrapper).attributes('aria-labelledby')).toBe(heading.attributes('id'))
   })
 })
@@ -183,21 +183,21 @@ describe('hero', () => {
     const wrapper = await render(sections.hero(variant))
     expect(root(wrapper).attributes('data-section')).toBe('hero')
     expect(root(wrapper).attributes('data-variant')).toBe(variant)
-    expect(wrapper.get('h2.bd-section-title').text()).toBe('Grow food where you live')
+    expect(wrapper.get('h2.myc-section-title').text()).toBe('Grow food where you live')
     expect(wrapper.findAll('h1')).toHaveLength(0)
-    expect(wrapper.get('.bd-section-text').text()).toBe('A demo of every section.')
-    expect(wrapper.findAll('.bd-section-actions a')).toHaveLength(2)
+    expect(wrapper.get('.myc-section-text').text()).toBe('A demo of every section.')
+    expect(wrapper.findAll('.myc-section-actions a')).toHaveLength(2)
   })
 
   it('loads its image first, with dimensions, AVIF and WebP', async () => {
     const wrapper = await render(sections.hero('split'))
-    const img = wrapper.get('.bd-section-media img')
+    const img = wrapper.get('.myc-section-media img')
     expect(img.attributes('loading')).toBe('eager')
     expect(img.attributes('fetchpriority')).toBe('high')
     expect(img.attributes('alt')).toBe('hero.png')
     expect(img.attributes('width')).toBe('1200')
     expect(img.attributes('height')).toBe('630')
-    expect(wrapper.get('.bd-section-media').attributes('style')).toContain('aspect-ratio: 1200 / 630')
+    expect(wrapper.get('.myc-section-media').attributes('style')).toContain('aspect-ratio: 1200 / 630')
     const types = wrapper.findAll('picture source').map(source => source.attributes('type'))
     expect(types).toContain('image/avif')
     expect(types).toContain('image/webp')
@@ -209,18 +209,18 @@ describe('hero', () => {
     expect((await render(video('centered'))).find('video[controls]').exists()).toBe(true)
     const background = await render(video('full-bleed'))
     expect(background.find('video').exists()).toBe(false)
-    expect(background.find('.bd-section-media').exists()).toBe(false)
+    expect(background.find('.myc-section-media').exists()).toBe(false)
     expect(background.get('h2').text()).toBe('Grow food where you live')
   })
 
   it('puts the full-bleed image behind the text', async () => {
     const wrapper = await render(sections.hero('full-bleed'))
-    expect(root(wrapper).element.firstElementChild?.classList.contains('bd-section-media')).toBe(true)
+    expect(root(wrapper).element.firstElementChild?.classList.contains('myc-section-media')).toBe(true)
   })
 
   it('localizes site paths and opens other sites with rel noopener and no target', async () => {
     const wrapper = await render(sections.hero('centered'))
-    const [primary, secondary] = wrapper.findAll('.bd-section-actions a')
+    const [primary, secondary] = wrapper.findAll('.myc-section-actions a')
     expect(primary!.attributes('href')).toBe('/blog')
     expect(secondary!.attributes('href')).toBe('https://github.com/bogd3v/micelio')
     expect(secondary!.attributes('rel')).toBe('noopener')
@@ -233,7 +233,7 @@ describe('hero', () => {
     section.primaryLink = link('Leer', '/blog')
     section.secondaryLink = link('Ya con prefijo', '/es/blog')
     const wrapper = await render(section, '/es')
-    const [primary, secondary] = wrapper.findAll('.bd-section-actions a')
+    const [primary, secondary] = wrapper.findAll('.myc-section-actions a')
     expect(primary!.attributes('href')).toBe('/es/blog')
     expect(secondary!.attributes('href')).toBe('/es/blog')
   })
@@ -243,7 +243,7 @@ describe('hero', () => {
     section.primaryLink = link('Write', 'mailto:hola@example.com')
     section.secondaryLink = link('Evil', '//evil.example.com')
     const wrapper = await render(section)
-    const links = wrapper.findAll('.bd-section-actions a')
+    const links = wrapper.findAll('.myc-section-actions a')
     expect(links).toHaveLength(1)
     expect(links[0]!.attributes('href')).toBe('mailto:hola@example.com')
   })
@@ -251,8 +251,8 @@ describe('hero', () => {
   it('renders without media and without links', async () => {
     const section = { __component: 'section.hero', variant: 'centered', title: 'Only a title' } as PageSection
     const wrapper = await render(section)
-    expect(wrapper.find('.bd-section-media').exists()).toBe(false)
-    expect(wrapper.find('.bd-section-actions').exists()).toBe(false)
+    expect(wrapper.find('.myc-section-media').exists()).toBe(false)
+    expect(wrapper.find('.myc-section-actions').exists()).toBe(false)
   })
 })
 
@@ -260,10 +260,10 @@ describe('media paths', () => {
   it('renders media from Strapi uploads and absolute URLs only', async () => {
     const hero = (url: string): PageSection => ({ ...sections.hero('split'), media: image('x.png', { url }) } as PageSection)
     for (const url of ['/uploads/x.png', 'https://api.bogdev.com.co/uploads/x.png']) {
-      expect((await render(hero(url))).find('.bd-section-media img').exists(), url).toBe(true)
+      expect((await render(hero(url))).find('.myc-section-media img').exists(), url).toBe(true)
     }
     for (const url of ['/theme/images/x.png', '/uploads/../x.png', '//evil.example.com/x.png', 'javascript:alert(1)', 'data:image/png;base64,AA']) {
-      expect((await render(hero(url))).find('.bd-section-media').exists(), url).toBe(false)
+      expect((await render(hero(url))).find('.myc-section-media').exists(), url).toBe(false)
     }
   })
 })
@@ -287,27 +287,27 @@ describe('feature grid', () => {
     const wrapper = await render(sections.featureGrid(variant))
     expect(root(wrapper).attributes('data-variant')).toBe(variant)
     expect(wrapper.get('h2').text()).toBe('What you need')
-    const items = wrapper.findAll('ul.bd-section-items > li.bd-section-item')
+    const items = wrapper.findAll('ul.myc-section-items > li.myc-section-item')
     expect(items).toHaveLength(2)
-    expect(items[0]!.get('h3.bd-section-item-title').text()).toBe('Light')
-    expect(items[0]!.get('.bd-section-item-text').text()).toBe('Four hours of sun.')
-    expect(items[1]!.find('.bd-section-item-text').exists()).toBe(false)
+    expect(items[0]!.get('h3.myc-section-item-title').text()).toBe('Light')
+    expect(items[0]!.get('.myc-section-item-text').text()).toBe('Four hours of sun.')
+    expect(items[1]!.find('.myc-section-item-text').exists()).toBe(false)
   })
 
   it('serves SVG icons straight, as decorative images', async () => {
     const wrapper = await render(sections.featureGrid('grid'))
-    const icon = wrapper.get('.bd-section-icon img')
+    const icon = wrapper.get('.myc-section-icon img')
     expect(icon.attributes('src')).toMatch(/\/uploads\/icon-light\.svg$/)
     expect(icon.attributes('alt')).toBe('')
-    expect(wrapper.find('.bd-section-icon picture').exists()).toBe(false)
+    expect(wrapper.find('.myc-section-icon picture').exists()).toBe(false)
   })
 
   it('loads items lazily', async () => {
     const section = sections.featureGrid('grid') as Extract<PageSection, { __component: 'section.feature-grid' }>
     section.items[0]!.icon = image('icon.png')
     const wrapper = await render(section)
-    expect(wrapper.get('.bd-section-icon img').attributes('loading')).toBe('lazy')
-    expect(wrapper.get('.bd-section-icon img').attributes('fetchpriority')).toBeUndefined()
+    expect(wrapper.get('.myc-section-icon img').attributes('loading')).toBe('lazy')
+    expect(wrapper.get('.myc-section-icon img').attributes('fetchpriority')).toBeUndefined()
   })
 })
 
@@ -315,11 +315,11 @@ describe('media showcase', () => {
   it.each(['left', 'right', 'stacked'] as const)('renders the %s variant', async (variant) => {
     const wrapper = await render(sections.mediaShowcase(variant))
     expect(root(wrapper).attributes('data-variant')).toBe(variant)
-    expect(wrapper.get('.bd-section-media img').attributes('alt')).toBe('balcony.png')
-    expect(wrapper.get('.bd-section-media img').attributes('loading')).toBe('lazy')
+    expect(wrapper.get('.myc-section-media img').attributes('alt')).toBe('balcony.png')
+    expect(wrapper.get('.myc-section-media img').attributes('loading')).toBe('lazy')
     expect(wrapper.get('h2').text()).toBe('A balcony in spring')
-    expect(wrapper.get('.bd-section-text strong').text()).toBe('cherry tomatoes')
-    expect(wrapper.get('.bd-section-actions a').attributes('href')).toBe('/blog/starting-a-balcony-garden')
+    expect(wrapper.get('.myc-section-text strong').text()).toBe('cherry tomatoes')
+    expect(wrapper.get('.myc-section-actions a').attributes('href')).toBe('/blog/starting-a-balcony-garden')
   })
 
   it('plays a video only when asked: controls, muted, no autoplay', async () => {
@@ -342,10 +342,10 @@ describe('stats', () => {
   it.each(['row', 'cards'] as const)('renders the %s variant as a description list', async (variant) => {
     const wrapper = await render(sections.stats(variant))
     expect(root(wrapper).attributes('data-variant')).toBe(variant)
-    const list = wrapper.get('dl.bd-section-items')
-    expect(list.findAll('.bd-section-item')).toHaveLength(2)
-    expect(list.findAll('dt.bd-section-stat-value').map(node => node.text())).toEqual(['4 h', '12'])
-    expect(list.findAll('dd.bd-section-stat-label').map(node => node.text())).toEqual(['of sun a day', 'pots'])
+    const list = wrapper.get('dl.myc-section-items')
+    expect(list.findAll('.myc-section-item')).toHaveLength(2)
+    expect(list.findAll('dt.myc-section-stat-value').map(node => node.text())).toEqual(['4 h', '12'])
+    expect(list.findAll('dd.myc-section-stat-label').map(node => node.text())).toEqual(['of sun a day', 'pots'])
   })
 })
 
@@ -353,12 +353,12 @@ describe('logo cloud', () => {
   it('renders the row variant with one list and names the logos', async () => {
     const wrapper = await render(sections.logoCloud('row'))
     expect(root(wrapper).attributes('data-variant')).toBe('row')
-    expect(wrapper.get('.bd-section-logo-track').attributes('data-variant')).toBe('row')
-    expect(wrapper.findAll('.bd-section-items')).toHaveLength(1)
+    expect(wrapper.get('.myc-section-logo-track').attributes('data-variant')).toBe('row')
+    expect(wrapper.findAll('.myc-section-items')).toHaveLength(1)
     const linked = wrapper.get('a[href="https://circle.example.com"]')
     expect(linked.attributes('rel')).toBe('noopener')
     expect(linked.get('img').attributes('alt')).toBe('logo-circle.svg')
-    expect(wrapper.findAll('.bd-section-item')[1]!.find('a').exists()).toBe(false)
+    expect(wrapper.findAll('.myc-section-item')[1]!.find('a').exists()).toBe(false)
   })
 
   it('links logos to http(s) URLs only', async () => {
@@ -373,13 +373,13 @@ describe('logo cloud', () => {
     const section = sections.logoCloud('row') as Extract<PageSection, { __component: 'section.logo-cloud' }>
     section.logos[1]!.image = { ...svg('x.svg'), alternativeText: undefined }
     const wrapper = await render(section)
-    expect(wrapper.findAll('.bd-section-item')[1]!.get('img').attributes('alt')).toBe('Square Soil')
+    expect(wrapper.findAll('.myc-section-item')[1]!.get('img').attributes('alt')).toBe('Square Soil')
   })
 
   it('duplicates the marquee track out of the accessibility tree and the focus order', async () => {
     const wrapper = await render(sections.logoCloud('marquee'))
-    expect(wrapper.get('.bd-section-logo-track').attributes('data-variant')).toBe('marquee')
-    const lists = wrapper.findAll('.bd-section-logo-track > .bd-section-items')
+    expect(wrapper.get('.myc-section-logo-track').attributes('data-variant')).toBe('marquee')
+    const lists = wrapper.findAll('.myc-section-logo-track > .myc-section-items')
     expect(lists).toHaveLength(2)
     expect(lists[0]!.attributes('aria-hidden')).toBeUndefined()
     expect(lists[1]!.attributes('aria-hidden')).toBe('true')
@@ -393,10 +393,10 @@ describe('testimonials', () => {
   it.each(['single', 'grid'] as const)('renders the %s variant as figures with a quotation', async (variant) => {
     const wrapper = await render(sections.testimonials(variant))
     expect(root(wrapper).attributes('data-variant')).toBe(variant)
-    const figures = wrapper.findAll('li.bd-section-item > figure')
+    const figures = wrapper.findAll('li.myc-section-item > figure')
     expect(figures).toHaveLength(variant === 'single' ? 1 : 2)
-    expect(figures[0]!.get('blockquote.bd-section-quote').text()).toBe('The basil smells all the way to the street.')
-    expect(figures[0]!.get('figcaption.bd-section-author').text()).toContain('Sam · Neighbor')
+    expect(figures[0]!.get('blockquote.myc-section-quote').text()).toBe('The basil smells all the way to the street.')
+    expect(figures[0]!.get('figcaption.myc-section-author').text()).toContain('Sam · Neighbor')
     expect(figures[0]!.get('figcaption img').attributes('alt')).toBe('')
     if (variant === 'grid') expect(figures[1]!.get('figcaption').text()).toBe('Robin')
   })
@@ -406,13 +406,13 @@ describe('pricing', () => {
   it('renders the cards variant and marks the recommended plan with text', async () => {
     const wrapper = await render(sections.pricing('cards'))
     expect(root(wrapper).attributes('data-variant')).toBe('cards')
-    const plans = wrapper.findAll('li.bd-section-plan')
+    const plans = wrapper.findAll('li.myc-section-plan')
     expect(plans).toHaveLength(2)
-    expect(plans[0]!.classes()).not.toContain('bd-section-plan-recommended')
+    expect(plans[0]!.classes()).not.toContain('myc-section-plan-recommended')
     expect(plans[0]!.get('h3').text()).toBe('Starter')
-    expect(plans[0]!.get('.bd-section-plan-price strong').text()).toBe('$5')
-    expect(plans[0]!.findAll('.bd-section-plan-features li').map(node => node.text())).toEqual(['3 seed packs', 'A planting guide'])
-    expect(plans[1]!.classes()).toContain('bd-section-plan-recommended')
+    expect(plans[0]!.get('.myc-section-plan-price strong').text()).toBe('$5')
+    expect(plans[0]!.findAll('.myc-section-plan-features li').map(node => node.text())).toEqual(['3 seed packs', 'A planting guide'])
+    expect(plans[1]!.classes()).toContain('myc-section-plan-recommended')
     expect(plans[1]!.text()).toContain('Recommended')
     expect(plans[1]!.get('a').attributes('href')).toBe('/')
   })
@@ -423,10 +423,10 @@ describe('pricing', () => {
     const table = wrapper.get('table')
     expect(table.get('caption').text()).toBe('Seed boxes')
     expect(table.findAll('thead th[scope="col"]').length).toBeGreaterThanOrEqual(3)
-    const rows = table.findAll('tbody tr.bd-section-plan')
+    const rows = table.findAll('tbody tr.myc-section-plan')
     expect(rows).toHaveLength(2)
     expect(rows[0]!.get('th[scope="row"]').text()).toBe('Starter')
-    expect(rows[1]!.classes()).toContain('bd-section-plan-recommended')
+    expect(rows[1]!.classes()).toContain('myc-section-plan-recommended')
     expect(rows[1]!.text()).toContain('Recommended')
     expect(rows[1]!.get('a').text()).toBe('Choose')
   })
@@ -443,12 +443,12 @@ describe('faq', () => {
   it.each(['list', 'two-columns'] as const)('renders the %s variant with native details', async (variant) => {
     const wrapper = await render(sections.faq(variant))
     expect(root(wrapper).attributes('data-variant')).toBe(variant)
-    const items = wrapper.findAll('details.bd-section-item')
+    const items = wrapper.findAll('details.myc-section-item')
     expect(items).toHaveLength(2)
-    expect(items[0]!.get('summary.bd-section-question').text()).toBe('Do I need a garden?')
+    expect(items[0]!.get('summary.myc-section-question').text()).toBe('Do I need a garden?')
     expect(items[0]!.attributes('open')).toBeUndefined()
-    expect(items[0]!.get('.bd-section-answer').text()).toBe('No: a balcony is enough.')
-    expect(items[1]!.get('.bd-section-answer a').attributes('href')).toBe('https://github.com/bogd3v/micelio')
+    expect(items[0]!.get('.myc-section-answer').text()).toBe('No: a balcony is enough.')
+    expect(items[1]!.get('.myc-section-answer a').attributes('href')).toBe('https://github.com/bogd3v/micelio')
   })
 })
 
@@ -457,8 +457,8 @@ describe('cta', () => {
     const wrapper = await render(sections.cta(variant))
     expect(root(wrapper).attributes('data-variant')).toBe(variant)
     expect(wrapper.get('h2').text()).toBe('Start this weekend')
-    expect(wrapper.get('.bd-section-text').text()).toBe('One pot, one plant.')
-    expect(wrapper.get('.bd-section-actions a.bd-btn-primary').attributes('href')).toBe('/blog')
+    expect(wrapper.get('.myc-section-text').text()).toBe('One pot, one plant.')
+    expect(wrapper.get('.myc-section-actions a.myc-btn-primary').attributes('href')).toBe('/blog')
   })
 })
 
@@ -466,7 +466,7 @@ describe('post list', () => {
   it('renders the cards variant with post cards', async () => {
     const wrapper = await render(sections.postList('cards'))
     expect(root(wrapper).attributes('data-variant')).toBe('cards')
-    const card = wrapper.get('li.bd-section-item article.bd-card')
+    const card = wrapper.get('li.myc-section-item article.myc-card')
     expect(card.get('a').attributes('href')).toBe('/blog/starting-a-balcony-garden')
     expect(card.get('h3').text()).toBe('Starting a balcony garden')
   })
@@ -474,10 +474,10 @@ describe('post list', () => {
   it('renders the list variant with a title link and a date', async () => {
     const wrapper = await render(sections.postList('list'))
     expect(root(wrapper).attributes('data-variant')).toBe('list')
-    const item = wrapper.get('li.bd-section-item')
+    const item = wrapper.get('li.myc-section-item')
     expect(item.get('h3 a').attributes('href')).toBe('/blog/starting-a-balcony-garden')
     expect(item.get('time').attributes('datetime')).toBe('2026-09-24T15:00:00.000Z')
-    expect(item.get('.bd-section-item-text').text()).toBe('Four hours of sun are enough.')
+    expect(item.get('.myc-section-item-text').text()).toBe('Four hours of sun are enough.')
   })
 
   it.each(['cards', 'list'] as const)('renders nothing for the %s variant without posts', async (variant) => {
@@ -500,13 +500,13 @@ describe('newsletter', () => {
     const wrapper = await render(sections.newsletter(variant))
     expect(root(wrapper).attributes('data-variant')).toBe(variant)
     expect(wrapper.get('h2').text()).toBe('Notes by email')
-    expect(wrapper.find('form.bd-news').exists()).toBe(true)
+    expect(wrapper.find('form.myc-news').exists()).toBe(true)
     expect(wrapper.find('input[type="email"]').exists()).toBe(true)
     expect(wrapper.get('form button[type="submit"]').text()).toContain('Subscribe me')
     expect(wrapper.get('form p').text()).toBe('One email per season.')
     // One heading: the section's h2, not the form's own eyebrow and h3
     expect(wrapper.findAll('h2, h3')).toHaveLength(1)
-    expect(wrapper.find('.bd-news-eyebrow').exists()).toBe(false)
+    expect(wrapper.find('.myc-news-eyebrow').exists()).toBe(false)
   })
 
   it('renders nothing when the newsletter module is off', async () => {
@@ -522,8 +522,8 @@ describe('rich text', () => {
     const wrapper = await render(sections.richText())
     expect(root(wrapper).attributes('data-section')).toBe('rich-text')
     expect(root(wrapper).attributes('data-variant')).toBeUndefined()
-    expect(wrapper.get('.bd-section-text h2').text()).toBe('About this page')
-    expect(wrapper.get('.bd-section-text p').text()).toBe('Every section appears once.')
+    expect(wrapper.get('.myc-section-text h2').text()).toBe('About this page')
+    expect(wrapper.get('.myc-section-text p').text()).toBe('Every section appears once.')
   })
 })
 
@@ -531,7 +531,7 @@ describe('gallery', () => {
   it.each(['grid', 'masonry'] as const)('renders the %s variant with lazy images and alt text', async (variant) => {
     const wrapper = await render(sections.gallery(variant))
     expect(root(wrapper).attributes('data-variant')).toBe(variant)
-    const images = wrapper.findAll('li.bd-section-item img')
+    const images = wrapper.findAll('li.myc-section-item img')
     expect(images.map(img => img.attributes('alt'))).toEqual(['balcony.png', 'summer.png', 'autumn.png'])
     expect(images.every(img => img.attributes('loading') === 'lazy' && img.attributes('width') === '1200')).toBe(true)
   })
@@ -541,9 +541,9 @@ describe('scene', () => {
   it.each(['background', 'inline'] as const)('renders the %s variant as a static poster', async (variant) => {
     const wrapper = await render(sections.scene(variant))
     expect(root(wrapper).attributes('data-variant')).toBe(variant)
-    expect(wrapper.get('.bd-section-media img').attributes('alt')).toBe('A green triangle')
+    expect(wrapper.get('.myc-section-media img').attributes('alt')).toBe('A green triangle')
     expect(wrapper.get('h2').text()).toBe('A scene')
-    expect(wrapper.get('.bd-section-text').text()).toBe('Static preview.')
+    expect(wrapper.get('.myc-section-text').text()).toBe('Static preview.')
     expect(wrapper.find('canvas').exists()).toBe(false)
     // The island reads the model from here; static builds rewrite it to /_media/ (ADR 0004)
     expect(wrapper.get('micelio-scene').attributes('data-model')).toMatch(/\/uploads\/triangle\.glb$/)

@@ -4,13 +4,13 @@ import { postTransitionNames } from '../app/helpers/postTransition'
 const IDENT = /^-?[_a-zA-Z][_a-zA-Z0-9-]*$/
 
 describe('postTransitionNames', () => {
-  it('returns valid CSS idents with the bd-post- prefix', () => {
+  it('returns valid CSS idents with the myc-post- prefix', () => {
     for (const slug of ['hello-world', '2024-recap', 'año nuevo', 'a/b?c=d', 'emoji-🍄', '', 'x_y']) {
       const { media, title } = postTransitionNames(slug)
       expect(media).toMatch(IDENT)
       expect(title).toMatch(IDENT)
-      expect(media.startsWith('bd-post-')).toBe(true)
-      expect(title.startsWith('bd-post-')).toBe(true)
+      expect(media.startsWith('myc-post-')).toBe(true)
+      expect(title.startsWith('myc-post-')).toBe(true)
     }
   })
 

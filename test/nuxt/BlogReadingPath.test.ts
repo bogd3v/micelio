@@ -31,8 +31,8 @@ async function mountPath(category: Category, currentDocumentId?: string) {
 describe('BlogReadingPath', () => {
   beforeEach(() => {
     localStorage.clear()
-    useState('bd-read-articles').value = []
-    useState('bd-read-articles-loaded').value = false
+    useState('myc-read-articles').value = []
+    useState('myc-read-articles-loaded').value = false
   })
 
   it('lists the path in order as a numbered list with the progress', async () => {
@@ -40,20 +40,20 @@ describe('BlogReadingPath', () => {
     const wrapper = await mountPath(Category.Ai)
     expect(wrapper.get('h2').text()).toBe('Reading path · AI')
     const steps = wrapper.findAll('ol > li')
-    expect(steps.map(step => step.get('.bd-path-number').text())).toEqual(['01', '02', '03'])
+    expect(steps.map(step => step.get('.myc-path-number').text())).toEqual(['01', '02', '03'])
     expect(steps.map(step => step.get('a').text())).toEqual(['Start here', 'RAG explained', 'Agents'])
     expect(steps[0]!.get('a').attributes('href')).toBe('/blog/start-here')
-    expect(steps.map(step => step.find('.bd-path-read').exists())).toEqual([true, false, false])
-    expect(wrapper.get('.bd-path-progress').text()).toBe('01 of 03 read · kept in your browser')
+    expect(steps.map(step => step.find('.myc-path-read').exists())).toEqual([true, false, false])
+    expect(wrapper.get('.myc-path-progress').text()).toBe('01 of 03 read · kept in your browser')
     expect(wrapper.find('[aria-current]').exists()).toBe(false)
-    expect(wrapper.find('.bd-path-next').exists()).toBe(false)
+    expect(wrapper.find('.myc-path-next').exists()).toBe(false)
   })
 
   it('marks the current article and links to the next one', async () => {
     const wrapper = await mountPath(Category.Ai, 'doc-rag')
     const current = wrapper.get('a[aria-current="page"]')
     expect(current.text()).toBe('RAG explained')
-    const next = wrapper.get('.bd-path-next')
+    const next = wrapper.get('.myc-path-next')
     expect(next.attributes('href')).toBe('/blog/agents')
     expect(next.text()).toContain('Next on the path')
     expect(next.text()).toContain('Agents')
@@ -61,19 +61,19 @@ describe('BlogReadingPath', () => {
 
   it('says when the current article is the last one', async () => {
     const wrapper = await mountPath(Category.Ai, 'doc-agents')
-    expect(wrapper.find('.bd-path-next').exists()).toBe(false)
+    expect(wrapper.find('.myc-path-next').exists()).toBe(false)
     expect(wrapper.text()).toContain('Last article on the path')
   })
 
   it('stays hidden for an article off the path or a path with a single article', async () => {
-    expect((await mountPath(Category.Ai, 'doc-other')).find('.bd-path').exists()).toBe(false)
-    expect((await mountPath(Category.Diy)).find('.bd-path').exists()).toBe(false)
+    expect((await mountPath(Category.Ai, 'doc-other')).find('.myc-path').exists()).toBe(false)
+    expect((await mountPath(Category.Diy)).find('.myc-path').exists()).toBe(false)
   })
 
   it('updates the progress when an article of the path is read', async () => {
     const wrapper = await mountPath(Category.Ai)
     useReadArticles().markRead('doc-rag')
     await flushPromises()
-    expect(wrapper.get('.bd-path-progress').text()).toBe('01 of 03 read · kept in your browser')
+    expect(wrapper.get('.myc-path-progress').text()).toBe('01 of 03 read · kept in your browser')
   })
 })

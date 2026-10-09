@@ -30,7 +30,7 @@ function minimal(): Manifest {
 
 /** An installed copy of the minimal theme under a fresh root, changed by `change` and `files`. */
 function install(id: string, change: (manifest: Manifest) => void = () => {}, files: Record<string, string> = {}): string {
-  const root = mkdtempSync(join(tmpdir(), 'bd-contract-'))
+  const root = mkdtempSync(join(tmpdir(), 'myc-contract-'))
   const dir = join(root, id)
   cpSync(join(FIXTURES, 'minimal'), dir, { recursive: true })
   const manifest = minimal()
@@ -84,7 +84,7 @@ describe('reserved theme ids', () => {
     expect(problems).toHaveLength(1)
   })
 
-  it.each(['bogota', 'starter', 'bd-like', 'mycelium'])('accepts the id "%s"', (id) => {
+  it.each(['bogota', 'starter', 'myc-like', 'mycelium'])('accepts the id "%s"', (id) => {
     expect(contractProblems({ ...minimal(), id }).filter(problem => problem.includes('"id"'))).toEqual([])
   })
 })
@@ -348,21 +348,21 @@ describe('package files', () => {
   })
 
   it('reports CSS problems with the file name', () => {
-    const problems = problemsOf(install('css', () => {}, { 'theme.css': '.bd-made-up { color: red }' }))
-    expect(problems).toEqual(['theme.css: ".bd-made-up" is not a public hook (internal bd-* classes can change in any release)'])
+    const problems = problemsOf(install('css', () => {}, { 'theme.css': '.myc-made-up { color: red }' }))
+    expect(problems).toEqual(['theme.css: ".myc-made-up" is not a public hook (internal myc-* classes can change in any release)'])
   })
 
   it('checks the optional sections.css like theme.css', () => {
-    expect(problemsOf(install('sections-ok', () => {}, { 'sections.css': '.bd-section[data-section="hero"] { top: 0 }' }))).toEqual([])
-    const problems = problemsOf(install('sections-bad', () => {}, { 'sections.css': '.bd-made-up { color: red }' }))
-    expect(problems).toEqual(['sections.css: ".bd-made-up" is not a public hook (internal bd-* classes can change in any release)'])
+    expect(problemsOf(install('sections-ok', () => {}, { 'sections.css': '.myc-section[data-section="hero"] { top: 0 }' }))).toEqual([])
+    const problems = problemsOf(install('sections-bad', () => {}, { 'sections.css': '.myc-made-up { color: red }' }))
+    expect(problems).toEqual(['sections.css: ".myc-made-up" is not a public hook (internal myc-* classes can change in any release)'])
   })
 
   it('checks slot CSS and the files theme.css imports', () => {
     const slot = problemsOf(install('slotcss', () => {}, { 'slots/mark.css': '.x { color: red !important }' }))
     expect(slot.join('\n')).toMatch(/slots\/mark\.css: !important on "color"/)
-    const imported = problemsOf(install('imported', () => {}, { 'theme.css': '@import "./more.css";', 'more.css': '.bd-nope { top: 0 }' }))
-    expect(imported.join('\n')).toMatch(/more\.css: ".bd-nope"/)
+    const imported = problemsOf(install('imported', () => {}, { 'theme.css': '@import "./more.css";', 'more.css': '.myc-nope { top: 0 }' }))
+    expect(imported.join('\n')).toMatch(/more\.css: ".myc-nope"/)
     expect(problemsOf(install('escape', () => {}, { 'theme.css': '@import "../other.css";' })).join('\n')).toMatch(/leaves the theme folder/)
   })
 })

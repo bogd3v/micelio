@@ -32,29 +32,29 @@ const points = computed<{ id: string, title: string, text: string, icon: string 
 </script>
 
 <template>
-  <div class="bd-account-page">
-    <div class="bd-account-card">
-      <span class="bd-corner bd-corner-tl" aria-hidden="true" />
-      <span class="bd-corner bd-corner-br" aria-hidden="true" />
+  <div class="myc-account-page">
+    <div class="myc-account-card">
+      <span class="myc-corner myc-corner-tl" aria-hidden="true" />
+      <span class="myc-corner myc-corner-br" aria-hidden="true" />
       <slot />
     </div>
-    <aside class="bd-account-aside" aria-labelledby="bd-account-why">
-      <div class="bd-account-aside-head">
-        <p class="bd-eyebrow">{{ t('account.aside.eyebrow') }}</p>
-        <h2 id="bd-account-why" class="bd-account-aside-title bd-stretch">{{ t('account.aside.title') }}</h2>
+    <aside class="myc-account-aside" aria-labelledby="myc-account-why">
+      <div class="myc-account-aside-head">
+        <p class="myc-eyebrow">{{ t('account.aside.eyebrow') }}</p>
+        <h2 id="myc-account-why" class="myc-account-aside-title myc-stretch">{{ t('account.aside.title') }}</h2>
       </div>
-      <ul class="bd-account-points">
-        <li v-for="point in points" :key="point.id" class="bd-account-point">
-          <span class="bd-account-point-icon">
+      <ul class="myc-account-points">
+        <li v-for="point in points" :key="point.id" class="myc-account-point">
+          <span class="myc-account-point-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><path :d="point.icon" /></svg>
           </span>
-          <span class="bd-account-point-body">
-            <span class="bd-account-point-title">{{ point.title }}</span>
-            <span class="bd-account-point-text">{{ point.text }}</span>
+          <span class="myc-account-point-body">
+            <span class="myc-account-point-title">{{ point.title }}</span>
+            <span class="myc-account-point-text">{{ point.text }}</span>
           </span>
         </li>
       </ul>
-      <NuxtLink :to="localizePath('/privacy')" class="bd-account-privacy">{{ t('account.aside.privacy') }} <span aria-hidden="true">→</span></NuxtLink>
+      <NuxtLink :to="localizePath('/privacy')" class="myc-account-privacy">{{ t('account.aside.privacy') }} <span aria-hidden="true">→</span></NuxtLink>
     </aside>
   </div>
 </template>

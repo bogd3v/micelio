@@ -20,9 +20,9 @@ function copyLink(): void {
 </script>
 
 <template>
-  <span v-if="!isStatic" class="bd-copy-link">
+  <span v-if="!isStatic" class="myc-copy-link">
     <BdButton v-if="variant === 'button'" variant="secondary" size="sm" @click="copyLink">{{ label }}</BdButton>
-    <button v-else type="button" class="bd-share-link" @click="copyLink">{{ label }}</button>
-    <span class="bd-sr" aria-live="polite">{{ copied ? t('post.linkCopied') : '' }}</span>
+    <button v-else type="button" class="myc-share-link" @click="copyLink">{{ label }}</button>
+    <span class="myc-sr" aria-live="polite">{{ copied ? t('post.linkCopied') : '' }}</span>
   </span>
 </template>

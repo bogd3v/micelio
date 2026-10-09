@@ -1,33 +1,33 @@
 /* Hero section: centered, split and full-bleed */
-[data-section="hero"] .bd-section-title {
+[data-section="hero"] .myc-section-title {
     font: var(--text-display-l);
     letter-spacing: var(--tracking-display-l);
 }
 
-[data-section="hero"] .bd-section-inner {
+[data-section="hero"] .myc-section-inner {
     gap: var(--space-6);
 }
 
-[data-section="hero"][data-variant="centered"] .bd-section-inner {
+[data-section="hero"][data-variant="centered"] .myc-section-inner {
     justify-items: center;
     text-align: center;
 }
 
-[data-section="hero"][data-variant="centered"] .bd-section-head {
+[data-section="hero"][data-variant="centered"] .myc-section-head {
     justify-items: center;
 }
 
-[data-section="hero"][data-variant="centered"] .bd-section-actions {
+[data-section="hero"][data-variant="centered"] .myc-section-actions {
     justify-content: center;
 }
 
-[data-section="hero"][data-variant="centered"] .bd-section-inner > .bd-section-media {
+[data-section="hero"][data-variant="centered"] .myc-section-inner > .myc-section-media {
     width: 100%;
     margin-top: var(--space-6);
 }
 
 @media (min-width: 900px) {
-    [data-section="hero"][data-variant="split"] .bd-section-inner {
+    [data-section="hero"][data-variant="split"] .myc-section-inner {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-areas:
             "head media"
@@ -37,17 +37,17 @@
         column-gap: var(--space-12);
     }
 
-    [data-section="hero"][data-variant="split"] .bd-section-head {
+    [data-section="hero"][data-variant="split"] .myc-section-head {
         grid-area: head;
         align-self: end;
     }
 
-    [data-section="hero"][data-variant="split"] .bd-section-actions {
+    [data-section="hero"][data-variant="split"] .myc-section-actions {
         grid-area: actions;
         align-self: start;
     }
 
-    [data-section="hero"][data-variant="split"] .bd-section-inner > .bd-section-media {
+    [data-section="hero"][data-variant="split"] .myc-section-inner > .myc-section-media {
         grid-area: media;
     }
 }
@@ -60,19 +60,19 @@
     isolation: isolate;
 }
 
-[data-section="hero"][data-variant="full-bleed"] > .bd-section-media {
+[data-section="hero"][data-variant="full-bleed"] > .myc-section-media {
     position: absolute;
     inset: 0;
     z-index: -1;
     border-radius: 0;
 }
 
-[data-section="hero"][data-variant="full-bleed"] > .bd-section-media :is(img, picture) {
+[data-section="hero"][data-variant="full-bleed"] > .myc-section-media :is(img, picture) {
     width: 100%;
     height: 100%;
 }
 
-[data-section="hero"][data-variant="full-bleed"] > .bd-section-media::after {
+[data-section="hero"][data-variant="full-bleed"] > .myc-section-media::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -80,7 +80,7 @@
 }
 
 /* The text sits on a mostly solid panel of the surface, so its contrast does not depend on the image */
-[data-section="hero"][data-variant="full-bleed"] .bd-section-inner {
+[data-section="hero"][data-variant="full-bleed"] .myc-section-inner {
     padding-block: var(--space-8);
     background: color-mix(in oklab, var(--surface) 88%, transparent);
 }

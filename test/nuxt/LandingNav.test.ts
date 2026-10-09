@@ -40,13 +40,13 @@ describe('landing without a blog', () => {
   it('has no blog tab, and the search tab goes to the site navigation', async () => {
     setBuild('landing', false)
     const wrapper = await mountSuspended(BdTabBar)
-    expect(wrapper.findAll('a.bd-tab').map(link => link.attributes('href'))).toEqual(['/', '/#bd-site-nav', '#bd-site-nav'])
+    expect(wrapper.findAll('a.myc-tab').map(link => link.attributes('href'))).toEqual(['/', '/#myc-site-nav', '#myc-site-nav'])
   })
 
   it('sends the search control to the site navigation, not to a blog list', async () => {
     setBuild('landing', false)
     const wrapper = await mountSuspended(BdSearchTrigger)
-    expect(wrapper.get('a').attributes('href')).toBe('/#bd-site-nav')
+    expect(wrapper.get('a').attributes('href')).toBe('/#myc-site-nav')
     setBuild('landing', true)
     expect((await mountSuspended(BdSearchTrigger)).get('a').attributes('href')).toBe('/blog')
   })
@@ -54,8 +54,8 @@ describe('landing without a blog', () => {
   it('shows anchors to the titled sections in the header, once the home page has loaded', async () => {
     setBuild('landing', false)
     const wrapper = await mountSuspended(Header, { props: { active: 'home' } })
-    await vi.waitFor(() => expect(wrapper.get('.bd-nav-main').text()).toContain('Features'))
-    const links = wrapper.get('.bd-nav-main').findAll('a')
+    await vi.waitFor(() => expect(wrapper.get('.myc-nav-main').text()).toContain('Features'))
+    const links = wrapper.get('.myc-nav-main').findAll('a')
     expect(links.map(link => [link.text(), link.attributes('href')])).toEqual([
       ['Features', '/#section-features'],
       ['Questions', '/#section-questions'],
@@ -71,8 +71,8 @@ describe('landing without a blog', () => {
     const hrefs = wrapper.findAll('a').map(link => link.attributes('href') ?? '')
     expect(hrefs).toContain('/#section-features')
     expect(hrefs.filter(href => /\/blog|\/feed/.test(href))).toEqual([])
-    expect(wrapper.find('.bd-foot-nav-topics').exists()).toBe(false)
-    expect(wrapper.findAll('details').map(group => group.get('.bd-acc-label').text())).not.toContain('Topics')
+    expect(wrapper.find('.myc-foot-nav-topics').exists()).toBe(false)
+    expect(wrapper.findAll('details').map(group => group.get('.myc-acc-label').text())).not.toContain('Topics')
     const minimal = await mountSuspended(FooterMinimal)
     await vi.waitFor(() => expect(minimal.text()).toContain('Features'))
     expect(minimal.findAll('a').map(link => link.attributes('href') ?? '').filter(href => /\/blog|\/feed/.test(href))).toEqual([])
@@ -81,8 +81,8 @@ describe('landing without a blog', () => {
   it('keeps the blog in the navigation of a landing that has articles', async () => {
     setBuild('landing', true)
     const wrapper = await mountSuspended(Header, { props: { active: 'home' } })
-    await vi.waitFor(() => expect(wrapper.get('.bd-nav-main').text()).toContain('Features'))
-    expect(wrapper.get('.bd-nav-main').findAll('a').map(link => link.text())).toEqual(['Features', 'Questions', 'Start', 'Blog'])
+    await vi.waitFor(() => expect(wrapper.get('.myc-nav-main').text()).toContain('Features'))
+    expect(wrapper.get('.myc-nav-main').findAll('a').map(link => link.text())).toEqual(['Features', 'Questions', 'Start', 'Blog'])
   })
 
   it('gives the sections the ids the navigation links to, and only in a landing', async () => {

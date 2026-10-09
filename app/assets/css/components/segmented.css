@@ -1,9 +1,9 @@
-.bd-seg-group {
+.myc-seg-group {
     display: inline-flex;
     border: 1px solid var(--line-strong);
 }
 
-.bd-seg {
+.myc-seg {
     min-width: 72px;
     min-height: 42px;
     padding: 0 14px;
@@ -17,25 +17,25 @@
     transition: color var(--duration-base) var(--ease-standard), background-color var(--duration-base) var(--ease-standard);
 }
 
-.bd-lang .bd-seg {
+.myc-lang .myc-seg {
     min-width: 44px;
     padding: 0 var(--space-3);
     letter-spacing: 0.12em;
 }
 
-a.bd-seg {
+a.myc-seg {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
 }
 
-.bd-seg:hover {
+.myc-seg:hover {
     color: var(--ink);
 }
 
-.bd-seg[aria-pressed="true"],
-.bd-seg[aria-current="true"] {
+.myc-seg[aria-pressed="true"],
+.myc-seg[aria-current="true"] {
     background: var(--ink);
     color: var(--on-ink);
 }
@@ -43,18 +43,18 @@ a.bd-seg {
 /* Per-mode switch rules before hydration: generated from the theme's modes (micelio/components.css) */
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-seg {
+    .myc-seg {
         transition: none;
     }
 }
 
 @media (forced-colors: active) {
-    .bd-seg-group {
+    .myc-seg-group {
         border-color: ButtonText;
     }
 
-    .bd-seg[aria-pressed="true"],
-    .bd-seg[aria-current="true"] {
+    .myc-seg[aria-pressed="true"],
+    .myc-seg[aria-current="true"] {
         background: Highlight;
         color: HighlightText;
     }

@@ -17,7 +17,7 @@ function trackRequests(page: Page): string[] {
 }
 
 function trigger(page: Page): ReturnType<Page['locator']> {
-  return page.locator('.bd-chip[aria-haspopup="dialog"]')
+  return page.locator('.myc-chip[aria-haspopup="dialog"]')
 }
 
 test('a page loads the small island and nothing of Pagefind', async ({ page }) => {
@@ -208,6 +208,6 @@ test('without JavaScript the search is a link to the blog list', async ({ browse
   const link = page.locator('a[data-micelio-search-open]').first()
   expect(await link.getAttribute('href')).toBe('/es/blog')
   await expect(page.locator('dialog[open]')).toHaveCount(0)
-  await expect(page.locator('button:visible:not(form.bd-news[method="post"][action] button)')).toHaveCount(0)
+  await expect(page.locator('button:visible:not(form.myc-news[method="post"][action] button)')).toHaveCount(0)
   await context.close()
 })

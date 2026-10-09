@@ -11,16 +11,16 @@ const props = withDefaults(defineProps<{
 const { t } = useI18n()
 
 const label = computed<string>(() => t(`bd.categories.${props.category}`))
-const classes = computed<string[]>(() => ['bd-tag', `bd-tag-${props.category}`])
+const classes = computed<string[]>(() => ['myc-tag', `myc-tag-${props.category}`])
 </script>
 
 <template>
   <NuxtLink v-if="href" :to="href" :class="classes">
-    <span class="bd-tag-dot" aria-hidden="true" />
+    <span class="myc-tag-dot" aria-hidden="true" />
     <span><slot>{{ label }}</slot></span>
   </NuxtLink>
   <span v-else :class="classes">
-    <span class="bd-tag-dot" aria-hidden="true" />
+    <span class="myc-tag-dot" aria-hidden="true" />
     <span><slot>{{ label }}</slot></span>
   </span>
 </template>

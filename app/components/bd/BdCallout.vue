@@ -17,11 +17,11 @@ const heading = computed<string>(() => props.title ?? t(`bd.callout.${props.tone
 
 <template>
   <aside
-    :class="['bd-callout', `bd-callout-${tone}`]"
+    :class="['myc-callout', `myc-callout-${tone}`]"
     :role="tone === 'danger' ? 'alert' : 'note'"
   >
-    <span class="bd-callout-label"><span aria-hidden="true">{{ `${CALLOUT_GLYPHS[tone]} ` }}</span>{{ heading }}</span>
-    <div class="bd-callout-body">
+    <span class="myc-callout-label"><span aria-hidden="true">{{ `${CALLOUT_GLYPHS[tone]} ` }}</span>{{ heading }}</span>
+    <div class="myc-callout-body">
       <slot />
     </div>
   </aside>

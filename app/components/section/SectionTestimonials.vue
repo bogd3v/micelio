@@ -9,16 +9,16 @@ const items = computed(() => props.section.variant === 'single' ? props.section.
 </script>
 
 <template>
-  <section class="bd-section" data-section="testimonials" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
-    <div class="bd-section-inner">
+  <section class="myc-section" data-section="testimonials" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+    <div class="myc-section-inner">
       <SectionHead :title="section.title" :title-id="titleId" />
-      <ul class="bd-section-items">
-        <li v-for="(item, index) in items" :key="index" class="bd-section-item">
+      <ul class="myc-section-items">
+        <li v-for="(item, index) in items" :key="index" class="myc-section-item">
           <figure>
-            <blockquote class="bd-section-quote">
+            <blockquote class="myc-section-quote">
               <p>{{ item.quote }}</p>
             </blockquote>
-            <figcaption class="bd-section-author">
+            <figcaption class="myc-section-author">
               <SectionMedia v-if="item.avatar" :media="item.avatar" sizes="48px" decorative />
               <span>
                 <strong>{{ item.author }}</strong>

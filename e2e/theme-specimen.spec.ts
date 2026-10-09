@@ -10,16 +10,16 @@ test('renders every group of the specimen', async ({ page }) => {
   // Drawn when near the viewport: scroll each block in
   const blocks = page.locator('[data-section="prose"] micelio-mermaid')
   for (let index = 0; index < await blocks.count(); index++) await blocks.nth(index).scrollIntoViewIfNeeded()
-  await expect(page.locator('[data-section="prose"] .bd-mermaid-diagram svg')).toHaveCount(2)
+  await expect(page.locator('[data-section="prose"] .myc-mermaid-diagram svg')).toHaveCount(2)
 })
 
 test('renders every page section through the real components', async ({ page }) => {
   await page.goto('/_theme', { waitUntil: 'networkidle' })
   for (const kind of PAGE_SECTIONS) {
-    await expect(page.locator(`.bd-specimen-group[data-section="page-${kind}"] section.bd-section[data-section="${kind}"]`).first()).toBeVisible()
+    await expect(page.locator(`.myc-specimen-group[data-section="page-${kind}"] section.myc-section[data-section="${kind}"]`).first()).toBeVisible()
   }
   // 29 variants + rich-text, each once (the newsletter is on in the e2e site)
-  await expect(page.locator('.bd-specimen-group[data-section^="page-"] section.bd-section')).toHaveCount(30)
+  await expect(page.locator('.myc-specimen-group[data-section^="page-"] section.myc-section')).toHaveCount(30)
 })
 
 test('is not indexable', async ({ page, request }) => {

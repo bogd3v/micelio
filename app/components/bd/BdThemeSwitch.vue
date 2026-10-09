@@ -18,12 +18,12 @@ function select(next: ThemeMode, event: MouseEvent): void {
 </script>
 
 <template>
-  <div v-if="modes.length > 1 && !isStatic" class="bd-seg-group" role="group" :aria-label="t('bd.header.theme')">
+  <div v-if="modes.length > 1 && !isStatic" class="myc-seg-group" role="group" :aria-label="t('bd.header.theme')">
     <button
       v-for="mode in modes"
       :key="mode.id"
       type="button"
-      class="bd-seg"
+      class="myc-seg"
       :data-mode="mode.id"
       :aria-pressed="theme === mode.id ? 'true' : 'false'"
       @click="select(mode.id, $event)"

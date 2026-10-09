@@ -1,5 +1,5 @@
 /* Hidden until a link inside takes focus; the bar has no padding of its own */
-.bd-skip-links {
+.myc-skip-links {
     position: fixed;
     top: 0;
     right: 0;
@@ -7,7 +7,7 @@
     z-index: 9999;
 }
 
-.bd-skip-links-bar {
+.myc-skip-links-bar {
     position: absolute;
     display: flex;
     flex-wrap: wrap;
@@ -24,7 +24,7 @@
     background-color: var(--link);
 }
 
-.bd-skip-links:focus-within .bd-skip-links-bar {
+.myc-skip-links:focus-within .myc-skip-links-bar {
     position: static;
     width: auto;
     height: auto;
@@ -34,7 +34,7 @@
     white-space: normal;
 }
 
-.bd-skip-link {
+.myc-skip-link {
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
     font-size: 0.875rem;
@@ -43,18 +43,18 @@
 }
 
 @media (hover: hover) {
-    .bd-skip-link:hover {
+    .myc-skip-link:hover {
         text-decoration-line: underline;
     }
 }
 
-.bd-skip-link:focus {
+.myc-skip-link:focus {
     outline: none;
     box-shadow: 0 0 0 2px #fff;
 }
 
 @media (forced-colors: active) {
-    .bd-skip-link:focus {
+    .myc-skip-link:focus {
         outline: 2px solid Highlight;
         outline-offset: 2px;
     }

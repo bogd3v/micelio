@@ -7,10 +7,10 @@ defineProps<{
 </script>
 
 <template>
-  <blockquote class="bd-quote">
+  <blockquote class="myc-quote">
     <!-- eslint-disable-next-line vue/no-v-html -- sanitized on the server (app/helpers/markdown.ts) -->
-    <p class="bd-quote-text" v-html="block.html ?? ''" />
-    <cite v-if="block.title" class="bd-quote-cite">
+    <p class="myc-quote-text" v-html="block.html ?? ''" />
+    <cite v-if="block.title" class="myc-quote-cite">
       — {{ block.title }}
     </cite>
   </blockquote>

@@ -6,7 +6,7 @@ body {
     padding-bottom: var(--myc-tabbar-h);
 }
 
-.bd-tabbar {
+.myc-tabbar {
     position: fixed;
     left: 0;
     right: 0;
@@ -23,7 +23,7 @@ body {
     box-sizing: border-box;
 }
 
-.bd-tab {
+.myc-tab {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -43,31 +43,31 @@ body {
     transition: color var(--duration-base) var(--ease-standard);
 }
 
-.bd-tab svg {
+.myc-tab svg {
     display: block;
 }
 
-.bd-tab:hover,
-.bd-tab[aria-current="page"],
-.bd-tab[aria-expanded="true"] {
+.myc-tab:hover,
+.myc-tab[aria-current="page"],
+.myc-tab[aria-expanded="true"] {
     color: var(--ink);
 }
 
-.bd-tab[aria-current="page"],
-.bd-tab[aria-expanded="true"] {
+.myc-tab[aria-current="page"],
+.myc-tab[aria-expanded="true"] {
     border-top-color: var(--accent);
 }
 
-.bd-tab:focus-visible {
+.myc-tab:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: -4px;
 }
 
-html:has(.bd-sheet[open]) {
+html:has(.myc-sheet[open]) {
     overflow: hidden;
 }
 
-.bd-sheet {
+.myc-sheet {
     position: fixed;
     inset: auto 0 0;
     width: 100%;
@@ -81,12 +81,12 @@ html:has(.bd-sheet[open]) {
     overflow: visible;
 }
 
-.bd-sheet::backdrop {
+.myc-sheet::backdrop {
     background: color-mix(in srgb, var(--surface-sunken) 60%, transparent);
     backdrop-filter: blur(6px);
 }
 
-.bd-sheet-panel {
+.myc-sheet-panel {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
@@ -99,7 +99,7 @@ html:has(.bd-sheet[open]) {
     box-sizing: border-box;
 }
 
-.bd-sheet-grip {
+.myc-sheet-grip {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -107,36 +107,36 @@ html:has(.bd-sheet[open]) {
     cursor: grab;
 }
 
-.bd-sheet-handle {
+.myc-sheet-handle {
     width: 40px;
     height: 4px;
     background: var(--line-strong);
 }
 
-.bd-sheet-head {
+.myc-sheet-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
     align-self: stretch;
 }
 
-.bd-sheet-close {
+.myc-sheet-close {
     margin-right: calc(-1 * var(--space-3));
 }
 
-.bd-sheet-label {
+.myc-sheet-label {
     margin: 0;
     color: var(--ink-muted);
 }
 
-.bd-sheet-nav {
+.myc-sheet-nav {
     display: flex;
     flex-direction: column;
     margin-top: calc(-1 * var(--space-4));
     border-top: 1px solid var(--line);
 }
 
-.bd-sheet-link {
+.myc-sheet-link {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -150,30 +150,30 @@ html:has(.bd-sheet[open]) {
     border-bottom: 1px solid var(--line);
 }
 
-.bd-sheet-link[aria-current="page"] {
+.myc-sheet-link[aria-current="page"] {
     padding-left: var(--space-4);
     box-shadow: inset 3px 0 0 var(--accent);
 }
 
-.bd-sheet-arrow {
+.myc-sheet-arrow {
     font-family: var(--font-mono);
     font-size: 16px;
     color: var(--ink-muted);
 }
 
-.bd-sheet-group {
+.myc-sheet-group {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
 }
 
-.bd-sheet-topics {
+.myc-sheet-topics {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-2);
 }
 
-.bd-sheet-cat {
+.myc-sheet-cat {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -185,28 +185,28 @@ html:has(.bd-sheet[open]) {
     border: 1px solid var(--line);
 }
 
-.bd-sheet-cat:hover {
+.myc-sheet-cat:hover {
     border-color: var(--line-strong);
 }
 
-.bd-sheet-mark {
+.myc-sheet-mark {
     color: var(--link);
 }
 
-.bd-sheet-dot {
+.myc-sheet-dot {
     flex: none;
     width: 8px;
     height: 8px;
     border-radius: var(--radius-xs);
 }
 
-.bd-sheet-settings {
+.myc-sheet-settings {
     display: flex;
     flex-direction: column;
     border-top: 1px solid var(--line);
 }
 
-.bd-sheet-row {
+.myc-sheet-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -215,11 +215,11 @@ html:has(.bd-sheet[open]) {
     font-size: 15px;
 }
 
-.bd-sheet-row + .bd-sheet-row {
+.myc-sheet-row + .myc-sheet-row {
     border-top: 1px solid var(--line);
 }
 
-:where(.bd-sheet-link, .bd-sheet-cat):focus-visible {
+:where(.myc-sheet-link, .myc-sheet-cat):focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: -2px;
 }
@@ -229,22 +229,22 @@ html:has(.bd-sheet[open]) {
         --myc-tabbar-h: 0px;
     }
 
-    .bd-tabbar,
-    .bd-sheet {
+    .myc-tabbar,
+    .myc-sheet {
         display: none;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .bd-tab {
+    .myc-tab {
         transition: none;
     }
 }
 
 /* Enter and exit: the dialog stays rendered (display, overlay) until the transition ends */
 @media (prefers-reduced-motion: no-preference) {
-    .bd-sheet,
-    .bd-sheet::backdrop {
+    .myc-sheet,
+    .myc-sheet::backdrop {
         opacity: 0;
         transition:
             opacity var(--duration-base) var(--ease-standard),
@@ -252,32 +252,32 @@ html:has(.bd-sheet[open]) {
             overlay var(--duration-base) allow-discrete;
     }
 
-    .bd-sheet[open],
-    .bd-sheet[open]::backdrop {
+    .myc-sheet[open],
+    .myc-sheet[open]::backdrop {
         opacity: 1;
     }
 
-    .bd-sheet-panel {
+    .myc-sheet-panel {
         transform: translateY(40px);
         transition: transform var(--duration-base) var(--ease-standard);
     }
 
-    .bd-sheet[open] .bd-sheet-panel {
+    .myc-sheet[open] .myc-sheet-panel {
         transform: none;
     }
 
     /* A drag follows the finger: no easing */
-    .bd-sheet-panel[data-dragging] {
+    .myc-sheet-panel[data-dragging] {
         transition: none;
     }
 
     @starting-style {
-        .bd-sheet[open],
-        .bd-sheet[open]::backdrop {
+        .myc-sheet[open],
+        .myc-sheet[open]::backdrop {
             opacity: 0;
         }
 
-        .bd-sheet[open] .bd-sheet-panel {
+        .myc-sheet[open] .myc-sheet-panel {
             transform: translateY(40px);
         }
     }

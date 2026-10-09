@@ -19,10 +19,10 @@ const newsletterOn = useModule('newsletter')
 </script>
 
 <template>
-  <div class="bd-home" data-layout="index">
-    <header class="bd-home-lede">
-      <h1 class="bd-home-lede-title bd-wide">{{ site.name }}</h1>
-      <p v-if="site.description" class="bd-home-lede-text">{{ site.description }}</p>
+  <div class="myc-home" data-layout="index">
+    <header class="myc-home-lede">
+      <h1 class="myc-home-lede-title myc-wide">{{ site.name }}</h1>
+      <p v-if="site.description" class="myc-home-lede-text">{{ site.description }}</p>
       <BdButton :href="localizePath('/about')" variant="text" arrow>{{ t('nav.about') }}</BdButton>
     </header>
 

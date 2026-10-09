@@ -1,21 +1,21 @@
-.bd-form {
+.myc-form {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
 }
 
-.bd-form-row {
+.myc-form-row {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
 }
 
-.bd-label {
+.myc-label {
     font: 500 15px/22px var(--font-sans);
     color: var(--ink);
 }
 
-.bd-field {
+.myc-field {
     width: 100%;
     min-width: 0;
     height: 48px;
@@ -28,48 +28,48 @@
     box-sizing: border-box;
 }
 
-.bd-field::placeholder {
+.myc-field::placeholder {
     color: var(--ink-muted);
 }
 
-.bd-field:focus {
+.myc-field:focus {
     position: relative;
     z-index: 1;
     outline: none;
     box-shadow: var(--glow-link);
 }
 
-.bd-field:focus-visible {
+.myc-field:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
 }
 
-.bd-field[aria-invalid="true"] {
+.myc-field[aria-invalid="true"] {
     border-color: var(--danger);
 }
 
-.bd-field-group {
+.myc-field-group {
     display: flex;
 }
 
-.bd-field-group .bd-field {
+.myc-field-group .myc-field {
     flex: 1;
     border-right: 0;
 }
 
-.bd-field-group .bd-seg {
+.myc-field-group .myc-seg {
     flex: none;
     border: 1px solid var(--line-strong);
 }
 
-.bd-help {
+.myc-help {
     font: 400 12px/18px var(--font-mono);
     letter-spacing: 0.02em;
     text-transform: uppercase;
     color: var(--ink-muted);
 }
 
-.bd-err {
+.myc-err {
     display: flex;
     gap: var(--space-2);
     align-items: flex-start;
@@ -77,41 +77,41 @@
     color: var(--danger);
 }
 
-.bd-meter {
+.myc-meter {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-.bd-meter-bars {
+.myc-meter-bars {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--space-1);
 }
 
-.bd-meter-bars span {
+.myc-meter-bars span {
     height: 4px;
     background: var(--line);
 }
 
-.bd-meter[data-level="1"] .bd-meter-bars span:nth-child(-n + 1) {
+.myc-meter[data-level="1"] .myc-meter-bars span:nth-child(-n + 1) {
     background: var(--danger);
 }
 
-.bd-meter[data-level="2"] .bd-meter-bars span:nth-child(-n + 2) {
+.myc-meter[data-level="2"] .myc-meter-bars span:nth-child(-n + 2) {
     background: var(--warning);
 }
 
-.bd-meter[data-level="3"] .bd-meter-bars span:nth-child(-n + 3),
-.bd-meter[data-level="4"] .bd-meter-bars span {
+.myc-meter[data-level="3"] .myc-meter-bars span:nth-child(-n + 3),
+.myc-meter[data-level="4"] .myc-meter-bars span {
     background: var(--success);
 }
 
-.bd-meter[data-level="1"] .bd-help {
+.myc-meter[data-level="1"] .myc-help {
     color: var(--danger);
 }
 
-.bd-check {
+.myc-check {
     display: flex;
     gap: var(--space-3);
     align-items: flex-start;
@@ -120,7 +120,7 @@
     cursor: pointer;
 }
 
-.bd-check input {
+.myc-check input {
     flex: none;
     width: 20px;
     height: 20px;
@@ -128,25 +128,25 @@
     accent-color: var(--link);
 }
 
-.bd-check a {
+.myc-check a {
     color: var(--link);
 }
 
-.bd-check a:hover {
+.myc-check a:hover {
     color: var(--ink);
 }
 
 @media (forced-colors: active) {
-    .bd-field {
+    .myc-field {
         border-color: FieldText;
     }
 
-    .bd-field:focus {
+    .myc-field:focus {
         outline: 2px solid Highlight;
         outline-offset: 2px;
     }
 
-    .bd-field[aria-invalid="true"] {
+    .myc-field[aria-invalid="true"] {
         border-style: dashed;
     }
 }

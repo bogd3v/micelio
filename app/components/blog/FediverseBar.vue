@@ -34,52 +34,52 @@ function copyArticleUrl(): void {
 </script>
 
 <template>
-  <section class="bd-fedi-bar" :aria-label="t('post.fediverse.label')">
-    <div class="bd-fedi-bar-head">
-      <p class="bd-meta bd-fedi-bar-stats">
-        <span class="bd-fedi-accent" aria-hidden="true">◆ {{ t('post.fediverse.label') }}</span>
+  <section class="myc-fedi-bar" :aria-label="t('post.fediverse.label')">
+    <div class="myc-fedi-bar-head">
+      <p class="myc-meta myc-fedi-bar-stats">
+        <span class="myc-fedi-accent" aria-hidden="true">◆ {{ t('post.fediverse.label') }}</span>
         <template v-if="stats">
           <span>
-            <span class="bd-fedi-bar-count">{{ stats.likes }}</span>
+            <span class="myc-fedi-bar-count">{{ stats.likes }}</span>
             {{ t('post.fediverse.likes', stats.likes) }}
           </span>
           <span>
-            <span class="bd-fedi-bar-count">{{ stats.boosts }}</span>
+            <span class="myc-fedi-bar-count">{{ stats.boosts }}</span>
             {{ t('post.fediverse.boosts', stats.boosts) }}
           </span>
-          <a v-if="loaded && commentsOn" class="bd-fedi-bar-link" href="#comments">
-            <span class="bd-fedi-bar-count">{{ fediverseReplies }}</span>
+          <a v-if="loaded && commentsOn" class="myc-fedi-bar-link" href="#comments">
+            <span class="myc-fedi-bar-count">{{ fediverseReplies }}</span>
             {{ t('post.fediverse.replies', fediverseReplies) }}
           </a>
         </template>
       </p>
       <button
         type="button"
-        class="bd-chip"
+        class="myc-chip"
         :aria-expanded="replyOpen ? 'true' : 'false'"
-        aria-controls="bd-fedi-reply"
+        aria-controls="myc-fedi-reply"
         @click="toggleReply"
       >
         {{ t('post.fediverse.reply') }}
       </button>
     </div>
 
-    <div v-show="replyOpen" id="bd-fedi-reply" class="bd-fedi-reply">
-      <p class="bd-fedi-reply-text">{{ t('post.fediverse.instructions') }}</p>
-      <div class="font-mono bd-fedi-reply-url">
-        <span class="bd-fedi-reply-address">{{ articleUrl }}</span>
-        <button type="button" class="bd-chip" :aria-label="t('post.fediverse.copyAria')" @click="copyArticleUrl">
+    <div v-show="replyOpen" id="myc-fedi-reply" class="myc-fedi-reply">
+      <p class="myc-fedi-reply-text">{{ t('post.fediverse.instructions') }}</p>
+      <div class="font-mono myc-fedi-reply-url">
+        <span class="myc-fedi-reply-address">{{ articleUrl }}</span>
+        <button type="button" class="myc-chip" :aria-label="t('post.fediverse.copyAria')" @click="copyArticleUrl">
           {{ copied ? t('post.fediverse.copied') : t('post.fediverse.copy') }}
         </button>
-        <span class="bd-sr" aria-live="polite">{{ copied ? t('post.fediverse.copiedAnnounce') : '' }}</span>
+        <span class="myc-sr" aria-live="polite">{{ copied ? t('post.fediverse.copiedAnnounce') : '' }}</span>
       </div>
-      <form class="bd-fedi-form" novalidate @submit.prevent="open">
-        <label for="bd-fedi-article-instance" class="bd-eyebrow bd-home-eyebrow">{{ t('post.fediverse.instanceLabel') }}</label>
-        <div class="bd-fedi-row">
+      <form class="myc-fedi-form" novalidate @submit.prevent="open">
+        <label for="myc-fedi-article-instance" class="myc-eyebrow myc-home-eyebrow">{{ t('post.fediverse.instanceLabel') }}</label>
+        <div class="myc-fedi-row">
           <input
-            id="bd-fedi-article-instance"
+            id="myc-fedi-article-instance"
             v-model="instance"
-            class="bd-input"
+            class="myc-input"
             type="text"
             inputmode="url"
             autocomplete="off"
@@ -87,13 +87,13 @@ function copyArticleUrl(): void {
             spellcheck="false"
             placeholder="mastodon.social"
             :aria-invalid="error ? 'true' : undefined"
-            aria-describedby="bd-fedi-article-hint"
+            aria-describedby="myc-fedi-article-hint"
           >
           <BdButton type="submit" arrow>{{ t('post.fediverse.open') }}</BdButton>
         </div>
-        <p id="bd-fedi-article-hint" :class="['bd-meta bd-fedi-hint', { 'bd-fedi-hint-error': error }]" role="status">{{ hint }}</p>
+        <p id="myc-fedi-article-hint" :class="['myc-meta myc-fedi-hint', { 'myc-fedi-hint-error': error }]" role="status">{{ hint }}</p>
       </form>
-      <p class="bd-meta bd-fedi-note">{{ t('post.fediverse.moderation') }}</p>
+      <p class="myc-meta myc-fedi-note">{{ t('post.fediverse.moderation') }}</p>
     </div>
   </section>
 </template>

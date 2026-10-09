@@ -7,12 +7,12 @@ const url = computed<string>(() => `https://www.buymeacoffee.com/${username.valu
 </script>
 
 <template>
-  <section v-if="username" class="bd-coffee" aria-labelledby="bd-coffee-title">
-    <svg class="bd-coffee-cup" width="120" height="100" viewBox="0 0 120 100" aria-hidden="true" focusable="false">
+  <section v-if="username" class="myc-coffee" aria-labelledby="myc-coffee-title">
+    <svg class="myc-coffee-cup" width="120" height="100" viewBox="0 0 120 100" aria-hidden="true" focusable="false">
       <g fill="none" stroke="var(--ink-muted)" stroke-width="1.4" stroke-linecap="round">
-        <path class="bd-steam" d="M50 36 Q46 28 51 21 Q56 14 51 6" />
-        <path class="bd-steam bd-steam-2" d="M60 34 Q56 26 61 19 Q66 12 61 4" />
-        <path class="bd-steam bd-steam-3" d="M70 36 Q66 28 71 21 Q76 14 71 6" />
+        <path class="myc-steam" d="M50 36 Q46 28 51 21 Q56 14 51 6" />
+        <path class="myc-steam myc-steam-2" d="M60 34 Q56 26 61 19 Q66 12 61 4" />
+        <path class="myc-steam myc-steam-3" d="M70 36 Q66 28 71 21 Q76 14 71 6" />
       </g>
       <path d="M12 88 Q60 98 108 88" fill="none" stroke="var(--ink-muted)" stroke-width="1.4" stroke-linecap="round" />
       <path d="M92 52 Q106 54 102 66 Q98 74 88 72" fill="none" stroke="var(--ink)" stroke-width="1.4" />
@@ -21,13 +21,13 @@ const url = computed<string>(() => `https://www.buymeacoffee.com/${username.valu
       <ellipse cx="60" cy="46.5" rx="27" ry="3.2" fill="var(--accent)" fill-opacity=".85" />
       <ThemeSupportArt />
     </svg>
-    <div class="bd-coffee-body">
-      <p class="bd-eyebrow bd-home-eyebrow">{{ t('buyMeACoffee.eyebrow') }}</p>
-      <h2 id="bd-coffee-title" class="bd-coffee-title">{{ t('buyMeACoffee.supportMyWork') }}</h2>
-      <p class="bd-coffee-text">{{ t('buyMeACoffee.description') }}</p>
-      <p class="bd-meta bd-coffee-handle">buymeacoffee.com/{{ username }}</p>
+    <div class="myc-coffee-body">
+      <p class="myc-eyebrow myc-home-eyebrow">{{ t('buyMeACoffee.eyebrow') }}</p>
+      <h2 id="myc-coffee-title" class="myc-coffee-title">{{ t('buyMeACoffee.supportMyWork') }}</h2>
+      <p class="myc-coffee-text">{{ t('buyMeACoffee.description') }}</p>
+      <p class="myc-meta myc-coffee-handle">buymeacoffee.com/{{ username }}</p>
     </div>
-    <BdButton :href="url" class="bd-coffee-button" target="_blank" rel="noopener noreferrer">
+    <BdButton :href="url" class="myc-coffee-button" target="_blank" rel="noopener noreferrer">
       {{ t('buyMeACoffee.button') }} <span aria-hidden="true">↗</span>
     </BdButton>
   </section>

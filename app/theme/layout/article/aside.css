@@ -1,11 +1,11 @@
-:where(.bd-article-page[data-layout="aside"]) .bd-article-head {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-head {
     display: flex;
     flex-direction: column;
     gap: 20px;
     padding: 40px var(--myc-home-gutter) 32px;
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-kicker {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-kicker {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -13,7 +13,7 @@
     color: var(--ink-muted);
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-title {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-title {
     margin: 0;
     font-size: 34px;
     line-height: 40px;
@@ -21,7 +21,7 @@
     text-wrap: balance;
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-lead {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-lead {
     margin: 0;
     font-size: 17px;
     line-height: 28px;
@@ -29,7 +29,7 @@
     text-wrap: pretty;
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-byline {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-byline {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -39,49 +39,49 @@
     border-top: 1px solid var(--line);
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-author {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-author {
     display: flex;
     align-items: center;
     gap: var(--space-3);
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-author-text {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-author-text {
     display: flex;
     flex-direction: column;
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-author-name {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-author-name {
     font-weight: 500;
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-place {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-place {
     text-transform: uppercase;
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-actions {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-2) var(--space-4);
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-figure {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-figure {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
     margin: 0 var(--myc-home-gutter);
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-figure .bd-article-cover {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-figure .myc-article-cover {
     margin: 0;
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-cover-credit {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-cover-credit {
     padding-left: var(--space-3);
     border-left: 2px solid var(--line-strong);
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-cover {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-cover {
     margin: 0 var(--myc-home-gutter);
     aspect-ratio: 16 / 9;
     overflow: hidden;
@@ -89,42 +89,42 @@
     border: 1px solid var(--line);
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-cover img {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-cover img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-cover-empty {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-cover-empty {
     background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--myc-scan) 3px 4px);
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-body {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-body {
     display: flex;
     flex-direction: column;
     gap: 40px;
     padding: 48px var(--myc-home-gutter) 64px;
 }
 
-:where(.bd-article-page[data-layout="aside"]) .bd-article-content {
+:where(.myc-article-page[data-layout="aside"]) .myc-article-content {
     min-width: 0;
     max-width: var(--measure);
 }
 
 @media (min-width: 768px) {
-    :where(.bd-article-page[data-layout="aside"]) .bd-article-title {
+    :where(.myc-article-page[data-layout="aside"]) .myc-article-title {
         font: var(--text-display-l);
         font-stretch: 125%;
     }
 
-    :where(.bd-article-page[data-layout="aside"]) .bd-article-lead {
+    :where(.myc-article-page[data-layout="aside"]) .myc-article-lead {
         font: var(--text-body-l);
     }
 }
 
 @media (min-width: 1024px) {
-    :where(.bd-article-page[data-layout="aside"]) .bd-article-head {
+    :where(.myc-article-page[data-layout="aside"]) .myc-article-head {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         column-gap: var(--space-gutter);
@@ -132,11 +132,11 @@
         padding: var(--space-section) var(--myc-home-gutter) 64px;
     }
 
-    :where(.bd-article-page[data-layout="aside"]) .bd-article-head > * {
+    :where(.myc-article-page[data-layout="aside"]) .myc-article-head > * {
         grid-column: 3 / span 8;
     }
 
-    :where(.bd-article-page[data-layout="aside"]) .bd-article-body {
+    :where(.myc-article-page[data-layout="aside"]) .myc-article-body {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
         column-gap: var(--space-gutter);
@@ -144,7 +144,7 @@
         padding: var(--space-section) var(--myc-home-gutter);
     }
 
-    :where(.bd-article-page[data-layout="aside"]) .bd-article-toc {
+    :where(.myc-article-page[data-layout="aside"]) .myc-article-toc {
         position: sticky;
         top: calc(var(--myc-header-h) + var(--space-6));
         grid-column: 1 / span 3;
@@ -153,11 +153,11 @@
         border: 0;
     }
 
-    :where(.bd-article-page[data-layout="aside"]) .bd-article-content {
+    :where(.myc-article-page[data-layout="aside"]) .myc-article-content {
         grid-column: 4 / span 7;
     }
 
-    :where(.bd-article-page[data-layout="aside"]) .bd-article-share {
+    :where(.myc-article-page[data-layout="aside"]) .myc-article-share {
         position: sticky;
         top: calc(var(--myc-header-h) + var(--space-6));
         grid-column: span 2;
@@ -169,7 +169,7 @@
         border-top: 0;
     }
 
-    :where(.bd-article-page[data-layout="aside"]) .bd-article-share .bd-share-link {
+    :where(.myc-article-page[data-layout="aside"]) .myc-article-share .myc-share-link {
         min-height: 0;
     }
 }

@@ -6,9 +6,9 @@ import ThemeHero from '~/theme/defaults/ThemeHero.vue'
 
 describe('core slot defaults', () => {
   it('keeps the hero a decorative block that takes the caller class', async () => {
-    const wrapper = await mountSuspended(ThemeHero, { props: { compact: true }, attrs: { class: 'bd-hero-art-compact' } })
+    const wrapper = await mountSuspended(ThemeHero, { props: { compact: true }, attrs: { class: 'myc-hero-art-compact' } })
     expect(wrapper.attributes('aria-hidden')).toBe('true')
-    expect(wrapper.classes()).toEqual(['bd-hero-art-compact'])
+    expect(wrapper.classes()).toEqual(['myc-hero-art-compact'])
     expect(wrapper.text()).toBe('')
   })
 

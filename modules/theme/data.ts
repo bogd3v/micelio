@@ -66,7 +66,7 @@ export const SLOT_SPECS: Record<SlotName, SlotSpec> = {
     defaultRenders: 'Nothing.',
   },
   ThemeProgressMarker: {
-    purpose: 'Marker that travels along the reading-progress bar of an article, inside `bd-progress`; the slot renders its own `bd-progress-track` lane.',
+    purpose: 'Marker that travels along the reading-progress bar of an article, inside `myc-progress`; the slot renders its own `myc-progress-track` lane.',
     props: [{ name: 'progress', type: 'number', optional: true, description: 'Reading progress, 0 to 100.' }],
     defaultRenders: 'Nothing; the header\'s progress bar alone remains.',
   },

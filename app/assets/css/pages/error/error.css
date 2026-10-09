@@ -1,4 +1,4 @@
-.bd-error-page {
+.myc-error-page {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6,12 +6,12 @@
     padding-inline: 1rem;
 }
 
-.bd-error-body {
+.myc-error-body {
     max-width: 28rem;
     text-align: center;
 }
 
-.bd-error-code {
+.myc-error-code {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -26,26 +26,26 @@
     );
 }
 
-.bd-error-code-text {
+.myc-error-code-text {
     color: var(--link);
     font-size: 3.75rem;
     font-weight: 700;
     line-height: 1;
 }
 
-.bd-error-title {
+.myc-error-title {
     margin-bottom: 1rem;
     font-size: 1.875rem;
     font-weight: 600;
     line-height: calc(2.25 / 1.875);
 }
 
-.bd-error-text {
+.myc-error-text {
     margin-bottom: 2rem;
     color: var(--ink-muted);
 }
 
-.bd-error-actions {
+.myc-error-actions {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -54,24 +54,24 @@
 }
 
 @media (min-width: 40rem) {
-    .bd-error-actions {
+    .myc-error-actions {
         flex-direction: row;
     }
 }
 
-.bd-error-actions .bd-icon {
+.myc-error-actions .myc-icon {
     width: 1rem;
     height: 1rem;
 }
 
-.bd-error-help {
+.myc-error-help {
     margin-top: 3rem;
     padding: 1rem;
     border-radius: 0.5rem;
     background-color: var(--surface-sunken);
 }
 
-.bd-error-help p {
+.myc-error-help p {
     color: var(--ink-muted);
     font-size: 0.875rem;
     line-height: calc(1.25 / 0.875);

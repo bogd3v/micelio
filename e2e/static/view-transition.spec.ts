@@ -19,7 +19,7 @@ async function record(page: Page): Promise<void> {
 
 async function openFirstCard(page: Page): Promise<void> {
   await page.goto('/blog')
-  const link = page.locator('.bd-card-link').first()
+  const link = page.locator('.myc-card-link').first()
   await expect(link).toBeVisible()
   await Promise.all([page.waitForURL(/\/blog\/[^/]+$/), link.click()])
   await expect(page.locator('h1')).toBeVisible()
@@ -36,18 +36,18 @@ test.describe('motion allowed', () => {
     test(`${path} has no duplicate view-transition-name`, async ({ page }) => {
       await page.goto(path)
       const names = await page.$$eval('body *', nodes => nodes.map(node => getComputedStyle(node).viewTransitionName).filter(name => name !== 'none'))
-      expect(names.filter(name => name.startsWith('bd-post-')).length).toBeGreaterThan(0)
+      expect(names.filter(name => name.startsWith('myc-post-')).length).toBeGreaterThan(0)
       expect(names.filter((name, index) => names.indexOf(name) !== index)).toEqual([])
     })
   }
 
   test('the article header takes the names of its card', async ({ page }) => {
     await page.goto('/blog')
-    const href = await page.locator('.bd-card-link').first().getAttribute('href')
-    const card = await page.locator('.bd-card-title').first().evaluate(node => getComputedStyle(node).viewTransitionName)
+    const href = await page.locator('.myc-card-link').first().getAttribute('href')
+    const card = await page.locator('.myc-card-title').first().evaluate(node => getComputedStyle(node).viewTransitionName)
     await page.goto(href!)
     expect(card).not.toBe('none')
-    expect(await page.locator('h1.bd-post-title').evaluate(node => getComputedStyle(node).viewTransitionName)).toBe(card)
+    expect(await page.locator('h1.myc-post-title').evaluate(node => getComputedStyle(node).viewTransitionName)).toBe(card)
   })
 
   test('a card opens its article with a view transition where the API exists', async ({ page }) => {
@@ -75,6 +75,6 @@ test.describe('reduced motion', () => {
     await openFirstCard(page)
     expect(await seen(page)).toEqual({ swap: false, reveal: false })
     expect(await motionAnimations(page)).toEqual([])
-    expect(await page.locator('h1.bd-post-title').evaluate(node => getComputedStyle(node).viewTransitionName)).toBe('none')
+    expect(await page.locator('h1.myc-post-title').evaluate(node => getComputedStyle(node).viewTransitionName)).toBe('none')
   })
 })

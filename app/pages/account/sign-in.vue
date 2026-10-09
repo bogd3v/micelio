@@ -49,31 +49,31 @@ onMounted(async () => {
 
 <template>
   <AccountShell>
-    <form class="bd-account-view" novalidate @submit.prevent="submit">
+    <form class="myc-account-view" novalidate @submit.prevent="submit">
       <AccountHeading :eyebrow="t('account.eyebrow.signIn')" :title="t('account.signIn.title', { site: site.name })">
         {{ t('account.signIn.lead') }}
       </AccountHeading>
       <AccountNotice v-if="notice && !error">{{ t(`account.notices.${notice}`) }}</AccountNotice>
-      <AccountNotice v-if="error" id="bd-login-err" ref="errorRef" tone="error">{{ error }}</AccountNotice>
+      <AccountNotice v-if="error" id="myc-login-err" ref="errorRef" tone="error">{{ error }}</AccountNotice>
       <AccountField
-        id="bd-login-id"
+        id="myc-login-id"
         v-model="identifier"
         :label="t('account.signIn.identifier')"
         autocomplete="username"
       />
       <AccountPasswordField
-        id="bd-login-pw"
+        id="myc-login-pw"
         v-model="password"
         :label="t('account.signIn.password')"
         autocomplete="current-password"
       />
-      <div class="bd-account-actions">
+      <div class="myc-account-actions">
         <BdButton type="submit" arrow>{{ t('account.signIn.submit') }}</BdButton>
-        <NuxtLink :to="localizePath('/account/forgot-password')" class="bd-inline">{{ t('account.signIn.forgot') }}</NuxtLink>
+        <NuxtLink :to="localizePath('/account/forgot-password')" class="myc-inline">{{ t('account.signIn.forgot') }}</NuxtLink>
       </div>
-      <p class="bd-account-switch">
+      <p class="myc-account-switch">
         {{ t('account.signIn.noAccount') }}
-        <NuxtLink :to="localizePath('/account/sign-up')" class="bd-inline">{{ t('account.signIn.createAccount') }}</NuxtLink>
+        <NuxtLink :to="localizePath('/account/sign-up')" class="myc-inline">{{ t('account.signIn.createAccount') }}</NuxtLink>
       </p>
     </form>
   </AccountShell>

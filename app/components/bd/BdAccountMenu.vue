@@ -53,53 +53,53 @@ watch(() => route.fullPath, close)
 
 <template>
   <div
-    :class="['bd-account', { 'bd-account-compact': compact, 'bd-account-editor': isEditor }]"
+    :class="['myc-account', { 'myc-account-compact': compact, 'myc-account-editor': isEditor }]"
   >
     <template v-if="user">
       <button
         type="button"
-        class="bd-chip bd-account-toggle"
+        class="myc-chip myc-account-toggle"
         :aria-label="t('bd.header.accountMenu', { username: user.username })"
         :aria-controls="panelId"
         :popovertarget="panelId"
         :style="{ 'anchor-name': anchor }"
       >
-        <span class="bd-account-avatar" aria-hidden="true">{{ userInitial(user.username) }}</span>
-        <span v-if="compact && showDraftCount && draftCount" class="bd-count bd-account-badge" aria-hidden="true">{{ draftCount }}</span>
-        <span class="bd-account-name" aria-hidden="true">{{ user.username }}</span>
+        <span class="myc-account-avatar" aria-hidden="true">{{ userInitial(user.username) }}</span>
+        <span v-if="compact && showDraftCount && draftCount" class="myc-count myc-account-badge" aria-hidden="true">{{ draftCount }}</span>
+        <span class="myc-account-name" aria-hidden="true">{{ user.username }}</span>
       </button>
       <ul
         :id="panelId"
         ref="panelRef"
         popover="auto"
-        class="bd-account-panel"
+        class="myc-account-panel"
         :style="{ 'position-anchor': anchor }"
         @toggle="onToggle"
       >
-        <li class="bd-account-who" aria-hidden="true">{{ user.email }}</li>
+        <li class="myc-account-who" aria-hidden="true">{{ user.email }}</li>
         <li>
-          <NuxtLink :to="localizePath('/account')" class="bd-account-item">{{ t('bd.header.account') }}</NuxtLink>
+          <NuxtLink :to="localizePath('/account')" class="myc-account-item">{{ t('bd.header.account') }}</NuxtLink>
         </li>
         <li v-if="draftsOn && isEditor">
-          <NuxtLink :to="localizePath('/drafts')" class="bd-account-item bd-account-item-drafts" :aria-label="draftsLabel">
+          <NuxtLink :to="localizePath('/drafts')" class="myc-account-item myc-account-item-drafts" :aria-label="draftsLabel">
             {{ t('bd.header.drafts') }}
-            <span v-if="showDraftCount" class="bd-count" aria-hidden="true">{{ draftCount }}</span>
+            <span v-if="showDraftCount" class="myc-count" aria-hidden="true">{{ draftCount }}</span>
           </NuxtLink>
         </li>
         <li>
-          <button type="button" class="bd-account-item bd-account-item-signout" @click="signOut">{{ t('bd.header.signOut') }}</button>
+          <button type="button" class="myc-account-item myc-account-item-signout" @click="signOut">{{ t('bd.header.signOut') }}</button>
         </li>
       </ul>
     </template>
     <NuxtLink
       v-else-if="compact"
       :to="signInTarget"
-      class="bd-iconbtn"
+      class="myc-iconbtn"
       :aria-label="t('bd.header.signInLabel')"
     >
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4" /><path d="M4 21 C4 16 8 14 12 14 C16 14 20 16 20 21" /></svg>
     </NuxtLink>
-    <NuxtLink v-else :to="signInTarget" class="bd-chip bd-account-signin">
+    <NuxtLink v-else :to="signInTarget" class="myc-chip myc-account-signin">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4" /><path d="M4 21 C4 16 8 14 12 14 C16 14 20 16 20 21" /></svg>
       {{ t('bd.header.signIn') }}
     </NuxtLink>

@@ -34,14 +34,14 @@ test('lists the drafts for an editor and filters them by state', async ({ page }
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow')
 
   await expect(page.getByRole('heading', { level: 1, name: 'Drafts' })).toBeVisible()
-  const rows = page.locator('.bd-drafts-table tbody tr')
+  const rows = page.locator('.myc-drafts-table tbody tr')
   await expect(rows).toHaveCount(2)
   await expect(rows.nth(0)).toContainText('Pi-hole en una Raspberry Pi')
   await expect(rows.nth(0)).toContainText('Never published')
   await expect(rows.nth(0)).toContainText('ES')
   await expect(rows.nth(0)).toContainText('28.09.2026 · 18:42')
   await expect(rows.nth(1)).toContainText('Published with changes')
-  await expect(rows.nth(1).locator('.bd-tag-linux')).toBeVisible()
+  await expect(rows.nth(1).locator('.myc-tag-linux')).toBeVisible()
 
   const filters = page.getByRole('group', { name: 'Filter drafts' })
   await filters.getByRole('button', { name: /^With changes/ }).click()
@@ -56,7 +56,7 @@ test('lists the drafts for an editor and filters them by state', async ({ page }
 test('opens a draft with the draft strip and without the public extras', async ({ page }) => {
   await signIn(page, testUsers.editor.username, testUsers.editor.password)
   await page.goto('/drafts', { waitUntil: 'networkidle' })
-  await page.locator('.bd-drafts-table').getByRole('link', { name: 'Review the draft Linux Server Hardening Guide, second edition' }).click()
+  await page.locator('.myc-drafts-table').getByRole('link', { name: 'Review the draft Linux Server Hardening Guide, second edition' }).click()
   await expect(page).toHaveURL(/\/drafts\/doc-linux\?locale=en$/)
 
   const strip = page.getByRole('status').filter({ hasText: 'Only editors can see it.' })
@@ -65,9 +65,9 @@ test('opens a draft with the draft strip and without the public extras', async (
   await expect(strip).toContainText('Last edited 27.09.2026 · 09:15')
   await expect(strip.getByRole('link', { name: /View published version/ })).toHaveAttribute('href', '/blog/linux-server-hardening-guide')
   await expect(page.getByRole('heading', { level: 1, name: 'Linux Server Hardening Guide, second edition' })).toBeVisible()
-  await expect(page.locator('.bd-prose')).toContainText('Start with SSH keys and a firewall.')
+  await expect(page.locator('.myc-prose')).toContainText('Start with SSH keys and a firewall.')
 
-  await expect(page.locator('#comments, .bd-related, .bd-article-share, .bd-article-actions, .bd-fedi-bar')).toHaveCount(0)
+  await expect(page.locator('#comments, .myc-related, .myc-article-share, .myc-article-actions, .myc-fedi-bar')).toHaveCount(0)
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow')
   await expect(page.locator('link[rel="canonical"]')).toHaveCount(0)
   await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(0)

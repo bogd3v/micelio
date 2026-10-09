@@ -34,30 +34,30 @@ function postCategory(post: PostListItem): Category | undefined {
 </script>
 
 <template>
-  <div class="bd-log">
-    <section v-for="month in months" :key="month.key" class="bd-log-month" :aria-labelledby="`bd-log-${month.key}`">
-      <header class="bd-log-month-head">
-        <h2 :id="`bd-log-${month.key}`" class="bd-eyebrow bd-log-month-title">{{ month.label }}</h2>
-        <span class="bd-meta bd-log-month-count">{{ countLabel(month) }}</span>
+  <div class="myc-log">
+    <section v-for="month in months" :key="month.key" class="myc-log-month" :aria-labelledby="`myc-log-${month.key}`">
+      <header class="myc-log-month-head">
+        <h2 :id="`myc-log-${month.key}`" class="myc-eyebrow myc-log-month-title">{{ month.label }}</h2>
+        <span class="myc-meta myc-log-month-count">{{ countLabel(month) }}</span>
       </header>
-      <ul class="bd-log-list">
-        <li v-for="post in month.posts" :key="post.id" class="bd-log-row">
-          <time class="bd-meta bd-log-date" :datetime="post.publishedAt ?? undefined">{{ formatDotDate(post.publishedAt) }}</time>
-          <span class="bd-log-category">
+      <ul class="myc-log-list">
+        <li v-for="post in month.posts" :key="post.id" class="myc-log-row">
+          <time class="myc-meta myc-log-date" :datetime="post.publishedAt ?? undefined">{{ formatDotDate(post.publishedAt) }}</time>
+          <span class="myc-log-category">
             <BdCategoryTag v-if="postCategory(post)" :category="postCategory(post)!" />
           </span>
-          <span class="bd-log-text">
-            <NuxtLink :to="postHref(post)" class="bd-log-link">{{ post.title }}</NuxtLink>
-            <span v-if="post.snippet" class="bd-log-excerpt"><BdHighlight :text="post.snippet" :query="highlight" /></span>
-            <span v-else-if="post.description" class="bd-log-excerpt">{{ post.description }}</span>
+          <span class="myc-log-text">
+            <NuxtLink :to="postHref(post)" class="myc-log-link">{{ post.title }}</NuxtLink>
+            <span v-if="post.snippet" class="myc-log-excerpt"><BdHighlight :text="post.snippet" :query="highlight" /></span>
+            <span v-else-if="post.description" class="myc-log-excerpt">{{ post.description }}</span>
           </span>
-          <span class="bd-meta bd-log-meta">
-            <span v-if="postStats(post)" class="bd-log-stats">
+          <span class="myc-meta myc-log-meta">
+            <span v-if="postStats(post)" class="myc-log-stats">
               <span aria-hidden="true">◆</span>
               {{ postStats(post)!.likes }} {{ t('post.fediverse.likes', postStats(post)!.likes) }}
               · {{ postStats(post)!.boosts }} {{ t('post.fediverse.boosts', postStats(post)!.boosts) }}
             </span>
-            <span v-if="isRead(post.documentId)" class="bd-read-mark"><span aria-hidden="true">✓</span> {{ t('bd.card.read') }}</span>
+            <span v-if="isRead(post.documentId)" class="myc-read-mark"><span aria-hidden="true">✓</span> {{ t('bd.card.read') }}</span>
           </span>
         </li>
       </ul>

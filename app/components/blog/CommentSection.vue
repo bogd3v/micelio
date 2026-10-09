@@ -125,20 +125,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <section id="comments" class="bd-comments bd-reveal" aria-labelledby="bd-comments-title">
-    <div class="bd-comments-main">
-      <div class="bd-home-heading">
-        <p class="bd-eyebrow bd-home-eyebrow">{{ countLabel }}</p>
-        <h2 id="bd-comments-title" class="bd-home-title bd-stretch">{{ t('comments.title') }}</h2>
-        <p class="bd-comments-intro">{{ federated ? t('comments.introFediverse') : t('comments.intro') }}</p>
+  <section id="comments" class="myc-comments myc-reveal" aria-labelledby="myc-comments-title">
+    <div class="myc-comments-main">
+      <div class="myc-home-heading">
+        <p class="myc-eyebrow myc-home-eyebrow">{{ countLabel }}</p>
+        <h2 id="myc-comments-title" class="myc-home-title myc-stretch">{{ t('comments.title') }}</h2>
+        <p class="myc-comments-intro">{{ federated ? t('comments.introFediverse') : t('comments.intro') }}</p>
       </div>
 
-      <div v-if="federated" class="bd-comments-filters" role="group" :aria-label="t('comments.filterLabel')">
+      <div v-if="federated" class="myc-comments-filters" role="group" :aria-label="t('comments.filterLabel')">
         <button
           v-for="option in FILTERS"
           :key="option"
           type="button"
-          class="bd-chip"
+          class="myc-chip"
           :aria-pressed="filter === option ? 'true' : 'false'"
           @click="selectFilter(option)"
         >
@@ -146,86 +146,86 @@ onMounted(() => {
         </button>
       </div>
 
-      <p v-if="pending" class="bd-meta bd-home-eyebrow" role="status">{{ t('common.loading') }}</p>
+      <p v-if="pending" class="myc-meta myc-home-eyebrow" role="status">{{ t('common.loading') }}</p>
 
-      <div v-else-if="error" class="bd-comments-error" role="alert">
+      <div v-else-if="error" class="myc-comments-error" role="alert">
         <p>{{ error }}</p>
-        <button type="button" class="bd-blog-textbtn" @click="fetchComments">{{ t('common.retry') }}</button>
+        <button type="button" class="myc-blog-textbtn" @click="fetchComments">{{ t('common.retry') }}</button>
       </div>
 
-      <p v-else-if="visibleComments.length === 0" class="bd-meta bd-comments-empty">{{ emptyLabel }}</p>
+      <p v-else-if="visibleComments.length === 0" class="myc-meta myc-comments-empty">{{ emptyLabel }}</p>
 
-      <div v-else class="bd-comment-list">
-        <div v-for="comment in visibleComments" :key="comment.id" class="bd-comment-group">
+      <div v-else class="myc-comment-list">
+        <div v-for="comment in visibleComments" :key="comment.id" class="myc-comment-group">
           <BlogCommentItem :comment="comment" can-reply @reply="startReply" />
-          <div v-if="repliesOf(comment.id).length" class="bd-comment-thread">
+          <div v-if="repliesOf(comment.id).length" class="myc-comment-thread">
             <BlogCommentItem v-for="reply in repliesOf(comment.id)" :key="reply.id" :comment="reply" />
           </div>
         </div>
       </div>
 
-      <form class="bd-comment-form" novalidate @submit.prevent="handleSubmit">
-        <div class="bd-comment-form-head">
-          <p class="bd-eyebrow bd-home-eyebrow">
+      <form class="myc-comment-form" novalidate @submit.prevent="handleSubmit">
+        <div class="myc-comment-form-head">
+          <p class="myc-eyebrow myc-home-eyebrow">
             {{ replyingTo ? `${t('comments.replyingTo')} ${replyingToName}` : t('comments.leave') }}
           </p>
-          <button v-if="replyingTo" type="button" class="bd-blog-textbtn" @click="cancelReply">{{ t('comments.cancel') }}</button>
+          <button v-if="replyingTo" type="button" class="myc-blog-textbtn" @click="cancelReply">{{ t('comments.cancel') }}</button>
         </div>
 
-        <p v-if="submitSuccess" class="bd-comment-status bd-comment-status-success" role="status">{{ t('comments.successMessage') }}</p>
-        <p v-if="submitError" class="bd-comment-status bd-comment-status-error" role="alert">{{ submitError }}</p>
+        <p v-if="submitSuccess" class="myc-comment-status myc-comment-status-success" role="status">{{ t('comments.successMessage') }}</p>
+        <p v-if="submitError" class="myc-comment-status myc-comment-status-error" role="alert">{{ submitError }}</p>
 
-        <div class="bd-comment-fields">
-          <div class="bd-comment-field">
+        <div class="myc-comment-fields">
+          <div class="myc-comment-field">
             <label for="author-name">{{ t('comments.name') }}</label>
             <input
               id="author-name"
               v-model="formData.author.name"
               type="text"
-              class="bd-comment-input"
+              class="myc-comment-input"
               autocomplete="name"
               :maxlength="COMMENT_LIMITS.name"
               :placeholder="t('comments.namePlaceholder')"
               :aria-invalid="formErrors.name ? 'true' : undefined"
               :aria-describedby="formErrors.name ? 'author-name-error' : undefined"
             >
-            <p v-if="formErrors.name" id="author-name-error" class="bd-comment-error" role="alert">{{ formErrors.name }}</p>
+            <p v-if="formErrors.name" id="author-name-error" class="myc-comment-error" role="alert">{{ formErrors.name }}</p>
           </div>
-          <div class="bd-comment-field">
+          <div class="myc-comment-field">
             <label for="author-email">{{ t('comments.email') }}</label>
             <input
               id="author-email"
               v-model="formData.author.email"
               type="email"
-              class="bd-comment-input"
+              class="myc-comment-input"
               autocomplete="email"
               :maxlength="COMMENT_LIMITS.email"
               :placeholder="t('comments.emailPlaceholder')"
               :aria-invalid="formErrors.email ? 'true' : undefined"
               :aria-describedby="formErrors.email ? 'author-email-error author-email-hint' : 'author-email-hint'"
             >
-            <p v-if="formErrors.email" id="author-email-error" class="bd-comment-error" role="alert">{{ formErrors.email }}</p>
-            <p id="author-email-hint" class="bd-meta bd-comment-hint">{{ t('comments.emailRequired') }}</p>
+            <p v-if="formErrors.email" id="author-email-error" class="myc-comment-error" role="alert">{{ formErrors.email }}</p>
+            <p id="author-email-hint" class="myc-meta myc-comment-hint">{{ t('comments.emailRequired') }}</p>
           </div>
         </div>
 
-        <div class="bd-comment-field">
+        <div class="myc-comment-field">
           <label for="comment-content">{{ t('comments.comment') }}</label>
           <textarea
             id="comment-content"
             v-model="formData.content"
             rows="5"
             :maxlength="COMMENT_LIMITS.content"
-            class="bd-comment-input bd-comment-textarea"
+            class="myc-comment-input myc-comment-textarea"
             :placeholder="t('comments.placeholder')"
             :aria-invalid="formErrors.content ? 'true' : undefined"
             :aria-describedby="formErrors.content ? 'comment-content-error' : undefined"
           />
-          <p v-if="formErrors.content" id="comment-content-error" class="bd-comment-error" role="alert">{{ formErrors.content }}</p>
+          <p v-if="formErrors.content" id="comment-content-error" class="myc-comment-error" role="alert">{{ formErrors.content }}</p>
         </div>
 
-        <div :class="['bd-comment-submit', { 'bd-comment-submit-split': federated }]">
-          <button v-if="federated" type="button" class="bd-blog-textbtn" aria-controls="bd-fedi-reply" @click="openReply">
+        <div :class="['myc-comment-submit', { 'myc-comment-submit-split': federated }]">
+          <button v-if="federated" type="button" class="myc-blog-textbtn" aria-controls="myc-fedi-reply" @click="openReply">
             {{ t('comments.replyFromFediverse') }} <span aria-hidden="true">↗</span>
           </button>
           <BdButton type="submit" arrow :disabled="submitting">
@@ -235,11 +235,11 @@ onMounted(() => {
       </form>
     </div>
 
-    <aside v-if="federated" class="bd-comments-moderation" aria-labelledby="bd-comments-moderation-title">
-      <p id="bd-comments-moderation-title" class="bd-eyebrow bd-home-eyebrow">{{ t('comments.moderation.title') }}</p>
-      <ul class="bd-meta bd-comments-moderation-list">
+    <aside v-if="federated" class="myc-comments-moderation" aria-labelledby="myc-comments-moderation-title">
+      <p id="myc-comments-moderation-title" class="myc-eyebrow myc-home-eyebrow">{{ t('comments.moderation.title') }}</p>
+      <ul class="myc-meta myc-comments-moderation-list">
         <li v-for="rule in MODERATION_RULES" :key="rule">
-          <span class="bd-comments-moderation-check" aria-hidden="true">✓</span>
+          <span class="myc-comments-moderation-check" aria-hidden="true">✓</span>
           {{ t(`comments.moderation.${rule}`) }}
         </li>
       </ul>

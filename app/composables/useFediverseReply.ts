@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 
-const INSTANCE_INPUT_ID = 'bd-fedi-article-instance'
+const INSTANCE_INPUT_ID = 'myc-fedi-article-instance'
 
 interface FediverseReply {
   replyOpen: Ref<boolean>

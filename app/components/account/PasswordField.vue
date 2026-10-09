@@ -50,14 +50,14 @@ defineExpose({ focus })
 </script>
 
 <template>
-  <div class="bd-form-row">
-    <label :for="id" class="bd-label">{{ label }}</label>
-    <div :class="{ 'bd-field-group': toggle }">
+  <div class="myc-form-row">
+    <label :for="id" class="myc-label">{{ label }}</label>
+    <div :class="{ 'myc-field-group': toggle }">
       <input
         :id="id"
         ref="inputRef"
         v-model="model"
-        class="bd-field"
+        class="myc-field"
         :type="shown ? 'text' : 'password'"
         :autocomplete="autocomplete"
         :aria-invalid="error ? 'true' : undefined"
@@ -66,7 +66,7 @@ defineExpose({ focus })
       <button
         v-if="toggle"
         type="button"
-        class="bd-seg"
+        class="myc-seg"
         :aria-pressed="shown ? 'true' : 'false'"
         :aria-controls="id"
         @click="shown = !shown"
@@ -74,11 +74,11 @@ defineExpose({ focus })
         {{ shown ? t('account.password.hide') : t('account.password.show') }}
       </button>
     </div>
-    <div v-if="meter" :id="`${id}-meter`" class="bd-meter" :data-level="level">
-      <div class="bd-meter-bars" aria-hidden="true"><span /><span /><span /><span /></div>
-      <span class="bd-help">{{ t(`account.password.strength.${STRENGTH_KEYS[level]}`) }}</span>
+    <div v-if="meter" :id="`${id}-meter`" class="myc-meter" :data-level="level">
+      <div class="myc-meter-bars" aria-hidden="true"><span /><span /><span /><span /></div>
+      <span class="myc-help">{{ t(`account.password.strength.${STRENGTH_KEYS[level]}`) }}</span>
     </div>
-    <span v-if="help" :id="`${id}-help`" class="bd-help">{{ help }}</span>
-    <span v-if="error" :id="`${id}-err`" class="bd-err" role="alert"><span aria-hidden="true">✕</span>{{ error }}</span>
+    <span v-if="help" :id="`${id}-help`" class="myc-help">{{ help }}</span>
+    <span v-if="error" :id="`${id}-err`" class="myc-err" role="alert"><span aria-hidden="true">✕</span>{{ error }}</span>
   </div>
 </template>

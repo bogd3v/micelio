@@ -113,19 +113,19 @@ function scrollToTop(): void {
 </script>
 
 <template>
-  <footer class="bd-foot" data-layout="columns">
-    <div class="bd-foot-main">
-      <div class="bd-foot-brand-col">
-        <NuxtLink :to="localizePath('/')" class="bd-foot-brand bd-wide" :aria-label="t('bd.header.home', { site: site.name })">
+  <footer class="myc-foot" data-layout="columns">
+    <div class="myc-foot-main">
+      <div class="myc-foot-brand-col">
+        <NuxtLink :to="localizePath('/')" class="myc-foot-brand myc-wide" :aria-label="t('bd.header.home', { site: site.name })">
           <ThemeMark :size="56" context="footer" />
         </NuxtLink>
-        <p class="bd-foot-tagline">{{ t('bd.footer.tagline') }}</p>
-        <ul v-if="socials.length" class="bd-foot-socials" :aria-label="t('bd.footer.social')">
+        <p class="myc-foot-tagline">{{ t('bd.footer.tagline') }}</p>
+        <ul v-if="socials.length" class="myc-foot-socials" :aria-label="t('bd.footer.social')">
           <li v-for="social in socials" :key="social.id">
-            <a :href="social.href" class="bd-foot-soc" target="_blank" rel="noopener noreferrer me">
-              <span class="bd-foot-soc-abbr" aria-hidden="true">{{ social.abbr }}</span>
+            <a :href="social.href" class="myc-foot-soc" target="_blank" rel="noopener noreferrer me">
+              <span class="myc-foot-soc-abbr" aria-hidden="true">{{ social.abbr }}</span>
               <span>{{ social.label }}</span>
-              <span class="bd-foot-soc-arrow" aria-hidden="true">↗</span>
+              <span class="myc-foot-soc-arrow" aria-hidden="true">↗</span>
             </a>
           </li>
         </ul>
@@ -134,60 +134,60 @@ function scrollToTop(): void {
       <nav
         v-for="group in desktopGroups"
         :key="group.id"
-        :class="['bd-foot-nav', `bd-foot-nav-${group.id}`]"
-        :aria-labelledby="`bd-foot-${group.id}`"
+        :class="['myc-foot-nav', `myc-foot-nav-${group.id}`]"
+        :aria-labelledby="`myc-foot-${group.id}`"
       >
-        <h2 :id="`bd-foot-${group.id}`" class="bd-eyebrow bd-foot-heading">{{ group.label }}</h2>
+        <h2 :id="`myc-foot-${group.id}`" class="myc-eyebrow myc-foot-heading">{{ group.label }}</h2>
         <template v-for="link in group.links" :key="link.id">
           <a
             v-if="link.external"
             :href="link.to"
-            class="bd-foot-link"
+            class="myc-foot-link"
             target="_blank"
             rel="noopener noreferrer"
           >{{ link.label }}<span aria-hidden="true">↗</span></a>
-          <a v-else-if="link.anchor" :href="link.to" class="bd-foot-link">{{ link.label }}</a>
-          <NuxtLink v-else :to="link.to" class="bd-foot-link">
-            <span v-if="link.color" class="bd-foot-dot" :style="{ background: link.color }" aria-hidden="true" />{{ link.label }}
+          <a v-else-if="link.anchor" :href="link.to" class="myc-foot-link">{{ link.label }}</a>
+          <NuxtLink v-else :to="link.to" class="myc-foot-link">
+            <span v-if="link.color" class="myc-foot-dot" :style="{ background: link.color }" aria-hidden="true" />{{ link.label }}
           </NuxtLink>
         </template>
       </nav>
 
-      <div :id="isStatic ? menuId : undefined" class="bd-foot-accordions">
-        <details v-for="group in mobileGroups" :key="group.id" class="bd-acc" :open="group.open">
+      <div :id="isStatic ? menuId : undefined" class="myc-foot-accordions">
+        <details v-for="group in mobileGroups" :key="group.id" class="myc-acc" :open="group.open">
           <summary>
-            <span class="bd-eyebrow bd-acc-label">{{ group.label }}</span>
-            <span class="bd-acc-aside">
-              <span class="bd-meta bd-acc-summary">{{ group.summary }}</span>
-              <span class="bd-acc-mark" aria-hidden="true" />
+            <span class="myc-eyebrow myc-acc-label">{{ group.label }}</span>
+            <span class="myc-acc-aside">
+              <span class="myc-meta myc-acc-summary">{{ group.summary }}</span>
+              <span class="myc-acc-mark" aria-hidden="true" />
             </span>
           </summary>
-          <div class="bd-acc-body">
+          <div class="myc-acc-body">
             <template v-for="link in group.links" :key="link.id">
               <a
                 v-if="link.external"
                 :href="link.to"
-                class="bd-foot-row"
+                class="myc-foot-row"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <span>{{ link.label }}</span>
-                <span class="bd-foot-row-arrow" aria-hidden="true">↗</span>
+                <span class="myc-foot-row-arrow" aria-hidden="true">↗</span>
               </a>
-              <a v-else-if="link.anchor" :href="link.to" class="bd-foot-row">
-                <span class="bd-foot-row-label">{{ link.label }}</span>
-                <span class="bd-foot-row-arrow" aria-hidden="true">→</span>
+              <a v-else-if="link.anchor" :href="link.to" class="myc-foot-row">
+                <span class="myc-foot-row-label">{{ link.label }}</span>
+                <span class="myc-foot-row-arrow" aria-hidden="true">→</span>
               </a>
-              <NuxtLink v-else :to="link.to" class="bd-foot-row">
-                <span class="bd-foot-row-label">
-                  <span v-if="link.color" class="bd-foot-dot" :style="{ background: link.color }" aria-hidden="true" />{{ link.label }}
+              <NuxtLink v-else :to="link.to" class="myc-foot-row">
+                <span class="myc-foot-row-label">
+                  <span v-if="link.color" class="myc-foot-dot" :style="{ background: link.color }" aria-hidden="true" />{{ link.label }}
                 </span>
-                <span class="bd-foot-row-arrow" aria-hidden="true">→</span>
+                <span class="myc-foot-row-arrow" aria-hidden="true">→</span>
               </NuxtLink>
             </template>
           </div>
         </details>
-        <div v-if="isStatic" class="bd-acc-body">
+        <div v-if="isStatic" class="myc-acc-body">
           <BdLangSwitch />
         </div>
       </div>
@@ -195,21 +195,21 @@ function scrollToTop(): void {
 
     <ThemeDivider placement="footer" />
 
-    <div class="bd-meta bd-foot-credits">
-      <span class="bd-foot-legal">
+    <div class="myc-meta myc-foot-credits">
+      <span class="myc-foot-legal">
         <span>© {{ year }} {{ site.name }}<template v-if="site.author.name"> · {{ site.author.name }}</template></span>
-        <NuxtLink :to="localizePath('/privacy')" class="bd-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
-        <a :href="sourceUrl" class="bd-foot-privacy bd-foot-source" target="_blank" rel="noopener noreferrer">{{ t('bd.footer.source') }}<span aria-hidden="true">↗</span></a>
+        <NuxtLink :to="localizePath('/privacy')" class="myc-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
+        <a :href="sourceUrl" class="myc-foot-privacy myc-foot-source" target="_blank" rel="noopener noreferrer">{{ t('bd.footer.source') }}<span aria-hidden="true">↗</span></a>
       </span>
-      <span v-if="hud.madeIn">{{ hud.madeIn }} <span v-if="hud.coords" class="bd-foot-diamond" aria-hidden="true">◆</span> {{ hud.coords }}</span>
+      <span v-if="hud.madeIn">{{ hud.madeIn }} <span v-if="hud.coords" class="myc-foot-diamond" aria-hidden="true">◆</span> {{ hud.coords }}</span>
       <span v-if="te('theme.divider.credit')">{{ t('theme.divider.credit') }}</span>
-      <a v-if="isStatic" href="#main-content" class="bd-foot-row bd-foot-top">
+      <a v-if="isStatic" href="#main-content" class="myc-foot-row myc-foot-top">
         <span>{{ t('common.backToTop') }}</span>
-        <span class="bd-foot-row-arrow" aria-hidden="true">↑</span>
+        <span class="myc-foot-row-arrow" aria-hidden="true">↑</span>
       </a>
-      <button v-else type="button" class="bd-foot-row bd-foot-top" @click="scrollToTop">
+      <button v-else type="button" class="myc-foot-row myc-foot-top" @click="scrollToTop">
         <span>{{ t('common.backToTop') }}</span>
-        <span class="bd-foot-row-arrow" aria-hidden="true">↑</span>
+        <span class="myc-foot-row-arrow" aria-hidden="true">↑</span>
       </button>
     </div>
   </footer>

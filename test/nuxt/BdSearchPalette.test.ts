@@ -31,7 +31,7 @@ async function mountOpen() {
 }
 
 function labels(wrapper: Awaited<ReturnType<typeof mountOpen>>): string[] {
-  return wrapper.findAll('[role="option"] .bd-result-label').map(node => node.text())
+  return wrapper.findAll('[role="option"] .myc-result-label').map(node => node.text())
 }
 
 describe('BdSearchPalette', () => {
@@ -45,17 +45,17 @@ describe('BdSearchPalette', () => {
     expect((wrapper.get('dialog').element as HTMLDialogElement).open).toBe(true)
     const input = wrapper.get('input')
     expect(input.attributes('role')).toBe('combobox')
-    expect(input.attributes('aria-controls')).toBe('bd-palette-list')
+    expect(input.attributes('aria-controls')).toBe('myc-palette-list')
     expect(input.attributes('aria-expanded')).toBe('true')
     expect(wrapper.get('label').attributes('for')).toBe(input.attributes('id'))
-    expect(wrapper.get('#bd-palette-list').attributes('role')).toBe('listbox')
-    expect(wrapper.findAll('[role="group"]').map(group => group.get('.bd-palette-heading').text())).toEqual(['Topics', 'Actions'])
+    expect(wrapper.get('#myc-palette-list').attributes('role')).toBe('listbox')
+    expect(wrapper.findAll('[role="group"]').map(group => group.get('.myc-palette-heading').text())).toEqual(['Topics', 'Actions'])
     expect(labels(wrapper)).toEqual([
       'Privacy', 'DIY · Do it yourself', 'Artificial intelligence', 'Software development', 'Linux and open source',
       'Switch to the Day theme', 'Follow on the fediverse',
     ])
-    await vi.waitFor(() => expect(wrapper.get('#topic-software .bd-result-hint').text()).toBe('02'))
-    expect(wrapper.get('.bd-palette-note').text()).toBe('Type 3 or more letters to search articles')
+    await vi.waitFor(() => expect(wrapper.get('#topic-software .myc-result-hint').text()).toBe('02'))
+    expect(wrapper.get('.myc-palette-note').text()).toBe('Type 3 or more letters to search articles')
   })
 
   it('filters topics locally without calling the API for short queries', async () => {
@@ -68,11 +68,11 @@ describe('BdSearchPalette', () => {
   it('searches articles with the locale and announces the result count', async () => {
     const wrapper = await mountOpen()
     await wrapper.get('input').setValue('composables')
-    expect(wrapper.get('.bd-palette-note').text()).toBe('Searching…')
+    expect(wrapper.get('.myc-palette-note').text()).toBe('Searching…')
     await vi.waitFor(() => expect(wrapper.find('#article-doc-vue').exists()).toBe(true), { timeout: 2000 })
     expect(searches).toEqual([{ q: 'composables', locale: 'en' }])
-    expect(wrapper.get('#article-doc-vue .bd-result-label').text()).toBe('Understanding Vue Composables')
-    expect(wrapper.get('#article-doc-vue .bd-result-hint').text()).toBe('01.02.2026')
+    expect(wrapper.get('#article-doc-vue .myc-result-label').text()).toBe('Understanding Vue Composables')
+    expect(wrapper.get('#article-doc-vue .myc-result-hint').text()).toBe('01.02.2026')
     expect(wrapper.get('[role="status"]').text()).toBe('1 result')
     expect(wrapper.get('[role="status"]').attributes('aria-live')).toBe('polite')
   })
@@ -81,27 +81,27 @@ describe('BdSearchPalette', () => {
     const wrapper = await mountOpen()
     await wrapper.get('input').setValue('composables')
     await vi.waitFor(() => expect(wrapper.find('#article-doc-vue').exists()).toBe(true), { timeout: 2000 })
-    expect(wrapper.get('#article-doc-vue .bd-result-label mark').text()).toBe('Composables')
-    expect(wrapper.find('#article-doc-vue .bd-result-snippet').exists()).toBe(false)
+    expect(wrapper.get('#article-doc-vue .myc-result-label mark').text()).toBe('Composables')
+    expect(wrapper.find('#article-doc-vue .myc-result-snippet').exists()).toBe(false)
   })
 
   it('also searches the content when asked and shows the highlighted snippet', async () => {
     const wrapper = await mountOpen()
-    const toggle = wrapper.get('.bd-palette-content input')
-    expect(wrapper.get('.bd-palette-content').text()).toBe('Also search the content')
+    const toggle = wrapper.get('.myc-palette-content input')
+    expect(wrapper.get('.myc-palette-content').text()).toBe('Also search the content')
     await wrapper.get('input').setValue('stateful')
     await vi.waitFor(() => expect(searches).toHaveLength(1), { timeout: 2000 })
     await toggle.setValue(true)
-    await vi.waitFor(() => expect(wrapper.find('#article-doc-vue .bd-result-snippet').exists()).toBe(true), { timeout: 2000 })
+    await vi.waitFor(() => expect(wrapper.find('#article-doc-vue .myc-result-snippet').exists()).toBe(true), { timeout: 2000 })
     expect(searches.at(-1)).toEqual({ q: 'stateful', locale: 'en', content: '1' })
-    expect(wrapper.get('#article-doc-vue .bd-result-snippet').text()).toBe('…share stateful logic across components…')
-    expect(wrapper.get('#article-doc-vue .bd-result-snippet mark').text()).toBe('stateful')
+    expect(wrapper.get('#article-doc-vue .myc-result-snippet').text()).toBe('…share stateful logic across components…')
+    expect(wrapper.get('#article-doc-vue .myc-result-snippet mark').text()).toBe('stateful')
   })
 
   it('shows the empty state', async () => {
     const wrapper = await mountOpen()
     await wrapper.get('input').setValue('nada que ver')
-    await vi.waitFor(() => expect(wrapper.find('.bd-palette-note').text()).toBe('No results for “nada que ver”'), { timeout: 2000 })
+    await vi.waitFor(() => expect(wrapper.find('.myc-palette-note').text()).toBe('No results for “nada que ver”'), { timeout: 2000 })
     expect(wrapper.get('[role="status"]').text()).toBe('No results for “nada que ver”')
     expect(labels(wrapper)).toEqual(['Switch to the Day theme', 'Follow on the fediverse'])
   })
@@ -124,9 +124,9 @@ describe('BdSearchPalette', () => {
   it('closes with Esc, the Esc button and the backdrop, and resets when it opens again', async () => {
     const wrapper = await mountOpen()
     await wrapper.get('dialog').trigger('cancel')
-    await wrapper.get('.bd-palette-esc').trigger('click')
+    await wrapper.get('.myc-palette-esc').trigger('click')
     await wrapper.get('dialog').trigger('click')
-    await wrapper.get('.bd-palette-panel').trigger('click')
+    await wrapper.get('.myc-palette-panel').trigger('click')
     expect(wrapper.emitted('close')).toHaveLength(3)
 
     await wrapper.get('input').setValue('li')

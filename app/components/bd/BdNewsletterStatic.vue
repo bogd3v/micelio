@@ -18,17 +18,17 @@ const { newsletterProvider: provider } = useRuntimeConfig().public
 
 <template>
   <!-- No target: without JS a popup cannot open; the provider's confirmation page replaces this one -->
-  <form class="bd-news" method="post" :action="provider.action">
-    <span v-if="!hideHeading" class="bd-eyebrow bd-news-eyebrow">{{ eyebrow }}</span>
+  <form class="myc-news" method="post" :action="provider.action">
+    <span v-if="!hideHeading" class="myc-eyebrow myc-news-eyebrow">{{ eyebrow }}</span>
     <h3 v-if="!hideHeading">{{ title }}</h3>
     <p v-if="showDescription">{{ description }}</p>
-    <label :for="id" class="bd-eyebrow bd-news-label">{{ t('bd.newsletter.label') }}</label>
-    <div class="bd-news-row">
-      <input :id="id" class="bd-input" type="email" :name="provider.field" autocomplete="email" required :placeholder="placeholder">
+    <label :for="id" class="myc-eyebrow myc-news-label">{{ t('bd.newsletter.label') }}</label>
+    <div class="myc-news-row">
+      <input :id="id" class="myc-input" type="email" :name="provider.field" autocomplete="email" required :placeholder="placeholder">
       <input v-for="field in provider.hidden" :key="field.name" type="hidden" :name="field.name" :value="field.value">
       <BdButton type="submit" variant="accent" arrow>{{ buttonLabel }}</BdButton>
     </div>
-    <i18n-t keypath="bd.newsletter.external" tag="p" scope="global" class="bd-news-note">
+    <i18n-t keypath="bd.newsletter.external" tag="p" scope="global" class="myc-news-note">
       <template #provider><strong>{{ provider.host }}</strong></template>
       <template #link><NuxtLink :to="localizePath('/privacy')">{{ t('bd.newsletter.privacyLink') }}</NuxtLink></template>
     </i18n-t>

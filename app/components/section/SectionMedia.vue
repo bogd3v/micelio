@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<{
   poster: undefined,
   decorative: false,
   fallbackAlt: '',
-  rootClass: 'bd-section-media',
+  rootClass: 'myc-section-media',
 })
 
 const { t } = useI18n()

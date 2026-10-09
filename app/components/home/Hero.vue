@@ -14,21 +14,21 @@ const eyebrow = computed<string>(() => t('home.hero.eyebrow', { count: padCount(
 </script>
 
 <template>
-  <section class="bd-hero">
-    <ThemeHero class="bd-hero-art" />
-    <div class="bd-hero-copy">
-      <p class="bd-eyebrow bd-hero-eyebrow">{{ eyebrow }}</p>
-      <p v-if="hud.city" class="bd-meta bd-hero-place">
-        <span class="bd-hero-diamond" aria-hidden="true">◆</span>
+  <section class="myc-hero">
+    <ThemeHero class="myc-hero-art" />
+    <div class="myc-hero-copy">
+      <p class="myc-eyebrow myc-hero-eyebrow">{{ eyebrow }}</p>
+      <p v-if="hud.city" class="myc-meta myc-hero-place">
+        <span class="myc-hero-diamond" aria-hidden="true">◆</span>
         <span>{{ [hud.city, hud.altitude].filter(Boolean).join(' · ') }}</span>
       </p>
-      <h1 class="bd-hero-title bd-wide">{{ t('home.hero.title') }}</h1>
-      <p class="bd-hero-lead">{{ themeMessage('hero.subtitle', 'home.hero.subtitle') }}</p>
-      <div class="bd-hero-actions">
+      <h1 class="myc-hero-title myc-wide">{{ t('home.hero.title') }}</h1>
+      <p class="myc-hero-lead">{{ themeMessage('hero.subtitle', 'home.hero.subtitle') }}</p>
+      <div class="myc-hero-actions">
         <BdButton href="#latest" arrow>{{ t('home.hero.read') }}</BdButton>
-        <BdButton :href="localizePath('/about')" variant="text" class="bd-hero-about">{{ t('nav.about') }}</BdButton>
+        <BdButton :href="localizePath('/about')" variant="text" class="myc-hero-about">{{ t('nav.about') }}</BdButton>
       </div>
     </div>
-    <ThemeHero class="bd-hero-art-compact" compact />
+    <ThemeHero class="myc-hero-art-compact" compact />
   </section>
 </template>
