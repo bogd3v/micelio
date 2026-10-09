@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
 import type { AuthErrorCode, StrapiAuthUser } from '~/interfaces/auth'
-import { SESSION_COOKIE, SESSION_MAX_AGE, strapiAuthErrorCode } from '~/helpers/auth'
+import { LEGACY_SESSION_COOKIE, SESSION_COOKIE, SESSION_MAX_AGE, strapiAuthErrorCode } from '~/helpers/auth'
 
 const AUTH_ERROR_STATUS: Record<AuthErrorCode, number> = {
   invalidCredentials: 400,
@@ -48,22 +48,41 @@ function originOf(url: string): string | null {
   return URL.canParse(url) ? new URL(url).origin : null
 }
 
+/** Attributes shared by the session cookie and the one that clears it (ADR 0003). */
+const SESSION_COOKIE_ATTRIBUTES = { httpOnly: true, secure: true, sameSite: 'lax', path: '/' } as const
+
+/** The session JWT of the request: `micelio_session`, else the pre-rename `bd_session`. */
 export function getSessionToken(event: H3Event): string | null {
-  return getCookie(event, SESSION_COOKIE) || null
+  // TODO(#422): remove the bd_session fallback
+  return getCookie(event, SESSION_COOKIE) || getCookie(event, LEGACY_SESSION_COOKIE) || null
 }
 
 export function setSessionCookie(event: H3Event, jwt: string): void {
-  setCookie(event, SESSION_COOKIE, jwt, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: SESSION_MAX_AGE,
-  })
+  setCookie(event, SESSION_COOKIE, jwt, { ...SESSION_COOKIE_ATTRIBUTES, maxAge: SESSION_MAX_AGE })
 }
 
 export function clearSessionCookie(event: H3Event): void {
-  deleteCookie(event, SESSION_COOKIE, { httpOnly: true, secure: true, sameSite: 'lax', path: '/' })
+  deleteCookie(event, SESSION_COOKIE, SESSION_COOKIE_ATTRIBUTES)
+  // TODO(#422): remove with the bd_session fallback. Without it a stale bd_session would sign the visitor back in
+  deleteCookie(event, LEGACY_SESSION_COOKIE, SESSION_COOKIE_ATTRIBUTES)
+}
+
+/**
+ * Re-issues a session that only exists under `bd_session` as `micelio_session` and clears the old cookie, so nobody is signed out by the rename.
+ *
+ * @remarks
+ * Called once per request by `server/middleware/session-rename.ts`, before the route. A route that sets or clears
+ * `micelio_session` afterwards replaces this cookie (same name, path and domain), so login, logout and deletion win.
+ * The response is `private, no-store`: it carries a `Set-Cookie`.
+ */
+export function migrateLegacySession(event: H3Event): void {
+  // TODO(#422): remove with the bd_session fallback
+  if (getCookie(event, SESSION_COOKIE)) return
+  const legacy = getCookie(event, LEGACY_SESSION_COOKIE)
+  if (!legacy) return
+  preventCaching(event)
+  setSessionCookie(event, legacy)
+  deleteCookie(event, LEGACY_SESSION_COOKIE, SESSION_COOKIE_ATTRIBUTES)
 }
 
 export function fetchStrapiMe(event: H3Event, jwt: string): Promise<StrapiAuthUser> {

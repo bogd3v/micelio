@@ -44,13 +44,20 @@ function run(modes: ThemeModeDefinition[], { stored = {}, prefersLight = false, 
 
 describe('buildInitScript with the Bogota modes', () => {
   it('uses the stored mode', () => {
+    expect(run(BOGOTA, { stored: { 'micelio-theme': 'dia' } })).toEqual({ 'data-theme': 'dia', 'data-scheme': 'light' })
+    expect(run(BOGOTA, { stored: { 'micelio-theme': 'noche' }, prefersLight: true })).toEqual({ 'data-theme': 'noche', 'data-scheme': 'dark' })
+  })
+
+  it('reads bd-theme behind micelio-theme and ahead of the devbog keys', () => {
     expect(run(BOGOTA, { stored: { 'bd-theme': 'dia' } })).toEqual({ 'data-theme': 'dia', 'data-scheme': 'light' })
-    expect(run(BOGOTA, { stored: { 'bd-theme': 'noche' }, prefersLight: true })).toEqual({ 'data-theme': 'noche', 'data-scheme': 'dark' })
+    expect(run(BOGOTA, { stored: { 'micelio-theme': 'noche', 'bd-theme': 'dia' } })['data-theme']).toBe('noche')
+    expect(run(BOGOTA, { stored: { 'bd-theme': 'dia', 'devbog-theme': 'noche' } })['data-theme']).toBe('dia')
+    expect(run(BOGOTA, { stored: { 'bd-theme': 'sepia', 'devbog-theme': 'dia' } })['data-theme']).toBe('dia')
   })
 
   it('reads the previous theme key', () => {
     expect(run(BOGOTA, { stored: { 'devbog-theme': 'dia' } })['data-theme']).toBe('dia')
-    expect(run(BOGOTA, { stored: { 'bd-theme': 'noche', 'devbog-theme': 'dia' } })['data-theme']).toBe('noche')
+    expect(run(BOGOTA, { stored: { 'micelio-theme': 'noche', 'devbog-theme': 'dia' } })['data-theme']).toBe('noche')
   })
 
   it('maps the legacy color mode through the scheme', () => {
@@ -65,8 +72,8 @@ describe('buildInitScript with the Bogota modes', () => {
   })
 
   it('keeps an invalid stored value and falls through, never writing storage', () => {
-    expect(run(BOGOTA, { stored: { 'bd-theme': 'sepia' } })['data-theme']).toBe('noche')
-    expect(run(BOGOTA, { stored: { 'bd-theme': 'sepia' }, prefersLight: true })['data-theme']).toBe('dia')
+    expect(run(BOGOTA, { stored: { 'micelio-theme': 'sepia' } })['data-theme']).toBe('noche')
+    expect(run(BOGOTA, { stored: { 'micelio-theme': 'sepia' }, prefersLight: true })['data-theme']).toBe('dia')
   })
 
   it('falls back to the first mode when storage is blocked', () => {
@@ -79,7 +86,7 @@ describe('buildInitScript with the Bogota modes', () => {
 
   it('uses the server default mode after the stored choice and before the system preference', () => {
     expect(run(BOGOTA, { modeDefault: 'dia', prefersLight: false })['data-theme']).toBe('dia')
-    expect(run(BOGOTA, { modeDefault: 'dia', stored: { 'bd-theme': 'noche' } })['data-theme']).toBe('noche')
+    expect(run(BOGOTA, { modeDefault: 'dia', stored: { 'micelio-theme': 'noche' } })['data-theme']).toBe('noche')
     expect(run(BOGOTA, { modeDefault: 'other', prefersLight: true })['data-theme']).toBe('dia')
   })
 })
@@ -88,14 +95,14 @@ describe('buildInitScript with other modes', () => {
   it('works with a single mode', () => {
     const one: ThemeModeDefinition[] = [{ id: 'paper', scheme: 'light' }]
     expect(run(one, { prefersLight: false })).toEqual({ 'data-theme': 'paper', 'data-scheme': 'light' })
-    expect(run(one, { stored: { 'bd-theme': 'noche' } })['data-theme']).toBe('paper')
+    expect(run(one, { stored: { 'micelio-theme': 'noche' } })['data-theme']).toBe('paper')
     expect(run(one, { stored: { 'devbog-color-mode': 'dark' } })['data-theme']).toBe('paper')
   })
 
   it('works with three modes, matching the first mode of the scheme', () => {
     expect(run(THREE, { prefersLight: true })['data-theme']).toBe('sand')
     expect(run(THREE, { prefersLight: false })['data-theme']).toBe('dusk')
-    expect(run(THREE, { stored: { 'bd-theme': 'dawn' } })).toEqual({ 'data-theme': 'dawn', 'data-scheme': 'light' })
+    expect(run(THREE, { stored: { 'micelio-theme': 'dawn' } })).toEqual({ 'data-theme': 'dawn', 'data-scheme': 'light' })
     expect(run(THREE, { stored: { 'devbog-color-mode': 'light' } })['data-theme']).toBe('sand')
   })
 

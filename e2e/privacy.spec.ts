@@ -10,7 +10,7 @@ test('shows the privacy notice once and remembers «Got it»', async ({ page }) 
 
   await notice.getByRole('button', { name: 'Got it' }).click()
   await expect(notice).toHaveCount(0)
-  expect(await page.evaluate(() => localStorage.getItem('bd-privacy-notice'))).toBe('1')
+  expect(await page.evaluate(() => localStorage.getItem('micelio-privacy-notice'))).toBe('1')
 
   await page.reload({ waitUntil: 'networkidle' })
   await page.goto('/blog', { waitUntil: 'networkidle' })
@@ -54,20 +54,32 @@ test('writes no cookies without a session', async ({ browser }) => {
   await context.close()
 })
 
+test('names no pre-rename cookie or key in either locale', async ({ page }) => {
+  for (const [path, names] of [
+    ['/privacy', ['micelio_session', 'micelio-theme', 'micelio-privacy-notice', 'micelio-read-articles']],
+    ['/es/privacy', ['micelio_session', 'micelio-theme', 'micelio-privacy-notice', 'micelio-read-articles']],
+  ] as const) {
+    await page.goto(path, { waitUntil: 'networkidle' })
+    const text = await page.locator('main').innerText()
+    for (const name of names) expect(text).toContain(name)
+    for (const old of ['bd_session', 'bd-theme', 'bd-privacy-notice', 'bd-read-articles']) expect(text).not.toContain(old)
+  }
+})
+
 test('lists exactly the cookies and browser keys the site uses', async ({ page }) => {
   await page.goto('/privacy', { waitUntil: 'networkidle' })
   await expect(page.getByRole('heading', { level: 1, name: 'Privacy and cookies' })).toBeVisible()
 
   const cookies = await page.locator('#cookies tbody td:first-child').allTextContents()
-  expect(cookies).toEqual(['bd_session'])
+  expect(cookies).toEqual(['micelio_session'])
   const listed = await page.locator('#browser dt').allTextContents()
-  expect(listed).toEqual(['bd-theme', 'bd-privacy-notice', 'bd-read-articles'])
+  expect(listed).toEqual(['micelio-theme', 'micelio-privacy-notice', 'micelio-read-articles'])
 
   await page.getByRole('button', { name: 'Got it' }).click()
   await page.getByRole('group', { name: 'Color theme' }).getByRole('button', { name: 'Night' }).click()
   await page.goto('/blog/understanding-vue-composables', { waitUntil: 'networkidle' })
   await page.locator('.bd-prose').evaluate(element => element.scrollIntoView({ block: 'end' }))
-  await expect.poll(() => page.evaluate(() => localStorage.getItem('bd-read-articles'))).not.toBeNull()
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('micelio-read-articles'))).not.toBeNull()
 
   const stored = await page.evaluate(() => [...Object.keys(localStorage), ...Object.keys(sessionStorage)])
   expect(stored.sort()).toEqual([...listed].sort())

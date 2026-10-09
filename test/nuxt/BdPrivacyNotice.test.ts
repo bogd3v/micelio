@@ -24,11 +24,11 @@ describe('BdPrivacyNotice', () => {
     await flushPromises()
     await wrapper.get('button').trigger('click')
     expect(wrapper.find('section').exists()).toBe(false)
-    expect(localStorage.getItem('bd-privacy-notice')).toBe('1')
+    expect(localStorage.getItem('micelio-privacy-notice')).toBe('1')
   })
 
   it('stays hidden once dismissed', async () => {
-    localStorage.setItem('bd-privacy-notice', '1')
+    localStorage.setItem('micelio-privacy-notice', '1')
     const wrapper = await mountSuspended(BdPrivacyNotice)
     await flushPromises()
     expect(wrapper.find('section').exists()).toBe(false)

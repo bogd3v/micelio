@@ -61,7 +61,7 @@ describe('BlogLog', () => {
   })
 
   it('marks the posts already read in this browser', async () => {
-    localStorage.setItem('bd-read-articles', '["doc-linux"]')
+    localStorage.setItem('micelio-read-articles', '["doc-linux"]')
     useState('bd-read-articles-loaded').value = false
     const wrapper = await mountSuspended(BlogLog, { props: { posts } })
     await flushPromises()

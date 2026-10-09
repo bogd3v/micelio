@@ -29,7 +29,7 @@ const THEMED_GROUPS: RoleGroup[] = ['color', 'shadow']
 const FLAT_GROUPS: RoleGroup[] = ['spacing', 'radius', 'size', 'motion']
 
 const Mode = z.object({
-  id: z.string().regex(MODE_ID, { error: iss => `mode id "${String(iss.input)}" must match ^[\\w-]+$` }).describe('Goes into data-theme, CSS selectors and the bd-theme storage key.'),
+  id: z.string().regex(MODE_ID, { error: iss => `mode id "${String(iss.input)}" must match ^[\\w-]+$` }).describe('Goes into data-theme, CSS selectors and the micelio-theme storage key.'),
   scheme: z.enum(['dark', 'light'], { error: iss => `has scheme "${String(iss.input)}", expected "dark" or "light"` }).describe('Lightness of the mode; core CSS selects on data-scheme.'),
   name: z.string().optional().describe('Label of the mode in the switch.'),
 })

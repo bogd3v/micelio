@@ -8,7 +8,7 @@ Public styling hooks of contract v1, from `app/theme/hooks.json`. A theme's `the
 
 | Attribute | Describes | Values |
 | --- | --- | --- |
-| `data-theme` | `<html>`: id of the active mode (the bd-theme value). | the ids of the theme's modes |
+| `data-theme` | `<html>`: id of the active mode (the micelio-theme value). | the ids of the theme's modes |
 | `data-scheme` | `<html>`: lightness of the active mode. | `dark`, `light` |
 | `data-layout` | The root element of a layout region: the variant it renders. | `bar`, `centered`, `showcase`, `index`, `grid`, `list`, `aside`, `columns`, `minimal` |
 | `data-mode` | A button of the mode switch: the mode it selects (.bd-seg). | the ids of the theme's modes |

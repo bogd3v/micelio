@@ -27,7 +27,7 @@
           "id": {
             "type": "string",
             "pattern": "^[\\w-]+$",
-            "description": "Goes into data-theme, CSS selectors and the bd-theme storage key."
+            "description": "Goes into data-theme, CSS selectors and the micelio-theme storage key."
           },
           "scheme": {
             "type": "string",

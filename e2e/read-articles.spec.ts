@@ -12,7 +12,7 @@ test('marks an article as read after reading it and keeps it in the browser', as
 
   await page.goto('/blog/understanding-vue-composables', { waitUntil: 'networkidle' })
   await page.locator('.bd-prose').evaluate(element => element.scrollIntoView({ block: 'end' }))
-  await expect.poll(() => page.evaluate(() => localStorage.getItem('bd-read-articles'))).toBe('["doc-vue"]')
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('micelio-read-articles'))).toBe('["doc-vue"]')
 
   await page.goto('/blog', { waitUntil: 'networkidle' })
   await expect(card.locator('.bd-read-mark')).toHaveText('✓ Read')
@@ -28,25 +28,25 @@ test('marks an article as read after reading it and keeps it in the browser', as
 })
 
 test('clears the reading history from the blog', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('bd-read-articles', '["doc-vue","doc-linux"]'))
+  await page.addInitScript(() => localStorage.setItem('micelio-read-articles', '["doc-vue","doc-linux"]'))
   await page.goto('/blog', { waitUntil: 'networkidle' })
   await expect(page.locator('.bd-card .bd-read-mark')).toHaveCount(2)
   await page.getByRole('button', { name: 'Clear reading history' }).click()
   await expect(page.locator('.bd-card .bd-read-mark')).toHaveCount(0)
   await expect(page.getByRole('status').filter({ hasText: 'History cleared' })).toBeVisible()
-  expect(await page.evaluate(() => localStorage.getItem('bd-read-articles'))).toBeNull()
+  expect(await page.evaluate(() => localStorage.getItem('micelio-read-articles'))).toBeNull()
 })
 
 test('keeps the history out of every request', async ({ page }) => {
   const leaks: string[] = []
   page.on('request', (request) => {
     const payload = `${request.url()} ${request.postData() ?? ''} ${request.headers().cookie ?? ''}`
-    if (payload.includes('bd-read-articles') || payload.includes('doc-linux')) leaks.push(request.url())
+    if (payload.includes('micelio-read-articles') || payload.includes('doc-linux')) leaks.push(request.url())
   })
-  await page.addInitScript(() => localStorage.setItem('bd-read-articles', '["doc-linux"]'))
+  await page.addInitScript(() => localStorage.setItem('micelio-read-articles', '["doc-linux"]'))
   await page.goto('/blog', { waitUntil: 'networkidle' })
   await page.goto('/blog/understanding-vue-composables', { waitUntil: 'networkidle' })
   await page.locator('.bd-prose').evaluate(element => element.scrollIntoView({ block: 'end' }))
-  await expect.poll(() => page.evaluate(() => localStorage.getItem('bd-read-articles'))).toBe('["doc-linux","doc-vue"]')
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('micelio-read-articles'))).toBe('["doc-linux","doc-vue"]')
   expect(leaks).toEqual([])
 })
