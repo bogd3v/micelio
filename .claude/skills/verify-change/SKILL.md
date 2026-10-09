@@ -8,6 +8,7 @@ description: Verify a change to the Micelio frontend before opening or merging a
 ## 1. The suite (same as CI)
 
 ```bash
+npm run check             # typecheck + lint + test:coverage, the fast part below in one command
 npm run lint              # 0 errors; the 3 v-html warnings are known and sanitized
 npm run typecheck
 npm run test:coverage     # unit + component, fails under the thresholds in vitest.config.ts
