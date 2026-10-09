@@ -28,7 +28,7 @@ describe('heavy island registry', () => {
   it('rejects duplicate ids, bad names and the registry as an entry', () => {
     expect(validateHeavyIslands([valid, valid])).toEqual(['island "mermaid": duplicate id'])
     expect(validateHeavyIslands([{ ...valid, id: 'Bad Id' }])[0]).toContain('id must be')
-    expect(validateHeavyIslands([{ ...valid, entry: 'heavy' }])[0]).toContain('entry must name')
+    for (const entry of ['heavy', 'types', 'constants']) expect(validateHeavyIslands([{ ...valid, entry }])[0]).toContain('entry must name')
     expect(validateHeavyIslands([{ ...valid, entry: '../x' }])[0]).toContain('entry must name')
   })
 

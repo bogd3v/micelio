@@ -1,3 +1,4 @@
+// Runtimes must not import this file: the limits reach them as `RunLimits` (docs/security.md, WebKit).
 // What the playground island and its Worker agree on (ADR 0004, worker containment). Apart from `../constants.ts` on purpose:
 // a module that two island entries import becomes a chunk of its own, one more request for each (docs/performance.md).
 

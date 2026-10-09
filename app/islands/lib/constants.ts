@@ -2,7 +2,7 @@ import type { HeavyIsland } from '../types'
 
 // Constants of the loader and of the pages that declare an island for it, and the registry they read. They live apart from `../constants.ts` on purpose:
 // the loader runs at start, and a module it shares with an island entry becomes a chunk the loader loads (`sharedWithLoader`, modules/lib/islands-graph.ts).
-// No island entry imports this file. The registry here also keeps the app's home chunks at their budget (docs/performance.md).
+// No island entry imports this file. The registry stays out of `../constants.ts` too: in that file it pushed the home JS to 146.7 KB against a budget of 146.6 (docs/performance.md).
 
 /** A page that renders a heavy island declares it in a JSON script with this id prefix; `app/islands/loader.ts` reads them. */
 export const HEAVY_SCRIPT_PREFIX = 'micelio-island-'

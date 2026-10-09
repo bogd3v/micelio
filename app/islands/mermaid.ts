@@ -155,4 +155,5 @@ class MicelioMermaid extends HTMLElement {
   }
 }
 
+// The element name is a literal, not MERMAID_ELEMENT: importing ./constants here would make it a chunk shared with the scene entry
 if (!customElements.get('micelio-mermaid')) customElements.define('micelio-mermaid', MicelioMermaid)
