@@ -1,32 +1,9 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, delimiter, join, resolve } from 'node:path'
-import type { ThemeData } from './tokens.mjs'
 import { FONT_FILE, themeIdProblem } from './contract'
-import type { LayoutRegion, SlotName, SlotOptions } from './data'
+import type { InstalledTheme, ThemeManifest } from './types'
 
 export const DEFAULT_THEME = 'bogota'
-
-export interface ThemeFont {
-  family: string
-  file: string
-  preload?: boolean
-}
-
-export interface ThemeManifest extends ThemeData {
-  id: string
-  contract: number
-  fonts?: ThemeFont[]
-  images?: Partial<Record<'favicon' | 'ogImage' | 'profile', string>>
-  layout?: Partial<Record<LayoutRegion, string>>
-  slots?: Partial<Record<SlotName, SlotOptions>>
-  mermaid?: Record<string, string>
-}
-
-export interface InstalledTheme {
-  id: string
-  dir: string
-  manifest: ThemeManifest
-}
 
 function isThemeDir(dir: string): boolean {
   return existsSync(join(dir, 'theme.json'))

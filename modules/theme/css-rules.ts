@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { transform } from 'lightningcss'
 import { readThemeFile } from './files'
-import type { Hooks } from './hooks'
+import type { Hooks } from './types'
 
 // ADR 0005, sections 4 and 5: a theme's CSS selects public hooks only and loads nothing from outside its package
 

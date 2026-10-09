@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { DEFAULT_LAYOUT, LAYOUT_REGIONS, SLOT_NAMES } from '../modules/theme/data'
+import { DEFAULT_LAYOUT } from '../modules/theme/data'
+import { LAYOUT_REGIONS, SLOT_NAMES } from '../modules/theme/constants'
 import { compileMessages } from '../modules/precompile-messages'
 
 interface Messages {

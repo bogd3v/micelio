@@ -2,7 +2,7 @@ import { contrastRatio, mixOklab, nearestWhere, parseHex, toHex } from '~/helper
 import type { Rgb } from '~/helpers/color'
 import type { AccentColors, SiteTheme, ThemeSettings } from '~/interfaces/site'
 import { displayFontId } from './displayFonts'
-import type { ContrastRule } from '../../modules/theme/contrast'
+import type { ContrastRule } from '../../modules/theme/types'
 import type { ModePalette } from '../../modules/theme/palette'
 
 // Pure: the theme Strapi asks for, checked against the built theme (ADR 0005, section 8). Nothing here reads a request.

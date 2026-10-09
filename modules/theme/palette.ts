@@ -1,7 +1,7 @@
 import { toHex } from './color'
 import { CONTRAST_RULES, lookupFor, resolveOver } from './contrast'
-import type { ContrastRule, Lookup } from './contrast'
-import type { ThemeManifest } from './themes'
+import type { Lookup } from './contrast'
+import type { ContrastRule, ThemeManifest } from './types'
 
 // The slice of the active theme the server needs to compute accent contrast at runtime (#micelio/theme-palette, Nitro only).
 

@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { addTemplate, addTypeTemplate, extendPages } from 'nuxt/kit'
-import type { ThemeContext } from '../context'
+import type { ThemeContext } from '../types'
 import { alternateVariants } from '../layout/variants'
 
 const DIR = dirname(fileURLToPath(import.meta.url))

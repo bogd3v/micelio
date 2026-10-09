@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import type { ThemeContext, ThemeComponent } from './context'
-import { SLOT_NAMES } from './data'
+import type { ThemeContext, ThemeComponent } from './types'
+import { SLOT_NAMES } from './constants'
 
 // ADR 0005, section 4: a theme's slots/<Name>.vue, else the core default in app/theme/defaults/
 const DEFAULTS_DIR = 'theme/defaults'

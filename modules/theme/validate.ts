@@ -3,11 +3,10 @@ import { join } from 'node:path'
 import { contractProblems } from './contract'
 import { checkCss, checkThemeCss } from './css-rules'
 import { buildTokensCss } from './tokens.mjs'
-import { SLOT_NAMES } from './data'
+import { SLOT_NAMES } from './constants'
 import { readThemeFile } from './files'
 import { slotProblems } from './island'
-import type { Hooks } from './hooks'
-import type { InstalledTheme } from './themes'
+import type { Hooks, InstalledTheme } from './types'
 
 // ADR 0005, section 6: every installed theme is validated before the build, and a failure names the theme and the problem
 

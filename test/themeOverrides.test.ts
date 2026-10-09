@@ -4,7 +4,7 @@ import { contrastProblems } from '../modules/theme/contrast'
 import { buildPalette } from '../modules/theme/palette'
 import type { ThemePalette } from '../modules/theme/palette'
 import { discoverThemes, themeRoots } from '../modules/theme/themes'
-import type { ThemeManifest } from '../modules/theme/themes'
+import type { ThemeManifest } from '../modules/theme/types'
 import { resetThemeLog, resolveTheme, themeOverridesCss } from '../server/utils/theme'
 import type { ThemeSettings } from '../app/interfaces/site'
 

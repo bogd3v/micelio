@@ -1,20 +1,12 @@
 import { composite, contrastRatio, nearestPassing, parseColor, resolveRefs, toHex } from './color'
 import type { Rgb } from './color'
 import { OPTIONAL_ROLES } from './roles.mjs'
-import type { ThemeManifest } from './themes'
+import type { ContrastRule, ThemeManifest } from './types'
 
 // Contrast rules of ADR 0005, section 1 (WCAG 2 AA) and its 2026-10-06 amendment, evaluated per mode.
 
 export const TEXT_MIN = 4.5
 export const CONTROL_MIN = 3
-
-export interface ContrastRule {
-  /** The foreground role. */
-  role: string
-  /** The roles it sits on. */
-  surfaces: string[]
-  min: number
-}
 
 const SURFACES = ['surface', 'surface-raised', 'surface-sunken']
 const STATES = ['success', 'warning', 'danger', 'info']
