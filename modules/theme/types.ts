@@ -8,10 +8,13 @@ export type LayoutRegion = typeof LAYOUT_REGIONS[number]
 /** A slot a theme can fill with its own component. */
 export type SlotName = typeof SLOT_NAMES[number]
 
+/** How a slot component is rendered. */
 export interface SlotOptions {
+  /** Render the component as a client island instead of static markup. */
   island?: boolean
 }
 
+/** A font file a theme ships and the family it provides. */
 export interface ThemeFont {
   family: string
   file: string
@@ -48,12 +51,14 @@ export interface ContrastRule {
   role: string
   /** The roles it sits on. */
   surfaces: string[]
+  /** The minimum WCAG contrast ratio. */
   min: number
 }
 
 /** A piece of generated CSS, evaluated each time its template is rebuilt. */
 export type CssSource = () => string
 
+/** A theme component registered with Nuxt. */
 export interface ThemeComponent {
   name: string
   filePath: string
