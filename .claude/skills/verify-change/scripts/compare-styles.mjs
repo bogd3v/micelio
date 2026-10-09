@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { chromium } from '@playwright/test'
 
 const DEFAULT_WIDTHS = [375, 800, 1280]
-const THEME_STORAGE_KEY = 'bd-theme'
+const THEME_STORAGE_KEY = 'micelio-theme'
 const argv = process.argv.slice(2)
 
 // Flags can appear anywhere; everything else is positional.

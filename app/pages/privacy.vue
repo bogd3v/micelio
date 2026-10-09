@@ -28,7 +28,7 @@ const modeNames = computed<string>(() => formatModeList(
   locale.value,
 ))
 
-// With one mode nothing ever writes bd-theme
+// With one mode nothing ever writes micelio-theme
 const storageKeys = BROWSER_STORAGE_KEYS.filter(key => key !== THEME_STORAGE_KEY || modes.length > 1)
 
 const sections = computed<PrivacySection[]>(() => [

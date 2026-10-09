@@ -51,8 +51,8 @@ test('registers, confirms, signs in and signs out without exposing the JWT', asy
   await expect(page.getByRole('heading', { level: 1, name: 'My account' })).toBeVisible()
   await expect(page.locator('.bd-account-facts')).toContainText(user.email)
 
-  expect(await page.evaluate(() => document.cookie)).not.toContain('bd_session')
-  const session = (await page.context().cookies()).find(cookie => cookie.name === 'bd_session')
+  expect(await page.evaluate(() => document.cookie)).not.toContain('micelio_session')
+  const session = (await page.context().cookies()).find(cookie => cookie.name === 'micelio_session')
   expect(session).toMatchObject({ httpOnly: true, secure: true, sameSite: 'Lax', path: '/' })
   expect(authBodies.length).toBeGreaterThan(0)
   for (const body of authBodies) expect(body).not.toContain(session!.value)
@@ -69,7 +69,7 @@ test('registers, confirms, signs in and signs out without exposing the JWT', asy
 
   await expect(page).toHaveURL(/\/account\/sign-in\?notice=signed-out$/)
   await expect(page.locator('.bd-notice')).toHaveText(/You signed out\./)
-  expect((await page.context().cookies()).some(cookie => cookie.name === 'bd_session')).toBe(false)
+  expect((await page.context().cookies()).some(cookie => cookie.name === 'micelio_session')).toBe(false)
   await expect(page.locator('.bd-strip').getByRole('link', { name: 'Sign in' })).toBeVisible()
 })
 
@@ -148,7 +148,7 @@ test('deletes the account only with the right password', async ({ page }) => {
   await page.getByRole('button', { name: 'Delete forever' }).click()
   await expect(page).toHaveURL(/\/account\/sign-in\?notice=account-deleted$/)
   await expect(page.locator('.bd-notice')).toHaveText(/We deleted your account and your data\./)
-  expect((await page.context().cookies()).some(cookie => cookie.name === 'bd_session')).toBe(false)
+  expect((await page.context().cookies()).some(cookie => cookie.name === 'micelio_session')).toBe(false)
 
   await signIn(page, user.username, user.password)
   await expect(page.locator('#bd-login-err')).toBeFocused()

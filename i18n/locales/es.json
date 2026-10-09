@@ -775,7 +775,7 @@
       "when": "Cuándo",
       "duration": "Duración",
       "items": {
-        "bd_session": {
+        "micelio_session": {
           "purpose": "Mantener tu sesión iniciada. Necesaria: sin ella no puedes entrar a tu cuenta.",
           "when": "Solo si entras"
         }
@@ -789,9 +789,9 @@
       "body": "Algunas preferencias se guardan en el almacenamiento local de tu navegador. {local} y puedes borrarlas desde la configuración del navegador.",
       "local": "Nunca salen de tu dispositivo",
       "items": {
-        "bd-theme": "Tema {modes} que elegiste.",
-        "bd-privacy-notice": "Que ya cerraste el aviso de privacidad.",
-        "bd-read-articles": "Los artículos que ya leíste, para la marca «✓ Leído»."
+        "micelio-theme": "Tema {modes} que elegiste.",
+        "micelio-privacy-notice": "Que ya cerraste el aviso de privacidad.",
+        "micelio-read-articles": "Los artículos que ya leíste, para la marca «✓ Leído»."
       }
     },
     "data": {

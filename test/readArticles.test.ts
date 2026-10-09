@@ -59,6 +59,37 @@ describe('loadReadIds and saveReadIds', () => {
   })
 })
 
+describe('read marks migration', () => {
+  it('reads the pre-rename key, writes the new one and removes the old one', () => {
+    const storage = memoryStorage({ 'bd-read-articles': '["a","b"]' })
+    expect(loadReadIds(storage)).toEqual(['a', 'b'])
+    expect(Object.fromEntries(storage.data)).toEqual({ [READ_STORAGE_KEY]: '["a","b"]' })
+  })
+
+  it('prefers the new key and leaves the old one for the next save', () => {
+    const storage = memoryStorage({ [READ_STORAGE_KEY]: '["new"]', 'bd-read-articles': '["old"]' })
+    expect(loadReadIds(storage)).toEqual(['new'])
+    expect(saveReadIds(['new', 'more'], storage)).toBe(true)
+    expect(Object.fromEntries(storage.data)).toEqual({ [READ_STORAGE_KEY]: '["new","more"]' })
+  })
+
+  it('never writes the old key, and a cleared history removes both', () => {
+    const storage = memoryStorage({ 'bd-read-articles': '["a"]' })
+    saveReadIds(['a', 'b'], storage)
+    expect([...storage.data.keys()]).toEqual([READ_STORAGE_KEY])
+    saveReadIds([], memoryStorage({ 'bd-read-articles': '["a"]' }))
+    const cleared = memoryStorage({ [READ_STORAGE_KEY]: '["a"]', 'bd-read-articles': '["a"]' })
+    saveReadIds([], cleared)
+    expect(cleared.data.size).toBe(0)
+  })
+
+  it('ignores a malformed pre-rename value without writing', () => {
+    const storage = memoryStorage({ 'bd-read-articles': 'nope' })
+    expect(loadReadIds(storage)).toEqual([])
+    expect(Object.fromEntries(storage.data)).toEqual({ 'bd-read-articles': 'nope' })
+  })
+})
+
 describe('withReadId', () => {
   it('adds a new id and returns the same list when it is already there', () => {
     const ids = ['doc-a']

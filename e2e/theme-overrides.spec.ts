@@ -11,14 +11,14 @@ test('the default mode wins over the system preference', async ({ browser }) => 
 })
 
 test('the visitor\'s stored choice wins over the default mode', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('bd-theme', 'noche'))
+  await page.addInitScript(() => localStorage.setItem('micelio-theme', 'noche'))
   await page.goto('/', { waitUntil: 'networkidle' })
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'noche')
   await expect(page.locator('html')).toHaveAttribute('data-mode-default', 'dia')
 })
 
 test('applies the corrected accent in the mode it was set for only', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('bd-theme', 'noche'))
+  await page.addInitScript(() => localStorage.setItem('micelio-theme', 'noche'))
   await page.goto('/', { waitUntil: 'networkidle' })
   const accent = (): Promise<string> => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().toLowerCase())
   const corrected = await accent()

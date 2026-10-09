@@ -2,7 +2,7 @@
   "$comment": "Public styling hooks of contract v1 (ADR 0005, section 5). A theme's theme.css and slot CSS may select only these bd-* classes and core data-* attributes; every other one is internal and can change in any release. An entry is a description, or { describes, layouts, states }: layouts names the region and variants where it appears (omitted: every variant), states the classes and attributes it takes. Adding a hook stays in contract v1; removing or renaming one is contract 2.",
   "contract": 1,
   "attributes": {
-    "data-theme": { "describes": "<html>: id of the active mode (the bd-theme value).", "values": "the ids of the theme's modes" },
+    "data-theme": { "describes": "<html>: id of the active mode (the micelio-theme value).", "values": "the ids of the theme's modes" },
     "data-scheme": { "describes": "<html>: lightness of the active mode.", "values": ["dark", "light"] },
     "data-layout": { "describes": "The root element of a layout region: the variant it renders.", "values": ["bar", "centered", "showcase", "index", "grid", "list", "aside", "columns", "minimal"] },
     "data-mode": { "describes": "A button of the mode switch: the mode it selects (.bd-seg).", "values": "the ids of the theme's modes" },

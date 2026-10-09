@@ -7,7 +7,7 @@ import { tabThroughDialog } from '../fixtures/focus'
 // The mock Strapi accepts `mock-jwt-<id>` as a session; seeding the cookie skips a sign-in form that
 // WebKit cannot complete over http (it drops the Secure session cookie the server sets)
 async function signInAsReader(page: Page, baseURL: string | undefined): Promise<void> {
-  await page.context().addCookies([{ name: 'bd_session', value: 'mock-jwt-101', url: baseURL!, httpOnly: true, secure: true, sameSite: 'Lax' }])
+  await page.context().addCookies([{ name: 'micelio_session', value: 'mock-jwt-101', url: baseURL!, httpOnly: true, secure: true, sameSite: 'Lax' }])
 }
 
 test.describe('search palette', () => {

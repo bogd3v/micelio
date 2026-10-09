@@ -2,14 +2,16 @@ import { SESSION_COOKIE, SESSION_MAX_AGE } from './auth'
 import { READ_STORAGE_KEY } from './readArticles'
 import { THEME_STORAGE_KEY } from './theme'
 
-export const PRIVACY_NOTICE_STORAGE_KEY = 'bd-privacy-notice'
+export const PRIVACY_NOTICE_STORAGE_KEY = 'micelio-privacy-notice'
+// TODO(#422): remove the bd-privacy-notice fallback
+const LEGACY_PRIVACY_NOTICE_STORAGE_KEY = 'bd-privacy-notice'
 
 export interface SiteCookie {
   name: string
   maxAgeDays: number
 }
 
-type NoticeStorage = Pick<Storage, 'getItem' | 'setItem'>
+type NoticeStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 
 export const SITE_COOKIES: SiteCookie[] = [
   { name: SESSION_COOKIE, maxAgeDays: SESSION_MAX_AGE / (60 * 60 * 24) },
@@ -27,7 +29,15 @@ function browserStorage(): NoticeStorage | null {
 
 export function isPrivacyNoticeDismissed(storage: NoticeStorage | null = browserStorage()): boolean {
   try {
-    return storage?.getItem(PRIVACY_NOTICE_STORAGE_KEY) === '1'
+    if (!storage) return false
+    if (storage.getItem(PRIVACY_NOTICE_STORAGE_KEY) === '1') {
+      storage.removeItem(LEGACY_PRIVACY_NOTICE_STORAGE_KEY)
+      return true
+    }
+    // TODO(#422): remove the bd-privacy-notice fallback
+    if (storage.getItem(LEGACY_PRIVACY_NOTICE_STORAGE_KEY) !== '1') return false
+    dismissPrivacyNotice(storage)
+    return true
   } catch {
     return false
   }
@@ -37,6 +47,7 @@ export function dismissPrivacyNotice(storage: NoticeStorage | null = browserStor
   if (!storage) return false
   try {
     storage.setItem(PRIVACY_NOTICE_STORAGE_KEY, '1')
+    storage.removeItem(LEGACY_PRIVACY_NOTICE_STORAGE_KEY)
     return true
   } catch {
     return false

@@ -775,7 +775,7 @@
       "when": "When",
       "duration": "Duration",
       "items": {
-        "bd_session": {
+        "micelio_session": {
           "purpose": "Keeps you signed in. Necessary: without it you cannot sign in to your account.",
           "when": "Only if you sign in"
         }
@@ -789,9 +789,9 @@
       "body": "Some preferences are kept in your browser’s local storage. {local} and you can delete them from your browser settings.",
       "local": "They never leave your device",
       "items": {
-        "bd-theme": "The {modes} theme you chose.",
-        "bd-privacy-notice": "That you already closed the privacy notice.",
-        "bd-read-articles": "The articles you already read, for the “✓ Read” mark."
+        "micelio-theme": "The {modes} theme you chose.",
+        "micelio-privacy-notice": "That you already closed the privacy notice.",
+        "micelio-read-articles": "The articles you already read, for the “✓ Read” mark."
       }
     },
     "data": {

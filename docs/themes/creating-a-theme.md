@@ -69,7 +69,7 @@ themes/my-theme/
 ]
 ```
 
-Between 1 and 6 modes (the inline init script must stay under 2 KB). The first is the default. `id` matches `^[\w-]+$`, goes into `data-theme` on `<html>` and into the `bd-theme` storage key; `scheme` (`light` or `dark`) is what core CSS selects on (`data-scheme`).
+Between 1 and 6 modes (the inline init script must stay under 2 KB). The first is the default. `id` matches `^[\w-]+$`, goes into `data-theme` on `<html>` and into the `micelio-theme` storage key; `scheme` (`light` or `dark`) is what core CSS selects on (`data-scheme`).
 
 ### Role groups
 
