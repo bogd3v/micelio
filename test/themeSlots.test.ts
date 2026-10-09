@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { SLOT_NAMES } from '../modules/theme/data'
+import { SLOT_NAMES } from '../modules/theme/constants'
 import { resolveSlots, slotStyles } from '../modules/theme/slots'
 
 function tmp(): string {

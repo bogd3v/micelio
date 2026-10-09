@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import { addComponent, addTemplate, addTypeTemplate, useLogger } from 'nuxt/kit'
-import type { ThemeContext } from './context'
+import type { LayoutRegion, SlotName, ThemeContext } from './types'
+import { LAYOUT_REGIONS, SLOT_NAMES } from './constants'
 import { buildPalette } from './palette'
 
 /** Where the theme's images are served: /theme/images/<file> (docs/adr/0005-theme-contract.md). */
@@ -10,12 +11,6 @@ export const IMAGES_URL = 'theme/images'
 const BUILD_THEME_MODULE = '#micelio/build-theme'
 // Nitro only: the active theme's resolved palette, for the server's contrast math
 const PALETTE_MODULE = '#micelio/theme-palette'
-
-export const LAYOUT_REGIONS = ['header', 'home', 'postList', 'article', 'footer'] as const
-export type LayoutRegion = typeof LAYOUT_REGIONS[number]
-
-export const SLOT_NAMES = ['ThemeMark', 'ThemeHero', 'ThemeDivider', 'ThemeEmptyState', 'ThemeIllustration', 'ThemeProgressMarker', 'ThemeSupportArt'] as const
-export type SlotName = typeof SLOT_NAMES[number]
 
 export interface SlotProp {
   name: string
@@ -75,10 +70,6 @@ export const SLOT_SPECS: Record<SlotName, SlotSpec> = {
     props: [],
     defaultRenders: 'Nothing; the cup stays as it is.',
   },
-}
-
-export interface SlotOptions {
-  island?: boolean
 }
 
 /** A mode as the theme declares it (the module's own type; the app's `ThemeMode` is a mode id). */

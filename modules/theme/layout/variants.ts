@@ -1,7 +1,6 @@
 import { join } from 'node:path'
-import type { ThemeContext } from '../context'
-import type { LayoutRegion } from '../data'
-import { LAYOUT_REGIONS } from '../data'
+import type { ThemeContext, LayoutRegion } from '../types'
+import { LAYOUT_REGIONS } from '../constants'
 
 export interface RegionVariants {
   /** Name the component is registered under. */

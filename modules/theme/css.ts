@@ -2,8 +2,7 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { addTemplate } from 'nuxt/kit'
 import { buildTokensCss } from './tokens.mjs'
-import type { CssSource, ThemeContext } from './context'
-import type { LayoutRegion } from './data'
+import type { CssSource, ThemeContext, LayoutRegion } from './types'
 
 /** Template of each region's CSS; main.css imports it where the core file it replaces sits. */
 export const REGION_TEMPLATES: Record<LayoutRegion, string> = {

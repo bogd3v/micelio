@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, symlinkSync, writeFile
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { FONT_FILE, copyServed } from '../modules/theme/assets'
-import type { ThemeContext } from '../modules/theme/context'
+import type { ThemeContext } from '../modules/theme/types'
 
 const ctx = { id: 'sample' } as unknown as ThemeContext
 

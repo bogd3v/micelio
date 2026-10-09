@@ -2,46 +2,15 @@ import { resolve, sep } from 'node:path'
 import type { Nuxt } from '@nuxt/schema'
 import { updateTemplates } from 'nuxt/kit'
 import { DEFAULT_THEME, discoverThemes, selectTheme, themeRoots } from './themes'
-import type { InstalledTheme } from './themes'
+import type { InstalledTheme, ThemeContext, CssSource, LayoutRegion } from './types'
 import { loadHooks } from './hooks'
 import { validateThemes } from './validate'
-import { LAYOUT_REGIONS } from './data'
-import type { LayoutRegion } from './data'
+import { LAYOUT_REGIONS } from './constants'
 
 declare module '@nuxt/schema' {
   interface PublicRuntimeConfig {
     theme: string
   }
-}
-
-/** A piece of generated CSS, evaluated each time its template is rebuilt. */
-export type CssSource = () => string
-
-export interface ThemeComponent {
-  name: string
-  filePath: string
-  /** Registered globally, for `resolveComponent` (the specimen's alternate variants). */
-  global?: boolean
-}
-
-/** What the setup files share: the active theme, and the lists that css.ts turns into templates. */
-export interface ThemeContext {
-  nuxt: Nuxt
-  /** Id of the active theme at build time. */
-  id: string
-  roots: string[]
-  /** The active theme's directory. */
-  dir: string
-  /** Reads the active theme again (discovery runs on every regeneration). */
-  load: () => InstalledTheme
-  /** Rules for `micelio/components.css` (myc.components, after segmented.css). */
-  componentsCss: CssSource[]
-  /** Rules for `micelio/theme.css` (myc.theme, after the theme's own theme.css). */
-  slotCss: CssSource[]
-  /** Rules for each region's template, at the position of the file it replaces. */
-  layoutCss: Record<LayoutRegion, CssSource[]>
-  /** Components to register (slots and layout variants); data.ts adds them with addComponent. */
-  components: ThemeComponent[]
 }
 
 export function createContext(nuxt: Nuxt): ThemeContext {

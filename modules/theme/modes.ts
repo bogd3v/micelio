@@ -1,5 +1,5 @@
 import { buildInitScript } from './init-script.mjs'
-import type { ThemeContext } from './context'
+import type { ThemeContext } from './types'
 import type { ModeDefinition } from './data'
 
 /**

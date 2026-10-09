@@ -1,4 +1,4 @@
-import type { ThemeContext } from './context'
+import type { ThemeContext } from './types'
 import { registerAlternates, registerVariants } from './layout/variants'
 import { specimenEnabled } from './specimen/setup'
 

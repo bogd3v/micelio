@@ -5,8 +5,7 @@ import { transform } from 'lightningcss'
 import { contrastProblems } from './contrast'
 import { contractProblems } from './contract'
 import { themeProblems } from './validate'
-import type { Hooks } from './hooks'
-import type { InstalledTheme } from './themes'
+import type { Hooks, InstalledTheme } from './types'
 
 // `npm run theme:check`: what the build validates, plus contrast and static budgets (ADR 0005, sections 7 and 9).
 // Contrast is not part of the build, so a theme in progress does not stop `nuxt dev`.

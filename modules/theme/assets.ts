@@ -2,7 +2,7 @@ import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, rmSync } from 'n
 import { basename, join, relative } from 'node:path'
 import { useLogger } from 'nuxt/kit'
 import { isThemePath } from './context'
-import type { ThemeContext } from './context'
+import type { ThemeContext } from './types'
 import { IMAGES_URL } from './data'
 
 /** Files copied from a theme's images/; anything else is skipped with a warning. */

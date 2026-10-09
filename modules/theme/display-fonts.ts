@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { addTypeTemplate } from 'nuxt/kit'
 import { copyServed, FONT_FILE, STATIC_CSP } from './assets'
-import type { ThemeContext } from './context'
+import type { ThemeContext } from './types'
 
 // The curated display fonts of the core (ADR 0005, section 8): served at /fonts/display/, emitted by server/utils/displayFonts.ts.
 

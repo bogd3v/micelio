@@ -4,9 +4,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
 import { REGION_VARIANTS, alternateVariants, registerAlternates, registerVariants } from '../modules/theme/layout/variants'
-import { LAYOUT_REGIONS } from '../modules/theme/data'
-import type { LayoutRegion } from '../modules/theme/data'
-import type { ThemeContext } from '../modules/theme/context'
+import { LAYOUT_REGIONS } from '../modules/theme/constants'
+import type { LayoutRegion, ThemeContext } from '../modules/theme/types'
 import { themeMismatch } from '../app/helpers/runtimeConfig'
 
 function theme(root: string, folder: string, manifest: object = { id: folder }): void {

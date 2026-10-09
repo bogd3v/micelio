@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { QUOTED_VALUE, REQUIRED_ROLES, TYPE_FAMILIES, TYPE_STEPS, UNSAFE_VALUE } from './roles.mjs'
 import type { RoleGroup } from './roles.mjs'
-import { LAYOUT_REGIONS, SLOT_NAMES } from './data'
+import { LAYOUT_REGIONS, SLOT_NAMES } from './constants'
 import { REGION_VARIANTS } from './layout/variants'
 
 // Contract v1 (ADR 0005, section 6), defined once: the build validates every installed theme with it
