@@ -2,7 +2,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 48px var(--bd-home-gutter) 0;
+    padding: 48px var(--myc-home-gutter) 0;
 }
 
 .bd-hero-art {
@@ -88,7 +88,7 @@
         column-gap: var(--space-gutter);
         align-content: center;
         min-height: 720px;
-        padding: 112px var(--bd-home-gutter) var(--space-section);
+        padding: 112px var(--myc-home-gutter) var(--space-section);
     }
 
     .bd-hero-art {

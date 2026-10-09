@@ -1,7 +1,7 @@
 .bd-draft-strip {
     position: relative;
     z-index: 9;
-    padding: 14px var(--bd-home-gutter);
+    padding: 14px var(--myc-home-gutter);
     background: var(--warning-soft);
     border-bottom: 1px solid var(--warning);
 }

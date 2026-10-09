@@ -2,7 +2,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     row-gap: var(--space-12);
-    padding: 64px var(--bd-home-gutter);
+    padding: 64px var(--myc-home-gutter);
     border-top: 1px solid var(--line);
 }
 
@@ -316,7 +316,7 @@
         grid-template-columns: repeat(12, minmax(0, 1fr));
         column-gap: var(--space-gutter);
         align-items: start;
-        padding: var(--space-section) var(--bd-home-gutter);
+        padding: var(--space-section) var(--myc-home-gutter);
     }
 
     .bd-comments-main {
@@ -325,7 +325,7 @@
 
     .bd-comments-moderation {
         position: sticky;
-        top: calc(var(--bd-header-h) + var(--space-6));
+        top: calc(var(--myc-header-h) + var(--space-6));
         grid-row: 1;
         grid-column: 1 / span 3;
     }

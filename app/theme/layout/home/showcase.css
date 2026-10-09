@@ -1,5 +1,5 @@
 :where(.bd-home[data-layout="showcase"]) .bd-home-featured {
-    padding: 16px var(--bd-home-gutter) 80px;
+    padding: 16px var(--myc-home-gutter) 80px;
 }
 
 @media (min-width: 768px) {

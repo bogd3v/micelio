@@ -28,7 +28,7 @@ const draftsLabel = computed<string>(() =>
 )
 const showDraftCount = computed<boolean>(() => isEditor.value && draftCount.value !== null)
 // One anchor per instance: the header renders the compact and the full menu
-const anchor = computed<string>(() => `--bd-account-${panelId.replace(/[^a-z0-9]/gi, '')}`)
+const anchor = computed<string>(() => `--myc-account-${panelId.replace(/[^a-z0-9]/gi, '')}`)
 
 // Closing for a navigation must not send focus back to the toggle: it starts at the new page
 function close(): void {

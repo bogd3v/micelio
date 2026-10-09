@@ -22,7 +22,7 @@ html:has(.bd-palette[open]) {
 .bd-palette-panel {
     display: flex;
     flex-direction: column;
-    max-height: calc(100dvh - 88px - var(--bd-tabbar-h) - 16px);
+    max-height: calc(100dvh - 88px - var(--myc-tabbar-h) - 16px);
     background: var(--surface-raised);
     border: 1px solid var(--line-strong);
     box-shadow: var(--glow-link);

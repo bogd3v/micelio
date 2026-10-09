@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-8);
-    padding: 80px var(--bd-home-gutter);
+    padding: 80px var(--myc-home-gutter);
     border-top: 1px solid var(--line);
 }
 
@@ -40,10 +40,10 @@
 .bd-latest-filters {
     display: flex;
     gap: 10px;
-    margin: 0 calc(-1 * var(--bd-home-gutter));
-    padding: 0 var(--bd-home-gutter);
+    margin: 0 calc(-1 * var(--myc-home-gutter));
+    padding: 0 var(--myc-home-gutter);
     overflow-x: auto;
-    scroll-padding-inline: var(--bd-home-gutter);
+    scroll-padding-inline: var(--myc-home-gutter);
     scroll-snap-type: x proximity;
     scrollbar-width: none;
 }
@@ -84,7 +84,7 @@
     color: var(--ink);
     text-decoration: none;
     background-color: var(--surface-sunken);
-    background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--bd-scan) 3px 4px);
+    background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--myc-scan) 3px 4px);
     border: 1px solid var(--line);
     transition: box-shadow var(--duration-base) var(--ease-standard), border-color var(--duration-base) var(--ease-standard);
 }
@@ -114,7 +114,7 @@
     padding: 40px var(--space-6);
     text-align: center;
     background-color: var(--surface-sunken);
-    background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--bd-scan) 3px 4px);
+    background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--myc-scan) 3px 4px);
     border: 1px solid var(--line);
 }
 
@@ -153,7 +153,7 @@
 @media (min-width: 768px) {
     .bd-home-section {
         gap: var(--space-12);
-        padding: var(--space-section) var(--bd-home-gutter);
+        padding: var(--space-section) var(--myc-home-gutter);
     }
 
     .bd-home-head {

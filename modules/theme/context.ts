@@ -34,9 +34,9 @@ export interface ThemeContext {
   dir: string
   /** Reads the active theme again (discovery runs on every regeneration). */
   load: () => InstalledTheme
-  /** Rules for `micelio/components.css` (bd.components, after segmented.css). */
+  /** Rules for `micelio/components.css` (myc.components, after segmented.css). */
   componentsCss: CssSource[]
-  /** Rules for `micelio/theme.css` (bd.theme, after the theme's own theme.css). */
+  /** Rules for `micelio/theme.css` (myc.theme, after the theme's own theme.css). */
   slotCss: CssSource[]
   /** Rules for each region's template, at the position of the file it replaces. */
   layoutCss: Record<LayoutRegion, CssSource[]>

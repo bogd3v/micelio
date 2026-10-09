@@ -59,8 +59,8 @@ const categoryStyle = computed<Record<string, string> | undefined>(() =>
 const names = computed<PostTransitionNames | undefined>(() =>
   props.transition && props.slug ? postTransitionNames(props.slug) : undefined,
 )
-const mediaStyle = computed<Record<string, string> | undefined>(() => names.value && { '--bd-vt-media': names.value.media })
-const titleStyle = computed<Record<string, string> | undefined>(() => names.value && { '--bd-vt-title': names.value.title })
+const mediaStyle = computed<Record<string, string> | undefined>(() => names.value && { '--myc-vt-media': names.value.media })
+const titleStyle = computed<Record<string, string> | undefined>(() => names.value && { '--myc-vt-title': names.value.title })
 const imageSize = computed<{ width: number, height: number }>(() =>
   props.featured ? { width: 960, height: 540 } : { width: 640, height: 360 },
 )

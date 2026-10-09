@@ -1,13 +1,13 @@
 .bd-about-empty {
     margin: 0;
-    padding: var(--space-section) var(--bd-home-gutter);
+    padding: var(--space-section) var(--myc-home-gutter);
 }
 
 .bd-profile {
     display: flex;
     flex-direction: column;
     gap: 28px;
-    padding: 40px var(--bd-home-gutter) 64px;
+    padding: 40px var(--myc-home-gutter) 64px;
 }
 
 .bd-profile-copy {
@@ -50,7 +50,7 @@
     padding: 28px 16px 0;
     overflow: hidden;
     background-color: var(--surface-sunken);
-    background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--bd-scan) 3px 4px);
+    background-image: repeating-linear-gradient(0deg, transparent 0 3px, var(--myc-scan) 3px 4px);
     border: 1px solid var(--line);
 }
 
@@ -135,7 +135,7 @@
         column-gap: var(--space-gutter);
         row-gap: var(--space-8);
         align-items: start;
-        padding: 112px var(--bd-home-gutter) var(--space-section);
+        padding: 112px var(--myc-home-gutter) var(--space-section);
     }
 
     .bd-profile-copy,

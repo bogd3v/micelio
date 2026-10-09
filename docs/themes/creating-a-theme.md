@@ -162,6 +162,15 @@ The core styles every variant from your roles, and your own rules for variants y
 
 All three are optional files of `images/` (png, jpg, webp, avif, gif or svg). The core uses them only when Strapi has nothing: the favicon and the default share image of the site settings win over `favicon` and `ogImage`, and `profile` is the picture of the about profile block when the content has no photo. Images are served at `/theme/images/`; a listed file that does not exist fails validation.
 
+### Properties of the core a theme sees
+
+Two custom properties of the core are part of what a theme author works with, and both were renamed from their former BogDev prefix before any theme package was published (ADR 0005, amendment of 2026-10-08):
+
+- `--myc-header-h`: the height of the header. The core sets it for each header variant, and anchors, sticky sidebars and the account menu offset themselves by it; read it in your own sticky or anchored rules instead of hard-coding a height.
+- `--myc-read`: the reading progress of an article, from 0 to 1, set inline on `.bd-progress`. The core moves `.bd-progress-track` by it, and that is where the `ThemeProgressMarker` slot renders, so a slot follows the progress with no code of its own.
+
+The other `--myc-*` properties are internal and can change in any release.
+
 ### Slots
 
 ```json
@@ -172,13 +181,13 @@ The slots are a closed list; each one's purpose, props and core default are in [
 
 Rules (`modules/theme/island.ts`, `slots.ts`):
 
-- **No `<style>` block in any slot.** Slot CSS goes in `slots/*.css`; every `.css` there is imported in file name order into the `bd.theme` layer and checked like `theme.css`.
+- **No `<style>` block in any slot.** Slot CSS goes in `slots/*.css`; every `.css` there is imported in file name order into the `myc.theme` layer and checked like `theme.css`.
 - **A slot is static by default**: no `@event`, `on*` attributes or `v-model`, no `v-bind` with an object or a dynamic argument, and none of the lifecycle hooks, `watch*`, `useState`, timers, `requestAnimationFrame` or `addEventListener`. The error says which one it found.
 - **Any slot may declare `"island": true`** when it needs JavaScript (Bogotá's `ThemeDivider` does). An island may be interactive but still may not ship `<style>`. Slots are plain components today, so every slot hydrates either way.
 
 ## 4. `theme.css`
 
-Plain CSS, imported into the layer `bd.theme`: after the core's components, layout and pages and before animations and utilities (`app/assets/css/main.css`). A theme rule restyles a hook without raising specificity. The same rules apply to `theme.css`, `sections.css`, `fonts.css`, `font-fallbacks.css` and `slots/*.css`, following local `@import`s (`modules/theme/css-rules.ts`):
+Plain CSS, imported into the layer `myc.theme`: after the core's components, layout and pages and before animations and utilities (`app/assets/css/main.css`). A theme rule restyles a hook without raising specificity. The same rules apply to `theme.css`, `sections.css`, `fonts.css`, `font-fallbacks.css` and `slots/*.css`, following local `@import`s (`modules/theme/css-rules.ts`):
 
 - Select only public hooks, listed with their states and layout variants in [reference/hooks.md](reference/hooks.md): a `bd-*` class or a `data-*` attribute that is not in `app/theme/hooks.json` fails, and so does an attribute selector on `class` that matches `bd-`. Every other `bd-*` class is internal and may change in any release.
 - A theme's own attributes start with `data-<id>-`; its own classes should carry the id as prefix (`my-theme-mark`).
@@ -191,7 +200,7 @@ Hooks are validated by the build and by `theme:check`. `npm run lint` does not c
 
 ### `sections.css`
 
-Optional. The style of the page sections (the `bd-section-*` hooks and `data-section` / `data-variant`, [reference/hooks.md](reference/hooks.md)) goes here, not in `theme.css`: `theme.css` loads on every page, `sections.css` only on pages that render sections, in the same chunk as the core section CSS and after it, in the layer `bd.theme`. Same rules as `theme.css`, and its gzipped size counts toward the same 25 KB budget. Without it the sections still render, styled from your roles by the core. Every theme styles every section and variant (ADR 0005, section 11), and `/_theme` shows them.
+Optional. The style of the page sections (the `bd-section-*` hooks and `data-section` / `data-variant`, [reference/hooks.md](reference/hooks.md)) goes here, not in `theme.css`: `theme.css` loads on every page, `sections.css` only on pages that render sections, in the same chunk as the core section CSS and after it, in the layer `myc.theme`. Same rules as `theme.css`, and its gzipped size counts toward the same 25 KB budget. Without it the sections still render, styled from your roles by the core. Every theme styles every section and variant (ADR 0005, section 11), and `/_theme` shows them.
 
 ## 5. Messages
 

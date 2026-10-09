@@ -1,4 +1,4 @@
-/* /_theme (modules/theme/specimen): imported by #build/micelio/specimen.css in bd.pages; empty in builds without the page */
+/* /_theme (modules/theme/specimen): imported by #build/micelio/specimen.css in myc.pages; empty in builds without the page */
 .bd-specimen {
     display: grid;
     gap: var(--space-12);

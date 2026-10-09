@@ -5,8 +5,8 @@
 .bd-drafts-page,
 .bd-draft-strip,
 .bd-privacy {
-    --bd-home-gutter: var(--space-inline);
-    --bd-scan: color-mix(in oklab, var(--ink-muted) 7%, transparent);
+    --myc-home-gutter: var(--space-inline);
+    --myc-scan: color-mix(in oklab, var(--ink-muted) 7%, transparent);
     overflow-x: clip;
 }
 

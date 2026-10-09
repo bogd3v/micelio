@@ -1,11 +1,11 @@
 .bd-guide-grid {
     display: flex;
     gap: var(--space-4);
-    margin: 0 calc(-1 * var(--bd-home-gutter));
-    padding: 4px var(--bd-home-gutter) 12px;
+    margin: 0 calc(-1 * var(--myc-home-gutter));
+    padding: 4px var(--myc-home-gutter) 12px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    scroll-padding-inline: var(--bd-home-gutter);
+    scroll-padding-inline: var(--myc-home-gutter);
     scrollbar-width: none;
 }
 

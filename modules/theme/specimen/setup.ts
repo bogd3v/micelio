@@ -15,7 +15,7 @@ export function specimenEnabled(ctx: ThemeContext): boolean {
 export function setupSpecimen(ctx: ThemeContext): void {
   const enabled = specimenEnabled(ctx)
 
-  // main.css imports this template in bd.pages; it is empty when the page is not built
+  // main.css imports this template in myc.pages; it is empty when the page is not built
   addTemplate({
     filename: 'micelio/specimen.css',
     write: true,

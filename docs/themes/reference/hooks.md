@@ -33,7 +33,7 @@ Public styling hooks of contract v1, from `app/theme/hooks.json`. A theme's `the
 | `bd-strip-actions` | Actions at the end of the strip. |  | every variant |
 | `bd-progress` | Reading progress bar of the header on articles. |  | every variant |
 | `bd-progress-bar` | Filled part of the progress bar. |  | every variant |
-| `bd-progress-track` | Lane a ThemeProgressMarker travels along (the slot renders it); moved by the --bd-read custom property of .bd-progress. |  | every variant |
+| `bd-progress-track` | Lane a ThemeProgressMarker travels along (the slot renders it); moved by the --myc-read custom property of .bd-progress. |  | every variant |
 | `bd-hud` | Place line of the header strip; rendered only when the theme has theme.hud messages. |  | every variant |
 
 ## Classes of `home`

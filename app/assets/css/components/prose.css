@@ -161,7 +161,7 @@
     line-height: 0;
     color: var(--link);
     text-decoration: none;
-    scroll-margin-top: calc(var(--bd-header-h) + var(--space-6));
+    scroll-margin-top: calc(var(--myc-header-h) + var(--space-6));
 }
 
 .bd-prose .bd-cite:hover {

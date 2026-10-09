@@ -55,7 +55,7 @@ describe('RegionHeader', () => {
     expect(wrapper.get('.bd-strip-read-num').attributes('data-percent')).toBe('38')
     const progress = wrapper.get('.bd-progress')
     expect(progress.attributes('aria-hidden')).toBe('true')
-    expect(progress.attributes('style')).toContain('--bd-read: 0.38')
+    expect(progress.attributes('style')).toContain('--myc-read: 0.38')
     expect(wrapper.classes()).not.toContain('bd-header-auto')
     expect(wrapper.get('.bd-strip [role="group"]').attributes('aria-label')).toBe('Color theme')
   })

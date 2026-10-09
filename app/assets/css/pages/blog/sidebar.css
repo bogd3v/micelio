@@ -121,7 +121,7 @@
 @media (min-width: 1024px) {
     .bd-blog-aside {
         position: sticky;
-        top: calc(var(--bd-header-h) + var(--space-6));
+        top: calc(var(--myc-header-h) + var(--space-6));
         grid-column: span 3;
         gap: 40px;
         padding-top: 0;

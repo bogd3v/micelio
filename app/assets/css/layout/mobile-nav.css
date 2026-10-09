@@ -1,9 +1,9 @@
 :root {
-    --bd-tabbar-h: calc(64px + env(safe-area-inset-bottom, 0px));
+    --myc-tabbar-h: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
 body {
-    padding-bottom: var(--bd-tabbar-h);
+    padding-bottom: var(--myc-tabbar-h);
 }
 
 .bd-tabbar {
@@ -16,7 +16,7 @@ body {
     /* One equal column per tab: a site without search has three */
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
-    height: var(--bd-tabbar-h);
+    height: var(--myc-tabbar-h);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background: var(--surface-raised);
     border-top: 1px solid var(--line-strong);
@@ -226,7 +226,7 @@ html:has(.bd-sheet[open]) {
 
 @media (min-width: 768px) {
     :root {
-        --bd-tabbar-h: 0px;
+        --myc-tabbar-h: 0px;
     }
 
     .bd-tabbar,
