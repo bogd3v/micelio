@@ -163,3 +163,16 @@ export function siteLogoUrl(site: Pick<Site, 'logo' | 'favicon'>, siteUrl: strin
   const url = site.logo?.url ?? site.favicon?.url
   return url ? absoluteUrl(url, siteUrl) : undefined
 }
+
+/** The author's schema.org Person, only from what the site sets; null without an author name. */
+export function personStructuredData(site: Site): Record<string, unknown> | null {
+  if (!site.author.name) return null
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    'name': site.author.name,
+    ...(site.author.url && { url: site.author.url }),
+    ...(site.socialLinks.length && { sameAs: site.socialLinks.map(link => link.url) }),
+    'worksFor': { '@type': 'Organization', 'name': site.name },
+  }
+}

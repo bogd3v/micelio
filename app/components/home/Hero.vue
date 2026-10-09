@@ -8,6 +8,7 @@ const props = defineProps<{
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
 const hud = useThemeHud()
+const themeMessage = useThemeMessage()
 
 const eyebrow = computed<string>(() => t('home.hero.eyebrow', { count: padCount(props.total) }, props.total))
 </script>
@@ -22,7 +23,7 @@ const eyebrow = computed<string>(() => t('home.hero.eyebrow', { count: padCount(
         <span>{{ [hud.city, hud.altitude].filter(Boolean).join(' · ') }}</span>
       </p>
       <h1 class="bd-hero-title bd-wide">{{ t('home.hero.title') }}</h1>
-      <p class="bd-hero-lead">{{ t('home.hero.subtitle') }}</p>
+      <p class="bd-hero-lead">{{ themeMessage('hero.subtitle', 'home.hero.subtitle') }}</p>
       <div class="bd-hero-actions">
         <BdButton href="#latest" arrow>{{ t('home.hero.read') }}</BdButton>
         <BdButton :href="localizePath('/about')" variant="text" class="bd-hero-about">{{ t('nav.about') }}</BdButton>

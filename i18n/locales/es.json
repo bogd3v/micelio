@@ -5,10 +5,11 @@
     "about": "Acerca de"
   },
   "home": {
+    "metaDescription": "Últimos artículos de {site}.",
     "hero": {
       "eyebrow": "Bitácora técnica · {count} artículo | Bitácora técnica · {count} artículos",
       "title": "Explorando privacidad, DIY, IA, software y Linux.",
-      "subtitle": "Notas técnicas escritas desde Bogotá, a 2.640 metros sobre el nivel del mar.",
+      "subtitle": "Artículos y notas técnicas.",
       "read": "Leer artículos"
     },
     "latest": {
@@ -232,7 +233,7 @@
     "linkCopied": "Enlace copiado ✓",
     "shareOn": "Compartir en {network}",
     "writtenBy": "Escrito por",
-    "authorBio": "Explorando privacidad, DIY, IA, software y Linux desde Bogotá.",
+    "authorBio": "Escribe sobre los temas que se tratan en este blog.",
     "keepReading": "Sigue leyendo",
     "alsoIn": "También en {category}",
     "references": {
@@ -539,7 +540,8 @@
   },
   "feed": {
     "categoryTitle": "{site} - {category}",
-    "categoryDescription": "Los artículos de {site} sobre {category}, desde Bogotá, Colombia."
+    "categoryDescription": "Los artículos de {site} sobre {category}.",
+    "channelDescription": "Últimos artículos de {site}."
   },
   "account": {
     "meta": {
@@ -745,6 +747,7 @@
       "ok": "Entendido"
     },
     "eyebrow": "Legal · actualizado el {date}",
+    "eyebrowUndated": "Legal",
     "title": "Privacidad y cookies",
     "lead": "En corto: {site} no te sigue. No hay publicidad, ni cookies de seguimiento, ni analítica de terceros que arme un perfil tuyo.",
     "facts": {
@@ -806,7 +809,8 @@
     "rights": {
       "label": "Tus derechos",
       "title": "Conocer, corregir o borrar",
-      "body": "Según la Ley 1581 de 2012 de Colombia, puedes conocer, actualizar, rectificar y pedir que se supriman tus datos personales. Escribe a {email} y te respondemos."
+      "body": "Según la Ley 1581 de 2012 de Colombia, puedes conocer, actualizar, rectificar y pedir que se supriman tus datos personales. Escribe a {email} y te respondemos.",
+      "bodyNoContact": "Según la Ley 1581 de 2012 de Colombia, puedes conocer, actualizar, rectificar y pedir que se supriman tus datos personales."
     }
   },
   "newsletter": {
@@ -820,6 +824,7 @@
       "doneLead": "Ya no recibirás el newsletter y borramos tu correo. Puedes volver a suscribirte cuando quieras.",
       "invalidTitle": "Este enlace no es válido",
       "invalidLead": "Usa el enlace «Darte de baja» de uno de nuestros correos. Si el problema sigue, escríbenos a {email}.",
+      "invalidLeadNoContact": "Usa el enlace «Darte de baja» de uno de nuestros correos.",
       "error": "No pudimos darte de baja. Inténtalo de nuevo en un momento.",
       "blog": "Ir al blog"
     }

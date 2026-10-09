@@ -34,8 +34,8 @@ export interface LoadedSite {
   fromStrapi: boolean
 }
 
-/** The site identity: Strapi's site-setting over app.config.ts, field by field, with the modules that actually work. */
-export async function loadSite(locale: Locale): Promise<LoadedSite> {
+/** The site identity: Strapi's site-setting over app.config.ts, field by field, with the modules that actually work. `quiet` skips the error log (the startup check). */
+export async function loadSite(locale: Locale, options: { quiet?: boolean } = {}): Promise<LoadedSite> {
   const defaults = siteFromAppConfig(useAppConfig().site as AppSiteConfig, images.favicon)
   const requirements = moduleRequirements(useRuntimeConfig())
   let loaded: LoadedSite
@@ -47,7 +47,7 @@ export async function loadSite(locale: Locale): Promise<LoadedSite> {
     const theme = resolveTheme(settings?.theme, { modes: paletteModes, rules: paletteRules }, buildTheme)
     loaded = { site: { ...mergeSite(defaults, settings), ...(theme && { theme }) }, fromStrapi: true }
   } catch (error: unknown) {
-    console.error('Strapi fetch site-setting error:', asUpstreamError(error).data || error)
+    if (!options.quiet) console.error('Strapi fetch site-setting error:', asUpstreamError(error).data || error)
     loaded = { site: defaults, fromStrapi: false }
   }
   return { ...loaded, site: { ...loaded.site, modules: effectiveModules(loaded.site.modules, requirements, buildSiteMode) } }

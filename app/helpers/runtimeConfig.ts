@@ -1,4 +1,5 @@
 import type { ModuleRequirements } from './modules'
+import type { SiteModules } from '../interfaces/site'
 import { isStaticMode, parseSiteMode } from './siteMode'
 import type { SiteMode } from './siteMode'
 
@@ -87,4 +88,15 @@ export function moduleRequirements(config: CheckedRuntimeConfig): ModuleRequirem
     fediverse: missing(config.public, OPTIONAL_PUBLIC_RUNTIME_SETTINGS).length === 0,
     formAction: !empty((config.public?.newsletterProvider as { action?: unknown } | undefined)?.action),
   }
+}
+
+/** Modules that collect personal data, which the privacy page tells visitors to write about. */
+const DATA_MODULES = ['newsletter', 'comments', 'accounts'] as const
+
+/** The warning for a site that collects data but has no privacy contact email; null when it does, when no such module is on, or when the site did not load from Strapi. */
+export function privacyContactWarning(site: { privacyContactEmail: string, modules: SiteModules }, fromStrapi: boolean): string | null {
+  if (!fromStrapi || site.privacyContactEmail.trim()) return null
+  const on = DATA_MODULES.filter(module => site.modules[module])
+  if (!on.length) return null
+  return `Site setting privacyContactEmail is empty while ${on.join(', ')} collect personal data: the privacy page shows no contact address.`
 }

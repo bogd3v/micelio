@@ -12,7 +12,8 @@
         "authorAria": "Foto de Danielfjio · Wikimedia Commons (se abre en una pestaña nueva)",
         "license": "CC BY-SA 4.0",
         "licenseAria": "Licencia CC BY-SA 4.0 (se abre en una pestaña nueva)"
-      }
+      },
+      "subtitle": "Notas técnicas escritas desde Bogotá, a 2.640 metros sobre el nivel del mar."
     },
     "divider": {
       "title": "Cerros orientales",
@@ -82,6 +83,9 @@
     },
     "palette": {
       "names": "Pinchaflor · Golondrina · Chillón · Mirla · Monjita"
+    },
+    "author": {
+      "bio": "Explorando privacidad, DIY, IA, software y Linux desde Bogotá."
     }
   }
 }

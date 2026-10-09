@@ -24,7 +24,7 @@ describe('confirm page', () => {
   it('welcomes a new subscriber', async () => {
     const wrapper = await open('token-new-000000001')
     expect(wrapper.get('h1').text()).toBe('Subscription Confirmed!')
-    expect(wrapper.text()).toContain('Welcome to BogDev! You\'re now subscribed')
+    expect(wrapper.text()).toContain('Welcome to Micelio! You\'re now subscribed')
   })
 
   it('treats a reopened link as a success', async () => {

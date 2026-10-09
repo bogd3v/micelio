@@ -12,7 +12,8 @@
         "authorAria": "Photo by Danielfjio · Wikimedia Commons (opens in a new tab)",
         "license": "CC BY-SA 4.0",
         "licenseAria": "License CC BY-SA 4.0 (opens in a new tab)"
-      }
+      },
+      "subtitle": "Technical notes written from Bogotá, 2,640 meters above sea level."
     },
     "divider": {
       "title": "Eastern hills",
@@ -82,6 +83,9 @@
     },
     "palette": {
       "names": "Pinchaflor · Golondrina · Chillón · Mirla · Monjita"
+    },
+    "author": {
+      "bio": "Exploring privacy, DIY, AI, software and Linux from Bogotá."
     }
   }
 }

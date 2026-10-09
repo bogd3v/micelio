@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-import { smtpTransportOptions } from '~/helpers/email'
+import { smtpTransportOptions, welcomeEmailFooter } from '~/helpers/email'
 import { blogUrl, confirmUrl as buildConfirmUrl, unsubscribeHeaders, unsubscribeUrl } from '~/helpers/newsletter'
 import type { NewsletterLanguage } from '~/interfaces/newsletter'
 import { escapeHtml } from '~/helpers/code'
@@ -104,7 +104,7 @@ export async function sendWelcomeEmail(
             <a href="${articlesUrl}" style="background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 16px;">Ver Artículos</a>
           </div>
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-          <p style="color: #999; font-size: 12px;">${name} - Tu fuente de información sobre IA, desarrollo de software y Linux.</p>
+          <p style="color: #999; font-size: 12px;">${welcomeEmailFooter('es', name)}</p>
           <p style="color: #999; font-size: 12px;">¿Ya no quieres recibir estos correos? <a href="${leaveUrl}" style="color: #999;">Darte de baja</a>.</p>
         </div>
       `
@@ -116,7 +116,7 @@ export async function sendWelcomeEmail(
             <a href="${articlesUrl}" style="background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 16px;">View Articles</a>
           </div>
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-          <p style="color: #999; font-size: 12px;">${name} - Your source for AI, software development, and Linux content.</p>
+          <p style="color: #999; font-size: 12px;">${welcomeEmailFooter('en', name)}</p>
           <p style="color: #999; font-size: 12px;">Don't want these emails anymore? <a href="${leaveUrl}" style="color: #999;">Unsubscribe</a>.</p>
         </div>
       `

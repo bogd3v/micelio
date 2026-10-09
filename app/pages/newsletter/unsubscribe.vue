@@ -60,9 +60,10 @@ useSeoMeta({
       </div>
       <div v-else-if="status === 'invalid'" class="bd-account-view">
         <AccountHeading :eyebrow="t('newsletter.unsubscribe.eyebrow')" :title="t('newsletter.unsubscribe.invalidTitle')">
-          <i18n-t keypath="newsletter.unsubscribe.invalidLead" scope="global">
+          <i18n-t v-if="contactEmail" keypath="newsletter.unsubscribe.invalidLead" scope="global">
             <template #email><a :href="`mailto:${contactEmail}`" class="bd-inline">{{ contactEmail }}</a></template>
           </i18n-t>
+          <template v-else>{{ t('newsletter.unsubscribe.invalidLeadNoContact') }}</template>
         </AccountHeading>
         <div>
           <BdButton :href="localizePath('/blog')" variant="secondary">{{ t('newsletter.unsubscribe.blog') }}</BdButton>

@@ -661,7 +661,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
           contactEmail: 'hola@micelio.test',
           privacyContactEmail: null,
           privacyUpdatedAt: null,
-          supportHandle: null,
+          supportHandle: 'micelio',
           modules: { id: 1, ...modules },
           theme: theme.value,
           homePage: homePage.value?.[locale as 'en' | 'es'] ? { id: 1, documentId: 'home-page', slug: homePage.value[locale as 'en' | 'es'] } : null,

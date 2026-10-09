@@ -5,10 +5,11 @@
     "about": "About"
   },
   "home": {
+    "metaDescription": "Latest articles from {site}.",
     "hero": {
       "eyebrow": "Field log · {count} article | Field log · {count} articles",
       "title": "Exploring privacy, DIY, AI, software and Linux.",
-      "subtitle": "Technical notes written from Bogotá, 2,640 meters above sea level.",
+      "subtitle": "Articles and technical notes.",
       "read": "Read articles"
     },
     "latest": {
@@ -232,7 +233,7 @@
     "linkCopied": "Link copied ✓",
     "shareOn": "Share on {network}",
     "writtenBy": "Written by",
-    "authorBio": "Exploring privacy, DIY, AI, software and Linux from Bogotá.",
+    "authorBio": "Writing about the topics covered on this blog.",
     "keepReading": "Keep reading",
     "alsoIn": "Also in {category}",
     "references": {
@@ -539,7 +540,8 @@
   },
   "feed": {
     "categoryTitle": "{site} - {category}",
-    "categoryDescription": "{site} articles about {category}, from Bogotá, Colombia."
+    "categoryDescription": "{site} articles about {category}.",
+    "channelDescription": "Latest articles from {site}."
   },
   "account": {
     "meta": {
@@ -745,6 +747,7 @@
       "ok": "Got it"
     },
     "eyebrow": "Legal · updated {date}",
+    "eyebrowUndated": "Legal",
     "title": "Privacy and cookies",
     "lead": "In short: {site} does not track you. There are no ads, no tracking cookies and no third-party analytics building a profile of you.",
     "facts": {
@@ -806,7 +809,8 @@
     "rights": {
       "label": "Your rights",
       "title": "Know, correct or delete",
-      "body": "Under Colombia’s Law 1581 of 2012, you can access, update, correct and ask for the deletion of your personal data. Write to {email} and we will reply."
+      "body": "Under Colombia’s Law 1581 of 2012, you can access, update, correct and ask for the deletion of your personal data. Write to {email} and we will reply.",
+      "bodyNoContact": "Under Colombia’s Law 1581 of 2012, you can access, update, correct and ask for the deletion of your personal data."
     }
   },
   "newsletter": {
@@ -820,6 +824,7 @@
       "doneLead": "You will no longer receive the newsletter and we deleted your email. You can subscribe again whenever you want.",
       "invalidTitle": "This link is not valid",
       "invalidLead": "Use the “Unsubscribe” link in one of our emails. If the problem persists, write to {email}.",
+      "invalidLeadNoContact": "Use the “Unsubscribe” link in one of our emails.",
       "error": "We could not unsubscribe you. Try again in a moment.",
       "blog": "Go to the blog"
     }

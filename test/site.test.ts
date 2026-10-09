@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { absoluteUrl, ALL_MODULES_ON, defaultOgImageUrl, fediverseUser, iconType, mergeSite, pageTitle, resolveSiteImage, resolveSiteMedia, siteFromAppConfig, siteLogoUrl, xHandle } from '../app/helpers/site'
+import { absoluteUrl, ALL_MODULES_ON, defaultOgImageUrl, fediverseUser, iconType, mergeSite, pageTitle, resolveSiteImage, resolveSiteMedia, siteFromAppConfig, personStructuredData, siteLogoUrl, xHandle } from '../app/helpers/site'
 import type { AppSiteConfig } from '../app/helpers/site'
 import { parseSiteSettings } from '../server/schemas/site'
 import { Locale } from '../app/interfaces/locale'
@@ -301,5 +301,62 @@ describe('resolveSiteMedia', () => {
       favicon: { url: 'https://cdn.test/f.ico' },
       defaultOgImage: { url: 'https://cms.example.org/uploads/o.png' },
     })
+  })
+})
+
+describe('empty app.config defaults', () => {
+  const empty: AppSiteConfig = {
+    name: 'Micelio',
+    description: '',
+    url: '',
+    author: { name: '', url: '' },
+    socialLinks: [],
+    support: { buyMeACoffee: '' },
+    privacy: { contactEmail: '', updatedAt: '' },
+  }
+  const neutral = siteFromAppConfig(empty)
+
+  it('maps to empty values, not to missing ones', () => {
+    expect(neutral).toMatchObject({
+      name: 'Micelio',
+      description: '',
+      url: '',
+      author: { name: '', url: '' },
+      socialLinks: [],
+      contactEmail: '',
+      privacyContactEmail: '',
+      privacyUpdatedAt: '',
+      supportHandle: '',
+    })
+  })
+
+  it('takes every value Strapi sets', () => {
+    const site = mergeSite(neutral, parseSiteSettings({ name: 'Blog', url: 'https://blog.example', author: { name: 'Ada' }, supportHandle: 'ada' }))
+    expect(site).toMatchObject({ name: 'Blog', url: 'https://blog.example', author: { name: 'Ada', url: '' }, supportHandle: 'ada', contactEmail: '' })
+  })
+
+  it('keeps the empty defaults for what Strapi leaves empty or null', () => {
+    const site = mergeSite(neutral, parseSiteSettings({ name: 'Blog', description: '', url: null, author: null, socialLinks: [], privacyContactEmail: '' }))
+    expect(site).toMatchObject({ name: 'Blog', description: '', url: '', author: { name: '', url: '' }, socialLinks: [], privacyContactEmail: '' })
+  })
+
+  it('returns the defaults when Strapi has no settings', () => {
+    expect(mergeSite(neutral, null)).toEqual(neutral)
+    expect(mergeSite(neutral, parseSiteSettings({}))).toEqual(neutral)
+  })
+})
+
+describe('personStructuredData', () => {
+  it('is null without an author name', () => {
+    expect(personStructuredData({ ...defaults, author: { name: '', url: '' } })).toBeNull()
+  })
+
+  it('has only what the site sets', () => {
+    const person = personStructuredData({ ...defaults, author: { name: 'Ada', url: '' }, socialLinks: [] })
+    expect(person).toEqual({ '@context': 'https://schema.org', '@type': 'Person', 'name': 'Ada', 'worksFor': { '@type': 'Organization', 'name': 'Example' } })
+  })
+
+  it('adds the url and the social links', () => {
+    expect(personStructuredData(defaults)).toMatchObject({ name: 'Ada', url: 'https://example.org/about', sameAs: ['https://linkedin.com/in/ada', 'https://github.com/ada'] })
   })
 })

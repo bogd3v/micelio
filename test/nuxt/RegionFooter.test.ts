@@ -1,11 +1,19 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import type { Component } from 'vue'
-import type { Site } from '~/interfaces'
+import type { Site, SocialLink } from '~/interfaces'
 import { siteFromAppConfig } from '~/helpers/site'
 import type { AppSiteConfig } from '~/helpers/site'
 import RegionFooter from '~/theme/layout/footer/Columns.vue'
 import RegionFooterMinimal from '~/theme/layout/footer/Minimal.vue'
+
+const socialLinks: SocialLink[] = [
+  { network: 'linkedin', url: 'https://www.linkedin.com/in/ada' },
+  { network: 'github', url: 'https://github.com/ada' },
+  { network: 'codeberg', url: 'https://codeberg.org/ada' },
+  { network: 'mastodon', url: 'https://mastodon.social/@ada' },
+  { network: 'x', url: 'https://x.com/ada' },
+]
 
 describe('RegionFooter', () => {
   let unregister: (() => void) | undefined
@@ -36,8 +44,10 @@ describe('RegionFooter', () => {
   })
 
   it('renders the brand, social links and desktop groups', async () => {
+    unregister = registerEndpoint('/api/site', () => ({ ...siteFromAppConfig(useAppConfig().site as AppSiteConfig), socialLinks, supportHandle: 'ada' }))
     const wrapper = await mountSuspended(RegionFooter)
-    expect(wrapper.get('a.bd-foot-brand').attributes('aria-label')).toBe('BogDev, home')
+    await vi.waitFor(() => expect(wrapper.findAll('a.bd-foot-soc')).toHaveLength(4))
+    expect(wrapper.get('a.bd-foot-brand').attributes('aria-label')).toBe('Micelio, home')
     const socials = wrapper.findAll('a.bd-foot-soc')
     expect(socials.map(a => a.text())).toEqual(['inLinkedIn↗', 'ghGitHub↗', 'cbCodeberg↗', 'mdMastodon↗'])
     expect(socials.every(a => a.attributes('rel') === 'noopener noreferrer me')).toBe(true)
@@ -50,6 +60,16 @@ describe('RegionFooter', () => {
       '/#fediverso',
       '/#newsletter',
     ])
+  })
+
+  describe.each<[string, Component]>([['columns', RegionFooter], ['minimal', RegionFooterMinimal]])('with the neutral app.config defaults (%s)', (_name, Footer) => {
+    it('shows the name alone, with no author separator, social links or support link', async () => {
+      const wrapper = await mountSuspended(Footer)
+      expect(wrapper.get('.bd-foot-legal span').text()).toBe(`© ${new Date().getFullYear()} Micelio`)
+      expect(wrapper.find('a.bd-foot-soc').exists()).toBe(false)
+      expect(wrapper.find('ul.bd-foot-socials').exists()).toBe(false)
+      expect(wrapper.find('a[href*="buymeacoffee"]').exists()).toBe(false)
+    })
   })
 
   it('lists only RSS under Subscribe when the fediverse, newsletter and support modules are off', async () => {
@@ -66,13 +86,15 @@ describe('RegionFooter', () => {
   })
 
   it('folds the mobile groups with native details, topics open first', async () => {
+    unregister = registerEndpoint('/api/site', () => ({ ...siteFromAppConfig(useAppConfig().site as AppSiteConfig), supportHandle: 'ada' }))
     const wrapper = await mountSuspended(RegionFooter)
+    await vi.waitFor(() => expect(wrapper.findAll('details.bd-acc')[2]!.findAll('a.bd-foot-row').at(-1)!.attributes('href')).toBe('https://www.buymeacoffee.com/ada'))
     const groups = wrapper.findAll('details.bd-acc')
     expect(groups.map(group => group.get('.bd-acc-label').text())).toEqual(['Topics', 'Navigate', 'Subscribe'])
     expect(groups.map(group => group.attributes('open') !== undefined)).toEqual([true, false, false])
     expect(groups[0]!.get('.bd-acc-summary').text()).toBe('05')
     expect(groups[0]!.findAll('a.bd-foot-row')).toHaveLength(5)
-    expect(groups[2]!.findAll('a.bd-foot-row').at(-1)!.attributes('href')).toBe('https://www.buymeacoffee.com/ale9420')
+    expect(groups[2]!.findAll('a.bd-foot-row').at(-1)!.attributes('href')).toBe('https://www.buymeacoffee.com/ada')
   })
 
   it('keeps the panorama decorative', async () => {

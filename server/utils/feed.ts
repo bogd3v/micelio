@@ -42,12 +42,13 @@ function categoryMessage(message: string, siteName: string, locale: FeedLocale, 
 }
 
 function channelTitle(siteName: string, locale: FeedLocale, category?: Category): string {
-  if (!category) return `${siteName} - Personal Blog${locale === 'es' ? ' (Español)' : ''}`
+  if (!category) return `${siteName}${locale === 'es' ? ' (Español)' : ''}`
   return categoryMessage(MESSAGES[locale].feed.categoryTitle, siteName, locale, category)
 }
 
-function channelDescription(siteName: string, locale: FeedLocale, category?: Category): string {
-  if (!category) return 'Exploring AI, Software Development, Linux, and more. A personal space for thoughts, tutorials, and experiments from Bogotá, Colombia.'
+function channelDescription(site: { name: string, description: string }, locale: FeedLocale, category?: Category): string {
+  const siteName = site.name
+  if (!category) return site.description || MESSAGES[locale].feed.channelDescription.replace('{site}', siteName)
   return categoryMessage(MESSAGES[locale].feed.categoryDescription, siteName, locale, category)
 }
 
@@ -75,7 +76,7 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
     ? `${baseUrl}${localePrefix(locale)}/blog/category/${category}`
     : `${baseUrl}${localePrefix(locale)}`
   const title = escapeXml(channelTitle(site.name, locale, category))
-  const description = escapeXml(channelDescription(site.name, locale, category))
+  const description = escapeXml(channelDescription(site, locale, category))
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xhtml="http://www.w3.org/1999/xhtml">

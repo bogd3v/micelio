@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { smtpTransportOptions } from '~/helpers/email'
+import { smtpTransportOptions, welcomeEmailFooter } from '~/helpers/email'
 
 describe('smtpTransportOptions', () => {
   it('authenticates with the SMTP user and key, using STARTTLS on port 2525', () => {
@@ -20,5 +20,12 @@ describe('smtpTransportOptions', () => {
   it('skips authentication when the credentials are incomplete', () => {
     expect(smtpTransportOptions({ host: 'mail.example.com', port: 587, user: 'u' })).not.toHaveProperty('auth')
     expect(smtpTransportOptions({})).toMatchObject({ host: 'localhost', port: 25 })
+  })
+})
+
+describe('welcomeEmailFooter', () => {
+  it('says why the reader gets the email, without naming topics', () => {
+    expect(welcomeEmailFooter('en', 'Micelio')).toBe('You receive this email because you subscribed to Micelio.')
+    expect(welcomeEmailFooter('es', 'Micelio')).toBe('Recibes este correo porque te suscribiste a Micelio.')
   })
 })

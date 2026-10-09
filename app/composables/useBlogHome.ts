@@ -12,7 +12,7 @@ export interface BlogHome {
 
 /** The data and the head of the blog home page (`/`), used when no page is set as the home page. */
 export function useBlogHome(): BlogHome {
-  const { locale } = useI18n()
+  const { locale, t } = useI18n()
   const { fetchPosts, fetchCategories } = useStrapi()
   const { siteUrl } = useSiteUrl()
   const defaultOgImage = useDefaultOgImage()
@@ -35,18 +35,20 @@ export function useBlogHome(): BlogHome {
     CATEGORIES.map(category => ({ category, count: counts.value[category] ?? 0 })),
   )
 
+  const metaDescription = computed<string>(() => site.value.description || t('home.metaDescription', { site: site.value.name }))
+
   useSeoMeta({
-    title: () => `${site.value.name} - Personal Blog`,
-    ogTitle: () => `${site.value.name} - Personal Blog`,
-    description: 'Explore articles on AI, software development, Linux, and modern tech. Join me on my journey through technology.',
-    ogDescription: 'Explore articles on AI, software development, Linux, and modern tech. Join me on my journey through technology.',
+    title: () => site.value.name,
+    ogTitle: () => site.value.name,
+    description: () => metaDescription.value,
+    ogDescription: () => metaDescription.value,
     ogImage: () => defaultOgImage.value,
-    ogImageAlt: () => `${site.value.name} — Exploring AI, Software and Linux`,
+    ogImageAlt: () => site.value.name,
     ogUrl: () => canonicalUrl.value,
     twitterCard: 'summary_large_image',
     twitterImage: () => defaultOgImage.value,
-    twitterTitle: () => `${site.value.name} - Personal Blog`,
-    twitterDescription: 'Explore articles on AI, software development, Linux, and modern tech.',
+    twitterTitle: () => site.value.name,
+    twitterDescription: () => metaDescription.value,
   })
 
   const structuredData = computed(() => ({
@@ -57,7 +59,7 @@ export function useBlogHome(): BlogHome {
         '@id': `${siteUrl.value}/#website`,
         'url': siteUrl.value,
         'name': site.value.name,
-        'description': site.value.description,
+        ...(site.value.description && { description: site.value.description }),
         'publisher': {
           '@id': `${siteUrl.value}/#organization`,
         },
@@ -80,7 +82,7 @@ export function useBlogHome(): BlogHome {
           '@type': 'ImageObject',
           'url': siteLogoUrl(site.value, siteUrl.value),
         },
-        'sameAs': site.value.socialLinks.map(link => link.url),
+        ...(site.value.socialLinks.length && { sameAs: site.value.socialLinks.map(link => link.url) }),
       },
     ],
   }))

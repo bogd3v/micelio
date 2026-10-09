@@ -18,8 +18,8 @@ async function parseFeed(page: import('@playwright/test').Page, path: string) {
 test('serves well-formed feeds per category and language', async ({ page }) => {
   await page.goto('/blog', { waitUntil: 'networkidle' })
   for (const [path, title, items] of [
-    ['/feed.xml', 'BogDev - Personal Blog', ['Understanding Vue Composables', 'Linux Server Hardening Guide']],
-    ['/es/feed.xml', 'BogDev - Personal Blog (Español)', ['Guía de Vue Composables']],
+    ['/feed.xml', 'BogDev', ['Understanding Vue Composables', 'Linux Server Hardening Guide']],
+    ['/es/feed.xml', 'BogDev (Español)', ['Guía de Vue Composables']],
     ['/feed/linux.xml', 'BogDev - Linux and open source', ['Linux Server Hardening Guide']],
     ['/es/feed/software.xml', 'BogDev - Desarrollo de software', ['Guía de Vue Composables']],
     ['/feed/privacidad.xml', 'BogDev - Privacy', []],

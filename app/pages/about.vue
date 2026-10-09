@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Locale } from '~/interfaces'
-import { pageTitle } from '~/helpers/site'
+import { pageTitle, personStructuredData } from '~/helpers/site'
 
 const { locale, t } = useI18n()
 const { fetchAbout, getMediaUrl } = useStrapi()
@@ -38,32 +38,12 @@ useHead({
   ],
 })
 
-const structuredData = computed(() => ({
-  '@context': 'https://schema.org',
-  '@type': 'Person',
-  'name': site.value.author.name,
-  'url': site.value.author.url,
-  'jobTitle': 'Software Developer',
-  'description': 'Colombian software developer passionate about AI, Linux, and open source',
-  'address': {
-    '@type': 'PostalAddress',
-    'addressLocality': 'Bogotá',
-    'addressCountry': 'CO',
-  },
-  'sameAs': site.value.socialLinks.map(link => link.url),
-  'worksFor': {
-    '@type': 'Organization',
-    'name': site.value.name,
-  },
-}))
+const structuredData = computed(() => personStructuredData(site.value))
 
 useHead({
-  script: [
-    {
-      type: 'application/ld+json',
-      innerHTML: JSON.stringify(structuredData.value),
-    },
-  ],
+  script: () => structuredData.value
+    ? [{ type: 'application/ld+json', innerHTML: JSON.stringify(structuredData.value) }]
+    : [],
 })
 </script>
 

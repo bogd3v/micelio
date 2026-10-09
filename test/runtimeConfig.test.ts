@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { missingOptionalRuntimeSettings, missingRuntimeSettings, modeMismatch } from '../app/helpers/runtimeConfig'
+import { missingOptionalRuntimeSettings, missingRuntimeSettings, modeMismatch, privacyContactWarning } from '../app/helpers/runtimeConfig'
 
 const complete = {
   strapiApiToken: 'token',
@@ -79,5 +79,19 @@ describe('static modes', () => {
     expect(missingRuntimeSettings({ public: {} }, 'landing')).toEqual(['NUXT_STRAPI_API_TOKEN', 'NUXT_PUBLIC_STRAPI_URL', 'NUXT_PUBLIC_SITE_URL'])
     expect(missingOptionalRuntimeSettings(config)).toContain('NUXT_PUBLIC_FEDIVERSE_HANDLE')
     expect(missingOptionalRuntimeSettings(config, 'static')).toEqual(['NUXT_MEDIA_URL'])
+  })
+})
+
+describe('privacyContactWarning', () => {
+  const modules = { newsletter: true, comments: true, accounts: false, drafts: false, fediverse: true, search: true, support: true }
+
+  it('names the data-collecting modules that are on when the contact email is empty', () => {
+    expect(privacyContactWarning({ privacyContactEmail: '', modules }, true)).toContain('newsletter, comments')
+  })
+
+  it('is null with an email, without data-collecting modules, or when Strapi failed', () => {
+    expect(privacyContactWarning({ privacyContactEmail: 'a@b.test', modules }, true)).toBeNull()
+    expect(privacyContactWarning({ privacyContactEmail: ' ', modules: { ...modules, newsletter: false, comments: false } }, true)).toBeNull()
+    expect(privacyContactWarning({ privacyContactEmail: '', modules }, false)).toBeNull()
   })
 })

@@ -154,7 +154,7 @@ const structuredData = computed(() => {
         '@id': `${siteUrl.value}/#website`,
         'url': siteUrl.value,
         'name': site.value.name,
-        'description': site.value.description,
+        ...(site.value.description && { description: site.value.description }),
         'publisher': {
           '@type': 'Organization',
           '@id': `${siteUrl.value}/#organization`,

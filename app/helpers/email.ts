@@ -32,3 +32,10 @@ export function smtpTransportOptions(settings: SmtpSettings): SmtpTransportOptio
     socketTimeout: 10000,
   }
 }
+
+/** The line under the welcome email: why the reader gets it. `name` is already HTML-escaped. */
+export function welcomeEmailFooter(locale: 'en' | 'es', name: string): string {
+  return locale === 'es'
+    ? `Recibes este correo porque te suscribiste a ${name}.`
+    : `You receive this email because you subscribed to ${name}.`
+}

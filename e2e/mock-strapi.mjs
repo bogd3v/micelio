@@ -6,10 +6,13 @@ import { createDraftsMock } from './fixtures/drafts.mjs'
 import { noisePng, texturedGlb, triangleGlb } from './fixtures/glb.mjs'
 import { findPages } from './fixtures/pages.mjs'
 
+// MOCK_EMPTY_SITE=1 simulates a CMS with no BogDev value: no site identity, no about page, a neutral author (e2e/empty-site.spec.ts)
+const emptySite = process.env.MOCK_EMPTY_SITE === '1'
+
 const author = {
   id: 31,
   documentId: 'author-1',
-  name: 'Alejandro Ramirez',
+  name: emptySite ? 'Ada Example' : 'Alejandro Ramirez',
   avatar: null,
 }
 
@@ -223,7 +226,7 @@ const englishComments = [
     blocked: false,
     blockedThread: false,
     removed: false,
-    author: { id: 'guest-2', name: 'Alejandro Ramirez' },
+    author: { id: 'guest-2', name: emptySite ? 'Ada Example' : 'Alejandro Ramirez' },
     createdAt: '2026-02-04T10:00:00.000Z',
     updatedAt: '2026-02-04T10:00:00.000Z',
     threadOf: { id: 101 },
@@ -550,6 +553,32 @@ const server = createServer(async (req, res) => {
 
   if (method === 'GET' && url.pathname === '/api/site-setting') {
     const locale = url.searchParams.get('locale') ?? 'en'
+    // Modules stay on
+    if (emptySite) {
+      sendJson(res, 200, {
+        data: {
+          id: 1,
+          documentId: 'site',
+          locale,
+          name: null,
+          description: null,
+          url: null,
+          defaultLocale: 'en',
+          author: null,
+          logo: null,
+          favicon: null,
+          defaultOgImage: null,
+          socialLinks: [],
+          contactEmail: null,
+          privacyContactEmail: null,
+          privacyUpdatedAt: null,
+          supportHandle: null,
+          homePage: null,
+          modules: { id: 1, ...Object.fromEntries(['newsletter', 'comments', 'accounts', 'drafts', 'fediverse', 'search', 'support'].map(module => [module, true])) },
+        },
+      })
+      return
+    }
     sendJson(res, 200, {
       data: {
         id: 1,
@@ -598,6 +627,10 @@ const server = createServer(async (req, res) => {
 
   if (method === 'GET' && url.pathname === '/api/about') {
     const locale = query.locale ?? 'en'
+    if (emptySite) {
+      sendJson(res, 404, { data: null, error: { status: 404, name: 'NotFoundError', message: 'Not Found' } })
+      return
+    }
     sendJson(res, 200, {
       data: {
         id: 1,

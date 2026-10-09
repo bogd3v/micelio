@@ -71,7 +71,7 @@ const subscriptions = computed<FooterLink[]>(() => [
 
     <div class="bd-meta bd-foot-credits">
       <span class="bd-foot-legal">
-        <span>© {{ year }} {{ site.name }} · {{ site.author.name }}</span>
+        <span>© {{ year }} {{ site.name }}<template v-if="site.author.name"> · {{ site.author.name }}</template></span>
         <NuxtLink :to="localizePath('/privacy')" class="bd-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
         <a :href="sourceUrl" class="bd-foot-privacy bd-foot-source" target="_blank" rel="noopener noreferrer">{{ t('bd.footer.source') }}<span aria-hidden="true">↗</span></a>
       </span>

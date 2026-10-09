@@ -59,7 +59,7 @@ useHead({
 <template>
   <div class="bd-privacy">
     <header class="bd-privacy-head">
-      <p class="bd-eyebrow bd-privacy-updated">{{ t('privacy.eyebrow', { date: updatedAt }) }}</p>
+      <p class="bd-eyebrow bd-privacy-updated">{{ updatedAt ? t('privacy.eyebrow', { date: updatedAt }) : t('privacy.eyebrowUndated') }}</p>
       <h1 class="bd-wide bd-privacy-title">{{ t('privacy.title') }}</h1>
       <p class="bd-privacy-lead">{{ t('privacy.lead', { site: site.name }) }}</p>
       <ul class="bd-privacy-facts" :aria-label="t('privacy.facts.label')">
@@ -146,9 +146,10 @@ useHead({
       <section id="rights" class="bd-privacy-section" aria-labelledby="rights-title">
         <p class="bd-eyebrow bd-privacy-label">{{ t('privacy.rights.label') }}</p>
         <h2 id="rights-title">{{ t('privacy.rights.title') }}</h2>
-        <i18n-t keypath="privacy.rights.body" tag="p" scope="global">
+        <i18n-t v-if="contactEmail" keypath="privacy.rights.body" tag="p" scope="global">
           <template #email><a :href="`mailto:${contactEmail}`"><strong>{{ contactEmail }}</strong></a></template>
         </i18n-t>
+        <p v-else>{{ t('privacy.rights.bodyNoContact') }}</p>
       </section>
     </div>
   </div>
