@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 // Core helpers in assets/css that predate the bd- prefix
-const ALLOWED = new Set(['card', 'font-display', 'font-mono', 'not-prose'])
+const ALLOWED = new Set(['font-display', 'font-mono', 'not-prose'])
 
 function files(dir) {
   if (!existsSync(dir)) return []

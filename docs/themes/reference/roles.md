@@ -56,7 +56,7 @@ Shadow and glow roles. A `value` may be `none`, and may be one string or one val
 
 | Role | Required | Purpose | As text or control on | As background for |
 | --- | --- | --- | --- | --- |
-| `shadow-raised` | required | Shadow of a `card` on hover. | none | none |
+| `shadow-raised` | required | Shadow of a raised card (CTA and pricing sections). | none | none |
 | `shadow-overlay` | required | Shadow of the slider arrow buttons. | none | none |
 | `glow-accent` | required | Glow of the accent button on hover (`bd-btn-accent`); may be `none`. | none | none |
 | `glow-link` | optional, core default `none` | Glow on focused and hovered interactive surfaces. | none | none |

@@ -45,17 +45,17 @@ useSeoMeta({
 <template>
   <div class="bd-confirm-page">
     <div class="bd-confirm-body">
-      <div v-if="status === 'loading'" class="card bd-confirm-card">
+      <div v-if="status === 'loading'" class="bd-confirm-card">
         <IconsArrowPath class="bd-confirm-icon bd-confirm-loading" />
         <p class="bd-confirm-status">{{ t("common.loading") }}</p>
       </div>
 
       <div
         v-else-if="status === 'success'"
-        class="card bd-confirm-card"
-        style="background-color: var(--success-soft); border-color: var(--success)"
+        class="bd-confirm-card"
+        data-status="success"
       >
-        <IconsCheckCircle class="bd-confirm-icon" style="color: var(--success)" />
+        <IconsCheckCircle class="bd-confirm-icon" />
         <h1 class="bd-confirm-title font-display">
           {{ t("confirm.successTitle") }}
         </h1>
@@ -67,10 +67,10 @@ useSeoMeta({
 
       <div
         v-else
-        class="card bd-confirm-card"
-        style="background-color: var(--danger-soft); border-color: var(--danger)"
+        class="bd-confirm-card"
+        data-status="error"
       >
-        <IconsXCircle class="bd-confirm-icon" style="color: var(--danger)" />
+        <IconsXCircle class="bd-confirm-icon" />
         <h1 class="bd-confirm-title font-display">
           {{ t("confirm.errorTitle") }}
         </h1>

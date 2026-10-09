@@ -61,7 +61,7 @@ export const ROLE_PURPOSES = {
   'code-string': 'Strings in code.',
   'code-number': 'Numbers in code.',
   'code-function': 'Function names in code.',
-  'shadow-raised': 'Shadow of a `card` on hover.',
+  'shadow-raised': 'Shadow of a raised card (CTA and pricing sections).',
   'shadow-overlay': 'Shadow of the slider arrow buttons.',
   'glow-accent': 'Glow of the accent button on hover (`bd-btn-accent`); may be `none`.',
   'glow-link': 'Glow on focused and hovered interactive surfaces.',
