@@ -39,7 +39,7 @@ describe('useSite', () => {
     const wrapper = await mountSuspended(SiteName)
     await vi.waitFor(() => expect(failed).toBe(true))
     await flushPromises()
-    expect(wrapper.text()).toBe('BogDev · comments')
+    expect(wrapper.text()).toBe('Micelio · comments')
   })
 
   it('fetches once per locale however many components read it', async () => {

@@ -1,8 +1,9 @@
 import { buildSiteMode } from '#micelio/build-site-mode'
 import { buildTheme } from '#micelio/build-theme'
 import { isStaticMode } from '~/helpers/siteMode'
+import { Locale } from '~/interfaces/locale'
 import { forwardHeaders, isSafeForwardTarget, parseTrustProxy } from '../lib/clientIp'
-import { missingOptionalRuntimeSettings, missingRuntimeSettings, moduleRequirements, modeMismatch, themeMismatch } from '~/helpers/runtimeConfig'
+import { missingOptionalRuntimeSettings, missingRuntimeSettings, moduleRequirements, modeMismatch, privacyContactWarning, themeMismatch } from '~/helpers/runtimeConfig'
 
 export default defineNitroPlugin(() => {
   const config = useRuntimeConfig()
@@ -31,4 +32,16 @@ export default defineNitroPlugin(() => {
   if (off.length) {
     console.warn(`Modules turned off by missing configuration: ${off.join(', ')}.`)
   }
+  // Warn only, without holding the boot: loadSite() has a 3 s timeout and a failed load skips the warning
+  void warnPrivacyContact()
 })
+
+async function warnPrivacyContact(): Promise<void> {
+  try {
+    const { site, fromStrapi } = await loadSite(Locale.English, { quiet: true })
+    const warning = privacyContactWarning(site, fromStrapi)
+    if (warning) console.warn(warning)
+  } catch {
+    // The check is advisory
+  }
+}

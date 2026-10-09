@@ -66,7 +66,7 @@ const subscriptions = computed<FooterLink[]>(() => [
   ...(blogEnabled ? [{ id: 'rss', label: t('bd.footer.rss'), to: '/feed.xml', external: true }] : []),
   ...(fediverseOn.value ? [{ id: 'fediverse', label: t('bd.footer.fediverse', { handle: fediverseUser }), to: `${localizePath('/')}#fediverso` }] : []),
   ...(newsletterOn.value ? [{ id: 'newsletter', label: t('bd.footer.newsletter'), to: `${localizePath('/')}#newsletter` }] : []),
-  ...(supportOn.value
+  ...(supportOn.value && site.value.supportHandle
     ? [{
         id: 'coffee',
         label: t('bd.footer.coffee'),
@@ -120,7 +120,7 @@ function scrollToTop(): void {
           <ThemeMark :size="56" context="footer" />
         </NuxtLink>
         <p class="bd-foot-tagline">{{ t('bd.footer.tagline') }}</p>
-        <ul class="bd-foot-socials" :aria-label="t('bd.footer.social')">
+        <ul v-if="socials.length" class="bd-foot-socials" :aria-label="t('bd.footer.social')">
           <li v-for="social in socials" :key="social.id">
             <a :href="social.href" class="bd-foot-soc" target="_blank" rel="noopener noreferrer me">
               <span class="bd-foot-soc-abbr" aria-hidden="true">{{ social.abbr }}</span>
@@ -197,7 +197,7 @@ function scrollToTop(): void {
 
     <div class="bd-meta bd-foot-credits">
       <span class="bd-foot-legal">
-        <span>© {{ year }} {{ site.name }} · {{ site.author.name }}</span>
+        <span>© {{ year }} {{ site.name }}<template v-if="site.author.name"> · {{ site.author.name }}</template></span>
         <NuxtLink :to="localizePath('/privacy')" class="bd-foot-privacy">{{ t('bd.footer.privacy') }}</NuxtLink>
         <a :href="sourceUrl" class="bd-foot-privacy bd-foot-source" target="_blank" rel="noopener noreferrer">{{ t('bd.footer.source') }}<span aria-hidden="true">↗</span></a>
       </span>

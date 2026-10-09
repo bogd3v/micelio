@@ -7,7 +7,7 @@ const url = computed<string>(() => `https://www.buymeacoffee.com/${username.valu
 </script>
 
 <template>
-  <section class="bd-coffee" aria-labelledby="bd-coffee-title">
+  <section v-if="username" class="bd-coffee" aria-labelledby="bd-coffee-title">
     <svg class="bd-coffee-cup" width="120" height="100" viewBox="0 0 120 100" aria-hidden="true" focusable="false">
       <g fill="none" stroke="var(--ink-muted)" stroke-width="1.4" stroke-linecap="round">
         <path class="bd-steam" d="M50 36 Q46 28 51 21 Q56 14 51 6" />

@@ -16,7 +16,7 @@ describe('ThemeMark (Bogotá)', () => {
     expect(svg.attributes('width')).toBe('52')
     expect(svg.attributes('height')).toBe('40')
     expect(svg.attributes('role')).toBe('img')
-    expect(svg.attributes('aria-label')).toBe('BogDev')
+    expect(svg.attributes('aria-label')).toBe('Micelio')
     expect(wrapper.findAll('path.bogota-mark-a')).toHaveLength(2)
     expect(wrapper.findAll('path.bogota-mark-b')).toHaveLength(2)
   })
@@ -35,7 +35,7 @@ describe('ThemeMark (Bogotá)', () => {
 describe('ThemeMark (core default)', () => {
   it('shows the site name as text', async () => {
     const wrapper = await mountSuspended(DefaultMark, { props: { size: 30, context: 'header' } })
-    expect(wrapper.text()).toBe('BogDev')
+    expect(wrapper.text()).toBe('Micelio')
     expect(wrapper.find('svg').exists()).toBe(false)
   })
 })

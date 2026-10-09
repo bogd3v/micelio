@@ -9,7 +9,7 @@ describe('RegionHeader', () => {
     expect(links.map(link => link.text())).toEqual(['Home', 'Blog', 'About'])
     expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'page', undefined])
     expect(wrapper.get('.bd-nav-main').attributes('aria-label')).toBe('Main')
-    expect(wrapper.get('.bd-brand').attributes('aria-label')).toBe('BogDev, home')
+    expect(wrapper.get('.bd-brand').attributes('aria-label')).toBe('Micelio, home')
   })
 
   it('shows the HUD strip with the fediverse chip, search and theme control', async () => {

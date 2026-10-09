@@ -4,6 +4,11 @@ import { isUmamiProxyPath, outboundLinkUrl, umamiScriptAttributes } from '../app
 const ORIGIN = 'https://bogdev.com.co'
 
 describe('umamiScriptAttributes', () => {
+  it('returns no script when the site URL is empty or invalid', () => {
+    expect(umamiScriptAttributes({ websiteId: 'site-1', scriptPath: '/bd.js', siteUrl: '' })).toBeNull()
+    expect(umamiScriptAttributes({ websiteId: 'site-1', scriptPath: '/bd.js', siteUrl: 'not a url' })).toBeNull()
+  })
+
   it('builds the tracker tag limited to the site host', () => {
     expect(umamiScriptAttributes({ websiteId: 'site-1', scriptPath: '/bd.js', siteUrl: 'https://bogdev.com.co/' })).toEqual({
       'src': '/bd.js',

@@ -316,8 +316,10 @@ describe('RSS feeds', () => {
     expect(english.status).toBe(200)
     expect(english.type).toBe('application/rss+xml; charset=utf-8')
     expect(english.cache).toBe('public, s-maxage=1800, stale-while-revalidate=3600')
-    expect(english.body).toContain('<title>Micelio - Personal Blog</title>')
+    expect(english.body).toContain('<title>Micelio</title>')
     expect(english.body).toContain('<generator>Micelio</generator>')
+    // The mock's English description is empty: the neutral fallback
+    expect(english.body).toContain('<description>Latest articles from Micelio.</description>')
     expect(english.body).toContain(`<atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml"/>`)
     expect(items(english.body)).toEqual(['Understanding Vue Composables', 'Linux Server Hardening Guide'])
 
@@ -325,7 +327,8 @@ describe('RSS feeds', () => {
     const legacy = await feed('/feed.xml?lang=es')
     expect(spanish.status).toBe(200)
     expect(spanish.body.replace(/<lastBuildDate>.*<\/lastBuildDate>/, '')).toBe(legacy.body.replace(/<lastBuildDate>.*<\/lastBuildDate>/, ''))
-    expect(spanish.body).toContain('<title>Micelio - Personal Blog (Español)</title>')
+    expect(spanish.body).toContain('<title>Micelio (Español)</title>')
+    expect(spanish.body).toContain('<description>Un motor de blogs</description>')
     expect(items(spanish.body)).toEqual(['Guía de Vue Composables'])
   })
 
@@ -335,7 +338,7 @@ describe('RSS feeds', () => {
     expect(linux.type).toBe('application/rss+xml; charset=utf-8')
     expect(linux.cache).toBe('public, s-maxage=1800, stale-while-revalidate=3600')
     expect(linux.body).toContain('<title>Micelio - Linux and open source</title>')
-    expect(linux.body).toContain('<description>Micelio articles about Linux and open source, from Bogotá, Colombia.</description>')
+    expect(linux.body).toContain('<description>Micelio articles about Linux and open source.</description>')
     expect(linux.body).toContain(`<link>${SITE_URL}/blog/category/linux</link>`)
     expect(linux.body).toContain(`<atom:link href="${SITE_URL}/feed/linux.xml" rel="self" type="application/rss+xml"/>`)
     expect(linux.body).toContain(`<atom:link href="${SITE_URL}/es/feed/linux.xml" rel="alternate" type="application/rss+xml" hreflang="es"/>`)
@@ -360,12 +363,13 @@ describe('RSS feeds', () => {
     expect(privacy.body.trim().endsWith('</channel>\n</rss>')).toBe(true)
   })
 
-  it('names the feed from app.config.ts when Strapi has no site-setting', async () => {
+  it('names the feed from app.config.ts (the neutral name) when Strapi has no site-setting', async () => {
     mock.failures.site = true
     const english = await feed('/feed.xml')
     expect(english.status).toBe(200)
-    expect(english.body).toContain('<title>BogDev - Personal Blog</title>')
-    expect(english.body).toContain('<generator>BogDev</generator>')
+    expect(english.body).toContain('<title>Micelio</title>')
+    expect(english.body).toContain('<generator>Micelio</generator>')
+    expect(english.body).toContain('<description>Latest articles from Micelio.</description>')
   })
 
   it('answers 404 for unknown categories or files without calling Strapi', async () => {
@@ -747,12 +751,12 @@ describe('/api/site', () => {
       name: 'Micelio',
       description: 'Un motor de blogs',
       url: 'https://micelio.test',
-      author: { name: 'Grace', url: 'https://bogdev.com.co/about' },
+      author: { name: 'Grace', url: '' },
       logo: { url: `${mock.url}/uploads/logo.svg`, alternativeText: 'Micelio', width: 120, height: 40 },
       socialLinks: [{ network: 'codeberg', url: 'https://codeberg.org/micelio' }],
       contactEmail: 'hola@micelio.test',
-      privacyContactEmail: 'gx_alejandro@hotmail.com',
-      supportHandle: 'ale9420',
+      privacyContactEmail: '',
+      supportHandle: 'micelio',
       modules: { comments: true, newsletter: true },
     })
     expect(mock.siteRequests).toEqual([expect.objectContaining({
@@ -762,9 +766,10 @@ describe('/api/site', () => {
     })])
   })
 
-  it('falls back field by field when a value is empty', async () => {
-    const site = await $fetch<{ description: string }>('/api/site', { query: { locale: 'en' } })
-    expect(site.description).toBe('Personal blog about AI, Software, Linux and more')
+  it('falls back field by field when a value is empty, to the empty default', async () => {
+    const site = await $fetch<{ description: string, privacyContactEmail: string }>('/api/site', { query: { locale: 'en' } })
+    expect(site.description).toBe('')
+    expect(site.privacyContactEmail).toBe('')
   })
 
   it('answers with app.config\'s values, cached briefly, when Strapi fails', async () => {
@@ -772,7 +777,7 @@ describe('/api/site', () => {
     const response = await fetch('/api/site')
     expect(response.status).toBe(200)
     expect(response.headers.get('cache-control')).toBe('public, s-maxage=30, stale-while-revalidate=60')
-    expect(await response.json()).toMatchObject({ name: 'BogDev', url: 'https://bogdev.com.co', modules: { comments: true } })
+    expect(await response.json()).toMatchObject({ name: 'Micelio', url: '', description: '', author: { name: '', url: '' }, socialLinks: [], supportHandle: '', modules: { comments: true } })
   })
 
   it('rejects an unknown locale without calling Strapi', async () => {

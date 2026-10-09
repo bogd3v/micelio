@@ -142,7 +142,7 @@ Set the variables from `.env.example` in the production environment (Dokploy) wi
 
 ```
 ├── app/
-│   ├── app.config.ts          # Site name, author, social links, privacy contact
+│   ├── app.config.ts          # Neutral fallbacks for the site identity (the CMS site settings win)
 │   ├── assets/css/            # Global styles by layer (see AGENTS.md, CSS Architecture)
 │   ├── components/            # Auto-imported, grouped by feature
 │   │   ├── bd/                # BogDev design system: BdButton, BdSearchPalette…
@@ -174,12 +174,14 @@ Set the variables from `.env.example` in the production environment (Dokploy) wi
 
 ### Site settings
 
-Edit `app/app.config.ts` to customize:
-- Site name, URL, and description
-- Social media links (GitHub, LinkedIn, Codeberg, Mastodon)
-- Comment provider
+A site is configured in the CMS (the `site-setting` single type), not by editing code:
+- Site name, URL, description and author
+- Social media links
 - Buy Me a Coffee username
 - Privacy contact email and last update date
+- Modules (newsletter, comments, accounts…) and theme
+
+`app/app.config.ts` holds only neutral fallbacks (the name `Micelio` and empty values). An empty value renders as absent: no link, no contact line, no date. Strapi's values win field by field (see [docs/api.md](docs/api.md)).
 
 ### Strapi API
 

@@ -18,7 +18,7 @@ export type UmamiScriptAttributes = {
 export const OUTBOUND_LINK_EVENT = 'outbound-link'
 
 export function umamiScriptAttributes(config: UmamiScriptConfig): UmamiScriptAttributes | null {
-  if (!config.websiteId) return null
+  if (!config.websiteId || !URL.canParse(config.siteUrl)) return null
   return {
     'src': config.scriptPath,
     'defer': true,

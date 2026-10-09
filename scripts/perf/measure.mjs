@@ -119,16 +119,16 @@ function startServers() {
     NUXT_PUBLIC_SITE_URL: base,
     ...(displayFont && { MOCK_DISPLAY_FONT: displayFont }),
     NUXT_PUBLIC_UMAMI_WEBSITE_ID: '',
-    NUXT_MEDIA_URL: 'https://resources.bogdev.com.co',
-    NUXT_PUBLIC_FEDIVERSE_HANDLE: '@bogdev@api.bogdev.com.co',
-    NUXT_PUBLIC_FEDIVERSE_ACTOR_URL: 'https://api.bogdev.com.co/fediverse/user/devbog',
-    NUXT_PUBLIC_FEDIVERSE_ARTICLES_URL: 'https://api.bogdev.com.co/fediverse/articles',
+    NUXT_MEDIA_URL: 'https://resources.example.com',
+    NUXT_PUBLIC_FEDIVERSE_HANDLE: '@blog@cms.example.com',
+    NUXT_PUBLIC_FEDIVERSE_ACTOR_URL: 'https://cms.example.com/fediverse/user/blog',
+    NUXT_PUBLIC_FEDIVERSE_ARTICLES_URL: 'https://cms.example.com/fediverse/articles',
     // A full SMTP setting keeps the newsletter module on; nothing is sent
     NUXT_SMTP_HOST: '127.0.0.1',
     NUXT_SMTP_PORT: '1',
     NUXT_SMTP_USER: 'test',
     NUXT_SMTP_PASS: 'test',
-    NUXT_NEWSLETTER_FROM: 'BogDev <no-reply@bogdev.test>',
+    NUXT_NEWSLETTER_FROM: 'Micelio <no-reply@micelio.test>',
   }
   return [
     spawn('node', ['e2e/mock-strapi.mjs'], { cwd: ROOT, env, stdio: 'ignore' }),
