@@ -130,7 +130,9 @@ A `static` or `landing` site is built by `.github/workflows/static-site.yml` on 
 
 ### Releases
 
-Every merge to `main` is deployed; a release is a dated snapshot of what is live. Run the **Release** workflow from the Actions tab on `main`: it tags the current commit `vYYYY.MM.DD` (`.2`, `.3`… for more than one a day) and publishes a GitHub release whose notes list the PRs merged since the previous one, grouped by label (security, features, fixes, quality, docs, dependencies).
+Releases follow [Semantic Versioning](docs/adr/0010-semantic-versioning.md): `micelio` and `micelio-cms` share MAJOR and MINOR (one release line) and each has its own PATCH. A release is a `vX.Y.Z` tag on `main`, a GitHub release and images tagged `X.Y.Z` and `X.Y`; `latest` is the newest stable release and builds of `main` are `edge`. While the version is `0.y.z`, a breaking change raises `y`.
+
+Until the pipeline of #415 lands, every merge to `main` is deployed and a release is still a dated snapshot of what is live. Run the **Release** workflow from the Actions tab on `main`: it tags the current commit `vYYYY.MM.DD` (`.2`, `.3`… for more than one a day) and publishes a GitHub release whose notes list the PRs merged since the previous one, grouped by label (security, features, fixes, quality, docs, dependencies).
 
 The labels come from the PR title: the `PR labels` workflow reads its conventional prefix (`feat` → enhancement, `fix` → bug, `docs` → documentation, `refactor`/`style` → refactor, `test` → testing, `ci` → ci, `chore` → code-quality, `chore(deps)` → dependencies; a `security`/`seguridad` scope adds security). Dependabot labels its own PRs. Add `ignore-for-release` to leave a PR out of the notes.
 
