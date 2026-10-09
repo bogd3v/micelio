@@ -8,7 +8,7 @@ The rules shared by every Micelio repository live in [`docs/engineering-standard
 
 ## Project Overview
 
-This is the frontend of Micelio, a blog engine whose CMS lives in `micelio-cms`. BogDev (bogdev.com.co) is the reference site running it. Stack:
+This is the frontend of Micelio, a site engine (a dynamic blog, a static site or a landing from the same content, ADR 0006) whose CMS lives in `micelio-cms`. BogDev (bogdev.com.co) is the reference site running it. Stack:
 - Nuxt 4 + Vue 3 + TypeScript frontend
 - Server-side API routes (Nitro)
 - Strapi CMS integration for content
@@ -51,7 +51,7 @@ npm run generate     # Generate static output
 
 Micelio's roadmap is tracked on GitHub, which is the source of truth for agents:
 
-- The epic **#240** lists every phase and issue, with a dependency graph. Start there to see what is done, in progress and unblocked.
+- The open epics (#316 and #408) list every phase and issue, with a dependency graph. Start there to see what is done, in progress and unblocked. Find them with `gh issue list --label épica`.
 - Each issue has a **Progress** section once work starts: PRs, numbers, findings that changed the plan, and what remains.
 - When a PR advances an issue, update that issue's Progress section and tick the epic's box in the same change. Use `Refs #N` while work remains and `Closes #N` in the last PR.
 - `docs/performance.md` records budgets and their history; ADRs in `docs/adr/` record decisions.
@@ -91,7 +91,7 @@ Branches, commits, signed-off commits (`git commit -s`), PR titles and descripti
 | Components | PascalCase | `PostCard.vue`, `CommentSection.vue` |
 | Pages | kebab-case | `blog/index.vue`, `about.vue` |
 | Composables | camelCase with `use` prefix | `useStrapi.ts`, `useComments.ts` |
-| Interfaces | camelCase | `post.ts`, `strapi-post.ts` |
+| Interfaces | kebab-case | `post.ts`, `strapi-post.ts` |
 | Server routes | kebab-case with HTTP method | `index.get.ts`, `[slug].get.ts` |
 | API endpoints | kebab-case with method suffix | `posts/[slug].get.ts`, `comments/index.post.ts` |
 
@@ -226,8 +226,11 @@ app/
 ├── assets/css/          # Global styles (see CSS Architecture)
 ├── components/          # Vue components (auto-imported)
 ├── composables/         # Composables (auto-imported)
+├── helpers/             # Pure logic without framework imports, unit-tested
 ├── interfaces/          # TypeScript interfaces
+├── islands/             # Heavy client-side islands and their loader
 ├── layouts/             # Page layouts
+├── theme/               # Theme hooks (hooks.json), default and layout parts
 └── pages/               # Route pages
     ├── index.vue        # Home (/)
     ├── about.vue        # About (/about)
@@ -248,6 +251,10 @@ server/
 └── utils/               # strapi.ts (strapiUrl, strapiFetch), auth, rate limit…
 
 i18n/locales/            # Translation files
+modules/                 # Nuxt modules: islands, site mode, message precompilation
+themes/                  # Installed themes (bogota, starter) and theme.schema.json
+test/                    # Vitest unit tests (test/integration/ for API routes)
+e2e/                     # Playwright end-to-end suites and the mock Strapi
 ```
 
 ## Key Dependencies
