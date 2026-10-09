@@ -43,6 +43,8 @@ export interface NewsletterResult {
 
 export interface PostCardProps {
   title: string
+  /** Names the card in the view transition to its article */
+  slug?: string
   href: string
   excerpt?: string
   snippet?: string

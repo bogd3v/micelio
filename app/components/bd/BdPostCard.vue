@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import type { Category } from '~/interfaces'
 import { categoryColor } from '~/helpers/categories'
+import type { PostTransitionNames } from '~/helpers/postTransition'
+import { postTransitionNames } from '~/helpers/postTransition'
 
 const props = withDefaults(defineProps<{
   title: string
+  slug?: string
+  /** False when the same post is already named elsewhere on the page (a duplicate name skips the whole transition) */
+  transition?: boolean
   href: string
   excerpt?: string
   snippet?: string
@@ -23,6 +28,8 @@ const props = withDefaults(defineProps<{
   /** Heading of a non-featured card */
   headingLevel?: 'h2' | 'h3'
 }>(), {
+  slug: undefined,
+  transition: true,
   excerpt: undefined,
   snippet: undefined,
   highlight: undefined,
@@ -49,6 +56,11 @@ const byline = computed<string>(() => [props.author, props.readTime].filter(Bool
 const categoryStyle = computed<Record<string, string> | undefined>(() =>
   props.category ? { '--cat': categoryColor(props.category) } : undefined,
 )
+const names = computed<PostTransitionNames | undefined>(() =>
+  props.transition && props.slug ? postTransitionNames(props.slug) : undefined,
+)
+const mediaStyle = computed<Record<string, string> | undefined>(() => names.value && { '--bd-vt-media': names.value.media })
+const titleStyle = computed<Record<string, string> | undefined>(() => names.value && { '--bd-vt-title': names.value.title })
 const imageSize = computed<{ width: number, height: number }>(() =>
   props.featured ? { width: 960, height: 540 } : { width: 640, height: 360 },
 )
@@ -56,7 +68,7 @@ const imageSize = computed<{ width: number, height: number }>(() =>
 
 <template>
   <article :class="['bd-card', { 'bd-card-featured': featured }]" :style="categoryStyle">
-    <div v-if="image" class="bd-card-media">
+    <div v-if="image" class="bd-card-media bd-post-media" :style="mediaStyle">
       <NuxtImg
         :src="image"
         :alt="imageAlt"
@@ -78,7 +90,7 @@ const imageSize = computed<{ width: number, height: number }>(() =>
           <time v-if="date" class="bd-meta" :datetime="dateTime">{{ date }}</time>
         </span>
       </div>
-      <component :is="featured ? 'h2' : headingLevel" class="bd-card-title">
+      <component :is="featured ? 'h2' : headingLevel" class="bd-card-title bd-post-title" :style="titleStyle">
         <NuxtLink :to="href" class="bd-card-link">{{ title }}</NuxtLink>
       </component>
       <p v-if="snippet" class="bd-card-excerpt bd-card-snippet"><BdHighlight :text="snippet" :query="highlight" /></p>

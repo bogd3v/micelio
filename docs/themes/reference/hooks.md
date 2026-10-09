@@ -130,6 +130,8 @@ These appear in every layout variant.
 | `bd-meta` | Metadata text: dates, counts, coordinates. |  |
 | `bd-sr` | Visually hidden text for screen readers. |  |
 | `bd-reveal` | A block that fades in when scrolled into view. |  |
+| `bd-post-media` | Cover of a post (card, featured card, article): the element that takes part in the card to article view transition. The core sets its view-transition-name; do not set one. |  |
+| `bd-post-title` | Title of a post (card, featured card, article h1): the element that takes part in the card to article view transition. The core sets its view-transition-name; do not set one. |  |
 | `bd-seg-group` | Group of segmented buttons: the mode switch and the language switch. |  |
 | `bd-seg` | A segmented button. | `[aria-pressed]`, `[aria-current]`, `[data-mode]` |
 | `bd-lang` | The language switch. |  |

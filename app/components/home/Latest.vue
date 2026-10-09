@@ -14,6 +14,8 @@ interface TopicFilter {
 const LATEST_SIZE = 5
 
 const props = defineProps<{
+  /** Slug of the post shown above as the featured card: it keeps its transition names there */
+  featuredSlug?: string
   total: number
   counts: Partial<Record<Category, number>>
 }>()
@@ -83,7 +85,7 @@ function select(id: TopicFilter['id']): void {
     </div>
 
     <div class="bd-latest-grid" :aria-busy="status === 'pending'">
-      <BdPostCard v-for="post in posts" :key="post.id" v-bind="toPostCard(post)" />
+      <BdPostCard v-for="post in posts" :key="post.id" v-bind="toPostCard(post)" :transition="post.slug !== featuredSlug" />
       <NuxtLink v-if="!selected && posts.length" :to="localizePath('/blog')" class="bd-latest-archive">
         <span class="bd-eyebrow bd-home-eyebrow">{{ t('home.latest.archive') }}</span>
         <span class="bd-latest-archive-title bd-wide">{{ t('home.latest.archiveTitle') }} <span class="bd-card-arrow" aria-hidden="true">→</span></span>
