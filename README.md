@@ -1,6 +1,6 @@
 # Micelio
 
-A blog engine built with **Nuxt 4** and **Strapi CMS**, following a **JAMStack architecture**: bilingual (English/Spanish), SEO-friendly and accessible. This repository is the frontend; the CMS lives in [micelio-cms](https://github.com/bogd3v/micelio-cms).
+A site engine built with **Nuxt 4** and **Strapi CMS**, following a **JAMStack architecture**: bilingual (English/Spanish), SEO-friendly and accessible. This repository is the frontend; the CMS lives in [micelio-cms](https://github.com/bogd3v/micelio-cms).
 
 [BogDev](https://bogdev.com.co) is the reference site running Micelio, and its design is the default theme.
 

@@ -21,9 +21,9 @@ The main session acts as **tech lead / orchestrator**. It splits the work, hands
 
 ## Where the plan lives
 
-- GitHub epic **#240** lists every phase and issue with a dependency graph; start there to pick unblocked work.
+- The open GitHub epics (#316 and #408) list every phase and issue with a dependency graph; start there to pick unblocked work. Find them with `gh issue list --label épica`.
 - Each issue has a **Progress** section; a PR that advances it updates Progress and ticks the epic box (`Refs #N` / `Closes #N`).
-- ADRs in `docs/adr/` (0001–0006) record expensive-to-undo decisions; `docs/design/DESIGN.md` is the design system.
+- ADRs in `docs/adr/` record expensive-to-undo decisions; `docs/design/DESIGN.md` is the design system.
 - Shipping follows the `ship-pr` skill; proving a change follows `verify-change`.
 
 ## Cross-repo contract (`micelio` ↔ `micelio-cms`)
