@@ -7,7 +7,8 @@ const { y: scrollY } = useWindowScroll()
 const isVisible = computed(() => scrollY.value > 200)
 
 function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' })
 }
 </script>
 
@@ -26,9 +27,11 @@ function scrollToTop() {
 </template>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+@media (prefers-reduced-motion: no-preference) {
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.2s ease;
+  }
 }
 
 .fade-enter-from,
