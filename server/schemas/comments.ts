@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { isValidEmail } from '~/helpers/auth'
-import { COMMENT_LIMITS, webUrlOrNull } from '~/helpers/comments'
+import { webUrlOrNull } from '~/helpers/comments'
+import { COMMENT_LIMITS } from '~/constants/comments'
 
 function text(max: number) {
   return z.string().trim().min(1).max(max)

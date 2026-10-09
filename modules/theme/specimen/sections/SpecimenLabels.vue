@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CATEGORIES } from '~/helpers/categories'
+import { CATEGORIES } from '~/constants/categories'
 import { AUTHOR, CREDIT } from '../fixtures'
 
 const { t } = useI18n()

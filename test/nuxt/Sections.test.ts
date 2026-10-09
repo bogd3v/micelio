@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, provide } from 'vue'
-import { TRUSTED_MEDIA_PREFIX } from '~/helpers/trustedMedia'
+import { TRUSTED_MEDIA_PREFIX } from '~/constants/media'
 import SectionRenderer from '~/components/section/SectionRenderer.vue'
 import type { PageLink, PageMedia, PageSection, PostListItem } from '~/interfaces'
 

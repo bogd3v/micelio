@@ -1,8 +1,4 @@
-/** Names a post's media and title take in a view transition (ADR 0005, section 10). */
-export interface PostTransitionNames {
-  media: string
-  title: string
-}
+import type { PostTransitionNames } from '../interfaces/post'
 
 /** Stable and collision-free: letters, digits and `-` stay, anything else (including `_`) becomes `_<hex>_`, so the result is a valid ident after the prefix. */
 export function postTransitionNames(slug: string): PostTransitionNames {

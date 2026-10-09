@@ -1,4 +1,4 @@
-import { CATEGORIES } from './categories'
+import { CATEGORIES } from '../constants/categories'
 import { feedPath } from './feed'
 import { localePrefixSource } from './localePrefix'
 import { isGlb, isGlbUrl, MODEL_MAX_BYTES } from './scene'

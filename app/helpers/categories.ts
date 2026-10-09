@@ -1,21 +1,8 @@
-import { Category } from '../interfaces/design'
-import type { CategoryInfo } from '../interfaces/design'
+import type { Category } from '../interfaces/design'
+import { CATEGORIES } from '../constants/categories'
 
-export const CATEGORIES: readonly Category[] = [
-  Category.Privacy,
-  Category.Diy,
-  Category.Ai,
-  Category.Software,
-  Category.Linux,
-]
-
-export const CATEGORY_INFO: Readonly<Record<Category, CategoryInfo>> = {
-  [Category.Privacy]: { pillar: 1 },
-  [Category.Diy]: { pillar: 2 },
-  [Category.Ai]: { pillar: null },
-  [Category.Software]: { pillar: null },
-  [Category.Linux]: { pillar: null },
-}
+// The theme contract exposes these through this module (slot APIs, ADR 0005)
+export { CATEGORIES, CATEGORY_INFO } from '../constants/categories'
 
 export function isCategory(value: unknown): value is Category {
   return typeof value === 'string' && (CATEGORIES as readonly string[]).includes(value)

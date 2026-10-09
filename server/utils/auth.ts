@@ -1,6 +1,7 @@
 import type { H3Event } from 'h3'
 import type { AuthErrorCode, StrapiAuthUser } from '~/interfaces/auth'
-import { LEGACY_SESSION_COOKIE, SESSION_COOKIE, SESSION_MAX_AGE, strapiAuthErrorCode } from '~/helpers/auth'
+import { strapiAuthErrorCode } from '~/helpers/auth'
+import { LEGACY_SESSION_COOKIE, SESSION_COOKIE, SESSION_MAX_AGE } from '~/constants/auth'
 
 const AUTH_ERROR_STATUS: Record<AuthErrorCode, number> = {
   invalidCredentials: 400,

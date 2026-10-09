@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { PageMedia, SceneSection } from '~/interfaces'
 
-import { TRUSTED_MEDIA_PREFIX, isTrustedMedia } from '~/helpers/trustedMedia'
+import { isTrustedMedia } from '~/helpers/trustedMedia'
+import { TRUSTED_MEDIA_PREFIX } from '~/constants/media'
 
 const props = defineProps<{
   section: SceneSection

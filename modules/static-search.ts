@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { defineNuxtModule, useLogger } from 'nuxt/kit'
 import { indexablePage, indexedPages } from '../app/helpers/searchIndex'
 import { isStaticMode } from '../app/helpers/siteMode'
-import type { SiteMode } from '../app/helpers/siteMode'
+import type { SiteMode } from '../app/interfaces/site'
 
 const UNUSED_FILES = [
   'pagefind-ui.js', 'pagefind-ui.css', 'pagefind-modular-ui.js', 'pagefind-modular-ui.css',

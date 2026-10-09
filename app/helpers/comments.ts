@@ -4,8 +4,6 @@ const HIDDEN_STATUSES = new Set(['PENDING', 'REJECTED'])
 const WEB_PROTOCOLS = new Set(['https:', 'http:'])
 const RELATION_PATTERN = /^api::article\.article:[\w-]{1,128}$/
 
-export const COMMENT_LIMITS = { name: 100, email: 254, content: 5000, avatar: 2048 } as const
-
 function textOrNull(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null
 }

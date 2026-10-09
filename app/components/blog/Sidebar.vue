@@ -2,7 +2,7 @@
 import type { Category, PostListItem } from '~/interfaces'
 import { formatDotDate } from '~/helpers/formatDate'
 import { padCount } from '~/helpers/search'
-import { CATEGORIES } from '~/helpers/categories'
+import { CATEGORIES } from '~/constants/categories'
 import { feedPath } from '~/helpers/feed'
 
 defineProps<{

@@ -1,9 +1,8 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import type { Component } from 'vue'
-import type { Site, SocialLink } from '~/interfaces'
+import type { Site, SocialLink, AppSiteConfig } from '~/interfaces'
 import { siteFromAppConfig } from '~/helpers/site'
-import type { AppSiteConfig } from '~/helpers/site'
 import RegionFooter from '~/theme/layout/footer/Columns.vue'
 import RegionFooterMinimal from '~/theme/layout/footer/Minimal.vue'
 

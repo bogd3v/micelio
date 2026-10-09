@@ -1,6 +1,7 @@
 import type { ComputedRef } from 'vue'
 import type { Category, FieldGuideTopic, Locale, PostListItem } from '~/interfaces'
-import { CATEGORIES, isCategory } from '~/helpers/categories'
+import { isCategory } from '~/helpers/categories'
+import { CATEGORIES } from '~/constants/categories'
 import { siteLogoUrl } from '~/helpers/site'
 
 export interface BlogHome {

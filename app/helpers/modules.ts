@@ -1,7 +1,6 @@
 import { SITE_MODULES } from '../interfaces/site'
-import type { SiteModule, SiteModules } from '../interfaces/site'
+import type { SiteModule, SiteModules, SiteMode } from '../interfaces/site'
 import { isStaticMode } from './siteMode'
-import type { SiteMode } from './siteMode'
 
 /** Path prefixes that belong to each module: API routes and pages (with or without a locale prefix). */
 export const MODULE_PATHS: Readonly<Record<SiteModule, readonly string[]>> = {

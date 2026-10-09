@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Comment, CommentFilter, CommentFormData } from '~/interfaces/comment'
-import { COMMENT_LIMITS, matchesCommentFilter } from '~/helpers/comments'
+import { matchesCommentFilter } from '~/helpers/comments'
+import { COMMENT_LIMITS } from '~/constants/comments'
 
 const FILTERS: CommentFilter[] = ['all', 'blog', 'fediverse']
 const MODERATION_RULES: string[] = ['approval', 'edited', 'deleted', 'plainText']

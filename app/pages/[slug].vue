@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PAGE_SLUG_PATTERN } from '~/helpers/pages'
+import { PAGE_SLUG_PATTERN } from '~/constants/pages'
 
 // A slug the API would reject (400, e.g. "Showcase") is a page that does not exist: 404 without the call
 definePageMeta({ validate: route => PAGE_SLUG_PATTERN.test(String(route.params.slug)) })

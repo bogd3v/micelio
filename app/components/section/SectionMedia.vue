@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { PageMedia } from '~/interfaces'
-import { TRUSTED_MEDIA_PREFIX, isTrustedMedia } from '~/helpers/trustedMedia'
+import { isTrustedMedia } from '~/helpers/trustedMedia'
+import { TRUSTED_MEDIA_PREFIX } from '~/constants/media'
 
 const props = withDefaults(defineProps<{
   media?: PageMedia | null

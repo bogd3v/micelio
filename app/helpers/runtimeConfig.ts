@@ -1,7 +1,6 @@
 import type { ModuleRequirements } from './modules'
-import type { SiteModules } from '../interfaces/site'
+import type { SiteModules, SiteMode } from '../interfaces/site'
 import { isStaticMode, parseSiteMode } from './siteMode'
-import type { SiteMode } from './siteMode'
 
 export const REQUIRED_RUNTIME_SETTINGS = {
   strapiApiToken: 'NUXT_STRAPI_API_TOKEN',

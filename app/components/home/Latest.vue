@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Category, Locale } from '~/interfaces'
-import { CATEGORIES, categoryColor } from '~/helpers/categories'
+import { categoryColor } from '~/helpers/categories'
+import { CATEGORIES } from '~/constants/categories'
 import { padCount } from '~/helpers/search'
 import { blogPath } from '~/helpers/blog'
 

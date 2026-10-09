@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { blogPath } from '~/helpers/blog'
-import type { StrapiPost } from '~/interfaces'
-import type { PostTransitionNames } from '~/helpers/postTransition'
+import type { StrapiPost, PostTransitionNames } from '~/interfaces'
 import { postTransitionNames } from '~/helpers/postTransition'
 
 defineOptions({ name: 'RegionArticleCentered' })

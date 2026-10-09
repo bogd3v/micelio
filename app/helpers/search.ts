@@ -1,7 +1,5 @@
 import type { TextSegment } from '../interfaces/design'
 
-export const MIN_SEARCH_LENGTH = 3
-
 export function normalizeText(value: string): string {
   return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
 }

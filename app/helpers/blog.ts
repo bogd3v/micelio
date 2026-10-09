@@ -3,7 +3,8 @@ import type { BlogFilters, BlogSort, BlogView, PaginationItem, PostMonth } from 
 import type { PostListItem } from '../interfaces/strapi-post'
 import { defaultLocale, Locale } from '../interfaces/locale'
 import { isCategory } from './categories'
-import { MIN_SEARCH_LENGTH, isContentSearch } from './search'
+import { isContentSearch } from './search'
+import { MIN_SEARCH_LENGTH } from '../constants/search'
 
 export const BLOG_PAGE_SIZE = 6
 export const LOG_PAGE_SIZE = 24

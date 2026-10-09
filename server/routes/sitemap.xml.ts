@@ -1,7 +1,7 @@
 import qs from 'qs'
 import { defaultLocale, Locale, type LocalePaths, type RawStrapiArticle } from '~/interfaces'
 import { blogPath } from '~/helpers/blog'
-import { CATEGORIES } from '~/helpers/categories'
+import { CATEGORIES } from '~/constants/categories'
 import { localizedPath } from '~/helpers/locale'
 import { isBlogEnabled } from '~/helpers/siteMode'
 import { articlePaths, publishedTranslations } from '~/helpers/translations'

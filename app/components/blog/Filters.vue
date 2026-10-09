@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { BlogFilters, Category, StrapiTagRef } from '~/interfaces'
-import { CATEGORIES, categoryColor } from '~/helpers/categories'
+import { categoryColor } from '~/helpers/categories'
+import { CATEGORIES } from '~/constants/categories'
 import { blogLocation, hasActiveFilters } from '~/helpers/blog'
 import { tagLabel } from '~/helpers/tags'
 import { padCount } from '~/helpers/search'

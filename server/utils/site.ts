@@ -3,11 +3,10 @@ import { buildSiteMode } from '#micelio/build-site-mode'
 import { buildTheme } from '#micelio/build-theme'
 import { modes as paletteModes, rules as paletteRules } from '#micelio/theme-palette'
 import { images } from '#micelio/theme'
-import type { Locale, Site } from '~/interfaces'
+import type { Locale, Site, AppSiteConfig } from '~/interfaces'
 import { effectiveModules } from '~/helpers/modules'
 import { moduleRequirements } from '~/helpers/runtimeConfig'
 import { mergeSite, resolveSiteMedia, siteFromAppConfig } from '~/helpers/site'
-import type { AppSiteConfig } from '~/helpers/site'
 import { parseSiteSettings } from '../schemas/site'
 
 // Strapi is optional for the identity, so a slow answer should not hold the page

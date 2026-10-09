@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { blogPath } from '~/helpers/blog'
 import type { CategoryCount, Locale, PaletteGroup, PaletteOption, SearchPostResult } from '~/interfaces'
-import { CATEGORIES, isCategory, categoryColor } from '~/helpers/categories'
+import { isCategory, categoryColor } from '~/helpers/categories'
+import { CATEGORIES } from '~/constants/categories'
 import { formatDotDate } from '~/helpers/formatDate'
-import { MIN_SEARCH_LENGTH, cycleIndex, matchesQuery, padCount } from '~/helpers/search'
+import { cycleIndex, matchesQuery, padCount } from '~/helpers/search'
+import { MIN_SEARCH_LENGTH } from '~/constants/search'
 
 const props = defineProps<{
   open: boolean
