@@ -1,6 +1,7 @@
 import type { H3Event } from 'h3'
 import { strapiRequest, strapiRequestUrl } from '../lib/strapiRequest'
-import type { StrapiRequestConfig, StrapiRequestOptions } from '../lib/strapiRequest'
+import type { StrapiRequestOptions } from '../lib/strapiRequest'
+import type { StrapiRequestConfig } from '../lib/types'
 import { forwardHeaders } from '../lib/clientIp'
 
 export interface StrapiFetchOptions extends StrapiRequestOptions {

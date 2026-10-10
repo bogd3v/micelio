@@ -20,9 +20,6 @@ export function authFailure(code: AuthErrorCode) {
   return createError({ statusCode: AUTH_ERROR_STATUS[code], statusMessage: code, data: { code } })
 }
 
-/** The auth calls may send mail inside Strapi (register, password reset), so they wait longer than a read. */
-export const AUTH_TIMEOUT_MS = 30_000
-
 export function strapiAuthFailure(event: H3Event, err: unknown, overrides: Partial<Record<AuthErrorCode, AuthErrorCode>> = {}) {
   const e = asUpstreamError(err)
   const status = e.response?.status

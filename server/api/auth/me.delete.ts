@@ -1,3 +1,4 @@
+import { AUTH_TIMEOUT_MS } from '../../lib/constants'
 import type { StrapiAuthUser } from '~/interfaces/auth'
 import { deleteAccountSchema } from '../../schemas/auth'
 

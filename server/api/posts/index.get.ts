@@ -3,6 +3,7 @@ import { defaultLocale } from '~/interfaces'
 import type { RawStrapiArticle, StrapiPaginatedResponse } from '~/interfaces'
 import { MIN_SEARCH_LENGTH } from '~/constants/search'
 import { postsQuerySchema } from '../../schemas/query'
+import { POST_CARD_POPULATE } from '../../lib/constants'
 
 const RANKING_TIMEOUT_MS = 3000
 const STATS_TIMEOUT_MS = 3000

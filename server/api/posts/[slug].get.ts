@@ -2,6 +2,7 @@ import qs from 'qs'
 import type { RawStrapiArticle } from '~/interfaces'
 import { renderArticleBlocks } from '~/helpers/markdown'
 import { localeQuerySchema } from '../../schemas/query'
+import { ARTICLE_POPULATE } from '../../lib/constants'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')

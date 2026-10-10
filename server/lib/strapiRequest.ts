@@ -1,5 +1,6 @@
 import { ofetch } from 'ofetch'
 import type { FetchOptions } from 'ofetch'
+import type { StrapiRequestConfig } from './types'
 
 const DEFAULT_TIMEOUT_MS = 10_000
 
@@ -8,12 +9,6 @@ export interface StrapiRequestOptions extends Pick<FetchOptions<'json'>, 'method
   auth?: 'token' | 'none' | { jwt: string }
   /** Extra request headers, e.g. the visitor forwarding headers. Never `Authorization`. */
   headers?: Record<string, string>
-}
-
-/** What a call to Strapi needs: the pure part of `strapiFetch`, usable outside Nitro (build modules). */
-export interface StrapiRequestConfig {
-  strapiUrl: string
-  strapiApiToken?: string
 }
 
 export function strapiRequestUrl(config: Pick<StrapiRequestConfig, 'strapiUrl'>, path: string): string {
