@@ -2,7 +2,8 @@ import { randomBytes } from 'node:crypto'
 import type { H3Event } from 'h3'
 import type { RateLimitRule } from '~/helpers/rateLimit'
 import { createRateLimiter } from '~/helpers/rateLimit'
-import { INTERNAL_IP_HEADER, INTERNAL_NONCE_HEADER, internalClientIp, parseTrustProxy, resolveClientIp } from '../lib/clientIp'
+import { internalClientIp, parseTrustProxy, resolveClientIp } from '../lib/clientIp'
+import { INTERNAL_IP_HEADER, INTERNAL_NONCE_HEADER } from '../lib/constants'
 import type { TrustProxy } from '../lib/clientIp'
 
 const limiter = createRateLimiter()

@@ -1,3 +1,4 @@
+import { AUTH_TIMEOUT_MS } from '../../lib/constants'
 import { emailSchema } from '../../schemas/auth'
 
 export default defineEventHandler(async (event): Promise<{ ok: true }> => {

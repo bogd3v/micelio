@@ -1,4 +1,5 @@
-import { INTERNAL_IP_HEADER, INTERNAL_NONCE_HEADER, isInternalFetchTarget } from '../lib/clientIp'
+import { isInternalFetchTarget } from '../lib/clientIp'
+import { INTERNAL_IP_HEADER, INTERNAL_NONCE_HEADER } from '../lib/constants'
 
 /**
  * SSR calls /api/* in process, with no socket address, so the visitor would be

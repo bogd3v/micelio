@@ -14,7 +14,7 @@ import type { SiteMode } from '../app/interfaces/site'
 import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, failsBuild, headersFile, initialRoutes, injectCspMeta, injectSpeculationRules, isCopyableMedia, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
 import { HEAVY_ISLANDS } from '../app/islands/heavy'
 import { strapiRequest } from '../server/lib/strapiRequest'
-import type { StrapiRequestConfig } from '../server/lib/strapiRequest'
+import type { StrapiRequestConfig } from '../server/lib/types'
 
 const PAGE_SIZE = 100
 // Where a page, a stylesheet or an island may name a script; media and the image cache never do

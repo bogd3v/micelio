@@ -206,10 +206,6 @@ export const MIN_FORWARDER_SECRET_LENGTH = 32
 export const FORWARDER_SECRET_HEADER = 'X-Micelio-Forwarder-Secret'
 export const FORWARDER_IP_HEADER = 'X-Micelio-Client-IP'
 
-/** Headers an in-process (SSR) call carries so the real visitor survives the hop. Never leave the process. */
-export const INTERNAL_IP_HEADER = 'x-micelio-internal-ip'
-export const INTERNAL_NONCE_HEADER = 'x-micelio-internal-nonce'
-
 /** Only a same-origin relative path (`/api/x`, not `//host` or an absolute URL) gets the internal headers. */
 export function isInternalFetchTarget(request: unknown): boolean {
   return typeof request === 'string' && request.startsWith('/') && !request.startsWith('//')

@@ -1,3 +1,4 @@
+import { AUTH_TIMEOUT_MS } from '../../lib/constants'
 import type { AuthUserResponse, StrapiAuthUser } from '~/interfaces/auth'
 import { toPublicUser } from '~/helpers/auth'
 import { registerSchema } from '../../schemas/auth'
