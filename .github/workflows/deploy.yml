@@ -85,10 +85,16 @@ jobs:
       - name: Run integration tests
         run: npm run test:integration
 
-  e2e-tests:
-    name: E2E Tests (Playwright)
+  # The Playwright configs run in parallel jobs, one per group of `npm run test:e2e:<group>`; `npm run test:e2e` runs them all in sequence.
+  # Groups are balanced by test count, not measured: record the durations in docs/performance.md if they drift.
+  e2e-tests-group:
+    name: E2E ${{ matrix.group }} (Playwright)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [main, site, playground, scene-ui]
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -111,16 +117,30 @@ jobs:
           # /_theme is registered at build time only with this flag (modules/theme/specimen/setup.ts)
           MICELIO_SPECIMEN: 1
       - name: Run e2e tests
-        run: npm run test:e2e
+        run: npm run test:e2e:${{ matrix.group }}
         env:
           E2E_BUILD: 1
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.group }}
           path: playwright-report/
           retention-days: 7
+
+  # One stable check name for branch protection and deploy: the name the single job had before the split
+  e2e-tests:
+    name: E2E Tests (Playwright)
+    needs: e2e-tests-group
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every e2e group to pass
+        env:
+          RESULT: ${{ needs.e2e-tests-group.result }}
+        run: |
+          echo "e2e groups: ${RESULT}"
+          test "${RESULT}" = "success"
 
   # A static site (ADR 0006) generated against the mock Strapi: no Nuxt client, no runtime API
   e2e-static:
