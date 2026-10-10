@@ -11,7 +11,7 @@ import type { ContrastRule, ThemeManifest } from './types'
  * @internal Exported for tests.
  */
 export const TEXT_MIN = 4.5
-export const CONTROL_MIN = 3
+const CONTROL_MIN = 3
 
 const SURFACES = ['surface', 'surface-raised', 'surface-sunken']
 const STATES = ['success', 'warning', 'danger', 'info']

@@ -99,7 +99,7 @@ function stripNoise(source) {
  * Every placement problem of the sources under `root`, as sorted messages.
  * Exported for the unit test.
  */
-export function findProblems(root = REPO_ROOT) {
+export function findProblems(root = REPO_ROOT, exempt = root === REPO_ROOT ? EXEMPT : new Map()) {
   const sources = new Map(SCANNED.flatMap(dir => files(join(root, dir))).map(path => [relative(root, path), readFileSync(path, 'utf8')]))
 
   // Declarations: `export interface|type|const|enum Name`, with the kind
@@ -160,9 +160,14 @@ export function findProblems(root = REPO_ROOT) {
   }
 
   const problems = []
+  const honoured = new Set()
   for (const { file, kind, name } of declarations) {
     const users = [...new Set([...(importers.get(`${file}\0${name}`) ?? []), ...(autoUsers.get(`${file}\0${name}`) ?? [])])]
-    if (users.length < 2 || EXEMPT.has(`${file}:${name}`)) continue
+    if (users.length < 2) continue
+    if (exempt.has(`${file}:${name}`)) {
+      honoured.add(`${file}:${name}`)
+      continue
+    }
     const noun = kind === 'interface' || kind === 'type' ? 'type' : 'constant'
     problems.push(`${file}  ${noun} ${name} is used by ${users.length} files (${users.slice(0, 3).join(', ')}${users.length > 3 ? ', …' : ''}): move it to its domain file or its feature folder's ${noun === 'type' ? 'types.ts' : 'constants.ts'}`)
   }
@@ -174,7 +179,10 @@ export function findProblems(root = REPO_ROOT) {
     if (/^export\s+(?:async\s+)?(?:function|class)\b/m.test(source)) problems.push(`${file}  holds a function or class: a shared file holds declarations only`)
   }
 
-  for (const [key, reason] of EXEMPT) if (!reason) problems.push(`${key}  exempt without a reason`)
+  for (const [key, reason] of exempt) {
+    if (!reason) problems.push(`${key}  exempt without a reason`)
+    if (!honoured.has(key)) problems.push(`${key}  exempt entry is stale: the declaration moved, is gone or has fewer than 2 users (remove it)`)
+  }
 
   return [...new Set(problems)].sort()
 }

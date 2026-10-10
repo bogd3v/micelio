@@ -12,6 +12,11 @@ import { MIN_SEARCH_LENGTH } from '../constants/search'
  * @internal Exported for tests.
  */
 export const BLOG_PAGE_SIZE = 6
+/**
+ * Entries per page of the log view.
+ *
+ * @internal Exported for tests.
+ */
 export const LOG_PAGE_SIZE = 24
 const BLOG_BASE = '/blog'
 

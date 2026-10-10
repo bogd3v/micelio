@@ -14,7 +14,7 @@ const MODULE = '#micelio/display-fonts'
  * @internal Exported for tests.
  */
 export const DISPLAY_FONTS_DIR = 'app/assets/fonts/display'
-export const DISPLAY_FONTS_URL = '/fonts/display'
+const DISPLAY_FONTS_URL = '/fonts/display'
 
 interface DisplayFontAssets {
   /** First 8 hex digits of the sha256 of each font file, the `?v=` of its URL */
