@@ -8,6 +8,13 @@ function isRichText(block: StrapiBlock): block is StrapiRichText {
   return block.__component === 'shared.rich-text'
 }
 
+/**
+ * The `##` and `###` headings of the rich-text blocks, as table-of-contents entries.
+ *
+ * @remarks
+ * `id` is `slugify()` of the heading text. Other blocks are ignored, and
+ * `null` or `undefined` gives an empty array.
+ */
 export function extractHeadings(blocks: StrapiBlock[] | null | undefined): TocHeading[] {
   const headings: TocHeading[] = []
   for (const block of blocks ?? []) {

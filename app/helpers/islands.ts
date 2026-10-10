@@ -1,6 +1,7 @@
 /** Island id to file name under `/_islands/`, written by `modules/islands.ts` (ADR 0006, section 3). */
 export type IslandManifest = Readonly<Record<string, string>>
 
+/** Folder of the built island scripts, relative to `app.baseURL`. */
 export const ISLANDS_PATH = '/_islands/'
 
 /** Public URL of an island's script, or undefined when the build did not produce it. `baseURL` is `app.baseURL`. */
@@ -10,9 +11,11 @@ export function islandSrc(manifest: IslandManifest, id: string, baseURL = '/'): 
   return `${baseURL.replace(/\/+$/, '')}${ISLANDS_PATH}${file}`
 }
 
+/** The declaration of a heavy island, written as JSON in its `<script>` element and read by `parseHeavyDeclaration()`. */
 export interface HeavyDeclaration {
   /** The registry id; the element it upgrades is `heavyTag(id)`. */
   id: string
+  /** `visible` loads the island when its element is in view; `interaction` waits for a press on `control`. */
   trigger: 'visible' | 'interaction'
   /** What `Save-Data` does to a `visible` island. */
   saveData: 'load' | 'skip'

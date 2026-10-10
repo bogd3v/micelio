@@ -7,6 +7,7 @@ const RUNTIMES: Readonly<Record<string, string>> = {
   javascript: 'JavaScript',
 }
 
+/** The display name of a runtime (`SQL`, `Python`, `JavaScript`), or the runtime value itself when it is not one of them. */
 export function playgroundLanguage(runtime: string): string {
   return RUNTIMES[runtime] ?? runtime
 }

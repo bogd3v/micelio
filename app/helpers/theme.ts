@@ -3,6 +3,7 @@ import { BD_THEME_STORAGE_KEY, LEGACY_THEME_STORAGE_KEY, PREVIOUS_THEME_STORAGE_
 
 export { LEGACY_THEME_STORAGE_KEY, PREVIOUS_THEME_STORAGE_KEY, THEME_STORAGE_KEY }
 
+/** Whether a value is the id of one of the theme `modes`. */
 export function isThemeMode(modes: ThemeModeDefinition[], value: unknown): value is ThemeMode {
   return modes.some(mode => mode.id === value)
 }
@@ -12,15 +13,28 @@ export function modeForScheme(modes: ThemeModeDefinition[], scheme: string | nul
   return modes.find(mode => mode.scheme === scheme)?.id ?? null
 }
 
+/**
+ * The colour scheme, `dark` or `light`, of a theme mode.
+ *
+ * @remarks
+ * An unknown mode takes the scheme of the first mode, and `dark` when there are no modes.
+ */
 export function schemeOf(modes: ThemeModeDefinition[], id: ThemeMode): 'dark' | 'light' {
   return modes.find(mode => mode.id === id)?.scheme ?? modes[0]?.scheme ?? 'dark'
 }
 
+/**
+ * The mode after `current` in the list, wrapping around to the first mode.
+ *
+ * @remarks
+ * A `current` that is not in the list moves to the first mode. The `current` mode is returned when there are no modes.
+ */
 export function nextMode(modes: ThemeModeDefinition[], current: ThemeMode): ThemeMode {
   const index = modes.findIndex(mode => mode.id === current)
   return modes[(index + 1) % modes.length]?.id ?? current
 }
 
+/** The mode saved in the browser, or null when none is saved, the saved value is not one of the `modes`, or storage is unavailable. */
 export function readStoredMode(modes: ThemeModeDefinition[]): ThemeMode | null {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY)
@@ -36,6 +50,7 @@ function removeLegacyKeys(): void {
   localStorage.removeItem(LEGACY_THEME_STORAGE_KEY)
 }
 
+/** Saves a mode in the browser and removes the keys of earlier versions. Returns false when storage is unavailable. */
 export function storeMode(mode: ThemeMode): boolean {
   try {
     localStorage.setItem(THEME_STORAGE_KEY, mode)

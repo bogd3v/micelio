@@ -82,6 +82,12 @@ export function landingLinks(
 const HEADER_ANCHORS = 4
 const HEADER_ACTIONS = 2
 
+/**
+ * The links the header shows: at most `HEADER_ANCHORS` anchors and `HEADER_ACTIONS` action links, plus every link that is neither.
+ *
+ * @remarks
+ * Returns a copy of `links` when none of them is an anchor or an action link. The order of `links` is kept.
+ */
 export function headerLinks<T extends { anchor?: boolean, action?: boolean }>(links: readonly T[]): T[] {
   if (!links.some(link => link.anchor || link.action)) return [...links]
   const anchors = links.filter(link => link.anchor).slice(0, HEADER_ANCHORS)

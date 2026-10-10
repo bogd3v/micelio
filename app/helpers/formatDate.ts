@@ -29,6 +29,12 @@ export function formatDate(date: string | null | undefined, style: DateFormatSty
   return new Date(date).toLocaleDateString(locale, options)
 }
 
+/**
+ * Formats an ISO date as `DD.MM.YYYY` in the `America/Bogota` time zone, whatever the reader's zone.
+ *
+ * @remarks
+ * Empty for a falsy input.
+ */
 export function formatDotDate(date: string | null | undefined): string {
   if (!date) return ''
 
@@ -43,6 +49,12 @@ export function formatDotDate(date: string | null | undefined): string {
   return `${part('day')}.${part('month')}.${part('year')}`
 }
 
+/**
+ * Formats an ISO date as `DD.MM.YYYY · HH:MM` in the `America/Bogota` time zone, with a 24-hour clock.
+ *
+ * @remarks
+ * Empty for a falsy input.
+ */
 export function formatDotDateTime(date: string | null | undefined): string {
   if (!date) return ''
 

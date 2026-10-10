@@ -21,6 +21,7 @@ export const LOG_PAGE_SIZE = 24
 const BLOG_BASE = '/blog'
 
 const LOG_VIEW = 'log'
+/** The sort options of the blog list, in display order. */
 export const BLOG_SORTS: BlogSort[] = ['recent', 'oldest', 'fediverse']
 const TIME_ZONE = 'America/Bogota'
 
@@ -29,11 +30,18 @@ function firstValue(value: LocationQuery[string] | RouteParams[string] | undefin
   return typeof raw === 'string' ? raw.trim() : ''
 }
 
+/** The trimmed search text, or undefined when it is shorter than `MIN_SEARCH_LENGTH`. */
 export function searchTerm(input: string): string | undefined {
   const term = input.trim()
   return term.length >= MIN_SEARCH_LENGTH ? term : undefined
 }
 
+/**
+ * The blog list filters read from the route params and the query, with unknown or empty values left out.
+ *
+ * @remarks
+ * When the path names both a category and a tag, the category wins. The page is 1 unless it is a number above 1.
+ */
 export function parseBlogRoute(params: RouteParams, query: LocationQuery): BlogFilters {
   const category = firstValue(params.category).toLowerCase()
   const tag = firstValue(params.tag)
@@ -50,6 +58,7 @@ export function parseBlogRoute(params: RouteParams, query: LocationQuery): BlogF
   }
 }
 
+/** The sort named by a query value: `oldest` or `fediverse`, or undefined for `recent` and for an unknown value. */
 export function parseSort(value: unknown): BlogSort | undefined {
   const sort = typeof value === 'string' ? value.trim().toLowerCase() : ''
   return sort === 'oldest' || sort === 'fediverse' ? sort : undefined
@@ -59,6 +68,7 @@ function parseView(value: string): BlogView | undefined {
   return value.toLowerCase() === LOG_VIEW ? 'log' : undefined
 }
 
+/** The number of entries per page for a view: `LOG_PAGE_SIZE` for the log, `BLOG_PAGE_SIZE` for the rest. */
 export function blogPageSize(view: BlogView | undefined): number {
   return view === 'log' ? LOG_PAGE_SIZE : BLOG_PAGE_SIZE
 }
@@ -81,6 +91,11 @@ export function blogPath(filters: Pick<BlogFilters, 'category' | 'tag' | 'page'>
   return `${base}${filter}${filters.page > 1 ? `/page/${filters.page}` : ''}`
 }
 
+/**
+ * The path and the query of a blog list page, built with `blogPath` and `blogQuery`.
+ *
+ * @param base - The blog path to build from, `/blog` by default, or its localised form.
+ */
 export function blogLocation(filters: BlogFilters, base = BLOG_BASE): { path: string, query: Record<string, string> } {
   return { path: blogPath(filters, base), query: blogQuery(filters) }
 }
@@ -138,6 +153,14 @@ function monthLabel(key: string, locale: string): string {
   return `${name} ${year}`
 }
 
+/**
+ * The posts grouped by the month of their publication, in the order given, with each month labelled in the language of `locale`.
+ *
+ * @remarks
+ * Posts without a publication date are left out. Months are counted in the time zone `America/Bogota`.
+ *
+ * @param locale - The language tag of the month names, such as `en` or `es`.
+ */
 export function groupPostsByMonth(posts: PostListItem[], locale: string): PostMonth[] {
   const months = new Map<string, PostListItem[]>()
   for (const post of posts) {
@@ -148,10 +171,17 @@ export function groupPostsByMonth(posts: PostListItem[], locale: string): PostMo
   return Array.from(months, ([key, items]) => ({ key, label: monthLabel(key, locale), posts: items }))
 }
 
+/** Whether a category, a tag or a search narrows the blog list. The sort, the view and the page do not count. */
 export function hasActiveFilters(filters: BlogFilters): boolean {
   return Boolean(filters.category || filters.tag || filters.search)
 }
 
+/**
+ * The items of a pager: every page when there are seven or fewer, otherwise the first page, the current page with its neighbours, and the last page.
+ *
+ * @remarks
+ * Pages that are left out are replaced by `gap`. A total of 0 gives no items.
+ */
 export function paginationItems(current: number, total: number): PaginationItem[] {
   if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1)
   const items: PaginationItem[] = [1]

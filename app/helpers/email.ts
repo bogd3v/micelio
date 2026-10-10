@@ -17,6 +17,13 @@ interface SmtpTransportOptions {
   socketTimeout: number
 }
 
+/**
+ * Nodemailer transport options for the SMTP settings.
+ *
+ * @remarks
+ * The port is 25 when unset. Port 465 uses implicit TLS; any other port requires STARTTLS. Certificates are verified. The host is
+ * `localhost` when unset. `auth` is set only when both `user` and `pass` are. Connection, greeting and socket timeouts are 10 000 ms.
+ */
 export function smtpTransportOptions(settings: SmtpSettings): SmtpTransportOptions {
   const port = settings.port || 25
   const secure = port === 465

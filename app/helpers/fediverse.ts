@@ -4,6 +4,14 @@ const SCHEME = /^[a-z][a-z0-9+.-]*:\/\//i
 const ACCOUNT_PREFIX = /^@?[^@\s/]+@/
 const LABEL = /^(?!-)[a-z0-9-]{1,63}(?<!-)$/
 
+/**
+ * Turns what a reader typed into the host of a fediverse instance.
+ *
+ * @remarks
+ * Accepts a URL, a host or an account (`@user@host`). The scheme, the account, any path, query or hash, a trailing dot and a port
+ * are dropped. Answers `{ error: 'empty' }` for blank input and `{ error: 'invalid' }` when the rest is not a host with at least
+ * two labels whose last label is not all digits (an IPv4 address is refused).
+ */
 export function normalizeInstance(input: string): InstanceResult {
   let value = input.trim().toLowerCase()
   if (!value) return { error: 'empty' }
@@ -25,6 +33,7 @@ export function normalizeInstance(input: string): InstanceResult {
   return { domain: hostname }
 }
 
+/** The instance's own follow page for an actor, with the actor's URL in `uri`. */
 export function followUrl(domain: string, actorUrl: string): string {
   return `https://${domain}/authorize_interaction?uri=${encodeURIComponent(actorUrl)}`
 }

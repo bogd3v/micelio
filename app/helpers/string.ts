@@ -1,3 +1,9 @@
+/**
+ * The initials of a name: the upper-case first letter of its first two words.
+ *
+ * @remarks
+ * Answers `fallback` when the name is empty or blank.
+ */
 export function initials(name: string | null | undefined, fallback = '?'): string {
   const letters = (name ?? '')
     .trim()

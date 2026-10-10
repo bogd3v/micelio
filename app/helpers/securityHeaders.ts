@@ -32,6 +32,13 @@ const FRAME_ORIGINS = [
   'https://vimeo.com',
 ]
 
+/**
+ * The security headers sent with every response, by lowercase name.
+ *
+ * @remarks
+ * HSTS for one year, `nosniff`, `DENY` framing, a referrer policy, a permissions policy that turns off camera, microphone,
+ * geolocation, payment and USB, and same-origin COOP. The Content-Security-Policy is built by `contentSecurityPolicy()`.
+ */
 export const SECURITY_HEADERS: Record<string, string> = {
   'strict-transport-security': 'max-age=31536000',
   'x-content-type-options': 'nosniff',
@@ -46,6 +53,12 @@ function scriptType(attributes: string): string {
   return (match?.[1] ?? match?.[2] ?? match?.[3] ?? '').trim().toLowerCase()
 }
 
+/**
+ * The text of each inline script of `html` that the browser runs or checks against `script-src`, in order.
+ *
+ * @remarks
+ * Scripts with a `src` are left out, and so are types that are not executed (JSON, templates). The script hashes of the policy come from these.
+ */
 export function inlineScripts(html: string): string[] {
   const scripts: string[] = []
   for (const [, attributes = '', content = ''] of html.matchAll(SCRIPT_PATTERN)) {
@@ -72,6 +85,15 @@ function origins(urls: string[]): string[] {
   return [...new Set(urls.map(cspOrigin).filter(Boolean))]
 }
 
+/**
+ * The `Content-Security-Policy` value of a page, built from `options`.
+ *
+ * @remarks
+ * `default-src`, `base-uri`, `font-src` and `form-action` start at `'self'`; `object-src` and `frame-ancestors` are `'none'`;
+ * `frame-src` allows only the YouTube and Vimeo embed origins; `img-src` adds `data:` and, unless `imageBlobs` is false, `blob:`.
+ * Scripts allow `'self'` and the hashes given; styles allow `'unsafe-inline'`. The options add their sources, and
+ * `frame-ancestors` is left out when `meta` is set.
+ */
 export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): string {
   const hashes = [...new Set(options.scriptHashes)].map(hash => `'sha256-${hash}'`)
   const directives: [string, string[]][] = [

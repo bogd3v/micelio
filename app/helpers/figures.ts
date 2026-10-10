@@ -22,6 +22,14 @@ const LICENSES: Readonly<Record<StrapiImageLicense, { key: string, path?: string
   'other': { key: 'other' },
 }
 
+/**
+ * The i18n key and the link of the license of a figure credit.
+ *
+ * @remarks
+ * Creative Commons licenses link to their deed page. Licenses with a fixed link use it. Other licenses use the credit's own license URL, and own work has no link.
+ *
+ * @param language - The language of the Creative Commons deed page, such as `en` or `es`.
+ */
 export function licenseInfo(credit: StrapiImageCredit, language: string): LicenseInfo {
   const license = LICENSES[credit.license] ?? LICENSES.other
   const ownUrl = credit.licenseUrl?.trim() || undefined
@@ -35,6 +43,14 @@ function text(value: string | null | undefined): string {
   return value?.trim() ?? ''
 }
 
+/**
+ * The parts of a figure credit in display order: author, source, license and modifications.
+ *
+ * @remarks
+ * Empty texts are left out, but the license is always present.
+ *
+ * @param language - The language of the license link, as in `licenseInfo`.
+ */
 export function creditParts(credit: StrapiImageCredit, language: string): CreditPart[] {
   const parts: CreditPart[] = []
   const author = text(credit.author)
@@ -48,11 +64,13 @@ export function creditParts(credit: StrapiImageCredit, language: string): Credit
   return parts
 }
 
+/** The slides of a slider block: its items that have a file or, when it has no items, its library files without a caption or credit. */
 export function slidesOf(block: StrapiSlider): StrapiSlide[] {
   if (block.items?.length) return block.items.filter(item => Boolean(item.file))
   return (block.files ?? []).map(file => ({ file, caption: file.caption ?? null, credit: null }))
 }
 
+/** The caption of a media block, from the block or else from its library file, trimmed. Empty when there is none. */
 export function mediaCaption(block: StrapiMedia): string {
   return text(block.caption) || text(block.file?.caption)
 }
@@ -63,10 +81,17 @@ function hasFigcaption(block: StrapiBlock): boolean {
   return false
 }
 
+/** The key of a block in the map of `figureNumbers`, in the same form as `citationBlockKey`. */
 export function figureBlockKey(block: StrapiBlock): string {
   return `${block.__component}-${block.id}`
 }
 
+/**
+ * The figure number of each block that has a caption or a credit, keyed by `figureBlockKey`.
+ *
+ * @remarks
+ * Numbers count from 1 in the order of the blocks. Blocks without a caption or a credit are not in the map.
+ */
 export function figureNumbers(blocks: StrapiBlock[] | null | undefined): Record<string, number> {
   const numbers: Record<string, number> = {}
   let count = 0
@@ -76,6 +101,7 @@ export function figureNumbers(blocks: StrapiBlock[] | null | undefined): Record<
   return numbers
 }
 
+/** A figure number with two digits, such as `02`. Larger numbers keep all their digits. */
 export function formatFigureNumber(number: number): string {
   return String(number).padStart(2, '0')
 }

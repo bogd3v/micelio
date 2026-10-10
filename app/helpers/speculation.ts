@@ -1,6 +1,8 @@
 import { defaultLocale, Locale } from '../interfaces/locale'
 
+/** The rules of one `speculationrules` script, as `speculationRules()` builds them. */
 export interface SpeculationRules {
+  /** Present only when `speculationRules()` is asked to prerender. */
   prerender?: SpeculationRule[]
   prefetch: SpeculationRule[]
 }

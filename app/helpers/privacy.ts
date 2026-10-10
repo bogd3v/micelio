@@ -18,10 +18,12 @@ interface SiteCookie {
 
 type NoticeStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 
+/** The cookies the site sets, with their lifetime in days, as the privacy page lists them. */
 export const SITE_COOKIES: SiteCookie[] = [
   { name: SESSION_COOKIE, maxAgeDays: SESSION_MAX_AGE / (60 * 60 * 24) },
 ]
 
+/** The keys the site keeps in the browser's `localStorage`, as the privacy page lists them. */
 export const BROWSER_STORAGE_KEYS: string[] = [THEME_STORAGE_KEY, PRIVACY_NOTICE_STORAGE_KEY, READ_STORAGE_KEY]
 
 function browserStorage(): NoticeStorage | null {
@@ -32,6 +34,13 @@ function browserStorage(): NoticeStorage | null {
   }
 }
 
+/**
+ * Whether the reader has dismissed the privacy notice.
+ *
+ * @remarks
+ * A value under the legacy key is moved to the current key when found. Answers false without storage, and when storage throws.
+ * `storage` defaults to `localStorage` when the page has one.
+ */
 export function isPrivacyNoticeDismissed(storage: NoticeStorage | null = browserStorage()): boolean {
   try {
     if (!storage) return false
@@ -48,6 +57,12 @@ export function isPrivacyNoticeDismissed(storage: NoticeStorage | null = browser
   }
 }
 
+/**
+ * Stores that the privacy notice was dismissed, and removes the legacy key.
+ *
+ * @remarks
+ * Answers whether the value was stored: false without storage, and when storage throws.
+ */
 export function dismissPrivacyNotice(storage: NoticeStorage | null = browserStorage()): boolean {
   if (!storage) return false
   try {

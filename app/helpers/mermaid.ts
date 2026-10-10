@@ -1,8 +1,10 @@
 import { MERMAID_ELEMENT } from '../islands/constants'
 import { renderCodeBlockHtml } from './code'
 
+/** The `id` of the element that holds the JSON settings of a diagram, read by `parseMermaidConfig`. */
 export const MERMAID_CONFIG_ID = 'micelio-island-mermaid'
 
+/** The names of the theme tokens that the diagrams read from CSS custom properties, without the `--` prefix. */
 export const MERMAID_TOKENS = [
   'surface',
   'surface-raised',
@@ -19,8 +21,10 @@ export const MERMAID_TOKENS = [
 
 type MermaidToken = typeof MERMAID_TOKENS[number]
 
+/** The value of each token in `MERMAID_TOKENS`, as read from the page. */
 export type MermaidTokens = Record<MermaidToken, string>
 
+/** The CSS injected into each diagram: thin strokes, square corners and no shadows. */
 export const MERMAID_CSS = [
   '.flowchart-link, .messageLine0, .messageLine1, .relation, .transition { stroke-width: 1.4px; }',
   '.marker, .arrowheadPath { stroke-width: 1.4px; }',
@@ -69,10 +73,18 @@ export function resolveMermaidOverrides(overrides: Record<string, string>, read:
   }))
 }
 
+/** The accessible title of a Mermaid source, from its `accTitle` line, or null when it has none. */
 export function mermaidTitle(source: string): string | null {
   return source.match(ACC_TITLE)?.[1] ?? null
 }
 
+/**
+ * The Mermaid theme variables for the tokens in the light or the dark scheme, with the overrides applied on top.
+ *
+ * @param tokens - The value of each token in `MERMAID_TOKENS`.
+ * @param dark - Whether the diagram uses the dark scheme.
+ * @param overrides - Variables that replace the base ones, by Mermaid variable name. Empty by default.
+ */
 export function mermaidThemeVariables(tokens: MermaidTokens, dark: boolean, overrides: Record<string, string> = {}): Record<string, string | number | boolean> {
   return {
     ...baseThemeVariables(tokens, dark),

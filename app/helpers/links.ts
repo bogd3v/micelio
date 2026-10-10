@@ -5,6 +5,12 @@ interface ResolvedLink {
 
 const EXTERNAL = /^(https?:|mailto:)/i
 
+/**
+ * The href of a link: the trimmed URL, with a site path (`/…`) passed through `localize`.
+ *
+ * @remarks
+ * `http(s)` and `mailto:` URLs are external and kept as they are. Any other value is kept and not external.
+ */
 export function resolveLink(url: string, localize: (path: string) => string): ResolvedLink {
   const trimmed = url.trim()
   if (EXTERNAL.test(trimmed)) return { href: trimmed, external: true }
