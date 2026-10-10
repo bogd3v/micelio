@@ -1,4 +1,4 @@
-/* A landing's header lists section anchors and the links of its hero and call to action (docs/static-mode.md, "Landing") */
+/* A landing's header lists section anchors and the links of its hero and call to action (docs/operate/static-site.md, "Landing") */
 .myc-nav-links > li[data-kind] > .myc-nav-link {
     white-space: nowrap;
 }

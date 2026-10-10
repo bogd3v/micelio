@@ -250,7 +250,7 @@ export function unreachableScripts(scripts: ReadonlyMap<string, string>, roots: 
 }
 
 /**
- * What a landing needs from its home pages (docs/static-mode.md, "Landing"): with no articles, the home page is all there is,
+ * What a landing needs from its home pages (docs/operate/static-site.md, "Landing"): with no articles, the home page is all there is,
  * so a language without one fails the build; with articles the blog home answers, so it is only a warning.
  */
 export function landingHomeCheck(blogEnabled: boolean, missing: readonly string[]): { error?: string, warning?: string } {

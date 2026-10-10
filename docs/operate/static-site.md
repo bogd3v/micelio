@@ -1,12 +1,12 @@
 # Hosting a static or landing site
 
-How to build and publish a Micelio site with `NUXT_PUBLIC_SITE_MODE=static` or `landing` ([ADR 0006](adr/0006-site-modes.md), section 7). Cloudflare Pages is the reference host.
+How to build and publish a Micelio site with `NUXT_PUBLIC_SITE_MODE=static` or `landing` ([ADR 0006](../adr/0006-site-modes.md), section 7). Cloudflare Pages is the reference host.
 
 ## When to choose it
 
 - Choose `static` for a blog or documentation site whose content changes with publishing, not per visitor: no comments, accounts, drafts or fediverse, search through a static index, newsletter through an external provider.
 - Choose `landing` for a few pages that rarely change.
-- Keep `dynamic` (a Node server) when you need comments, accounts, drafts, the fediverse or the newsletter stored in Strapi. BogDev stays dynamic.
+- Keep `dynamic` (a Node server) when you need comments, accounts, drafts, the fediverse or the newsletter stored in Strapi.
 
 ## How it works
 
@@ -37,7 +37,7 @@ Settings, Secrets and variables, Actions.
 
 ## The build token
 
-The static build must use the `build` token (`BUILD_API_TOKEN` in micelio-cms): custom, find-only, content types needed to render and nothing else. Never give the build the frontend token, which can read and delete subscribers. See [security.md](security.md) (credentials towards Strapi, and the rebuild and deploy tokens).
+The static build must use the `build` token (`BUILD_API_TOKEN` in micelio-cms): custom, find-only, content types needed to render and nothing else. Never give the build the frontend token, which can read and delete subscribers. See [security.md](../security.md) (credentials towards Strapi, and the rebuild and deploy tokens).
 
 ## Strapi reachable from the runner
 
@@ -60,7 +60,7 @@ Optional: `REBUILD_HOOK_DEBOUNCE_MS`, `REBUILD_HOOK_RETRIES`, `REBUILD_HOOK_RETR
 
 ## Cloudflare Pages
 
-1. Create a Pages project with **Direct Upload** (no Git integration: GitHub builds, Cloudflare only serves). The project and its domain are created in bogdev-infra (Terraform) for the reference deployment.
+1. Create a Pages project with **Direct Upload** (no Git integration: GitHub builds, Cloudflare only serves). Create the project and its domain with whatever tool manages your infrastructure.
 2. Create an API token with the permission *Account, Cloudflare Pages, Edit* only, and note the account id.
 3. Set the variables and secrets above and run the workflow once by hand.
 
@@ -167,7 +167,7 @@ Static and landing sites search with [Pagefind](https://pagefind.app) (MIT), as 
 - **The index** is built by `modules/static-search.ts` right after the pages are prerendered, so `npm run generate` stays one command. Pagefind indexes the pages that carry `data-pagefind-body`: the article body (`<article class="myc-article-content">`, without the tags, author card and reading path) and the article's lead, and section pages (`app/pages/[slug].vue`, without post lists). When a section page is the home page it is indexed once, at `/` (`app/pages/index.vue`), and its own slug is left out, so results link to the canonical URL. The blog list, the blog home, `/about` and `/privacy` are not indexed. If no generated page has `data-pagefind-body` the build warns and writes no index (Pagefind would otherwise index whole pages), and the log lists the pages indexed per language. A theme's own article layout must keep `data-pagefind-body` on the article and `data-pagefind-meta="title"` on the `h1`. English and Spanish get separate indexes from `<html lang>`. Pagefind's own UI files are deleted from the output; only `pagefind.js`, its worker, one WebAssembly file per language and the index chunks stay.
 - **What loads when.** Every page with search loads one file at start: `/_islands/search-<hash>.js` (a plain `<script type="module">`, never preloaded). Pagefind (`/pagefind/pagefind.js`, the worker, `wasm.<lang>.pagefind`, the entry and meta files) loads when the palette first opens; the index and fragment chunks load per query, only for the language of the page. `/_islands/*` is immutable (hashed names); `/pagefind/*` is revalidated, because `pagefind.js` keeps its name between builds.
 - **Islands** are built by `modules/islands.ts` from `app/islands/*.ts` with Vite (one entry each, hashed names) into `node_modules/.cache/micelio/islands-<hash>` (kept between runs, keyed by a hash of the island sources, `app/helpers`, `app/interfaces` and `package-lock.json`), which Nitro serves under `/_islands/`; the manifest is the generated `#build/micelio/islands`, read by `useIsland(id)`. Islands are built in every mode (ADR 0006 amendment); only static pages render them today. In `nuxt dev` the island works but there is no `/pagefind/` index, so the palette says the search is unavailable; edits to `app/islands/` need a restart.
-- **CSP.** Pagefind runs WebAssembly, so static builds add `'wasm-unsafe-eval'` to `script-src` on every page (one `/*` rule, and the meta); see [security.md](security.md). It does not allow `eval()` or inline scripts.
+- **CSP.** Pagefind runs WebAssembly, so static builds add `'wasm-unsafe-eval'` to `script-src` on every page (one `/*` rule, and the meta); see [security.md](../security.md). It does not allow `eval()` or inline scripts.
 - **Budget.** The `islands` section of `modes.static` in `scripts/perf/budgets.json`, enforced by `npm run perf -- --mode static` (what loads when the palette opens) and `e2e/static/search.spec.ts` (the files) hold the sizes (the loader and the Pagefind runtime in gzip KB, the WebAssembly in raw KB); `docs/performance.md` has the numbers.
 
 Search needs `search` on in Strapi's `site-setting.modules` and a host that serves `/pagefind/` and `/_islands/` as files (any static host does).

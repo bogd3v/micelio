@@ -35,6 +35,7 @@ npm run theme:reference # Regenerate docs/themes/reference/ from the contract (r
 npm run theme:new -- <id> # New theme: copies themes/starter/ to themes/<id>/ and renames it ([--name "Name"])
 npm run theme:check  # Contract, hooks, contrast matrix and static budgets of the installed themes ([id] and --json; errors exit 1)
 npm run lint:fix     # Run ESLint with --fix
+npm run tokens       # Print the role CSS the build generates from a theme.json (default themes/bogota/theme.json)
 npm run test         # Run unit tests with Vitest (test/*.test.ts)
 npm run test:coverage     # Same tests with coverage of app/ and themes/; fails under the thresholds in vitest.config.ts
 npm run test:integration  # Run API-route integration tests (test/integration/, needs a Nuxt build)

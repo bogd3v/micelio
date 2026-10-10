@@ -1,7 +1,7 @@
 name: Static site
 
 # Builds the static or landing site and publishes it to Cloudflare Pages
-# (ADR 0006, section 7; guide: docs/static-mode.md). It does nothing unless the
+# (ADR 0006, section 7; guide: docs/operate/static-site.md). It does nothing unless the
 # repository variable STATIC_SITE_ENABLED is "true", so BogDev and forks skip it.
 
 on:

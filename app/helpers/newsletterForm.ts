@@ -1,6 +1,6 @@
 import { cspOrigin } from './securityHeaders'
 
-// The external newsletter form of static builds (ADR 0006, section 5; docs/static-mode.md)
+// The external newsletter form of static builds (ADR 0006, section 5; docs/operate/static-site.md)
 
 interface HiddenField {
   name: string
@@ -41,7 +41,7 @@ export function formFieldName(value: unknown): string {
   return typeof value === 'string' && value.trim() !== '' ? value.trim() : DEFAULT_FIELD
 }
 
-/** Hidden fields a known provider needs. Buttondown's embed form sends `embed=1` (docs/static-mode.md). */
+/** Hidden fields a known provider needs. Buttondown's embed form sends `embed=1` (docs/operate/static-site.md). */
 export function hiddenFields(action: string): HiddenField[] {
   const host = URL.canParse(action) ? new URL(action).hostname : ''
   return host === 'buttondown.com' || host.endsWith('.buttondown.com') ? [{ name: 'embed', value: '1' }] : []

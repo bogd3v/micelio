@@ -20,7 +20,7 @@ export function useNavLinks(): ComputedRef<SiteNavLink[]> {
 }
 
 /**
- * The landing navigation (docs/static-mode.md, "Landing"): anchors to the titled sections of the home page, then the links of its hero and call to action.
+ * The landing navigation (docs/operate/static-site.md, "Landing"): anchors to the titled sections of the home page, then the links of its hero and call to action.
  * Empty when no home page is set or it cannot be loaded. The header renders before the page, when the site settings have not answered yet,
  * so this asks for them itself (the same key everywhere it is used: one request).
  */
