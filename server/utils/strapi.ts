@@ -39,6 +39,12 @@ export function strapiForwardHeaders(event: H3Event): Record<string, string> {
   return forwardHeaders(strapiForwarderSecret(), clientIp(event))
 }
 
+/**
+ * Calls the CMS at `path` and resolves with the parsed body, with the API token or the credential of `options.auth`.
+ *
+ * @remarks
+ * Pass `event` for any call made on behalf of a visitor: when the forwarder secret is set, the visitor address and the secret go to the CMS, and, when they are sent, `redirect` is `error` so the secret never follows a redirect. Without `event`, or without the forwarder secret, nothing is forwarded and the CMS counts the call against the server's own address (docs/security.md, "Client IP and rate limits"). Failures are the `ofetch` errors of `strapiRequest`, which the callers handle.
+ */
 export function strapiFetch<T>(path: string, options: StrapiFetchOptions = {}): Promise<T> {
   const { event, headers, ...request } = options
   const forward = event ? strapiForwardHeaders(event) : {}

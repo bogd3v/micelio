@@ -55,6 +55,12 @@ function resolveEventIp(event: H3Event): string {
   return resolveClientIp(trustProxy(config.trustProxy), peer, header).ip
 }
 
+/**
+ * Counts one attempt in `bucket` for `key` and throws a 429 when the bucket is full.
+ *
+ * @remarks
+ * The counts are in memory (docs/security.md): they reset on a restart and are not shared between instances. `key` is a visitor IP address, or an email address for the email limit. The limits of each bucket are in `RATE_LIMITS`. On a 429 the response carries `Retry-After` with the seconds left in the window.
+ */
 export function assertRateLimit(event: H3Event, bucket: keyof typeof RATE_LIMITS, key: string): void {
   const result = limiter.consume(`${bucket}:${key}`, RATE_LIMITS[bucket])
   if (result.allowed) return
@@ -65,6 +71,7 @@ export function assertRateLimit(event: H3Event, bucket: keyof typeof RATE_LIMITS
 /** Longest `Retry-After` echoed to the browser, whatever the CMS says. */
 const MAX_RETRY_AFTER_SECONDS = 3600
 
+/** Whether an error from a CMS call is a 429, read from `response.status` or from `statusCode`. */
 export function isUpstreamRateLimit(error: unknown): boolean {
   const upstream = asUpstreamError(error)
   return (upstream.response?.status ?? upstream.statusCode) === 429

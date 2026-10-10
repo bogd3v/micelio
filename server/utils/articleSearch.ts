@@ -4,6 +4,7 @@ import type { SearchMatch, SearchPostResult } from '~/interfaces'
 const SEARCH_TIMEOUT_MS = 3000
 const MATCHES = new Set<SearchMatch>(['title', 'description', 'content'])
 
+/** The most results one search returns: a larger `limit` is cut to it. */
 export const SEARCH_MAX_RESULTS = 50
 
 interface UpstreamSearchRow {
@@ -46,6 +47,12 @@ function toResult(row: UpstreamSearchRow): SearchPostResult | null {
   }
 }
 
+/**
+ * Searches the published articles in the CMS and returns the matches in the CMS order.
+ *
+ * @remarks
+ * Calls `/api/articles/search` with a 3-second timeout and `limit` capped at `SEARCH_MAX_RESULTS`. With `content` set, the bodies are searched too. The visitor forwarding headers go with the call. Rows without a document id or a slug are dropped, and an unknown `matchedIn` reads as `title`. A failed call rejects, and the route answers it.
+ */
 export async function searchArticles({ event, query, locale, content, limit }: ArticleSearchOptions): Promise<SearchPostResult[]> {
   const response = await strapiFetch<{ data?: UpstreamSearchRow[] }>('/api/articles/search', {
     event,

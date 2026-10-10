@@ -5,14 +5,18 @@ import type { Page, PageSection, PageSeo, PostListSection } from '~/interfaces'
 import { PAGE_SLUG_PATTERN } from '~/constants/pages'
 import { isGlbUrl } from '~/helpers/scene'
 
+/** Fewest posts a `section.post-list` shows: its `count` is clamped up to this. */
 export const POST_LIST_MIN = 1
+/** Most posts a `section.post-list` shows: its `count` is clamped down to this. */
 export const POST_LIST_MAX = 12
 const POST_LIST_DEFAULT = 3
 
+/** The route parameters of `GET /api/pages/:slug`: a `slug` that matches `PAGE_SLUG_PATTERN`, checked before any CMS call. A slug that fails it is a 400 `Invalid slug`. */
 export const pageParamsSchema = z.object({
   slug: z.string({ error: 'Invalid slug' }).regex(PAGE_SLUG_PATTERN, 'Invalid slug'),
 })
 
+/** Renders Markdown from the CMS to HTML for a text section. The renderer of `markdownRenderer` sanitizes its output. */
 export type RenderMarkdown = (markdown: string) => string
 
 // Strapi sends null (or '') for what was never set; an invalid optional value drops itself alone
