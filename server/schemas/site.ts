@@ -51,6 +51,12 @@ const theme = z.object({
 /** The page Strapi chose for `/`; null when none, and only its slug is read. */
 const homePage = z.object({ slug: z.string().regex(PAGE_SLUG_PATTERN) })
 
+/**
+ * The `site-setting` content of Strapi, validated field by field.
+ *
+ * @remarks
+ * Every field is optional and falls back alone when it is invalid, so one bad value never drops the rest. `parseSiteSettings` is the only reader.
+ */
 export const siteSettingsSchema = z.object({
   name: lenient(text),
   description: lenient(text),
@@ -75,6 +81,7 @@ export const siteSettingsSchema = z.object({
   homePage: lenient(homePage.nullish().transform(value => value ?? undefined)),
 })
 
+/** The site settings from a CMS body, or null when the body is not an object. */
 export function parseSiteSettings(data: unknown): SiteSettings | null {
   const parsed = siteSettingsSchema.safeParse(data)
   return parsed.success ? parsed.data : null

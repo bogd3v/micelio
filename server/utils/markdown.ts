@@ -8,6 +8,12 @@ import es from '../../i18n/locales/es.json'
 const MESSAGES: Record<string, typeof en> = { en, es }
 const renderers = new Map<string, MarkdownRenderer>()
 
+/**
+ * The Markdown renderer of one locale, built on first use and cached for the life of the process.
+ *
+ * @remarks
+ * Callout titles and citation labels come from the locale messages. An unknown or missing locale uses the default locale.
+ */
 export function markdownRenderer(locale: Locale | string | undefined): MarkdownRenderer {
   const key = locale && locale in MESSAGES ? locale : defaultLocale
   let renderer = renderers.get(key)

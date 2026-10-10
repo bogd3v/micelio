@@ -51,7 +51,7 @@ export default withNuxt(
   },
   {
     // Folders whose exports are all documented: a missing comment fails the lint (#425).
-    files: ['app/interfaces/**/*.ts', 'app/constants/categories.ts', 'app/composables/useSite.ts', 'app/helpers/**/*.ts'],
+    files: ['app/interfaces/**/*.ts', 'app/constants/categories.ts', 'app/composables/useSite.ts', 'app/helpers/**/*.ts', 'server/**/*.ts'],
     rules: { 'jsdoc/require-jsdoc': 'error' },
   },
   {

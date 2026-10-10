@@ -64,6 +64,12 @@ async function fetchFeedPosts({ locale, category }: FeedOptions): Promise<RawStr
   return response.data || []
 }
 
+/**
+ * The RSS 2.0 document of the newest articles of one locale, optionally of one category.
+ *
+ * @remarks
+ * Reads up to 50 articles from the CMS and the site from `loadSite`, then builds the XML by hand, with escaped text and CDATA sections. The channel links to its own feed and to the feed of the other locale. Caching is set by `sendFeed`, not here.
+ */
 export async function renderFeed(options: FeedOptions): Promise<string> {
   const { locale, category } = options
   const config = useRuntimeConfig()
@@ -122,6 +128,12 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
 </rss>`
 }
 
+/**
+ * Answers a feed request with the document of `renderFeed`.
+ *
+ * @remarks
+ * Sets the RSS content type and `public, s-maxage=1800, stale-while-revalidate=3600`. Throws a 404 when the blog is disabled (ADR 0006), and a 500 `Failed to generate RSS feed` when rendering fails.
+ */
 export async function sendFeed(event: H3Event, options: FeedOptions): Promise<string> {
   // A landing with no articles has no feeds (ADR 0006, section 1)
   if (!isBlogEnabled(useRuntimeConfig(event).public.blogEnabled)) throw createError({ statusCode: 404, message: 'This site has no blog' })
@@ -134,6 +146,14 @@ export async function sendFeed(event: H3Event, options: FeedOptions): Promise<st
   }
 }
 
+/**
+ * The category of a feed file such as `name.xml`, for the category feeds.
+ *
+ * @param file - The `file` route parameter, with its `.xml` suffix; undefined when the route has none.
+ *
+ * @throws
+ * A 404 error with the message `Feed not found` when the name is not a lowercase slug of a known category.
+ */
 export function feedCategory(file: string | undefined): Category {
   const match = /^([a-z-]+)\.xml$/.exec(file ?? '')
   const slug = match?.[1]

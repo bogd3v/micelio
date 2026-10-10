@@ -4,6 +4,7 @@ import { blogUrl, confirmUrl as buildConfirmUrl, unsubscribeHeaders, unsubscribe
 import type { NewsletterLanguage } from '~/interfaces/newsletter'
 import { escapeHtml } from '~/helpers/code'
 
+/** A nodemailer transport built from the SMTP settings of the runtime config. Each call builds a new one; nothing is pooled. */
 export function createTransporter() {
   const config = useRuntimeConfig()
 
@@ -15,6 +16,12 @@ export function createTransporter() {
   }))
 }
 
+/**
+ * Sends one HTML email from the newsletter sender, through the SMTP settings of the runtime config.
+ *
+ * @remarks
+ * Opens a new transport for each message. `options.headers` are added to the message as given. A failed delivery rejects with the transport error.
+ */
 export async function sendEmail(options: {
   to: string
   subject: string
@@ -33,6 +40,12 @@ export async function sendEmail(options: {
   })
 }
 
+/**
+ * Sends the newsletter confirmation email, in the subscriber language, with the link that confirms the subscription.
+ *
+ * @remarks
+ * The link is built from the public site URL and `token`. The subject names the site through `siteName`; the body does not, so `siteName` is not HTML-escaped here. A failed delivery rejects.
+ */
 export async function sendConfirmationEmail(
   email: string,
   token: string,
@@ -78,6 +91,12 @@ export async function sendConfirmationEmail(
   await sendEmail({ to: email, subject, html })
 }
 
+/**
+ * Sends the welcome email that follows a confirmed subscription, with a link to leave the newsletter.
+ *
+ * @remarks
+ * The message carries the `List-Unsubscribe` and `List-Unsubscribe-Post` headers, so mail clients can unsubscribe in one click. `siteName` is escaped in the HTML body. A failed delivery rejects.
+ */
 export async function sendWelcomeEmail(
   email: string,
   locale: NewsletterLanguage,

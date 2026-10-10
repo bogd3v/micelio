@@ -8,6 +8,12 @@ import { BlockList, isIP } from 'node:net'
  * Pure functions: docs/security.md, "Client IP".
  */
 
+/**
+ * The proxies the server trusts to have written the forwarded address, as `parseTrustProxy` reads them from `NUXT_TRUST_PROXY`.
+ *
+ * @remarks
+ * `none` ignores the forwarded header. `hops` takes the `hops`-th entry counted from the right (1 is the last); a shorter chain falls back to the socket address. `peers` reads the header only when the socket peer is trusted: it walks it from the right while each entry is a trusted address, and the first untrusted entry is the visitor (the leftmost when all are trusted). An unparsable entry falls back to the socket address.
+ */
 export type TrustProxy
   = | { kind: 'none' }
     | { kind: 'hops', hops: number }
