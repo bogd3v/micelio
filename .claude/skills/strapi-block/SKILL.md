@@ -8,7 +8,7 @@ description: Render a new Strapi dynamic-zone block (shared.* for articles, abou
 A block travels through five places. Missing one gives an empty block, a 400 from Strapi or a CSP violation in production.
 
 1. **Backend first.** The component lives in `~/Git/micelio-cms/src/components/<category>/<name>.json`. Read its attributes there; do not guess field names.
-2. **Populate.** Add the component to the dynamic-zone `populate.on` map: `server/utils/articlePopulate.ts` for articles, `server/api/about.get.ts` for About. Media and relations need explicit `populate: { file: true, … }`; an unknown key makes Strapi answer 400.
+2. **Populate.** Add the component to the dynamic-zone `populate.on` map: `ARTICLE_POPULATE` in `server/lib/constants.ts` for articles, `server/api/about.get.ts` for About. Media and relations need explicit `populate: { file: true, … }`; an unknown key makes Strapi answer 400.
 3. **Type.** Add an interface to `app/interfaces/strapi-blocks.ts` with `__component: '<category>.<name>'` and add it to the `StrapiBlock` union.
 4. **Renderer.** Create `app/components/strapi/<Name>Block.vue` (follow the **ui-component** skill) and register it in `componentMap` in `BlocksRenderer.vue`. Blocks missing from the map are skipped silently.
 5. **Content safety.**

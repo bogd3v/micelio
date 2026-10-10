@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ARTICLE_POPULATE } from '../server/utils/articlePopulate'
+import { ARTICLE_POPULATE } from '../server/lib/constants'
 import { isRunnable, playgroundLanguage, playgroundText } from '../app/helpers/playground'
 
 describe('article populate', () => {

@@ -103,7 +103,7 @@ Branches, commits, signed-off commits (`git commit -s`), PR titles and descripti
 - Use `defineProps<T>()` with generic syntax for component props
 - Use `defineEmits<{ event: [paramType] }>()` for emits
 - Prefer interfaces over types for object shapes
-- Place a type or constant by its reach (standard, section 4): in the file that uses it; next to its function when only that function's callers import it; in the feature folder's `types.ts` or `constants.ts` when several files of `modules/theme/`, `app/islands/` or `server/lib/` share it; in `app/interfaces/<domain>.ts` or `app/constants/<domain>.ts` when several features share it or it crosses a boundary. Shared files hold declarations only, and a domain file past ~200 lines becomes a folder with an `index.ts`. `npm run lint:placement` checks it
+- Place a type or constant by its reach (standard, section 4): in the file that uses it; next to its function when only that function's callers import it; in the feature folder's `types.ts` or `constants.ts` when several files of `modules/theme/`, `app/islands/` or `server/lib/` share it; in `app/interfaces/<domain>.ts` or `app/constants/<domain>.ts` when several features share it or it crosses a boundary. `server/lib/constants.ts` and `types.ts` are the home of what several server features share; they are never auto-imported, so consumers import them explicitly. Shared files hold declarations only, and a domain file past ~200 lines becomes a folder with an `index.ts`. `npm run lint:placement` checks it
 
 ### Vue Component Guidelines
 

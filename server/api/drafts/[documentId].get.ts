@@ -2,6 +2,7 @@ import qs from 'qs'
 import type { H3Event } from 'h3'
 import type { DraftArticleResponse, Locale, PublishedVersion, RawStrapiArticle } from '~/interfaces'
 import { renderArticleBlocks } from '~/helpers/markdown'
+import { ARTICLE_POPULATE } from '../../lib/constants'
 
 async function fetchPublishedVersion(event: H3Event, jwt: string, path: string, locale: Locale | undefined): Promise<PublishedVersion | null> {
   const query = qs.stringify({ status: 'published', locale, fields: ['slug', 'updatedAt', 'publishedAt'] }, { skipNulls: true })
