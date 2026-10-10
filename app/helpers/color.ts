@@ -2,6 +2,7 @@
 
 /** sRGB channels in 0..1. */
 export interface Rgb { r: number, g: number, b: number }
+/** `Rgb` with an alpha channel `a` in 0..1. */
 export interface Rgba extends Rgb { a: number }
 interface Oklch { l: number, c: number, h: number }
 
@@ -63,6 +64,7 @@ export function contrastRatio(a: Rgb, b: Rgb): number {
   return (hi + 0.05) / (lo + 0.05)
 }
 
+/** `#rrggbb` of a color: channels are clamped to 0..1 and rounded to 8 bits. */
 export function toHex(color: Rgb): string {
   return `#${[color.r, color.g, color.b].map(channel => Math.round(clamp01(channel) * 255).toString(16).padStart(2, '0')).join('')}`
 }
@@ -118,6 +120,12 @@ function inGamut(color: Rgb): boolean {
   return [color.r, color.g, color.b].every(channel => channel >= -EPSILON && channel <= 1 + EPSILON)
 }
 
+/**
+ * OKLCH to sRGB, clamped to 0..1 per channel.
+ *
+ * @remarks
+ * A color outside the sRGB gamut is clipped, not reduced in chroma; `atLightness()` does the reduction.
+ */
 export function oklchToSrgb(color: Oklch): Rgb {
   const raw = oklchToRawSrgb(color)
   return { r: clamp01(raw.r), g: clamp01(raw.g), b: clamp01(raw.b) }

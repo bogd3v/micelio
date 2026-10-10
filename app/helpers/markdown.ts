@@ -15,8 +15,11 @@ interface MarkdownLabels {
   cite: (n: number) => string
 }
 
+/** Renders the Markdown of Strapi content to sanitized HTML; created by `createMarkdownRenderer()`. */
 export interface MarkdownRenderer {
+  /** Renders blocks of Markdown; an empty string gives an empty string, and a render error gives the escaped text. */
   renderMarkdown: (text: string, citations?: BlockCitations) => string
+  /** Renders Markdown without block elements; the sanitizer keeps only links, emphasis, code and superscript. */
   renderInlineMarkdown: (text: string, citations?: BlockCitations) => string
 }
 
@@ -138,6 +141,13 @@ function buildMarked(
   return marked
 }
 
+/**
+ * Creates a Markdown renderer with its own `Marked` instance and citation state.
+ *
+ * @remarks
+ * `labels.callout` gives the title of a callout that has none, and `labels.cite` the accessible label of a citation link. The renderer
+ * is server-only (see the top of this file).
+ */
 export function createMarkdownRenderer(labels: MarkdownLabels): MarkdownRenderer {
   const state: CitationState = { emitted: new Set() }
   const scopedMarked = buildMarked(labels.callout, labels.cite, state)
@@ -180,6 +190,13 @@ function blockCitations(index: CitationIndex | undefined, block: StrapiBlock): B
   return { numbers: index.numbers, anchored: index.anchors[citationBlockKey(block)] ?? [] }
 }
 
+/**
+ * The blocks with `html` added to their Markdown: rich text, quotes and the items of the open-source guide.
+ *
+ * @remarks
+ * Other blocks pass through unchanged, and the input array is not modified. Citations are numbered only when `index` is given.
+ * `null` or `undefined` gives an empty array.
+ */
 export function renderBlocks(blocks: StrapiBlock[] | null | undefined, renderer: MarkdownRenderer, index?: CitationIndex): StrapiBlock[] {
   return (blocks ?? []).map((block) => {
     switch (block.__component) {
@@ -195,6 +212,7 @@ export function renderBlocks(blocks: StrapiBlock[] | null | undefined, renderer:
   })
 }
 
+/** Renders the blocks of an article, numbering its citations from `references`; see `renderBlocks()`. */
 export function renderArticleBlocks(
   blocks: StrapiBlock[] | null | undefined,
   references: StrapiReference[] | null | undefined,

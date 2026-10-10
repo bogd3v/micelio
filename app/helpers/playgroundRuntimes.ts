@@ -12,7 +12,11 @@ export const RUNTIME_FILES: Readonly<Record<string, RegExp>> = {
   python: /^runtimes\/(?:python-[\w-]{8}\.js|pyodide-[\w-]{8}\/(?:pyodide\.mjs|pyodide\.asm\.mjs|pyodide\.asm\.wasm|python_stdlib\.zip|pyodide-lock\.json))$/,
 }
 
-// Emitted by the SQLite package next to what we use, never loaded: its OPFS proxy and its worker1 API (we run in memory, in our own Worker)
+/**
+ * Files of `/_islands/` that a runtime package emits and the playground never loads (SQLite's OPFS proxy and worker1 API: it runs in memory, in our own Worker). `modules/islands.ts` deletes the matching files.
+ *
+ * @internal Exported for `modules/islands.ts` and the tests.
+ */
 export const UNUSED_RUNTIME_FILES: readonly RegExp[] = [
   /^runtimes\/sqlite3-opfs-async-proxy-[\w-]+\.js$/,
   /^workers\/sqlite3-worker1-[\w-]+\.js$/,

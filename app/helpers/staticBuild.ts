@@ -44,10 +44,12 @@ function localized(path: string, locale: Locale): string {
   return locale === defaultLocale ? path : `/${locale}${path}`
 }
 
+/** The static route of an article in a locale: `/blog/<slug>`, with the locale prefix except for the default locale. */
 export function articleRoute(slug: string, locale: Locale): string {
   return localized(`/blog/${slug}`, locale)
 }
 
+/** The static route of a section page in a locale: `/<slug>`, with the locale prefix except for the default locale. */
 export function sectionPageRoute(slug: string, locale: Locale): string {
   return localized(`/${slug}`, locale)
 }

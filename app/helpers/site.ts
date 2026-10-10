@@ -2,6 +2,7 @@ import { defaultLocale } from '../interfaces/locale'
 import { SITE_MODULES } from '../interfaces/site'
 import type { AppSiteConfig, Site, SiteImage, SiteModules, SiteSettings, SocialLink } from '../interfaces/site'
 
+/** Every site module switched on, frozen: copy it before switching one off. */
 export const ALL_MODULES_ON: Readonly<SiteModules> = Object.freeze(
   Object.fromEntries(SITE_MODULES.map(module => [module, true])) as SiteModules,
 )

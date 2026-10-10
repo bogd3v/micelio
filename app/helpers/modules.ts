@@ -28,6 +28,7 @@ export function moduleForPath(path: string): SiteModule | null {
   return null
 }
 
+/** Whether a module is switched on in `modules`. */
 export function isModuleEnabled(modules: SiteModules, module: SiteModule): boolean {
   return modules[module]
 }

@@ -1,6 +1,13 @@
 import type { RawStrapiArticle, StrapiPost } from '../interfaces/strapi-post'
 import { publishedTranslations } from './translations'
 
+/**
+ * Maps a raw Strapi article to the `StrapiPost` the pages use.
+ *
+ * @remarks
+ * `seo` becomes `undefined` when it is `null` or missing, `blocks` and `references` become empty arrays when missing, and `localizations`
+ * become the published `translations`. The blocks are not rendered here.
+ */
 export function toStrapiPost(article: RawStrapiArticle): StrapiPost {
   return {
     id: article.id,
