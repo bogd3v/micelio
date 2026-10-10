@@ -17,7 +17,7 @@ The server, DNS and reverse proxy (Traefik on Dokploy) are managed with Terrafor
 
 ## The Node base image
 
-The `Dockerfile` pulls `node:22.23-slim` from Docker Hub, which rate-limits anonymous pulls (`429 Too Many Requests` failed two builds of `main` before the deploy). The two image jobs (`build-and-push` and `build-builder`) therefore run the `node-base` action (`.github/actions/node-base`, `scripts/ci/resolve-node-base.sh`) after logging in to GHCR:
+The `Dockerfile` pulls `node:22.23-slim` from Docker Hub, which rate-limits anonymous pulls (`429 Too Many Requests` failed two builds of `main` before the deploy). The two image jobs (`build-and-push` and `build-builder`) therefore run the `node-base` action (`.github/actions/node-base`, `scripts/ci/resolve-node-base.sh`, which uses the generic `scripts/ci/mirror-image.sh`, also used for the Postgres of [the contract tests](contract-tests.md)) after logging in to GHCR:
 
 1. It reads the tag of the first `FROM node:` line of the `Dockerfile`, so a Dependabot bump of the base image needs no change here.
 2. If `ghcr.io/<owner>/node:<tag>` does not exist, it copies the multi-architecture image there with `docker buildx imagetools create`, using the workflow's own `GITHUB_TOKEN` (no secret to add). This is the only pull from Docker Hub, once per tag.

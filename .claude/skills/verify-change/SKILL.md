@@ -15,9 +15,10 @@ npm run test:coverage     # unit + component, fails under the thresholds in vite
 npm run test:integration  # real build + mock Strapi
 npm run test:e2e          # Playwright against the dev server + mock Strapi
 npm run test:theme        # theme visual regression + axe (CI, Playwright image; see docs/theme-testing.md)
+npm run test:contract     # server routes against a real CMS; needs Docker and `npm run build` (docs/architecture/contract-tests.md)
 ```
 
-Run all of them; report the counts (e.g. 383 / 121 / 117), not "tests pass". For lockfile or Docker changes also run `npm run build`.
+Run `test:contract` when the change touches `server/`, `app/interfaces/`, `e2e/mock-strapi.mjs` or the contract suite (CI runs it on those paths and on `main`). Run all of the others; report the counts (e.g. 383 / 121 / 117), not "tests pass". For lockfile or Docker changes also run `npm run build`.
 
 ## 2. A failing e2e
 
