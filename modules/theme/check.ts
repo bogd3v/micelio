@@ -11,7 +11,7 @@ import type { Hooks, InstalledTheme } from './types'
 // Contrast is not part of the build, so a theme in progress does not stop `nuxt dev`.
 
 const MAX_CSS_GZIP_BYTES = 25 * 1024
-export const MAX_FONT_FAMILIES = 2
+const MAX_FONT_FAMILIES = 2
 /** Warning above this total; error above FONT_TOTAL_MAX_BYTES, Bogotá's recorded exception (ADR 0005, section 9). KB are KiB like perf's fontKb. */
 const FONT_TOTAL_WARN_BYTES = 100 * 1024
 export const FONT_TOTAL_MAX_BYTES = 150.8 * 1024

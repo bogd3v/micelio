@@ -204,7 +204,7 @@ export function resolveClientIp(
 const MIN_FORWARDER_SECRET_LENGTH = 32
 
 const FORWARDER_SECRET_HEADER = 'X-Micelio-Forwarder-Secret'
-export const FORWARDER_IP_HEADER = 'X-Micelio-Client-IP'
+const FORWARDER_IP_HEADER = 'X-Micelio-Client-IP'
 
 /** Only a same-origin relative path (`/api/x`, not `//host` or an absolute URL) gets the internal headers. */
 export function isInternalFetchTarget(request: unknown): boolean {
