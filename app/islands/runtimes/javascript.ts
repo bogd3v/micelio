@@ -176,6 +176,12 @@ class Run {
   }
 }
 
+/**
+ * Loads the QuickJS engine for JavaScript and returns the runtime that the playground Worker runs code with.
+ *
+ * @remarks
+ * Runs in the playground Worker, never on the page. The Worker imports this chunk on the first JavaScript run. The engine is a WebAssembly module with bounded memory. Each run gets a fresh QuickJS runtime and context, disposed when the run ends. A host failure, or a run that hits its deadline, output cap or memory limit, sets `recycle`; an error in the reader's own code does not.
+ */
 export default async function load(): Promise<Runtime> {
   const bounded = newVariant(variant, { wasmMemory: new WebAssembly.Memory({ initial: WASM_INITIAL_PAGES, maximum: WASM_MAX_PAGES }) })
   const quickjs = await newQuickJSWASMModuleFromVariant(bounded)

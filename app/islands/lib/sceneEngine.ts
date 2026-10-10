@@ -10,6 +10,7 @@ const FIELD_OF_VIEW = 40
 const TURN = 0.5
 const MAX_PIXEL_RATIO = 2
 
+/** The handle `createScene` returns: it sizes the canvas, starts and stops the turntable, and frees every GPU object. */
 export interface SceneView {
   /** Matches the canvas to the size of its box (CSS pixels). */
   resize: (width: number, height: number) => void

@@ -29,6 +29,7 @@ interface RunOptions {
   onStarted?: () => void
 }
 
+/** A run started by `WorkerPool.run`: `result` settles with how the run ended, and `cancel` stops it. */
 export interface RunHandle {
   result: Promise<RunResult>
   /** Stops the run (or removes it from the queue); the result is `stopped`. */
@@ -49,6 +50,12 @@ interface Slot {
 
 const STOPPED: RunResult = { status: 'stopped', output: '', truncated: false }
 
+/**
+ * Runs playground code in one dedicated Worker per runtime, shared by every run of that runtime on the page.
+ *
+ * @remarks
+ * The pool runs on the main thread and only drives the Workers, which run the code (`app/islands/workers/playground.ts`). Runs of one runtime queue behind each other. The Worker is created when the first run reaches it, and a run's clock starts when the Worker reports `started`, so loading does not use up its time. A Worker is terminated when its run times out, is stopped or crashes, or when the reply sets `recycle`; the next run of that runtime starts a new one. The time limits default to `runtimes/constants.ts`. `dispose` terminates every Worker.
+ */
 export class WorkerPool {
   private readonly slots = new Map<string, Slot>()
   private nextId = 0
