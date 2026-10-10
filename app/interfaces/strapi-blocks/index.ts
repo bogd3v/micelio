@@ -14,7 +14,11 @@ export * from './media'
 export * from './sections'
 export * from './text'
 
-/** Any block of a Strapi dynamic zone, discriminated by `__component`. */
+/**
+ * Any block of a Strapi dynamic zone, discriminated by `__component`.
+ *
+ * @public
+ */
 export type StrapiBlock
   = | StrapiRichText
     | StrapiQuote

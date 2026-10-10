@@ -19,7 +19,11 @@ function fetchSite(): { defaults: Site, request: ReturnType<typeof useAsyncData<
   return { defaults, request }
 }
 
-/** The site identity from GET /api/site, with app.config.ts's values until it answers or if it fails. */
+/**
+ * The site identity from GET /api/site, with app.config.ts's values until it answers or if it fails.
+ *
+ * @public
+ */
 export function useSite(): ComputedRef<Site> {
   const { defaults, request } = fetchSite()
   return computed<Site>(() => request.data.value ?? defaults)
