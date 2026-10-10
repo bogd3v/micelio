@@ -41,7 +41,7 @@ npm run test:coverage     # Same tests with coverage of app/ and themes/; fails 
 npm run test:integration  # Run API-route integration tests (test/integration/, needs a Nuxt build)
 npm run test:static       # Generate a static site against the mock Strapi and run e2e/static/
 npm run test:landing      # Generate a landing (home page, no articles) against the mock Strapi and run e2e/landing/ (the default theme, then starter)
-npm run test:e2e          # Run Playwright e2e tests (e2e/, starts mock Strapi + dev server; CI runs its four groups, test:e2e:main, :site, :playground and :scene-ui, as parallel jobs; the playground specs run on Chromium, Firefox and WebKit against a build)
+npm run test:e2e          # Run Playwright e2e tests (e2e/, starts mock Strapi + dev server; CI runs its four groups, test:e2e:main, :site, :playground and :scene-ui, as parallel jobs, the playground one per engine (`-- --project=chromium|firefox|webkit`); the playground specs run on Chromium, Firefox and WebKit against a build)
 npm run test:theme        # Theme visual regression and axe (e2e/theme/, needs a build with MICELIO_SPECIMEN=1; docs/theme-testing.md)
 npm run test:theme:update # Same with --update-snapshots=changed (baselines are committed from the CI artifact, not made locally)
 npm run perf              # Performance budgets on a production build (run npm run build first; see docs/performance.md)
