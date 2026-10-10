@@ -149,7 +149,7 @@ export function themeCssFiles(themeDir: string): string[] {
   ].filter(file => existsSync(file))
 }
 
-/** Every problem in the theme's CSS, following local @imports inside the theme folder. */
+/** Every problem in the theme's CSS, following local `@import` rules inside the theme folder. */
 export function checkThemeCss(ctx: CssRuleContext): string[] {
   const problems: string[] = []
   const seen = new Set<string>()

@@ -38,7 +38,7 @@ export function highlightSegments(text: string, query: string): TextSegment[] {
 }
 
 /**
- * A Pagefind result URL as the site writes its links: no trailing slash on the path (`/blog/a/` -> `/blog/a`, `/` stays).
+ * A Pagefind result URL as the site writes its links: no trailing slash on the path (`/blog/a/` becomes `/blog/a`, `/` stays).
  * Undefined unless it is a path of this site: it must start with `/`, not `//` or `/\`.
  */
 export function resultPath(url: string): string | undefined {
