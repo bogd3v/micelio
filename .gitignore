@@ -39,3 +39,4 @@ coverage/
 # Theme visual regression (playwright.theme.config.ts)
 playwright-report-theme/
 test-results-theme/
+test-results-contract/

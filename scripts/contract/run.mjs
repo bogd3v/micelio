@@ -101,7 +101,7 @@ async function main() {
   try {
     const cms = external ? { url: process.env.CONTRACT_CMS_URL, token: process.env.CONTRACT_STRAPI_TOKEN } : await startCms()
     cmsInfo = cms
-    exitCode = await playwright({ CONTRACT_CMS_URL: cms.url, CONTRACT_STRAPI_TOKEN: cms.token, CONTRACT_APP_PORT: APP_PORT })
+    exitCode = await playwright({ CONTRACT_CMS_URL: cms.url, CONTRACT_STRAPI_TOKEN: cms.token, CONTRACT_APP_PORT: APP_PORT, CONTRACT_RECORD_FILE: process.env.CONTRACT_RECORD_FILE ?? 'test-results-contract/strapi-requests.jsonl' })
   } catch (error) {
     console.error(`contract: ${error.message}`)
   } finally {
