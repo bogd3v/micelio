@@ -14,6 +14,11 @@ const MAX_CSS_GZIP_BYTES = 25 * 1024
 const MAX_FONT_FAMILIES = 2
 /** Warning above this total; error above FONT_TOTAL_MAX_BYTES, Bogotá's recorded exception (ADR 0005, section 9). KB are KiB like perf's fontKb. */
 const FONT_TOTAL_WARN_BYTES = 100 * 1024
+/**
+ * Error above this font total: Bogotá's recorded exception (ADR 0005, section 9). KB are KiB like perf's `fontKb`.
+ *
+ * @internal Exported for tests.
+ */
 export const FONT_TOTAL_MAX_BYTES = 150.8 * 1024
 
 type IssueKind = 'contract' | 'contrast' | 'budget'
