@@ -46,7 +46,8 @@ const motionProjects: Project[] = manifest.modes.flatMap((mode) => {
   const metadata = { theme, mode: mode.id }
   const use = { colorScheme: mode.scheme, storageState: modeStorage(mode.id), viewport: { width: 1280, height: 800 } }
   return [
-    { name: `${mode.id}-reduced`, testMatch: '**/motion/reduced.spec.ts', metadata, use: { ...use, reducedMotion: 'reduce' as const } },
+    // A page.evaluate hung for the whole timeout twice (#463) and no retry may hide it: keep the trace of a failure, without screenshots (the renderer is the suspect)
+    { name: `${mode.id}-reduced`, testMatch: '**/motion/reduced.spec.ts', metadata, use: { ...use, reducedMotion: 'reduce' as const, trace: { mode: 'retain-on-failure' as const, screenshots: false, snapshots: true } } },
     { name: `${mode.id}-apis-off-chromium`, testMatch: '**/motion/apis-off.spec.ts', metadata, use: { ...use, reducedMotion: 'no-preference' as const } },
     { name: `${mode.id}-apis-off-firefox`, testMatch: '**/motion/apis-off.spec.ts', metadata, use: { ...use, browserName: 'firefox' as const, launchOptions: { firefoxUserPrefs: NATIVE_APIS_OFF }, reducedMotion: 'no-preference' as const } },
   ]
