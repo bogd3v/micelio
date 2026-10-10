@@ -15,6 +15,12 @@ interface UseTheme {
   modeLabel: (id: ThemeMode) => string
 }
 
+/**
+ * Holds the active color mode of the site and changes it, with a view transition when the browser allows it.
+ *
+ * @remarks
+ * The mode is shared state (`myc-theme`) that starts at the first mode of the theme. `setTheme` does nothing on the server; on the client it saves the choice and sets the `data-theme` and `data-scheme` attributes on the root element. With `prefers-reduced-motion` or without `document.startViewTransition` the change is immediate; otherwise it runs as a view transition, from the center of `origin` when it is an element, and the `myc-vt-theme` class is removed when the transition ends. `sync` applies a mode to the page and the state without saving it. Call it in setup or a plugin, because it reads `useNuxtApp`.
+ */
 export function useTheme(): UseTheme {
   const { t, te } = useNuxtApp().$i18n
   const state = useState<ThemeMode>('myc-theme', () => modes[0]?.id ?? '')

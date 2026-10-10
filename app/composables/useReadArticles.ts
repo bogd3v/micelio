@@ -8,6 +8,12 @@ interface ReadArticles {
   clear: () => void
 }
 
+/**
+ * Holds the ids of the articles a visitor has read, kept in the browser.
+ *
+ * @remarks
+ * The ids are shared state (`myc-read-articles`). They are loaded once from local storage under `READ_STORAGE_KEY`, on the first mount or `markRead`, and each change is written back there; `clear` empties both. Local storage exists only in the browser, so the list stays empty on the server. On static sites `isRead` is always false. Call it in setup, because it reads `useStaticSite` and registers a mount hook.
+ */
 export function useReadArticles(): ReadArticles {
   const { isStatic } = useStaticSite()
   const ids = useState<string[]>('myc-read-articles', () => [])

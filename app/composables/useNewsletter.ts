@@ -4,6 +4,12 @@ import { asApiError } from '~/helpers/apiError'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+/**
+ * Returns the newsletter function that validates an address and subscribes it.
+ *
+ * @remarks
+ * `subscribe` trims the address, checks its shape on the client and posts it with the current locale to `/api/newsletter/subscribe`. Request failures do not throw: every outcome is a `NewsletterResult`. A malformed address, or an HTTP 400 from the server, sets `invalid` to true; HTTP 429 gives the rate-limit message; any other failure gives a generic error. Call it in setup, because it reads `useI18n`.
+ */
 export function useNewsletter(): { subscribe: (email: string) => Promise<NewsletterResult> } {
   const { t, locale } = useI18n()
 
