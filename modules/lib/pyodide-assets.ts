@@ -14,7 +14,7 @@ interface Emitter {
   emitFile: (file: { type: 'asset', fileName: string, source: string | Uint8Array }) => string
 }
 
-export interface PyodideAssetsPlugin {
+interface PyodideAssetsPlugin {
   name: string
   buildStart: () => void
   resolveId: (id: string) => string | undefined

@@ -7,14 +7,14 @@ import { findProblems } from '../scripts/check-placement.mjs'
 const roots: string[] = []
 
 /** Builds a throwaway project with the given files and returns its placement problems. */
-function problemsOf(files: Record<string, string>): string[] {
+function problemsOf(files: Record<string, string>, exempt?: Map<string, string>): string[] {
   const root = mkdtempSync(join(tmpdir(), 'placement-'))
   roots.push(root)
   for (const [path, content] of Object.entries(files)) {
     mkdirSync(dirname(join(root, path)), { recursive: true })
     writeFileSync(join(root, path), content)
   }
-  return findProblems(root)
+  return findProblems(root, exempt)
 }
 
 afterEach(() => {
@@ -182,8 +182,40 @@ describe('check-placement', () => {
     expect(problems[0]).toContain('constant MAX')
   })
 
+  it('accepts roles.mjs as a shared file and holds it to declarations only', () => {
+    expect(problemsOf({
+      'modules/theme/roles.mjs': 'export const ROLES = [\'a\']\n',
+      'modules/theme/a.ts': 'import { ROLES } from \'./roles.mjs\'\n',
+      'modules/theme/b.ts': 'import { ROLES } from \'./roles.mjs\'\n',
+    })).toEqual([])
+    expect(problemsOf({
+      'modules/theme/roles.mjs': 'import { x } from \'./x.mjs\'\nexport function f() { return x }\n',
+    })).toHaveLength(2)
+  })
+
+  describe('exemptions', () => {
+    const shared = {
+      'app/helpers/limits.ts': 'export const MAX = 3\n',
+      'app/helpers/a.ts': 'import { MAX } from \'./limits\'\n',
+      'app/helpers/b.ts': 'import { MAX } from \'./limits\'\n',
+    }
+
+    it('honours an exempt entry that has a reason', () => {
+      expect(problemsOf(shared, new Map([['app/helpers/limits.ts:MAX', 'built at runtime']]))).toEqual([])
+    })
+
+    it('reports an exempt entry without a reason', () => {
+      expect(problemsOf(shared, new Map([['app/helpers/limits.ts:MAX', '']])).join('\n')).toContain('exempt without a reason')
+    })
+
+    it('reports a stale exempt entry: the declaration moved or has fewer than 2 users', () => {
+      const stale = problemsOf({ 'app/helpers/limits.ts': 'export const MAX = 3\n' }, new Map([['app/helpers/limits.ts:MAX', 'reason']]))
+      expect(stale).toHaveLength(1)
+      expect(stale[0]).toContain('exempt entry is stale')
+    })
+  })
+
   it('passes on the repository', () => {
-    // Report-only until the last pull request of issue #423 turns the check strict; this guards the shared files
-    expect(findProblems().filter(line => line.includes('shared file holds'))).toEqual([])
+    expect(findProblems()).toEqual([])
   })
 })

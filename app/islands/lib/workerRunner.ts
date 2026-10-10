@@ -4,7 +4,11 @@ import { LOAD_TIMEOUT_MS, RUN_TIMEOUT_MS } from '../runtimes/constants'
 import type { RunResult, WorkerRequest } from '../types'
 import { capOutput, isWorkerReply } from '../../helpers/playgroundRunner'
 
-/** The part of `Worker` the runner uses; tests pass a fake. */
+/**
+ * The part of `Worker` the runner uses; tests pass a fake.
+ *
+ * @internal Exported for tests.
+ */
 export interface WorkerLike {
   postMessage: (message: WorkerRequest) => void
   terminate: () => void
@@ -13,7 +17,7 @@ export interface WorkerLike {
   onmessageerror: ((event: MessageEvent) => void) | null
 }
 
-export interface RunOptions {
+interface RunOptions {
   runtime: string
   code: string
   setup: string
@@ -31,7 +35,7 @@ export interface RunHandle {
   cancel: () => void
 }
 
-export interface PoolOptions {
+interface PoolOptions {
   runMs?: number
   loadMs?: number
 }

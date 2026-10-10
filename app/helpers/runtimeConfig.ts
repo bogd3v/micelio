@@ -2,7 +2,7 @@ import type { ModuleRequirements } from './modules'
 import type { SiteModules, SiteMode } from '../interfaces/site'
 import { isStaticMode, parseSiteMode } from './siteMode'
 
-export const REQUIRED_RUNTIME_SETTINGS = {
+const REQUIRED_RUNTIME_SETTINGS = {
   strapiApiToken: 'NUXT_STRAPI_API_TOKEN',
   smtpHost: 'NUXT_SMTP_HOST',
   smtpUser: 'NUXT_SMTP_USER',
@@ -10,25 +10,23 @@ export const REQUIRED_RUNTIME_SETTINGS = {
   newsletterFrom: 'NUXT_NEWSLETTER_FROM',
 } as const
 
-export const REQUIRED_PUBLIC_RUNTIME_SETTINGS = {
+const REQUIRED_PUBLIC_RUNTIME_SETTINGS = {
   strapiUrl: 'NUXT_PUBLIC_STRAPI_URL',
   siteUrl: 'NUXT_PUBLIC_SITE_URL',
 } as const
 
 /** Empty is allowed: the feature they serve is left out. */
-export const OPTIONAL_RUNTIME_SETTINGS = {
+const OPTIONAL_RUNTIME_SETTINGS = {
   mediaUrl: 'NUXT_MEDIA_URL',
 } as const
 
-export const OPTIONAL_PUBLIC_RUNTIME_SETTINGS = {
+const OPTIONAL_PUBLIC_RUNTIME_SETTINGS = {
   fediverseHandle: 'NUXT_PUBLIC_FEDIVERSE_HANDLE',
   fediverseActorUrl: 'NUXT_PUBLIC_FEDIVERSE_ACTOR_URL',
   fediverseArticlesUrl: 'NUXT_PUBLIC_FEDIVERSE_ARTICLES_URL',
 } as const
 
-export type RequiredRuntimeSetting = keyof typeof REQUIRED_RUNTIME_SETTINGS
-
-export interface CheckedRuntimeConfig {
+interface CheckedRuntimeConfig {
   [key: string]: unknown
   public?: Record<string, unknown>
 }

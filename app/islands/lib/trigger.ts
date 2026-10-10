@@ -1,18 +1,18 @@
 // When a heavy island starts loading (ADR 0006, section 6). Each trigger returns a promise that rejects with an
 // AbortError when `signal` aborts, and releases its listeners and observer either way.
 
-export interface TriggerOptions {
+interface TriggerOptions {
   signal?: AbortSignal
 }
 
-export interface VisibleOptions extends TriggerOptions {
+interface VisibleOptions extends TriggerOptions {
   /** IntersectionObserver `rootMargin`: how far outside the viewport still counts as visible. */
   rootMargin?: string
   /** Longest wait for an idle period after `load`, in ms. */
   idleTimeout?: number
 }
 
-export interface InteractionOptions extends TriggerOptions {
+interface InteractionOptions extends TriggerOptions {
   events?: Array<'click' | 'keydown'>
 }
 

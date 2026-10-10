@@ -10,7 +10,7 @@ import SpecimenRegions from './sections/SpecimenRegions.vue'
 import SpecimenPageSection from './sections/SpecimenPageSection.vue'
 import { PAGE_SECTION_COMPONENTS } from '../../../app/interfaces/page'
 
-export interface SpecimenSection {
+interface SpecimenSection {
   /** Anchor of the group (`#id`) and its `data-section`. */
   id: string
   /** i18n key of the group's heading. */

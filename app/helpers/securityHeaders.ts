@@ -1,6 +1,6 @@
 import type { HeavyIsland } from '../islands/types'
 
-export interface ContentSecurityPolicyOptions {
+interface ContentSecurityPolicyOptions {
   scriptHashes: string[]
   imageOrigins: string[]
   /** For a `<meta http-equiv>`: without the directives a meta cannot carry (`frame-ancestors`; ADR 0006, section 7). */
@@ -23,7 +23,7 @@ const TYPE_PATTERN = /(?:^|\s)type\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i
 // `speculationrules` is not executed, but the browser checks it against `script-src`: it is hashed like the rest (ADR 0004 amendment)
 const EXECUTABLE_TYPES = new Set(['', 'text/javascript', 'application/javascript', 'module', 'importmap', 'speculationrules'])
 
-export const FRAME_ORIGINS = [
+const FRAME_ORIGINS = [
   'https://www.youtube.com',
   'https://youtube.com',
   'https://www.youtube-nocookie.com',

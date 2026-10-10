@@ -6,13 +6,13 @@ import { formatDotDate } from '~/helpers/formatDate'
 import { mastodonShareUrl } from '~/helpers/share'
 import { extractHeadings } from '~/helpers/toc'
 
-export interface ArticleProps {
+interface ArticleProps {
   post: StrapiPost
   shareUrl: string
   draft: boolean
 }
 
-export interface ArticleState {
+interface ArticleState {
   coverUrl: ComputedRef<string>
   category: ComputedRef<Category | undefined>
   references: ComputedRef<NumberedReference[]>

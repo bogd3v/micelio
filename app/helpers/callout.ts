@@ -13,7 +13,7 @@ const MARKER_TONES: Readonly<Record<string, CalloutTone>> = {
 
 const MARKER = /^\[!(\w+)\][ \t]*(.*)$/
 
-export interface CalloutMarker {
+interface CalloutMarker {
   tone: CalloutTone
   title?: string
   body: string

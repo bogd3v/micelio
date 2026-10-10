@@ -2,8 +2,8 @@ import type { NewsletterLanguage } from '../interfaces/newsletter'
 
 const TOKEN_PATTERN = /^[\w-]{16,128}$/
 
-export const UNSUBSCRIBE_PATH = '/newsletter/unsubscribe'
-export const UNSUBSCRIBE_API_PATH = '/api/newsletter/unsubscribe'
+const UNSUBSCRIBE_PATH = '/newsletter/unsubscribe'
+const UNSUBSCRIBE_API_PATH = '/api/newsletter/unsubscribe'
 
 export function newsletterLanguage(value: unknown): NewsletterLanguage {
   return value === 'es' ? 'es' : 'en'

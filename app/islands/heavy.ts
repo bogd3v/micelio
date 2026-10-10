@@ -2,14 +2,14 @@
 // modules/islands.ts does not build these three files as entries, and each `entry` is a sibling file `app/islands/<entry>.ts`.
 import type { HeavyFeature, HeavyIsland, HeavySaveData, HeavyTrigger } from './types'
 
-export const HEAVY_FEATURES: readonly HeavyFeature[] = ['webgl2', 'wasm', 'worker']
-export const HEAVY_TRIGGERS: readonly HeavyTrigger[] = ['visible', 'interaction']
-export const HEAVY_SAVE_DATA: readonly HeavySaveData[] = ['load', 'skip']
+const HEAVY_FEATURES: readonly HeavyFeature[] = ['webgl2', 'wasm', 'worker']
+const HEAVY_TRIGGERS: readonly HeavyTrigger[] = ['visible', 'interaction']
+const HEAVY_SAVE_DATA: readonly HeavySaveData[] = ['load', 'skip']
 
 // Files of app/islands/ that are not islands
 const RESERVED_ENTRIES = new Set(['heavy', 'types', 'constants'])
 // A control is an attribute selector of ours, never free CSS
-export const CONTROL = /^\[data-[a-z][a-z-]*\]$/
+const CONTROL = /^\[data-[a-z][a-z-]*\]$/
 const NAME = /^[a-z][a-z0-9-]*$/
 // `'self'` or an absolute origin with an optional path; never a wildcard, another keyword, a bare path, a space or a `;`
 const SOURCE = /^(?:'self'|https:\/\/[\w.-]+(?::\d+)?(?:\/[\w./-]*)?|http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(?:\/[\w./-]*)?)$/

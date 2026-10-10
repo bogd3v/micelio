@@ -6,7 +6,7 @@ import { THEME_ID, themeIdProblem } from './contract'
 const STARTER_ID = 'starter'
 const USAGE = 'Usage: npm run theme:new -- <id> [--name "Theme name"]'
 
-export interface ThemeNewArgs {
+interface ThemeNewArgs {
   id: string
   name?: string
 }

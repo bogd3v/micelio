@@ -8,10 +8,15 @@ import type { ThemeContext } from './types'
 // The curated display fonts of the core (ADR 0005, section 8): served at /fonts/display/, emitted by server/utils/displayFonts.ts.
 
 const MODULE = '#micelio/display-fonts'
+/**
+ * Folder of the curated display fonts, relative to the project root.
+ *
+ * @internal Exported for tests.
+ */
 export const DISPLAY_FONTS_DIR = 'app/assets/fonts/display'
-export const DISPLAY_FONTS_URL = '/fonts/display'
+const DISPLAY_FONTS_URL = '/fonts/display'
 
-export interface DisplayFontAssets {
+interface DisplayFontAssets {
   /** First 8 hex digits of the sha256 of each font file, the `?v=` of its URL */
   versions: Record<string, string>
   /** The minified fallback `@font-face` rules of each font (`font-fallbacks.css`) */

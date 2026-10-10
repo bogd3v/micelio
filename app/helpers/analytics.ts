@@ -2,13 +2,13 @@ export interface UmamiTracker {
   track: (event: string, data?: Record<string, string>) => void
 }
 
-export interface UmamiScriptConfig {
+interface UmamiScriptConfig {
   websiteId: string
   scriptPath: string
   siteUrl: string
 }
 
-export type UmamiScriptAttributes = {
+type UmamiScriptAttributes = {
   'src': string
   'defer': boolean
   'data-website-id': string

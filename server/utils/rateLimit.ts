@@ -8,7 +8,7 @@ import type { TrustProxy } from '../lib/clientIp'
 
 const limiter = createRateLimiter()
 
-export const RATE_LIMITS = {
+const RATE_LIMITS = {
   commentPerIp: { limit: 10, windowMs: 10 * 60 * 1000 },
   newsletterPerIp: { limit: 10, windowMs: 60 * 60 * 1000 },
   newsletterPerEmail: { limit: 3, windowMs: 60 * 60 * 1000 },

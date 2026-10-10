@@ -23,13 +23,13 @@ const SPECS: Record<DisplayFont, DisplayFontSpec> = {
 const UNICODE_RANGE = 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0300-0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2190-2193,U+2212,U+2215,U+FEFF,U+FFFD'
 
 /** What the build knows (`#micelio/display-fonts`): file versions and generated fallback faces per font id. */
-export interface DisplayFontAssets {
+interface DisplayFontAssets {
   versions: Record<string, string>
   fallbacks: Record<string, string>
 }
 
 /** The theme's own display family and the system part of its display and sans stacks (its own web fonts left out). */
-export interface ThemeDisplay {
+interface ThemeDisplay {
   family: string
   /** The theme's own font file for `family` (preloaded at build) and whether the body text uses `family` too */
   file?: string
@@ -47,7 +47,7 @@ function tail(kind: 'sans' | 'serif', theme: ThemeDisplay): string {
   return own.length && own.at(-1)!.toLowerCase() === generic ? own.join(',') : GENERIC[kind]
 }
 
-export interface DisplayFontOverride {
+interface DisplayFontOverride {
   css: string
   /** URL of the font file, as in the `@font-face` and the preload link */
   href: string
@@ -58,7 +58,11 @@ const NAME = '[A-Za-z][A-Za-z0-9 -]*'
 const FONT_FACE = `@font-face\\{font-family:"${NAME}";font-style:normal;font-display:swap;font-weight:\\d{3} \\d{3};src:url\\("/fonts/display/[a-z-]+-latin-wght\\.woff2\\?v=[\\da-f]{8}"\\) format\\("woff2"\\);unicode-range:${URANGE}(?:,${URANGE})*\\}`
 const FALLBACK_FACE = `@font-face\\{font-family:"${NAME} Fallback";font-weight:\\d{3} \\d{3};src:local\\("${NAME}"\\)(?:,local\\("${NAME}"\\))*;size-adjust:[\\d.]+%;ascent-override:[\\d.]+%;descent-override:[\\d.]+%;line-gap-override:0%\\}`
 const STACK = `"${NAME}","${NAME} Fallback"(?:,[A-Za-z0-9" -]+)*`
-/** The shape of everything emitted: faces, then `--font-display`. No `<`, no free-form value. */
+/**
+ * The shape of everything emitted: faces, then `--font-display`. No `<`, no free-form value.
+ *
+ * @internal Exported for tests.
+ */
 export const DISPLAY_FONT_RULE = new RegExp(`^${FONT_FACE}(?:${FALLBACK_FACE})+:root\\{--font-display:${STACK}\\}$`)
 
 /** The enum value as a font, or undefined for anything else (inherited keys included). */
@@ -88,7 +92,7 @@ export function displayFontOverride(font: string | undefined, theme: ThemeDispla
   return { css, href }
 }
 
-export interface ThemeFontFile {
+interface ThemeFontFile {
   file: string
   preload?: boolean
 }

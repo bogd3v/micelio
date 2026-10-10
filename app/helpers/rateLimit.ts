@@ -3,12 +3,12 @@ export interface RateLimitRule {
   windowMs: number
 }
 
-export interface RateLimitResult {
+interface RateLimitResult {
   allowed: boolean
   retryAfterSeconds: number
 }
 
-export interface RateLimiter {
+interface RateLimiter {
   consume: (key: string, rule: RateLimitRule, now?: number) => RateLimitResult
 }
 

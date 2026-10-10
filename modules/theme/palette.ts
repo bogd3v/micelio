@@ -6,7 +6,7 @@ import type { ContrastRule, ThemeManifest } from './types'
 // The slice of the active theme the server needs to compute accent contrast at runtime (#micelio/theme-palette, Nitro only).
 
 /** Roles whose contrast the accent override can change. */
-export const PALETTE_RULE_ROLES: string[] = ['accent', 'on-accent', 'link', 'focus']
+const PALETTE_RULE_ROLES: string[] = ['accent', 'on-accent', 'link', 'focus']
 
 /**
  * One mode, every color as opaque `#rrggbb`. `accent-soft`, `accent-hover` and `on-accent` are the theme's own
@@ -34,11 +34,16 @@ export interface ModePalette {
   'linkSoftIsDefault': boolean
 }
 
-export interface SkippedMode {
+interface SkippedMode {
   mode: string
   reason: string
 }
 
+/**
+ * What `buildPalette` returns: the palette of every mode of a theme.
+ *
+ * @internal Exported for tests.
+ */
 export interface ThemePalette {
   /** Modes that resolved; a mode that did not is in `skipped`. */
   modes: Record<string, ModePalette>

@@ -1,5 +1,9 @@
-// Files of /_islands/ that a playground runtime downloads when Run is pressed (modules/islands.ts sums their size for the Save-Data label).
-// A new runtime adds its pattern here.
+/**
+ * Files of `/_islands/` that a playground runtime downloads when Run is pressed (`modules/islands.ts` sums their size for the Save-Data label).
+ * A new runtime adds its pattern here.
+ *
+ * @internal Exported for tests.
+ */
 export const RUNTIME_FILES: Readonly<Record<string, RegExp>> = {
   sql: /^runtimes\/(?:sql|sqlite3)-[\w-]{8}\.(?:js|wasm)$/,
   // The runtime, QuickJS's loader chunks (`ffi`, `module-*`, `emscripten-module.browser`) and its WebAssembly

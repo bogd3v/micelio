@@ -10,7 +10,7 @@ import { MERMAID_ELEMENT } from '../islands/constants'
 import { renderMermaidBlockHtml } from './mermaid'
 import { buildCitationIndex, citationBlockKey, CITATION_RULE, splitCitationGroup } from './citations'
 
-export interface MarkdownLabels {
+interface MarkdownLabels {
   callout: (tone: CalloutTone) => string
   cite: (n: number) => string
 }

@@ -13,7 +13,7 @@ export type TrustProxy
     | { kind: 'hops', hops: number }
     | { kind: 'peers', trusted: BlockList }
 
-export interface ResolvedIp {
+interface ResolvedIp {
   /** Normalised address, `unknown` when the socket has none. */
   ip: string
   /** `hops` found fewer entries than asked: the server is reached directly. */
@@ -201,10 +201,10 @@ export function resolveClientIp(
 }
 
 /** Minimum length of the forwarder secret, as in the CMS. */
-export const MIN_FORWARDER_SECRET_LENGTH = 32
+const MIN_FORWARDER_SECRET_LENGTH = 32
 
-export const FORWARDER_SECRET_HEADER = 'X-Micelio-Forwarder-Secret'
-export const FORWARDER_IP_HEADER = 'X-Micelio-Client-IP'
+const FORWARDER_SECRET_HEADER = 'X-Micelio-Forwarder-Secret'
+const FORWARDER_IP_HEADER = 'X-Micelio-Client-IP'
 
 /** Only a same-origin relative path (`/api/x`, not `//host` or an absolute URL) gets the internal headers. */
 export function isInternalFetchTarget(request: unknown): boolean {

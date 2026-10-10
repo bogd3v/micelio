@@ -3,7 +3,7 @@ import { modes } from '#micelio/theme'
 import type { ThemeMode, ThemeModeDefinition } from '~/interfaces'
 import { nextMode, schemeOf, storeMode } from '~/helpers/theme'
 
-export interface UseTheme {
+interface UseTheme {
   modes: ThemeModeDefinition[]
   theme: ComputedRef<ThemeMode>
   nextTheme: ComputedRef<ThemeMode>

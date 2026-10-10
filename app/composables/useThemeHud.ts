@@ -1,7 +1,7 @@
 import type { ComputedRef } from 'vue'
 
 /** The place line a theme may show (header, hero, footer, article byline); a field is undefined when the theme has no message for it. */
-export interface ThemeHud {
+interface ThemeHud {
   city?: string
   coords?: string
   altitude?: string

@@ -1,7 +1,11 @@
 // Network access a Worker must not keep once its runtime is loaded (ADR 0004, worker containment). The Worker's CSP is the
 // second layer; this is the first, and it holds where a browser applies the policy late.
 
-/** Globals that reach the network, other contexts or storage. */
+/**
+ * Globals that reach the network, other contexts or storage.
+ *
+ * @internal Exported for tests.
+ */
 export const NETWORK_GLOBALS: readonly string[] = [
   'fetch',
   'XMLHttpRequest',
@@ -20,7 +24,7 @@ export const NETWORK_GLOBALS: readonly string[] = [
 ]
 
 /** Members of `navigator` that reach storage, other contexts or the network. */
-export const NAVIGATOR_MEMBERS: readonly string[] = ['storage', 'locks', 'serviceWorker', 'sendBeacon', 'connection', 'mediaDevices']
+const NAVIGATOR_MEMBERS: readonly string[] = ['storage', 'locks', 'serviceWorker', 'sendBeacon', 'connection', 'mediaDevices']
 
 /**
  * Removes `names` from `scope` and from every object of its prototype chain (`fetch` lives on the prototype in browsers),

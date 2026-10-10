@@ -5,7 +5,7 @@ import type { Page, PageSection, PostListItem, PostListSection, StrapiPaginatedR
 
 // Strapi does not mix '*' with keyed entries: every relation of every section is named.
 // Links and media are listed explicitly so a new CMS field never widens the response.
-export const PAGE_POPULATE = {
+const PAGE_POPULATE = {
   seo: { populate: '*' },
   localizations: { fields: ['slug', 'locale'] },
   sections: {
@@ -50,7 +50,7 @@ async function postsOf(section: PostListSection, locale: string | undefined): Pr
 }
 
 /** Post lists resolved per page; the others render with no posts, so one page cannot fan out into many Strapi calls */
-export const MAX_POST_LISTS = 4
+const MAX_POST_LISTS = 4
 
 /** Fills the posts of the first `MAX_POST_LISTS` `post-list` sections, in parallel. */
 export function resolvePostLists(sections: PageSection[], locale: string | undefined): Promise<PageSection[]> {

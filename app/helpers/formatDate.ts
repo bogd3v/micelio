@@ -4,7 +4,7 @@
  * - `short`: "May 27, 2026" (abbreviated month, numeric day, numeric year)
  * - `abbreviated`: "May 27" (abbreviated month, numeric day, no year)
  */
-export type DateFormatStyle = 'full' | 'short' | 'abbreviated'
+type DateFormatStyle = 'full' | 'short' | 'abbreviated'
 
 /**
  * Formats an ISO date string for user-facing display.

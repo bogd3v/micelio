@@ -4,14 +4,14 @@ import { localePrefixSource } from './localePrefix'
 import { resolveSectionLink } from './links'
 import { slugify } from './slugify'
 
-export interface LandingContext {
+interface LandingContext {
   /** The newsletter section renders only when the module is on */
   newsletterOn: boolean
   /** Site paths of the blog are not linked when the build has no blog */
   blogEnabled: boolean
 }
 
-export interface SectionAnchor {
+interface SectionAnchor {
   /** Position in the list the renderer shows */
   index: number
   id: string
@@ -79,8 +79,8 @@ export function landingLinks(
 }
 
 /** The header has room for a few entries: the first anchors and the first links of the hero and call to action. Everything else is in the footer navigation. */
-export const HEADER_ANCHORS = 4
-export const HEADER_ACTIONS = 2
+const HEADER_ANCHORS = 4
+const HEADER_ACTIONS = 2
 
 export function headerLinks<T extends { anchor?: boolean, action?: boolean }>(links: readonly T[]): T[] {
   if (!links.some(link => link.anchor || link.action)) return [...links]

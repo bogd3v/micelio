@@ -7,9 +7,9 @@ import { isBlogEnabled } from '~/helpers/siteMode'
 import en from '../../i18n/locales/en.json'
 import es from '../../i18n/locales/es.json'
 
-export type FeedLocale = 'en' | 'es'
+type FeedLocale = 'en' | 'es'
 
-export interface FeedOptions {
+interface FeedOptions {
   locale: FeedLocale
   category?: Category
 }

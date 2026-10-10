@@ -1,6 +1,6 @@
 import type { LocaleAlternates, LocalePaths } from '~/interfaces'
 
-export interface LocaleAlternatesState {
+interface LocaleAlternatesState {
   alternates: Ref<LocaleAlternates | null>
   setAlternates: (paths: LocalePaths, options?: { hreflang?: boolean }) => void
 }

@@ -1,4 +1,4 @@
-export interface IndexablePage {
+interface IndexablePage {
   /** The page marks content with `data-pagefind-body`. */
   body: boolean
   /** `<html lang>`, if any. */
@@ -18,7 +18,7 @@ export function indexablePage(html: string): IndexablePage {
   return { body: /\sdata-pagefind-body[\s=>]/i.test(html), lang: (match?.[1] ?? match?.[2] ?? match?.[3])?.trim() || undefined }
 }
 
-export interface IndexedLanguages {
+interface IndexedLanguages {
   languages?: Record<string, { page_count?: number }>
 }
 

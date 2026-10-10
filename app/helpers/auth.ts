@@ -1,7 +1,7 @@
 import type { AuthErrorCode, AuthNotice, AuthUser, PasswordStrength, StrapiAuthUser } from '../interfaces/auth'
 
-export const MIN_PASSWORD_LENGTH = 10
-export const EDITOR_ROLE_TYPE = 'editor'
+const MIN_PASSWORD_LENGTH = 10
+const EDITOR_ROLE_TYPE = 'editor'
 
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/i
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
