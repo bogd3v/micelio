@@ -9,6 +9,12 @@ test.beforeEach(async ({ page }) => {
   await disableNativeMotionApis(page)
 })
 
+// The route callback of disableNativeMotionApis fetches each stylesheet: one still in flight when the test ends would be reported as
+// `route.fetch: Test ended` and fail the run although every test passed (run 38056056933)
+test.afterEach(async ({ page }) => {
+  await page.unrouteAll({ behavior: 'ignoreErrors' })
+})
+
 /** Elements that paint (not display:none, not visibility:hidden) yet are transparent, or sit outside the page where nothing scrolls to them */
 async function hiddenByMotion(page: Page): Promise<string[]> {
   return page.evaluate(() => {
