@@ -229,7 +229,8 @@ jobs:
         run: |
           themes="$(npx jiti scripts/theme-check.ts --list)"
           modes="$(node -p "JSON.stringify(Object.entries(require('./scripts/perf/budgets.json').modes).filter(([, mode]) => mode.ci !== false).map(([id]) => id))")"
-          echo "matrix={\"theme\":${themes},\"mode\":${modes}}" >> "$GITHUB_OUTPUT"
+          # The heaviest-display-font run (docs/performance.md) is its own entry in dynamic mode only: a static entry has no font run
+          echo "matrix=$(node -p "JSON.stringify({ theme: ${themes}, mode: ${modes}, font: ['default', 'heaviest'], exclude: ${modes}.filter((mode) => mode !== 'dynamic').map((mode) => ({ mode, font: 'heaviest' })) })")" >> "$GITHUB_OUTPUT"
           echo "themes=${themes}" >> "$GITHUB_OUTPUT"
       # The lockfile decides the browser build, so the Docker image follows a Dependabot bump of @playwright/test
       - name: Read the Playwright version
@@ -240,7 +241,7 @@ jobs:
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 
   performance:
-    name: Performance Budgets (${{ matrix.theme }}, ${{ matrix.mode }})
+    name: Performance Budgets (${{ matrix.theme }}, ${{ matrix.mode }}, ${{ matrix.font }} font)
     needs: matrix
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -268,13 +269,14 @@ jobs:
         if: ${{ matrix.mode == 'dynamic' }}
         run: npm run build
       - name: Check performance budgets
+        if: ${{ matrix.font == 'default' }}
         env:
           PERF_THEME: ${{ matrix.theme }}
           PERF_MODE: ${{ matrix.mode }}
         run: npm run perf -- --check --theme "$PERF_THEME" --mode "$PERF_MODE" --out perf-report.json
-      # Same build, the mock Strapi sets the heaviest curated display font; the font limit is the theme's plus 60 KB (ADR 0005, section 9)
+      # The mock Strapi sets the heaviest curated display font; the font limit is the theme's plus 60 KB (ADR 0005, section 9)
       - name: Check performance budgets with the heaviest display font
-        if: ${{ !cancelled() && matrix.mode == 'dynamic' }}
+        if: ${{ matrix.font == 'heaviest' }}
         env:
           PERF_THEME: ${{ matrix.theme }}
           PERF_MODE: ${{ matrix.mode }}
@@ -283,10 +285,11 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: perf-report-${{ matrix.theme }}-${{ matrix.mode }}
+          name: perf-report-${{ matrix.theme }}-${{ matrix.mode }}-${{ matrix.font }}
           path: |
             perf-report.json
             perf-report-display-font.json
+          if-no-files-found: ignore
           retention-days: 14
 
   # One stable check name for branch protection and deploy: fails when any matrix entry failed, was skipped or cancelled
