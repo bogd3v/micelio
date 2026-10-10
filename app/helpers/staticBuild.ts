@@ -191,11 +191,11 @@ const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_media/*', '/_islands/
 const REVALIDATED_PATHS: readonly string[] = ['/_ipx/*', '/pagefind/*']
 /** Files copied from Strapi are data, never documents: an SVG opened directly runs nothing and loads nothing. Sent on top of the site policy (repeated policies only tighten). */
 const WORKERS_PATH = '/_islands/workers/*'
-export const MEDIA_POLICY = 'default-src \'none\'; style-src \'unsafe-inline\'; img-src \'self\' data:; sandbox'
+const MEDIA_POLICY = 'default-src \'none\'; style-src \'unsafe-inline\'; img-src \'self\' data:; sandbox'
 
 // Cloudflare Pages limits (docs): 100 rules, 2000 characters per line
 const HEADERS_MAX_RULES = 100
-export const HEADERS_MAX_LINE = 2000
+const HEADERS_MAX_LINE = 2000
 
 function headerName(name: string): string {
   return name.replace(/(^|-)([a-z])/g, (_match, dash: string, letter: string) => `${dash}${letter.toUpperCase()}`)

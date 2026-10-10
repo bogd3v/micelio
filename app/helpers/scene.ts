@@ -29,7 +29,7 @@ export function isGlb(bytes: ArrayBuffer | Uint8Array): boolean {
 const MODEL_MAX_ACCESSOR_BYTES = 64 * 1024 * 1024
 /** Largest embedded image, in bytes and in pixels (a small file can decode to gigabytes). */
 const IMAGE_MAX_BYTES = 8 * 1024 * 1024
-export const IMAGE_MAX_PIXELS = 4096 * 4096
+const IMAGE_MAX_PIXELS = 4096 * 4096
 
 const JSON_CHUNK = 0x4E4F534A
 const BIN_CHUNK = 0x004E4942

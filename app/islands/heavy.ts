@@ -3,7 +3,7 @@
 import type { HeavyFeature, HeavyIsland, HeavySaveData, HeavyTrigger } from './types'
 
 const HEAVY_FEATURES: readonly HeavyFeature[] = ['webgl2', 'wasm', 'worker']
-export const HEAVY_TRIGGERS: readonly HeavyTrigger[] = ['visible', 'interaction']
+const HEAVY_TRIGGERS: readonly HeavyTrigger[] = ['visible', 'interaction']
 const HEAVY_SAVE_DATA: readonly HeavySaveData[] = ['load', 'skip']
 
 // Files of app/islands/ that are not islands

@@ -80,7 +80,7 @@ export function landingLinks(
 
 /** The header has room for a few entries: the first anchors and the first links of the hero and call to action. Everything else is in the footer navigation. */
 const HEADER_ANCHORS = 4
-export const HEADER_ACTIONS = 2
+const HEADER_ACTIONS = 2
 
 export function headerLinks<T extends { anchor?: boolean, action?: boolean }>(links: readonly T[]): T[] {
   if (!links.some(link => link.anchor || link.action)) return [...links]
