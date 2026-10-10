@@ -52,7 +52,11 @@ export function sectionPageRoute(slug: string, locale: Locale): string {
   return localized(`/${slug}`, locale)
 }
 
-/** Routes every static site must have, whatever Strapi lists. */
+/**
+ * Routes every static site must have, whatever Strapi lists.
+ *
+ * @internal Exported for tests.
+ */
 export const STATIC_INITIAL_ROUTES: readonly string[] = ['/', '/es', '/blog', '/es/blog']
 
 /** What a build with no blog (a landing with no articles) must not generate or crawl: the blog, its filters and its feeds, in every locale. */
@@ -182,15 +186,15 @@ const IMMUTABLE = 'public, max-age=31536000, immutable'
 const REVALIDATE = 'public, max-age=0, must-revalidate'
 /** Strapi keeps a file's URL when it is replaced, so `_ipx` (named after the source URL) revalidates; `_nuxt` (Vite hash) and `_media` (byte hash) never change under a name. */
 /** `_islands` files carry a content hash in the name. */
-export const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_media/*', '/_islands/*']
+const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_media/*', '/_islands/*']
 /** `/pagefind/*` is rebuilt with every generate (`pagefind.js` keeps its name), so it is never immutable. */
-export const REVALIDATED_PATHS: readonly string[] = ['/_ipx/*', '/pagefind/*']
+const REVALIDATED_PATHS: readonly string[] = ['/_ipx/*', '/pagefind/*']
 /** Files copied from Strapi are data, never documents: an SVG opened directly runs nothing and loads nothing. Sent on top of the site policy (repeated policies only tighten). */
-export const WORKERS_PATH = '/_islands/workers/*'
+const WORKERS_PATH = '/_islands/workers/*'
 export const MEDIA_POLICY = 'default-src \'none\'; style-src \'unsafe-inline\'; img-src \'self\' data:; sandbox'
 
 // Cloudflare Pages limits (docs): 100 rules, 2000 characters per line
-export const HEADERS_MAX_RULES = 100
+const HEADERS_MAX_RULES = 100
 export const HEADERS_MAX_LINE = 2000
 
 function headerName(name: string): string {

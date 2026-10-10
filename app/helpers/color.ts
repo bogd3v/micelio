@@ -3,7 +3,7 @@
 /** sRGB channels in 0..1. */
 export interface Rgb { r: number, g: number, b: number }
 export interface Rgba extends Rgb { a: number }
-export interface Oklch { l: number, c: number, h: number }
+interface Oklch { l: number, c: number, h: number }
 
 const MAX_REF_DEPTH = 20
 
@@ -67,7 +67,7 @@ export function toHex(color: Rgb): string {
   return `#${[color.r, color.g, color.b].map(channel => Math.round(clamp01(channel) * 255).toString(16).padStart(2, '0')).join('')}`
 }
 
-export interface Oklab { l: number, a: number, b: number }
+interface Oklab { l: number, a: number, b: number }
 
 /** sRGB to OKLab (Ottosson). */
 export function srgbToOklab(color: Rgb): Oklab {
@@ -135,6 +135,11 @@ export function atLightness(l: number, c: number, h: number): Rgb {
   return oklchToSrgb({ l, c: low, h })
 }
 
+/**
+ * Step of the lightness search in `nearestWhere`.
+ *
+ * @internal Exported for tests.
+ */
 export const LIGHTNESS_STEP = 0.002
 
 /**

@@ -1,4 +1,4 @@
-export interface ResolvedLink {
+interface ResolvedLink {
   href: string
   external: boolean
 }

@@ -3,7 +3,7 @@ import type { Locale, LocalePaths, Page, Site } from '~/interfaces'
 import { homePaths, pagePaths } from '~/helpers/translations'
 import { pageTitle } from '~/helpers/site'
 
-export interface SectionPageState {
+interface SectionPageState {
   page: Ref<Page | undefined>
   /** Status of the failed request (404 and 400 mean no such page); undefined when it loaded */
   failure: Ref<number | undefined>

@@ -4,7 +4,7 @@ import { isCategory } from '~/helpers/categories'
 import { CATEGORIES } from '~/constants/categories'
 import { siteLogoUrl } from '~/helpers/site'
 
-export interface BlogHome {
+interface BlogHome {
   featuredPost: ComputedRef<PostListItem | undefined>
   total: ComputedRef<number>
   counts: ComputedRef<Partial<Record<Category, number>>>

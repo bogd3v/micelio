@@ -2,7 +2,7 @@ import { cspOrigin } from './securityHeaders'
 
 // The external newsletter form of static builds (ADR 0006, section 5; docs/static-mode.md)
 
-export interface HiddenField {
+interface HiddenField {
   name: string
   value: string
 }

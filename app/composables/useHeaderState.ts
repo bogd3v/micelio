@@ -2,12 +2,12 @@ import type { ComputedRef, Ref } from 'vue'
 import type { SiteNavLink } from '~/interfaces'
 import { headerLinks } from '~/helpers/landing'
 
-export interface HeaderStateInput {
+interface HeaderStateInput {
   reading: boolean
   progress?: number
 }
 
-export interface HeaderState {
+interface HeaderState {
   accountsOn: Ref<boolean>
   searchOn: Ref<boolean>
   fediverseOn: Ref<boolean>

@@ -1,6 +1,6 @@
 import type { Category } from '~/interfaces'
 
-export interface IllustrationCaption {
+interface IllustrationCaption {
   name: string
   scientific: string
 }

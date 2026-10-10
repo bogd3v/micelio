@@ -6,6 +6,11 @@ import { isCategory } from './categories'
 import { isContentSearch } from './search'
 import { MIN_SEARCH_LENGTH } from '../constants/search'
 
+/**
+ * Articles per page of the blog list.
+ *
+ * @internal Exported for tests.
+ */
 export const BLOG_PAGE_SIZE = 6
 export const LOG_PAGE_SIZE = 24
 const BLOG_BASE = '/blog'

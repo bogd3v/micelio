@@ -1,11 +1,11 @@
-export interface SmtpSettings {
+interface SmtpSettings {
   host?: string
   port?: number
   user?: string
   pass?: string
 }
 
-export interface SmtpTransportOptions {
+interface SmtpTransportOptions {
   host: string
   port: number
   secure: boolean

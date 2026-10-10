@@ -3,7 +3,7 @@
 import { MAX_OUTPUT_BYTES } from '../islands/runtimes/constants'
 import type { WorkerReply } from '../islands/types'
 
-export interface CappedOutput {
+interface CappedOutput {
   text: string
   truncated: boolean
 }

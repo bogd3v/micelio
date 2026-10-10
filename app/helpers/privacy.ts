@@ -2,11 +2,16 @@ import { SESSION_COOKIE, SESSION_MAX_AGE } from '../constants/auth'
 import { READ_STORAGE_KEY } from './readArticles'
 import { THEME_STORAGE_KEY } from './theme'
 
+/**
+ * Storage key of the dismissed privacy notice.
+ *
+ * @internal Exported for tests.
+ */
 export const PRIVACY_NOTICE_STORAGE_KEY = 'micelio-privacy-notice'
 // TODO(#422): remove the bd-privacy-notice fallback
 const LEGACY_PRIVACY_NOTICE_STORAGE_KEY = 'bd-privacy-notice'
 
-export interface SiteCookie {
+interface SiteCookie {
   name: string
   maxAgeDays: number
 }

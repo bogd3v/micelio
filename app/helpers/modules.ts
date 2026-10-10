@@ -3,7 +3,7 @@ import type { SiteModule, SiteModules, SiteMode } from '../interfaces/site'
 import { isStaticMode } from './siteMode'
 
 /** Path prefixes that belong to each module: API routes and pages (with or without a locale prefix). */
-export const MODULE_PATHS: Readonly<Record<SiteModule, readonly string[]>> = {
+const MODULE_PATHS: Readonly<Record<SiteModule, readonly string[]>> = {
   newsletter: ['/api/newsletter', '/confirm', '/newsletter'],
   comments: ['/api/comments'],
   accounts: ['/api/auth', '/account'],

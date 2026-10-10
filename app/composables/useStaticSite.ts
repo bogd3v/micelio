@@ -1,6 +1,6 @@
 import { isBlogEnabled, isStaticMode, parseSiteMode } from '~/helpers/siteMode'
 
-export interface UseStaticSite {
+interface UseStaticSite {
   /** True in static and landing builds, where pages run no Vue (ADR 0006, section 3). */
   isStatic: boolean
   /** True in landing builds: the navigation comes from the home page's sections. */

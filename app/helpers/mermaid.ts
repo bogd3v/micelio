@@ -17,7 +17,7 @@ export const MERMAID_TOKENS = [
   'font-mono',
 ] as const
 
-export type MermaidToken = typeof MERMAID_TOKENS[number]
+type MermaidToken = typeof MERMAID_TOKENS[number]
 
 export type MermaidTokens = Record<MermaidToken, string>
 
