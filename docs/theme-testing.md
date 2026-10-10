@@ -36,6 +36,8 @@ Baselines are committed in `e2e/theme/__screenshots__/<theme>/<mode>/<viewport>/
 
 The `Theme Quality` check gates `deploy`, like `Performance Budgets`.
 
+The `<mode>-reduced` motion projects keep a Playwright trace (`trace.zip`, without screenshots) of a failing test in `theme-report-<theme>`, under `test-results-theme/`. The suite has no retries on purpose, so a test that hangs leaves nothing else to diagnose it from; open the trace with `npx playwright show-trace <trace.zip>`. Passing tests keep none.
+
 ## Locally
 
 ```bash
