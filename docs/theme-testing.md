@@ -38,6 +38,16 @@ The `Theme Quality` check gates `deploy`, like `Performance Budgets`.
 
 The `<mode>-reduced` motion projects keep a Playwright trace (`trace.zip`, without screenshots) of a failing test in `theme-report-<theme>`, under `test-results-theme/`. The suite has no retries on purpose, so a test that hangs leaves nothing else to diagnose it from; open the trace with `npx playwright show-trace <trace.zip>`. Passing tests keep none.
 
+## Why the captures wait as they do
+
+`specimen groups` captures sections of an 18,000 px page, and on a slow CPU (a shared CI runner) two consecutive captures of the same section used to differ in the home hero's photo, which was painted in one and not in the other (`Failed to take two consecutive stable screenshots`). Three things keep them stable (#463):
+
+- `openPage` waits for `image.decode()` of every image, not only `image.complete`, which is true before an image with `decoding="async"` is decoded.
+- `openPage` waits for the page to finish hydrating (`window.__micelioHydrated`, `app/plugins/hydrated.client.ts`): network idle comes earlier on a slow CPU, and a capture between hydration and the node replacement finds its element detached.
+- The Chromium projects start with `--disable-checker-imaging`: while it rasterizes a capture that tall, Chromium defers the decode of large images ("checker imaging") and the capture can catch the frame before the photo is back. It does not change what is painted: the committed baselines still match.
+
+To reproduce a flake like this, run the Playwright image of the CI with `--cpus=4` and slow the page down with `Emulation.setCPUThrottlingRate` (CDP) at 8 to 16 times: the unfixed capture failed in 12 of 12 repetitions at 12 times.
+
 ## Locally
 
 ```bash

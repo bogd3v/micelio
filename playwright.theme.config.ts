@@ -69,7 +69,9 @@ export default defineConfig({
   // A retry would hide a nondeterministic page: a screenshot that needs one is a bug
   retries: 0,
   reporter: [...(process.env.CI ? [['github'] as const] : []), ['html', { outputFolder: 'playwright-report-theme', open: 'never' }]],
-  use: { baseURL, reducedMotion: 'reduce' },
+  // Chromium defers the decode of large images while it rasterizes ("checker imaging"): a capture of the 18,000 px specimen can catch
+  // the frame before the hero photo is back (docs/theme-testing.md). The Firefox project sets its own launchOptions
+  use: { baseURL, reducedMotion: 'reduce', launchOptions: { args: ['--disable-checker-imaging'] } },
   projects: [...projects, ...motionProjects],
   webServer: webServers({ mockPort, appPort }),
 })
