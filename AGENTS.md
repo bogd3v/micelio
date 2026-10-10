@@ -102,7 +102,7 @@ Branches, commits, signed-off commits (`git commit -s`), PR titles and descripti
 ### TypeScript Guidelines
 
 - Always use explicit return types for composables
-- Doc comments: every exported declaration of a `.ts` file has a TSDoc comment, as section 4 of the standard says ("Doc comments (TSDoc)"). `npm run lint` checks the syntax (`tsdoc/syntax`) and that the comment exists (`jsdoc/require-jsdoc`, a warning until a folder is complete); `.vue` files are not covered
+- Doc comments: every exported declaration of a `.ts` file has a TSDoc comment, as section 4 of the standard says ("Doc comments (TSDoc)"). `npm run lint` checks the syntax (`tsdoc/syntax`) and that the comment exists (`jsdoc/require-jsdoc`, an error on every `.ts` file outside `test/`, `e2e/` and `.d.ts`); `.vue` files are not covered
 - Use `defineProps<T>()` with generic syntax for component props
 - Use `defineEmits<{ event: [paramType] }>()` for emits
 - Prefer interfaces over types for object shapes

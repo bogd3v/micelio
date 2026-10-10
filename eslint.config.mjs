@@ -31,13 +31,12 @@ export default withNuxt(
   },
   {
     // TSDoc syntax and a doc comment on every export (standard, section 4). Scoped to .ts: tsdoc cannot parse .vue.
-    // `require-jsdoc` warns until a folder is complete; each folder's PR raises it to an error (#425).
     files: ['**/*.ts'],
     ignores: ['**/*.d.ts', '.nuxt/**', '.output/**', 'test/**', 'e2e/**'],
     plugins: { tsdoc, jsdoc },
     rules: {
       'tsdoc/syntax': 'error',
-      'jsdoc/require-jsdoc': ['warn', {
+      'jsdoc/require-jsdoc': ['error', {
         publicOnly: true,
         require: { FunctionDeclaration: true, ClassDeclaration: true },
         contexts: [
@@ -48,11 +47,6 @@ export default withNuxt(
         ],
       }],
     },
-  },
-  {
-    // Folders whose exports are all documented: a missing comment fails the lint (#425).
-    files: ['app/interfaces/**/*.ts', 'app/constants/categories.ts', 'app/helpers/**/*.ts', 'server/**/*.ts', 'app/composables/**/*.ts', 'app/islands/**/*.ts', 'modules/**/*.ts'],
-    rules: { 'jsdoc/require-jsdoc': 'error' },
   },
   {
     ignores: ['docs/**', '.claude/worktrees/**'],
