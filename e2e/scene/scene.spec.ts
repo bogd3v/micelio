@@ -336,8 +336,8 @@ test('a scene that opens the page loads nothing of its own before load, and its 
   expect(early).toEqual([])
   const poster = page.locator(SCENE).locator('img')
   await expect(poster).toHaveAttribute('fetchpriority', 'high')
-  const lcp = await page.evaluate(() => (window as unknown as { __lcp: string[] }).__lcp)
-  expect(lcp.at(-1)).toBe('IMG')
+  // The observer delivers its entries after `load`, and a poster decoded asynchronously reports late: poll for the final candidate
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __lcp: string[] }).__lcp.at(-1))).toBe('IMG')
   // After load and idle the island arrives (where the browser has WebGL2)
   if (await hasWebGL2(page)) await expect(page.locator(SCENE)).toHaveAttribute('data-state', /loading|ready/)
 })
