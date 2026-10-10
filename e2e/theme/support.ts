@@ -45,10 +45,23 @@ export async function openPage(page: Page, { path, diagrams = 0 }: ThemePage): P
     await page.evaluate(() => window.scrollTo(0, 0))
   }
   if (diagrams) await page.waitForFunction(count => document.querySelectorAll('.myc-mermaid-diagram svg').length >= count, diagrams)
-  await page.evaluate(() => Promise.all([
-    document.fonts.ready,
-    ...Array.from(document.images, image => image.complete ? null : new Promise((resolve) => { image.onload = image.onerror = resolve })),
-  ]))
+  // `complete` is true before a `decoding="async"` image is decoded and painted: wait for the decode too, or it appears between two captures
+  await page.evaluate(async () => {
+    await document.fonts.ready
+    await Promise.all(Array.from(document.images, async (image) => {
+      if (!image.complete) {
+        await new Promise((resolve) => {
+          image.addEventListener('load', resolve, { once: true })
+          image.addEventListener('error', resolve, { once: true })
+        })
+      }
+      try {
+        await image.decode()
+      } catch {
+        // A broken image has nothing to decode; the capture shows it as it is
+      }
+    }))
+  })
 }
 
 /** What changes with the clock: dates and the footer year */
