@@ -1,0 +1,18 @@
+name: Resolve the Node base image
+description: Copies the Dockerfile's Node base image to GHCR once per tag and outputs the `build-contexts` entry that makes the build pull it from there. Empty when the copy is unavailable (the build then uses Docker Hub). Run after logging in to GHCR.
+
+outputs:
+  build-context:
+    description: The `build-contexts` entry, or an empty string
+    value: ${{ steps.resolve.outputs.build-context }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve the base image
+      id: resolve
+      shell: bash
+      env:
+        OWNER: ${{ github.repository_owner }}
+        SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}
+      run: MIRROR_OWNER="${OWNER,,}" MIRROR_REGISTRY=ghcr.io SOURCE_URL="${SOURCE_URL}" "${GITHUB_WORKSPACE}/scripts/ci/resolve-node-base.sh" Dockerfile >> "$GITHUB_OUTPUT"
