@@ -1,6 +1,6 @@
 // Fails when a type or constant declared outside the shared places is used by two or more files (imported or auto-imported), or when a shared file holds logic.
 // Placement rules: engineering standard, section 4 ("Where types and constants live"). Run by `npm run lint`.
-// Without --strict it only reports and exits 0 (the check is introduced as a report, issue #423).
+// With --strict (as `npm run lint` runs it) any problem exits 1; without it the script only reports.
 // A file that uses an exported value of an auto-imported folder without importing it counts as an importer too:
 // Nitro auto-imports server/utils/** into server/, Nuxt auto-imports app/composables/** and app/utils/** into app/.
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
@@ -11,7 +11,10 @@ const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url))
 const SCANNED = ['app', 'server', 'modules']
 const STRICT = process.argv.includes('--strict')
 // `file:name` → reason. A reason is mandatory: an entry without one is reported
-const EXEMPT = new Map([])
+const EXEMPT = new Map([
+  ['modules/theme/specimen/fixtures.ts:POSTS', 'built with the `post()` builder that ARTICLE also uses and with the `Category` enum, which a shared file may not import at runtime; a literal copy would duplicate the post shape'],
+  ['modules/theme/specimen/fixtures.ts:FEATURED_POST', 'the first of POSTS (see above)'],
+])
 
 const SOURCE = /\.(ts|mts|mjs|vue)$/
 const RESOLVE_EXTENSIONS = ['', '.ts', '.mts', '.mjs', '.vue', '/index.ts', '/index.mjs']
@@ -63,8 +66,9 @@ function files(dir) {
 }
 
 // Shared places: the domain folders and the types.ts / constants.ts of a feature folder
+// A plain-node script cannot import a .ts file, and a `constants.mjs` beside `constants.ts` would make `./constants` ambiguous: that folder's role lists live in roles.mjs
 function isShared(file) {
-  return file.startsWith('app/interfaces/') || file.startsWith('app/constants/') || /(^|\/)(types|constants)\.ts$/.test(file)
+  return file.startsWith('app/interfaces/') || file.startsWith('app/constants/') || /(^|\/)(?:types|constants)\.ts$/.test(file) || file === 'modules/theme/roles.mjs'
 }
 
 // `~/x` is app/x and `~~/x` the project root; `#micelio/...` and `#build/...` are generated and never declare shared things

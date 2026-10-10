@@ -182,8 +182,18 @@ describe('check-placement', () => {
     expect(problems[0]).toContain('constant MAX')
   })
 
+  it('accepts roles.mjs as a shared file and holds it to declarations only', () => {
+    expect(problemsOf({
+      'modules/theme/roles.mjs': 'export const ROLES = [\'a\']\n',
+      'modules/theme/a.ts': 'import { ROLES } from \'./roles.mjs\'\n',
+      'modules/theme/b.ts': 'import { ROLES } from \'./roles.mjs\'\n',
+    })).toEqual([])
+    expect(problemsOf({
+      'modules/theme/roles.mjs': 'import { x } from \'./x.mjs\'\nexport function f() { return x }\n',
+    })).toHaveLength(2)
+  })
+
   it('passes on the repository', () => {
-    // Report-only until the last pull request of issue #423 turns the check strict; this guards the shared files
-    expect(findProblems().filter(line => line.includes('shared file holds'))).toEqual([])
+    expect(findProblems()).toEqual([])
   })
 })
