@@ -1,6 +1,8 @@
 // Islands that write into the light DOM of a Vue page wait for hydration, or Vue sees a mismatch (ADR 0006, section 6).
 // `app/plugins/hydrated.client.ts` sets the flag and dispatches the event on `app:suspense:resolve`.
+/** Name of the event that `document` receives once the Nuxt app has finished hydrating; `app/plugins/hydrated.client.ts` dispatches it. */
 export const HYDRATED_EVENT = 'micelio:hydrated'
+/** Name of the `window` property that the hydration plugin sets to `true` once the Nuxt app has finished hydrating. */
 export const HYDRATED_FLAG = '__micelioHydrated'
 
 interface HydratedWindow {

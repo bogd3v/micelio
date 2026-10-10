@@ -28,6 +28,12 @@ const LIMITS: Readonly<Record<string, number>> = {
 // All the engine may hold: tables built by a loop stop here with an error
 const HEAP_LIMIT = 64 * 1024 * 1024
 
+/**
+ * Loads SQLite for SQL and returns the runtime that the playground Worker runs queries with.
+ *
+ * @remarks
+ * Runs in the playground Worker, never on the page. The Worker imports this chunk on the first SQL run. Each run opens a new in-memory database with the engine limits of `LIMITS`; the heap cap of `HEAP_LIMIT` is set once, when the engine loads. `setup` runs first and its output is hidden; each statement of `code` runs on its own, and every statement that returns columns is shown as a table, even when it has no rows. A run stops early once its output would exceed twice the reader's output cap.
+ */
 export default async function load(): Promise<Runtime> {
   const sqlite3 = await sqlite3InitModule()
   const capi = sqlite3.capi as unknown as Record<string, unknown>

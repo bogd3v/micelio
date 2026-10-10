@@ -85,6 +85,12 @@ function restrictedGlobals(): Restricted {
   }
 }
 
+/**
+ * Loads Pyodide for Python and returns the runtime that the playground Worker runs code with.
+ *
+ * @remarks
+ * Runs in the playground Worker, never on the page. The Worker imports this chunk on the first Python run, and the Pyodide loader is imported by URL from the folder beside it, because its files are not bundled. Python sees only an allow-list of JavaScript globals, and `input()` reads the end of the input. Tasks and timers left by a run are cancelled and cleared when it ends. A task that does not stop, or a failed cleanup, sets `recycle`, which asks the pool to replace the Worker.
+ */
 export default async function load(): Promise<Runtime> {
   // Next to this chunk; the files are not bundled (Pyodide loads its siblings by name), so the import is by URL
   const folder = new URL(PYODIDE_DIR + '/', import.meta.url).href

@@ -7,10 +7,12 @@ interface NetworkInformation {
 
 let webgl2: boolean | undefined
 
+/** Whether the browser has the WebAssembly API. It tests that the API exists, not that the page's policy allows WebAssembly to compile. */
 export function supportsWasm(): boolean {
   return typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function'
 }
 
+/** Whether the browser has the `Worker` constructor. It does not test that the page's policy lets a Worker start from its origin (`workerSrc`). */
 export function supportsWorker(): boolean {
   return typeof Worker === 'function'
 }
@@ -28,10 +30,12 @@ export function supportsWebGL2(): boolean {
   return webgl2
 }
 
+/** Whether the reader asked for less motion (`prefers-reduced-motion: reduce`). False where `matchMedia` does not exist. */
 export function prefersReducedMotion(): boolean {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+/** Whether the reader asked to save data, through `navigator.connection`. False where the browser does not expose that object. */
 export function saveData(): boolean {
   return (navigator as Navigator & { connection?: NetworkInformation }).connection?.saveData === true
 }
