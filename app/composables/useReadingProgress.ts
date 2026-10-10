@@ -1,6 +1,12 @@
 import type { Ref } from 'vue'
 import { readingPercent } from '~/helpers/header'
 
+/**
+ * Returns the scroll progress of the page, from 0 to 100, updated while `enabled` is true.
+ *
+ * @remarks
+ * While enabled, it listens to scroll and resize on the window and measures at most once per animation frame. When `enabled` turns false it removes the listeners and resets the value to 0. Nothing runs on the server, because the listeners start on mount. Call it in setup, because it registers lifecycle hooks.
+ */
 export function useReadingProgress(enabled: Ref<boolean>): Ref<number> {
   const progress = ref(0)
   let frame: number | null = null

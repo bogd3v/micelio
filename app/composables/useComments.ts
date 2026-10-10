@@ -7,6 +7,12 @@ function getErrorMessage(err: unknown, fallback: string): string {
   return fallback
 }
 
+/**
+ * Loads, posts and groups the comments of one article in the current locale.
+ *
+ * @remarks
+ * The comments are shared state keyed by locale and article. The article is identified by `articleDocumentId` when it is given, and by `articleSlug` otherwise. `fetchComments` reads `/api/comments/flat` and keeps a failure in `error` without throwing. `postComment` sends a guest comment with trimmed fields, refetches the list and sets `submitSuccess` until 3 seconds after the list is refetched. A failed post sets `submitError` (a rate-limit message on HTTP 429) and rethrows the error, so the caller must catch it. Call it in setup, because it reads `useI18n` and `useState`.
+ */
 export function useComments(articleSlug: string, articleDocumentId?: string) {
   const { t, locale } = useI18n()
 

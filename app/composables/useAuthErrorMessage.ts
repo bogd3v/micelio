@@ -10,6 +10,12 @@ const MESSAGE_CODES: readonly AuthErrorCode[] = [
   'wrongPassword',
 ]
 
+/**
+ * Returns a function that turns an auth error into a translated message.
+ *
+ * @remarks
+ * A known error code maps to `account.errors.<code>`; any other error maps to `account.errors.unknown`. Call it in setup, because it reads `useI18n`.
+ */
 export function useAuthErrorMessage(): (err: unknown) => string {
   const { t } = useI18n()
 

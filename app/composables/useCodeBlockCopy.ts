@@ -1,5 +1,11 @@
 import type { Ref } from 'vue'
 
+/**
+ * Adds a copy button behaviour to the code blocks inside `target`.
+ *
+ * @remarks
+ * On mount, each `[data-myc-copy]` button in the target gets its label and an `aria-live` attribute, and is hidden when the browser has no clipboard API. A click copies the text of the block without its `.myc-prompt` lines and shows the copied label for 1.6 seconds. The click listener is removed when the component unmounts. Call it in setup, because it registers lifecycle hooks and reads `useI18n`.
+ */
 export function useCodeBlockCopy(target: Ref<HTMLElement | null>): void {
   const { t } = useI18n()
 
