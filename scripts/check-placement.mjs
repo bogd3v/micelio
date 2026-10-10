@@ -1,6 +1,8 @@
 // Fails when a type or constant declared outside the shared places is imported by two or more files, or when a shared file holds logic.
 // Placement rules: engineering standard, section 4 ("Where types and constants live"). Run by `npm run lint`.
 // Without --strict it only reports and exits 0 (the check is introduced as a report, issue #423).
+// A file that uses an exported value of an auto-imported folder without importing it counts as an importer too:
+// Nitro auto-imports server/utils/** into server/, Nuxt auto-imports app/composables/** and app/utils/** into app/.
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -13,6 +15,12 @@ const EXEMPT = new Map([])
 
 const SOURCE = /\.(ts|mts|mjs|vue)$/
 const RESOLVE_EXTENSIONS = ['', '.ts', '.mts', '.mjs', '.vue', '/index.ts', '/index.mjs']
+
+// Auto-imported folders (no `imports.dirs` in nuxt.config.ts) and the side of the project that sees them
+const AUTO_IMPORTS = [
+  { dirs: ['server/utils/'], scope: 'server/' },
+  { dirs: ['app/composables/', 'app/utils/'], scope: 'app/' },
+]
 
 function files(dir) {
   if (!existsSync(dir)) return []
@@ -39,6 +47,16 @@ function resolveSpecifier(root, specifier, from) {
     if (existsSync(candidate) && statSync(candidate).isFile()) return relative(root, candidate)
   }
   return null
+}
+
+// Source with comments and string contents blanked, so a name mentioned in a comment or a message is not a use.
+// The expressions inside `${…}` of a template literal are kept: they are code.
+function stripNoise(source) {
+  const noise = /\/\*[\s\S]*?\*\/|<!--[\s\S]*?-->|\/\/[^\n]*|'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`/g
+  return source.replace(noise, (match) => {
+    if (!match.startsWith('`')) return ' '
+    return [...match.matchAll(/\$\{([^}]*)\}/g)].map(part => ` ${part[1]} `).join('')
+  })
 }
 
 /**
@@ -72,12 +90,30 @@ export function findProblems(root = REPO_ROOT) {
     }
   }
 
+  // Auto-import users: files of the matching side that mention a value of an auto-imported folder without importing it
+  const stripped = new Map()
+  const autoUsers = new Map()
+  for (const { dirs, scope } of AUTO_IMPORTS) {
+    for (const { file, kind, name } of declarations) {
+      if (kind === 'interface' || kind === 'type' || !dirs.some(dir => file.startsWith(dir))) continue
+      const word = new RegExp(`(?<![\\w$.])${name.replace(/\$/g, '\\$')}(?![\\w$])`)
+      for (const [other, source] of sources) {
+        if (other === file || !other.startsWith(scope) || importers.get(`${file}\0${name}`)?.has(other)) continue
+        if (!stripped.has(other)) stripped.set(other, stripNoise(source))
+        if (!word.test(stripped.get(other))) continue
+        const key = `${file}\0${name}`
+        if (!autoUsers.has(key)) autoUsers.set(key, new Set())
+        autoUsers.get(key).add(other)
+      }
+    }
+  }
+
   const problems = []
   for (const { file, kind, name } of declarations) {
-    const users = [...(importers.get(`${file}\0${name}`) ?? [])]
+    const users = [...new Set([...(importers.get(`${file}\0${name}`) ?? []), ...(autoUsers.get(`${file}\0${name}`) ?? [])])]
     if (users.length < 2 || EXEMPT.has(`${file}:${name}`)) continue
     const noun = kind === 'interface' || kind === 'type' ? 'type' : 'constant'
-    problems.push(`${file}  ${noun} ${name} is imported by ${users.length} files (${users.slice(0, 3).join(', ')}${users.length > 3 ? ', …' : ''}): move it to its domain file or its feature folder's ${noun === 'type' ? 'types.ts' : 'constants.ts'}`)
+    problems.push(`${file}  ${noun} ${name} is used by ${users.length} files (${users.slice(0, 3).join(', ')}${users.length > 3 ? ', …' : ''}): move it to its domain file or its feature folder's ${noun === 'type' ? 'types.ts' : 'constants.ts'}`)
   }
 
   // A shared file holds declarations only: no logic and no runtime imports
