@@ -1,4 +1,5 @@
 import type { Locator, Page } from '@playwright/test'
+import { HYDRATED_FLAG } from '../../app/islands/lib/hydrated'
 
 export interface ThemePage {
   /** Snapshot and report name */
@@ -38,6 +39,8 @@ export async function openPage(page: Page, { path, diagrams = 0 }: ThemePage): P
     }).observe(document, { childList: true, subtree: true })
   })
   await page.goto(path, { waitUntil: 'networkidle' })
+  // Network idle is not hydration: on a slow CPU Vue hydrates late and replaces nodes, and a capture in between finds its element detached
+  await page.waitForFunction(flag => !document.getElementById('__NUXT_DATA__') || (window as unknown as Record<string, unknown>)[flag] === true, HYDRATED_FLAG)
   // Diagrams are drawn when they near the viewport (ADR 0006, section 6): bring each one in, as a reader scrolling would
   if (diagrams) {
     const blocks = page.locator('micelio-mermaid')
