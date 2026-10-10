@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { runtimeDownloads } from '../app/helpers/playgroundRuntimes'
 import loadJavaScript from '../app/islands/runtimes/javascript'
-import type { RunLimits } from '../app/islands/runtimes/runtime'
+import type { RunLimits } from '../app/islands/types'
 
 const LIMITS: RunLimits = { deadlineMs: 4000, outputBytes: 64 * 1024 }
 

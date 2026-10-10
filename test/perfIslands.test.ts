@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 // @ts-expect-error plain ESM script without types
 import { budgetKeysOf, islandBudgetErrors, islandElement, islandMetrics, islandProblems, isStrayRequest } from '../scripts/perf/islands.mjs'
-import type { HeavyIsland } from '../app/islands/heavy'
+import type { HeavyIsland } from '../app/islands/types'
 
 const MERMAID: HeavyIsland = { id: 'mermaid', entry: 'mermaid', trigger: 'visible', fallback: 'the diagram source', features: [], budget: 'mermaid' }
 const PLAYGROUND: HeavyIsland = { id: 'playground', entry: 'playground', trigger: 'interaction', fallback: 'the code', features: ['worker'], budget: 'playground' }
@@ -64,7 +64,7 @@ describe('islandBudgetErrors', () => {
   })
 
   it('rejects a budget no island owns', () => {
-    expect(islandBudgetErrors([], { dynamic: { islands: { scene: BUDGET } } })).toEqual(['modes.dynamic.islands.scene is not the budget of an island in app/islands/heavy.ts'])
+    expect(islandBudgetErrors([], { dynamic: { islands: { scene: BUDGET } } })).toEqual(['modes.dynamic.islands.scene is not the budget of an island in app/islands/lib/constants.ts'])
   })
 
   it('accepts variants of an island budget, and a variant alone counts as its budget', () => {
@@ -74,7 +74,7 @@ describe('islandBudgetErrors', () => {
 
   it('rejects a variant of an unknown island or with a bad name', () => {
     expect(islandBudgetErrors([MERMAID], { dynamic: { islands: { 'mermaid': BUDGET, 'scene:big': BUDGET, 'mermaid:Big': BUDGET, 'mermaid:a:b': BUDGET } } })).toEqual([
-      'modes.dynamic.islands.scene:big is not the budget of an island in app/islands/heavy.ts',
+      'modes.dynamic.islands.scene:big is not the budget of an island in app/islands/lib/constants.ts',
       'modes.dynamic.islands.mermaid:Big: a variant is <budget>:<name>, the name in lowercase letters, digits and hyphens',
       'modes.dynamic.islands.mermaid:a:b: a variant is <budget>:<name>, the name in lowercase letters, digits and hyphens',
     ])

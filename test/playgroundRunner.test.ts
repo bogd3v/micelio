@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { capOutput, fillLabel, formatDownload, isWorkerReply, MAX_OUTPUT_BYTES } from '../app/helpers/playgroundRunner'
+import { capOutput, fillLabel, formatDownload, isWorkerReply } from '../app/helpers/playgroundRunner'
+import { MAX_OUTPUT_BYTES } from '../app/islands/runtimes/constants'
 import { cellLength, formatCell, formatTable } from '../app/helpers/sqlTable'
 import { NETWORK_GLOBALS, removeNetworkGlobals } from '../app/helpers/workerSandbox'
 import { runtimeDownloads, RUNTIME_FILES, UNUSED_RUNTIME_FILES } from '../app/helpers/playgroundRuntimes'

@@ -6,7 +6,7 @@
 import { PYODIDE_DIR } from 'virtual:micelio-pyodide'
 import type { PyodideAPI } from 'pyodide'
 import { OutputBuffer, readableTraceback } from '../../helpers/pythonOutput'
-import type { Runtime, RunLimits } from './runtime'
+import type { Runtime, RunLimits } from '../types'
 
 interface PyodideModule {
   loadPyodide: (options: Record<string, unknown>) => Promise<PyodideAPI>

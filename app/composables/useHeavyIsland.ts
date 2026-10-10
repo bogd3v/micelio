@@ -1,9 +1,9 @@
 import manifest from '#build/micelio/islands'
-import { HEAVY_ISLANDS } from '~/islands/heavy'
-import { HEAVY_SCAN_EVENT, HEAVY_SCRIPT_PREFIX, heavyDeclarationJson, islandSrc } from '~/helpers/islands'
+import { HEAVY_ISLANDS, HEAVY_SCAN_EVENT, HEAVY_SCRIPT_PREFIX } from '~/islands/lib/constants'
+import { heavyDeclarationJson, islandSrc } from '~/helpers/islands'
 
 /**
- * Declares a heavy island of the registry (`app/islands/heavy.ts`) on this page. Its own script is not added: the loader
+ * Declares a heavy island of the registry (`HEAVY_ISLANDS` in `app/islands/lib/constants.ts`) on this page. Its own script is not added: the loader
  * (`app/islands/loader.ts`) imports it on the island's trigger, for the element `micelio-<id>`. `config` is the island's own
  * settings, read from the same JSON script.
  */

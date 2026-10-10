@@ -44,7 +44,7 @@ export function islandBudgetErrors(registry, modes) {
       const [base, variant, ...rest] = key.split(':')
       const island = byKey.get(base)
       if (!island) {
-        errors.push(`${label} is not the budget of an island in app/islands/heavy.ts`)
+        errors.push(`${label} is not the budget of an island in app/islands/lib/constants.ts`)
         continue
       }
       if (variant !== undefined && (!VARIANT.test(variant) || rest.length)) {

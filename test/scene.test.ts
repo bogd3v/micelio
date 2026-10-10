@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { bombGlb, buildGlb, noisePng, texturedGlb, triangleGlb } from '../e2e/fixtures/glb.mjs'
-import { glbProblem, imageSize, isGlb, isGlbUrl, modelSource, MODEL_MAX_BYTES } from '../app/helpers/scene'
+import { glbProblem, imageSize, isGlb, isGlbUrl, modelSource } from '../app/helpers/scene'
+import { MODEL_MAX_BYTES } from '../app/islands/constants'
 import { isCopyableMedia } from '../app/helpers/staticBuild'
 
 /** A minimal binary glTF: the 12-byte header only (what the checks read). */

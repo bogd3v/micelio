@@ -4,7 +4,7 @@ import sqlite3InitModule from '@sqlite.org/sqlite-wasm'
 import { splitStatements } from '../../helpers/sqlStatements'
 import { cellLength, formatTable } from '../../helpers/sqlTable'
 import type { SqlCell } from '../../helpers/sqlTable'
-import type { Runtime, RunLimits } from './runtime'
+import type { Runtime, RunLimits } from '../types'
 
 interface ResultSet {
   columns: string[]

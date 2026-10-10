@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { contentSecurityPolicy, inlineScripts, islandPolicyOptions, islandsInHtml, sceneModelOrigins } from '~/helpers/securityHeaders'
-import { HEAVY_ISLANDS } from '~/islands/heavy'
+import { HEAVY_ISLANDS } from '~/islands/lib/constants'
 
 function sha256(content: string): string {
   return createHash('sha256').update(content).digest('base64')

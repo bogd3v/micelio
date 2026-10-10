@@ -1,35 +1,7 @@
 // What the playground island and its Worker agree on (ADR 0004, worker containment). Pure, so it is unit-tested without a browser.
 
-/** Longest a run may execute, in ms. The clock starts when the runtime is loaded, not when Run is pressed. */
-export const RUN_TIMEOUT_MS = 5000
-/** Longest the runtime may take to load, in ms: a hung download must not leave the button busy for ever. */
-export const LOAD_TIMEOUT_MS = 60000
-/** Output shown to the reader, in bytes of UTF-8. */
-export const MAX_OUTPUT_BYTES = 64 * 1024
-
-/** Main thread -> Worker. */
-export interface WorkerRequest {
-  type: 'run'
-  id: number
-  runtime: string
-  code: string
-  setup: string
-}
-
-/** Worker -> main thread. `started`: the runtime is loaded and the code is about to run. `recycle`: the Worker should not run again (the pool replaces it). */
-export type WorkerReply
-  = | { type: 'started', id: number }
-    | { type: 'done', id: number, output: string, truncated: boolean, recycle?: boolean }
-    | { type: 'error', id: number, message: string, recycle?: boolean }
-
-export type RunStatus = 'done' | 'error' | 'timeout' | 'stopped'
-
-export interface RunResult {
-  status: RunStatus
-  /** Output, or the error message for `error`. Always plain text. */
-  output: string
-  truncated: boolean
-}
+import { MAX_OUTPUT_BYTES } from '../islands/runtimes/constants'
+import type { WorkerReply } from '../islands/types'
 
 export interface CappedOutput {
   text: string

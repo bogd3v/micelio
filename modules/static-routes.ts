@@ -12,7 +12,7 @@ import { isStaticMode } from '../app/helpers/siteMode'
 import { speculationRules } from '../app/helpers/speculation'
 import type { SiteMode } from '../app/interfaces/site'
 import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, failsBuild, headersFile, initialRoutes, injectCspMeta, injectSpeculationRules, isCopyableMedia, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
-import { HEAVY_ISLANDS } from '../app/islands/heavy'
+import { HEAVY_ISLANDS } from '../app/islands/lib/constants'
 import { strapiRequest } from '../server/lib/strapiRequest'
 import type { StrapiRequestConfig } from '../server/lib/strapiRequest'
 

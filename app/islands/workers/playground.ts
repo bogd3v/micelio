@@ -1,9 +1,9 @@
 // Dedicated Worker of the playground (ADR 0004, worker containment). It is served from /_islands/workers/ with its own CSP, loads the
 // runtime of its first request, removes the network globals and then only runs code. One Worker serves one runtime.
-import { capOutput, MAX_OUTPUT_BYTES, RUN_TIMEOUT_MS } from '../../helpers/playgroundRunner'
-import type { WorkerReply, WorkerRequest } from '../../helpers/playgroundRunner'
+import { MAX_OUTPUT_BYTES, RUN_TIMEOUT_MS } from '../runtimes/constants'
+import type { RunLimits, Runtime, WorkerReply, WorkerRequest } from '../types'
+import { capOutput } from '../../helpers/playgroundRunner'
 import { removeNetworkGlobals } from '../../helpers/workerSandbox'
-import type { Runtime, RunLimits } from '../runtimes/runtime'
 
 // One loader per runtime; a runtime is a chunk fetched from /_islands/runtimes/ the first time it is needed
 const LOADERS: Readonly<Record<string, () => Promise<{ default: () => Promise<Runtime> }>>> = {

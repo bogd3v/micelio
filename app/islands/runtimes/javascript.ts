@@ -4,7 +4,7 @@
 import variant from '@jitl/quickjs-wasmfile-release-sync'
 import { newQuickJSWASMModuleFromVariant, newVariant } from 'quickjs-emscripten-core'
 import type { QuickJSContext, QuickJSHandle, QuickJSRuntime } from 'quickjs-emscripten-core'
-import type { RunLimits, Runtime } from './runtime'
+import type { RunLimits, Runtime } from '../types'
 
 // What the guest may hold, by QuickJS's own limits: a loop that builds an array or a string ends with an error before it can
 // starve the Worker, and runaway recursion ends with a stack error instead of a crash

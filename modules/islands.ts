@@ -8,7 +8,8 @@ import { build } from 'vite'
 import { addTemplate, defineNuxtModule, useLogger } from 'nuxt/kit'
 import { ISLANDS_PATH } from '../app/helpers/islands'
 import { runtimeDownloads, UNUSED_RUNTIME_FILES } from '../app/helpers/playgroundRuntimes'
-import { HEAVY_ISLANDS, validateHeavyIslands } from '../app/islands/heavy'
+import { HEAVY_ISLANDS } from '../app/islands/lib/constants'
+import { validateHeavyIslands } from '../app/islands/heavy'
 import { runtimesImportingWorkers, sharedWithLoader } from './lib/islands-graph'
 import { dropPyodideCopies, pyodideAssets } from './lib/pyodide-assets'
 import { isStaticMode } from '../app/helpers/siteMode'
@@ -26,11 +27,11 @@ interface CachedBuild {
   modulesHash: string
 }
 
-// Not islands: the heavy registry (data) and everything under lib/ (shared helpers the islands import)
+// Not islands: the heavy registry, the shared types and constants, and everything under lib/ (shared helpers the islands import)
 function islandEntries(sourceDir: string): Record<string, string> {
   return Object.fromEntries(
     readdirSync(sourceDir, { withFileTypes: true })
-      .filter(entry => entry.isFile() && entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts') && entry.name !== 'heavy.ts')
+      .filter(entry => entry.isFile() && entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts') && !['heavy.ts', 'types.ts', 'constants.ts'].includes(entry.name))
       .map(entry => [parse(entry.name).name, join(sourceDir, entry.name)]),
   )
 }
@@ -167,7 +168,7 @@ export default defineNuxtModule({
         ...validateHeavyIslands(HEAVY_ISLANDS),
         ...HEAVY_ISLANDS.filter(island => !Object.hasOwn(input, island.entry)).map(island => `island "${island.id}": entry "${island.entry}" is not a file of app/islands/`),
       ]
-      if (problems.length) throw new Error(`Invalid heavy island registry (app/islands/heavy.ts):\n- ${problems.join('\n- ')}`)
+      if (problems.length) throw new Error(`Invalid heavy island registry (app/islands/lib/constants.ts):\n- ${problems.join('\n- ')}`)
 
       if (Object.keys(input).length) {
         // cssTarget is the site's browser list (nuxt.config.ts, CSS_TARGETS) in esbuild syntax, which is also what Vite wants here
