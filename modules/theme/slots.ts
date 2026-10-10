@@ -26,6 +26,14 @@ export function slotStyles(themeDir: string): string {
 }
 
 // Slots are plain components for now: `island` is recorded in #micelio/theme (data.ts) and enforced by the theme validator (#237, PR 7)
+/**
+ * Registers the component of each slot, and the styles of the theme's slot files, at build time.
+ *
+ * @remarks
+ * A slot renders the theme's `slots/<Name>.vue` when it ships one, else the core default in `app/theme/defaults/`. The components
+ * are added to the context and registered by `setupComponents`. The theme's `slots/*.css` files join `micelio/theme.css` in
+ * file-name order.
+ */
 export function setupSlots(ctx: ThemeContext): void {
   const defaultsDir = resolve(ctx.nuxt.options.srcDir, DEFAULTS_DIR)
   ctx.components.push(...resolveSlots(ctx.dir, defaultsDir))

@@ -18,6 +18,15 @@ function joinCss(sources: CssSource[]): string {
 }
 
 // main.css imports these at fixed positions (ADR 0005, section 3); never nuxt.options.css
+/**
+ * Adds the templates that carry the active theme's CSS into the build, under `micelio/`.
+ *
+ * @remarks
+ * Runs at build time. `settings.css` holds the role CSS generated from `theme.json`, preceded by the theme's `fonts.css` and
+ * `font-fallbacks.css` when present. `theme.css` imports the theme's `theme.css` and its slot styles, `sections.css` its
+ * `sections.css`, `components.css` holds the CSS that other setups add (the mode switch), and the five region templates hold the variant CSS of each region. Each template is generated again on every
+ * regeneration, so an edit to `theme.json` in dev reaches the role CSS without a restart.
+ */
 export function setupCss(ctx: ThemeContext): void {
   const { dir, load } = ctx
 

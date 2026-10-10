@@ -13,6 +13,16 @@ declare module '@nuxt/schema' {
   }
 }
 
+/**
+ * Discovers and validates every installed theme, and returns the context of the active one.
+ *
+ * @remarks
+ * The active theme is `NUXT_PUBLIC_THEME`, else the public runtime config, else `DEFAULT_THEME`. Every installed theme is
+ * validated, not only the active one (ADR 0005, section 6). The returned `load` runs discovery and validation again, so a
+ * regeneration in dev sees the edits made to a theme.
+ *
+ * @throws `Error` when an installed theme is invalid, or the active theme is not installed; the message names each problem.
+ */
 export function createContext(nuxt: Nuxt): ThemeContext {
   const id = process.env.NUXT_PUBLIC_THEME || nuxt.options.runtimeConfig.public.theme || DEFAULT_THEME
   const roots = themeRoots(nuxt.options.rootDir)

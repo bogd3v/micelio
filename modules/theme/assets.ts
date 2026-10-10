@@ -103,6 +103,17 @@ function setupMessages(ctx: ThemeContext): void {
   })
 }
 
+/**
+ * Serves the active theme's fonts, images and messages, at build time.
+ *
+ * @remarks
+ * `fonts/` is served at `/fonts/` and `images/` at `/theme/images/`, both copied under `micelio/` in the build folder with the
+ * `STATIC_CSP` header. The theme's `i18n/<locale>.json` files are registered with `@nuxtjs/i18n`. A missing folder is skipped.
+ * Images are copied again when they change in dev; the fonts are copied once, so a change to `fonts/` needs a dev restart.
+ *
+ * @throws `Error` when a file in `fonts/` or `images/` is a symlink, or when `@nuxt/image` was set up before this module
+ * and the theme has an `images/` folder.
+ */
 export function setupAssets(ctx: ThemeContext): void {
   setupFonts(ctx)
   setupImages(ctx)

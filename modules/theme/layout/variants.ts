@@ -10,6 +10,13 @@ interface RegionVariants {
 }
 
 // Components live in app/theme/layout/<region>/<Variant>.vue with <variant>.css beside them (ADR 0005, section 5)
+/**
+ * The component and the variants the core implements, for each region of the page.
+ *
+ * @remarks
+ * The first variant of a region is its default. The `layout` of a `theme.json` accepts exactly these names, and the theme
+ * reference lists them. `component` is the name the region's chosen variant is registered under.
+ */
 export const REGION_VARIANTS: Record<LayoutRegion, RegionVariants> = {
   header: { component: 'RegionHeader', variants: ['bar', 'centered'] },
   home: { component: 'RegionHome', variants: ['showcase', 'index'] },

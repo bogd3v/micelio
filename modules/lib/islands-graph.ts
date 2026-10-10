@@ -1,5 +1,6 @@
 // Checks on the chunk graph of the islands build (ADR 0006, section 6). Pure, so a test can feed it a graph.
 
+/** A chunk of the islands build, reduced to the fields the checks of this file read. */
 export interface BuiltChunk {
   /** File name in the output folder, e.g. `chunks/trigger-AbC.js`. */
   fileName: string

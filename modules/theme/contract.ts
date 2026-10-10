@@ -7,9 +7,23 @@ import { REGION_VARIANTS } from './layout/variants'
 // Contract v1 (ADR 0005, section 6), defined once: the build validates every installed theme with it
 // and `npm run theme:schema` generates themes/theme.schema.json from it.
 
+/**
+ * The theme contract version this build implements: a `theme.json` must declare the same `contract` number to pass validation.
+ *
+ * @remarks
+ * Adding an optional role, layout variant, hook or slot with a core default keeps the number (ADR 0005, section 6). A breaking
+ * change to roles, modes, variants, hooks, slots or the package layout is the next number, with a migration note. The number is
+ * also printed in the generated theme reference.
+ */
 export const CONTRACT_VERSION = 1
 /** The init script stays under 2 KB (ADR 0004: it is inline on every page). */
 export const MAX_MODES = 6
+/**
+ * Pattern of a theme id: lowercase letters, digits and hyphens. The id is also the name of the theme's folder, which the loader checks.
+ *
+ * @remarks
+ * This pattern does not refuse reserved ids: `themeIdProblem` does, and says why.
+ */
 export const THEME_ID = /^[a-z0-9-]+$/
 /** Ids no theme may take: its own `<id>-*` classes could not be told apart from the core's (ADR 0005, amendment of 2026-10-08). */
 const RESERVED_THEME_IDS: readonly string[] = ['myc', 'micelio', 'bd']
@@ -21,6 +35,13 @@ export function themeIdProblem(id: string): string | null {
   if (RESERVED_THEME_IDS.includes(id)) return `"id" "${id}" is reserved for the core: a theme's own classes (<id>-*) must not be confusable with the core's`
   return null
 }
+/**
+ * Pattern of a font file in `fonts` of `theme.json`: a bare `.woff2` name, found in the theme's `fonts/` folder.
+ *
+ * @remarks
+ * Not the `FONT_FILE` of `assets.ts`, which also lets the static copy serve `.woff` and license text files. A theme can declare
+ * only `.woff2` fonts in `theme.json`.
+ */
 export const FONT_FILE = /^[\w.-]+\.woff2$/
 const MODE_ID = /^[\w-]+$/
 const NAME = /^[\w-]+$/
@@ -177,6 +198,7 @@ export const ThemeSchema = z.strictObject({
   }
 })
 
+/** A `theme.json` that passed the contract, typed as `ThemeSchema` infers it. */
 export type ThemeContract = z.infer<typeof ThemeSchema>
 
 function formatPath(path: ReadonlyArray<PropertyKey>): string {

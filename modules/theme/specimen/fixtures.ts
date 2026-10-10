@@ -11,8 +11,10 @@ import { renderMermaidBlockHtml } from '~/helpers/mermaid'
 
 // Static content for /_theme: the page needs no Strapi. Sample prose, not UI text.
 
+/** Shell session of the specimen's code block: a dev server command and its answer. Sample text, not UI text. */
 export const SHELL_SAMPLE = '$ npm run dev\n$ curl -sI http://localhost:3000/_theme\nHTTP/1.1 200 OK'
 
+/** TypeScript snippet shown in the specimen's code blocks. */
 export const TS_SAMPLE = `export function slugify(text: string): string {
   return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-')
 }`
@@ -68,6 +70,7 @@ export const PROSE_BLOCKS: StrapiBlock[] = [
   },
 ]
 
+/** Photo credit of the specimen's article cover, in the shape a Strapi image credit has. */
 export const CREDIT: StrapiImageCredit = {
   kind: 'photo',
   author: 'Ada Lovelace',
@@ -78,6 +81,7 @@ export const CREDIT: StrapiImageCredit = {
   licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
 }
 
+/** The author of every specimen post and article, and of the author badge samples. */
 export const AUTHOR = { id: 1, documentId: 'specimen-author', name: 'Specimen Author', avatar: null }
 
 function post(id: number, category: Category, title: string): PostListItem {
@@ -103,6 +107,7 @@ export const POSTS: PostListItem[] = [
   post(5, Category.Linux, 'Hardening a server in an hour'),
 ]
 
+/** The featured post of the home region and of the featured card sample: the first of `POSTS`. */
 export const FEATURED_POST: PostListItem = POSTS[0]!
 
 // Own ids and no Mermaid: the Prose group already holds the full set, and ids must stay unique on the page

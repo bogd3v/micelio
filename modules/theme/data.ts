@@ -12,6 +12,7 @@ const BUILD_THEME_MODULE = '#micelio/build-theme'
 // Nitro only: the active theme's resolved palette, for the server's contrast math
 const PALETTE_MODULE = '#micelio/theme-palette'
 
+/** One prop of a slot component, as the theme reference documents it. */
 export interface SlotProp {
   name: string
   /** TypeScript type, as text. */
@@ -20,6 +21,7 @@ export interface SlotProp {
   description: string
 }
 
+/** The documented contract of one slot: its purpose, its props and what the core renders without a theme file. */
 export interface SlotSpec {
   purpose: string
   props: SlotProp[]
@@ -88,6 +90,17 @@ export const DEFAULT_LAYOUT: Record<LayoutRegion, string> = {
   footer: 'columns',
 }
 
+/**
+ * Exposes the active theme to the app and to Nitro, and declares the types that describe it.
+ *
+ * @remarks
+ * Runs at build time. Writes `micelio/theme.mjs` (`#micelio/theme`: id, modes, fonts, images, layout and slots) and
+ * `micelio/theme-mermaid.mjs` (`#micelio/theme-mermaid`: the Mermaid overrides), with their type declarations under the build's
+ * `types/` folder. Image file names become URLs under `/theme/images/`, and an omitted layout region takes `DEFAULT_LAYOUT`.
+ * In the Nitro build it adds the virtual modules `#micelio/build-theme` (the active theme id) and `#micelio/theme-palette`
+ * (the contrast palette of each mode, from `buildPalette`); a mode whose palette does not resolve is left out with a warning.
+ * Sets `runtimeConfig.public.theme` to the active id.
+ */
 export function setupData(ctx: ThemeContext): void {
   const { nuxt } = ctx
   const logger = useLogger('micelio-theme')
