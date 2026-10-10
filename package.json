@@ -32,6 +32,7 @@
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run -c vitest.config.integration.ts",
     "test:e2e": "npm run test:e2e:main && npm run test:e2e:site && npm run test:e2e:playground && npm run test:e2e:scene-ui",
+    "test:contract": "node scripts/contract/run.mjs",
     "test:e2e:main": "playwright test",
     "test:e2e:site": "playwright test -c playwright.modules-off.config.ts && playwright test -c playwright.empty-site.config.ts && playwright test -c playwright.theme-overrides.config.ts && playwright test -c playwright.home-page.config.ts",
     "test:e2e:playground": "playwright test -c playwright.playground.config.ts",

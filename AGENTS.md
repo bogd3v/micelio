@@ -39,6 +39,7 @@ npm run tokens       # Print the role CSS the build generates from a theme.json 
 npm run test         # Run unit tests with Vitest (test/*.test.ts)
 npm run test:coverage     # Same tests with coverage of app/ and themes/; fails under the thresholds in vitest.config.ts
 npm run test:integration  # Run API-route integration tests (test/integration/, needs a Nuxt build)
+npm run test:contract     # Run the server routes against a real CMS (the demo image of micelio-cms with Postgres, started and removed by the script; needs Docker and a build; docs/architecture/contract-tests.md)
 npm run test:static       # Generate a static site against the mock Strapi and run e2e/static/
 npm run test:landing      # Generate a landing (home page, no articles) against the mock Strapi and run e2e/landing/ (the default theme, then starter)
 npm run test:e2e          # Run Playwright e2e tests (e2e/, starts mock Strapi + dev server; CI runs its four groups, test:e2e:main, :site, :playground and :scene-ui, as parallel jobs, the playground one per engine (`-- --project=chromium|firefox|webkit`); the playground specs run on Chromium, Firefox and WebKit against a build)

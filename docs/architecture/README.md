@@ -6,6 +6,7 @@ Documents:
 
 - [The CI and deploy pipeline](ci-pipeline.md): what runs on every push to `main` and how the images are produced.
 - [Releasing](releasing.md): how the maintainer cuts a release.
+- [Contract tests against a real CMS](contract-tests.md): what the suite covers and how to run it.
 
 Decisions that are expensive to undo are recorded in [`docs/adr/`](../adr/README.md), not here. A document here points to the ADR that decided its behaviour.
 

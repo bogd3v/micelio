@@ -1,0 +1,84 @@
+# The frontend's server routes against a real CMS: the demo image of micelio-cms (Postgres included), started by
+# `npm run test:contract` (scripts/contract/run.mjs). Docs: docs/architecture/contract-tests.md.
+#
+# It runs on every push to main and on the pull requests that touch what the routes ask the CMS for. It does not gate `deploy`: the
+# check is marked as required in the branch protection by the maintainer once it has proven stable. micelio-cms calls it with
+# `uses: bogd3v/micelio/.github/workflows/contract.yml@<ref>` and the image it built (`cms_image`), to run the same suite against a CMS
+# built from one of its pull requests.
+name: Contract tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - server/**
+      - app/interfaces/**
+      - e2e/mock-strapi.mjs
+      - e2e/contract/**
+      - playwright.contract.config.ts
+      - scripts/contract/**
+      - scripts/ci/mirror-image.sh
+      - package-lock.json
+      - .github/workflows/contract.yml
+  workflow_dispatch:
+    inputs:
+      cms_image:
+        description: CMS image to test (default ghcr.io/bogd3v/micelio-cms:latest, pinned by digest for the run)
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      cms_image:
+        description: CMS image to test (default ghcr.io/bogd3v/micelio-cms:latest, pinned by digest for the run)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contract-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  contract:
+    name: Contract Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      # Postgres comes from a copy in GHCR, so Docker Hub's pull rate limit cannot fail the run (docs/architecture/ci-pipeline.md)
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Resolve the Postgres image
+        id: postgres
+        env:
+          OWNER: ${{ github.repository_owner }}
+          SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: echo "image=$(MIRROR_OWNER="${OWNER,,}" MIRROR_REGISTRY=ghcr.io SOURCE_URL="${SOURCE_URL}" scripts/ci/mirror-image.sh postgres:18-alpine)" >> "$GITHUB_OUTPUT"
+      - name: Run the contract suite
+        env:
+          CMS_IMAGE: ${{ inputs.cms_image }}
+          POSTGRES_IMAGE: ${{ steps.postgres.outputs.image }}
+        run: CONTRACT_CMS_IMAGE="${CMS_IMAGE:-ghcr.io/bogd3v/micelio-cms:latest}" CONTRACT_POSTGRES_IMAGE="${POSTGRES_IMAGE}" npm run test:contract
