@@ -1,4 +1,6 @@
 import withNuxt from './.nuxt/eslint.config.mjs'
+import jsdoc from 'eslint-plugin-jsdoc'
+import tsdoc from 'eslint-plugin-tsdoc'
 
 export default withNuxt(
   {
@@ -25,6 +27,26 @@ export default withNuxt(
     files: ['server/schemas/**'],
     rules: {
       'no-restricted-syntax': 'off',
+    },
+  },
+  {
+    // TSDoc syntax and a doc comment on every export (standard, section 4). Scoped to .ts: tsdoc cannot parse .vue.
+    // `require-jsdoc` warns until a folder is complete; each folder's PR raises it to an error (#425).
+    files: ['**/*.ts'],
+    ignores: ['**/*.d.ts', '.nuxt/**', '.output/**', 'test/**', 'e2e/**'],
+    plugins: { tsdoc, jsdoc },
+    rules: {
+      'tsdoc/syntax': 'error',
+      'jsdoc/require-jsdoc': ['warn', {
+        publicOnly: true,
+        require: { FunctionDeclaration: true, ClassDeclaration: true },
+        contexts: [
+          'ExportNamedDeclaration > TSInterfaceDeclaration',
+          'ExportNamedDeclaration > TSTypeAliasDeclaration',
+          'ExportNamedDeclaration > TSEnumDeclaration',
+          'ExportNamedDeclaration > VariableDeclaration',
+        ],
+      }],
     },
   },
   {

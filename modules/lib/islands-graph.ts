@@ -15,7 +15,7 @@ const LOADER_ENTRY = 'loader'
 /**
  * Problems, one message each: a Worker runtime chunk (`runtimes/`) that imports a Worker script (`workers/`). WebKit evaluates a module
  * worker's main script again when a chunk imports it, so its message listener would run twice and its state would be split in two.
- * `sources` is file name -> code.
+ * `sources` maps file name to code.
  */
 export function runtimesImportingWorkers(sources: ReadonlyMap<string, string>): string[] {
   return [...sources]

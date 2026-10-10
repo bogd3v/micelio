@@ -18,7 +18,7 @@ export const UNUSED_RUNTIME_FILES: readonly RegExp[] = [
   /^workers\/sqlite3-worker1-[\w-]+\.js$/,
 ]
 
-/** Runtime id -> kilobytes of the files of `sizes` (relative path -> bytes) it downloads. */
+/** Runtime id to kilobytes of the files of `sizes` (relative path to bytes) it downloads. */
 export function runtimeDownloads(sizes: ReadonlyMap<string, number>): Record<string, number> {
   return Object.fromEntries(Object.entries(RUNTIME_FILES).map(([runtime, pattern]) => {
     const bytes = [...sizes].filter(([file]) => pattern.test(file)).reduce((sum, [, size]) => sum + size, 0)

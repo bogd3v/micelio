@@ -52,7 +52,7 @@ function compileMessage(message: string, key: string): unknown {
 
 /**
  * Nitro imports the locale files as raw JSON and serves them to the client, which then needs
- * the message compiler. This hands @nuxtjs/i18n the compiled AST instead (docs/performance.md).
+ * the message compiler. This hands `@nuxtjs/i18n` the compiled AST instead (docs/performance.md).
  */
 export default defineNuxtModule({
   meta: { name: 'precompile-messages' },

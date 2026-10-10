@@ -92,7 +92,7 @@ function setupImages(ctx: ThemeContext): void {
   })
 }
 
-/** Registers the theme's i18n/<locale>.json files with @nuxtjs/i18n; they go through the same precompiler as the core ones. */
+/** Registers the theme's i18n/<locale>.json files with `@nuxtjs/i18n`; they go through the same precompiler as the core ones. */
 function setupMessages(ctx: ThemeContext): void {
   const langDir = join(ctx.dir, 'i18n')
   if (!existsSync(langDir)) return

@@ -14,7 +14,7 @@ export function resolveSlots(themeDir: string, defaultsDir: string): ThemeCompon
   })
 }
 
-/** The theme's slots/*.css in a fixed order, as the @import lines of the `micelio/theme.css` template. */
+/** The theme's slots/*.css in a fixed order, as the `@import` lines of the `micelio/theme.css` template. */
 export function slotStyles(themeDir: string): string {
   const dir = join(themeDir, 'slots')
   if (!existsSync(dir)) return ''

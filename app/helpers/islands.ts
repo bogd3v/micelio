@@ -1,4 +1,4 @@
-/** Island id -> file name under `/_islands/`, written by `modules/islands.ts` (ADR 0006, section 3). */
+/** Island id to file name under `/_islands/`, written by `modules/islands.ts` (ADR 0006, section 3). */
 export type IslandManifest = Readonly<Record<string, string>>
 
 export const ISLANDS_PATH = '/_islands/'
