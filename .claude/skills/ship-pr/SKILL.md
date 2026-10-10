@@ -46,7 +46,7 @@ If the PR advances an issue of the Micelio plan (epic #240), update the issue's 
 
 ## Release
 
-Only the maintainer releases (standard, section 13): prepare it, never run it unasked. Versions are SemVer and come from the PR titles (ADR 0010; README "Releases").
+Only the maintainer releases (standard, section 13): prepare it, never run it unasked. Versions are SemVer and come from the PR titles (ADR 0010; docs/architecture/releasing.md).
 
 1. Dry run: `gh workflow run Release --ref main` (the default input is `dry_run=true`). Read the computed version and the notes in the run summary.
 2. If `package.json` differs from that version, open `chore(release): X.Y.Z` setting it, and merge it before releasing.

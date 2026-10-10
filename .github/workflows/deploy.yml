@@ -394,7 +394,7 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64
 
-  # The builder image (Dockerfile target `static`; docs/static-mode.md) for amd64 and arm64: each platform builds
+  # The builder image (Dockerfile target `static`; docs/operate/static-site.md) for amd64 and arm64: each platform builds
   # natively (no QEMU) and pushes by digest, merge-builder joins the digests under the commit tag
   build-builder:
     name: Build Builder Image (${{ matrix.platform }})

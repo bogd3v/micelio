@@ -1,6 +1,6 @@
 #!/bin/sh
 # Entrypoint of the builder image (Dockerfile, target `static`). Configuration comes from NUXT_* env vars only.
-# docs/static-mode.md, "Builder image"
+# docs/operate/static-site.md, "Builder image"
 set -eu
 
 OUT="${OUT_DIR:-/out}"
@@ -20,7 +20,7 @@ case "${1:-}" in
       exit 2
     fi
     if [ ! -w "$OUT" ]; then
-      echo "micelio-builder: $OUT is not writable by uid $(id -u); mount a volume that uid owns (docs/static-mode.md)." >&2
+      echo "micelio-builder: $OUT is not writable by uid $(id -u); mount a volume that uid owns (docs/operate/static-site.md)." >&2
       exit 2
     fi
     NUXT_PUBLIC_SITE_MODE="$mode" npm run generate

@@ -50,7 +50,7 @@ const newsletterOn = __STATIC_BUILD__ && isLanding ? useModule('newsletter') : u
 const titleLeads = computed<boolean>(() => props.pageTitle !== undefined && !heroLeadsPage(props.sections))
 const heroLeads = computed<boolean>(() => props.pageTitle !== undefined ? heroLeadsPage(props.sections) : Boolean(props.leadHeading))
 const knownSections = computed<PageSection[]>(() => filterKnown(props.sections))
-// A landing's navigation links to its home page's sections by these ids (docs/static-mode.md, "Landing")
+// A landing's navigation links to its home page's sections by these ids (docs/operate/static-site.md, "Landing")
 const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLanding
   ? new Map(sectionAnchors(knownSections.value, { newsletterOn: newsletterOn?.value ?? false, blogEnabled }).map(anchor => [anchor.index, anchor.id]))
   : new Map())

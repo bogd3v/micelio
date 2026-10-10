@@ -100,7 +100,7 @@ export default defineNuxtConfig({
     smtpUser: '',
     smtpPass: '',
     newsletterFrom: '',
-    // Site-specific values come from NUXT_* variables (README); empty defaults keep the core neutral
+    // Site-specific values come from NUXT_* variables (docs/operate/configure.md); empty defaults keep the core neutral
     mediaUrl: '',
     umamiUrl: '',
     umamiCollectPath: '/api/bd',

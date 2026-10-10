@@ -14,7 +14,7 @@ COPY . .
 RUN npm rebuild && npm run build
 
 # Builder image (ghcr.io/bogd3v/micelio-builder): generates a static site at run time and serves it.
-# Declared before the production stage, which must stay last (the default target). docs/static-mode.md
+# Declared before the production stage, which must stay last (the default target). docs/operate/static-site.md
 FROM node:22.23-slim AS static
 
 ARG GIT_COMMIT_SHA=unknown
