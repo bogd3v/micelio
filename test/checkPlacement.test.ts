@@ -122,6 +122,66 @@ describe('check-placement', () => {
     })).toHaveLength(1)
   })
 
+  it('does not count a file that shadows the name, imports it from elsewhere, or uses it as a key', () => {
+    expect(problemsOf({
+      'server/utils/limits.ts': 'export const MAX = 3\n',
+      'server/api/a.get.ts': 'const MAX = 5\nexport default () => MAX\n',
+      'server/api/b.get.ts': 'import { MAX } from \'../other\'\nexport default () => MAX\n',
+      'server/other.ts': 'export const MAX = 9\n',
+      'server/api/c.get.ts': 'export default () => ({ MAX: 1 })\n',
+      'server/api/d.get.ts': 'const { MAX } = useThing()\nexport default () => MAX\n',
+    })).toEqual([])
+  })
+
+  it('still counts a ternary branch and a #imports import as uses', () => {
+    expect(problemsOf({
+      'server/utils/limits.ts': 'export const MAX = 3\n',
+      'server/api/a.get.ts': 'export default (x: boolean) => (x ? MAX : 0)\n',
+      'server/api/b.get.ts': 'import { MAX } from \'#imports\'\nexport default () => MAX\n',
+    })).toHaveLength(1)
+  })
+
+  it('scans bound attributes of a .vue template', () => {
+    const problems = problemsOf({
+      'app/composables/useLimits.ts': 'export const MAX = 3\n',
+      'app/components/A.vue': '<template>\n  <p :title="MAX" @click="go(MAX)">x</p>\n</template>\n',
+      'app/components/B.vue': '<template>\n  <p title="MAX">{{ \'MAX\' }}</p>\n</template>\n',
+      'app/pages/c.vue': '<template>\n  <p v-if="MAX > 1">x</p>\n</template>\n',
+    })
+    expect(problems).toHaveLength(1)
+    expect(problems[0]).toContain('used by 2 files')
+    expect(problems[0]).not.toContain('B.vue')
+  })
+
+  it('does not treat function-valued exports as constants', () => {
+    expect(problemsOf({
+      'server/utils/load.ts': 'export const loadPage = defineCachedFunction(fetchPage, {})\nexport const run = async () => 1\nexport const make = (a: number) => a\nexport const fn = function () {}\n',
+      'server/api/a.get.ts': 'export default () => [loadPage, run, make, fn]\n',
+      'server/api/b.get.ts': 'export default () => [loadPage, run, make, fn]\n',
+    })).toEqual([])
+  })
+
+  it('does not count a type of server/utils as auto-imported', () => {
+    expect(problemsOf({
+      'server/utils/shape.ts': 'export interface Shape { id: string }\n',
+      'server/api/a.get.ts': 'export default (s: Shape) => s\n',
+      'server/api/b.get.ts': 'export default (s: Shape) => s\n',
+    })).toEqual([])
+  })
+
+  it('scans server/utils recursively but Nuxt folders only at the top level', () => {
+    const problems = problemsOf({
+      'server/utils/deep/limits.ts': 'export const MAX = 3\n',
+      'app/composables/nested/deep.ts': 'export const MIN = 1\n',
+      'server/api/a.get.ts': 'export default () => MAX\n',
+      'server/api/b.get.ts': 'export default () => MAX\n',
+      'app/pages/a.vue': '<script setup lang="ts">\nconst x = MIN\n</script>\n',
+      'app/pages/b.vue': '<script setup lang="ts">\nconst x = MIN\n</script>\n',
+    })
+    expect(problems).toHaveLength(1)
+    expect(problems[0]).toContain('constant MAX')
+  })
+
   it('passes on the repository', () => {
     // Report-only until the last pull request of issue #423 turns the check strict; this guards the shared files
     expect(findProblems().filter(line => line.includes('shared file holds'))).toEqual([])
