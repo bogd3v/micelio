@@ -10,15 +10,15 @@ import type { Hooks, InstalledTheme } from './types'
 // `npm run theme:check`: what the build validates, plus contrast and static budgets (ADR 0005, sections 7 and 9).
 // Contrast is not part of the build, so a theme in progress does not stop `nuxt dev`.
 
-export const MAX_CSS_GZIP_BYTES = 25 * 1024
+const MAX_CSS_GZIP_BYTES = 25 * 1024
 export const MAX_FONT_FAMILIES = 2
 /** Warning above this total; error above FONT_TOTAL_MAX_BYTES, Bogotá's recorded exception (ADR 0005, section 9). KB are KiB like perf's fontKb. */
-export const FONT_TOTAL_WARN_BYTES = 100 * 1024
+const FONT_TOTAL_WARN_BYTES = 100 * 1024
 export const FONT_TOTAL_MAX_BYTES = 150.8 * 1024
 
-export type IssueKind = 'contract' | 'contrast' | 'budget'
+type IssueKind = 'contract' | 'contrast' | 'budget'
 
-export interface ThemeIssue {
+interface ThemeIssue {
   kind: IssueKind
   message: string
   mode?: string
@@ -29,7 +29,7 @@ export interface ThemeIssue {
   suggestion?: string | null
 }
 
-export interface ThemeReport {
+interface ThemeReport {
   theme: string
   errors: ThemeIssue[]
   warnings: ThemeIssue[]

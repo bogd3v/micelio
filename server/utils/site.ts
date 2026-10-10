@@ -27,7 +27,7 @@ const SITE_POPULATE = {
   homePage: { fields: ['slug'] },
 }
 
-export interface LoadedSite {
+interface LoadedSite {
   site: Site
   /** false when Strapi failed and every value comes from app.config.ts */
   fromStrapi: boolean

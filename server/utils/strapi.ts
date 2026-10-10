@@ -4,7 +4,7 @@ import type { StrapiRequestOptions } from '../lib/strapiRequest'
 import type { StrapiRequestConfig } from '../lib/types'
 import { forwardHeaders } from '../lib/clientIp'
 
-export interface StrapiFetchOptions extends StrapiRequestOptions {
+interface StrapiFetchOptions extends StrapiRequestOptions {
   /**
    * The visitor's request. When given, and the forwarder secret is set, the CMS
    * counts its rate limits against the visitor's address (docs/security.md).

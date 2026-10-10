@@ -13,7 +13,7 @@ const MYC_PREFIX = 'myc-'
 
 const REMOTE = /^([a-z][a-z0-9+.-]*:)?\/\//i
 
-export interface CssRuleContext {
+interface CssRuleContext {
   themeId: string
   themeDir: string
   hooks: Hooks

@@ -2,7 +2,7 @@ import { join } from 'node:path'
 import type { ThemeContext, LayoutRegion } from '../types'
 import { LAYOUT_REGIONS } from '../constants'
 
-export interface RegionVariants {
+interface RegionVariants {
   /** Name the component is registered under. */
   component: string
   /** Variants the core implements, by file name (the first is the default). */

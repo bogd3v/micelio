@@ -17,7 +17,7 @@ interface UpstreamSearchRow {
   snippet?: unknown
 }
 
-export interface ArticleSearchOptions {
+interface ArticleSearchOptions {
   event: H3Event
   query: string
   locale?: string

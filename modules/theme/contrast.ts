@@ -5,6 +5,11 @@ import type { ContrastRule, ThemeManifest } from './types'
 
 // Contrast rules of ADR 0005, section 1 (WCAG 2 AA) and its 2026-10-06 amendment, evaluated per mode.
 
+/**
+ * Minimum contrast ratio of text (WCAG 2 AA).
+ *
+ * @internal Exported for tests.
+ */
 export const TEXT_MIN = 4.5
 export const CONTROL_MIN = 3
 
@@ -24,7 +29,7 @@ export const CONTRAST_RULES: ContrastRule[] = [
   ...['code-ink', 'code-muted', 'code-keyword', 'code-string', 'code-number', 'code-function'].map(role => ({ role, surfaces: ['surface-sunken'], min: TEXT_MIN })),
 ]
 
-export interface ContrastProblem {
+interface ContrastProblem {
   theme: string
   mode: string
   role: string
@@ -49,7 +54,7 @@ export function lookupFor(manifest: ThemeManifest, mode: string): Lookup {
   }
 }
 
-export type Resolved = Rgb & { translucent?: boolean }
+type Resolved = Rgb & { translucent?: boolean }
 
 /** The opaque color of a role in a mode over `backdrop`; a string is the reason when it cannot be resolved. */
 export function resolveOver(lookup: Lookup, name: string, backdrop: Rgb | null): Resolved | string {

@@ -5,7 +5,7 @@ import { buildTokensCss } from './tokens.mjs'
 import type { CssSource, ThemeContext, LayoutRegion } from './types'
 
 /** Template of each region's CSS; main.css imports it where the core file it replaces sits. */
-export const REGION_TEMPLATES: Record<LayoutRegion, string> = {
+const REGION_TEMPLATES: Record<LayoutRegion, string> = {
   header: 'micelio/layout-header.css',
   footer: 'micelio/layout-footer.css',
   home: 'micelio/pages-home.css',

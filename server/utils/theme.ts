@@ -8,7 +8,7 @@ import type { ModePalette } from '../../modules/theme/palette'
 // Pure: the theme Strapi asks for, checked against the built theme (ADR 0005, section 8). Nothing here reads a request.
 
 /** The slice of `#micelio/theme-palette` the resolution needs. */
-export interface PaletteInput {
+interface PaletteInput {
   modes: Record<string, ModePalette>
   rules: ContrastRule[]
 }

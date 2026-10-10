@@ -17,13 +17,13 @@ export const TS_SAMPLE = `export function slugify(text: string): string {
   return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-')
 }`
 
-export const MERMAID_SAMPLE = `flowchart LR
+const MERMAID_SAMPLE = `flowchart LR
   accTitle: Request flow
   Visitor --> Nitro
   Nitro --> Strapi
   Nitro --> Cache[(ISR cache)]`
 
-export const SEQUENCE_SAMPLE = `sequenceDiagram
+const SEQUENCE_SAMPLE = `sequenceDiagram
   Browser->>Server: GET /_theme
   Server-->>Browser: 200 OK`
 
@@ -249,7 +249,7 @@ const richText: RichTextSection = {
   html: '<h2>About this page</h2><p>Rich text has no variant: it sets <strong>Markdown</strong> prose between the other sections, with <a href="/blog">a link</a>.</p><ul><li>A list item</li><li>Another item</li></ul>',
 }
 
-export interface SpecimenPageSection {
+interface SpecimenPageSection {
   /** Section kind, as in `data-section` */
   kind: PageSectionKind
   /** `data-variant`; empty for rich-text */

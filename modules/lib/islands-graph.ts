@@ -10,7 +10,7 @@ export interface BuiltChunk {
   imports: string[]
 }
 
-export const LOADER_ENTRY = 'loader'
+const LOADER_ENTRY = 'loader'
 
 /**
  * Problems, one message each: a Worker runtime chunk (`runtimes/`) that imports a Worker script (`workers/`). WebKit evaluates a module
