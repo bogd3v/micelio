@@ -20,6 +20,15 @@ const CATEGORIES = [1, 2, 3, 4, 5].map(n => `category-${n}`)
 /** Text roles: on the three surfaces and on their own `-soft` (when it exists). */
 const SOFT_TEXT = ['accent', 'link', ...STATES, ...CATEGORIES]
 
+/**
+ * The contrast every installed theme must meet in every mode (ADR 0005, section 1 and its 2026-10-06 amendment).
+ *
+ * @remarks
+ * Text meets `TEXT_MIN` (4.5:1): `ink` and `ink-muted` on the three surfaces; the `code-*` roles on `surface-sunken`; `on-ink` on `ink`; `on-accent` on `accent`
+ * and `accent-hover`; `accent`, `link`, the states and the categories on the three surfaces and on their own `-soft` role.
+ * `line-strong` and `focus` meet 3:1 on the surfaces. An optional role the theme omits is checked with its core default. `contrastProblems`
+ * adds the `contrast` assertions that a theme declares on its tokens.
+ */
 export const CONTRAST_RULES: ContrastRule[] = [
   ...['ink', 'ink-muted'].map(role => ({ role, surfaces: SURFACES, min: TEXT_MIN })),
   ...SOFT_TEXT.map(role => ({ role, surfaces: [...SURFACES, `${role}-soft`], min: TEXT_MIN })),
@@ -42,8 +51,19 @@ interface ContrastProblem {
   message: string
 }
 
+/** Reads the raw value of a role or token in one mode, before its `{name}` references are resolved; `undefined` when there is none. */
 export type Lookup = (name: string) => string | undefined
 
+/**
+ * Reads the values of one mode of a theme, from its color and shadow tokens.
+ *
+ * @remarks
+ * A token with one value per mode gives its value for `mode`, and a single value applies in every mode. A role the theme omits
+ * gives its core default, when it has one (`OPTIONAL_ROLES`).
+ *
+ * @param manifest - The theme's `theme.json`, already valid.
+ * @param mode - Id of one of the theme's modes.
+ */
 export function lookupFor(manifest: ThemeManifest, mode: string): Lookup {
   const tokens = new Map<string, string | Record<string, string>>()
   for (const token of [...manifest.color.tokens, ...(manifest.shadow?.tokens ?? [])]) tokens.set(token.name, token.value)

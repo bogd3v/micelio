@@ -12,6 +12,15 @@ export function specimenEnabled(ctx: ThemeContext): boolean {
 }
 
 // ADR 0005, section 7: /_theme, the whole catalog to design a theme against (#238)
+/**
+ * Adds the `/_theme` specimen page and its files to the build, when the specimen is enabled.
+ *
+ * @remarks
+ * Runs at build time. `micelio/specimen.css` is always written, and it imports the specimen styles only when the page exists.
+ * When `specimenEnabled` is true, the setup also registers the page's `en` and `es` messages, serves its media at
+ * `/_theme/media/`, writes the `#micelio/specimen-variants` module with the alternate variants and its type declarations, and
+ * adds the page route.
+ */
 export function setupSpecimen(ctx: ThemeContext): void {
   const enabled = specimenEnabled(ctx)
 

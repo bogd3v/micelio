@@ -3,6 +3,7 @@ import { basename, delimiter, join, resolve } from 'node:path'
 import { FONT_FILE, themeIdProblem } from './contract'
 import type { InstalledTheme, ThemeManifest } from './types'
 
+/** The theme used when neither `NUXT_PUBLIC_THEME` nor the runtime config names one; when it is the one selected and is not installed, the build fails. */
 export const DEFAULT_THEME = 'bogota'
 
 function isThemeDir(dir: string): boolean {

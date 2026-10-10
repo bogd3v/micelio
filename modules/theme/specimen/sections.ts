@@ -20,6 +20,12 @@ interface SpecimenSection {
 }
 
 // A group is one entry: later work appends its own and touches nothing else
+/**
+ * The groups of the `/_theme` page, in order: each has an anchor, a heading key and the component that renders it.
+ *
+ * @remarks
+ * Each page section kind of `PAGE_SECTION_COMPONENTS` gets one group, with the id `page-<kind>`, rendered with its `kind` prop.
+ */
 export const SPECIMEN_SECTIONS: SpecimenSection[] = [
   { id: 'foundations', title: 'specimen.sections.foundations', component: SpecimenFoundations },
   { id: 'controls', title: 'specimen.sections.controls', component: SpecimenControls },
