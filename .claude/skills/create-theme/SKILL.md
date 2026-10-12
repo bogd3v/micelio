@@ -19,7 +19,7 @@ Use it to make a theme or change how one looks. Not for core components, pages o
    - Fonts: a font is declared in `theme.json` `fonts` (`family`, `file` `*.woff2`, `preload`), `fonts.css` (`@font-face`, `src: url("/fonts/<file>")`), `fonts/` with its license, and `font-fallbacks.css`; `type.families` uses `"<Family>", "<Family> Fallback"`. Budgets and missing-file checks read only `fonts`.
    - Also available: `images` (`favicon`, `ogImage`, `profile`), `mermaid` (overrides of Mermaid `themeVariables`, as roles), and the `theme.*` messages the core reads (`docs/themes/creating-a-theme.md`, section 5).
 4. Edit `theme.css` for what roles cannot do: public hooks only (`docs/themes/reference/hooks.md`).
-5. Only if CSS cannot express it, add slots (`docs/themes/reference/slots.md`).
+5. Only if CSS cannot express it, add slots (`docs/themes/reference/slots.md`). A slot may call only the slot APIs of `docs/themes/reference/slot-apis.md`.
 6. `npm run theme:check -- <id> --json` until `"ok": true`. Run it before `nuxt dev`: the dev server and the build fail on contract errors.
 7. `NUXT_PUBLIC_THEME=<id> npm run dev`, open `/_theme` and review every mode. The core styles every layout variant from your roles; your own rules for variants you do not use are optional, but `/_theme` shows all of them and CI captures them, so look.
 8. `npm run lint` (if it fails with `Cannot find module '.nuxt/eslint.config.mjs'`, run `npx nuxt prepare` once).
