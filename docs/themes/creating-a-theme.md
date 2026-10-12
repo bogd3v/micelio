@@ -9,7 +9,7 @@ What a theme can change, in order of preference (ADR 0005, section 5):
 3. **Public hooks**: `myc-*` classes and `data-*` attributes listed in `app/theme/hooks.json`, styled from `theme.css`.
 4. **Slots**: Vue components for what CSS cannot express (logo, hero, divider and so on). They are optional; the core has defaults.
 
-The reference of roles, layout variants, hooks and slots is generated from the contract: [reference/](reference/README.md).
+The reference of roles, layout variants, hooks, slots and slot APIs is generated from the contract and the TSDoc of the core: [reference/](reference/README.md).
 
 Components read roles only. Primitive colors (`--mirla`, `--chillon`) belong to a theme package and to `app/assets/css/settings/`; `npm run lint` fails on them anywhere else.
 
@@ -222,7 +222,7 @@ The footer shows a link to the site's source code (`myc-foot-source`, from `runt
 
 ### What slots may use, and the license of a theme
 
-A slot may call or import only the **slot APIs**: `useSite()`, `useAnimations()`, the helpers of `~/helpers/categories`, the types of `~/interfaces`, and Vue, Nuxt (`<NuxtLink>`, `<NuxtImg>`, `useId()`, `useRuntimeConfig()`) and `useI18n()`. A theme that keeps to them, to the public hooks and to the slot list may use any license, including a proprietary one ([theme exception](../../LICENSE-EXCEPTION.md)). `themes/starter/` is MIT-0, so a theme made with `npm run theme:new` can take any license (replace its `LICENSE`; a theme kept in this repository also gets an entry in [REUSE.toml](../../REUSE.toml) with its license, and OFL-1.1 for its fonts); a theme that copies `themes/bogota/` or core code is AGPL-3.0. Fonts and images keep their own licenses ([THIRD-PARTY.md](../../THIRD-PARTY.md)).
+A slot may call or import only the **slot APIs**: `useSite()`, the helpers of `~/helpers/categories`, the types of `~/interfaces`, and Vue, Nuxt (`<NuxtLink>`, `<NuxtImg>`, `useId()`, `useRuntimeConfig()`) and `useI18n()`. Signatures, summaries and examples of the slot APIs are in [reference/slot-apis.md](reference/slot-apis.md). A theme that keeps to them, to the public hooks and to the slot list may use any license, including a proprietary one ([theme exception](../../LICENSE-EXCEPTION.md)). `themes/starter/` is MIT-0, so a theme made with `npm run theme:new` can take any license (replace its `LICENSE`; a theme kept in this repository also gets an entry in [REUSE.toml](../../REUSE.toml) with its license, and OFL-1.1 for its fonts); a theme that copies `themes/bogota/` or core code is AGPL-3.0. Fonts and images keep their own licenses ([THIRD-PARTY.md](../../THIRD-PARTY.md)).
 
 ## 6. Accessibility handled by the core
 

@@ -31,7 +31,7 @@ npm run check        # The fast part of CI before a PR: typecheck, lint and test
 npm run typecheck    # Run Nuxt type checking
 npm run lint         # Run ESLint (flat config, @nuxt/eslint), the primitives, class and placement checks, and the theme schema and reference drift checks
 npm run theme:schema # Regenerate themes/theme.schema.json from modules/theme/contract.ts (run it after changing the contract)
-npm run theme:reference # Regenerate docs/themes/reference/ from the contract (run it after changing roles, layout variants, hooks or slots)
+npm run theme:reference # Regenerate docs/themes/reference/ from the contract (run it after changing roles, layout variants, hooks, slots or the TSDoc of a `@public` slot API)
 npm run theme:new -- <id> # New theme: copies themes/starter/ to themes/<id>/ and renames it ([--name "Name"])
 npm run theme:check  # Contract, hooks, contrast matrix and static budgets of the installed themes ([id] and --json; errors exit 1)
 npm run lint:fix     # Run ESLint with --fix
