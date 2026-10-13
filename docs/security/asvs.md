@@ -32,7 +32,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V1 Encoding and Sanitization | L2 | 16 | 9 | 2 |
 | V2 Validation and Business Logic | L2 | 8 | 1 | 2 |
 | V3 Web Frontend Security | L1 | 11 | 2 | 6 |
-| V4 API and Web Service | L1 | 0 | 8 | 2 |
+| V4 API and Web Service | L1 | 1 | 8 | 1 |
 | V5 File Handling | L1 | 2 | 7 | 0 |
 | V6 Authentication | L2 | 7 | 14 | 14 |
 | V7 Session Management | L2 | 7 | 5 | 6 |
@@ -41,14 +41,14 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V10 OAuth and OIDC | L1 | 1 | 28 | 0 |
 | V11 Cryptography | L1 | 5 | 6 | 3 |
 | V12 Secure Communication | L1 | 1 | 6 | 2 |
-| V13 Configuration | L1 | 9 | 2 | 2 |
+| V13 Configuration | L1 | 10 | 2 | 1 |
 | V14 Data Protection | L1 | 3 | 0 | 6 |
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 6 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 11 |
 | V17 WebRTC | L1 | 0 | 7 | 0 |
-| **Total (253 requirements)** | | **85** | **104** | **64** |
+| **Total (253 requirements)** | | **87** | **104** | **62** |
 
-Of the 64 open requirements, 10 are tracked in private security advisories.
+Of the 62 open requirements, 10 are tracked in private security advisories.
 
 ## Keeping it true
 
@@ -130,7 +130,7 @@ Of the 64 open requirements, 10 are tracked in private security advisories.
 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
-| V4.1.1 | Content-Type matching the body, with a charset | Open | `robots.txt` and `sitemap.xml` are sent without a charset (`server/routes/robots.txt.ts:3`, `server/routes/sitemap.xml.ts:13`); the feeds and the JSON routes have one (`server/utils/feed.ts:140`). Add `; charset=utf-8`. Test of the routes: `test/integration/api.test.ts:493`. Tracked in #492 |
+| V4.1.1 | Content-Type matching the body, with a charset | Met | `robots.txt` and `sitemap.xml` send `; charset=utf-8` (`server/routes/robots.txt.ts`, `server/routes/sitemap.xml.ts`); the feeds and the JSON routes already had one (`server/utils/feed.ts:140`). Test: `test/integration/api.test.ts` (`/robots.txt`, `/sitemap.xml`) |
 | V4.1.2 | Redirect HTTP to HTTPS only on browser-facing endpoints | N/A | Operator/reverse proxy: TLS and the HTTP redirect are terminated in front of Nitro |
 | V4.1.3 | Intermediary-set headers cannot be overridden by the client | Open | `assertSameOrigin` reads `X-Forwarded-Host` and `X-Forwarded-Proto` whatever `NUXT_TRUST_PROXY` says (`server/utils/auth.ts:53`), while the client address honours it (`docs/security.md:70-80`). A browser cannot set these headers cross-site, so the check still holds against CSRF; read them only from trusted proxies, or compare with `siteUrl` alone. Test: `test/integration/api.test.ts:1456`. Tracked in #492 |
 | V4.2.1 | Consistent HTTP message boundary handling across components | N/A | Operator/reverse proxy; Nitro uses the Node.js HTTP parser |
@@ -284,7 +284,7 @@ Of the 64 open requirements, 10 are tracked in private security advisories.
 | V13.4.1 | No source control metadata deployed or reachable | Met | The image copies only `.output` (`Dockerfile:61`); local probe: `/.git/config` and `/.git/HEAD` answer 404. No test |
 | V13.4.2 | Debug modes disabled in production | Met | `devtools: { enabled: false }` (`nuxt.config.ts:78`), `NODE_ENV=production` (`Dockerfile:63`), dev-only plugins return early (`server/plugins/contentSecurityPolicy.ts`, `server/plugins/workerPolicy.ts`). No test |
 | V13.4.3 | No directory listings unless intended | Met | Local probe: `/_nuxt/`, `/_islands/`, `/theme/images/` answer 404. No test |
-| V13.4.4 | HTTP TRACE not supported in production | Open | Local probe: `TRACE /` answers 200 with the rendered page; nothing filters methods (no middleware in `server/middleware/`, no rule in `nuxt.config.ts:130-150`). Tracked in #492 |
+| V13.4.4 | HTTP TRACE not supported in production | Met | `server/middleware/methods.ts` answers any method outside GET, HEAD, POST, PUT, PATCH, DELETE and OPTIONS with 405 and an `Allow` list, before any route runs. Test: `test/integration/api.test.ts` ("HTTP methods") |
 | V13.4.5 | Documentation and monitoring endpoints not exposed unintentionally | Met | No OpenAPI or devtools route (local probe: `/_openapi.json`, `/_scalar`, `/__nuxt_devtools__/client` 404); `/_theme` exists only in dev or with `MICELIO_SPECIMEN=1` (`modules/theme/specimen/setup.ts:10-11`). Test: `test/themeModule.test.ts` |
 
 ## V14 Data Protection
