@@ -20,7 +20,7 @@ An exploitable gap is never written in the mapping, an issue, a PR or a report f
 
 Example of a review:
 
-> **V3.5.3** Medium, `server/api/newsletter/confirm.get.ts:48`: a GET request confirms a subscription, so a link prefetch or an image tag can confirm an address. Move the state change to POST behind the confirmation page. Row V3.5.3 stays Open.
+> **V3.4.1** Low, `app/helpers/securityHeaders.ts:43`: HSTS has no `includeSubDomains`, so a subdomain served over plain HTTP can still set cookies for the site. Add it behind an operator setting once every subdomain is on HTTPS. Row V3.4.1 stays Open.
 > **V7.2.4** Met, unchanged: ADR 0003 accepts that the previous token lives until it expires.
 
 Report back briefly: what changed (files), commands run and their real results, open questions. No process narration.

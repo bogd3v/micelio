@@ -56,7 +56,7 @@ The routes of a module switched off in `site-setting.modules`, or off for lack o
 | `POST /api/comments` | Public | Same-origin check, 10 per IP every 10 min, allow-listed fields and lengths, author id set by the server |
 | `GET /api/fediverse/stats`, `/api/fediverse/stats/:documentId` | Public | Document id pattern, at most 50 ids |
 | `POST /api/newsletter/subscribe` | Public | Same-origin check, 10 per IP and 3 per email every hour, same answer for new and confirmed addresses |
-| `GET /api/newsletter/confirm`, `POST /api/newsletter/unsubscribe` | Holder of the emailed token | Token format check; unsubscribe also accepts RFC 8058 one-click POSTs from mail providers, so it has no origin check |
+| `POST /api/newsletter/confirm`, `POST /api/newsletter/unsubscribe` | Holder of the emailed token | Token format check; confirm checks the same origin and is sent by a button on `/confirm`, so a link scanner that only fetches the link confirms nothing; unsubscribe also accepts RFC 8058 one-click POSTs from mail providers, so it has no origin check |
 | `POST /api/auth/login`, `register`, `forgot-password`, `reset-password`, `resend-confirmation`, `logout` | Public | Same-origin check, body schema, `no-store`; the CMS rate-limits the auth routes per visitor (see "Client IP and rate limits") |
 | `GET /api/auth/me` | Session | `no-store` |
 | `DELETE /api/auth/me` | Session + password | Same-origin check, username and password re-checked by Strapi |

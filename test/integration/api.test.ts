@@ -1364,8 +1364,11 @@ describe('/api/newsletter/subscribe', () => {
 })
 
 describe('/api/newsletter/confirm', () => {
+  const confirm = (token: unknown, headers: Record<string, string> = { origin: SITE_URL }) =>
+    $fetch('/api/newsletter/confirm', { method: 'POST', headers, body: { token } })
+
   it('confirms the subscriber, keeps an unsubscribe token and succeeds even if the welcome email fails', async () => {
-    const result = await $fetch('/api/newsletter/confirm', { query: { token: 'confirmation-token-to-confirm-0001' } })
+    const result = await confirm('confirmation-token-to-confirm-0001')
     expect(result).toMatchObject({ success: true, alreadyConfirmed: false })
     const update = mock.requests.find(request => request.method === 'PUT' && request.path === '/api/subscribers/sub-to-confirm')
     expect(update?.body?.data).toMatchObject({ confirmed: true })
@@ -1374,15 +1377,32 @@ describe('/api/newsletter/confirm', () => {
   })
 
   it('answers a reopened link as already confirmed without writing again', async () => {
-    const result = await $fetch('/api/newsletter/confirm', { query: { token: 'confirmation-token-to-confirm-0001' } })
+    const result = await confirm('confirmation-token-to-confirm-0001')
     expect(result).toMatchObject({ success: true, alreadyConfirmed: true })
     expect(mock.requests.filter(request => request.method !== 'GET')).toEqual([])
   })
 
-  it('answers 404 for an unknown or malformed token', async () => {
+  it('answers 404 for an unknown or malformed token and 400 for none', async () => {
     for (const token of ['confirmation-token-unknown-0001', 'bad token']) {
-      await expect($fetch('/api/newsletter/confirm', { query: { token } })).rejects.toMatchObject({ response: { status: 404 } })
+      await expect(confirm(token), token).rejects.toMatchObject({ response: { status: 404 } })
     }
+    await expect(confirm(undefined)).rejects.toMatchObject({ response: { status: 400 } })
+  })
+
+  it('does not change anything on a GET, which is what a link scanner sends', async () => {
+    const before = mock.requests.length
+    for (const query of [{ token: 'confirmation-token-to-confirm-0001' }, {}]) {
+      await expect($fetch('/api/newsletter/confirm', { query }), JSON.stringify(query)).rejects.toMatchObject({ response: { status: 404 } })
+    }
+    expect(mock.requests.slice(before)).toEqual([])
+  })
+
+  it('refuses a request from another origin or without one before calling Strapi', async () => {
+    const before = mock.requests.length
+    for (const headers of [{ origin: 'https://otro.sitio' }, {}]) {
+      await expect(confirm('confirmation-token-to-confirm-0001', headers)).rejects.toMatchObject({ response: { status: 403 } })
+    }
+    expect(mock.requests.slice(before)).toEqual([])
   })
 })
 
@@ -1929,7 +1949,7 @@ describe('Strapi API token', () => {
     await $fetch('/api/posts')
     await $fetch('/api/tags')
     await $fetch('/api/comments/flat', { query: { relation: 'api::article.article:doc-vue' } })
-    await ignoreError($fetch('/api/newsletter/confirm', { query: { token: 'confirmation-token-unknown-0002' } }))
+    await ignoreError($fetch('/api/newsletter/confirm', { method: 'POST', headers: { origin: SITE_URL }, body: { token: 'confirmation-token-unknown-0002' } }))
     const paths = ['/api/articles', '/api/tags', '/api/comments/api::article.article:doc-vue/flat', '/api/subscribers']
     for (const path of paths) {
       const request = mock.requests.find(recorded => recorded.path === path)

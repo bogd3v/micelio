@@ -1,27 +1,26 @@
 <script setup lang="ts">
 import { asApiError } from '~/helpers/apiError'
+import { isNewsletterToken } from '~/helpers/newsletter'
 import type { ConfirmResponse } from '~/interfaces/newsletter'
 
 const { t } = useI18n()
 const route = useRoute()
 const site = useSite()
-const token = route.query.token as string
+const token = String(route.query.token ?? '')
+const valid = isNewsletterToken(token)
 
-const status = ref<'loading' | 'success' | 'error'>('loading')
+// Opening the link only shows the button: the subscription is confirmed by the click, so a scanner that fetches the link confirms nothing
+const status = ref<'ready' | 'loading' | 'success' | 'error'>(valid ? 'ready' : 'error')
 const successMessage = ref('')
-const errorMessage = ref('')
+const errorMessage = ref(valid ? '' : t('confirm.invalidToken'))
 
 async function confirmSubscription() {
-  if (!token) {
-    status.value = 'error'
-    errorMessage.value = t('confirm.invalidToken')
-    return
-  }
-
+  if (status.value === 'loading') return
+  status.value = 'loading'
   try {
     const response = await $fetch<ConfirmResponse>('/api/newsletter/confirm', {
-      method: 'GET',
-      params: { token },
+      method: 'POST',
+      body: { token },
     })
     successMessage.value = t(response.alreadyConfirmed ? 'confirm.alreadyConfirmed' : 'confirm.successMessage', { site: site.value.name })
     status.value = 'success'
@@ -33,10 +32,6 @@ async function confirmSubscription() {
   }
 }
 
-onMounted(() => {
-  confirmSubscription()
-})
-
 useSeoMeta({
   title: t('confirm.title'),
 })
@@ -45,7 +40,17 @@ useSeoMeta({
 <template>
   <div class="myc-confirm-page">
     <div class="myc-confirm-body">
-      <div v-if="status === 'loading'" class="myc-confirm-card">
+      <form v-if="status === 'ready'" class="myc-confirm-card" data-status="ready" @submit.prevent="confirmSubscription">
+        <h1 class="myc-confirm-title font-display">
+          {{ t("confirm.readyTitle") }}
+        </h1>
+        <p class="myc-confirm-text">{{ t("confirm.readyLead", { site: site.name }) }}</p>
+        <MycButton type="submit">
+          {{ t("confirm.action") }}
+        </MycButton>
+      </form>
+
+      <div v-else-if="status === 'loading'" class="myc-confirm-card">
         <IconsArrowPath class="myc-confirm-icon myc-confirm-loading" />
         <p class="myc-confirm-status">{{ t("common.loading") }}</p>
       </div>

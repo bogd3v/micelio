@@ -366,6 +366,9 @@
   },
   "confirm": {
     "title": "Confirmar Suscripción",
+    "readyTitle": "Confirma tu suscripción",
+    "readyLead": "Pulsa el botón para empezar a recibir por correo los artículos más recientes de {site}.",
+    "action": "Confirmar suscripción",
     "successTitle": "¡Suscripción Confirmada!",
     "successMessage": "¡Bienvenido a {site}! Ahora estás suscrito para recibir nuestros últimos artículos.",
     "errorTitle": "Confirmación Fallida",

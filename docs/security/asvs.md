@@ -31,7 +31,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | --- | --- | --- | --- | --- |
 | V1 Encoding and Sanitization | L2 | 16 | 9 | 2 |
 | V2 Validation and Business Logic | L2 | 8 | 1 | 2 |
-| V3 Web Frontend Security | L1 | 13 | 2 | 4 |
+| V3 Web Frontend Security | L1 | 14 | 2 | 3 |
 | V4 API and Web Service | L1 | 2 | 8 | 0 |
 | V5 File Handling | L1 | 2 | 7 | 0 |
 | V6 Authentication | L2 | 7 | 14 | 14 |
@@ -46,9 +46,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 6 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 11 |
 | V17 WebRTC | L1 | 0 | 7 | 0 |
-| **Total (253 requirements)** | | **90** | **104** | **59** |
+| **Total (253 requirements)** | | **91** | **104** | **58** |
 
-Of the 59 open requirements, 10 are tracked in private security advisories.
+Of the 58 open requirements, 10 are tracked in private security advisories.
 
 ## Keeping it true
 
@@ -96,7 +96,7 @@ Of the 59 open requirements, 10 are tracked in private security advisories.
 | V2.2.1 | Validate input against business expectations | Open | Private advisory |
 | V2.2.2 | Enforce validation at a trusted server layer | Met | Every body and query goes through a zod schema on the server before any CMS call (`server/schemas/`, `server/utils/validation.ts:10-37`); the client forms share the validators of `app/helpers/`. Test: `test/schemas.test.ts`, `test/integration/api.test.ts` |
 | V2.2.3 | Check that related data items are mutually consistent | Met | A valid category drops the tag (`app/helpers/blog.ts:131-133`); a comment must name an article relation of the expected form (`server/utils/commentRelation.ts:10-16`); the thread a reply belongs to is checked by the CMS comments plugin, see micelio-cms#128. Test: `test/blog.test.ts:106`, `test/comments.test.ts:88` |
-| V2.3.1 | Run business flows in order without skipping steps | Met | A subscription becomes confirmed only through the emailed token (`server/api/newsletter/confirm.get.ts:19-30`, `:48`); a confirmed address is never reset by a new subscribe (`server/api/newsletter/subscribe.post.ts:29`); account steps are enforced by the CMS, see micelio-cms#128. Test: `test/integration/api.test.ts:1229`, `:1288-1306` |
+| V2.3.1 | Run business flows in order without skipping steps | Met | A subscription becomes confirmed only through the emailed token (`server/api/newsletter/confirm.post.ts`); a confirmed address is never reset by a new subscribe (`server/api/newsletter/subscribe.post.ts:29`); account steps are enforced by the CMS, see micelio-cms#128. Test: `test/integration/api.test.ts:1229`, `:1288-1306` |
 | V2.3.2 | Implement the documented business limits | Met | The frontend limits of `docs/security.md:66` are the buckets of `server/utils/rateLimit.ts:12-14`, enforced by `assertRateLimit` (`:64`); page size clamped (`server/schemas/query.ts:53`). Test: `test/rateLimit.test.ts`, `test/integration/api.test.ts:1270` |
 | V2.3.3 | Make business operations all-or-nothing, rolling back on failure | Met | A subscribe whose confirmation email cannot be sent deletes the pending record it just created, by the id the CMS returned, before answering the error (`server/api/newsletter/subscribe.post.ts`, `server/utils/subscribers.ts`); a rollback that fails is logged and the next request replaces the pending record. Test: `test/integration/api.test.ts` ("deletes the subscriber it created when the confirmation email cannot be sent") |
 | V2.3.4 | Lock limited-quantity resources against double booking | N/A | No such feature: no limited-quantity resources |
@@ -120,7 +120,7 @@ Of the 59 open requirements, 10 are tracked in private security advisories.
 | V3.4.6 | CSP `frame-ancestors` on every response | Met | Pages carry `frame-ancestors 'none'` in their policy; every other response gets it from a `request` hook (`server/plugins/contentSecurityPolicy.ts`), and the Worker scripts, the theme assets and the sandboxed static files carry it in their own policies (`workerPolicy`, `STATIC_CSP`); `X-Frame-Options: DENY` stays as a fallback. Static hosts get the site policy from `_headers`. Test: `test/integration/api.test.ts` ("tells every response it cannot be framed", the Worker policy), `test/securityHeaders.test.ts`, `e2e/playground/playground.spec.ts` |
 | V3.5.1 | Anti-CSRF checks where CORS preflight is not relied on | Met | Same-origin `Origin` check on the comment, subscribe and auth routes (`server/utils/auth.ts:50-57`), `SameSite=Lax`; unsubscribe is reached by the emailed token only (`docs/security.md:59`). Test: `test/integration/api.test.ts:1456` |
 | V3.5.2 | Preflight-reliant routes not callable without preflight | N/A | The frontend does not rely on CORS preflight; see V3.5.1 |
-| V3.5.3 | Sensitive functions use POST/PUT/PATCH/DELETE, not GET | Open | `GET /api/newsletter/confirm` changes state: it confirms the subscriber (`server/api/newsletter/confirm.get.ts:48`). A link prefetcher or scanner can confirm on the owner's behalf. Show a page that confirms with a POST. Test of the current behaviour: `test/integration/api.test.ts:1289`. Tracked in #492 |
+| V3.5.3 | Sensitive functions use POST/PUT/PATCH/DELETE, not GET | Met | The newsletter confirmation is `POST /api/newsletter/confirm` with the token in the body and a same-origin check (`server/api/newsletter/confirm.post.ts`); the `/confirm` page shows a button and sends it on the click, so a link scanner or prefetcher that only fetches the link confirms nothing (`app/pages/confirm.vue`). A GET to the route changes nothing. Test: `test/integration/api.test.ts` (`/api/newsletter/confirm`), `test/nuxt/ConfirmPage.test.ts`, `e2e/newsletter-confirm.spec.ts` |
 | V3.5.4 | Host separate applications on separate hostnames | Met | The CMS runs on its own host (`NUXT_PUBLIC_STRAPI_URL`, `docs/security.md:7`); Umami is proxied on the site origin on purpose, for two exact paths, without cookies or credentials (ADR 0002, `server/middleware/umami.ts:4-18`). Test: `test/analytics.test.ts:26` |
 | V3.5.5 | Discard postMessage messages from untrusted origins or with bad syntax | Met | No window `message` listeners; Worker replies are accepted only for the run in progress, and a second `started` is ignored (`app/islands/lib/workerRunner.ts:130`, `:152-154`). Test: `test/islandsWorkerRunner.test.ts:106`, `:183` |
 | V3.7.1 | Use only supported, secure client-side technologies | Met | Plain HTML, CSS and JavaScript for current browsers (Lightning CSS targets in `AGENTS.md`); no plugins, Flash or applets. No test |
@@ -337,7 +337,7 @@ Of the 59 open requirements, 10 are tracked in private security advisories.
 | V16.4.2–V16.4.3 | Logs protected from tampering and shipped to a separate system | N/A | Operator/deployment: the app writes to stdout/stderr; collection, access control and shipping are the hosting platform's |
 | V16.5.1 | Generic message for unexpected or security-sensitive errors | Open | Private advisory |
 | V16.5.2 | Secure operation when external resources fail | Met | Site settings fall back to `app.config.ts` (`server/utils/site.ts:49`), search answers `[]` (`server/api/search.get.ts:18-21`), fediverse ranking falls back to newest (`server/api/posts/index.get.ts:58-62`), post lists render empty (`server/utils/pageSections.ts:46-48`), short timeouts. Test: `test/integration/api.test.ts` (502 never cached, fallbacks) |
-| V16.5.3 | Fails securely, no fail-open on errors | Met | Validation and origin checks run before any CMS call (`server/utils/validation.ts:17-18`, `server/utils/auth.ts:50-57`); drafts answer 404 on any refusal (`server/utils/drafts.ts:46`); a failed confirmation update is a 500, not a success (`server/api/newsletter/confirm.get.ts:52-61`). Test: `test/integration/api.test.ts` |
+| V16.5.3 | Fails securely, no fail-open on errors | Met | Validation and origin checks run before any CMS call (`server/utils/validation.ts:17-18`, `server/utils/auth.ts:50-57`); drafts answer 404 on any refusal (`server/utils/drafts.ts:46`); a failed confirmation update is a 500, not a success (`server/api/newsletter/confirm.post.ts`). Test: `test/integration/api.test.ts` |
 
 ## V17 WebRTC
 
