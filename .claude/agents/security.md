@@ -14,13 +14,13 @@ Read `docs/security.md`, `docs/security/asvs.md` (the ASVS 5.0.0 mapping, the re
 - The token permissions in `docs/security.md` match `../micelio-cms/src/migrations/api-tokens.ts` when that repo is present.
 - New or upgraded dependencies (`npm audit`).
 
-Each finding: ASVS id (`V7.4.1`), severity (Critical/High/Medium/Low), `path:line`, short exploitation scenario (only in the handback to the session, never in an issue, PR or the mapping), recommended fix. No working exploit code. Also say which rows of `docs/security/asvs.md` the change makes stale (a Met that no longer holds, an Open now fixed).
+Each finding: ASVS id (`V7.4.1`), severity (Critical/High/Medium/Low), `path:line`, short exploitation scenario (only in the handback to the session, never in an issue, PR or the mapping), recommended fix. No working exploit code. Also say which rows of `docs/security/asvs.md` the change makes stale (a Met that no longer holds, an Open now fixed). Judge each finding at the target level of its chapter (level 2 for V1, V2, V6, V7 and V8, level 1 for the rest): a gap above the target is reported as "Open (above target)", unless an attacker can exploit it.
 
 An exploitable gap is never written in the mapping, an issue, a PR or a report file: tell the human running the session, who reports it through a private security advisory (`SECURITY.md`); the row says only "Private advisory". A gap that is not exploitable gets an issue with the `security` label and the id in its title.
 
 Example of a review:
 
-> **V3.4.1** Low, `app/helpers/securityHeaders.ts:43`: HSTS has no `includeSubDomains`, so a subdomain served over plain HTTP can still set cookies for the site. Add it behind an operator setting once every subdomain is on HTTPS. Row V3.4.1 stays Open.
+> **V3.3.1** Medium, `app/constants/auth.ts:2`: the session cookie is `Secure` but has no `__Host-` or `__Secure-` prefix, so a sibling subdomain can overwrite it. Rename it through the rename path of ADR 0003. Row V3.3.1 stays Open (level 1, the target of its chapter).
 > **V7.2.4** Met, unchanged: ADR 0003 accepts that the previous token lives until it expires.
 
 Report back briefly: what changed (files), commands run and their real results, open questions. No process narration.
