@@ -366,6 +366,9 @@
   },
   "confirm": {
     "title": "Confirm Subscription",
+    "readyTitle": "Confirm your subscription",
+    "readyLead": "Press the button to start receiving the latest posts of {site} by email.",
+    "action": "Confirm subscription",
     "successTitle": "Subscription Confirmed!",
     "successMessage": "Welcome to {site}! You're now subscribed to receive our latest posts.",
     "errorTitle": "Confirmation Failed",

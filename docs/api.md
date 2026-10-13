@@ -81,7 +81,7 @@ These call Strapi anonymously. Type: `app/interfaces/fediverse.ts`.
 | Route | Input | Returns | Errors |
 | --- | --- | --- | --- |
 | `POST /api/newsletter/subscribe` | Body: `email` (≤ 254), `locale` (`es` or English for anything else) | `SubscribeResponse` — the same for new and already confirmed addresses | 400 `Email is required` / `Invalid email format`, 403 other origin, 429 (10 per IP and 3 per email / hour, or the CMS limit), 500 (also when the confirmation email cannot be sent: the pending record is deleted, so nothing is left stored) |
-| `GET /api/newsletter/confirm` | Query: `token` | `ConfirmResponse`; `alreadyConfirmed: true` when the link is opened again | 400 missing token, 404 unknown or malformed token, 500 |
+| `POST /api/newsletter/confirm` | Body: `token`. Same-origin check; the `/confirm?token=` page sends it when the button is pressed, never on opening the link | `ConfirmResponse`; `alreadyConfirmed: true` when the link is used again | 400 missing token, 403 other origin, 404 unknown or malformed token, 500 |
 | `POST /api/newsletter/unsubscribe` | `token` in the body (unsubscribe page) or the query (RFC 8058 one-click) | `{ success: true }`, also for unknown or used tokens | 400 malformed token, 502 |
 
 Every newsletter response is `private, no-store`. Types: `app/interfaces/newsletter.ts`.

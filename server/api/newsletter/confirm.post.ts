@@ -4,8 +4,20 @@ import { findSubscriber, newUnsubscribeToken, updateSubscriber } from '../../uti
 import { isNewsletterToken, newsletterLanguage } from '~/helpers/newsletter'
 import type { ConfirmResponse } from '~/interfaces/newsletter'
 
+async function readToken(event: Parameters<typeof readBody>[0]): Promise<unknown> {
+  try {
+    const body = await readBody<{ token?: unknown } | null>(event)
+    return body?.token
+  } catch {
+    // An unreadable body is the same as a missing token
+    return undefined
+  }
+}
+
 export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
-  const token = getQuery(event).token
+  // The page sends this from a click, so the request comes from the site itself
+  assertSameOrigin(event)
+  const token = await readToken(event)
 
   if (!token) {
     throw createError({

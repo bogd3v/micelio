@@ -19,13 +19,22 @@ async function expectRoleStyles(card: Locator): Promise<void> {
   expect(actual).toEqual(roles)
 }
 
-test('confirms a subscription from the link in the email', async ({ page }) => {
+test('confirms a subscription from the link in the email, only when the button is pressed', async ({ page }) => {
   // Mocked so the shared mock-Strapi subscriber stays pending for other specs
-  await page.route('**/api/newsletter/confirm?*', route => route.fulfill({ json: { success: true, alreadyConfirmed: false, message: '' } }))
-  await page.goto('/confirm?token=confirmation-token-pending-0001')
+  const calls: string[] = []
+  await page.route('**/api/newsletter/confirm', (route) => {
+    calls.push(route.request().method())
+    return route.fulfill({ json: { success: true, alreadyConfirmed: false, message: '' } })
+  })
+  // Wait for hydration: a click before it would submit the form natively
+  await page.goto('/confirm?token=confirmation-token-pending-0001', { waitUntil: 'networkidle' })
 
+  await expect(page.getByRole('heading', { level: 1, name: 'Confirm your subscription' })).toBeVisible()
+  expect(calls).toEqual([])
+  await page.getByRole('button', { name: 'Confirm subscription' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Subscription Confirmed!' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Browse Blog' })).toHaveAttribute('href', '/blog')
+  expect(calls).toEqual(['POST'])
   await expectRoleStyles(page.locator('.myc-confirm-card'))
 })
 
