@@ -35,8 +35,8 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V3 Web Frontend Security | L1 | 17 | 2 | 0 | 0 |
 | V4 API and Web Service | L1 | 2 | 8 | 0 | 0 |
 | V5 File Handling | L1 | 2 | 7 | 0 | 0 |
-| V6 Authentication | L2 | 7 | 14 | 14 | 0 |
-| V7 Session Management | L2 | 7 | 5 | 6 | 0 |
+| V6 Authentication | L2 | 9 | 14 | 12 | 0 |
+| V7 Session Management | L2 | 9 | 5 | 4 | 0 |
 | V8 Authorization | L2 | 6 | 1 | 0 | 0 |
 | V9 Self-contained Tokens | L1 | 0 | 5 | 0 | 2 |
 | V10 OAuth and OIDC | L1 | 1 | 28 | 0 | 0 |
@@ -47,9 +47,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 4 | 2 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 1 | 10 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **95** | **104** | **31** | **23** |
+| **Total (253 requirements)** | | **99** | **104** | **27** | **23** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 54 requirements that are not met, **31 are at the target level** (10 of them tracked in private security advisories) and 23 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 50 requirements that are not met, **27 are at the target level** (10 of them tracked in private security advisories) and 23 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -156,7 +156,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | --- | --- | --- | --- |
 | V6.1.1 | Document rate limits and anti-automation, including lockout abuse | Met | `docs/security.md:60`, `:66`, `:83` (CMS limits per visitor through the forwarder); micelio-cms `docs/RATE_LIMITING.md:32-54` (groups, per-account limits, lockout abuse accepted at :54). Test: `test/integration/api.test.ts:1462` (CMS 429 translated); micelio-cms `tests/rate-limit.test.ts` |
 | V6.1.2 | Document context-specific words banned in passwords | Open | No list exists in `docs/security.md` or micelio-cms `docs/ACCOUNTS.md`. Tracked in #491 |
-| V6.1.3 | Document every authentication pathway and its consistent controls | Open | The gap is in micelio-cms (see micelio-cms#128). `docs/security.md:7` and `:60` describe only the BFF; the CMS `/api/auth/*` routes (incl. `change-password`) are publicly reachable with other rules (micelio-cms `config/plugins.ts:78-84`, `docs/ACCOUNTS.md:7-16`). Tracked in #491 |
+| V6.1.3 | Document every authentication pathway and its consistent controls | Met | The pathways and what each enforces are in `docs/security.md`, "Authentication and sessions", with the strength they must hold. The CMS routes that can be called directly are listed there; the one control that is not consistent across them is V6.3.4. Test: no test (documentation) |
 | V6.2.1 | Passwords at least 8 characters | Open | The gap is in micelio-cms (see micelio-cms#128). BFF enforces 10 (`server/schemas/auth.ts:5`, `app/helpers/auth.ts:3`, `:21-23`; test `test/auth.test.ts:54`, `test/schemas.test.ts:15`). Direct `POST /api/auth/local/register` on the CMS has no minimum: no `validatePassword` in micelio-cms `config/plugins.ts:78-84`. Tracked in #491 |
 | V6.2.2 | Users can change their password | Open | Only the emailed reset flow (`server/api/auth/forgot-password.post.ts`, `reset-password.post.ts`); no change route under `server/api/auth/`. Tracked in #491 |
 | V6.2.3 | Password change asks for current and new password | Open | No change-password route or page in the frontend; the CMS `POST /api/auth/change-password` (checks the current one, `node_modules/@strapi/plugin-users-permissions/dist/server` 5.56.0 `controllers/auth.js:220-240`) is unreachable to users because the JWT is httpOnly. Tracked in #491 |
@@ -171,8 +171,8 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V6.2.12 | Check new passwords against breached password sets | Open | No breached-password check in `server/api/auth/register.post.ts`, `reset-password.post.ts` or the CMS. Tracked in #491 |
 | V6.3.1 | Brute-force and stuffing controls implemented as documented | Met | Per client and per identifier in the CMS (micelio-cms `config/rate-limit.ts:19-23`, `src/constants/rate-limit.ts:64-84`); the BFF forwards the visitor address (`server/utils/strapi.ts:48-57`, `docs/security.md:83`). Tests: micelio-cms `tests/rate-limit.test.ts`, `tests/rate-limit-forwarder.test.ts`; `test/strapiRequest.test.ts:57`, `:64` |
 | V6.3.2 | No default accounts present | N/A | The frontend has no accounts of its own; enforced in micelio-cms, see micelio-cms#128: `src/migrations/` seeds roles and permissions only, no users |
-| V6.3.3 | Multi-factor or combined authentication required | Open | Single factor only; MFA rejected in `docs/adr/0003-session-in-httponly-cookie.md` (option D) without mitigating controls listed. Tracked in #491 |
-| V6.3.4 | No undocumented auth pathways; controls consistent | Open | Same root as V6.1.3: CMS `change-password`, `email-confirmation` and register (no 10-character minimum) are not in `docs/security.md:60`. Tracked in #491 |
+| V6.3.3 | Multi-factor or combined authentication required | Met | Single factor by decision, with the rationale and the mitigating controls documented: ADR 0003, amendment of 2026-10-14 (accepted risk). Test: no test (documented decision) |
+| V6.3.4 | No undocumented auth pathways; controls consistent | Open | No undocumented pathway is left (`docs/security.md`, "Authentication and sessions"). The controls are not consistent: the 10-character minimum is enforced only by the frontend, and a direct sign-up or `change-password` call on the CMS has none (micelio-cms `config/plugins.ts:78-84`). Tracked in #491 and micelio-cms#177 |
 | V6.4.1 | Activation codes random, short-lived, single use | Open | Private advisory |
 | V6.4.2 | No password hints or secret questions | Met | None in `app/pages/account/` or the CMS user model. No test |
 | V6.4.3 | Secure forgotten-password reset process | Open | Private advisory |
@@ -185,8 +185,8 @@ An open requirement that an attacker could exploit is **not** described here or 
 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
-| V7.1.1 | Document inactivity timeout and absolute lifetime, justify deviations | Open | Absolute 7 days is documented (`docs/security.md:13`, ADR 0003); no inactivity rule and no NIST SP 800-63B justification. Tracked in #491 |
-| V7.1.2 | Document allowed concurrent sessions per account | Open | Not documented; any number of JWTs per account are valid at once. Tracked in #491 |
+| V7.1.1 | Document inactivity timeout and absolute lifetime, justify deviations | Met | Documented in `docs/security.md`, "Authentication and sessions": 7 days absolute, no inactivity timeout, with the reasoning against NIST SP 800-63B. The missing inactivity timeout itself is V7.3.1. Test: no test (documentation) |
+| V7.1.2 | Document allowed concurrent sessions per account | Met | Documented in `docs/security.md`, "Authentication and sessions": not limited, each sign-in issues an independent JWT. Test: no test (documentation) |
 | V7.1.3 | Document federated session coordination | N/A | No federated identity or SSO |
 | V7.2.1 | Session tokens verified by a trusted backend | Met | The BFF never decodes the JWT; every use goes to the CMS, which verifies it: `server/utils/auth.ts:113-115`, `server/utils/drafts.ts:21-25`, `:41-50`. Tests: `test/integration/api.test.ts:1472`, `e2e/drafts.spec.ts:14`, `:21` |
 | V7.2.2 | Dynamic session tokens, not static keys | Met | A JWT issued per sign-in is the session (`server/api/auth/login.post.ts:13-26`); the static API token is never a user session (`server/lib/strapiRequest.ts:28`). Test: `test/integration/api.test.ts:1434`, `test/strapiRequest.test.ts:30` |

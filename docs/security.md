@@ -103,6 +103,35 @@ What does not forward (the CMS counts these against the API token's bucket): the
 
 A CMS 429 reaches the browser as a 429 with the CMS's `Retry-After` (a positive number, at most 3600) and, where the route would otherwise degrade (search, fediverse ranking and stats), `Cache-Control: no-store`. The Umami proxy replaces `X-Forwarded-For` and `X-Real-IP` with the resolved address and drops the other client address headers (`CF-Connecting-IP`, `True-Client-IP`, `X-Client-IP`, `Forwarded`…); set Umami's `CLIENT_IP_HEADER` to `x-forwarded-for` or `x-real-ip`. The secret is a credential: keep it out of logs and of the repository, and rotate both sides together.
 
+## Authentication and sessions
+
+People sign in with a password: one factor, an account per email address. Accounts are readers (they comment and subscribe) or editors (they also preview drafts); an administrator gives the Editor role by hand in the CMS admin panel. This section says which ways in exist, what each one enforces, and how long a session lasts (ASVS V6.1.3, V6.3.4, V7.1.1, V7.1.2). Why there is no second factor is in [ADR 0003](adr/0003-session-in-httponly-cookie.md), amendment of 2026-10-14.
+
+### Authentication pathways
+
+| Pathway | Entry point | What it enforces |
+| --- | --- | --- |
+| Sign in | `POST /api/auth/login` of the frontend, which calls `POST /api/auth/local` of the CMS | Same-origin check, body schema, `no-store`; CMS limits per client (10 per 60 s per route), per login identifier across all addresses (10 per 15 min) and a confirmed email before the first sign-in |
+| Sign up | `POST /api/auth/register`, then the CMS register route | The same checks, a password of at least 10 characters in the frontend, and 5 emails per address per hour in the CMS; the account cannot sign in until its email is confirmed |
+| Email confirmation | The link in the email, `GET /api/auth/email-confirmation` of the CMS, which redirects to `/account/confirmed` | One-use token in the CMS; the frontend does not proxy this route |
+| Resend confirmation, forgot password, reset password | `POST /api/auth/resend-confirmation`, `forgot-password`, `reset-password` of the frontend, then the CMS routes | Same-origin check, body schema; 5 emails per address per hour; the same answer whether or not the address has an account |
+| Delete the account | `DELETE /api/auth/me` | Session, same-origin check, and the password asked again |
+| Third-party sign-in | `/api/connect/*` of the CMS | Off unless the operator enables a provider in the CMS admin panel; the frontend has no flow for it. A site that turns one on adds a pathway with its own strength and must document it here |
+| CMS admin panel | `/admin` of the CMS | Separate administrator accounts, with their own limits (20 per 300 s per client); not part of the frontend |
+
+The CMS routes `/api/auth/*` and `/api/users/me` can also be called directly by anyone who reaches the CMS address. They carry the CMS limits listed above and the same confirmed-email rule, **but the 10-character minimum is enforced only by the frontend**: a direct sign-up or `change-password` call is bound by Strapi's own minimum. That gap, and a `change-password` route that the frontend does not offer yet, are tracked in [micelio-cms#177](https://github.com/bogd3v/micelio-cms/issues/177) and #491. The strength every pathway must hold is: a confirmed email, a password of at least 10 characters, and the rate limits above.
+
+### Sessions
+
+| What | Value |
+| --- | --- |
+| Absolute lifetime | 7 days: the cookie `Max-Age` and the CMS JWT `expiresIn` are both 604800 seconds. A session is not extended while it is used |
+| Inactivity timeout | None |
+| Concurrent sessions | Not limited: every sign-in issues its own JWT and none ends another, so there is no maximum to reach and no behaviour for reaching it |
+| Sign out | Clears the cookie of that browser. The JWT itself stays valid until it expires, which ADR 0003 accepts |
+
+Why there is no inactivity timeout, which departs from some readings of NIST SP 800-63B: a password alone is authenticator assurance level 1, for which the guideline asks to re-authenticate at least every 30 days and asks for no inactivity limit; 7 days is stricter on lifetime. The accounts hold an email address and a username, comment, and (editors) read drafts, with no payment or other personal data. An inactivity timeout needs a server-side record of the last use, which a stateless JWT does not have; the CMS offers one only in its `refresh` session mode, which would supersede part of ADR 0003. It is left out for now and tracked in #491 (ASVS V7.3.1). Check this against the current revision of the guideline when it changes, and when accounts hold more than they do.
+
 ## Browser-side protections
 
 - **HTTP methods**: `server/middleware/methods.ts` answers any method outside GET, HEAD, POST, PUT, PATCH, DELETE and OPTIONS (`TRACE` above all) with 405 and an `Allow` list, before any route runs.
