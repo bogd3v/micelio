@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
+import { request as httpRequest } from 'node:http'
 import { join } from 'node:path'
 import { $fetch, fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
 import type { RawStrapiArticle } from '~/interfaces/strapi-post'
@@ -524,11 +525,43 @@ describe('/api/posts/[slug]', () => {
   })
 })
 
+describe('HTTP methods', () => {
+  // `fetch` refuses to send TRACE, so the request goes through node:http
+  function send(method: string, path: string): Promise<{ status: number, allow: string | undefined, body: string }> {
+    const { url } = useTestContext()
+    return new Promise((resolve, reject) => {
+      const req = httpRequest(new URL(path, url), { method, headers: { 'x-probe': 'echo-me' } }, (res) => {
+        let body = ''
+        res.on('data', (chunk: Buffer) => {
+          body += chunk.toString()
+        })
+        res.on('end', () => resolve({ status: res.statusCode ?? 0, allow: res.headers.allow as string | undefined, body }))
+      })
+      req.on('error', reject)
+      req.end()
+    })
+  }
+
+  it('answers TRACE and other methods the site does not use with 405 and an Allow list', async () => {
+    for (const path of ['/', '/api/posts', '/blog']) {
+      const response = await send('TRACE', path)
+      expect(response.status, path).toBe(405)
+      expect(response.allow, path).toBe('GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS')
+      expect(response.body).not.toContain('echo-me')
+    }
+  })
+
+  it('keeps answering the methods it uses', async () => {
+    expect((await send('GET', '/robots.txt')).status).toBe(200)
+    expect((await send('HEAD', '/robots.txt')).status).toBe(200)
+  })
+})
+
 describe('/robots.txt', () => {
   it('allows crawling and lists the sitemap', async () => {
     const response = await fetch('/robots.txt')
     expect(response.status).toBe(200)
-    expect(response.headers.get('content-type')).toContain('text/plain')
+    expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8')
     const body = await response.text()
     expect(body).toContain('User-agent: *')
     expect(body).toContain('Allow: /')
@@ -540,6 +573,7 @@ describe('/sitemap.xml', () => {
   async function sitemap(): Promise<string> {
     const response = await fetch('/sitemap.xml')
     expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('application/xml; charset=utf-8')
     return response.text()
   }
 
