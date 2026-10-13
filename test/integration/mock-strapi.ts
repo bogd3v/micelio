@@ -58,6 +58,8 @@ interface MockStrapiResult {
   /** The `homePage` relation site-setting answers with, by locale (null when never set) */
   homePage: { value: { en?: string, es?: string } | null }
   users: Array<{ id: number, username: string, email: string, password: string, confirmed: boolean, role: string }>
+  /** The articles the mock serves; a test that changes one restores it */
+  articles: RawStrapiArticle[]
 }
 
 const author: StrapiAuthorRef = {
@@ -850,7 +852,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address()
       const port = typeof address === 'object' && address !== null ? address.port : 0
-      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, users: authMock.users })
+      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, users: authMock.users, articles })
     })
   })
 }

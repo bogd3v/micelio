@@ -13,6 +13,7 @@ const target = computed(() => resolveLink(props.link.url, localizePath))
 
 <template>
   <MycButton
+    v-if="target"
     :href="target.href"
     :variant="link.variant"
     :arrow="link.variant === 'primary' && !target.external"

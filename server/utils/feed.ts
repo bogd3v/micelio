@@ -1,3 +1,4 @@
+import { escapeXml } from '~/helpers/xml'
 import qs from 'qs'
 import type { H3Event } from 'h3'
 import type { Category, Locale, RawStrapiArticle } from '~/interfaces'
@@ -27,14 +28,6 @@ function otherLocale(locale: FeedLocale): FeedLocale {
 
 function cdata(value: string): string {
   return `<![CDATA[${value.replaceAll(']]>', ']]]]><![CDATA[>')}]]>`
-}
-
-function escapeXml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
 }
 
 function categoryMessage(message: string, siteName: string, locale: FeedLocale, category: Category): string {
@@ -76,11 +69,11 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
   const baseUrl = config.public.siteUrl
   const [posts, { site }] = await Promise.all([fetchFeedPosts(options), loadSite(locale as Locale)])
 
-  const feedUrl = `${baseUrl}${feedPath(locale, category)}`
-  const altFeedUrl = `${baseUrl}${feedPath(otherLocale(locale), category)}`
-  const channelLink = category
+  const feedUrl = escapeXml(`${baseUrl}${feedPath(locale, category)}`)
+  const altFeedUrl = escapeXml(`${baseUrl}${feedPath(otherLocale(locale), category)}`)
+  const channelLink = escapeXml(category
     ? `${baseUrl}${localePrefix(locale)}/blog/category/${category}`
-    : `${baseUrl}${localePrefix(locale)}`
+    : `${baseUrl}${localePrefix(locale)}`)
   const title = escapeXml(channelTitle(site.name, locale, category))
   const description = escapeXml(channelDescription(site, locale, category))
 
@@ -97,19 +90,19 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
     <generator>${escapeXml(site.name)}</generator>
     ${posts
       .map((post) => {
-        const coverUrl = post.cover?.url
+        const coverUrl = escapeXml(post.cover?.url
           ? post.cover.url.startsWith('http')
             ? post.cover.url
             : strapiUrl(post.cover.url)
-          : ''
+          : '')
         const pubDate = post.publishedAt
           ? new Date(post.publishedAt).toUTCString()
           : new Date().toUTCString()
         const itemDescription = post.description || ''
 
-        const itemLocale = post.locale || 'en'
-        const postUrl = `${baseUrl}${itemLocale === 'es' ? '/es' : ''}/blog/${post.slug}`
-        const altPostUrl = `${baseUrl}${itemLocale === 'es' ? '' : '/es'}/blog/${post.slug}`
+        const itemLocale = post.locale === 'es' ? 'es' : 'en'
+        const postUrl = escapeXml(`${baseUrl}${itemLocale === 'es' ? '/es' : ''}/blog/${post.slug}`)
+        const altPostUrl = escapeXml(`${baseUrl}${itemLocale === 'es' ? '' : '/es'}/blog/${post.slug}`)
         return `<item>
       <title>${cdata(post.title)}</title>
       <description>${cdata(itemDescription)}</description>

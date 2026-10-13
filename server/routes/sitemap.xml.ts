@@ -1,3 +1,4 @@
+import { escapeXml } from '~/helpers/xml'
 import qs from 'qs'
 import { defaultLocale, Locale, type LocalePaths, type RawStrapiArticle } from '~/interfaces'
 import { blogPath } from '~/helpers/blog'
@@ -52,13 +53,13 @@ export default defineEventHandler(async (event) => {
     ) => {
       const links = locales
         .filter(locale => alternates[locale])
-        .map(locale => `<xhtml:link rel="alternate" hreflang="${locale}" href="${siteUrl}${alternates[locale]}"/>`)
+        .map(locale => `<xhtml:link rel="alternate" hreflang="${locale}" href="${escapeXml(`${siteUrl}${alternates[locale]}`)}"/>`)
       const fallback = alternates[defaultLocale] ?? loc
-      links.push(`<xhtml:link rel="alternate" hreflang="x-default" href="${siteUrl}${fallback}"/>`)
+      links.push(`<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(`${siteUrl}${fallback}`)}"/>`)
 
       return `<url>
-    <loc>${siteUrl}${loc}</loc>
-    <lastmod>${lastmod}</lastmod>
+    <loc>${escapeXml(`${siteUrl}${loc}`)}</loc>
+    <lastmod>${escapeXml(lastmod)}</lastmod>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
     ${links.join('\n    ')}
