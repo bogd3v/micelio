@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { FRAME_ANCESTORS_NONE } from '~/constants/security'
 import { contentSecurityPolicy, inlineScripts, islandPolicyOptions, islandsInHtml, sceneModelOrigins } from '~/helpers/securityHeaders'
 import { HEAVY_ISLANDS } from '~/islands/lib/constants'
 
@@ -8,6 +9,11 @@ function sha256(content: string): string {
 
 export default defineNitroPlugin((nitroApp) => {
   if (import.meta.dev) return
+  // Every response says it cannot be framed (ASVS V3.4.6). Set on `request`, before any handler, so that what comes later replaces it:
+  // a page with its full policy (below), a Worker script (workerPolicy.ts) and the theme assets with theirs (route rules)
+  nitroApp.hooks.hook('request', (event) => {
+    setResponseHeader(event, 'content-security-policy', FRAME_ANCESTORS_NONE)
+  })
   nitroApp.hooks.hook('render:html', (html, { event }) => {
     const config = useRuntimeConfig(event)
     const document = [...html.head, ...html.bodyPrepend, ...html.body, ...html.bodyAppend].join('')

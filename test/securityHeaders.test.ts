@@ -84,7 +84,7 @@ describe('contentSecurityPolicy', () => {
     expect(directives.get('frame-ancestors')).toEqual(['\'none\''])
     expect(directives.get('object-src')).toEqual(['\'none\''])
     expect(directives.get('form-action')).toEqual(['\'self\''])
-    expect(directives.get('base-uri')).toEqual(['\'self\''])
+    expect(directives.get('base-uri')).toEqual(['\'none\''])
   })
 
   it('embeds only the video players the sanitizer allows', () => {
@@ -156,7 +156,7 @@ describe('Worker policy', () => {
   })
 
   it('denies everything but scripts of the site, WebAssembly and the runtimes folder', () => {
-    expect(workerPolicy('https://bogdev.com.co')).toBe('default-src \'none\'; script-src \'self\' \'wasm-unsafe-eval\'; connect-src https://bogdev.com.co/_islands/runtimes/')
+    expect(workerPolicy('https://bogdev.com.co')).toBe('default-src \'none\'; script-src \'self\' \'wasm-unsafe-eval\'; connect-src https://bogdev.com.co/_islands/runtimes/; frame-ancestors \'none\'')
     expect(workerPolicy('https://bogdev.com.co')).not.toContain('unsafe-inline')
     expect(workerPolicy('https://bogdev.com.co')).not.toContain(' \'unsafe-eval\'')
   })

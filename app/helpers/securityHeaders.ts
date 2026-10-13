@@ -1,3 +1,4 @@
+import { FRAME_ANCESTORS_NONE } from '../constants/security'
 import type { HeavyIsland } from '../islands/types'
 
 interface ContentSecurityPolicyOptions {
@@ -89,7 +90,7 @@ function origins(urls: string[]): string[] {
  * The `Content-Security-Policy` value of a page, built from `options`.
  *
  * @remarks
- * `default-src`, `base-uri`, `font-src` and `form-action` start at `'self'`; `object-src` and `frame-ancestors` are `'none'`;
+ * `default-src`, `font-src` and `form-action` start at `'self'`; `object-src`, `base-uri` and `frame-ancestors` are `'none'`;
  * `frame-src` allows only the YouTube and Vimeo embed origins; `img-src` adds `data:` and, unless `imageBlobs` is false, `blob:`.
  * Scripts allow `'self'` and the hashes given; styles allow `'unsafe-inline'`. The options add their sources, and
  * `frame-ancestors` is left out when `meta` is set.
@@ -109,7 +110,7 @@ export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): st
     ...(options.workerSources?.length ? [['worker-src', [...new Set(options.workerSources)]] as [string, string[]]] : []),
     // `report-uri` and `sandbox` are never emitted; a meta ignores `frame-ancestors`
     ...(options.meta ? [] : [['frame-ancestors', ['\'none\'']] as [string, string[]]]),
-    ['base-uri', ['\'self\'']],
+    ['base-uri', ['\'none\'']],
     ['form-action', ['\'self\'', ...origins(options.formOrigins ?? [])]],
     ['object-src', ['\'none\'']],
   ]
@@ -164,7 +165,7 @@ export function runtimesSource(siteUrl: string, baseURL = '/'): string | undefin
  */
 export function workerPolicy(siteUrl: string, baseURL = '/'): string | undefined {
   const connect = runtimesSource(siteUrl, baseURL)
-  return connect ? ['default-src \'none\'', 'script-src \'self\' \'wasm-unsafe-eval\'', `connect-src ${connect}`].join('; ') : undefined
+  return connect ? ['default-src \'none\'', 'script-src \'self\' \'wasm-unsafe-eval\'', `connect-src ${connect}`, FRAME_ANCESTORS_NONE].join('; ') : undefined
 }
 
 /** Whether a request path is a Worker script of the islands. The path is decoded and normalised first, so `/_islands/%77orkers/` and `//_islands/./workers/` count. */

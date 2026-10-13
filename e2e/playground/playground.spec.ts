@@ -213,7 +213,7 @@ test.describe('CSP', () => {
   test('the Worker script has its own policy: runtimes folder only, no eval', async ({ request, baseURL }) => {
     const response = await request.get(await workerUrl(request))
     expect(response.status()).toBe(200)
-    expect(response.headers()['content-security-policy']).toBe(`default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src ${baseURL}/_islands/runtimes/`)
+    expect(response.headers()['content-security-policy']).toBe(`default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src ${baseURL}/_islands/runtimes/; frame-ancestors 'none'`)
   })
 
   test('the browser enforces the Worker policy from its own response', async ({ page, request }) => {
