@@ -32,7 +32,7 @@ In scope: code and configuration in this repository, including:
 - The theme validator and checks (`modules/theme`), and the theme installer once it lands ([ADR 0008](docs/adr/0008-theme-registry.md))
 - The `Dockerfile` and the GitHub workflows (`.github/workflows`)
 
-The model behind these, and how every endpoint is protected, is described in [`docs/security.md`](docs/security.md).
+The model behind these, and how every endpoint is protected, is described in [`docs/security.md`](docs/security.md), and how it measures up against OWASP ASVS 5.0.0 in [`docs/security/asvs.md`](docs/security/asvs.md).
 
 Report these upstream instead:
 

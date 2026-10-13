@@ -1,6 +1,6 @@
 # Security model
 
-What the frontend trusts, which credentials it uses to reach Strapi, and how each endpoint is protected. The input and output of each endpoint are in [api.md](api.md). Keep it in sync when a route or a Strapi call changes.
+What the frontend trusts, which credentials it uses to reach Strapi, and how each endpoint is protected. The input and output of each endpoint are in [api.md](api.md). Keep it in sync when a route or a Strapi call changes. How it measures up against OWASP ASVS 5.0.0, requirement by requirement, is in [security/asvs.md](security/asvs.md).
 
 ## Credentials towards Strapi
 
