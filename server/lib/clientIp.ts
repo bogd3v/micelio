@@ -206,6 +206,19 @@ export function resolveClientIp(
   return { ip: candidate, shortChain: false }
 }
 
+/**
+ * Whether `X-Forwarded-Host` and `X-Forwarded-Proto` of a request may be read: under the same rule as the forwarded address.
+ *
+ * @remarks
+ * `none` never reads them. `hops` reads them, since the operator counted the proxies in front. `peers` reads them only when the socket `peer` is a trusted proxy, so a visitor who reaches the server directly cannot set them.
+ */
+export function trustsForwardedHost(trust: TrustProxy, peer: string | null | undefined): boolean {
+  if (trust.kind === 'none') return false
+  if (trust.kind === 'hops') return true
+  const socket = normalizeIp(peer)
+  return socket !== null && isTrusted(trust.trusted, socket)
+}
+
 /** Minimum length of the forwarder secret, as in the CMS. */
 const MIN_FORWARDER_SECRET_LENGTH = 32
 

@@ -32,7 +32,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V1 Encoding and Sanitization | L2 | 16 | 9 | 2 |
 | V2 Validation and Business Logic | L2 | 8 | 1 | 2 |
 | V3 Web Frontend Security | L1 | 13 | 2 | 4 |
-| V4 API and Web Service | L1 | 1 | 8 | 1 |
+| V4 API and Web Service | L1 | 2 | 8 | 0 |
 | V5 File Handling | L1 | 2 | 7 | 0 |
 | V6 Authentication | L2 | 7 | 14 | 14 |
 | V7 Session Management | L2 | 7 | 5 | 6 |
@@ -46,9 +46,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 6 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 11 |
 | V17 WebRTC | L1 | 0 | 7 | 0 |
-| **Total (253 requirements)** | | **89** | **104** | **60** |
+| **Total (253 requirements)** | | **90** | **104** | **59** |
 
-Of the 60 open requirements, 10 are tracked in private security advisories.
+Of the 59 open requirements, 10 are tracked in private security advisories.
 
 ## Keeping it true
 
@@ -132,7 +132,7 @@ Of the 60 open requirements, 10 are tracked in private security advisories.
 | --- | --- | --- | --- |
 | V4.1.1 | Content-Type matching the body, with a charset | Met | `robots.txt` and `sitemap.xml` send `; charset=utf-8` (`server/routes/robots.txt.ts`, `server/routes/sitemap.xml.ts`); the feeds and the JSON routes already had one (`server/utils/feed.ts:140`). Test: `test/integration/api.test.ts` (`/robots.txt`, `/sitemap.xml`) |
 | V4.1.2 | Redirect HTTP to HTTPS only on browser-facing endpoints | N/A | Operator/reverse proxy: TLS and the HTTP redirect are terminated in front of Nitro |
-| V4.1.3 | Intermediary-set headers cannot be overridden by the client | Open | `assertSameOrigin` reads `X-Forwarded-Host` and `X-Forwarded-Proto` whatever `NUXT_TRUST_PROXY` says (`server/utils/auth.ts:53`), while the client address honours it (`docs/security.md:70-80`). A browser cannot set these headers cross-site, so the check still holds against CSRF; read them only from trusted proxies, or compare with `siteUrl` alone. Test: `test/integration/api.test.ts:1456`. Tracked in #492 |
+| V4.1.3 | Intermediary-set headers cannot be overridden by the client | Met | `assertSameOrigin` reads `X-Forwarded-Host` and `X-Forwarded-Proto` only when `NUXT_TRUST_PROXY` allows it for the socket peer (`trustsForwardedHost()` in `server/lib/clientIp.ts`, `server/utils/auth.ts`), the same rule as the forwarded address (`docs/security.md:70-82`). Test: `test/clientIp.test.ts` (`trustsForwardedHost`), `test/integration/api.test.ts` (same-origin checks behind a private proxy) |
 | V4.2.1 | Consistent HTTP message boundary handling across components | N/A | Operator/reverse proxy; Nitro uses the Node.js HTTP parser |
 | V4.3.1–V4.3.2 | Limit GraphQL query cost and disable introspection | N/A | No such feature: the frontend has no GraphQL endpoint and calls the CMS REST API only |
 | V4.4.1–V4.4.4 | Secure WebSocket transport, origin checks and session tokens | N/A | No such feature: no WebSocket endpoints |

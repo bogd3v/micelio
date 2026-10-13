@@ -2,6 +2,7 @@ import type { H3Event } from 'h3'
 import type { AuthErrorCode, StrapiAuthUser } from '~/interfaces/auth'
 import { strapiAuthErrorCode } from '~/helpers/auth'
 import { LEGACY_SESSION_COOKIE, SESSION_COOKIE, SESSION_MAX_AGE } from '~/constants/auth'
+import { trustsForwardedHost } from '../lib/clientIp'
 
 const AUTH_ERROR_STATUS: Record<AuthErrorCode, number> = {
   invalidCredentials: 400,
@@ -45,13 +46,16 @@ export function preventCaching(event: H3Event): void {
  * Throws the 403 `forbiddenOrigin` error unless the request `Origin` is the site origin.
  *
  * @remarks
- * The site origin is the request origin (read through `X-Forwarded-Host` and `X-Forwarded-Proto`) or the origin of `siteUrl`. A request without an `Origin` header is refused. The auth, comment and subscribe routes call this first; the one-click unsubscribe route does not, since mail clients send no `Origin`.
+ * The site origin is the request origin (read through `X-Forwarded-Host` and `X-Forwarded-Proto` only from a proxy `NUXT_TRUST_PROXY` trusts) or the origin of `siteUrl`. A request without an `Origin` header is refused. The auth, comment and subscribe routes call this first; the one-click unsubscribe route does not, since mail clients send no `Origin`.
  */
 export function assertSameOrigin(event: H3Event): void {
   const origin = getRequestHeader(event, 'origin')
+  const config = useRuntimeConfig(event)
+  // The forwarded host and protocol count only from a proxy the operator trusts (`NUXT_TRUST_PROXY`), like the forwarded address
+  const forwarded = trustsForwardedHost(trustProxy(config.trustProxy), event.node.req.socket?.remoteAddress)
   const allowed = [
-    getRequestURL(event, { xForwardedHost: true, xForwardedProto: true }).origin,
-    originOf(useRuntimeConfig(event).public.siteUrl),
+    getRequestURL(event, { xForwardedHost: forwarded, xForwardedProto: forwarded }).origin,
+    originOf(config.public.siteUrl),
   ]
   if (!origin || !allowed.includes(origin)) throw authFailure('forbiddenOrigin')
 }

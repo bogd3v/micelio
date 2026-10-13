@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { forwardHeaders, internalClientIp, isInternalFetchTarget, isSafeForwardTarget, normalizeIp, parseTrustProxy, resolveClientIp } from '../server/lib/clientIp'
+import { forwardHeaders, internalClientIp, isInternalFetchTarget, isSafeForwardTarget, normalizeIp, parseTrustProxy, resolveClientIp, trustsForwardedHost } from '../server/lib/clientIp'
 
 const resolve = (trust: string, peer: string | null, header: string | null): string =>
   resolveClientIp(parseTrustProxy(trust), peer, header).ip
@@ -90,6 +90,27 @@ describe('resolveClientIp', () => {
 
   it('reports unknown without a socket address', () => {
     expect(resolve('private', null, '203.0.113.9')).toBe('unknown')
+  })
+})
+
+describe('trustsForwardedHost', () => {
+  it('never reads the forwarded host and protocol when no proxy is trusted', () => {
+    const none = parseTrustProxy('false')
+    for (const peer of ['10.0.0.5', '127.0.0.1', '203.0.113.9', undefined]) expect(trustsForwardedHost(none, peer), String(peer)).toBe(false)
+  })
+
+  it('reads them from a trusted peer only, as it does the forwarded address', () => {
+    const trust = parseTrustProxy('private')
+    expect(trustsForwardedHost(trust, '10.0.0.5')).toBe(true)
+    expect(trustsForwardedHost(trust, '::ffff:10.0.0.5')).toBe(true)
+    expect(trustsForwardedHost(trust, '127.0.0.1')).toBe(true)
+    expect(trustsForwardedHost(trust, '203.0.113.9')).toBe(false)
+    expect(trustsForwardedHost(trust, undefined)).toBe(false)
+    expect(trustsForwardedHost(parseTrustProxy('203.0.113.0/24'), '203.0.113.9')).toBe(true)
+  })
+
+  it('reads them when the operator counted the proxy hops', () => {
+    expect(trustsForwardedHost(parseTrustProxy('1'), '203.0.113.9')).toBe(true)
   })
 })
 

@@ -16,7 +16,8 @@ const RATE_LIMITS = {
 
 let parsedTrust: { raw: string, value: TrustProxy } | undefined
 
-function trustProxy(raw: unknown): TrustProxy {
+/** The `NUXT_TRUST_PROXY` setting `raw`, parsed once and cached until it changes. */
+export function trustProxy(raw: unknown): TrustProxy {
   const key = String(raw ?? '')
   if (parsedTrust?.raw !== key) parsedTrust = { raw: key, value: parseTrustProxy(key) }
   return parsedTrust.value

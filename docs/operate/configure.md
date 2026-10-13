@@ -30,7 +30,7 @@ Start from `.env.example` in the repository. Nuxt reads only the `NUXT_*` names 
 
 | Variable | Required | Default | Read | What it does |
 | --- | --- | --- | --- | --- |
-| `NUXT_TRUST_PROXY` | No | `private` | Runtime | How far `X-Forwarded-For` is trusted: `private` (only from loopback or private addresses), a number of proxy hops, a comma-separated list of CIDR ranges, or `false` (use the socket address). An invalid value stops the boot. |
+| `NUXT_TRUST_PROXY` | No | `private` | Runtime | How far `X-Forwarded-For`, `X-Forwarded-Host` and `X-Forwarded-Proto` are trusted: `private` (only from loopback or private addresses), a number of proxy hops, a comma-separated list of CIDR ranges, or `false` (use the socket address and the request's own host and protocol). An invalid value stops the boot. |
 | `NUXT_PROXY_IP_HEADER` | No | `X-Forwarded-For` | Runtime | Header that carries the proxy chain. Set it only when your proxy overwrites it. |
 
 ## Newsletter (SMTP)
