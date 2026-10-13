@@ -98,6 +98,7 @@ All account routes answer `private, no-store`. The session is the `__Host-miceli
 | `POST /api/auth/forgot-password` | `email` | `{ ok: true }`, whether or not the account exists | `invalidInput`, `tooManyRequests`, `forbiddenOrigin` |
 | `POST /api/auth/reset-password` | `code` (from the email), `password`, `passwordConfirmation` | `{ ok: true }` | `invalidInput`, `invalidCode`, `forbiddenOrigin` |
 | `POST /api/auth/logout` | — | `{ ok: true }`; clears the cookie | `forbiddenOrigin` |
+| `POST /api/auth/change-password` | `currentPassword`, `password` (at least 10 characters, different from the current one), `passwordConfirmation`. Needs the session | `{ ok: true }`; the CMS checks the current password and answers a new JWT, which replaces the cookie | `unauthorized` (also clears the cookie), `invalidInput`, `wrongPassword`, `tooManyRequests`, `forbiddenOrigin` |
 | `GET /api/auth/me` | — | `AuthUserResponse`; `user: null` without a valid session (and clears an expired cookie) | Other Strapi failures, usually `unknown` |
 | `DELETE /api/auth/me` | `username` (must be the signed-in user), `password` | `{ ok: true }`; deletes the Strapi user and clears the cookie | `unauthorized`, `invalidInput` (also for another username), `wrongPassword`, `forbiddenOrigin` |
 

@@ -58,6 +58,7 @@ The routes of a module switched off in `site-setting.modules`, or off for lack o
 | `POST /api/newsletter/subscribe` | Public | Same-origin check, 10 per IP and 3 per email every hour, same answer for new and confirmed addresses |
 | `POST /api/newsletter/confirm`, `POST /api/newsletter/unsubscribe` | Holder of the emailed token | Token format check; confirm checks the same origin and is sent by a button on `/confirm`, so a link scanner that only fetches the link confirms nothing; unsubscribe also accepts RFC 8058 one-click POSTs from mail providers, so it has no origin check |
 | `POST /api/auth/login`, `register`, `forgot-password`, `reset-password`, `resend-confirmation`, `logout` | Public | Same-origin check, body schema, `no-store`; the CMS rate-limits the auth routes per visitor (see "Client IP and rate limits") |
+| `POST /api/auth/change-password` | Session + current password | Same-origin check, body schema (new password at least 10 characters and different from the current one), `no-store`; the CMS re-checks the current password with the person's own JWT and answers a new JWT that replaces the cookie |
 | `GET /api/auth/me` | Session | `no-store` |
 | `DELETE /api/auth/me` | Session + password | Same-origin check, username and password re-checked by Strapi |
 | `GET /api/drafts`, `/api/drafts/:documentId` | Editor | Answers 404, not 403, to anyone else; `no-store` |

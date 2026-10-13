@@ -1702,6 +1702,78 @@ describe('/api/auth', () => {
     expect(await reset.text()).not.toContain('mock-jwt')
   })
 
+  describe('change password', () => {
+    const OLD = 'cambiable-segura-1'
+    const NEW = 'una-frase-larga-y-nueva-2'
+    let cookie: string
+
+    beforeEach(async () => {
+      mock.users.splice(mock.users.findIndex(user => user.username === 'cambiable') >>> 0, 1)
+      mock.users.push({ id: 151, username: 'cambiable', email: 'cambiable@example.com', password: OLD, confirmed: true, role: 'authenticated' })
+      cookie = await signIn('cambiable', OLD)
+    })
+
+    function change(body: unknown, headers: Record<string, string> = { origin, cookie }): Promise<Response> {
+      return fetch('/api/auth/change-password', { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) })
+    }
+    const changes = () => mock.requests.filter(request => request.path === '/api/auth/change-password')
+
+    it('changes the password with the session, asks the CMS with the person\'s own JWT and renews the cookie', async () => {
+      mock.requests.length = 0
+      const response = await change({ currentPassword: OLD, password: NEW, passwordConfirmation: NEW })
+      expect(response.status).toBe(200)
+      expect(response.headers.get('cache-control')).toBe('private, no-store')
+      expect(await response.json()).toEqual({ ok: true })
+      const request = changes()[0]!
+      expect(request.authorization).toBe('Bearer mock-jwt-151')
+      expect(request.rawBody).toEqual({ currentPassword: OLD, password: NEW, passwordConfirmation: NEW })
+      expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=mock-jwt-151;.*HttpOnly/)
+      expect((await post('/api/auth/login', { identifier: 'cambiable', password: NEW })).status).toBe(200)
+      const old = await post('/api/auth/login', { identifier: 'cambiable', password: OLD })
+      expect([old.status, await errorCode(old)]).toEqual([400, 'invalidCredentials'])
+    })
+
+    it('says the current password is wrong without touching the session or the account', async () => {
+      const response = await change({ currentPassword: 'no-es-esta-1', password: NEW, passwordConfirmation: NEW })
+      expect([response.status, await errorCode(response)]).toEqual([400, 'wrongPassword'])
+      expect(sessionCookie(response)).toBe('')
+      expect((await post('/api/auth/login', { identifier: 'cambiable', password: OLD })).status).toBe(200)
+    })
+
+    it('refuses bad input before calling the CMS', async () => {
+      mock.requests.length = 0
+      for (const body of [
+        { currentPassword: OLD, password: 'corta', passwordConfirmation: 'corta' },
+        { currentPassword: OLD, password: NEW, passwordConfirmation: 'otra-frase-larga-3' },
+        { currentPassword: OLD, password: OLD, passwordConfirmation: OLD },
+        { currentPassword: '', password: NEW, passwordConfirmation: NEW },
+        { password: NEW, passwordConfirmation: NEW },
+        {},
+      ]) {
+        const response = await change(body)
+        expect([response.status, await errorCode(response)], JSON.stringify(body)).toEqual([400, 'invalidInput'])
+      }
+      expect(changes()).toEqual([])
+    })
+
+    it('needs a session and the site origin, and calls nothing without them', async () => {
+      mock.requests.length = 0
+      const noSession = await change({ currentPassword: OLD, password: NEW, passwordConfirmation: NEW }, { origin })
+      expect([noSession.status, await errorCode(noSession)]).toEqual([401, 'unauthorized'])
+      for (const headers of [{ origin: 'https://otro.sitio', cookie }, { cookie }]) {
+        const response = await change({ currentPassword: OLD, password: NEW, passwordConfirmation: NEW }, headers)
+        expect([response.status, await errorCode(response)]).toEqual([403, 'forbiddenOrigin'])
+      }
+      expect(changes()).toEqual([])
+    })
+
+    it('clears the session when the CMS refuses the token', async () => {
+      const response = await change({ currentPassword: OLD, password: NEW, passwordConfirmation: NEW }, { origin, cookie: '__Host-micelio_session=mock-jwt-999' })
+      expect([response.status, await errorCode(response)]).toEqual([401, 'unauthorized'])
+      expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=;.*Max-Age=0/)
+    })
+  })
+
   it('deletes the account only with the right username and password', async () => {
     mock.users.push({ id: 150, username: 'borrable', email: 'borrable@example.com', password: 'borrable-segura-1', confirmed: true, role: 'authenticated' })
     const cookie = await signIn('borrable', 'borrable-segura-1')

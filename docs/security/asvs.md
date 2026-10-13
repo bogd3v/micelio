@@ -35,7 +35,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V3 Web Frontend Security | L1 | 17 | 2 | 0 | 0 |
 | V4 API and Web Service | L1 | 2 | 8 | 0 | 0 |
 | V5 File Handling | L1 | 2 | 7 | 0 | 0 |
-| V6 Authentication | L2 | 9 | 14 | 12 | 0 |
+| V6 Authentication | L2 | 11 | 14 | 10 | 0 |
 | V7 Session Management | L2 | 9 | 5 | 4 | 0 |
 | V8 Authorization | L2 | 6 | 1 | 0 | 0 |
 | V9 Self-contained Tokens | L1 | 0 | 5 | 0 | 2 |
@@ -47,9 +47,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 4 | 2 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 1 | 10 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **99** | **104** | **27** | **23** |
+| **Total (253 requirements)** | | **101** | **104** | **25** | **23** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 50 requirements that are not met, **27 are at the target level** (10 of them tracked in private security advisories) and 23 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 48 requirements that are not met, **25 are at the target level** (10 of them tracked in private security advisories) and 23 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -158,8 +158,8 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V6.1.2 | Document context-specific words banned in passwords | Open | No list exists in `docs/security.md` or micelio-cms `docs/ACCOUNTS.md`. Tracked in #491 |
 | V6.1.3 | Document every authentication pathway and its consistent controls | Met | The pathways and what each enforces are in `docs/security.md`, "Authentication and sessions", with the strength they must hold. The CMS routes that can be called directly are listed there; the one control that is not consistent across them is V6.3.4. Test: no test (documentation) |
 | V6.2.1 | Passwords at least 8 characters | Open | The gap is in micelio-cms (see micelio-cms#128). BFF enforces 10 (`server/schemas/auth.ts:5`, `app/helpers/auth.ts:3`, `:21-23`; test `test/auth.test.ts:54`, `test/schemas.test.ts:15`). Direct `POST /api/auth/local/register` on the CMS has no minimum: no `validatePassword` in micelio-cms `config/plugins.ts:78-84`. Tracked in #491 |
-| V6.2.2 | Users can change their password | Open | Only the emailed reset flow (`server/api/auth/forgot-password.post.ts`, `reset-password.post.ts`); no change route under `server/api/auth/`. Tracked in #491 |
-| V6.2.3 | Password change asks for current and new password | Open | No change-password route or page in the frontend; the CMS `POST /api/auth/change-password` (checks the current one, `node_modules/@strapi/plugin-users-permissions/dist/server` 5.56.0 `controllers/auth.js:220-240`) is unreachable to users because the JWT is httpOnly. Tracked in #491 |
+| V6.2.2 | Users can change their password | Met | `/account/password` and `POST /api/auth/change-password` (`app/pages/account/password.vue`, `server/api/auth/change-password.post.ts`): a signed-in person changes it with the current password and a new one; the cookie is renewed with the JWT the CMS answers. Test: `test/integration/api.test.ts` ("change password"), `test/nuxt/AccountPasswordPage.test.ts`, `e2e/account.spec.ts` |
+| V6.2.3 | Password change asks for current and new password | Met | The route needs `currentPassword`, `password` and `passwordConfirmation`, refuses a new password equal to the current one before calling the CMS, and the CMS checks the current password (`server/schemas/auth.ts`, `server/api/auth/change-password.post.ts`). Test: `test/integration/api.test.ts` ("change password": wrong current password, bad input, no session or origin) |
 | V6.2.4 | Check new passwords against top 3000 common passwords | Open | Length is the only rule: `server/schemas/auth.ts:5`, `app/helpers/auth.ts:21-23`; nothing in the CMS. Tracked in #491 |
 | V6.2.5 | No character composition rules | Met | `app/helpers/auth.ts:21-23` (length only); the CMS adds none (`node_modules/@strapi/plugin-users-permissions/dist/server` 5.56.0 `controllers/validation/auth.js:22-29`). Test: `test/auth.test.ts:54` |
 | V6.2.6 | Password fields masked, optional reveal | Met | `app/components/account/PasswordField.vue:61` (`type=password`, show/hide toggle). Test: `e2e/account.spec.ts:179-181` |

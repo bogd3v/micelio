@@ -554,6 +554,7 @@
       "confirmed": "Account confirmed",
       "recover": "Recover your password",
       "reset": "New password",
+      "password": "Change password",
       "profile": "My account"
     },
     "eyebrow": {
@@ -563,6 +564,7 @@
       "confirmed": "Account · Confirmed",
       "recover": "Account · Recover",
       "reset": "Account · New password",
+      "password": "Account · Password",
       "profile": "Account · {role}"
     },
     "signIn": {
@@ -619,6 +621,17 @@
       "missingCode": "This link is invalid or incomplete. Ask for a new one.",
       "requestNew": "Ask for another link"
     },
+    "changePassword": {
+      "title": "Change your password",
+      "lead": "Type your current password and choose a new one. You stay signed in on this device.",
+      "current": "Current password",
+      "new": "New password",
+      "newHelp": "At least 10 characters. A long phrase is safer than an odd word.",
+      "confirm": "Repeat the new password",
+      "submit": "Save password",
+      "saved": "We saved your new password.",
+      "back": "Back to my account"
+    },
     "profile": {
       "title": "My account",
       "username": "Username",
@@ -626,6 +639,7 @@
       "role": "Role",
       "memberSince": "Member since",
       "signOut": "Sign out",
+      "changePassword": "Change password",
       "drafts": "Drafts",
       "draftsLead": "Read draft articles with the real design."
     },
@@ -660,6 +674,8 @@
       "password": "The password needs at least 10 characters.",
       "privacy": "Check the box to create the account.",
       "mismatch": "The passwords don't match.",
+      "samePassword": "The new password must be different from the current one.",
+      "currentRequired": "Type your current password.",
       "invalidCredentials": "The username or password don't match. Check them and try again.",
       "emailNotConfirmed": "You haven't confirmed your email yet. Open the link we sent you to sign in.",
       "emailTaken": "There is already an account with that email or username.",

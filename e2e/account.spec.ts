@@ -196,3 +196,40 @@ test('shows the sign-in entry in the mobile header and menu sheet', async ({ pag
   await page.locator('.myc-nav-mobile').getByRole('button', { name: 'Open menu' }).click()
   await expect(page.getByRole('dialog').getByRole('link', { name: /Sign in/ })).toHaveAttribute('href', '/account/sign-in')
 })
+
+test('changes the password while signed in, keeps the session and accepts only the new password afterwards', async ({ page }) => {
+  const user = uniqueUser('cambia')
+  const next = 'otra frase larga y nueva'
+  await registerAndConfirm(page, user)
+  await page.goto('/account/sign-in', { waitUntil: 'networkidle' })
+  await signIn(page, user.email, user.password)
+  await expect(page).toHaveURL(/\/account$/)
+
+  await page.getByRole('link', { name: 'Change password' }).click()
+  await expect(page).toHaveURL(/\/account\/password$/)
+  await expect(page.getByRole('heading', { level: 1, name: 'Change your password' })).toBeVisible()
+  await page.waitForLoadState('networkidle')
+
+  await page.getByLabel('Current password', { exact: true }).fill('no es esta contraseña')
+  await page.getByLabel('New password', { exact: true }).fill(next)
+  await page.getByLabel('Repeat the new password').fill(next)
+  await page.getByRole('button', { name: 'Save password' }).click()
+  await expect(page.getByText('The password is not correct.')).toBeVisible()
+
+  await page.getByLabel('Current password', { exact: true }).fill(user.password)
+  await page.getByRole('button', { name: 'Save password' }).click()
+  await expect(page.getByRole('status').filter({ hasText: 'We saved your new password.' })).toBeVisible()
+
+  // Still signed in on this device
+  await page.goto('/account', { waitUntil: 'networkidle' })
+  await expect(page.getByRole('heading', { level: 1, name: 'My account' })).toBeVisible()
+  await page.getByRole('button', { name: 'Sign out' }).first().click()
+  await expect(page).toHaveURL(/\/account\/sign-in/)
+  await page.waitForLoadState('networkidle')
+
+  await signIn(page, user.email, user.password)
+  await expect(page.getByRole('alert')).toBeVisible()
+  await page.getByLabel('Password', { exact: true }).fill(next)
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await expect(page).toHaveURL(/\/account$/)
+})

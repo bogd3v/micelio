@@ -108,6 +108,16 @@ export function createAuthMock({ frontendUrl }) {
       return { status: 200, body: { jwt: `${JWT_PREFIX}${user.id}`, user: publicUser(user, false) } }
     }
 
+    if (method === 'POST' && pathname === '/api/auth/change-password') {
+      const user = userFromAuth(headers)
+      if (!user) return strapiError(401, 'UnauthorizedError', 'Missing or invalid credentials')
+      if (input.password !== input.passwordConfirmation) return strapiError(400, 'ValidationError', 'Passwords do not match')
+      if (user.password !== input.currentPassword) return strapiError(400, 'ValidationError', 'The provided current password is invalid')
+      if (input.currentPassword === input.password) return strapiError(400, 'ValidationError', 'Your new password must be different than your current password')
+      user.password = input.password
+      return { status: 200, body: { jwt: `${JWT_PREFIX}${user.id}`, user: publicUser(user, false) } }
+    }
+
     if (method === 'GET' && pathname === '/api/users/me') {
       const user = userFromAuth(headers)
       if (!user) return strapiError(401, 'UnauthorizedError', 'Missing or invalid credentials')
