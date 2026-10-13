@@ -25,13 +25,14 @@ export async function findSubscriber(event: H3Event, field: SubscriberField, val
   return response.data?.[0] ?? null
 }
 
-/** Creates a subscriber in the CMS with the fields of `data`. */
-export async function createSubscriber(event: H3Event, data: Omit<Subscriber, 'id' | 'documentId' | 'createdAt' | 'updatedAt'>): Promise<void> {
-  await strapiFetch('/api/subscribers', {
+/** Creates a subscriber in the CMS with the fields of `data` and returns its `documentId`. */
+export async function createSubscriber(event: H3Event, data: Omit<Subscriber, 'id' | 'documentId' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  const response = await strapiFetch<{ data: Pick<Subscriber, 'documentId'> }>('/api/subscribers', {
     event,
     method: 'POST',
     body: { data },
   })
+  return response.data.documentId
 }
 
 /** Sends the fields of `data` to the subscriber with `documentId`. */

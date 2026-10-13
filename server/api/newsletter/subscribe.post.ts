@@ -30,7 +30,7 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
     if (existing) await deleteSubscriber(event, existing.documentId)
 
     const confirmationToken = randomUUID()
-    await createSubscriber(event, {
+    const documentId = await createSubscriber(event, {
       email,
       confirmationToken,
       unsubscribeToken: newUnsubscribeToken(),
@@ -38,8 +38,19 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
       language,
     })
 
-    const { site } = await loadSite(language as Locale)
-    await sendConfirmationEmail(email, confirmationToken, language, site.name)
+    try {
+      const { site } = await loadSite(language as Locale)
+      await sendConfirmationEmail(email, confirmationToken, language, site.name)
+    } catch (error: unknown) {
+      // All or nothing: nobody holds the token, so the pending record goes too
+      try {
+        await deleteSubscriber(event, documentId)
+      } catch {
+        // The send error below is the one the caller needs; a pending record is replaced on the next request
+        console.error('Newsletter subscription rollback failed')
+      }
+      throw error
+    }
 
     return successResponse(language)
   } catch (error: unknown) {

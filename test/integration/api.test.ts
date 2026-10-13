@@ -1266,6 +1266,16 @@ describe('/api/newsletter/subscribe', () => {
     expect(writes).toEqual([])
   })
 
+  it('deletes the subscriber it created when the confirmation email cannot be sent', async () => {
+    const email = 'rollback@example.com'
+    await expect(subscribe({ email })).rejects.toMatchObject({ response: { status: 500 } })
+    const calls = mock.requests.filter(request => request.path.startsWith('/api/subscribers') && request.method !== 'GET')
+    const created = calls.findIndex(request => request.method === 'POST' && request.body?.data?.email === email)
+    expect(created).toBeGreaterThanOrEqual(0)
+    // The record the route just made is deleted, by the id the CMS gave it
+    expect(calls.slice(created + 1).map(request => `${request.method} ${request.path.replace(/\d+$/, 'N')}`)).toEqual(['DELETE /api/subscribers/sub-N'])
+  })
+
   it('replaces a pending subscriber before creating a new one', async () => {
     await expect(subscribe({ email: 'pending@example.com' })).rejects.toMatchObject({ response: { status: 500 } })
     const deleteRequest = mock.requests.find(
