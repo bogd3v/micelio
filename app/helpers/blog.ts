@@ -111,6 +111,24 @@ export function isBlogRouteValid(params: RouteParams): boolean {
   return params.page === undefined || Number.parseInt(firstValue(params.page), 10) >= 2
 }
 
+/** The path segment decoded once, or null when its escapes are malformed. */
+function decodeSegment(segment: string | undefined): string | null {
+  if (segment === undefined) return ''
+  try {
+    return decodeURIComponent(segment)
+  } catch {
+    // A malformed escape is not a filter: leave the path to the route instead of redirecting
+    return null
+  }
+}
+
+/** Whether two paths are the same once decoded, since the server may hand over the path encoded or decoded. */
+function isSamePath(a: string, b: string): boolean {
+  if (a === b) return true
+  const decodedA = decodeSegment(a)
+  return decodedA !== null && decodedA === decodeSegment(b)
+}
+
 /**
  * The canonical URL for a blog list request, or null when it already is: old query-string filters
  * (`/blog?category=x&page=2`), a category in capitals, a padded page number or `/page/1`.
@@ -118,7 +136,10 @@ export function isBlogRouteValid(params: RouteParams): boolean {
 export function legacyBlogRedirect(pathname: string, search: string): string | null {
   const match = BLOG_URL_PATH.exec(pathname)
   if (!match) return null
-  const [, base = BLOG_BASE, kind, slug, pageText] = match
+  const [, base = BLOG_BASE, kind, rawSlug, pageText] = match
+  // The path may arrive percent-encoded and `blogPath` encodes it again: decode it once so a canonical path is a fixed point
+  const slug = decodeSegment(rawSlug)
+  if (slug === null) return null
   const params = new URLSearchParams(search)
   const legacy = LEGACY_PARAMS.some(name => params.has(name))
   const queryFilters = legacy && !kind && !pageText
@@ -138,7 +159,7 @@ export function legacyBlogRedirect(pathname: string, search: string): string | n
   const query = rest.toString()
   const target = query ? `${location}?${query}` : location
   // Compare without the query: a canonical path is left alone
-  return location === pathname && !queryFilters ? null : target
+  return isSamePath(location, pathname) && !queryFilters ? null : target
 }
 
 function monthKey(date: string): string {
