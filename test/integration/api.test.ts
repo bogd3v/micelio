@@ -502,6 +502,14 @@ describe('/api/posts/[slug]', () => {
     await expect($fetch('/api/posts/unknown-slug')).rejects.toMatchObject({ response: { status: 404 } })
   })
 
+  it('refuses a slug that is not a Strapi uid with a 400 before any CMS call', async () => {
+    const before = mock.requests.length
+    for (const slug of ['a%20b', '%3Cscript%3E', 'a%00b', 'a%2Fb', 'a%2E%2E%2Fb', `a${'b'.repeat(300)}`, '-a', '%E2%82%AC']) {
+      await expect($fetch(`/api/posts/${slug}`), slug).rejects.toMatchObject({ response: { status: 400 }, data: { message: 'Invalid slug' } })
+    }
+    expect(mock.requests.length).toBe(before)
+  })
+
   it('answers 502 when Strapi fails', async () => {
     await expect($fetch('/api/posts/broken-article')).rejects.toMatchObject({ response: { status: 502 } })
   })

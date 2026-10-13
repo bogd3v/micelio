@@ -14,7 +14,7 @@ Conventions:
 | Route | Query | Returns | Cache | Errors |
 | --- | --- | --- | --- | --- |
 | `GET /api/posts` | `page` (≥ 1, default 1), `pageSize` (1–50, default 10), `locale`, `category`, `tag` (slugs), `search` (≤ 200 chars; used from 3), `sort` (`recent` · `oldest` · `fediverse`, unknown → `recent`), `content` (`1`/`true`: search the body and return a `snippet`) | `StrapiPaginatedResponse<RawStrapiArticle[]>` | 5 min | 400 bad query |
-| `GET /api/posts/:slug` | `locale` | `RawStrapiArticle` | 5 min | 400, 404 not found, 502 |
+| `GET /api/posts/:slug` | `locale`; the slug is checked against the alphabet of a Strapi uid (letters, digits, `_`, `.`, `~`, `-`; 256 characters at most) before any CMS call | `RawStrapiArticle` | 5 min | 400 (`Invalid slug`, `Unsupported locale`), 404 not found, 502 |
 | `GET /api/search` | `q` (≤ 200; under 3 chars returns `[]`), `locale`, `content` | `SearchPostResult[]` (at most 10) | 1 min | 400; Strapi errors return `[]` |
 | `GET /api/categories` | `locale` (default `en`) | `CategoryCount[]` | 10 min | 400 |
 | `GET /api/tags` | `locale` (default `en`) | `TagCount[]` | 10 min | 400 |

@@ -12,6 +12,8 @@ export const DEFAULT_PAGE_SIZE = 10
 export const MAX_SEARCH_LENGTH = 200
 
 const SLUG_PATTERN = /^[a-z0-9-]{1,64}$/
+// The alphabet of a Strapi uid, which does not lower-case what an editor types, and a length of 256 at most
+const POST_SLUG_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.~-]{0,255}$/
 const COMMENT_SORT_PATTERN = /^[a-zA-Z]+:(asc|desc)$/
 const INVALID_PAGINATION = 'Invalid pagination'
 
@@ -33,6 +35,11 @@ const positiveInteger = z.string({ error: INVALID_PAGINATION })
   .pipe(z.number().int().min(1, INVALID_PAGINATION).max(Number.MAX_SAFE_INTEGER, INVALID_PAGINATION))
 const page = z.preprocess(blank, positiveInteger.optional())
 const pageSize = z.preprocess(blank, positiveInteger.optional())
+
+/** The route parameters of `GET /api/posts/:slug`: a `slug` in the alphabet and length of a Strapi uid, checked before any CMS call. A slug that fails it is a 400 `Invalid slug`. */
+export const postParamsSchema = z.object({
+  slug: z.string({ error: 'Invalid slug' }).regex(POST_SLUG_PATTERN, 'Invalid slug'),
+})
 
 /** The optional `locale` query of a route that answers in one language (`about`, `pages/:slug`, `posts/:slug`). An absent or empty value is accepted; an unsupported one is a 400 `Unsupported locale`. */
 export const localeQuerySchema = z.object({ locale })

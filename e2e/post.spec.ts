@@ -200,6 +200,14 @@ test('server-renders hreflang links to the real URL of each version', async ({ r
   expect(await hreflangs('/es/blog')).toEqual({ 'en': '/blog', 'es': '/es/blog', 'x-default': '/blog' })
 })
 
+test('answers 404, not 400, for a path that cannot be an article slug', async ({ page }) => {
+  for (const path of ['/blog/not%20a%20slug', '/es/blog/caf%C3%A9', '/blog/-x']) {
+    const response = await page.goto(path)
+    expect(response?.status(), path).toBe(404)
+    await expect(page.locator('h1'), path).toHaveText(/Page Not Found|Página No Encontrada/)
+  }
+})
+
 test('answers 404 with the translated error page for an unknown article', async ({ page }) => {
   const english = await page.goto('/blog/no-existe')
   expect(english?.status()).toBe(404)

@@ -18,7 +18,9 @@ const { setAlternates } = useLocaleAlternates()
 const { data: post, error } = await fetchPost(slug, locale.value as Locale)
 
 if (error.value || !post.value) {
-  const statusCode = error.value?.statusCode ?? 404
+  // The API refuses a slug that cannot exist with a 400: for the visitor that is a page that is not there
+  const failure = error.value?.statusCode
+  const statusCode = failure === undefined || failure === 400 ? 404 : failure
   throw createError({
     statusCode,
     statusMessage: statusCode === 404 ? 'Post not found' : 'Failed to load post',

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { deleteAccountSchema, emailSchema, loginSchema, registerSchema, resetPasswordSchema } from '../server/schemas/auth'
 import { guestCommentSchema } from '../server/schemas/comments'
 import { subscribeSchema } from '../server/schemas/newsletter'
-import { commentsQuerySchema, DEFAULT_PAGE_SIZE, listLocaleQuerySchema, localeQuerySchema, MAX_PAGE_SIZE, postsQuerySchema, readingPathQuerySchema, searchQuerySchema } from '../server/schemas/query'
+import { commentsQuerySchema, DEFAULT_PAGE_SIZE, listLocaleQuerySchema, localeQuerySchema, MAX_PAGE_SIZE, postParamsSchema, postsQuerySchema, readingPathQuerySchema, searchQuerySchema } from '../server/schemas/query'
 import { COMMENT_LIMITS } from '../app/constants/comments'
 
 describe('auth schemas', () => {
@@ -145,6 +145,20 @@ describe('query schemas', () => {
     expect(commentsQuerySchema.parse({})).toEqual({})
     for (const query of [{ sort: 'createdAt;drop' }, { sort: 'createdAt' }, { page: '0' }, { locale: 'fr' }]) {
       expect(commentsQuerySchema.safeParse(query).success, JSON.stringify(query)).toBe(false)
+    }
+  })
+})
+
+describe('postParamsSchema', () => {
+  it('accepts the slugs Strapi makes for a uid, in either case', () => {
+    for (const slug of ['understanding-vue-composables', 'Guide_v2.1~x', 'a', '2026-recap', 'b'.repeat(256)]) {
+      expect(postParamsSchema.safeParse({ slug }).success, slug).toBe(true)
+    }
+  })
+
+  it('refuses anything else', () => {
+    for (const slug of ['', '-a', 'a b', 'a/b', '../x', '<script>', 'a\u0000b', 'é', 'b'.repeat(257), undefined, 12]) {
+      expect(postParamsSchema.safeParse({ slug }).success, String(slug)).toBe(false)
     }
   })
 })

@@ -1,16 +1,14 @@
 import qs from 'qs'
 import type { RawStrapiArticle } from '~/interfaces'
 import { renderArticleBlocks } from '~/helpers/markdown'
-import { localeQuerySchema } from '../../schemas/query'
+import { localeQuerySchema, postParamsSchema } from '../../schemas/query'
 import { ARTICLE_POPULATE } from '../../lib/constants'
 
 export default defineEventHandler(async (event) => {
-  const slug = getRouterParam(event, 'slug')
+  const route = postParamsSchema.safeParse({ slug: getRouterParam(event, 'slug') })
+  if (!route.success) throw invalidQuery(route.error)
+  const { slug } = route.data
   const { locale } = validQuery(event, localeQuerySchema)
-
-  if (!slug) {
-    throw createError({ statusCode: 400, message: 'Slug is required' })
-  }
 
   const params = qs.stringify({
     filters: { slug: { $eq: slug } },
