@@ -1666,6 +1666,29 @@ describe('/api/auth', () => {
     })
   })
 
+  it('refuses a password that holds the username, the email address or the site name, before the CMS', async () => {
+    const site = await (await fetch('/api/site?locale=en')).json() as { name: string }
+    mock.requests.length = 0
+    for (const [body, why] of [
+      [{ username: 'sofia.perez', email: 'otra@example.com', password: 'mi-sofia.perez-1-2' }, 'username'],
+      [{ username: 'unnombre', email: 'camila.rojas@example.com', password: 'Camila-Rojas-1234' }, 'email'],
+      [{ username: 'unnombre', email: 'otra@example.com', password: `${site.name.toLowerCase()}-es-mi-sitio-1` }, 'site name'],
+    ] as const) {
+      const response = await post('/api/auth/register', { ...body, acceptPrivacy: true })
+      expect([response.status, await errorCode(response)], why).toEqual([400, 'weakPassword'])
+    }
+    expect(mock.requests.filter(request => request.path === '/api/auth/local/register')).toEqual([])
+  })
+
+  it('refuses a common password when registering and when resetting, before the CMS', async () => {
+    mock.requests.length = 0
+    const register = await post('/api/auth/register', { username: 'nuevo-usuario', email: 'nuevo@example.com', password: 'Qwertyuiop', acceptPrivacy: true })
+    expect([register.status, await errorCode(register)]).toEqual([400, 'commonPassword'])
+    const reset = await post('/api/auth/reset-password', { code: resetCode(testUsers.reader.username), password: '1234567890', passwordConfirmation: '1234567890' })
+    expect([reset.status, await errorCode(reset)]).toEqual([400, 'commonPassword'])
+    expect(mock.requests.filter(request => ['/api/auth/local/register', '/api/auth/reset-password'].includes(request.path))).toEqual([])
+  })
+
   it('registers only with valid data and reports taken accounts', async () => {
     const invalid = await post('/api/auth/register', { username: 'ab', email: 'nuevo@example.com', password: 'corta', acceptPrivacy: true })
     expect([invalid.status, await errorCode(invalid)]).toEqual([400, 'invalidInput'])

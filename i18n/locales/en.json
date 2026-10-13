@@ -682,6 +682,8 @@
       "tooManyRequests": "Too many attempts. Wait a few minutes and try again.",
       "invalidCode": "The link is no longer valid. Ask for a new one.",
       "wrongPassword": "The password is not correct.",
+      "weakPassword": "The password can't contain your username, your email or the name of the site.",
+      "commonPassword": "That password is one of the most used ones. Choose a longer phrase of your own.",
       "unknown": "Something went wrong. Try again in a moment."
     },
     "notices": {

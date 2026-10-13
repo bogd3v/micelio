@@ -11,6 +11,8 @@ const AUTH_ERROR_STATUS: Record<AuthErrorCode, number> = {
   tooManyRequests: 429,
   invalidCode: 400,
   wrongPassword: 400,
+  weakPassword: 400,
+  commonPassword: 400,
   invalidInput: 400,
   unauthorized: 401,
   forbiddenOrigin: 403,

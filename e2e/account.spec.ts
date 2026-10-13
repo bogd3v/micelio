@@ -232,4 +232,19 @@ test('changes the password while signed in, keeps the session and accepts only t
   await page.getByLabel('Password', { exact: true }).fill(next)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).toHaveURL(/\/account$/)
+
+test('sign up refuses a password built from the username or the site name before it asks the server', async ({ page }) => {
+  const user = uniqueUser('ana')
+  const requests: string[] = []
+  page.on('request', request => request.url().includes('/api/auth/register') && requests.push(request.url()))
+  await page.goto('/account/sign-up', { waitUntil: 'networkidle' })
+  await page.getByLabel('Username', { exact: true }).fill(user.username)
+  await page.getByLabel('Email', { exact: true }).fill(user.email)
+  await page.getByRole('checkbox').check()
+  for (const password of [`${user.username}-segura-1`, 'BoGdEv-es-genial-1']) {
+    await page.getByLabel('Password', { exact: true }).fill(password)
+    await page.getByRole('button', { name: 'Create account' }).click()
+    await expect(page.getByText('The password can\'t contain your username, your email or the name of the site.')).toBeVisible()
+  }
+  expect(requests).toEqual([])
 })

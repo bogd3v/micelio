@@ -38,6 +38,12 @@ The curated display fonts in `app/assets/fonts/display/` are subset from the var
 | `newsreader` | `ofl/newsreader/Newsreader[opsz,wght].ttf` | `8a08d13f8a6c0d51be379a60af84f945f65369a67e509ee3c3bdcc421254d7c1` | `a5e07912d00cafd30239b7470b3d0c0466b2de110a7c29e941d48a6f57029524` |
 | `space-grotesk` | `ofl/spacegrotesk/SpaceGrotesk[wght].ttf` | `acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72` | `0d283ee847c39bb2afc4012de0882633ee0cf79a4fb1ff5665c29af2991b7fa5` |
 
+## Password list
+
+| File | What it is | Source | Licence |
+| --- | --- | --- | --- |
+| `server/lib/commonPasswords.data.ts` | The 3000 most common passwords of at least 10 characters, lower case, in order of frequency (ASVS V6.2.4). A new password that equals one of them is refused when registering and when resetting | `Passwords/Common-Credentials/Pwdb_top-100000.txt` of [SecLists](https://github.com/danielmiessler/SecLists) at commit `3a5f62f0e18a1b8a36b25399aff0077f3706e5af`, built by `scripts/common-passwords.mjs` | MIT, copyright 2018 Daniel Miessler (`LICENSES/MIT.txt`; the file carries its SPDX header). The list is a compilation of passwords that appeared in public leaks: SecLists does not state the terms of its upstream sources, and the maintainers accepted that risk on 2026-10-14 |
+
 ## Images
 
 | Material | Files | Source and license |

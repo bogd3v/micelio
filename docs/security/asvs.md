@@ -35,7 +35,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V3 Web Frontend Security | L1 | 17 | 2 | 0 | 0 |
 | V4 API and Web Service | L1 | 2 | 8 | 0 | 0 |
 | V5 File Handling | L1 | 2 | 7 | 0 | 0 |
-| V6 Authentication | L2 | 11 | 14 | 10 | 0 |
+| V6 Authentication | L2 | 14 | 14 | 7 | 0 |
 | V7 Session Management | L2 | 9 | 5 | 4 | 0 |
 | V8 Authorization | L2 | 6 | 1 | 0 | 0 |
 | V9 Self-contained Tokens | L1 | 0 | 5 | 0 | 2 |
@@ -47,9 +47,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 4 | 2 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 1 | 10 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **101** | **104** | **25** | **23** |
+| **Total (253 requirements)** | | **104** | **104** | **22** | **23** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 48 requirements that are not met, **25 are at the target level** (10 of them tracked in private security advisories) and 23 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 45 requirements that are not met, **22 are at the target level** (10 of them tracked in private security advisories) and 23 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -155,20 +155,20 @@ An open requirement that an attacker could exploit is **not** described here or 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
 | V6.1.1 | Document rate limits and anti-automation, including lockout abuse | Met | `docs/security.md:60`, `:66`, `:83` (CMS limits per visitor through the forwarder); micelio-cms `docs/RATE_LIMITING.md:32-54` (groups, per-account limits, lockout abuse accepted at :54). Test: `test/integration/api.test.ts:1462` (CMS 429 translated); micelio-cms `tests/rate-limit.test.ts` |
-| V6.1.2 | Document context-specific words banned in passwords | Open | No list exists in `docs/security.md` or micelio-cms `docs/ACCOUNTS.md`. Tracked in #491 |
+| V6.1.2 | Document context-specific words banned in passwords | Met | The words (the username, the address before the `@`, the name of the site, and their parts of four characters or more) are documented in `docs/security.md`, "Password rules", and enforced at sign up (`app/helpers/passwordContext.ts`, `server/api/auth/register.post.ts`). Test: `test/passwordContext.test.ts`, `test/integration/api.test.ts` ("holds the username, the email address or the site name") |
 | V6.1.3 | Document every authentication pathway and its consistent controls | Met | The pathways and what each enforces are in `docs/security.md`, "Authentication and sessions", with the strength they must hold. The CMS routes that can be called directly are listed there; the one control that is not consistent across them is V6.3.4. Test: no test (documentation) |
 | V6.2.1 | Passwords at least 8 characters | Open | The gap is in micelio-cms (see micelio-cms#128). BFF enforces 10 (`server/schemas/auth.ts:5`, `app/helpers/auth.ts:3`, `:21-23`; test `test/auth.test.ts:54`, `test/schemas.test.ts:15`). Direct `POST /api/auth/local/register` on the CMS has no minimum: no `validatePassword` in micelio-cms `config/plugins.ts:78-84`. Tracked in #491 |
 | V6.2.2 | Users can change their password | Met | `/account/password` and `POST /api/auth/change-password` (`app/pages/account/password.vue`, `server/api/auth/change-password.post.ts`): a signed-in person changes it with the current password and a new one; the cookie is renewed with the JWT the CMS answers. Test: `test/integration/api.test.ts` ("change password"), `test/nuxt/AccountPasswordPage.test.ts`, `e2e/account.spec.ts` |
 | V6.2.3 | Password change asks for current and new password | Met | The route needs `currentPassword`, `password` and `passwordConfirmation`, refuses a new password equal to the current one before calling the CMS, and the CMS checks the current password (`server/schemas/auth.ts`, `server/api/auth/change-password.post.ts`). Test: `test/integration/api.test.ts` ("change password": wrong current password, bad input, no session or origin) |
-| V6.2.4 | Check new passwords against top 3000 common passwords | Open | Length is the only rule: `server/schemas/auth.ts:5`, `app/helpers/auth.ts:21-23`; nothing in the CMS. Tracked in #491 |
+| V6.2.4 | Check new passwords against top 3000 common passwords | Met | The 3000 most common passwords of at least 10 characters (SecLists, `server/lib/commonPasswords.data.ts`) are refused when registering and when resetting (`server/lib/commonPasswords.ts`, the routes `register.post.ts` and `reset-password.post.ts`); the change-password route is covered where #510 lands. Test: `test/commonPasswords.test.ts`, `test/integration/api.test.ts` ("refuses a common password") |
 | V6.2.5 | No character composition rules | Met | `app/helpers/auth.ts:21-23` (length only); the CMS adds none (`node_modules/@strapi/plugin-users-permissions/dist/server` 5.56.0 `controllers/validation/auth.js:22-29`). Test: `test/auth.test.ts:54` |
 | V6.2.6 | Password fields masked, optional reveal | Met | `app/components/account/PasswordField.vue:61` (`type=password`, show/hide toggle). Test: `e2e/account.spec.ts:179-181` |
 | V6.2.7 | Paste and password managers allowed | Met | No paste handlers in `app/`; `autocomplete` set: `app/pages/account/sign-in.vue:62`, `:68`, `sign-up.vue:142`, `reset-password.vue:74`, `:84`. No test |
 | V6.2.8 | Password verified exactly as entered, no truncation | Open | BFF keeps it as typed (`server/schemas/auth.ts:14-17`; test `test/schemas.test.ts:9`), but the CMS hashes with bcryptjs 2.4.3, which compares only the first 72 bytes at sign-in (`node_modules/@strapi/plugin-users-permissions/dist/server` 5.56.0 `services/user.js:4`, `:161-163`); `loginSchema` sets no byte cap. Tracked in #491 |
 | V6.2.9 | Passwords of 64 characters or more allowed | Open | CMS refuses passwords over 72 bytes (`node_modules/@strapi/plugin-users-permissions/dist/server` 5.56.0 `controllers/validation/auth.js:22-29`), so 64 non-ASCII characters can fail; the BFF shows only `invalidInput` (`app/helpers/auth.ts:110`). Tracked in #491 |
 | V6.2.10 | No forced periodic password rotation | Met | No password expiry in either repository (`server/api/auth/`, micelio-cms `config/plugins.ts:78-84`). No test |
-| V6.2.11 | Context-specific word list enforced at password set | Open | Depends on V6.1.2; `server/schemas/auth.ts:5` checks length only. Tracked in #491 |
-| V6.2.12 | Check new passwords against breached password sets | Open | No breached-password check in `server/api/auth/register.post.ts`, `reset-password.post.ts` or the CMS. Tracked in #491 |
+| V6.2.11 | Context-specific word list enforced at password set | Open | Enforced at sign up (V6.1.2). Not at reset: the route knows the code and the password, not the account, so only the CMS can check it (micelio-cms#177). The change-password route of #510 gets it when that lands. Tracked in #491 |
+| V6.2.12 | Check new passwords against breached password sets | Met | Accepted risk, documented in `docs/security.md`, "Password rules": a breached-password service is a third-party request and a local set of that size is out of proportion; the list of 3000 common passwords (V6.2.4) and the 10-character minimum stand in. Test: no test (documented decision) |
 | V6.3.1 | Brute-force and stuffing controls implemented as documented | Met | Per client and per identifier in the CMS (micelio-cms `config/rate-limit.ts:19-23`, `src/constants/rate-limit.ts:64-84`); the BFF forwards the visitor address (`server/utils/strapi.ts:48-57`, `docs/security.md:83`). Tests: micelio-cms `tests/rate-limit.test.ts`, `tests/rate-limit-forwarder.test.ts`; `test/strapiRequest.test.ts:57`, `:64` |
 | V6.3.2 | No default accounts present | N/A | The frontend has no accounts of its own; enforced in micelio-cms, see micelio-cms#128: `src/migrations/` seeds roles and permissions only, no users |
 | V6.3.3 | Multi-factor or combined authentication required | Met | Single factor by decision, with the rationale and the mitigating controls documented: ADR 0003, amendment of 2026-10-14 (accepted risk). Test: no test (documented decision) |
