@@ -29,7 +29,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 
 | Chapter | Target | Met | N/A | Open |
 | --- | --- | --- | --- | --- |
-| V1 Encoding and Sanitization | L2 | 14 | 9 | 4 |
+| V1 Encoding and Sanitization | L2 | 16 | 9 | 2 |
 | V2 Validation and Business Logic | L2 | 6 | 1 | 4 |
 | V3 Web Frontend Security | L1 | 11 | 2 | 6 |
 | V4 API and Web Service | L1 | 0 | 8 | 2 |
@@ -46,9 +46,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 6 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 11 |
 | V17 WebRTC | L1 | 0 | 7 | 0 |
-| **Total (253 requirements)** | | **81** | **104** | **68** |
+| **Total (253 requirements)** | | **83** | **104** | **66** |
 
-Of the 68 open requirements, 10 are tracked in private security advisories.
+Of the 66 open requirements, 10 are tracked in private security advisories.
 
 ## Keeping it true
 
@@ -62,8 +62,8 @@ Of the 68 open requirements, 10 are tracked in private security advisories.
 | --- | --- | --- | --- |
 | V1.1.1 | Decode input to canonical form exactly once, then validate | Met | The tag or category segment of a blog list path is decoded once before `blogPath` encodes it, and a path is left alone whether the server hands it over encoded or decoded (`app/helpers/blog.ts`, `legacyBlogRedirect`). Test: `test/blog.test.ts` (`legacyBlogRedirect`), `e2e/blog.spec.ts` ("does not redirect a tag whose name has an encoded character") |
 | V1.1.2 | Encode output last, for the interpreter that consumes it | Met | Vue text interpolation escapes at render; Markdown HTML is sanitized after rendering, as the last step before it leaves the API (`app/helpers/markdown.ts:169`, `:179`); feed text escaped at output (`server/utils/feed.ts:84-85`). Test: `test/markdown.test.ts:52` |
-| V1.2.1 | Context-correct output encoding for HTTP, HTML and XML | Open | Feed and sitemap put CMS values into XML attributes and elements without escaping: `post.slug` and the cover URL in `server/utils/feed.ts:111-123`, article paths in `server/routes/sitemap.xml.ts:55-60`. Slugs are Strapi uid fields today, so the value set is narrow; escape with `escapeXml` anyway. Tracked in #493 |
-| V1.2.2 | Encode untrusted data by context when building URLs | Open | `resolveLink` keeps a CMS link with any scheme (`app/helpers/links.ts:18`), used by `app/components/strapi/LinkButton.vue:11` and `ContactBlock.vue:13-16`; the hash CSP blocks a `javascript:` URL in production, but the link is still rendered. Apply the `resolveSectionLink` allowlist (`links.ts:26-34`). Elsewhere paths are encoded (`server/api/drafts/[documentId].get.ts:25`) and queries built with `qs.stringify`. Tracked in #493 |
+| V1.2.1 | Context-correct output encoding for HTTP, HTML and XML | Met | Every CMS value written into the feed and the sitemap (slugs, cover URL, locale, channel links) goes through `escapeXml` (`app/helpers/xml.ts`, `server/utils/feed.ts`, `server/routes/sitemap.xml.ts`); text uses CDATA with the end marker split. Test: `test/xml.test.ts`, `test/integration/api.test.ts` ("XML output of CMS values") |
+| V1.2.2 | Encode untrusted data by context when building URLs | Met | `resolveLink` and `resolveSectionLink` pass only `http(s)`, `mailto:`, site paths and in-page anchors, and refuse other schemes, `//host`, and control characters or spaces (`app/helpers/links.ts`); `LinkButton` and the contact block's links and socials render nothing for a refused URL. Paths are encoded elsewhere (`server/api/drafts/[documentId].get.ts:25`) and queries built with `qs.stringify`. Test: `test/links.test.ts`, `test/nuxt/LinkRendering.test.ts` |
 | V1.2.3 | Escape data when building JavaScript or JSON content | Met | JSON-LD and island declarations are `JSON.stringify` output; unhead rewrites `</script` in script content, and island JSON also escapes `<` (`app/helpers/islands.ts:46`). Test: `test/islands.test.ts:52` |
 | V1.2.4 | Parameterized or protected database queries | Met | No database in the frontend; CMS filters are built as structured `$eq` objects with `qs.stringify`, never concatenated (`server/api/posts/[slug].get.ts:15-19`, `server/utils/subscribers.ts:20-23`). Query handling itself is in micelio-cms, see micelio-cms#128. No test |
 | V1.2.5 | Protect against OS command injection | N/A | No such feature: no process is spawned at runtime (no `child_process` in `server/`, `app/`) |

@@ -6,16 +6,20 @@ interface ResolvedLink {
 const EXTERNAL = /^(https?:|mailto:)/i
 
 /**
- * The href of a link: the trimmed URL, with a site path (`/…`) passed through `localize`.
+ * The href of a link, or null when the URL is not one the site may render.
  *
  * @remarks
- * `http(s)` and `mailto:` URLs are external and kept as they are. Any other value is kept and not external.
+ * Only `http(s)` and `mailto:` URLs (external, kept as they are), site paths (`/…`, passed through `localize`) and in-page anchors (`#…`) pass. Any other scheme (`javascript:`, `data:`), a protocol-relative URL (`//host`, `/\host`) and a value with control characters or spaces give null.
  */
-export function resolveLink(url: string, localize: (path: string) => string): ResolvedLink {
-  const trimmed = url.trim()
+export function resolveLink(url: string, localize: (path: string) => string): ResolvedLink | null {
+  // eslint-disable-next-line no-control-regex -- control characters are what this rejects
+  const trimmed = url.replace(/^[\x00-\x20]+|[\x00-\x20]+$/g, '')
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x20\x7f]/.test(trimmed)) return null
   if (EXTERNAL.test(trimmed)) return { href: trimmed, external: true }
-  if (trimmed.startsWith('/')) return { href: localize(trimmed), external: false }
-  return { href: trimmed, external: false }
+  if (/^\/(?![/\\])/.test(trimmed)) return { href: localize(trimmed), external: false }
+  if (trimmed.startsWith('#')) return { href: trimmed, external: false }
+  return null
 }
 
 /**

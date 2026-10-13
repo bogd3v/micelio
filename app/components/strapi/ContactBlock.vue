@@ -15,6 +15,13 @@ const fediverseLink = computed(() =>
 const extraLink = computed(() =>
   props.block.extraLink ? resolveLink(props.block.extraLink.url, localizePath) : null,
 )
+// A social link the site may not render (a `javascript:` URL, say) is dropped
+const socials = computed(() =>
+  (props.block.socials ?? []).flatMap((social) => {
+    const target = resolveLink(social.url, localizePath)
+    return target?.external ? [{ social, href: target.href }] : []
+  }),
+)
 </script>
 
 <template>
@@ -45,11 +52,11 @@ const extraLink = computed(() =>
         {{ block.extraLink.label }} <span v-if="extraLink.external" aria-hidden="true">↗</span>
       </NuxtLink>
     </div>
-    <nav v-if="block.socials?.length" class="myc-contact-list" :aria-label="t('myc.footer.social')">
+    <nav v-if="socials.length" class="myc-contact-list" :aria-label="t('myc.footer.social')">
       <a
-        v-for="social in block.socials"
+        v-for="{ social, href } in socials"
         :key="social.id"
-        :href="social.url"
+        :href="href"
         class="myc-contact-row"
         target="_blank"
         rel="noopener noreferrer me"

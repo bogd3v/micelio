@@ -13,6 +13,12 @@ describe('resolveLink', () => {
     expect(resolveLink('/blog', localize)).toEqual({ href: '/es/blog', external: false })
     expect(resolveLink(' #projects ', localize)).toEqual({ href: '#projects', external: false })
   })
+
+  it('refuses any other scheme, protocol-relative URLs and values with control characters or spaces', () => {
+    for (const url of ['javascript:alert(1)', ' JavaScript:alert(1)', 'data:text/html,x', 'vbscript:x', '//evil.example', '/\\evil.example', 'java\nscript:x', '/blog post', 'projects', '']) {
+      expect(resolveLink(url, localize), url).toBeNull()
+    }
+  })
 })
 
 describe('resolveSectionLink', () => {

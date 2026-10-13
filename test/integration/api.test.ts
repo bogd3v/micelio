@@ -296,6 +296,32 @@ describe('/api/reading-path', () => {
   })
 })
 
+describe('XML output of CMS values', () => {
+  // An ampersand that does not start an entity, outside CDATA, makes the document invalid
+  const rawAmpersand = /&(?!(?:amp|lt|gt|quot|apos|#\d+);)/
+
+  it('escapes the slug and the cover URL in the feed and the slug in the sitemap', async () => {
+    const article = mock.articles[0]!
+    const original = { slug: article.slug, cover: article.cover }
+    article.slug = 'a&b"c<d'
+    article.cover = { ...article.cover!, url: 'https://cdn.example.com/x.png?a=1&b="2"' }
+    try {
+      const feed = await (await fetch('/feed.xml')).text()
+      const sitemap = await (await fetch('/sitemap.xml')).text()
+      for (const body of [feed, sitemap]) {
+        const markup = body.replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, '')
+        expect(markup).not.toMatch(rawAmpersand)
+        expect(markup).not.toContain('a&b"c<d')
+        expect(markup).toContain('a&amp;b&quot;c&lt;d')
+      }
+      expect(feed).toContain('<enclosure url="https://cdn.example.com/x.png?a=1&amp;b=&quot;2&quot;"')
+    } finally {
+      article.slug = original.slug
+      article.cover = original.cover
+    }
+  })
+})
+
 describe('RSS feeds', () => {
   async function feed(path: string): Promise<{ status: number, type: string | null, cache: string | null, body: string }> {
     const response = await fetch(path)
