@@ -5,9 +5,11 @@ import { tabThroughDialog } from '../fixtures/focus'
 // Dialogs and the account popover rely on the engine's own focus, Escape and dismiss rules (#245).
 
 // The mock Strapi accepts `mock-jwt-<id>` as a session; seeding the cookie skips a sign-in form that
-// WebKit cannot complete over http (it drops the Secure session cookie the server sets)
+// WebKit cannot complete over http (it drops the Secure session cookie the server sets). The seed is
+// the previous cookie name: Chromium refuses to seed a `__Host-` cookie over http, and the server still
+// reads the previous name (TODO(#422): sign in through the API when that fallback goes)
 async function signInAsReader(page: Page, baseURL: string | undefined): Promise<void> {
-  await page.context().addCookies([{ name: '__Host-micelio_session', value: 'mock-jwt-101', url: baseURL!, httpOnly: true, secure: true, sameSite: 'Lax' }])
+  await page.context().addCookies([{ name: 'micelio_session', value: 'mock-jwt-101', url: baseURL!, httpOnly: true, secure: true, sameSite: 'Lax' }])
 }
 
 test.describe('search palette', () => {
