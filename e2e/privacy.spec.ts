@@ -56,8 +56,8 @@ test('writes no cookies without a session', async ({ browser }) => {
 
 test('names no pre-rename cookie or key in either locale', async ({ page }) => {
   for (const [path, names] of [
-    ['/privacy', ['micelio_session', 'micelio-theme', 'micelio-privacy-notice', 'micelio-read-articles']],
-    ['/es/privacy', ['micelio_session', 'micelio-theme', 'micelio-privacy-notice', 'micelio-read-articles']],
+    ['/privacy', ['__Host-micelio_session', 'micelio-theme', 'micelio-privacy-notice', 'micelio-read-articles']],
+    ['/es/privacy', ['__Host-micelio_session', 'micelio-theme', 'micelio-privacy-notice', 'micelio-read-articles']],
   ] as const) {
     await page.goto(path, { waitUntil: 'networkidle' })
     const text = await page.locator('main').innerText()
@@ -71,7 +71,7 @@ test('lists exactly the cookies and browser keys the site uses', async ({ page }
   await expect(page.getByRole('heading', { level: 1, name: 'Privacy and cookies' })).toBeVisible()
 
   const cookies = await page.locator('#cookies tbody td:first-child').allTextContents()
-  expect(cookies).toEqual(['micelio_session'])
+  expect(cookies).toEqual(['__Host-micelio_session'])
   const listed = await page.locator('#browser dt').allTextContents()
   expect(listed).toEqual(['micelio-theme', 'micelio-privacy-notice', 'micelio-read-articles'])
 

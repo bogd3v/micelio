@@ -32,7 +32,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | --- | --- | --- | --- | --- | --- |
 | V1 Encoding and Sanitization | L2 | 16 | 9 | 2 | 0 |
 | V2 Validation and Business Logic | L2 | 8 | 1 | 2 | 0 |
-| V3 Web Frontend Security | L1 | 15 | 2 | 1 | 1 |
+| V3 Web Frontend Security | L1 | 17 | 2 | 0 | 0 |
 | V4 API and Web Service | L1 | 2 | 8 | 0 | 0 |
 | V5 File Handling | L1 | 2 | 7 | 0 | 0 |
 | V6 Authentication | L2 | 7 | 14 | 14 | 0 |
@@ -47,9 +47,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 4 | 2 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 1 | 10 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **93** | **104** | **32** | **24** |
+| **Total (253 requirements)** | | **95** | **104** | **31** | **23** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 56 requirements that are not met, **32 are at the target level** (10 of them tracked in private security advisories) and 24 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 54 requirements that are not met, **31 are at the target level** (10 of them tracked in private security advisories) and 23 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -109,9 +109,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | --- | --- | --- | --- |
 | V3.2.1 | Prevent browsers rendering responses in the wrong context | Met | `nosniff` and explicit content types on every response (`app/helpers/securityHeaders.ts:42-49`, applied to `/**` in `nuxt.config.ts:132`); copied media, theme images and fonts carry a sandbox CSP (`docs/security.md:109`, `:133`, `:136`). Test: `test/integration/api.test.ts:924`, `:1750`, `e2e/static/headers.spec.ts:83` |
 | V3.2.2 | Render text with safe functions, not as HTML | Met | Vue text interpolation; search results built from text nodes only (`app/islands/search.ts:30`); playground output written with `textContent` (`docs/security.md:111`); `v-html` limited to server-sanitized HTML (V1.3.1). Test: `test/search.test.ts:65` |
-| V3.3.1 | Set Secure on cookies, with a `__Secure-` or `__Host-` prefix | Open | The session cookie is `Secure` (`server/utils/auth.ts:64`) but its name has no prefix (`app/constants/auth.ts:2`). Rename to `__Host-…` through the rename path of ADR 0003 (a visitor-facing identifier, standard section 6). Tracked in #492 |
+| V3.3.1 | Set Secure on cookies, with a `__Secure-` or `__Host-` prefix | Met | The session cookie is `__Host-micelio_session`, `Secure` and `HttpOnly` (`app/constants/auth.ts`, `server/utils/auth.ts`); the older names are read and cleared for one release line and never written (ADR 0003, amendment of 2026-10-14). Test: `test/integration/api.test.ts` ("session cookie rename", sign-in), `e2e/account.spec.ts` |
 | V3.3.2 | Set SameSite on each cookie according to its purpose | Met | `SameSite=Lax` on the only cookie, plus an Origin check on state-changing routes (`server/utils/auth.ts:50-57`, `:64`; ADR 0003). Test: `test/integration/api.test.ts:1444`, `:1505` |
-| V3.3.3 | Use the `__Host-` prefix unless sharing across hosts | Open (above target) | Same cookie as V3.3.1: no `__Host-` prefix although it is host-only with `Path=/` (`app/constants/auth.ts:2`, `server/utils/auth.ts:64`). Tracked in #492 |
+| V3.3.3 | Use the `__Host-` prefix unless sharing across hosts | Met | The only cookie the site sets is `__Host-micelio_session`: `Secure`, `Path=/`, no `Domain` (`server/utils/auth.ts`). Test: `test/integration/api.test.ts` (sign-in attributes) |
 | V3.3.4 | Set HttpOnly on cookies scripts must not read | Met | `httpOnly: true` on the session cookie (`server/utils/auth.ts:64`, ADR 0003). Test: `test/integration/api.test.ts:1442`, `:1503` |
 | V3.4.1 | HSTS on all responses, one year, subdomains included | Met | HSTS is sent on every response with a `max-age` of one year (`app/helpers/securityHeaders.ts:43`), which is the level 1 requirement and the target of this chapter. The level 2 clause, `includeSubDomains`, is not set: it is the operator's decision, because it makes every subdomain HTTPS-only. Test: `test/integration/api.test.ts:1749` |
 | V3.4.2 | Fixed or allowlisted CORS `Access-Control-Allow-Origin` | N/A | No such feature: the frontend emits no CORS headers (none in `server/` or `nuxt.config.ts`) |

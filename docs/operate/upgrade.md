@@ -35,6 +35,10 @@ Pull and start the new CMS image of the release line, with the same environment 
 
 Pull and start the new frontend image, with the same environment. The frontend holds no data, so the step only changes the code it runs. Check that the site, the admin links and a sign-in work.
 
+## Changes you may notice
+
+- **The session cookie is `__Host-micelio_session`.** It was `micelio_session` before, and `bd_session` before that. Nobody is signed out: for one release line the frontend still reads the older names and moves the session to the new one. If you filter or log cookies by name (a reverse proxy, a WAF rule, an analytics exclusion), use the new name. The `__Host-` prefix needs the site to be served over HTTPS, as the cookie already did.
+
 ## Image tags
 
 The images are published as `ghcr.io/bogd3v/micelio` (frontend), `ghcr.io/bogd3v/micelio-builder` (static site builder) and `ghcr.io/bogd3v/micelio-cms` (CMS). Each release `vX.Y.Z` publishes these tags:

@@ -1516,7 +1516,7 @@ describe('/api/auth', () => {
   }
 
   function sessionCookie(response: Response): string {
-    return response.headers.getSetCookie().find(cookie => cookie.startsWith('micelio_session=')) ?? ''
+    return response.headers.getSetCookie().find(cookie => cookie.startsWith('__Host-micelio_session=')) ?? ''
   }
 
   async function signIn(identifier: string, password: string): Promise<string> {
@@ -1534,12 +1534,14 @@ describe('/api/auth', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('cache-control')).toBe('private, no-store')
     const cookie = sessionCookie(response)
-    expect(cookie).toMatch(/^micelio_session=mock-jwt-102;/)
+    expect(cookie).toMatch(/^__Host-micelio_session=mock-jwt-102;/)
     expect(cookie).toContain('Max-Age=604800')
     expect(cookie).toContain('Path=/')
     expect(cookie).toContain('HttpOnly')
     expect(cookie).toContain('Secure')
     expect(cookie).toContain('SameSite=Lax')
+    // What the `__Host-` prefix asks of a cookie: Secure, Path=/ and no Domain
+    expect(cookie).not.toMatch(/Domain=/i)
     const text = await response.text()
     expect(text).not.toContain('mock-jwt')
     expect(JSON.parse(text)).toEqual({ user: { username: 'alejandro', email: testUsers.editor.email, role: 'editor', createdAt: '2026-01-15T15:00:00.000Z' } })
@@ -1573,7 +1575,7 @@ describe('/api/auth', () => {
     expect(signedIn.headers.get('cache-control')).toBe('private, no-store')
     expect(await signedIn.json()).toEqual({ user: { username: 'lectora', email: testUsers.reader.email, role: 'reader', createdAt: '2026-09-29T15:00:00.000Z' } })
     expect(await $fetch('/api/auth/me')).toEqual({ user: null })
-    const expired = await fetch('/api/auth/me', { headers: { cookie: 'micelio_session=mock-jwt-999' } })
+    const expired = await fetch('/api/auth/me', { headers: { cookie: '__Host-micelio_session=mock-jwt-999' } })
     expect(await expired.json()).toEqual({ user: null })
     expect(sessionCookie(expired)).toContain('Max-Age=0')
   })
@@ -1581,7 +1583,7 @@ describe('/api/auth', () => {
   it('signs out by clearing the cookie', async () => {
     const response = await post('/api/auth/logout', {})
     expect(response.status).toBe(200)
-    expect(sessionCookie(response)).toMatch(/^micelio_session=;.*Max-Age=0/)
+    expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=;.*Max-Age=0/)
   })
 
   describe('session cookie rename', () => {
@@ -1589,13 +1591,44 @@ describe('/api/auth', () => {
       return response.headers.getSetCookie().find(cookie => cookie.startsWith('bd_session=')) ?? ''
     }
 
-    it('authenticates a request that carries only bd_session, re-issues it as micelio_session and clears the old cookie', async () => {
-      const cookie = (await signIn(testUsers.reader.username, testUsers.reader.password)).replace('micelio_session=', 'bd_session=')
+    function previousCookie(response: Response): string {
+      return response.headers.getSetCookie().find(cookie => cookie.startsWith('micelio_session=')) ?? ''
+    }
+
+    it('authenticates a request that carries only micelio_session, re-issues it as __Host-micelio_session and clears the old cookie', async () => {
+      const cookie = (await signIn(testUsers.reader.username, testUsers.reader.password)).replace('__Host-micelio_session=', 'micelio_session=')
       const response = await fetch('/api/auth/me', { headers: { cookie } })
       expect(response.headers.get('cache-control')).toBe('private, no-store')
       expect(await response.json()).toMatchObject({ user: { username: 'lectora' } })
       const issued = sessionCookie(response)
-      expect(issued).toMatch(/^micelio_session=mock-jwt-\d+;/)
+      expect(issued).toMatch(/^__Host-micelio_session=mock-jwt-\d+;/)
+      for (const attribute of ['Max-Age=604800', 'Path=/', 'HttpOnly', 'Secure', 'SameSite=Lax']) expect(issued).toContain(attribute)
+      expect(issued).not.toMatch(/Domain=/i)
+      expect(previousCookie(response)).toMatch(/^micelio_session=;.*Max-Age=0/)
+    })
+
+    it('does not leave the previous cookie in place when both it and bd_session are sent', async () => {
+      const response = await fetch('/api/auth/me', { headers: { cookie: 'micelio_session=mock-jwt-101; bd_session=mock-jwt-101' } })
+      expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=mock-jwt-101;/)
+      expect(previousCookie(response)).toMatch(/^micelio_session=;.*Max-Age=0/)
+      expect(legacyCookie(response)).toMatch(/^bd_session=;.*Max-Age=0/)
+    })
+
+    it('clears the current cookie and the two it replaced on logout', async () => {
+      const response = await fetch('/api/auth/logout', { method: 'POST', headers: { origin, cookie: '__Host-micelio_session=mock-jwt-101; micelio_session=mock-jwt-101; bd_session=mock-jwt-101' } })
+      expect(response.status).toBe(200)
+      expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=;.*Max-Age=0/)
+      expect(previousCookie(response)).toMatch(/^micelio_session=;.*Max-Age=0/)
+      expect(legacyCookie(response)).toMatch(/^bd_session=;.*Max-Age=0/)
+    })
+
+    it('authenticates a request that carries only bd_session, re-issues it as __Host-micelio_session and clears the old cookie', async () => {
+      const cookie = (await signIn(testUsers.reader.username, testUsers.reader.password)).replace('__Host-micelio_session=', 'bd_session=')
+      const response = await fetch('/api/auth/me', { headers: { cookie } })
+      expect(response.headers.get('cache-control')).toBe('private, no-store')
+      expect(await response.json()).toMatchObject({ user: { username: 'lectora' } })
+      const issued = sessionCookie(response)
+      expect(issued).toMatch(/^__Host-micelio_session=mock-jwt-\d+;/)
       expect(issued).toContain('Max-Age=604800')
       expect(issued).toContain('Path=/')
       expect(issued).toContain('HttpOnly')
@@ -1604,7 +1637,7 @@ describe('/api/auth', () => {
       expect(legacyCookie(response)).toMatch(/^bd_session=;.*Max-Age=0/)
     })
 
-    it('leaves a request with micelio_session alone, even when bd_session is also there', async () => {
+    it('leaves a request with __Host-micelio_session alone, even when bd_session is also there', async () => {
       const current = await signIn(testUsers.reader.username, testUsers.reader.password)
       const response = await fetch('/api/auth/me', { headers: { cookie: `${current}; bd_session=mock-jwt-999` } })
       expect(await response.json()).toMatchObject({ user: { username: 'lectora' } })
@@ -1615,15 +1648,15 @@ describe('/api/auth', () => {
     it('does not bring the old cookie back when the route clears the session', async () => {
       const response = await fetch('/api/auth/logout', { method: 'POST', headers: { origin, cookie: 'bd_session=mock-jwt-101' } })
       expect(response.status).toBe(200)
-      expect(sessionCookie(response)).toMatch(/^micelio_session=;.*Max-Age=0/)
+      expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=;.*Max-Age=0/)
       expect(legacyCookie(response)).toMatch(/^bd_session=;.*Max-Age=0/)
-      expect(response.headers.getSetCookie().filter(cookie => cookie.startsWith('micelio_session='))).toHaveLength(1)
+      expect(response.headers.getSetCookie().filter(cookie => cookie.startsWith('__Host-micelio_session='))).toHaveLength(1)
     })
 
     it('clears both cookies on logout when both are sent', async () => {
-      const response = await fetch('/api/auth/logout', { method: 'POST', headers: { origin, cookie: 'micelio_session=mock-jwt-101; bd_session=mock-jwt-101' } })
+      const response = await fetch('/api/auth/logout', { method: 'POST', headers: { origin, cookie: '__Host-micelio_session=mock-jwt-101; bd_session=mock-jwt-101' } })
       expect(response.status).toBe(200)
-      expect(sessionCookie(response)).toMatch(/^micelio_session=;.*Max-Age=0/)
+      expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=;.*Max-Age=0/)
       expect(legacyCookie(response)).toMatch(/^bd_session=;.*Max-Age=0/)
     })
 
@@ -1722,7 +1755,7 @@ describe('account pages', () => {
       headers: { 'content-type': 'application/json', 'origin': SITE_URL },
       body: JSON.stringify({ identifier: testUsers.reader.username, password: testUsers.reader.password }),
     })
-    const cookie = login.headers.getSetCookie().find(value => value.startsWith('micelio_session='))!.split(';')[0]!
+    const cookie = login.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_session='))!.split(';')[0]!
     const html = await (await fetch('/account', { headers: { cookie } })).text()
     expect(html).toContain(testUsers.reader.email)
     expect(html).not.toContain('mock-jwt')
@@ -1738,7 +1771,7 @@ describe('/api/drafts', () => {
     })
     expect(response.status).toBe(200)
     mock.requests.length = 0
-    return response.headers.getSetCookie().find(value => value.startsWith('micelio_session='))!.split(';')[0]!
+    return response.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_session='))!.split(';')[0]!
   }
 
   it('answers 404 without a session, before calling Strapi', async () => {
@@ -2055,7 +2088,7 @@ describe('visitor address for the CMS rate limits', () => {
       body: JSON.stringify({ identifier, password }),
     })
     expect(response.status).toBe(200)
-    return response.headers.getSetCookie().find(cookie => cookie.startsWith('micelio_session='))!.split(';')[0]!
+    return response.headers.getSetCookie().find(cookie => cookie.startsWith('__Host-micelio_session='))!.split(';')[0]!
   }
 
   beforeEach(() => {
