@@ -21,7 +21,7 @@ let pendingRefresh: Promise<AuthUser | null> | null = null
  * Holds the signed-in user and the account actions of the auth API routes.
  *
  * @remarks
- * The user and the `resolved` flag are shared app state (`auth-user` and `auth-resolved`), so every component sees the same session. `refresh` reads `/api/auth/me`: on the server it always reads, on the client concurrent calls share one request. A failed read keeps the current user and does not throw; `resolved` stays false until a read or an account action sets the user. `ensure` returns the known user once the session is resolved and calls `refresh` otherwise. Every action lets its request error propagate, and callers turn it into a message with `useAuthErrorMessage`; `login`, `logout` and `deleteAccount` also update the user. Call it in setup, because it reads `useRequestFetch` and `useState`.
+ * The user and the `resolved` flag are shared app state (`auth-user` and `auth-resolved`), so every component sees the same session. `refresh` reads `/api/auth/me`: on the server it always reads, on the client concurrent calls share one request. A failed read keeps the current user and does not throw; `resolved` stays false until a read or an account action sets the user. `ensure` returns the known user once the session is resolved and calls `refresh` otherwise. Every action lets its request error propagate, and callers turn it into a message with `useAuthErrorMessage`; `login`, `logout` and `deleteAccount` also update the user; `logout` clears it before its request, so the page shows nothing of the session even when the request fails, and the error still propagates. Call it in setup, because it reads `useRequestFetch` and `useState`.
  */
 export function useAuth(): UseAuth {
   const requestFetch = useRequestFetch()
@@ -70,8 +70,9 @@ export function useAuth(): UseAuth {
   }
 
   async function logout(): Promise<void> {
-    await $fetch('/api/auth/logout', { method: 'POST' })
+    // Cleared first: nothing of the session stays on the page when the server cannot be reached. The error still reaches the caller
     setUser(null)
+    await $fetch('/api/auth/logout', { method: 'POST' })
   }
 
   async function register(input: RegisterInput): Promise<void> {

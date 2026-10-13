@@ -42,13 +42,13 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V11 Cryptography | L1 | 5 | 6 | 3 |
 | V12 Secure Communication | L1 | 1 | 6 | 2 |
 | V13 Configuration | L1 | 10 | 2 | 1 |
-| V14 Data Protection | L1 | 3 | 0 | 6 |
+| V14 Data Protection | L1 | 4 | 0 | 5 |
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 6 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 11 |
 | V17 WebRTC | L1 | 0 | 7 | 0 |
-| **Total (253 requirements)** | | **91** | **104** | **58** |
+| **Total (253 requirements)** | | **92** | **104** | **57** |
 
-Of the 58 open requirements, 10 are tracked in private security advisories.
+Of the 57 open requirements, 10 are tracked in private security advisories.
 
 ## Keeping it true
 
@@ -297,7 +297,7 @@ Of the 58 open requirements, 10 are tracked in private security advisories.
 | V14.2.2 | Sensitive data not cached in server components | Met | ISR only on public routes (`nuxt.config.ts:45-56`); private routes `private, no-store` (`nuxt.config.ts:134-149`); Nitro's cached render sees no cookie and stores no `Set-Cookie` (`docs/security.md:92`). Test: `test/integration/api.test.ts` (no `set-cookie` on cached pages, `private, no-store` on auth and drafts) |
 | V14.2.3 | Sensitive data not sent to untrusted parties or trackers | Open | Private advisory |
 | V14.2.4 | Data protection controls implemented as documented per level | Open | Cannot be met before V14.1.1–V14.1.2 define the levels; current gaps include V16.2.5. Tracked in #495 |
-| V14.3.1 | Authenticated data cleared from client after logout | Open | `app/composables/useAuth.ts:73-74` clears the user only after `/api/auth/logout` succeeds, so a failed request leaves the profile in page state; no `Clear-Site-Data` (`server/api/auth/logout.post.ts:4`). The JWT itself is `httpOnly` (`server/utils/auth.ts:64`). Tracked in #492 |
+| V14.3.1 | Authenticated data cleared from client after logout | Met | `logout()` clears the user before it calls the server (`app/composables/useAuth.ts`), so the page shows nothing of the session even when the request fails (the error still reaches the caller); the draft count follows the editor flag (`app/plugins/drafts.client.ts`); the JWT is `httpOnly` (`server/utils/auth.ts:64`) and the server clears the cookie. `Clear-Site-Data` is not sent: its `storage` and `cache` types would also drop the reading history kept in the browser. Test: `test/nuxt/useAuthLogout.test.ts`, `e2e/account.spec.ts` |
 | V14.3.2 | Anti-caching headers so browsers don't keep sensitive data | Met | `preventCaching()` on every auth and draft route (`server/utils/auth.ts:40-42`), route rules for account, drafts, newsletter and their APIs (`nuxt.config.ts:134-149`). Test: `test/integration/api.test.ts` (`private, no-store` assertions) |
 | V14.3.3 | Browser storage holds no sensitive data except session tokens | Met | `localStorage` holds only the theme mode (`app/helpers/theme.ts:40-78`, `modules/theme/init-script.mjs`); the only cookie is the session (`docs/security.md:127`). Test: `test/themeInitScript.test.ts`; e2e checks the JWT never reaches page JavaScript (ADR 0003) |
 
