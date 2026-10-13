@@ -30,7 +30,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | Chapter | Target | Met | N/A | Open |
 | --- | --- | --- | --- | --- |
 | V1 Encoding and Sanitization | L2 | 16 | 9 | 2 |
-| V2 Validation and Business Logic | L2 | 6 | 1 | 4 |
+| V2 Validation and Business Logic | L2 | 7 | 1 | 3 |
 | V3 Web Frontend Security | L1 | 11 | 2 | 6 |
 | V4 API and Web Service | L1 | 0 | 8 | 2 |
 | V5 File Handling | L1 | 2 | 7 | 0 |
@@ -46,9 +46,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 6 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 11 |
 | V17 WebRTC | L1 | 0 | 7 | 0 |
-| **Total (253 requirements)** | | **83** | **104** | **66** |
+| **Total (253 requirements)** | | **84** | **104** | **65** |
 
-Of the 66 open requirements, 10 are tracked in private security advisories.
+Of the 65 open requirements, 10 are tracked in private security advisories.
 
 ## Keeping it true
 
@@ -90,7 +90,7 @@ Of the 66 open requirements, 10 are tracked in private security advisories.
 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
-| V2.1.1 | Document validation rules for each data item | Open | The rules are documented per endpoint (`docs/security.md:47-64`, `docs/api.md`), but `docs/security.md:53` says `/api/posts/:slug` validates its slug and the route does not (`server/api/posts/[slug].get.ts:8`; the value only reaches the CMS as an `$eq` filter). Validate it with the slug pattern of `server/schemas/query.ts:14`, or correct the document. Tracked in #493 |
+| V2.1.1 | Document validation rules for each data item | Met | The rules are documented per endpoint (`docs/security.md:47-64`, `docs/api.md`) and the post route enforces its slug with `postParamsSchema` before any CMS call (`server/schemas/query.ts`, `server/api/posts/[slug].get.ts`); the value then reaches the CMS only as an `$eq` filter. Test: `test/schemas.test.ts` (`postParamsSchema`), `test/integration/api.test.ts` ("refuses a slug that is not a Strapi uid") |
 | V2.1.2 | Document consistency rules for combined data items | Met | `docs/api.md:34` (post lists: the category wins over the tag; at most four lists per page), `docs/api.md:137` (blog filters: the category wins, other parameters kept). No test |
 | V2.1.3 | Document business limits, per user and global | Met | `docs/security.md:53-66` (page sizes, search text, per-visitor and per-address limits, in-memory scope), `docs/api.md:66`; CMS limits in micelio-cms `docs/RATE_LIMITING.md`, see micelio-cms#128. No test |
 | V2.2.1 | Validate input against business expectations | Open | Private advisory |
