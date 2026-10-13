@@ -88,7 +88,7 @@ Every newsletter response is `private, no-store`. Types: `app/interfaces/newslet
 
 ## Account
 
-All account routes answer `private, no-store`. The session is the `micelio_session` cookie set by sign-in. For one release line a request that carries only the old `bd_session` cookie is still authenticated: `server/middleware/session-rename.ts` re-issues the session as `micelio_session` (same attributes) and clears `bd_session` on `/api/auth/**` and `/api/drafts/**` (TODO(#422): remove).
+All account routes answer `private, no-store`. The session is the `__Host-micelio_session` cookie set by sign-in. For one release line a request that carries only an old cookie (`micelio_session` or `bd_session`) is still authenticated: `server/middleware/session-rename.ts` re-issues the session as `__Host-micelio_session` (same attributes) and clears the old cookie on `/api/auth/**` and `/api/drafts/**` (TODO(#422): remove).
 
 | Route | Body | Returns | Errors |
 | --- | --- | --- | --- |

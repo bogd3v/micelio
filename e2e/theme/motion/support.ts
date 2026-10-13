@@ -91,7 +91,7 @@ export async function open(page: Page, entry: ThemePage): Promise<void> {
 
 /** The mock Strapi accepts `mock-jwt-<id>` as a session (e2e/native-ui/dialogs.spec.ts) */
 export async function signInAsReader(page: Page, baseURL: string | undefined): Promise<void> {
-  await page.context().addCookies([{ name: 'micelio_session', value: 'mock-jwt-101', url: baseURL!, httpOnly: true, secure: true, sameSite: 'Lax' }])
+  await page.context().addCookies([{ name: '__Host-micelio_session', value: 'mock-jwt-101', url: baseURL!, httpOnly: true, secure: true, sameSite: 'Lax' }])
 }
 
 export function accountToggle(page: Page): Locator {

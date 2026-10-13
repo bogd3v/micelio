@@ -778,7 +778,7 @@
       "when": "When",
       "duration": "Duration",
       "items": {
-        "micelio_session": {
+        "__Host-micelio_session": {
           "purpose": "Keeps you signed in. Necessary: without it you cannot sign in to your account.",
           "when": "Only if you sign in"
         }

@@ -67,7 +67,7 @@ describe('privacy notice migration', () => {
 describe('privacy inventory', () => {
   it('lists every browser storage key and cookie the site writes', () => {
     expect(BROWSER_STORAGE_KEYS).toEqual(['micelio-theme', 'micelio-privacy-notice', 'micelio-read-articles'])
-    expect(SITE_COOKIES).toEqual([{ name: 'micelio_session', maxAgeDays: 7 }])
+    expect(SITE_COOKIES).toEqual([{ name: '__Host-micelio_session', maxAgeDays: 7 }])
   })
 })
 

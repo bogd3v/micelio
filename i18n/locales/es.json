@@ -778,7 +778,7 @@
       "when": "Cuándo",
       "duration": "Duración",
       "items": {
-        "micelio_session": {
+        "__Host-micelio_session": {
           "purpose": "Mantener tu sesión iniciada. Necesaria: sin ella no puedes entrar a tu cuenta.",
           "when": "Solo si entras"
         }

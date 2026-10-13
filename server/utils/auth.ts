@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
 import type { AuthErrorCode, StrapiAuthUser } from '~/interfaces/auth'
 import { strapiAuthErrorCode } from '~/helpers/auth'
-import { LEGACY_SESSION_COOKIE, SESSION_COOKIE, SESSION_MAX_AGE } from '~/constants/auth'
+import { LEGACY_SESSION_COOKIE, PREVIOUS_SESSION_COOKIE, SESSION_COOKIE, SESSION_MAX_AGE } from '~/constants/auth'
 import { trustsForwardedHost } from '../lib/clientIp'
 
 const AUTH_ERROR_STATUS: Record<AuthErrorCode, number> = {
@@ -67,45 +67,46 @@ function originOf(url: string): string | null {
 /** Attributes shared by the session cookie and the one that clears it (ADR 0003). */
 const SESSION_COOKIE_ATTRIBUTES = { httpOnly: true, secure: true, sameSite: 'lax', path: '/' } as const
 
-/** The session JWT of the request: `micelio_session`, else the pre-rename `bd_session`. */
+/** The session JWT of the request: `__Host-micelio_session`, else the cookie of the previous release (`micelio_session`), else the pre-rename `bd_session`. */
 export function getSessionToken(event: H3Event): string | null {
-  // TODO(#422): remove the bd_session fallback
-  return getCookie(event, SESSION_COOKIE) || getCookie(event, LEGACY_SESSION_COOKIE) || null
+  // TODO(#422): remove the micelio_session and bd_session fallbacks
+  return getCookie(event, SESSION_COOKIE) || getCookie(event, PREVIOUS_SESSION_COOKIE) || getCookie(event, LEGACY_SESSION_COOKIE) || null
 }
 
 /**
- * Sets the session cookie `micelio_session` with the CMS JWT, for `SESSION_MAX_AGE` seconds.
+ * Sets the session cookie `__Host-micelio_session` with the CMS JWT, for `SESSION_MAX_AGE` seconds.
  *
  * @remarks
- * The cookie is `HttpOnly`, `Secure`, `SameSite=Lax` and sent to the whole site (ADR 0003).
+ * The cookie is `HttpOnly`, `Secure`, `SameSite=Lax`, sent to the whole site and to this host only, as the `__Host-` prefix requires (ADR 0003).
  */
 export function setSessionCookie(event: H3Event, jwt: string): void {
   setCookie(event, SESSION_COOKIE, jwt, { ...SESSION_COOKIE_ATTRIBUTES, maxAge: SESSION_MAX_AGE })
 }
 
-/** Expires the session cookie and the legacy one, so the visitor is signed out. */
+/** Expires the session cookie and the two it replaced, so the visitor is signed out. */
 export function clearSessionCookie(event: H3Event): void {
   deleteCookie(event, SESSION_COOKIE, SESSION_COOKIE_ATTRIBUTES)
-  // TODO(#422): remove with the bd_session fallback. Without it a stale bd_session would sign the visitor back in
+  // TODO(#422): remove with the fallbacks. Without them a stale old cookie would sign the visitor back in
+  deleteCookie(event, PREVIOUS_SESSION_COOKIE, SESSION_COOKIE_ATTRIBUTES)
   deleteCookie(event, LEGACY_SESSION_COOKIE, SESSION_COOKIE_ATTRIBUTES)
 }
 
 /**
- * Re-issues a session that only exists under `bd_session` as `micelio_session` and clears the old cookie, so nobody is signed out by the rename.
+ * Re-issues a session that only exists under `micelio_session` or `bd_session` as `__Host-micelio_session` and clears the old cookie, so nobody is signed out by the rename.
  *
  * @remarks
  * Called once per request by `server/middleware/session-rename.ts`, before the route. A route that sets or clears
- * `micelio_session` afterwards replaces this cookie (same name, path and domain), so login, logout and deletion win.
+ * `__Host-micelio_session` afterwards replaces this cookie (same name, path and domain), so login, logout and deletion win.
  * The response is `private, no-store`: it carries a `Set-Cookie`.
  */
 export function migrateLegacySession(event: H3Event): void {
-  // TODO(#422): remove with the bd_session fallback
+  // TODO(#422): remove with the fallbacks
   if (getCookie(event, SESSION_COOKIE)) return
-  const legacy = getCookie(event, LEGACY_SESSION_COOKIE)
-  if (!legacy) return
+  const old = [PREVIOUS_SESSION_COOKIE, LEGACY_SESSION_COOKIE].filter(name => getCookie(event, name))
+  if (!old.length) return
   preventCaching(event)
-  setSessionCookie(event, legacy)
-  deleteCookie(event, LEGACY_SESSION_COOKIE, SESSION_COOKIE_ATTRIBUTES)
+  setSessionCookie(event, getCookie(event, old[0]!)!)
+  for (const name of old) deleteCookie(event, name, SESSION_COOKIE_ATTRIBUTES)
 }
 
 /**
