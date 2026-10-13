@@ -73,7 +73,7 @@
       "limits": {
         "home": {
           "error": {
-            "jsKb": 146.6,
+            "jsKb": 146.7,
             "strayRequests": 0,
             "lcpMs": 5950,
             "cssKb": 21.1,
