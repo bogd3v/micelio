@@ -989,7 +989,7 @@ describe('theme from Strapi', () => {
     const file = await fetch(href!)
     expect(file.status).toBe(200)
     expect(file.headers.get('content-type')).toContain('font/woff2')
-    expect(file.headers.get('content-security-policy')).toBe('default-src \'none\'; style-src \'unsafe-inline\'; sandbox')
+    expect(file.headers.get('content-security-policy')).toBe('default-src \'none\'; style-src \'unsafe-inline\'; frame-ancestors \'none\'; sandbox')
     expect(file.headers.get('cache-control')).toContain('max-age=31536000')
     expect((await file.arrayBuffer()).byteLength).toBeLessThanOrEqual(60 * 1024)
   })
@@ -1821,6 +1821,29 @@ describe('security headers', () => {
   const sha256 = (content: string) => `'sha256-${createHash('sha256').update(content).digest('base64')}'`
   const scriptSources = (policy: string) => policy.split('; ').find(directive => directive.startsWith('script-src '))?.split(' ').slice(1) ?? []
 
+  it('tells every response it cannot be framed, with a CSP, not only the pages', async () => {
+    for (const path of ['/api/tags', '/api/posts', '/feed.xml', '/robots.txt', '/sitemap.xml', '/theme/images/bogdev.svg', '/fonts/archivo-latin-var.woff2']) {
+      const response = await fetch(path)
+      expect(response.status, path).toBe(200)
+      expect(response.headers.get('content-security-policy') ?? '', path).toContain('frame-ancestors \'none\'')
+    }
+  })
+
+  it('serves a Worker script with its own policy, which the default framing policy does not replace', async () => {
+    const dir = join(useTestContext().nuxt!.options.nitro.output!.dir!, 'public/_islands/workers')
+    const file = readdirSync(dir).find(name => name.endsWith('.js'))!
+    const response = await fetch(`/_islands/workers/${file}`)
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-security-policy')).toBe(`default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src ${SITE_URL}/_islands/runtimes/; frame-ancestors 'none'`)
+  })
+
+  it('sends no <base> element, which base-uri \'none\' would block', async () => {
+    for (const path of ['/', '/blog', '/es/blog']) {
+      expect(await (await fetch(path)).text(), path).not.toMatch(/<base[\s>]/i)
+    }
+    expect((await fetch('/blog')).headers.get('content-security-policy') ?? '').toContain('base-uri \'none\'')
+  })
+
   it('sends the fixed headers on pages and API routes', async () => {
     for (const path of ['/', '/account/sign-in', '/api/tags']) {
       const response = await fetch(path)
@@ -1949,7 +1972,7 @@ describe('theme fonts', () => {
   })
 
   it('serves fonts and their licenses from fonts/, with the sandbox CSP of the theme\'s static assets', async () => {
-    const csp = 'default-src \'none\'; style-src \'unsafe-inline\'; sandbox'
+    const csp = 'default-src \'none\'; style-src \'unsafe-inline\'; frame-ancestors \'none\'; sandbox'
     expect((await fetch('/fonts/archivo-latin-var.woff2')).headers.get('content-security-policy')).toBe(csp)
     for (const license of ['OFL-Archivo.txt', 'OFL-JetBrainsMono.txt']) {
       const response = await fetch(`/fonts/${license}`)

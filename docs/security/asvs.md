@@ -31,7 +31,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | --- | --- | --- | --- | --- |
 | V1 Encoding and Sanitization | L2 | 16 | 9 | 2 |
 | V2 Validation and Business Logic | L2 | 8 | 1 | 2 |
-| V3 Web Frontend Security | L1 | 11 | 2 | 6 |
+| V3 Web Frontend Security | L1 | 13 | 2 | 4 |
 | V4 API and Web Service | L1 | 1 | 8 | 1 |
 | V5 File Handling | L1 | 2 | 7 | 0 |
 | V6 Authentication | L2 | 7 | 14 | 14 |
@@ -46,9 +46,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 6 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 11 |
 | V17 WebRTC | L1 | 0 | 7 | 0 |
-| **Total (253 requirements)** | | **87** | **104** | **62** |
+| **Total (253 requirements)** | | **89** | **104** | **60** |
 
-Of the 62 open requirements, 10 are tracked in private security advisories.
+Of the 60 open requirements, 10 are tracked in private security advisories.
 
 ## Keeping it true
 
@@ -114,10 +114,10 @@ Of the 62 open requirements, 10 are tracked in private security advisories.
 | V3.3.4 | Set HttpOnly on cookies scripts must not read | Met | `httpOnly: true` on the session cookie (`server/utils/auth.ts:64`, ADR 0003). Test: `test/integration/api.test.ts:1442`, `:1503` |
 | V3.4.1 | HSTS on all responses, one year, subdomains included | Open | One year is set on every response, without `includeSubDomains` (`app/helpers/securityHeaders.ts:43`); level 2 asks for subdomains too. Add it once every subdomain of the site serves HTTPS (an operator decision). Test of the current value: `test/integration/api.test.ts:1749`. Tracked in #492 |
 | V3.4.2 | Fixed or allowlisted CORS `Access-Control-Allow-Origin` | N/A | No such feature: the frontend emits no CORS headers (none in `server/` or `nuxt.config.ts`) |
-| V3.4.3 | CSP restricting scripts, with `object-src` and `base-uri` none | Open | Hash-based policy with `object-src 'none'` (`app/helpers/securityHeaders.ts:97-117`, ADR 0004), but `base-uri` is `'self'`, not `'none'` (`:112`). Set `base-uri 'none'`; review the scope of the script hashes against ADR 0004. Test: `test/securityHeaders.test.ts:64`. Tracked in #492 |
+| V3.4.3 | CSP restricting scripts, with `object-src` and `base-uri` none | Met | Hash-based policy with `object-src 'none'` and `base-uri 'none'` (`app/helpers/securityHeaders.ts`, ADR 0004); the site sends no `<base>` element. Test: `test/securityHeaders.test.ts`, `test/integration/api.test.ts` ("sends no <base> element"), and a probe of a production build with `csp-probe.mjs` (0 problems) |
 | V3.4.4 | `X-Content-Type-Options: nosniff` on every response | Met | `app/helpers/securityHeaders.ts:44`, on `/**` (`nuxt.config.ts:132`) and in the static `_headers` (`docs/security.md:109`). Test: `test/integration/api.test.ts:1750` |
 | V3.4.5 | Referrer policy preventing leakage to third parties | Met | `strict-origin-when-cross-origin` (`app/helpers/securityHeaders.ts:46`); the scene island fetches with no referrer (`docs/security.md:124`). Test: `test/integration/api.test.ts:1752` |
-| V3.4.6 | CSP `frame-ancestors` on every response | Open | `frame-ancestors 'none'` is sent only with rendered HTML (`server/plugins/contentSecurityPolicy.ts:11`, `app/helpers/securityHeaders.ts:111`); API, feed and file responses rely on `X-Frame-Options: DENY` (`:45`), and static hosts without `_headers` get neither (`docs/security.md:109`). Send a minimal `frame-ancestors 'none'` policy on the other responses. Test: `test/integration/api.test.ts:1766`. Tracked in #492 |
+| V3.4.6 | CSP `frame-ancestors` on every response | Met | Pages carry `frame-ancestors 'none'` in their policy; every other response gets it from a `request` hook (`server/plugins/contentSecurityPolicy.ts`), and the Worker scripts, the theme assets and the sandboxed static files carry it in their own policies (`workerPolicy`, `STATIC_CSP`); `X-Frame-Options: DENY` stays as a fallback. Static hosts get the site policy from `_headers`. Test: `test/integration/api.test.ts` ("tells every response it cannot be framed", the Worker policy), `test/securityHeaders.test.ts`, `e2e/playground/playground.spec.ts` |
 | V3.5.1 | Anti-CSRF checks where CORS preflight is not relied on | Met | Same-origin `Origin` check on the comment, subscribe and auth routes (`server/utils/auth.ts:50-57`), `SameSite=Lax`; unsubscribe is reached by the emailed token only (`docs/security.md:59`). Test: `test/integration/api.test.ts:1456` |
 | V3.5.2 | Preflight-reliant routes not callable without preflight | N/A | The frontend does not rely on CORS preflight; see V3.5.1 |
 | V3.5.3 | Sensitive functions use POST/PUT/PATCH/DELETE, not GET | Open | `GET /api/newsletter/confirm` changes state: it confirms the subscriber (`server/api/newsletter/confirm.get.ts:48`). A link prefetcher or scanner can confirm on the owner's behalf. Show a page that confirms with a POST. Test of the current behaviour: `test/integration/api.test.ts:1289`. Tracked in #492 |
