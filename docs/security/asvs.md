@@ -30,7 +30,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | Chapter | Target | Met | N/A | Open |
 | --- | --- | --- | --- | --- |
 | V1 Encoding and Sanitization | L2 | 16 | 9 | 2 |
-| V2 Validation and Business Logic | L2 | 7 | 1 | 3 |
+| V2 Validation and Business Logic | L2 | 8 | 1 | 2 |
 | V3 Web Frontend Security | L1 | 11 | 2 | 6 |
 | V4 API and Web Service | L1 | 0 | 8 | 2 |
 | V5 File Handling | L1 | 2 | 7 | 0 |
@@ -46,9 +46,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 6 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 11 |
 | V17 WebRTC | L1 | 0 | 7 | 0 |
-| **Total (253 requirements)** | | **84** | **104** | **65** |
+| **Total (253 requirements)** | | **85** | **104** | **64** |
 
-Of the 65 open requirements, 10 are tracked in private security advisories.
+Of the 64 open requirements, 10 are tracked in private security advisories.
 
 ## Keeping it true
 
@@ -98,7 +98,7 @@ Of the 65 open requirements, 10 are tracked in private security advisories.
 | V2.2.3 | Check that related data items are mutually consistent | Met | A valid category drops the tag (`app/helpers/blog.ts:131-133`); a comment must name an article relation of the expected form (`server/utils/commentRelation.ts:10-16`); the thread a reply belongs to is checked by the CMS comments plugin, see micelio-cms#128. Test: `test/blog.test.ts:106`, `test/comments.test.ts:88` |
 | V2.3.1 | Run business flows in order without skipping steps | Met | A subscription becomes confirmed only through the emailed token (`server/api/newsletter/confirm.get.ts:19-30`, `:48`); a confirmed address is never reset by a new subscribe (`server/api/newsletter/subscribe.post.ts:29`); account steps are enforced by the CMS, see micelio-cms#128. Test: `test/integration/api.test.ts:1229`, `:1288-1306` |
 | V2.3.2 | Implement the documented business limits | Met | The frontend limits of `docs/security.md:66` are the buckets of `server/utils/rateLimit.ts:12-14`, enforced by `assertRateLimit` (`:64`); page size clamped (`server/schemas/query.ts:53`). Test: `test/rateLimit.test.ts`, `test/integration/api.test.ts:1270` |
-| V2.3.3 | Make business operations all-or-nothing, rolling back on failure | Open | A subscribe whose confirmation email fails answers 500 but leaves the unconfirmed subscriber stored (`server/api/newsletter/subscribe.post.ts:33-42`); `test/integration/api.test.ts:1251` pins that behaviour. Delete the record when the send fails, or answer success and retry. Tracked in #493 |
+| V2.3.3 | Make business operations all-or-nothing, rolling back on failure | Met | A subscribe whose confirmation email cannot be sent deletes the pending record it just created, by the id the CMS returned, before answering the error (`server/api/newsletter/subscribe.post.ts`, `server/utils/subscribers.ts`); a rollback that fails is logged and the next request replaces the pending record. Test: `test/integration/api.test.ts` ("deletes the subscriber it created when the confirmation email cannot be sent") |
 | V2.3.4 | Lock limited-quantity resources against double booking | N/A | No such feature: no limited-quantity resources |
 | V2.4.1 | Anti-automation against excessive calls to functions | Open | Private advisory |
 
