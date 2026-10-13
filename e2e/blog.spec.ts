@@ -201,6 +201,13 @@ test('serves the filter and page paths in both languages with path canonicals', 
   }
 })
 
+test('does not redirect a tag whose name has an encoded character', async ({ request }) => {
+  for (const path of ['/blog/tag/a%20b', '/blog/tag/caf%C3%A9', '/es/blog/tag/a%20b']) {
+    const response = await request.get(path, { maxRedirects: 0 })
+    expect(response.status(), path).toBe(200)
+  }
+})
+
 test('lists hreflang on the first page only and the switch goes to the first page', async ({ page }) => {
   await page.goto('/es/blog/category/linux', { waitUntil: 'networkidle' })
   await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute('href', 'https://bogdev.com.co/blog/category/linux')

@@ -29,7 +29,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 
 | Chapter | Target | Met | N/A | Open |
 | --- | --- | --- | --- | --- |
-| V1 Encoding and Sanitization | L2 | 13 | 9 | 5 |
+| V1 Encoding and Sanitization | L2 | 14 | 9 | 4 |
 | V2 Validation and Business Logic | L2 | 6 | 1 | 4 |
 | V3 Web Frontend Security | L1 | 11 | 2 | 6 |
 | V4 API and Web Service | L1 | 0 | 8 | 2 |
@@ -46,9 +46,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 7 | 0 | 6 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 11 |
 | V17 WebRTC | L1 | 0 | 7 | 0 |
-| **Total (253 requirements)** | | **80** | **104** | **69** |
+| **Total (253 requirements)** | | **81** | **104** | **68** |
 
-Of the 69 open requirements, 10 are tracked in private security advisories.
+Of the 68 open requirements, 10 are tracked in private security advisories.
 
 ## Keeping it true
 
@@ -60,7 +60,7 @@ Of the 69 open requirements, 10 are tracked in private security advisories.
 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
-| V1.1.1 | Decode input to canonical form exactly once, then validate | Open | A tag slug is read from the raw (still percent-encoded) path and encoded again when the canonical URL is built, so a tag with an encoded character redirects to itself with `%25` added on every hop (`app/helpers/blog.ts:126` read, `:90` encode, via `server/middleware/blog-redirects.ts:7`). Decode the slug once before `blogPath`. Tracked in #493 |
+| V1.1.1 | Decode input to canonical form exactly once, then validate | Met | The tag or category segment of a blog list path is decoded once before `blogPath` encodes it, and a path is left alone whether the server hands it over encoded or decoded (`app/helpers/blog.ts`, `legacyBlogRedirect`). Test: `test/blog.test.ts` (`legacyBlogRedirect`), `e2e/blog.spec.ts` ("does not redirect a tag whose name has an encoded character") |
 | V1.1.2 | Encode output last, for the interpreter that consumes it | Met | Vue text interpolation escapes at render; Markdown HTML is sanitized after rendering, as the last step before it leaves the API (`app/helpers/markdown.ts:169`, `:179`); feed text escaped at output (`server/utils/feed.ts:84-85`). Test: `test/markdown.test.ts:52` |
 | V1.2.1 | Context-correct output encoding for HTTP, HTML and XML | Open | Feed and sitemap put CMS values into XML attributes and elements without escaping: `post.slug` and the cover URL in `server/utils/feed.ts:111-123`, article paths in `server/routes/sitemap.xml.ts:55-60`. Slugs are Strapi uid fields today, so the value set is narrow; escape with `escapeXml` anyway. Tracked in #493 |
 | V1.2.2 | Encode untrusted data by context when building URLs | Open | `resolveLink` keeps a CMS link with any scheme (`app/helpers/links.ts:18`), used by `app/components/strapi/LinkButton.vue:11` and `ContactBlock.vue:13-16`; the hash CSP blocks a `javascript:` URL in production, but the link is still rendered. Apply the `resolveSectionLink` allowlist (`links.ts:26-34`). Elsewhere paths are encoded (`server/api/drafts/[documentId].get.ts:25`) and queries built with `qs.stringify`. Tracked in #493 |

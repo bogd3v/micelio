@@ -130,6 +130,16 @@ describe('legacyBlogRedirect', () => {
     expect(legacyBlogRedirect('/blog/page/0', '')).toBeNull()
   })
 
+  it('leaves a tag with an encoded character alone, whether the path arrives encoded or decoded', () => {
+    for (const path of ['/blog/tag/a%20b', '/blog/tag/a b', '/blog/tag/caf%C3%A9', '/blog/tag/café', '/blog/tag/caf%c3%a9', '/es/blog/tag/a%20b/page/2', '/blog/tag/a%2Fb']) {
+      expect(legacyBlogRedirect(path, ''), path).toBeNull()
+    }
+  })
+
+  it('leaves a tag with a malformed escape to the route instead of redirecting', () => {
+    expect(legacyBlogRedirect('/blog/tag/%E0%A4%A', '')).toBeNull()
+  })
+
   it('leaves other URLs alone', () => {
     expect(legacyBlogRedirect('/blog', '')).toBeNull()
     expect(legacyBlogRedirect('/blog', 'sort=oldest')).toBeNull()
