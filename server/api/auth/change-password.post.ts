@@ -6,7 +6,10 @@ export default defineEventHandler(async (event): Promise<{ ok: true }> => {
   preventCaching(event)
   assertSameOrigin(event)
   const jwt = getSessionToken(event)
-  if (!jwt) throw authFailure('unauthorized')
+  if (!jwt) {
+    logWarn('auth.failure', 'Password change without a session', { event, cause: 'unauthorized' })
+    throw authFailure('unauthorized')
+  }
 
   const { currentPassword, password, passwordConfirmation } = await validBody(event, changePasswordSchema, () => authFailure('invalidInput'))
 
@@ -19,7 +22,7 @@ export default defineEventHandler(async (event): Promise<{ ok: true }> => {
     if (failure.statusCode === 401) clearSessionCookie(event)
     throw failure
   }
-  await assertPasswordAllowed(password, { username: user.username, email: user.email })
+  await assertPasswordAllowed(event, password, { username: user.username, email: user.email })
 
   let renewed: { jwt?: string }
   try {
@@ -36,5 +39,6 @@ export default defineEventHandler(async (event): Promise<{ ok: true }> => {
   }
   // The CMS answers with a new JWT for the same person
   if (renewed.jwt) setSessionCookie(event, renewed.jwt)
+  logInfo('auth.password-change.success', 'Password changed', { event })
   return { ok: true }
 })

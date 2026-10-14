@@ -18,6 +18,7 @@ export default defineEventHandler(async (event): Promise<UnsubscribeResponse> =>
   const token = await readToken(event)
 
   if (!isNewsletterToken(token)) {
+    logWarn('input.refused', 'Unsubscribe token refused', { event, cause: 'invalidToken' })
     throw createError({
       statusCode: 400,
       statusMessage: 'Invalid unsubscribe token',

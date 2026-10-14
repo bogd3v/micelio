@@ -62,12 +62,13 @@ function resolveEventIp(event: H3Event): string {
  * Counts one attempt in `bucket` for `key` and throws a 429 when the bucket is full.
  *
  * @remarks
- * The counts are in memory (docs/security.md): they reset on a restart and are not shared between instances. `key` is a visitor's address bucket (`ipBucket`: an IPv6 address counts by its /64), an email address for the email limit, or a fixed word for the global one. The limits of each bucket are in `RATE_LIMITS`. On a 429 the response carries `Retry-After` with the seconds left in the window.
+ * The counts are in memory (docs/security.md): they reset on a restart and are not shared between instances. `key` is a visitor's address bucket (`ipBucket`: an IPv6 address counts by its /64), an email address for the email limit, or a fixed word for the global one. The limits of each bucket are in `RATE_LIMITS`. On a 429 the response carries `Retry-After` with the seconds left in the window, and the hit is logged as `limit.rate` with the bucket as `cause`.
  */
 export function assertRateLimit(event: H3Event, bucket: keyof typeof RATE_LIMITS, key: string): void {
   const result = limiter.consume(`${bucket}:${key}`, RATE_LIMITS[bucket])
   if (result.allowed) return
   setHeader(event, 'Retry-After', result.retryAfterSeconds)
+  logWarn('limit.rate', 'Rate limit reached', { event, cause: bucket })
   throw createError({ statusCode: 429, statusMessage: 'Too Many Requests' })
 }
 

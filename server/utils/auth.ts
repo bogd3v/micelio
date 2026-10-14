@@ -28,7 +28,7 @@ export function authFailure(code: AuthErrorCode) {
  * Turns a failed CMS call into the auth error of the route, and returns it so the caller throws it.
  *
  * @remarks
- * The code comes from the CMS status and message through `strapiAuthErrorCode`. `overrides` renames a code for one route, for example `invalidInput` to `invalidCredentials` on login. A 429 copies the CMS `Retry-After` onto the response. An unrecognised failure is logged (`cms.auth`) with the CMS status and message.
+ * The code comes from the CMS status and message through `strapiAuthErrorCode`. `overrides` renames a code for one route, for example `invalidInput` to `invalidCredentials` on login. A 429 copies the CMS `Retry-After` onto the response. Every code but `unknown` is logged as `auth.failure` with the code as `cause` (docs/security.md, "Security events"). An unrecognised failure is logged (`cms.auth`) with the CMS status and message.
  */
 export function strapiAuthFailure(event: H3Event, err: unknown, overrides: Partial<Record<AuthErrorCode, AuthErrorCode>> = {}) {
   const e = asUpstreamError(err)
@@ -36,7 +36,9 @@ export function strapiAuthFailure(event: H3Event, err: unknown, overrides: Parti
   const code = strapiAuthErrorCode(status, e.data?.error?.message)
   if (code === 'tooManyRequests') copyRetryAfter(event, err)
   if (code === 'unknown') logError('cms.auth', 'Auth call failed', { event, error: err })
-  return authFailure(overrides[code] ?? code)
+  const final = overrides[code] ?? code
+  if (final !== 'unknown') logWarn('auth.failure', 'Authentication call refused', { event, cause: final })
+  return authFailure(final)
 }
 
 /** Marks the response as `private, no-store`, so neither a shared cache nor the browser keeps it. */
@@ -49,6 +51,8 @@ export function preventCaching(event: H3Event): void {
  *
  * @remarks
  * The site origin is the request origin (read through `X-Forwarded-Host` and `X-Forwarded-Proto` only from a proxy `NUXT_TRUST_PROXY` trusts) or the origin of `siteUrl`. A request without an `Origin` header is refused. The auth, comment and subscribe routes call this first; the one-click unsubscribe route does not, since mail clients send no `Origin`.
+ *
+ * A refusal is logged as `authz.origin-refused`.
  */
 export function assertSameOrigin(event: H3Event): void {
   const origin = getRequestHeader(event, 'origin')
@@ -59,7 +63,10 @@ export function assertSameOrigin(event: H3Event): void {
     getRequestURL(event, { xForwardedHost: forwarded, xForwardedProto: forwarded }).origin,
     originOf(config.public.siteUrl),
   ]
-  if (!origin || !allowed.includes(origin)) throw authFailure('forbiddenOrigin')
+  if (!origin || !allowed.includes(origin)) {
+    logWarn('authz.origin-refused', 'Request from another origin refused', { event })
+    throw authFailure('forbiddenOrigin')
+  }
 }
 
 function originOf(url: string): string | null {

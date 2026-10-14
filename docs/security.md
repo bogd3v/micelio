@@ -232,7 +232,7 @@ What is not checked, and why:
 
 The server writes one JSON object per line to the standard error through `logError` and `logWarn` (`server/utils/log.ts`); it keeps no log file and sends logs nowhere else, so the destination is whatever the operator's platform does with the container's output (ASVS V16.2.3). A test fails when a server file writes to `console` directly.
 
-A line has `time` (UTC, ISO 8601), `level` (`warn` or `error`), `event` (a stable dotted name such as `cms.search`), `message` (fixed text) and, when it comes from a request, `route`, `requestId` and `visitor`; `cause` holds what went wrong, as `upstreamLogMessage` says it (V16.2.1, V16.2.4). `requestId` is a random id drawn per request, never read from a header; each internal `/api` call of a page render is its own request. A line written outside a request, or by a helper that receives none (boot checks, site settings, page sections, theme), has no `route`, `requestId` or `visitor`. Nitro's own report of an unhandled error is not yet in this format (tracked in #494). `visitor` is the first 12 hex characters of an HMAC-SHA256 of the visitor's address with a key drawn at random when the process starts: it groups one visitor's lines without holding the address, and it changes on a restart and is not shared between instances.
+A line has `time` (UTC, ISO 8601), `level` (`info`, `warn` or `error`), `event` (a stable dotted name such as `cms.search`), `message` (fixed text) and, when it comes from a request, `route`, `requestId` and `visitor`; `cause` holds what went wrong, as `upstreamLogMessage` says it (V16.2.1, V16.2.4). `requestId` is a random id drawn per request, never read from a header; each internal `/api` call of a page render is its own request. A line written outside a request, or by a helper that receives none (boot checks, site settings, page sections, theme), has no `route`, `requestId` or `visitor`. Nitro's own report of an unhandled error is not yet in this format (tracked in #494). `visitor` is the first 12 hex characters of an HMAC-SHA256 of the visitor's address with a key drawn at random when the process starts: it groups one visitor's lines without holding the address, and it changes on a restart and is not shared between instances.
 
 What a log line may hold (standard, section 4: no secrets, email addresses or raw IP addresses):
 
@@ -240,5 +240,24 @@ What a log line may hold (standard, section 4: no secrets, email addresses or ra
 - **A value from the CMS or a visitor** that is written into a message goes through `logText()`: control characters, line breaks included, become spaces and the text is cut at 300 characters, so a value cannot start a forged line (V16.4.1). `upstreamLogMessage` does it itself, and so does the theme log.
 - A unit test (`test/noRawErrorLogs.test.ts`) fails when a server file passes a caught error to `console` as it is.
 
-Not done yet: a log inventory and a record of sign-ins and refusals (above the target level, tracked in #494).
+### Security events
+
+These events are written on purpose (ASVS V16.3.1, V16.3.2, V16.3.3). Each line also has the route, a request id and the hashed visitor described above, so the route says which form or endpoint it was. `cause` is a fixed word, never something the visitor typed: no password, identifier, email address, token, `Origin` value or query.
+
+| `event` | Level | When | `cause` |
+| --- | --- | --- | --- |
+| `auth.login.success` | `info` | A sign-in worked | |
+| `auth.register.success` | `info` | An account was created | |
+| `auth.password-reset.success`, `auth.password-change.success` | `info` | A password was reset or changed | |
+| `auth.account-delete.success`, `auth.logout` | `info` | An account was deleted, a visitor signed out | |
+| `auth.forgot-password.requested`, `auth.resend-confirmation.requested` | `info` | The CMS accepted the request (the answer to the visitor is the same whether the address exists or not) | |
+| `auth.failure` | `warn` | An auth call was refused: wrong credentials, unconfirmed email, weak or common password, no session, the CMS's own rate limit | The auth error code (`invalidCredentials`, `emailNotConfirmed`, `weakPassword`, `unauthorized`, `tooManyRequests`…) |
+| `authz.origin-refused` | `warn` | A state-changing request came from another origin or without an `Origin` | |
+| `authz.draft-refused` | `warn` | A draft request had no session, or the CMS refused the editor session (401 or 403) | `noSession` or `upstream 401`/`upstream 403` |
+| `limit.rate` | `warn` | The site's own rate limit refused a request | The bucket (`commentPerIp`, `newsletterPerEmail`…) |
+| `input.refused` | `warn` | A body or a query was refused by its schema, a payload was too large, or a newsletter confirmation or unsubscribe token was missing or unknown (repeated guessing shows here) | The names of the refused fields, `payloadTooLarge`, `missingToken` or `invalidToken` |
+
+A flood of refused requests writes a line per request: the platform that collects the logs decides how long they are kept and whether to sample them.
+
+Not logged: a malformed path parameter or a malformed `relation` or `documentIds` value, which scanners produce in volume and which reach no control. Not done yet: a log inventory (events, access and retention in one place), failures of the Umami proxy and of `fetchPublishedVersion`, and Nitro's own report of an unhandled error (above the target level, tracked in #494).
 

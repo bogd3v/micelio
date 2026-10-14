@@ -4,7 +4,7 @@ import { logText } from '../utils/upstreamError'
 /** One line of the server log, before it is written (docs/security.md, "Logs"). */
 export interface LogEntry {
   time: Date
-  level: 'warn' | 'error'
+  level: 'info' | 'warn' | 'error'
   /** Stable, dotted name of what happened (`cms.search`, `config.missing`), for filtering. */
   event: string
   /** Fixed text of the event; a value from the CMS or a visitor goes in `cause`, not here. */
@@ -15,7 +15,7 @@ export interface LogEntry {
   requestId?: string
   /** Keyed hash of the visitor's address (`visitorHash`); absent outside a request. */
   visitor?: string
-  /** What went wrong, as `upstreamLogMessage` says it. */
+  /** What went wrong, as `upstreamLogMessage` says it, or the reason of a refusal (an error code, a rate-limit bucket, the fields a schema refused). */
   cause?: string
 }
 
