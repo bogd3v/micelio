@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import qs from 'qs'
 import type { RawStrapiArticle, StrapiAuthorRef, StrapiCategoryRef, StrapiLocalization, StrapiMediaRef, StrapiSEO, StrapiTagRef } from '~/interfaces/strapi-post'
@@ -387,6 +388,41 @@ const subscribers: MockSubscriber[] = [
     updatedAt: '2026-01-01T00:00:00.000Z',
   },
 ]
+
+/** The tokens whose SHA-256 the mock stores, as the frontend does since tokens are hashed. */
+export const HASHED_TOKENS = {
+  confirm: 'hashed-confirmation-token-0000001',
+  unsubscribe: 'hashed-unsubscribe-token-0000001',
+}
+
+function sha256(value: string): string {
+  return createHash('sha256').update(value).digest('hex')
+}
+
+subscribers.push(
+  {
+    id: 20,
+    documentId: 'sub-hashed-to-confirm',
+    email: 'hashed-to-confirm@example.com',
+    confirmationToken: sha256(HASHED_TOKENS.confirm),
+    unsubscribeToken: null,
+    confirmed: false,
+    language: 'en',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 21,
+    documentId: 'sub-hashed-leaving',
+    email: 'hashed-leaving@example.com',
+    confirmationToken: null,
+    unsubscribeToken: sha256(HASHED_TOKENS.unsubscribe),
+    confirmed: true,
+    language: 'en',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+)
 
 function getNestedValue(obj: unknown, path: string[]): unknown {
   let current = obj

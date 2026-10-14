@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
 import type { Locale } from '~/interfaces'
 import { sendWelcomeEmail } from '../../utils/email'
-import { findSubscriber, newUnsubscribeToken, updateSubscriber } from '../../utils/subscribers'
+import { findSubscriberByToken, hashToken, isHashedToken, newUnsubscribeToken, updateSubscriber } from '../../utils/subscribers'
 import { isNewsletterToken, newsletterLanguage } from '~/helpers/newsletter'
 import type { ConfirmResponse } from '~/interfaces/newsletter'
 
@@ -29,9 +29,9 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
     })
   }
 
-  let subscriber: Awaited<ReturnType<typeof findSubscriber>>
+  let subscriber: Awaited<ReturnType<typeof findSubscriberByToken>>
   try {
-    subscriber = isNewsletterToken(token) ? await findSubscriber(event, 'confirmationToken', token) : null
+    subscriber = isNewsletterToken(token) ? await findSubscriberByToken(event, 'confirmationToken', token) : null
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
     throw error
@@ -58,12 +58,13 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
     }
   }
 
-  const unsubscribeToken = subscriber.unsubscribeToken || newUnsubscribeToken()
+  // The CMS keeps only a hash, so a new token goes in the welcome email; one stored in the clear before hashing is kept, and now hashed
+  const unsubscribeToken = (!isHashedToken(subscriber.unsubscribeToken) && subscriber.unsubscribeToken) || newUnsubscribeToken()
 
   try {
     await updateSubscriber(event, subscriber.documentId, {
       confirmed: true,
-      unsubscribeToken,
+      unsubscribeToken: hashToken(unsubscribeToken),
     })
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)

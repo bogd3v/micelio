@@ -8,7 +8,7 @@ import type { RawStrapiArticle } from '~/interfaces/strapi-post'
 import type { Page, PageSection } from '~/interfaces/page'
 import type { StrapiRichText } from '~/interfaces/strapi-blocks'
 import { Category } from '~/interfaces/design'
-import { startMockStrapi } from './mock-strapi'
+import { HASHED_TOKENS, startMockStrapi } from './mock-strapi'
 import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
 import { resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
@@ -1478,8 +1478,9 @@ describe('/api/newsletter/subscribe', () => {
     const posts = mock.requests.filter(request => request.method === 'POST' && request.path === '/api/subscribers')
     const lastPost = posts[posts.length - 1]
     expect(lastPost?.body?.data).toMatchObject({ email: 'new@example.com', confirmed: false, language: 'en' })
-    expect(lastPost?.body?.data?.confirmationToken).toMatch(/^[\w-]{43}$/)
-    expect(lastPost?.body?.data?.unsubscribeToken).toMatch(/^[\w-]{43}$/)
+    // The CMS keeps the hash of the token the email carries, and no unsubscribe token before the subscriber confirms
+    expect(lastPost?.body?.data?.confirmationToken).toMatch(/^[0-9a-f]{64}$/)
+    expect(lastPost?.body?.data).not.toHaveProperty('unsubscribeToken')
     expect(lastPost?.body?.data).not.toHaveProperty('locale')
   })
 
@@ -1520,7 +1521,17 @@ describe('/api/newsletter/confirm', () => {
     const update = mock.requests.find(request => request.method === 'PUT' && request.path === '/api/subscribers/sub-to-confirm')
     expect(update?.body?.data).toMatchObject({ confirmed: true })
     expect(update?.body?.data).not.toHaveProperty('confirmationToken')
-    expect(update?.body?.data?.unsubscribeToken).toMatch(/^[\w-]{43}$/)
+    expect(update?.body?.data?.unsubscribeToken).toMatch(/^[0-9a-f]{64}$/)
+  })
+
+  it('looks a hashed token up by its hash, so the token never reaches the CMS', async () => {
+    const result = await confirm(HASHED_TOKENS.confirm)
+    expect(result).toMatchObject({ success: true, alreadyConfirmed: false })
+    const lookups = mock.requests.filter(request => request.method === 'GET' && request.path === '/api/subscribers')
+    expect(lookups).toHaveLength(1)
+    expect(JSON.stringify(lookups[0]?.query)).not.toContain(HASHED_TOKENS.confirm)
+    const update = mock.requests.find(request => request.method === 'PUT' && request.path === '/api/subscribers/sub-hashed-to-confirm')
+    expect(update?.body?.data?.unsubscribeToken).toMatch(/^[0-9a-f]{64}$/)
   })
 
   it('answers a reopened link as already confirmed without writing again', async () => {
@@ -1585,6 +1596,21 @@ describe('/api/newsletter/unsubscribe', () => {
       await expect($fetch('/api/newsletter/unsubscribe', { method: 'POST', body })).rejects.toMatchObject({ response: { status: 400 } })
     }
     expect(mock.requests.filter(request => request.path.startsWith('/api/subscribers'))).toEqual([])
+  })
+})
+
+describe('/api/newsletter/unsubscribe with hashed tokens', () => {
+  it('deletes the subscriber without sending the token to the CMS', async () => {
+    expect(await $fetch('/api/newsletter/unsubscribe', { method: 'POST', body: { token: HASHED_TOKENS.unsubscribe } })).toEqual({ success: true })
+    expect(mock.requests.some(request => request.method === 'DELETE' && request.path === '/api/subscribers/sub-hashed-leaving')).toBe(true)
+    const lookups = mock.requests.filter(request => request.method === 'GET' && request.path === '/api/subscribers')
+    expect(JSON.stringify(lookups.map(request => request.query))).not.toContain(HASHED_TOKENS.unsubscribe)
+  })
+
+  it('does not accept a stored hash as the token', async () => {
+    const stored = createHash('sha256').update(HASHED_TOKENS.unsubscribe).digest('hex')
+    expect(await $fetch('/api/newsletter/unsubscribe', { method: 'POST', body: { token: stored } })).toEqual({ success: true })
+    expect(mock.requests.filter(request => request.method === 'DELETE')).toEqual([])
   })
 })
 
