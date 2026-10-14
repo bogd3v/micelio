@@ -4,7 +4,7 @@ What the frontend trusts, which credentials it uses to reach Strapi, and how eac
 
 ## Credentials towards Strapi
 
-The browser never talks to Strapi: every call goes through the Nitro server, built with `strapiUrl()` and, when it needs the API token, `strapiFetch()` (`server/utils/strapi.ts`).
+The data the frontend handles and the protection of each level are in [Data classification and protection](security/data.md). The browser never talks to Strapi: every call goes through the Nitro server, built with `strapiUrl()` and, when it needs the API token, `strapiFetch()` (`server/utils/strapi.ts`).
 
 | Credential | Where it comes from | Used for |
 | --- | --- | --- |
