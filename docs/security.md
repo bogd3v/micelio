@@ -175,9 +175,29 @@ Why there is no inactivity timeout, which departs from some readings of NIST SP 
 
 ## Dependencies
 
-- CI fails on any **critical** `npm audit` finding. High stays allowed while the remaining ones (`node-forge` through the Nuxt dev server, `esbuild`) have no fixed release and do not reach the production image.
-- Dependabot alerts and security updates are on; weekly update PRs come grouped. Major updates of Node and `@types/node` are ignored on purpose: the runtime is distroless Node 22, and moving to a new major is done by hand in both Docker stages and the CI.
+- CI fails on any **critical** `npm audit` finding (`npm audit --audit-level=critical`). Dependabot alerts and security updates are on; weekly update PRs come grouped. Major updates of Node and `@types/node` are ignored on purpose: the runtime is distroless Node 22, and moving to a new major is done by hand in both Docker stages and the CI.
 - GitHub Actions are pinned by commit SHA.
+
+### Remediation time frames
+
+How long a vulnerable dependency may stay (ASVS V15.1.1 and V15.2.1). The clock starts when the advisory is published.
+
+| Where the component runs | Critical and high | Medium and low |
+| --- | --- | --- |
+| In the production image or in the visitor's browser | 14 days (the same as a vulnerability in our own code, `SECURITY.md`) | The next planned release |
+| Build and development tooling only | The next planned release | The next planned release |
+
+A finding with no fixed release, or whose only fix is a breaking change (a major version, or a downgrade), is not left silent: it is written in the list below with the reason, and the list is reviewed at every release. A vulnerability in our own code is handled as `SECURITY.md` says.
+
+### Accepted risks
+
+State on 2026-10-14, from `npm audit` (13 high, 2 low, no critical). None of the high ones is in `.output/server/node_modules`.
+
+| Component | Advisory | Severity | Why it stays | Review |
+| --- | --- | --- | --- | --- |
+| `node-forge` 1.4.0 or lower, through `nuxt`, `@nuxt/cli` and `listhen` | GHSA-86w9-cpqp-85rv | High | No fixed release exists (1.4.0 is the latest `node-forge`). It is pulled in by the dev and preview server of Nuxt (`listhen`), which the production image does not run | At every release |
+| `braces` 3.0.3 or lower, through `@nuxtjs/i18n`, `@intlify/unplugin-vue-i18n`, `fast-glob` and `micromatch` (and `globby` through `nitropack`) | GHSA-vfj7-8cjw-p6xm | High | Build time only, on the file patterns of this repository, which nobody outside the build controls; `npm audit` offers a downgrade of `@nuxtjs/i18n` to 7.3.1, a breaking change that is not applied | At every release |
+| `katex` below 0.18.2, through `mermaid` 12.1.0 | GHSA-238p-pmpm-9mq7 | Low | It ships in the Mermaid island chunks, loaded only on articles with a diagram; low severity, so the next planned release. Mermaid 12.2.0 depends on `katex` ^0.18.0 and fixes it | Next dependency update |
 
 ## Static site publishing tokens
 

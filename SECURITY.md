@@ -53,4 +53,4 @@ Good-faith research that follows these rules won't be pursued.
 
 ## How dependencies are handled
 
-Dependabot opens grouped minor and patch updates weekly; major versions are upgraded by hand after testing, and alerts that can't be fixed yet are written down with the reason the risk is accepted. The rules are in section 10 of the [engineering standard](docs/engineering-standard.md).
+Dependabot opens grouped minor and patch updates weekly; major versions are upgraded by hand after testing, and alerts that can't be fixed yet are written down with the reason the risk is accepted. The time frames for a vulnerable dependency, and the list of accepted risks, are in [`docs/security.md`](docs/security.md#dependencies). The rules are in section 10 of the [engineering standard](docs/engineering-standard.md).

@@ -44,12 +44,12 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V12 Secure Communication | L1 | 1 | 6 | 0 | 2 |
 | V13 Configuration | L1 | 10 | 2 | 0 | 1 |
 | V14 Data Protection | L1 | 4 | 0 | 2 | 3 |
-| V15 Secure Coding and Architecture | L1 | 7 | 0 | 4 | 2 |
+| V15 Secure Coding and Architecture | L1 | 9 | 0 | 2 | 2 |
 | V16 Security Logging and Error Handling | L1 | 2 | 3 | 1 | 10 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **104** | **104** | **22** | **23** |
+| **Total (253 requirements)** | | **106** | **104** | **20** | **23** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 45 requirements that are not met, **22 are at the target level** (10 of them tracked in private security advisories) and 23 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 43 requirements that are not met, **20 are at the target level** (10 of them tracked in private security advisories) and 23 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -306,10 +306,10 @@ An open requirement that an attacker could exploit is **not** described here or 
 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
-| V15.1.1 | Documented remediation time frames for vulnerable components | Open | `SECURITY.md:17-20` covers reported vulnerabilities in this code and sends dependency issues upstream (`SECURITY.md:37-40`); no time frame for updating a vulnerable dependency. Tracked in #495 |
+| V15.1.1 | Documented remediation time frames for vulnerable components | Met | `docs/security.md`, "Remediation time frames": 14 days for critical and high findings in what runs in production or in the browser, the next planned release for the rest and for build tooling; a finding with no fix is listed with its reason. `SECURITY.md` points to it. Test: no test (documentation) |
 | V15.1.2 | SBOM of third-party components, trusted sources verified | Open (above target) | The lockfile is committed, but the image builds (`.github/workflows/deploy.yml:421`, `:484`) publish no SBOM and no signed provenance, which the standard (section 10) requires. Tracked in #495 |
 | V15.1.3 | Resource-heavy functionality and its availability defences documented | Met | `docs/security.md:53-54` (page size, search length, post lists, caching), `:66` (rate limits), `server/lib/strapiRequest.ts:5` (CMS timeout), `:111-119` (playground limits). No test |
-| V15.2.1 | Components within the documented remediation time frames | Open | The accepted-risk list at `docs/security.md:144` is stale: `npm audit` now reports `node-forge` and the `braces` chain under `@nuxtjs/i18n` (high, dev/build only) and `katex` (low, bundled in the Mermaid island), and no longer `esbuild`. Tracked in #495 |
+| V15.2.1 | Components within the documented remediation time frames | Met | `npm audit` on 2026-10-14: 13 high and 2 low, no critical. The high ones (`node-forge`, the `braces` chain) are build and development tooling, not in `.output/server/node_modules`, with no fixed release (`node-forge`) or no fix that is not a breaking change (`braces`), and are listed in `docs/security.md`, "Accepted risks"; the low one (`katex`) is within the next planned release, and Mermaid 12.2.0 fixes it. Run: `npm audit`. Test: CI fails on a critical finding |
 | V15.2.2 | Defences against availability loss from heavy functionality | Open | Private advisory |
 | V15.2.3 | Production has no test, sample or dev functionality | Met | Image contains only `.output` (`Dockerfile:61`); specimen page only with `MICELIO_SPECIMEN=1` (`modules/theme/specimen/setup.ts:10-11`); dev-only plugins skip in production. Test: `test/themeModule.test.ts` |
 | V15.3.1 | Responses return only the required fields | Open | Article, about and post-list routes return the whole Strapi object with `populate: '*'` relations (`server/lib/constants.ts:10-37`, `server/api/posts/index.get.ts:137-141`, `server/api/posts/[slug].get.ts:43`, `server/api/about.get.ts:49`); private CMS fields stay hidden only because Strapi drops them. Tracked in #493 |
