@@ -1756,6 +1756,15 @@ describe('/api/auth', () => {
       expect([old.status, await errorCode(old)]).toEqual([400, 'invalidCredentials'])
     })
 
+    it('refuses a new password that is common or built from the username, the address or the site, before the CMS', async () => {
+      mock.requests.length = 0
+      for (const [password, code] of [['Qwertyuiop', 'commonPassword'], ['mi-cambiable-nueva-1', 'weakPassword'], ['cambiable-segura-2', 'weakPassword']] as const) {
+        const response = await change({ currentPassword: OLD, password, passwordConfirmation: password })
+        expect([response.status, await errorCode(response)], password).toEqual([400, code])
+      }
+      expect(changes()).toEqual([])
+    })
+
     it('says the current password is wrong without touching the session or the account', async () => {
       const response = await change({ currentPassword: 'no-es-esta-1', password: NEW, passwordConfirmation: NEW })
       expect([response.status, await errorCode(response)]).toEqual([400, 'wrongPassword'])

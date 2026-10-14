@@ -190,16 +190,16 @@ The workflow `.github/workflows/static-site.yml` ([operate/static-site.md](opera
 
 ## Password rules
 
-What a new password must satisfy (ASVS V6.1.2, V6.2.4, V6.2.11, V6.2.12). The frontend checks them on the server, before the CMS is called; the sign-up page repeats the first two in the browser so the message comes at once.
+What a new password must satisfy (ASVS V6.1.2, V6.2.4, V6.2.11, V6.2.12). The frontend checks them on the server, before the CMS is called; the sign-up page repeats the context check in the browser so the message comes at once.
 
 | Rule | Where it applies | Notes |
 | --- | --- | --- |
 | At least 10 characters | Sign up, reset, change | `isValidPassword` in `app/helpers/auth.ts`, shared with the forms. There is no composition rule (no required digit or symbol) |
-| Not built from the context | Sign up | The password must not contain the username, the address before the `@` or the parts of either, or the name of the site (in each language), ignoring case, accents and separators. Words shorter than four characters are not counted (`app/helpers/passwordContext.ts`). The error is `weakPassword` |
-| Not one of the 3000 most common | Sign up, reset | A new password that equals one of the 3000 most common passwords of at least 10 characters, ignoring case, is refused with `commonPassword` (`server/lib/commonPasswords.ts`; the list is from SecLists, see `THIRD-PARTY.md`, and is rebuilt with `scripts/common-passwords.mjs`) |
+| Not built from the context | Sign up, change | The password must not contain the username, the address before the `@` or the parts of either, or the name of the site (in each language), ignoring case, accents and separators. Words shorter than four characters are not counted (`app/helpers/passwordContext.ts`). The error is `weakPassword` |
+| Not one of the 3000 most common | Sign up, reset, change | A new password that equals one of the 3000 most common passwords of at least 10 characters, ignoring case, is refused with `commonPassword` (`server/lib/commonPasswords.ts`; the list is from SecLists, see `THIRD-PARTY.md`, and is rebuilt with `scripts/common-passwords.mjs`) |
 
 What is not checked, and why:
 
-- **The context words at reset.** The reset route receives a code and a password, not the account, so it cannot know the username or the address; the CMS can. This is tracked with the CMS minimum in micelio-cms#177 and #491.
+- **The context words at reset.** The reset route receives a code and a password, not the account, so it cannot know the username or the address; the CMS can. This is tracked with the CMS minimum in micelio-cms#177 and #491. The change route knows the account (it reads the person's profile first) and applies both checks.
 - **Breached password sets (ASVS V6.2.12), accepted risk.** Beyond the list above, a password is not compared with the large sets of leaked passwords. Doing it means asking a third-party service (even by hash prefix) or shipping a set of hundreds of millions of entries; the first breaks the rule that the site makes no request to a third party (standard, section 9), and the second is out of proportion for accounts that only comment and subscribe. Length (10 or more, and the interface suggests a long phrase) and the list of common passwords are the compensation. Revisit it if the accounts hold more than an email and a username.
 

@@ -232,6 +232,7 @@ test('changes the password while signed in, keeps the session and accepts only t
   await page.getByLabel('Password', { exact: true }).fill(next)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).toHaveURL(/\/account$/)
+})
 
 test('sign up refuses a password built from the username or the site name before it asks the server', async ({ page }) => {
   const user = uniqueUser('ana')
