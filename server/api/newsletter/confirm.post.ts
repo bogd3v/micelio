@@ -63,7 +63,7 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
     })
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
-    console.error('Newsletter confirmation error:', error)
+    console.error('Newsletter confirmation error:', upstreamLogMessage(error))
     throw createError({
       statusCode: 500,
       statusMessage:
@@ -77,7 +77,7 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
     const { site } = await loadSite(language as Locale)
     await sendWelcomeEmail(subscriber.email, language, unsubscribeToken, site.name)
   } catch (error: unknown) {
-    console.error('Newsletter welcome email error:', error)
+    console.error('Newsletter welcome email error:', upstreamLogMessage(error))
   }
 
   return {

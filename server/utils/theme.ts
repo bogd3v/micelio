@@ -1,3 +1,4 @@
+import { logText } from './upstreamError'
 import { contrastRatio, mixOklab, nearestWhere, parseHex, toHex } from '~/helpers/color'
 import type { Rgb } from '~/helpers/color'
 import type { AccentColors, SiteTheme, ThemeSettings } from '~/interfaces/site'
@@ -26,7 +27,9 @@ function mixSrgb(a: Rgb, b: Rgb, weight: number): Rgb {
 const logged = new Set<string>()
 const MAX_LOGGED = 100
 
-function logOnce(message: string): void {
+function logOnce(raw: string): void {
+  // The message holds values from the CMS: one line, whatever they contain
+  const message = logText(raw)
   if (logged.has(message)) return
   if (logged.size >= MAX_LOGGED) logged.clear()
   logged.add(message)

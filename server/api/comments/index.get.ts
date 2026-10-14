@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     return { ...response, data: toPublicComments(response?.data ?? []) }
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
-    console.error('Strapi fetch comments error:', asUpstreamError(error).data || error)
+    console.error('Strapi fetch comments error:', upstreamLogMessage(error))
     throw createError({
       statusCode: asUpstreamError(error).response?.status || 500,
       message: upstreamErrorMessage(error, 'Failed to fetch comments'),

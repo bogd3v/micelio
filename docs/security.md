@@ -223,3 +223,15 @@ What is not checked, and why:
 - **The context words at reset.** The reset route receives a code and a password, not the account, so it cannot know the username or the address; the CMS can. This is tracked with the CMS minimum in micelio-cms#177 and #491. The change route knows the account (it reads the person's profile first) and applies both checks.
 - **Breached password sets (ASVS V6.2.12), accepted risk.** Beyond the list above, a password is not compared with the large sets of leaked passwords. Doing it means asking a third-party service (even by hash prefix) or shipping a set of hundreds of millions of entries; the first breaks the rule that the site makes no request to a third party (standard, section 9), and the second is out of proportion for accounts that only comment and subscribe. Length (10 or more, and the interface suggests a long phrase) and the list of common passwords are the compensation. Revisit it if the accounts hold more than an email and a username.
 
+## Logs
+
+The server writes plain lines to the standard output and the standard error (`console.error`, `console.warn`); it keeps no log file and sends logs nowhere else, so the destination is whatever the operator's platform does with the container's output (ASVS V16.2.3).
+
+What a log line may hold (standard, section 4: no secrets, email addresses or raw IP addresses):
+
+- **A failed call to the CMS** is logged with `upstreamLogMessage(error)` (`server/utils/upstreamError.ts`): the status and the message the CMS sent, never the request URL, because the URL of a lookup holds a reader's email address or a token in its query (V16.2.5). An error of our own code keeps its name and message; one with a `code` (a mail or network error) keeps only the name and the code, because its message can hold the address it failed on.
+- **A value from the CMS or a visitor** that is written into a message goes through `logText()`: control characters, line breaks included, become spaces and the text is cut at 300 characters, so a value cannot start a forged line (V16.4.1). `upstreamLogMessage` does it itself, and so does the theme log.
+- A unit test (`test/noRawErrorLogs.test.ts`) fails when a server file passes a caught error to `console` as it is.
+
+Not done yet: a log inventory, a structured format and request context in each line, a record of sign-ins and refusals (all above the target level, tracked in #494).
+

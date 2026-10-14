@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
   try {
     response = await strapiFetch<{ data?: unknown }>(`/api/about?${params}`, { event })
   } catch (error: unknown) {
-    console.error('Strapi fetch about error:', asUpstreamError(error).data || error)
+    console.error('Strapi fetch about error:', upstreamLogMessage(error))
     throw createError({
       statusCode: 502,
       message: upstreamErrorMessage(error, 'Failed to fetch about page'),

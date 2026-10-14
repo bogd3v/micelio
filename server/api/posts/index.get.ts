@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
       })
     } catch (error: unknown) {
       noStoreOnUpstreamRateLimit(event, error)
-      console.error('Strapi fetch fediverse ranking error:', asUpstreamError(error).data || error)
+      console.error('Strapi fetch fediverse ranking error:', upstreamLogMessage(error))
       return null
     }
 
@@ -89,7 +89,7 @@ export default defineEventHandler(async (event) => {
       })
     } catch (error: unknown) {
       noStoreOnUpstreamRateLimit(event, error)
-      console.error('Strapi fetch fediverse batch stats error:', asUpstreamError(error).data || error)
+      console.error('Strapi fetch fediverse batch stats error:', upstreamLogMessage(error))
       return null
     }
   }

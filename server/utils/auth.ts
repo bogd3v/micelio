@@ -35,7 +35,7 @@ export function strapiAuthFailure(event: H3Event, err: unknown, overrides: Parti
   const status = e.response?.status
   const code = strapiAuthErrorCode(status, e.data?.error?.message)
   if (code === 'tooManyRequests') copyRetryAfter(event, err)
-  if (code === 'unknown') console.error('Strapi auth error:', status, e.data?.error?.message || e.message)
+  if (code === 'unknown') console.error('Strapi auth error:', upstreamLogMessage(err))
   return authFailure(overrides[code] ?? code)
 }
 
