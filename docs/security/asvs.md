@@ -44,10 +44,10 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V12 Secure Communication | L1 | 1 | 6 | 0 | 2 |
 | V13 Configuration | L1 | 10 | 2 | 0 | 1 |
 | V14 Data Protection | L1 | 5 | 0 | 1 | 3 |
-| V15 Secure Coding and Architecture | L1 | 10 | 0 | 1 | 2 |
+| V15 Secure Coding and Architecture | L1 | 11 | 0 | 1 | 1 |
 | V16 Security Logging and Error Handling | L1 | 6 | 3 | 0 | 7 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **117** | **104** | **12** | **20** |
+| **Total (253 requirements)** | | **118** | **104** | **12** | **19** |
 
 **Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 32 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 20 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
@@ -313,7 +313,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15.2.2 | Defences against availability loss from heavy functionality | Met | A request body is read within 64 KB and answers 413 before any route logic (`server/utils/validation.ts:5-45`), inputs have upper bounds (`server/schemas/auth.ts`), and the rate limiter holds at most 10,000 keys (`app/helpers/rateLimit.ts:25`). Heavy islands load only where used (ADR 0006). Tests: `test/integration/api.test.ts:531`, `test/rateLimit.test.ts:32` (GHSA-xjjv-c6cr-w4p6, GHSA-p9c9-2w7f-67wv) |
 | V15.2.3 | Production has no test, sample or dev functionality | Met | Image contains only `.output` (`Dockerfile:61`); specimen page only with `MICELIO_SPECIMEN=1` (`modules/theme/specimen/setup.ts:10-11`); dev-only plugins skip in production. Test: `test/themeModule.test.ts` |
 | V15.3.1 | Responses return only the required fields | Open | Article, about and post-list routes return the whole Strapi object with `populate: '*'` relations (`server/lib/constants.ts:10-37`, `server/api/posts/index.get.ts:137-141`, `server/api/posts/[slug].get.ts:43`, `server/api/about.get.ts:49`); private CMS fields stay hidden only because Strapi drops them. Tracked in #493 |
-| V15.3.2 | Backend calls to external URLs don't follow redirects unintentionally | Open (above target) | The Umami proxy follows redirects (`server/middleware/umami.ts:44`, h3 `sendProxy` default), so do CMS calls without the forwarder secret (`server/utils/strapi.ts:54`) and the static media copy (`modules/static-routes.ts:199`). Tracked in #493 |
+| V15.3.2 | Backend calls to external URLs don't follow redirects unintentionally | Met | No backend call follows a redirect. CMS calls reject on one (`redirect: 'error'` by default in `strapiRequest`, `server/lib/strapiRequest.ts`), so the token and the visitor headers stay on the configured origin. The Umami proxy turns a 3xx into a 502 instead of passing its `Location` to the visitor (`server/middleware/umami.ts`). The static media copy refuses a host that redirects and names the URL (`modules/lib/static-media.ts`). Tests: `test/strapiRequest.test.ts` ("never follows a redirect"), `test/integration/api.test.ts` ("does not hand the visitor a redirect from Umami"), `test/staticMedia.test.ts` |
 | V15.3.3 | Mass assignment prevented by per-action field allowlists | Met | zod objects drop unknown keys (`server/schemas/auth.ts`, `server/schemas/comments.ts`), the comment author id is set by the server (`server/api/comments/index.post.ts:14-18`). Test: `test/integration/api.test.ts` (register with `role: 'editor'` is ignored), `test/schemas.test.ts` |
 | V15.3.4 | Original client IP taken only from trusted proxy data | Met | `NUXT_TRUST_PROXY` model (`server/lib/clientIp.ts`, `server/utils/rateLimit.ts:33-56`, `docs/security.md:68-98`). Test: `test/clientIp.test.ts` |
 | V15.3.5 | Strict typing and strict comparisons | Met | Inputs typed by zod (`server/schemas/`), token and relation checks are type guards (`app/helpers/newsletter.ts:14-15`); no loose `==`/`!=` in `server/` or `app/helpers/`. Test: `test/schemas.test.ts` |

@@ -46,6 +46,16 @@ describe('strapiRequest credentials and headers', () => {
   })
 })
 
+describe('strapiRequest redirects', () => {
+  it('never follows a redirect from the CMS, unless the caller asks', async () => {
+    const fetchMock = stubFetch()
+    await strapiRequest(config, '/api/x')
+    expect((fetchMock.mock.calls.at(-1)![1] as { redirect?: string }).redirect).toBe('error')
+    await strapiRequest(config, '/api/x', { redirect: 'follow' })
+    expect((fetchMock.mock.calls.at(-1)![1] as { redirect?: string }).redirect).toBe('follow')
+  })
+})
+
 function sources(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name)
