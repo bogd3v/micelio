@@ -8,7 +8,7 @@ export default defineEventHandler(async (event): Promise<AuthUserResponse> => {
   assertSameOrigin(event)
   const { username, email, password } = await validBody(event, registerSchema, () => authFailure('invalidInput'))
 
-  await assertPasswordAllowed(password, { username, email })
+  await assertPasswordAllowed(event, password, { username, email })
 
   try {
     const response = await strapiFetch<{ user: StrapiAuthUser }>('/api/auth/local/register', {
@@ -17,6 +17,7 @@ export default defineEventHandler(async (event): Promise<AuthUserResponse> => {
       method: 'POST',
       body: { username, email, password },
     })
+    logInfo('auth.register.success', 'Account created', { event })
     setResponseStatus(event, 201)
     return { user: toPublicUser(response.user) }
   } catch (error: unknown) {

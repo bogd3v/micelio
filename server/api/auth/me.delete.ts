@@ -6,7 +6,10 @@ export default defineEventHandler(async (event): Promise<{ ok: true }> => {
   preventCaching(event)
   assertSameOrigin(event)
   const jwt = getSessionToken(event)
-  if (!jwt) throw authFailure('unauthorized')
+  if (!jwt) {
+    logWarn('auth.failure', 'Account deletion without a session', { event, cause: 'unauthorized' })
+    throw authFailure('unauthorized')
+  }
 
   const { username, password } = await validBody(event, deleteAccountSchema, () => authFailure('invalidInput'))
 
@@ -18,7 +21,10 @@ export default defineEventHandler(async (event): Promise<{ ok: true }> => {
     if (failure.statusCode === 401) clearSessionCookie(event)
     throw failure
   }
-  if (user.username !== username) throw authFailure('invalidInput')
+  if (user.username !== username) {
+    logWarn('auth.failure', 'Account deletion refused: the username did not match', { event, cause: 'invalidInput' })
+    throw authFailure('invalidInput')
+  }
 
   try {
     await strapiFetch('/api/users/me', {
@@ -32,5 +38,6 @@ export default defineEventHandler(async (event): Promise<{ ok: true }> => {
   }
 
   clearSessionCookie(event)
+  logInfo('auth.account-delete.success', 'Account deleted', { event })
   return { ok: true }
 })

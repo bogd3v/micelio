@@ -24,6 +24,7 @@ export default defineEventHandler(async (event): Promise<AuthUserResponse> => {
   try {
     const user = await fetchStrapiMe(event, jwt)
     setSessionCookie(event, jwt)
+    logInfo('auth.login.success', 'Signed in', { event })
     return { user: toPublicUser(user) }
   } catch (error: unknown) {
     throw strapiAuthFailure(event, error)

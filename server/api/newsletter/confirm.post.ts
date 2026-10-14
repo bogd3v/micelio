@@ -22,6 +22,7 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
   const token = await readToken(event)
 
   if (!token) {
+    logWarn('input.refused', 'Confirmation token missing', { event, cause: 'missingToken' })
     throw createError({
       statusCode: 400,
       statusMessage: 'Token is required',
@@ -37,6 +38,7 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
   }
 
   if (!subscriber) {
+    logWarn('input.refused', 'Confirmation token refused', { event, cause: 'invalidToken' })
     throw createError({
       statusCode: 404,
       statusMessage: 'Invalid confirmation token',

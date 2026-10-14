@@ -57,7 +57,7 @@ export async function readLimitedBody(event: H3Event, maxBytes = MAX_BODY_BYTES)
  * Reads the JSON body of a request and validates it against `schema`.
  *
  * @remarks
- * A body that is missing, is not JSON or is not an object is validated as an empty object, so the schema decides. A failing body throws the error that `invalid` builds, so each route sets its own status and code.
+ * A body that is missing, is not JSON or is not an object is validated as an empty object, so the schema decides. A failing body throws the error that `invalid` builds, so each route sets its own status and code. A refusal, and a body over the cap, is logged as `input.refused` with the refused field names (never their values).
  */
 export async function validBody<Schema extends z.ZodType>(event: H3Event, schema: Schema, invalid: (error: z.ZodError) => Error): Promise<z.output<Schema>> {
   let body: unknown
@@ -65,11 +65,17 @@ export async function validBody<Schema extends z.ZodType>(event: H3Event, schema
     body = await readLimitedBody(event)
   } catch (error: unknown) {
     // Too large is not "no body": the route must not go on
-    if ((error as { statusCode?: number }).statusCode === 413) throw error
+    if ((error as { statusCode?: number }).statusCode === 413) {
+      logWarn('input.refused', 'Request body refused', { event, cause: 'payloadTooLarge' })
+      throw error
+    }
     body = null
   }
   const result = schema.safeParse(body && typeof body === 'object' ? body : {})
-  if (!result.success) throw invalid(result.error)
+  if (!result.success) {
+    logWarn('input.refused', 'Request body refused by its schema', { event, cause: refusedFields(result.error, '(body)') })
+    throw invalid(result.error)
+  }
   return result.data
 }
 
@@ -77,12 +83,20 @@ export async function validBody<Schema extends z.ZodType>(event: H3Event, schema
  * Validates the query string of a request against `schema` and returns the parsed data.
  *
  * @remarks
- * A failing query throws the error that `invalid` builds; by default that is `invalidQuery`.
+ * A failing query throws the error that `invalid` builds; by default that is `invalidQuery`. A refusal is logged as `input.refused` with the refused field names.
  */
 export function validQuery<Schema extends z.ZodType>(event: H3Event, schema: Schema, invalid: (error: z.ZodError) => Error = invalidQuery): z.output<Schema> {
   const result = schema.safeParse(getQuery(event))
-  if (!result.success) throw invalid(result.error)
+  if (!result.success) {
+    logWarn('input.refused', 'Query refused by its schema', { event, cause: refusedFields(result.error, '(query)') })
+    throw invalid(result.error)
+  }
   return result.data
+}
+
+/** The names of the fields a schema refused, never their values. The schemas used with `validBody` and `validQuery` have no records or catchalls, so a path never holds a key the visitor chose. */
+function refusedFields(error: z.ZodError, whole: string): string {
+  return [...new Set(error.issues.map(issue => issue.path.map(String).join('.') || whole))].join(',')
 }
 
 /** The 400 error of a query that fails its schema, with the message of the first issue as the status message. */

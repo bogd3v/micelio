@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { request as httpRequest } from 'node:http'
 import { join } from 'node:path'
@@ -2538,5 +2538,98 @@ describe('the site-wide cap on confirmation emails', () => {
       if (response.status === 429) blocked++
     }
     expect(blocked).toBeGreaterThanOrEqual(20)
+  })
+})
+
+describe('security event logs', () => {
+  type LogLine = { time: string, level: string, event: string, route?: string, requestId?: string, visitor?: string, cause?: string }
+
+  /** The structured lines the server wrote to standard error so far (docs/security.md, "Logs"). */
+  function lines(): LogLine[] {
+    return useTestContext().serverLogs.flatMap(chunk => chunk.split('\n'))
+      .filter(text => text.startsWith('{'))
+      .flatMap((text) => {
+        try {
+          return [JSON.parse(text) as LogLine]
+        } catch {
+          return []
+        }
+      })
+  }
+
+  /** Runs `action`, then waits for the server's stderr to deliver the lines it wrote. */
+  async function written(action: () => Promise<unknown>, wanted: string[]): Promise<LogLine[]> {
+    const before = lines().length
+    await action()
+    await vi.waitFor(() => {
+      const events = lines().slice(before).map(line => line.event)
+      for (const event of wanted) expect(events).toContain(event)
+    })
+    return lines().slice(before)
+  }
+
+  function login(identifier: string, password: string, headers: Record<string, string> = { origin: SITE_URL }): Promise<Response> {
+    return fetch('/api/auth/login', { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify({ identifier, password }) })
+  }
+
+  it('records a failed and a successful sign-in with the route, a request id and a hashed visitor, and nothing the visitor typed', async () => {
+    const got = await written(async () => {
+      await login(testUsers.reader.username, 'no-es-esta-1')
+      await login(testUsers.reader.username, testUsers.reader.password)
+    }, ['auth.failure', 'auth.login.success'])
+    const failure = got.find(line => line.event === 'auth.failure')!
+    expect(failure).toMatchObject({ level: 'warn', route: '/api/auth/login', cause: 'invalidCredentials' })
+    expect(failure.requestId).toMatch(/^[0-9a-f-]{36}$/)
+    expect(failure.visitor).toMatch(/^[0-9a-f]{12}$/)
+    expect(got.find(line => line.event === 'auth.login.success')).toMatchObject({ level: 'info', route: '/api/auth/login' })
+    expect(JSON.stringify(got)).not.toMatch(/no-es-esta-1|lectora-segura-1|lectora|example\.com|mock-jwt/)
+  })
+
+  it('records a request from another origin and a draft request without a session', async () => {
+    const got = await written(async () => {
+      await login(testUsers.reader.username, testUsers.reader.password, { origin: 'https://otro.sitio' })
+      await fetch('/api/drafts')
+    }, ['authz.origin-refused', 'authz.draft-refused'])
+    expect(got.find(line => line.event === 'authz.origin-refused')).toMatchObject({ level: 'warn', route: '/api/auth/login' })
+    expect(got.find(line => line.event === 'authz.draft-refused')).toMatchObject({ level: 'warn', cause: 'noSession' })
+    expect(JSON.stringify(got)).not.toContain('otro.sitio')
+  })
+
+  it('records a body the schema refused by field name, never by value', async () => {
+    const got = await written(() => login('', 'a-secret-value'), ['input.refused'])
+    const refused = got.find(line => line.event === 'input.refused')!
+    expect(refused).toMatchObject({ level: 'warn', route: '/api/auth/login' })
+    expect(refused.cause).toContain('identifier')
+    expect(JSON.stringify(got)).not.toContain('a-secret-value')
+  })
+
+  it('records a refused newsletter token without the token', async () => {
+    const got = await written(() => fetch('/api/newsletter/unsubscribe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: 'x' }) }), ['input.refused'])
+    expect(got.find(line => line.event === 'input.refused')).toMatchObject({ level: 'warn', route: '/api/newsletter/unsubscribe', cause: 'invalidToken' })
+    expect(JSON.stringify(got)).not.toMatch(/guessed|"x"/)
+  })
+
+  it('records a sign-out, a common password, a body over the cap and a refused query', async () => {
+    const got = await written(async () => {
+      await fetch('/api/auth/logout', { method: 'POST', headers: { origin: SITE_URL } })
+      await fetch('/api/auth/reset-password', { method: 'POST', headers: { 'origin': SITE_URL, 'content-type': 'application/json' }, body: JSON.stringify({ code: 'some-code', password: 'password1234', passwordConfirmation: 'password1234' }) })
+      await login('someone', 'x'.repeat(100 * 1024))
+      await fetch('/api/about?locale=zz-invalid')
+    }, ['auth.logout', 'auth.failure', 'input.refused'])
+    expect(got.map(line => line.cause).filter(Boolean)).toEqual(expect.arrayContaining(['commonPassword', 'payloadTooLarge']))
+    expect(got.find(line => line.event === 'auth.logout')).toMatchObject({ level: 'info', route: '/api/auth/logout' })
+    expect(JSON.stringify(got)).not.toMatch(/password1234|zz-invalid|some-code/)
+  })
+
+  it('records a rate-limit hit with its bucket', async () => {
+    const relation = 'api::article.article:doc-vue'
+    const body = JSON.stringify({ author: { name: 'Bot', email: 'bot-log@example.com' }, content: 'Again.' })
+    const got = await written(async () => {
+      for (let i = 0; i < 11; i++) {
+        await fetch(`/api/comments?relation=${relation}`, { method: 'POST', headers: { 'origin': SITE_URL, 'content-type': 'application/json', 'x-forwarded-for': '2001:db8:99:1::1' }, body })
+      }
+    }, ['limit.rate'])
+    expect(got.find(line => line.event === 'limit.rate')).toMatchObject({ level: 'warn', cause: 'commentPerIp' })
+    expect(JSON.stringify(got)).not.toMatch(/2001:db8|bot-log@example\.com/)
   })
 })
