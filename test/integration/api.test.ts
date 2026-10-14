@@ -1131,6 +1131,28 @@ describe('/api/comments', () => {
     expect(response.data.every(comment => !('email' in comment.author))).toBe(true)
   })
 
+  it('never returns an email or a report anywhere in a comment, the parent of a reply included', async () => {
+    const flat = await $fetch<{ data: Array<{ id: number, threadOf?: Record<string, unknown> | null, reports?: unknown }> }>('/api/comments/flat', { query: { relation } })
+    const tree = await $fetch<unknown>('/api/comments', { query: { relation } })
+    for (const text of [JSON.stringify(flat), JSON.stringify(tree)]) {
+      expect(text).not.toMatch(/example\.(com|org)/)
+      expect(text).not.toContain('a reader wrote this')
+    }
+    expect(flat.data.find(comment => comment.id === 203)?.threadOf).toEqual({ id: 202 })
+    expect(flat.data.every(comment => !comment.reports || (comment.reports as unknown[]).length === 0)).toBe(true)
+  })
+
+  it('does not return the parent author\'s email when a reply is posted', async () => {
+    const response = await $fetch<Record<string, unknown>>('/api/comments', {
+      method: 'POST',
+      query: { relation },
+      headers: { origin: SITE_URL },
+      body: { author: { name: 'Dani', email: 'dani@example.com' }, content: 'Replying.', threadOf: 201 },
+    })
+    expect(JSON.stringify(response)).not.toContain('ana@example.com')
+    expect(response.threadOf).toEqual({ id: 201 })
+  })
+
   it('prunes hidden comments from the hierarchy, children included', async () => {
     const response = await $fetch<Array<{ id: number, children?: Array<{ id: number }> }>>('/api/comments', { query: { relation } })
     expect(response.map(comment => comment.id)).toEqual([201, 202])

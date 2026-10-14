@@ -28,6 +28,31 @@ const fediverse = comment({
   fediverseUri: 'https://mastodon.social/users/bea/statuses/1',
 })
 
+describe('toPublicComment, the parent of a reply', () => {
+  const parent = { ...comment({ id: 9 }), author: { id: 'guest-9', name: 'Zoe', email: 'zoe@example.com' }, reports: [{ id: 1, reason: 'OTHER', createdAt: '2026-02-03T10:00:00.000Z' }] }
+
+  it('keeps only the id of the parent, so its author email does not leave the server', () => {
+    const result = toPublicComment(comment({ id: 10, threadOf: parent as unknown as Comment['threadOf'] }))
+    expect(result.threadOf).toEqual({ id: 9 })
+    expect(JSON.stringify(result)).not.toContain('zoe@example.com')
+  })
+
+  it('leaves out the reports and any field the public shape does not name', () => {
+    const result = toPublicComment({ ...comment({ reports: parent.reports }), secret: 'value' } as unknown as Comment)
+    expect(result.reports).toEqual([])
+    expect(result).not.toHaveProperty('secret')
+  })
+
+  it('does the same for the replies of a hierarchy', () => {
+    const result = toPublicComment(comment({ children: [comment({ id: 11, threadOf: parent as unknown as Comment['threadOf'] })] }))
+    expect(result.children?.[0]?.threadOf).toEqual({ id: 9 })
+  })
+
+  it('keeps a top-level comment without a parent', () => {
+    expect(toPublicComment(comment()).threadOf).toBeNull()
+  })
+})
+
 describe('toPublicComment', () => {
   it('fills the fediverse fields with null on blog comments and drops the email', () => {
     const result = toPublicComment(comment())

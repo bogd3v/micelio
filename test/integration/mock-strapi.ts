@@ -264,7 +264,8 @@ const authorReply = {
   author: { id: 1, name: 'Alejandro Ramirez', email: 'admin@example.com' },
   createdAt: '2026-02-05T10:00:00.000Z',
   updatedAt: '2026-02-05T10:00:00.000Z',
-  threadOf: { id: 202 },
+  // As the comments plugin answers: the whole parent, with its author's email and its reports
+  threadOf: { ...fediverseComment, author: { ...fediverseComment.author, email: 'bea@example.org' }, reports: [{ id: 1, reason: 'OTHER', content: 'a reader wrote this' }] },
 }
 
 const pendingFediverseComment = {
@@ -780,6 +781,8 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
         documentId: 'comment-new',
         content: String(body?.content ?? ''),
         author: { id: author.id, name: author.name, email: author.email },
+        // A reply answers with its whole parent, author email included, as the comments plugin does
+        ...(body?.threadOf ? { threadOf: flatComments.find(comment => comment.id === Number(body.threadOf)) ?? null } : {}),
       })
       return
     }

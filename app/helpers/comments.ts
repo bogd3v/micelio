@@ -33,15 +33,22 @@ export function isVisibleComment(comment: Comment): boolean {
   return !HIDDEN_STATUSES.has(comment.approvalStatus ?? '')
 }
 
+// The fields of a comment that may leave the server. Anything else the CMS sends (an email in the parent of a reply, the reports readers
+// wrote, a field a later version of the plugin adds) stays behind: the public shape is built from this list, not by spreading the answer
+const PUBLIC_FIELDS = ['id', 'documentId', 'content', 'blocked', 'blockedThread', 'blockReason', 'authorUser', 'removed', 'approvalStatus', 'related', 'createdAt', 'updatedAt'] as const
+
 /**
  * A comment ready for the public: its author, admin flag and fediverse handle and link are normalised, and its replies are made public the same way.
  *
  * @remarks
- * The other fields are kept as they are.
+ * Built from a list of public fields, not from a copy of what the CMS sent. The parent of a reply (`threadOf`) is reduced to its `id`, because the plugin answers it as the whole parent comment, author email included, and the `reports` readers sent are never returned (the list is empty).
  */
 export function toPublicComment(comment: Comment): Comment {
+  const picked = Object.fromEntries(PUBLIC_FIELDS.filter(field => comment[field] !== undefined).map(field => [field, comment[field]]))
   return {
-    ...comment,
+    ...(picked as Pick<Comment, typeof PUBLIC_FIELDS[number]>),
+    reports: [],
+    threadOf: comment.threadOf ? { id: comment.threadOf.id } : null,
     author: toPublicAuthor(comment.author),
     isAdminComment: comment.isAdminComment === true,
     fediverseActorHandle: textOrNull(comment.fediverseActorHandle),
