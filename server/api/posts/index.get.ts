@@ -1,3 +1,4 @@
+import { publicPostCard } from '../../lib/publicShapes'
 import qs from 'qs'
 import { defaultLocale } from '~/interfaces'
 import type { RawStrapiArticle, StrapiPaginatedResponse } from '~/interfaces'
@@ -43,7 +44,8 @@ export default defineEventHandler(async (event) => {
 
   async function fetchArticles(params: Record<string, unknown>): Promise<StrapiPaginatedResponse<RawStrapiArticle[]>> {
     const queryString = qs.stringify({ populate: POST_CARD_POPULATE, locale, ...params }, { skipNulls: true })
-    return strapiFetch<StrapiPaginatedResponse<RawStrapiArticle[]>>(`/api/articles?${queryString}`, { event })
+    const response = await strapiFetch<StrapiPaginatedResponse<RawStrapiArticle[]>>(`/api/articles?${queryString}`, { event })
+    return { ...response, data: response.data.map(publicPostCard) as RawStrapiArticle[] }
   }
 
   async function fetchRanked(): Promise<StrapiPaginatedResponse<RawStrapiArticle[]> | null> {
