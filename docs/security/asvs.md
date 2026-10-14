@@ -31,7 +31,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | Chapter | Target | Met | N/A | Open | Open (above target) |
 | --- | --- | --- | --- | --- | --- |
 | V1 Encoding and Sanitization | L2 | 16 | 9 | 2 | 0 |
-| V2 Validation and Business Logic | L2 | 8 | 1 | 2 | 0 |
+| V2 Validation and Business Logic | L2 | 9 | 1 | 1 | 0 |
 | V3 Web Frontend Security | L1 | 17 | 2 | 0 | 0 |
 | V4 API and Web Service | L1 | 2 | 8 | 0 | 0 |
 | V5 File Handling | L1 | 2 | 7 | 0 | 0 |
@@ -47,9 +47,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15 Secure Coding and Architecture | L1 | 9 | 0 | 2 | 2 |
 | V16 Security Logging and Error Handling | L1 | 5 | 3 | 1 | 7 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **112** | **104** | **17** | **20** |
+| **Total (253 requirements)** | | **113** | **104** | **16** | **20** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 37 requirements that are not met, **17 are at the target level** (6 of them tracked in private security advisories) and 20 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 36 requirements that are not met, **16 are at the target level** (5 of them tracked in private security advisories) and 20 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -94,7 +94,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V2.1.1 | Document validation rules for each data item | Met | The rules are documented per endpoint (`docs/security.md:47-64`, `docs/api.md`) and the post route enforces its slug with `postParamsSchema` before any CMS call (`server/schemas/query.ts`, `server/api/posts/[slug].get.ts`); the value then reaches the CMS only as an `$eq` filter. Test: `test/schemas.test.ts` (`postParamsSchema`), `test/integration/api.test.ts` ("refuses a slug that is not a Strapi uid") |
 | V2.1.2 | Document consistency rules for combined data items | Met | `docs/api.md:34` (post lists: the category wins over the tag; at most four lists per page), `docs/api.md:137` (blog filters: the category wins, other parameters kept). No test |
 | V2.1.3 | Document business limits, per user and global | Met | `docs/security.md:53-66` (page sizes, search text, per-visitor and per-address limits, in-memory scope), `docs/api.md:66`; CMS limits in micelio-cms `docs/RATE_LIMITING.md`, see micelio-cms#128. No test |
-| V2.2.1 | Validate input against business expectations | Open | Private advisory |
+| V2.2.1 | Validate input against business expectations | Met | Sizes and shapes are bounded: a body is read within 64 KB and answers 413 before any route logic (`server/utils/validation.ts:5`, `:21`, `:45`; test `test/integration/api.test.ts:531`), a new password is at most 72 bytes, an email, identifier or username at most 254 characters and a reset code letters, digits, `_` and `-` (`server/schemas/auth.ts:6-20`, `:56`; GHSA-xjjv-c6cr-w4p6). A comment is built for the public from a list of fields, so a reply carries its parent as `{ id }` and no email or reports (`app/helpers/comments.ts:46`; GHSA-vjh3-x6fv-9mfr). Tests: `test/comments.test.ts:31`, `test/integration/api.test.ts:1178` |
 | V2.2.2 | Enforce validation at a trusted server layer | Met | Every body and query goes through a zod schema on the server before any CMS call (`server/schemas/`, `server/utils/validation.ts:10-37`); the client forms share the validators of `app/helpers/`. Test: `test/schemas.test.ts`, `test/integration/api.test.ts` |
 | V2.2.3 | Check that related data items are mutually consistent | Met | A valid category drops the tag (`app/helpers/blog.ts:131-133`); a comment must name an article relation of the expected form (`server/utils/commentRelation.ts:10-16`); the thread a reply belongs to is checked by the CMS comments plugin, see micelio-cms#128. Test: `test/blog.test.ts:106`, `test/comments.test.ts:88` |
 | V2.3.1 | Run business flows in order without skipping steps | Met | A subscription becomes confirmed only through the emailed token (`server/api/newsletter/confirm.post.ts`); a confirmed address is never reset by a new subscribe (`server/api/newsletter/subscribe.post.ts:29`); account steps are enforced by the CMS, see micelio-cms#128. Test: `test/integration/api.test.ts:1229`, `:1288-1306` |
