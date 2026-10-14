@@ -13,9 +13,14 @@ export function pinnedImage(ref, digest) {
   return `${name}@${digest}`
 }
 
-/** A random value of `bytes` bytes, base64 without characters that need quoting */
+/**
+ * A random value of `bytes` bytes written in hex: always `2 * bytes` characters (48 by default), all of them `[0-9a-f]`, so it needs no quoting.
+ *
+ * @remarks
+ * The CMS refuses a secret under 32 characters in production (micelio-cms `fix(security)!`), so the length must not depend on which characters are dropped, as it did with base64.
+ */
 export function secret(bytes = 24) {
-  return randomBytes(bytes).toString('base64').replace(/[^A-Za-z0-9]/g, '')
+  return randomBytes(bytes).toString('hex')
 }
 
 /**
