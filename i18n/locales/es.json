@@ -554,6 +554,7 @@
       "confirmed": "Cuenta confirmada",
       "recover": "Recuperar contraseña",
       "reset": "Contraseña nueva",
+      "password": "Cambiar contraseña",
       "profile": "Mi cuenta"
     },
     "eyebrow": {
@@ -563,6 +564,7 @@
       "confirmed": "Cuenta · Confirmada",
       "recover": "Cuenta · Recuperar",
       "reset": "Cuenta · Contraseña nueva",
+      "password": "Cuenta · Contraseña",
       "profile": "Cuenta · {role}"
     },
     "signIn": {
@@ -619,6 +621,17 @@
       "missingCode": "Este enlace no es válido o está incompleto. Pide uno nuevo.",
       "requestNew": "Pedir otro enlace"
     },
+    "changePassword": {
+      "title": "Cambia tu contraseña",
+      "lead": "Escribe tu contraseña actual y elige una nueva. Sigues con la sesión iniciada en este dispositivo.",
+      "current": "Contraseña actual",
+      "new": "Contraseña nueva",
+      "newHelp": "Al menos 10 caracteres. Una frase larga es más segura que una palabra rara.",
+      "confirm": "Repite la contraseña nueva",
+      "submit": "Guardar contraseña",
+      "saved": "Guardamos tu nueva contraseña.",
+      "back": "Volver a mi cuenta"
+    },
     "profile": {
       "title": "Mi cuenta",
       "username": "Usuario",
@@ -626,6 +639,7 @@
       "role": "Rol",
       "memberSince": "Miembro desde",
       "signOut": "Cerrar sesión",
+      "changePassword": "Cambiar contraseña",
       "drafts": "Borradores",
       "draftsLead": "Lee los artículos en borrador con el diseño real."
     },
@@ -660,6 +674,8 @@
       "password": "La contraseña necesita al menos 10 caracteres.",
       "privacy": "Marca la casilla para crear la cuenta.",
       "mismatch": "Las contraseñas no coinciden.",
+      "samePassword": "La contraseña nueva debe ser distinta de la actual.",
+      "currentRequired": "Escribe tu contraseña actual.",
       "invalidCredentials": "El usuario o la contraseña no coinciden. Revisa e inténtalo de nuevo.",
       "emailNotConfirmed": "Aún no confirmas tu correo. Abre el enlace que te enviamos para poder entrar.",
       "emailTaken": "Ya hay una cuenta con ese correo o ese nombre de usuario.",

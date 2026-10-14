@@ -58,6 +58,7 @@ The routes of a module switched off in `site-setting.modules`, or off for lack o
 | `POST /api/newsletter/subscribe` | Public | Same-origin check, 10 per IP and 3 per email every hour, same answer for new and confirmed addresses |
 | `POST /api/newsletter/confirm`, `POST /api/newsletter/unsubscribe` | Holder of the emailed token | Token format check; confirm checks the same origin and is sent by a button on `/confirm`, so a link scanner that only fetches the link confirms nothing; unsubscribe also accepts RFC 8058 one-click POSTs from mail providers, so it has no origin check |
 | `POST /api/auth/login`, `register`, `forgot-password`, `reset-password`, `resend-confirmation`, `logout` | Public | Same-origin check, body schema, `no-store`; the CMS rate-limits the auth routes per visitor (see "Client IP and rate limits") |
+| `POST /api/auth/change-password` | Session + current password | Same-origin check, body schema (new password at least 10 characters and different from the current one), `no-store`; the CMS re-checks the current password with the person's own JWT and answers a new JWT that replaces the cookie |
 | `GET /api/auth/me` | Session | `no-store` |
 | `DELETE /api/auth/me` | Session + password | Same-origin check, username and password re-checked by Strapi |
 | `GET /api/drafts`, `/api/drafts/:documentId` | Editor | Answers 404, not 403, to anyone else; `no-store` |
@@ -115,11 +116,12 @@ People sign in with a password: one factor, an account per email address. Accoun
 | Sign up | `POST /api/auth/register`, then the CMS register route | The same checks, a password of at least 10 characters in the frontend, and 5 emails per address per hour in the CMS; the account cannot sign in until its email is confirmed |
 | Email confirmation | The link in the email, `GET /api/auth/email-confirmation` of the CMS, which redirects to `/account/confirmed` | One-use token in the CMS; the frontend does not proxy this route |
 | Resend confirmation, forgot password, reset password | `POST /api/auth/resend-confirmation`, `forgot-password`, `reset-password` of the frontend, then the CMS routes | Same-origin check, body schema; 5 emails per address per hour; the same answer whether or not the address has an account |
+| Change the password | `POST /api/auth/change-password` of the frontend, which calls the CMS route with the person's own JWT | Session, same-origin check, the current password asked again, and a new password of at least 10 characters that differs from it; the cookie is renewed with the JWT the CMS answers |
 | Delete the account | `DELETE /api/auth/me` | Session, same-origin check, and the password asked again |
 | Third-party sign-in | `/api/connect/*` of the CMS | Off unless the operator enables a provider in the CMS admin panel; the frontend has no flow for it. A site that turns one on adds a pathway with its own strength and must document it here |
 | CMS admin panel | `/admin` of the CMS | Separate administrator accounts, with their own limits (20 per 300 s per client); not part of the frontend |
 
-The CMS routes `/api/auth/*` and `/api/users/me` can also be called directly by anyone who reaches the CMS address. They carry the CMS limits listed above and the same confirmed-email rule, **but the 10-character minimum is enforced only by the frontend**: a direct sign-up or `change-password` call is bound by Strapi's own minimum. That gap, and a `change-password` route that the frontend does not offer yet, are tracked in [micelio-cms#177](https://github.com/bogd3v/micelio-cms/issues/177) and #491. The strength every pathway must hold is: a confirmed email, a password of at least 10 characters, and the rate limits above.
+The CMS routes `/api/auth/*` and `/api/users/me` can also be called directly by anyone who reaches the CMS address. They carry the CMS limits listed above and the same confirmed-email rule, **but the 10-character minimum is enforced only by the frontend**: a direct sign-up or `change-password` call is bound by Strapi's own minimum. That gap is tracked in [micelio-cms#177](https://github.com/bogd3v/micelio-cms/issues/177) and #491. The strength every pathway must hold is: a confirmed email, a password of at least 10 characters, and the rate limits above.
 
 ### Sessions
 

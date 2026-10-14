@@ -34,6 +34,18 @@ export const resetPasswordSchema = z.object({
   passwordConfirmation: z.string(),
 }).refine(input => input.password === input.passwordConfirmation)
 
+/**
+ * The body of `POST /api/auth/change-password`: the current password, a new one of at least ten characters, and its repetition.
+ *
+ * @remarks
+ * The current password must be non-empty and the CMS checks it. The repetition must equal the new password, and the new password must differ from the current one.
+ */
+export const changePasswordSchema = z.object({
+  currentPassword: filled,
+  password,
+  passwordConfirmation: z.string(),
+}).refine(input => input.password === input.passwordConfirmation).refine(input => input.password !== input.currentPassword)
+
 /** The body of `DELETE /api/auth/me`: the username and the password that confirm the deletion. Both must be non-empty; the CMS checks them. */
 export const deleteAccountSchema = z.object({
   username: filled,
