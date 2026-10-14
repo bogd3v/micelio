@@ -1,6 +1,8 @@
 import type { AuthErrorCode, AuthNotice, AuthUser, PasswordStrength, StrapiAuthUser } from '../interfaces/auth'
 
 const MIN_PASSWORD_LENGTH = 10
+// The CMS hashes with bcrypt, which reads 72 bytes and refuses more: say so before it does
+const MAX_PASSWORD_BYTES = 72
 const EDITOR_ROLE_TYPE = 'editor'
 
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/i
@@ -17,9 +19,14 @@ export function isValidEmail(value: string): boolean {
   return EMAIL_PATTERN.test(value.trim())
 }
 
-/** Whether a password is at least 10 characters long. */
+/** Whether a password is longer than the 72 bytes (UTF-8) the CMS can hash: a letter with an accent counts as two bytes and an emoji as four. */
+export function isPasswordTooLong(value: string): boolean {
+  return new TextEncoder().encode(value).length > MAX_PASSWORD_BYTES
+}
+
+/** Whether a password is at least 10 characters long and at most 72 bytes. */
 export function isValidPassword(value: string): boolean {
-  return value.length >= MIN_PASSWORD_LENGTH
+  return value.length >= MIN_PASSWORD_LENGTH && !isPasswordTooLong(value)
 }
 
 /**

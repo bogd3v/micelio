@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { deleteAccountSchema, emailSchema, loginSchema, registerSchema, resetPasswordSchema } from '../server/schemas/auth'
+import { changePasswordSchema, deleteAccountSchema, emailSchema, loginSchema, registerSchema, resetPasswordSchema } from '../server/schemas/auth'
 import { guestCommentSchema } from '../server/schemas/comments'
 import { subscribeSchema } from '../server/schemas/newsletter'
 import { commentsQuerySchema, DEFAULT_PAGE_SIZE, listLocaleQuerySchema, localeQuerySchema, MAX_PAGE_SIZE, postParamsSchema, postsQuerySchema, readingPathQuerySchema, searchQuerySchema } from '../server/schemas/query'
@@ -160,5 +160,39 @@ describe('postParamsSchema', () => {
     for (const slug of ['', '-a', 'a b', 'a/b', '../x', '<script>', 'a\u0000b', 'é', 'b'.repeat(257), undefined, 12]) {
       expect(postParamsSchema.safeParse({ slug }).success, String(slug)).toBe(false)
     }
+  })
+})
+
+describe('auth schemas, upper bounds', () => {
+  const long = 'a'.repeat(73)
+  const email = `${'a'.repeat(250)}@example.com`
+
+  it('refuse a new password of more than 72 bytes where one is set', () => {
+    expect(registerSchema.safeParse({ username: 'lectora', email: 'lectora@example.com', password: long, acceptPrivacy: true }).success).toBe(false)
+    expect(resetPasswordSchema.safeParse({ code: 'abcdef0123456789', password: long, passwordConfirmation: long }).success).toBe(false)
+    expect(changePasswordSchema.safeParse({ currentPassword: 'la-actual-1', password: long, passwordConfirmation: long }).success).toBe(false)
+    expect(registerSchema.safeParse({ username: 'lectora', email: 'lectora@example.com', password: 'a'.repeat(72), acceptPrivacy: true }).success).toBe(true)
+  })
+
+  it('refuse an identifier, an email or a username of more than 254 characters', () => {
+    expect(loginSchema.safeParse({ identifier: 'a'.repeat(255), password: 'x' }).success).toBe(false)
+    expect(loginSchema.safeParse({ identifier: 'a'.repeat(254), password: 'x' }).success).toBe(true)
+    expect(emailSchema.safeParse({ email }).success).toBe(false)
+    expect(registerSchema.safeParse({ username: 'lectora', email, password: 'a'.repeat(20), acceptPrivacy: true }).success).toBe(false)
+    expect(deleteAccountSchema.safeParse({ username: 'a'.repeat(255), password: 'x' }).success).toBe(false)
+  })
+
+  it('refuse a password typed into a sign-in or delete form that is absurdly long', () => {
+    expect(loginSchema.safeParse({ identifier: 'lectora', password: 'x'.repeat(1025) }).success).toBe(false)
+    expect(deleteAccountSchema.safeParse({ username: 'lectora', password: 'x'.repeat(1025) }).success).toBe(false)
+    expect(changePasswordSchema.safeParse({ currentPassword: 'x'.repeat(1025), password: 'una-frase-larga-1', passwordConfirmation: 'una-frase-larga-1' }).success).toBe(false)
+  })
+
+  it('accept only a reset code made of the characters the CMS uses, and of a sane length', () => {
+    const good = { password: 'una-frase-larga-1', passwordConfirmation: 'una-frase-larga-1' }
+    expect(resetPasswordSchema.safeParse({ ...good, code: 'a'.repeat(128) }).success).toBe(true)
+    expect(resetPasswordSchema.safeParse({ ...good, code: 'a'.repeat(1000) }).success).toBe(false)
+    expect(resetPasswordSchema.safeParse({ ...good, code: 'abc def' }).success).toBe(false)
+    expect(resetPasswordSchema.safeParse({ ...good, code: '<script>' }).success).toBe(false)
   })
 })

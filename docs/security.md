@@ -134,6 +134,10 @@ The CMS routes `/api/auth/*` and `/api/users/me` can also be called directly by 
 
 Why there is no inactivity timeout, which departs from some readings of NIST SP 800-63B: a password alone is authenticator assurance level 1, for which the guideline asks to re-authenticate at least every 30 days and asks for no inactivity limit; 7 days is stricter on lifetime. The accounts hold an email address and a username, comment, and (editors) read drafts, with no payment or other personal data. An inactivity timeout needs a server-side record of the last use, which a stateless JWT does not have; the CMS offers one only in its `refresh` session mode, which would supersede part of ADR 0003. It is left out for now and tracked in #491 (ASVS V7.3.1). Check this against the current revision of the guideline when it changes, and when accounts hold more than they do.
 
+### Request size
+
+A request body is read within 64 KB (`readLimitedBody` in `server/utils/validation.ts`): a declared `content-length` over it, or bytes that pass it while they arrive (a chunked body has no length), are a 413 before the route runs, and the Umami proxy applies the same cap to its payload. The auth schemas bound what they accept (an email or identifier at most 254 characters, a password typed into a form at most 1024, a new password at most 72 bytes, a reset code at most 256 characters of letters, digits, `_` and `-`). A reverse proxy in front can set a lower cap; none is needed for the process not to hold a large body.
+
 ## Browser-side protections
 
 - **HTTP methods**: `server/middleware/methods.ts` answers any method outside GET, HEAD, POST, PUT, PATCH, DELETE and OPTIONS (`TRACE` above all) with 405 and an `Allow` list, before any route runs.
@@ -213,7 +217,7 @@ What a new password must satisfy (ASVS V6.1.2, V6.2.4, V6.2.11, V6.2.12). The fr
 
 | Rule | Where it applies | Notes |
 | --- | --- | --- |
-| At least 10 characters | Sign up, reset, change | `isValidPassword` in `app/helpers/auth.ts`, shared with the forms. There is no composition rule (no required digit or symbol) |
+| At least 10 characters and at most 72 bytes | Sign up, reset, change | `isValidPassword` in `app/helpers/auth.ts`, shared with the forms. 72 bytes (UTF-8: an accented letter counts two, an emoji four) is what the CMS can hash; a longer one is refused with its own message. There is no composition rule (no required digit or symbol) |
 | Not built from the context | Sign up, change | The password must not contain the username, the address before the `@` or the parts of either, or the name of the site (in each language), ignoring case, accents and separators. Words shorter than four characters are not counted (`app/helpers/passwordContext.ts`). The error is `weakPassword` |
 | Not one of the 3000 most common | Sign up, reset, change | A new password that equals one of the 3000 most common passwords of at least 10 characters, ignoring case, is refused with `commonPassword` (`server/lib/commonPasswords.ts`; the list is from SecLists, see `THIRD-PARTY.md`, and is rebuilt with `scripts/common-passwords.mjs`) |
 

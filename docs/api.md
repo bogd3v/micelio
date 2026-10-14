@@ -8,6 +8,7 @@ Conventions:
 - **Locales** are `en` and `es`. An unknown locale is a `400`; an empty one counts as absent.
 - **502** means Strapi failed or rejected the call; the message carries Strapi's when it has one.
 - **429** comes with `Retry-After` (seconds).
+- **413** answers a request body over 64 KB, declared or counted as it arrives; the rest of the body is not read and the connection is closed. Every route that reads a body applies it.
 
 ## Content
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { authErrorCodeOf, isValidPassword } from '~/helpers/auth'
+import { authErrorCodeOf, isPasswordTooLong, isValidPassword } from '~/helpers/auth'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -25,7 +25,7 @@ async function submit(): Promise<void> {
   if (submitting.value) return
   error.value = ''
   errors.value = {
-    password: isValidPassword(password.value) ? undefined : t('account.errors.password'),
+    password: isValidPassword(password.value) ? undefined : t(isPasswordTooLong(password.value) ? 'account.errors.passwordLong' : 'account.errors.password'),
     confirmation: confirmation.value === password.value ? undefined : t('account.errors.mismatch'),
   }
   if (errors.value.password || errors.value.confirmation) {

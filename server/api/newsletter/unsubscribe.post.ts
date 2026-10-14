@@ -6,9 +6,10 @@ async function readToken(event: Parameters<typeof getQuery>[0]): Promise<unknown
   const fromQuery = getQuery(event).token
   if (fromQuery) return fromQuery
   try {
-    const body = await readBody<{ token?: unknown } | null>(event)
+    const body = await readLimitedBody(event) as { token?: unknown } | null | undefined
     return body?.token
-  } catch {
+  } catch (error: unknown) {
+    if ((error as { statusCode?: number }).statusCode === 413) throw error
     return undefined
   }
 }

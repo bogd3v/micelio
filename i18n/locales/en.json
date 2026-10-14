@@ -672,6 +672,7 @@
       "username": "Use 3 to 30 letters, numbers, dots or hyphens.",
       "email": "Type a valid email, for example name{'@'}mail.com.",
       "password": "The password needs at least 10 characters.",
+      "passwordLong": "The password can't be longer than 72 bytes: about 72 letters or digits, fewer with accents or emoji.",
       "privacy": "Check the box to create the account.",
       "mismatch": "The passwords don't match.",
       "samePassword": "The new password must be different from the current one.",
