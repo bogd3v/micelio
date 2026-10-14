@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { forwardHeaders, internalClientIp, isInternalFetchTarget, isSafeForwardTarget, normalizeIp, parseTrustProxy, resolveClientIp, trustsForwardedHost } from '../server/lib/clientIp'
+import { forwardHeaders, internalClientIp, ipBucket, isInternalFetchTarget, isSafeForwardTarget, normalizeIp, parseTrustProxy, resolveClientIp, trustsForwardedHost } from '../server/lib/clientIp'
 
 const resolve = (trust: string, peer: string | null, header: string | null): string =>
   resolveClientIp(parseTrustProxy(trust), peer, header).ip
@@ -188,5 +188,24 @@ describe('isInternalFetchTarget', () => {
     for (const request of ['https://evil.example/api', 'http://localhost/api', '//evil.example/api', 'api/x', '', new URL('https://a.example/'), undefined]) {
       expect(isInternalFetchTarget(request)).toBe(false)
     }
+  })
+})
+
+describe('ipBucket', () => {
+  it('leaves an IPv4 address and the unknown marker as they are', () => {
+    expect(ipBucket('203.0.113.7')).toBe('203.0.113.7')
+    expect(ipBucket('unknown')).toBe('unknown')
+  })
+
+  it('groups an IPv6 address by its /64, as the CMS does, so the addresses of one network share a bucket', () => {
+    const bucket = ipBucket('2001:db8:1:2::1')
+    expect(bucket).toBe('2001:db8:1:2::/64')
+    expect(ipBucket('2001:db8:1:2::2')).toBe(bucket)
+    expect(ipBucket('2001:0db8:0001:0002:ffff:ffff:ffff:ffff')).toBe(bucket)
+    expect(ipBucket('2001:db8:1:3::1')).not.toBe(bucket)
+  })
+
+  it('reads an IPv4-mapped IPv6 address as the IPv4 one', () => {
+    expect(ipBucket('::ffff:203.0.113.7')).toBe('203.0.113.7')
   })
 })

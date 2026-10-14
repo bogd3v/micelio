@@ -95,6 +95,19 @@ export function normalizeIp(raw: string | null | undefined): string | null {
   return compressIPv6(groups)
 }
 
+/**
+ * The key a rate limit counts an address under: an IPv4 address as it is, an IPv6 one by its /64.
+ *
+ * @remarks
+ * A network holds 2^64 IPv6 addresses and a hosting plan usually one whole /64, so counting each address separately gives an attacker a fresh bucket per request. This is how the CMS groups them too. An IPv4-mapped IPv6 address is the IPv4 one, and anything that is not an address (`unknown`) is kept as it is.
+ */
+export function ipBucket(ip: string): string {
+  const normal = normalizeIp(ip)
+  if (!normal || !normal.includes(':')) return normal ?? ip
+  const groups = expandIPv6(normal)
+  return groups ? `${compressIPv6([...groups.slice(0, 4), 0, 0, 0, 0])}/64` : normal
+}
+
 /** True for a valid IPv4 or IPv6 address, as written (no port or brackets). */
 export function isIpAddress(value: string | null | undefined): value is string {
   return typeof value === 'string' && isIP(value) !== 0

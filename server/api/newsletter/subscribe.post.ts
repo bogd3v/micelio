@@ -2,6 +2,7 @@ import type { Locale } from '~/interfaces'
 import { randomUUID } from 'crypto'
 import { sendConfirmationEmail } from '../../utils/email'
 import { createSubscriber, deleteSubscriber, findSubscriber, newUnsubscribeToken } from '../../utils/subscribers'
+import { ipBucket } from '../../lib/clientIp'
 import { subscribeSchema } from '../../schemas/newsletter'
 import type { NewsletterLanguage, SubscribeResponse } from '~/interfaces/newsletter'
 
@@ -21,7 +22,7 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
     statusCode: 400,
     statusMessage: error.issues[0]?.message ?? 'Invalid email format',
   }))
-  assertRateLimit(event, 'newsletterPerIp', clientIp(event))
+  assertRateLimit(event, 'newsletterPerIp', ipBucket(clientIp(event)))
   assertRateLimit(event, 'newsletterPerEmail', email)
 
   try {
@@ -29,6 +30,8 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
     if (existing?.confirmed) return successResponse(language)
     if (existing) await deleteSubscriber(event, existing.documentId)
 
+    // The email goes out only past this point: the site-wide cap counts the ones it sends
+    assertRateLimit(event, 'newsletterGlobal', 'all')
     const confirmationToken = randomUUID()
     const documentId = await createSubscriber(event, {
       email,
