@@ -69,7 +69,6 @@ const cardFields = { id: true, documentId: true, title: true, slug: true, locale
 
 const articleShape: Shape = fields({
   ...cardFields,
-  content: true,
   // The draft strip shows when the draft was last edited
   updatedAt: true,
   coverCredit: credit,

@@ -1471,6 +1471,37 @@ export interface StrapiLocalization {
 }
 ```
 
+#### `RawStrapiArticle`
+
+An article as Strapi returns it, before `toStrapiPost` turns it into a `StrapiPost`.
+
+```ts
+export interface RawStrapiArticle {
+  id: number
+  documentId: string
+  title: string
+  slug: string
+  description?: string | null
+  /** @deprecated The legacy Markdown body: the CMS article has no such field and the route no longer returns it. Read `blocks`. Removed in the next major of the theme contract. */
+  content?: string | null
+  publishedAt?: string | null
+  updatedAt?: string | null
+  createdAt?: string | null
+  locale?: string | null
+  readTime?: number | null
+  tags?: StrapiTagRef[] | null
+  cover?: StrapiMediaRef | null
+  coverCredit?: StrapiImageCredit | null
+  category?: StrapiCategoryRef | null
+  author?: StrapiAuthorRef | null
+  seo?: StrapiSEO | null
+  snippet?: string | null
+  blocks?: StrapiBlock[] | null
+  references?: StrapiReference[] | null
+  localizations?: StrapiLocalization[] | null
+}
+```
+
 #### `SearchPostResult`
 
 One hit of the search route, `/api/search`.
@@ -1501,6 +1532,7 @@ export interface StrapiPost {
   title: string
   slug: string
   description?: string | null
+  /** @deprecated The legacy Markdown body: the CMS article has no such field and the route no longer returns it. Read `blocks`. Removed in the next major of the theme contract. */
   content?: string | null
   publishedAt?: string | null
   readTime?: number | null
