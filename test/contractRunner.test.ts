@@ -30,10 +30,22 @@ describe('pinnedImage', () => {
   })
 })
 
+// The CMS stops in production when a secret has fewer than 32 characters, so each run must clear that bar, whatever the random bytes are
+const CMS_MIN_SECRET_LENGTH = 32
+const RUNS = 200
+
 describe('secret', () => {
   it('is random, and safe to put in an environment file', () => {
     expect(secret()).not.toBe(secret())
     expect(secret(48)).toMatch(/^[A-Za-z0-9]+$/)
+  })
+
+  it('is as long as its bytes say, 48 characters by default, in every run', () => {
+    for (let run = 0; run < RUNS; run++) {
+      expect(secret()).toHaveLength(48)
+      expect(secret(48)).toHaveLength(96)
+      expect(secret(16)).toHaveLength(CMS_MIN_SECRET_LENGTH)
+    }
   })
 })
 
@@ -49,5 +61,19 @@ describe('cmsEnvironment', () => {
     const salts = [environment.API_TOKEN_SALT, environment.ADMIN_JWT_SECRET, environment.TRANSFER_TOKEN_SALT, environment.JWT_SECRET, environment.ENCRYPTION_KEY]
     expect(new Set(salts).size).toBe(salts.length)
     expect(cmsEnvironment({ databaseHost: 'db', databasePassword: 'pw', frontendToken: 'token', cmsUrl: 'u', frontendUrl: 'f' }).JWT_SECRET).not.toBe(environment.JWT_SECRET)
+  })
+
+  it('gives the CMS secrets it accepts in production: 32 characters or more, in 200 runs', () => {
+    for (let run = 0; run < RUNS; run++) {
+      const databasePassword = secret()
+      const { APP_KEYS, API_TOKEN_SALT, ADMIN_JWT_SECRET, TRANSFER_TOKEN_SALT, JWT_SECRET, ENCRYPTION_KEY, DATABASE_PASSWORD, NODE_ENV } = cmsEnvironment({ databaseHost: 'db', databasePassword, frontendToken: secret(48), cmsUrl: 'u', frontendUrl: 'f' })
+      expect(NODE_ENV).toBe('production')
+      expect(APP_KEYS.split(',')).toHaveLength(4)
+      for (const value of [...APP_KEYS.split(','), API_TOKEN_SALT, ADMIN_JWT_SECRET, TRANSFER_TOKEN_SALT, JWT_SECRET, ENCRYPTION_KEY]) {
+        expect(value.length).toBeGreaterThanOrEqual(CMS_MIN_SECRET_LENGTH)
+      }
+      expect(DATABASE_PASSWORD).toBe(databasePassword)
+      expect(DATABASE_PASSWORD).not.toBe('strapi')
+    }
   })
 })
