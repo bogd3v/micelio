@@ -12,6 +12,7 @@ async function fetchPublishedVersion(event: H3Event, jwt: string, path: string, 
     const version = response.data
     return version?.slug ? { slug: version.slug, updatedAt: version.updatedAt ?? null, publishedAt: version.publishedAt ?? null } : null
   } catch {
+    // Not silent: `fetchAsEditor` logged the failure (a 401 or 403 as `authz.draft-refused`, anything unexpected as `cms.drafts`) before it threw, and a 404 only means there is no published version
     return null
   }
 }

@@ -2621,6 +2621,18 @@ describe('security event logs', () => {
     expect(JSON.stringify(got)).not.toMatch(/password1234|zz-invalid|some-code/)
   })
 
+  it('records a failed analytics proxy call, a dropped connection and a redirect alike, without the query', async () => {
+    const got = await written(async () => {
+      await fetch('/bd.js', { headers: { 'x-mock-redirect': '1' }, redirect: 'manual' })
+      await fetch('/api/bd?token=secret-in-query', { method: 'POST', headers: { 'content-type': 'application/json', 'x-mock-destroy': '1' }, body: '{}' })
+    }, ['analytics.proxy'])
+    const proxy = got.filter(line => line.event === 'analytics.proxy')
+    expect(proxy).toHaveLength(2)
+    expect(proxy.map(line => line.route)).toEqual(expect.arrayContaining([expect.any(String)]))
+    expect(proxy.every(line => line.level === 'error' && line.cause === 'upstream 502' && /^[0-9a-f-]{36}$/.test(line.requestId ?? ''))).toBe(true)
+    expect(JSON.stringify(got)).not.toContain('secret-in-query')
+  })
+
   it('records a rate-limit hit with its bucket', async () => {
     const relation = 'api::article.article:doc-vue'
     const body = JSON.stringify({ author: { name: 'Bot', email: 'bot-log@example.com' }, content: 'Again.' })

@@ -53,5 +53,11 @@ export default defineEventHandler(async (event) => {
     }
   }
   const body = raw ? new Uint8Array(raw) : undefined
-  return sendProxy(event, new URL(event.path, config.umamiUrl).href, { fetch: fetchWithoutRedirect, fetchOptions: { method: event.method, body, headers } })
+  try {
+    return await sendProxy(event, new URL(event.path, config.umamiUrl).href, { fetch: fetchWithoutRedirect, fetchOptions: { method: event.method, body, headers } })
+  } catch (error: unknown) {
+    // The visitor's answer is the error as it was; the log says that analytics, not the page, failed (ASVS V16.3.4)
+    logError('analytics.proxy', 'The analytics proxy call failed', { event, error })
+    throw error
+  }
 })
