@@ -45,11 +45,11 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V13 Configuration | L1 | 10 | 2 | 0 | 1 |
 | V14 Data Protection | L1 | 5 | 0 | 1 | 3 |
 | V15 Secure Coding and Architecture | L1 | 12 | 0 | 0 | 1 |
-| V16 Security Logging and Error Handling | L1 | 11 | 3 | 0 | 2 |
+| V16 Security Logging and Error Handling | L1 | 12 | 3 | 0 | 1 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **124** | **104** | **11** | **14** |
+| **Total (253 requirements)** | | **125** | **104** | **11** | **13** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 27 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 15 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 26 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 14 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -324,7 +324,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
-| V16.1.1 | Log inventory: events, format, storage, access, retention | Open (above target) | No log inventory; the server writes structured lines to standard error (`docs/security.md`, "Logs") but the inventory of events, access and retention is not written. Tracked in #494 |
+| V16.1.1 | Log inventory: events, format, storage, access, retention | Met | `docs/operate/logging.md`: the fields of a line, the events by group (the full list with `cause` values is `docs/security.md`, "Security events"), the destination (standard error only), retention (the platform's, none set by Micelio) and who may read the logs. Test: no test (documentation); the event names it lists are those `test/integration/api.test.ts` ("security event logs") asserts |
 | V16.2.1 | Each log entry has when, where, who, what | Met | `logError` and `logWarn` (`server/utils/log.ts`) write a line with the UTC time, the event name, the route, a request id and a keyed hash of the visitor's address (random key per process; no address, no email). Lines written outside a request (boot) or by helpers that receive no request (`cms.site-setting`, `cms.page`, `cms.page-post-list`, `theme.*`) carry time and event only. The request id is per request: each internal `/api` call of a page render has its own. Test: `test/serverLog.test.ts`, and `test/noRawErrorLogs.test.ts` fails when a server file writes to `console` directly |
 | V16.2.2 | Synchronised time sources and UTC timestamps | N/A | Operator/deployment: each line carries a UTC ISO 8601 `time` from the process clock; keeping the host clock synchronised is the platform's |
 | V16.2.3 | Logs only go to documented destinations | Met | `docs/security.md`, "Logs": standard error only, no file and no other sink. Test: no test (documentation) |

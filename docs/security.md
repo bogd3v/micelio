@@ -261,5 +261,5 @@ These events are written on purpose (ASVS V16.3.1, V16.3.2, V16.3.3). Each line 
 
 A flood of refused requests writes a line per request: the platform that collects the logs decides how long they are kept and whether to sample them.
 
-Not logged: a malformed path parameter or a malformed `relation` or `documentIds` value, which scanners produce in volume and which reach no control. Nitro still writes its own report of an unhandled error, as free text over several lines with the request URL and its query; the `server.unhandled` line is the structured record of the same error. Not done yet: a log inventory (events, access and retention in one place), tracked in #494.
+Not logged: a malformed path parameter or a malformed `relation` or `documentIds` value, which scanners produce in volume and which reach no control. Nitro still writes its own report of an unhandled error, as free text over several lines with the request URL and its query; the `server.unhandled` line is the structured record of the same error. The format, the destination and the retention in one place: [operate/logging.md](operate/logging.md).
 
