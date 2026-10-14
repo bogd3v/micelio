@@ -30,9 +30,6 @@ export default defineEventHandler(async (event): Promise<Comment> => {
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
     console.error('Strapi comment error:', upstreamLogMessage(error))
-    throw createError({
-      statusCode: asUpstreamError(error).response?.status || 500,
-      message: upstreamErrorMessage(error, 'Failed to post comment'),
-    })
+    throw upstreamFailure(error, 'Failed to post comment', [400, 404])
   }
 })

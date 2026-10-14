@@ -6,7 +6,7 @@ Conventions:
 
 - **Errors** are Nitro errors: `{ statusCode, statusMessage, message, data? }`. Auth routes put a machine-readable code in `statusMessage` and `data.code` (see [Auth error codes](#auth-error-codes)); the client translates it.
 - **Locales** are `en` and `es`. An unknown locale is a `400`; an empty one counts as absent.
-- **502** means Strapi failed or rejected the call; the message carries Strapi's when it has one.
+- **502** means Strapi failed or rejected the call. The message is a fixed one that the route chooses (`Failed to fetch comments`): Strapi's own text and the URL of the call are never returned, they go to the log. A 404 from Strapi stays a 404, a posted comment that Strapi refuses stays a 400, and any other status (a 401 or 403 included) is a 502.
 - **429** comes with `Retry-After` (seconds).
 - **413** answers a request body over 64 KB, declared or counted as it arrives; the rest of the body is not read and the connection is closed. Every route that reads a body applies it.
 
@@ -62,9 +62,9 @@ Pages match with or without the `/es` prefix. `server/middleware/modules.ts` ans
 
 | Route | Input | Returns | Errors |
 | --- | --- | --- | --- |
-| `GET /api/comments` | Query: `relation`, `locale`, `page`, `pageSize` (≤ 50), `sort` (`field:asc` / `field:desc`) | `Comment[]` as a tree (`children`) | 400, Strapi's status |
-| `GET /api/comments/flat` | Same query | `CommentsResponse` (`data` flat, with `threadOf`) | 400, Strapi's status |
-| `POST /api/comments` | Query: `relation`. Body: `author.name` (≤ 100), `author.email` (≤ 254), `author.avatar` (http(s), optional, dropped if invalid), `content` (≤ 5000), `threadOf` (positive integer, optional), `locale` | `Comment` | 400 invalid body or locale, 403 other origin, 429 (10 per IP / 10 min, or the CMS limit, with its `Retry-After`), Strapi's status |
+| `GET /api/comments` | Query: `relation`, `locale`, `page`, `pageSize` (≤ 50), `sort` (`field:asc` / `field:desc`) | `Comment[]` as a tree (`children`) | 400, 404, 502 |
+| `GET /api/comments/flat` | Same query | `CommentsResponse` (`data` flat, with `threadOf`) | 400, 404, 502 |
+| `POST /api/comments` | Query: `relation`. Body: `author.name` (≤ 100), `author.email` (≤ 254), `author.avatar` (http(s), optional, dropped if invalid), `content` (≤ 5000), `threadOf` (positive integer, optional), `locale` | `Comment` | 400 invalid body or locale, 403 other origin, 429 (10 per IP / 10 min, or the CMS limit, with its `Retry-After`), 400 or 404 when Strapi refuses the comment, 502 |
 
 Every comment response hides `PENDING` and `REJECTED` comments and never includes the author's email. The author id of a posted comment is set by the server (`guest-<uuid>`). Types: `app/interfaces/comment.ts`.
 
