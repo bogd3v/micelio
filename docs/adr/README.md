@@ -15,6 +15,7 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0010](0010-semantic-versioning.md) | Semantic versioning and one release line for `micelio` and `micelio-cms`, with `latest` as the newest stable release and `edge` as `main` | Accepted | 2026-10-09 |
 | [0011](0011-refuse-plain-http-upstreams.md) | Refuse plain http towards the CMS and Umami outside a private network | Accepted | 2026-10-14 |
 | [0012](0012-static-cms-credentials.md) | Accept static credentials towards the CMS, with a rotation policy | Accepted | 2026-10-14 |
+| [0013](0013-cms-hardening-operator-changes.md) | Record the operator-facing changes of the CMS hardening | Accepted | 2026-10-14 |
 
 ## Writing a new record
 
