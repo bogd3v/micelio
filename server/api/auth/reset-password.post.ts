@@ -5,6 +5,7 @@ export default defineEventHandler(async (event): Promise<{ ok: true }> => {
   preventCaching(event)
   assertSameOrigin(event)
   const { code, password, passwordConfirmation } = await validBody(event, resetPasswordSchema, () => authFailure('invalidInput'))
+  await assertPasswordAllowed(password)
 
   try {
     await strapiFetch('/api/auth/reset-password', {

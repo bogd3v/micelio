@@ -8,6 +8,8 @@ export default defineEventHandler(async (event): Promise<AuthUserResponse> => {
   assertSameOrigin(event)
   const { username, email, password } = await validBody(event, registerSchema, () => authFailure('invalidInput'))
 
+  await assertPasswordAllowed(password, { username, email })
+
   try {
     const response = await strapiFetch<{ user: StrapiAuthUser }>('/api/auth/local/register', {
       event, timeout: AUTH_TIMEOUT_MS,

@@ -40,6 +40,8 @@ export type AuthErrorCode
     | 'tooManyRequests'
     | 'invalidCode'
     | 'wrongPassword'
+    | 'weakPassword'
+    | 'commonPassword'
     | 'invalidInput'
     | 'unauthorized'
     | 'forbiddenOrigin'

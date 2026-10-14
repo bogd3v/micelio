@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { isValidEmail, isValidPassword, isValidUsername, maskEmail } from '~/helpers/auth'
+import { passwordContextWords, passwordUsesContext } from '~/helpers/passwordContext'
 
 type RegisterField = 'username' | 'email' | 'password' | 'privacy'
 
@@ -35,6 +36,7 @@ function validate(): Partial<Record<RegisterField, string>> {
   if (!isValidUsername(username.value)) found.username = t('account.errors.username')
   if (!isValidEmail(email.value)) found.email = t('account.errors.email')
   if (!isValidPassword(password.value)) found.password = t('account.errors.password')
+  else if (passwordUsesContext(password.value, passwordContextWords({ username: username.value, email: email.value, siteName: site.value.name }))) found.password = t('account.errors.weakPassword')
   if (!acceptPrivacy.value) found.privacy = t('account.errors.privacy')
   return found
 }

@@ -8,6 +8,8 @@ const MESSAGE_CODES: readonly AuthErrorCode[] = [
   'tooManyRequests',
   'invalidCode',
   'wrongPassword',
+  'weakPassword',
+  'commonPassword',
 ]
 
 /**
