@@ -525,6 +525,39 @@ describe('/api/posts/[slug]', () => {
   })
 })
 
+describe('request bodies', () => {
+  const CAP = 64 * 1024
+
+  it('refuses a body over the cap with a 413 before the CMS or any route logic runs', async () => {
+    const before = mock.requests.length
+    const body = JSON.stringify({ identifier: 'lectora', password: 'x'.repeat(CAP) })
+    for (const path of ['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/newsletter/subscribe', '/api/comments?relation=api::article.article:doc-vue']) {
+      const response = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json', 'origin': SITE_URL }, body })
+      expect(response.status, path).toBe(413)
+    }
+    expect(mock.requests.length).toBe(before)
+  })
+
+  it('refuses it when the length is not declared, by counting what arrives', async () => {
+    const { url } = useTestContext()
+    const status = await new Promise<number>((resolve, reject) => {
+      const req = httpRequest(new URL('/api/auth/login', url), { method: 'POST', agent: false, headers: { 'content-type': 'application/json', 'origin': SITE_URL, 'transfer-encoding': 'chunked' } }, (res) => {
+        res.resume()
+        resolve(res.statusCode ?? 0)
+      })
+      req.on('error', reject)
+      for (let i = 0; i < 40; i++) req.write('x'.repeat(4096))
+      req.end()
+    })
+    expect(status).toBe(413)
+  })
+
+  it('still reads a normal body, a form-encoded one included', async () => {
+    const response = await fetch('/api/newsletter/unsubscribe', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'List-Unsubscribe=One-Click&token=unsubscribe-token-unknown-0000001' })
+    expect(response.status).toBe(200)
+  })
+})
+
 describe('HTTP methods', () => {
   // `fetch` refuses to send TRACE, so the request goes through node:http
   function send(method: string, path: string): Promise<{ status: number, allow: string | undefined, body: string }> {

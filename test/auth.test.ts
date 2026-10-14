@@ -3,6 +3,7 @@ import {
   authErrorCodeOf,
   authNotice,
   isValidEmail,
+  isPasswordTooLong,
   isValidPassword,
   isValidUsername,
   maskEmail,
@@ -56,6 +57,17 @@ describe('validators', () => {
     expect(isValidEmail('nombre@correo')).toBe(false)
     expect(isValidPassword('123456789')).toBe(false)
     expect(isValidPassword('1234567890')).toBe(true)
+  })
+
+  it('accepts at most 72 bytes, which is what the CMS can hash, counting a letter with an accent as two and an emoji as four', () => {
+    expect(isValidPassword('a'.repeat(72))).toBe(true)
+    expect(isValidPassword('a'.repeat(73))).toBe(false)
+    expect(isValidPassword('é'.repeat(36))).toBe(true)
+    expect(isValidPassword('é'.repeat(37))).toBe(false)
+    expect(isValidPassword('😀'.repeat(19))).toBe(false)
+    expect(isPasswordTooLong('a'.repeat(73))).toBe(true)
+    expect(isPasswordTooLong('a'.repeat(72))).toBe(false)
+    expect(isPasswordTooLong('corta')).toBe(false)
   })
 })
 

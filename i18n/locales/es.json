@@ -672,6 +672,7 @@
       "username": "Usa de 3 a 30 letras, números, punto o guion.",
       "email": "Escribe un correo válido, por ejemplo nombre{'@'}correo.co.",
       "password": "La contraseña necesita al menos 10 caracteres.",
+      "passwordLong": "La contraseña no puede pasar de 72 bytes: unas 72 letras o dígitos, menos si lleva tildes o emojis.",
       "privacy": "Marca la casilla para crear la cuenta.",
       "mismatch": "Las contraseñas no coinciden.",
       "samePassword": "La contraseña nueva debe ser distinta de la actual.",

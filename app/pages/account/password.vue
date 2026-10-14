@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { authErrorCodeOf, isValidPassword } from '~/helpers/auth'
+import { authErrorCodeOf, isPasswordTooLong, isValidPassword } from '~/helpers/auth'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -30,7 +30,7 @@ async function submit(): Promise<void> {
   saved.value = false
   errors.value = {
     current: current.value ? undefined : t('account.errors.currentRequired'),
-    password: !isValidPassword(password.value) ? t('account.errors.password') : password.value === current.value ? t('account.errors.samePassword') : undefined,
+    password: !isValidPassword(password.value) ? t(isPasswordTooLong(password.value) ? 'account.errors.passwordLong' : 'account.errors.password') : password.value === current.value ? t('account.errors.samePassword') : undefined,
     confirmation: confirmation.value === password.value ? undefined : t('account.errors.mismatch'),
   }
   const invalid = errors.value.current ? currentRef : errors.value.password ? passwordRef : errors.value.confirmation ? confirmationRef : null

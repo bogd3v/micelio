@@ -1,14 +1,16 @@
+import type { H3Event } from 'h3'
 import type { Locale } from '~/interfaces'
 import { sendWelcomeEmail } from '../../utils/email'
 import { findSubscriber, newUnsubscribeToken, updateSubscriber } from '../../utils/subscribers'
 import { isNewsletterToken, newsletterLanguage } from '~/helpers/newsletter'
 import type { ConfirmResponse } from '~/interfaces/newsletter'
 
-async function readToken(event: Parameters<typeof readBody>[0]): Promise<unknown> {
+async function readToken(event: H3Event): Promise<unknown> {
   try {
-    const body = await readBody<{ token?: unknown } | null>(event)
+    const body = await readLimitedBody(event) as { token?: unknown } | null | undefined
     return body?.token
-  } catch {
+  } catch (error: unknown) {
+    if ((error as { statusCode?: number }).statusCode === 413) throw error
     // An unreadable body is the same as a missing token
     return undefined
   }

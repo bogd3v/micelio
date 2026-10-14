@@ -37,8 +37,9 @@ export default defineEventHandler(async (event) => {
   let raw: Buffer | undefined
   if (PAYLOAD_METHODS.has(event.method)) {
     try {
-      raw = await readRawBody(event, false)
-    } catch {
+      raw = await readLimitedRaw(event)
+    } catch (error: unknown) {
+      if ((error as { statusCode?: number }).statusCode === 413) throw error
       raw = undefined
     }
   }
