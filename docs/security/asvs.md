@@ -30,8 +30,8 @@ An open requirement that an attacker could exploit is **not** described here or 
 
 | Chapter | Target | Met | N/A | Open | Open (above target) |
 | --- | --- | --- | --- | --- | --- |
-| V1 Encoding and Sanitization | L2 | 16 | 9 | 2 | 0 |
-| V2 Validation and Business Logic | L2 | 8 | 1 | 2 | 0 |
+| V1 Encoding and Sanitization | L2 | 17 | 9 | 1 | 0 |
+| V2 Validation and Business Logic | L2 | 10 | 1 | 0 | 0 |
 | V3 Web Frontend Security | L1 | 17 | 2 | 0 | 0 |
 | V4 API and Web Service | L1 | 2 | 8 | 0 | 0 |
 | V5 File Handling | L1 | 2 | 7 | 0 | 0 |
@@ -44,12 +44,12 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V12 Secure Communication | L1 | 1 | 6 | 0 | 2 |
 | V13 Configuration | L1 | 10 | 2 | 0 | 1 |
 | V14 Data Protection | L1 | 5 | 0 | 1 | 3 |
-| V15 Secure Coding and Architecture | L1 | 9 | 0 | 2 | 2 |
-| V16 Security Logging and Error Handling | L1 | 5 | 3 | 1 | 7 |
+| V15 Secure Coding and Architecture | L1 | 10 | 0 | 1 | 2 |
+| V16 Security Logging and Error Handling | L1 | 6 | 3 | 0 | 7 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **112** | **104** | **17** | **20** |
+| **Total (253 requirements)** | | **117** | **104** | **12** | **20** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 37 requirements that are not met, **17 are at the target level** (6 of them tracked in private security advisories) and 20 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 32 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 20 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -80,7 +80,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V1.3.8 | Sanitize JNDI input and disable unsafe JNDI | N/A | No such feature: not a Java application |
 | V1.3.9 | Sanitize content before sending to memcache | N/A | No such feature: no memcache; Nitro cache keys are built from validated locale and slug |
 | V1.3.10 | Sanitize format strings before processing | Met | Log calls use a constant first argument, with data as further arguments (`server/api/comments/index.post.ts:32`, `server/api/newsletter/subscribe.post.ts:47`); no printf-style formatting of input. No test |
-| V1.3.11 | Sanitize input passed to mail systems | Open | Private advisory |
+| V1.3.11 | Sanitize input passed to mail systems | Met | The frontend sends mail only to the address of a newsletter subscription, validated and normalised (`server/schemas/`), with fixed text; the CMS no longer emails comment authors on replies, so no guest text or address reaches a mail system (micelio-cms `src/extensions/comments/strapi-server.ts`, GHSA-64hp-rrrq-q2hh; mapped in micelio-cms#128). Test: micelio-cms `tests/comments-api.test.ts` |
 | V1.4.1 | Use memory-safe strings and buffer handling | N/A | Memory-safe runtime (TypeScript on Node.js); no native code of our own |
 | V1.4.2 | Prevent integer overflow with range validation | Met | Pagination integers are digit-only and capped at `Number.MAX_SAFE_INTEGER`, page size clamped to 50 (`server/schemas/query.ts:30-35`, `:53`). Test: `test/schemas.test.ts:112` (digits only); no test for the cap |
 | V1.4.3 | Release memory and clear dangling references | N/A | Memory-safe, garbage-collected runtime; no manual allocation |
@@ -94,14 +94,14 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V2.1.1 | Document validation rules for each data item | Met | The rules are documented per endpoint (`docs/security.md:47-64`, `docs/api.md`) and the post route enforces its slug with `postParamsSchema` before any CMS call (`server/schemas/query.ts`, `server/api/posts/[slug].get.ts`); the value then reaches the CMS only as an `$eq` filter. Test: `test/schemas.test.ts` (`postParamsSchema`), `test/integration/api.test.ts` ("refuses a slug that is not a Strapi uid") |
 | V2.1.2 | Document consistency rules for combined data items | Met | `docs/api.md:34` (post lists: the category wins over the tag; at most four lists per page), `docs/api.md:137` (blog filters: the category wins, other parameters kept). No test |
 | V2.1.3 | Document business limits, per user and global | Met | `docs/security.md:53-66` (page sizes, search text, per-visitor and per-address limits, in-memory scope), `docs/api.md:66`; CMS limits in micelio-cms `docs/RATE_LIMITING.md`, see micelio-cms#128. No test |
-| V2.2.1 | Validate input against business expectations | Open | Private advisory |
+| V2.2.1 | Validate input against business expectations | Met | Sizes and shapes are bounded: a body is read within 64 KB and answers 413 before any route logic (`server/utils/validation.ts:5`, `:21`, `:45`; test `test/integration/api.test.ts:531`), a new password is at most 72 bytes, an email, identifier or username at most 254 characters and a reset code letters, digits, `_` and `-` (`server/schemas/auth.ts:6-20`, `:56`; GHSA-xjjv-c6cr-w4p6). A comment is built for the public from a list of fields, so a reply carries its parent as `{ id }` and no email or reports (`app/helpers/comments.ts:46`; GHSA-vjh3-x6fv-9mfr). Tests: `test/comments.test.ts:31`, `test/integration/api.test.ts:1178` |
 | V2.2.2 | Enforce validation at a trusted server layer | Met | Every body and query goes through a zod schema on the server before any CMS call (`server/schemas/`, `server/utils/validation.ts:10-37`); the client forms share the validators of `app/helpers/`. Test: `test/schemas.test.ts`, `test/integration/api.test.ts` |
 | V2.2.3 | Check that related data items are mutually consistent | Met | A valid category drops the tag (`app/helpers/blog.ts:131-133`); a comment must name an article relation of the expected form (`server/utils/commentRelation.ts:10-16`); the thread a reply belongs to is checked by the CMS comments plugin, see micelio-cms#128. Test: `test/blog.test.ts:106`, `test/comments.test.ts:88` |
 | V2.3.1 | Run business flows in order without skipping steps | Met | A subscription becomes confirmed only through the emailed token (`server/api/newsletter/confirm.post.ts`); a confirmed address is never reset by a new subscribe (`server/api/newsletter/subscribe.post.ts:29`); account steps are enforced by the CMS, see micelio-cms#128. Test: `test/integration/api.test.ts:1229`, `:1288-1306` |
 | V2.3.2 | Implement the documented business limits | Met | The frontend limits of `docs/security.md:66` are the buckets of `server/utils/rateLimit.ts:12-14`, enforced by `assertRateLimit` (`:64`); page size clamped (`server/schemas/query.ts:53`). Test: `test/rateLimit.test.ts`, `test/integration/api.test.ts:1270` |
 | V2.3.3 | Make business operations all-or-nothing, rolling back on failure | Met | A subscribe whose confirmation email cannot be sent deletes the pending record it just created, by the id the CMS returned, before answering the error (`server/api/newsletter/subscribe.post.ts`, `server/utils/subscribers.ts`); a rollback that fails is logged and the next request replaces the pending record. Test: `test/integration/api.test.ts` ("deletes the subscriber it created when the confirmation email cannot be sent") |
 | V2.3.4 | Lock limited-quantity resources against double booking | N/A | No such feature: no limited-quantity resources |
-| V2.4.1 | Anti-automation against excessive calls to functions | Open | Private advisory |
+| V2.4.1 | Anti-automation against excessive calls to functions | Met | Comments and newsletter limits count an IPv6 network by its /64 (`ipBucket`, `server/lib/clientIp.ts:104`), the in-memory limiter tracks at most 10,000 keys and evicts the oldest first (`app/helpers/rateLimit.ts:25-72`), and a site-wide cap of 100 confirmation emails an hour stops a rotating client (`server/utils/rateLimit.ts:16`); the CMS no longer sends reply emails (GHSA-p9c9-2w7f-67wv, GHSA-64hp-rrrq-q2hh). Tests: `test/rateLimit.test.ts:29-53`, `test/clientIp.test.ts:194`, `test/integration/api.test.ts:1303`, `:2486` |
 
 ## V3 Web Frontend Security
 
@@ -310,7 +310,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V15.1.2 | SBOM of third-party components, trusted sources verified | Open (above target) | The lockfile is committed, but the image builds (`.github/workflows/deploy.yml:421`, `:484`) publish no SBOM and no signed provenance, which the standard (section 10) requires. Tracked in #495 |
 | V15.1.3 | Resource-heavy functionality and its availability defences documented | Met | `docs/security.md:53-54` (page size, search length, post lists, caching), `:66` (rate limits), `server/lib/strapiRequest.ts:5` (CMS timeout), `:111-119` (playground limits). No test |
 | V15.2.1 | Components within the documented remediation time frames | Met | `npm audit` on 2026-10-14: 13 high, no low, no critical. The high ones (`node-forge`, the `braces` chain) are build and development tooling, not in `.output/server/node_modules`, with no fixed release (`node-forge`) or no fix that is not a breaking change (`braces`), and are listed in `docs/security.md`, "Accepted risks". The low `katex` finding was fixed by Mermaid 12.2.0. Run: `npm audit`. Test: CI fails on a critical finding |
-| V15.2.2 | Defences against availability loss from heavy functionality | Open | Private advisory |
+| V15.2.2 | Defences against availability loss from heavy functionality | Met | A request body is read within 64 KB and answers 413 before any route logic (`server/utils/validation.ts:5-45`), inputs have upper bounds (`server/schemas/auth.ts`), and the rate limiter holds at most 10,000 keys (`app/helpers/rateLimit.ts:25`). Heavy islands load only where used (ADR 0006). Tests: `test/integration/api.test.ts:531`, `test/rateLimit.test.ts:32` (GHSA-xjjv-c6cr-w4p6, GHSA-p9c9-2w7f-67wv) |
 | V15.2.3 | Production has no test, sample or dev functionality | Met | Image contains only `.output` (`Dockerfile:61`); specimen page only with `MICELIO_SPECIMEN=1` (`modules/theme/specimen/setup.ts:10-11`); dev-only plugins skip in production. Test: `test/themeModule.test.ts` |
 | V15.3.1 | Responses return only the required fields | Open | Article, about and post-list routes return the whole Strapi object with `populate: '*'` relations (`server/lib/constants.ts:10-37`, `server/api/posts/index.get.ts:137-141`, `server/api/posts/[slug].get.ts:43`, `server/api/about.get.ts:49`); private CMS fields stay hidden only because Strapi drops them. Tracked in #493 |
 | V15.3.2 | Backend calls to external URLs don't follow redirects unintentionally | Open (above target) | The Umami proxy follows redirects (`server/middleware/umami.ts:44`, h3 `sendProxy` default), so do CMS calls without the forwarder secret (`server/utils/strapi.ts:54`) and the static media copy (`modules/static-routes.ts:199`). Tracked in #493 |
@@ -336,7 +336,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V16.3.4 | Unexpected errors and backend TLS failures logged | Open (above target) | Most CMS failures are logged, but a failed Umami proxy call becomes a 502 with no log line (`server/middleware/umami.ts:44`; local probe); `fetchPublishedVersion` swallows failures (`server/api/drafts/[documentId].get.ts:13`). Tracked in #494 |
 | V16.4.1 | Log data encoded to prevent log injection | Met | `logText` turns control characters into spaces and cuts the text; `upstreamLogMessage` and the theme log use it (`server/utils/upstreamError.ts`, `server/utils/theme.ts`). Test: `test/upstreamLog.test.ts` |
 | V16.4.2–V16.4.3 | Logs protected from tampering and shipped to a separate system | N/A | Operator/deployment: the app writes to stdout/stderr; collection, access control and shipping are the hosting platform's |
-| V16.5.1 | Generic message for unexpected or security-sensitive errors | Open | Private advisory |
+| V16.5.1 | Generic message for unexpected or security-sensitive errors | Met | A failed CMS call answers with a fixed message the route chooses and a 502 (a 404, and a 400 when posting a comment, are kept); the CMS text, URL and query go to the log only (`upstreamFailure`, `server/utils/upstreamError.ts:19`; GHSA-rcx4-hg9p-9gj9). Tests: `test/integration/api.test.ts:704`, `:728` |
 | V16.5.2 | Secure operation when external resources fail | Met | Site settings fall back to `app.config.ts` (`server/utils/site.ts:49`), search answers `[]` (`server/api/search.get.ts:18-21`), fediverse ranking falls back to newest (`server/api/posts/index.get.ts:58-62`), post lists render empty (`server/utils/pageSections.ts:46-48`), short timeouts. Test: `test/integration/api.test.ts` (502 never cached, fallbacks) |
 | V16.5.3 | Fails securely, no fail-open on errors | Met | Validation and origin checks run before any CMS call (`server/utils/validation.ts:17-18`, `server/utils/auth.ts:50-57`); drafts answer 404 on any refusal (`server/utils/drafts.ts:46`); a failed confirmation update is a 500, not a success (`server/api/newsletter/confirm.post.ts`). Test: `test/integration/api.test.ts` |
 
