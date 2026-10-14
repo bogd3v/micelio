@@ -13,6 +13,7 @@ const { localizePath } = useLocaleUtils()
 const site = useSite()
 
 const token = String(route.query.token ?? '')
+useForgetQueryParam('token')
 const contactEmail = computed<string>(() => site.value.privacyContactEmail)
 
 const status = ref<UnsubscribeStatus>(isNewsletterToken(token) ? 'ready' : 'invalid')

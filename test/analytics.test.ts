@@ -15,7 +15,13 @@ describe('umamiScriptAttributes', () => {
       'defer': true,
       'data-website-id': 'site-1',
       'data-domains': 'bogdev.com.co',
+      'data-exclude-search': 'true',
     })
+  })
+
+  it('tells the tracker to leave the query string out of the address it sends', () => {
+    const tag = umamiScriptAttributes({ websiteId: 'site-1', scriptPath: '/bd.js', siteUrl: ORIGIN })
+    expect(tag).toMatchObject({ 'data-exclude-search': 'true' })
   })
 
   it('skips the tracker without a website id', () => {

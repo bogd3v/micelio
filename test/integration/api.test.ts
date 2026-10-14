@@ -1502,6 +1502,14 @@ describe('Umami', () => {
     for (const name of ['cf-connecting-ip', 'true-client-ip', 'x-client-ip', 'forwarded', 'cookie', 'authorization']) expect(headers?.[name]).toBeUndefined()
   })
 
+  it('does not pass the Referer on: it holds the address of the page, query included, which can carry a reset code or a token', async () => {
+    const referer = `${SITE_URL}/account/reset-password?code=PROBECODE0123456789`
+    await fetch('/bd.js', { headers: { referer } })
+    await fetch('/api/bd', { method: 'POST', headers: { 'content-type': 'application/json', referer }, body: '{}' })
+    expect(umami.requests).toHaveLength(2)
+    for (const request of umami.requests) expect(request.headers.referer, `${request.method} ${request.path}`).toBeUndefined()
+  })
+
   it('leaves the other API routes alone', async () => {
     await $fetch('/api/categories', { query: { locale: 'en' } })
     expect(umami.requests).toEqual([])
@@ -1999,6 +2007,18 @@ describe('security headers', () => {
       expect(await (await fetch(path)).text(), path).not.toMatch(/<base[\s>]/i)
     }
     expect((await fetch('/blog')).headers.get('content-security-policy') ?? '').toContain('base-uri \'none\'')
+  })
+
+  it('tells the pages that carry a reset code or a token not to send a Referer', async () => {
+    for (const path of ['/account/reset-password?code=x', '/es/account/reset-password?code=x', '/confirm?token=confirmation-token-0000001', '/es/confirm?token=confirmation-token-0000001', '/newsletter/unsubscribe?token=unsubscribe-token-0000001', '/es/newsletter/unsubscribe?token=unsubscribe-token-0000001']) {
+      const response = await fetch(path)
+      expect(response.headers.get('referrer-policy'), path).toBe('no-referrer')
+    }
+  })
+
+  it('asks the tracker on those pages to leave the query string out', async () => {
+    const html = await (await fetch('/account/reset-password?code=x')).text()
+    expect(html).toMatch(/<script[^>]*src="\/bd\.js"[^>]*data-exclude-search="true"/)
   })
 
   it('sends the fixed headers on pages and API routes', async () => {

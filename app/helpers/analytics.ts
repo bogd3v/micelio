@@ -14,6 +14,7 @@ type UmamiScriptAttributes = {
   'defer': boolean
   'data-website-id': string
   'data-domains': string
+  'data-exclude-search': string
 }
 
 /** The name of the Umami event sent when a reader follows a link that leaves the site. */
@@ -23,7 +24,7 @@ export const OUTBOUND_LINK_EVENT = 'outbound-link'
  * The attributes of the Umami script tag, or null when there is no website id or the site URL is not a valid URL.
  *
  * @remarks
- * `data-domains` is the hostname of the site URL.
+ * `data-domains` is the hostname of the site URL. The tracker is told to leave the query string out of the address it sends, because a page can carry a one-use secret there (a reset code, a newsletter token).
  */
 export function umamiScriptAttributes(config: UmamiScriptConfig): UmamiScriptAttributes | null {
   if (!config.websiteId || !URL.canParse(config.siteUrl)) return null
@@ -32,6 +33,7 @@ export function umamiScriptAttributes(config: UmamiScriptConfig): UmamiScriptAtt
     'defer': true,
     'data-website-id': config.websiteId,
     'data-domains': new URL(config.siteUrl).hostname,
+    'data-exclude-search': 'true',
   }
 }
 

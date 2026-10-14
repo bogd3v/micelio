@@ -15,6 +15,8 @@ const DROPPED_HEADERS = [
   // A visitor's session must not reach the analytics server
   'cookie',
   'authorization',
+  // The address of the page, query included: it can carry a reset code or a token
+  'referer',
 ]
 
 const PAYLOAD_METHODS = new Set(['PATCH', 'POST', 'PUT', 'DELETE'])
