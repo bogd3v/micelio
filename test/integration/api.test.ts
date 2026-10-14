@@ -1610,6 +1610,12 @@ describe('Umami', () => {
     expect(umami.requests.map(request => [request.method, request.path])).toEqual([['GET', '/bd.js']])
   })
 
+  it('does not hand the visitor a redirect from Umami', async () => {
+    const response = await fetch('/bd.js', { headers: { 'x-mock-redirect': '1' }, redirect: 'manual' })
+    expect(response.status).toBe(502)
+    expect(response.headers.get('location')).toBeNull()
+  })
+
   it('forwards collected events with the visitor IP', async () => {
     const payload = JSON.stringify({ type: 'event', payload: { website: 'site-1', url: '/blog' } })
     const response = await fetch('/api/bd', {

@@ -27,6 +27,11 @@ export async function startMockUmami(): Promise<MockUmamiResult> {
         headers: request.headers,
         body: Buffer.concat(chunks).toString('utf8'),
       })
+      if (request.headers['x-mock-redirect']) {
+        response.writeHead(302, { location: 'https://evil.example/tracker.js' })
+        response.end()
+        return
+      }
       if (request.method === 'GET') {
         response.writeHead(200, { 'content-type': 'application/javascript' })
         response.end(MOCK_TRACKER_SCRIPT)

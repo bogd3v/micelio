@@ -21,7 +21,7 @@ export function strapiRequestUrl(config: Pick<StrapiRequestConfig, 'strapiUrl'>,
  * Calls the CMS at `path` and resolves with the parsed JSON body.
  *
  * @remarks
- * The credential is the API token unless `auth` says otherwise. A non-2xx answer rejects with the `ofetch` error, whose `response.status` the callers read. The timeout defaults to 10 seconds and `options` may change it. An `Authorization` entry in `headers` is always dropped. Route code uses `strapiFetch` from `server/utils/strapi.ts`, not this function.
+ * The credential is the API token unless `auth` says otherwise. A non-2xx answer rejects with the `ofetch` error, whose `response.status` the callers read. The timeout defaults to 10 seconds and `options` may change it. A redirect from the CMS is never followed: the call rejects, so the token and the visitor headers stay with the configured origin. An `Authorization` entry in `headers` is always dropped. Route code uses `strapiFetch` from `server/utils/strapi.ts`, not this function.
  */
 export function strapiRequest<T>(config: StrapiRequestConfig, path: string, options: StrapiRequestOptions = {}): Promise<T> {
   const { auth = 'token', headers: extra, ...fetchOptions } = options
@@ -30,5 +30,6 @@ export function strapiRequest<T>(config: StrapiRequestConfig, path: string, opti
     ...Object.fromEntries(Object.entries(extra ?? {}).filter(([name]) => name.toLowerCase() !== 'authorization')),
     ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}),
   }
-  return ofetch<T>(strapiRequestUrl(config, path), { timeout: DEFAULT_TIMEOUT_MS, ...fetchOptions, headers })
+  // The CMS is a known URL: a redirect from it is a misconfiguration or an attack, and following it would send the token elsewhere (ASVS V15.3.2)
+  return ofetch<T>(strapiRequestUrl(config, path), { timeout: DEFAULT_TIMEOUT_MS, redirect: 'error', ...fetchOptions, headers })
 }

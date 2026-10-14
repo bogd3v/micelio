@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { ofetch } from 'ofetch'
+import { fetchMedia } from './lib/static-media'
 import qs from 'qs'
 import { defineNuxtModule, useLogger } from 'nuxt/kit'
 import { Locale } from '../app/interfaces/locale'
@@ -196,7 +196,7 @@ export default defineNuxtModule({
         let path = localMedia.get(url)
         if (!path) {
           path = (async () => {
-            const blob = await ofetch<Blob, 'blob'>(url, { responseType: 'blob', timeout: 60_000 })
+            const blob = await fetchMedia(url)
             const bytes = Buffer.from(await blob.arrayBuffer())
             if (!isCopyableMedia(blob.type, url, bytes)) throw new Error(`${url} is ${blob.type || 'of unknown type'}, not an image, video, audio or .glb model`)
             // Named by its bytes: a file that changes behind the same URL gets a new name, so /_media/ can be immutable
