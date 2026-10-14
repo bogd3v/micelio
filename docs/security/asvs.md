@@ -40,16 +40,16 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V8 Authorization | L2 | 6 | 1 | 0 | 0 |
 | V9 Self-contained Tokens | L1 | 0 | 5 | 0 | 2 |
 | V10 OAuth and OIDC | L1 | 1 | 28 | 0 | 0 |
-| V11 Cryptography | L1 | 5 | 6 | 0 | 3 |
+| V11 Cryptography | L1 | 6 | 6 | 0 | 2 |
 | V12 Secure Communication | L1 | 1 | 6 | 0 | 2 |
 | V13 Configuration | L1 | 10 | 2 | 0 | 1 |
 | V14 Data Protection | L1 | 5 | 0 | 1 | 3 |
 | V15 Secure Coding and Architecture | L1 | 12 | 0 | 0 | 1 |
 | V16 Security Logging and Error Handling | L1 | 12 | 3 | 0 | 1 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **125** | **104** | **11** | **13** |
+| **Total (253 requirements)** | | **126** | **104** | **11** | **12** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 26 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 14 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 25 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 13 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -254,7 +254,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V11.4.2 | Passwords stored with an approved password hashing function | N/A | Passwords are stored by the CMS (users-permissions); enforced in micelio-cms, see micelio-cms#128 |
 | V11.4.3 | Integrity hashes collision resistant, adequate length | Met | CSP script hashes use SHA-256 (`server/plugins/contentSecurityPolicy.ts:6`); display font integrity pinned by sha256 (`docs/security.md:132`). Test: `test/integration/api.test.ts` (CSP hashes match inline scripts), `test/displayFonts.test.ts` |
 | V11.4.4 | Approved KDF with stretching for password-derived keys | N/A | The frontend derives no keys from passwords |
-| V11.5.1 | Non-guessable values from a CSPRNG with ≥128 bits | Open (above target) | Newsletter confirmation token is `randomUUID()` (122 random bits), `server/api/newsletter/subscribe.post.ts:32`; the unsubscribe token (`server/utils/subscribers.ts:10`, 256 bits) and the SSR nonce (`server/utils/rateLimit.ts:26`) are fine. Tracked in #495 |
+| V11.5.1 | Non-guessable values from a CSPRNG with ≥128 bits | Met | The newsletter confirmation token is 32 random bytes from `randomBytes` (256 bits, 43 characters), `newConfirmationToken()` in `server/utils/subscribers.ts`, used by `server/api/newsletter/subscribe.post.ts`; the unsubscribe token (same file, 256 bits) and the SSR nonce (`server/utils/rateLimit.ts:26`) are fine. Tokens already stored (UUIDs) still pass `isNewsletterToken`. Test: `test/integration/api.test.ts` ("returns 500 when SMTP is unreachable…" checks the stored token) |
 | V11.6.1 | Approved algorithms for key generation and signatures | N/A | The frontend generates no keys and signs nothing; JWTs are issued and verified by the CMS (enforced in micelio-cms, see micelio-cms#128) |
 
 ## V12 Secure Communication

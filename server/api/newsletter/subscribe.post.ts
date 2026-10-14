@@ -1,7 +1,6 @@
 import type { Locale } from '~/interfaces'
-import { randomUUID } from 'crypto'
 import { sendConfirmationEmail } from '../../utils/email'
-import { createSubscriber, deleteSubscriber, findSubscriber, newUnsubscribeToken } from '../../utils/subscribers'
+import { createSubscriber, deleteSubscriber, findSubscriber, newConfirmationToken, newUnsubscribeToken } from '../../utils/subscribers'
 import { ipBucket } from '../../lib/clientIp'
 import { subscribeSchema } from '../../schemas/newsletter'
 import type { NewsletterLanguage, SubscribeResponse } from '~/interfaces/newsletter'
@@ -32,7 +31,7 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
 
     // The email goes out only past this point: the site-wide cap counts the ones it sends
     assertRateLimit(event, 'newsletterGlobal', 'all')
-    const confirmationToken = randomUUID()
+    const confirmationToken = newConfirmationToken()
     const documentId = await createSubscriber(event, {
       email,
       confirmationToken,

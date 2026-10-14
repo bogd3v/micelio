@@ -5,6 +5,11 @@ import type { Subscriber } from '~/interfaces/newsletter'
 
 type SubscriberField = 'email' | 'confirmationToken' | 'unsubscribeToken'
 
+/** A new confirmation token: 32 random bytes (256 bits), base64url-encoded to 43 characters. */
+export function newConfirmationToken(): string {
+  return randomBytes(32).toString('base64url')
+}
+
 /** A new unsubscribe token: 32 random bytes, base64url-encoded to 43 characters. */
 export function newUnsubscribeToken(): string {
   return randomBytes(32).toString('base64url')
