@@ -1,6 +1,6 @@
 import type { Locale } from '~/interfaces'
 import { sendConfirmationEmail } from '../../utils/email'
-import { createSubscriber, deleteSubscriber, findSubscriber, newConfirmationToken, newUnsubscribeToken } from '../../utils/subscribers'
+import { createSubscriber, deleteSubscriber, findSubscriber, hashToken, newConfirmationToken } from '../../utils/subscribers'
 import { ipBucket } from '../../lib/clientIp'
 import { subscribeSchema } from '../../schemas/newsletter'
 import type { NewsletterLanguage, SubscribeResponse } from '~/interfaces/newsletter'
@@ -34,8 +34,7 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
     const confirmationToken = newConfirmationToken()
     const documentId = await createSubscriber(event, {
       email,
-      confirmationToken,
-      unsubscribeToken: newUnsubscribeToken(),
+      confirmationToken: hashToken(confirmationToken),
       confirmed: false,
       language,
     })

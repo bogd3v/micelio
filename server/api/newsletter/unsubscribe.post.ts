@@ -1,4 +1,4 @@
-import { deleteSubscriber, findSubscriber } from '../../utils/subscribers'
+import { deleteSubscriber, findSubscriberByToken } from '../../utils/subscribers'
 import { isNewsletterToken } from '~/helpers/newsletter'
 import type { UnsubscribeResponse } from '~/interfaces/newsletter'
 
@@ -26,7 +26,7 @@ export default defineEventHandler(async (event): Promise<UnsubscribeResponse> =>
   }
 
   try {
-    const subscriber = await findSubscriber(event, 'unsubscribeToken', token)
+    const subscriber = await findSubscriberByToken(event, 'unsubscribeToken', token)
     if (subscriber) await deleteSubscriber(event, subscriber.documentId)
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)

@@ -27,7 +27,7 @@ Create a **Custom** token, never Full Access or Read Only, with exactly these pe
 | Page | `find` | Section pages (`/api/pages/:slug`, looked up by slug through the filtered `find`; `findOne` is not granted and not needed) |
 | Site-setting | `find` | Site identity and modules (`/api/site`, RSS feeds, newsletter emails). Without it Strapi answers 403 and everything falls back to `app.config.ts` |
 | Comments (plugin) | read (hierarchy and flat), create | Comment threads and guest comments |
-| Subscriber | `find`, `create`, `update`, `delete` | Newsletter: subscribe, confirm, unsubscribe |
+| Subscriber | `find`, `create`, `update`, `delete` | Newsletter: subscribe, confirm, unsubscribe. Tokens are stored as SHA-256 hashes and looked up by hash (`hashToken`, `server/utils/subscribers.ts`) |
 
 `update` on Subscriber is easy to miss: without it a subscription is created but confirming it fails with a 500.
 

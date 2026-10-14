@@ -634,9 +634,19 @@ export interface Subscriber {
   id: number
   documentId: string
   email: string
-  /** Token of the confirmation link; null when there is none. */
+  /**
+   * SHA-256 (64 hex characters) of the token of the confirmation link; null when there is none.
+   *
+   * @remarks
+   * Rows stored before tokens were hashed hold the token itself.
+   */
   confirmationToken: string | null
-  /** Token of the unsubscribe link that every email carries. */
+  /**
+   * SHA-256 (64 hex characters) of the token of the unsubscribe link that every email carries; null until the subscriber confirms.
+   *
+   * @remarks
+   * Rows stored before tokens were hashed hold the token itself.
+   */
   unsubscribeToken: string | null
   confirmed: boolean
   language: NewsletterLanguage

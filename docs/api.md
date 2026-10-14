@@ -87,7 +87,7 @@ These call Strapi anonymously. Type: `app/interfaces/fediverse.ts`.
 | `POST /api/newsletter/confirm` | Body: `token`. Same-origin check; the `/confirm?token=` page sends it when the button is pressed, never on opening the link | `ConfirmResponse`; `alreadyConfirmed: true` when the link is used again | 400 missing token, 403 other origin, 404 unknown or malformed token, 500 |
 | `POST /api/newsletter/unsubscribe` | `token` in the body (unsubscribe page) or the query (RFC 8058 one-click) | `{ success: true }`, also for unknown or used tokens | 400 malformed token, 502 |
 
-Every newsletter response is `private, no-store`. Types: `app/interfaces/newsletter.ts`.
+Every newsletter response is `private, no-store`. The CMS stores the SHA-256 of the confirmation and unsubscribe tokens, not the tokens the emails carry, and the server looks a subscriber up by that hash, so a token never reaches the CMS's access logs (ASVS V14.2.1). Subscribers stored before this still have their tokens in the clear and keep working: if no hash matches, the server tries the token as it is, and a confirmation re-stores the unsubscribe token hashed. The unsubscribe token is created when the subscriber confirms, not when they subscribe. Types: `app/interfaces/newsletter.ts`.
 
 ## Account
 
