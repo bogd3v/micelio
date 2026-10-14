@@ -21,6 +21,15 @@ const DROPPED_HEADERS = [
 
 const PAYLOAD_METHODS = new Set(['PATCH', 'POST', 'PUT', 'DELETE'])
 
+/** Fetches without following a redirect and turns one into a 502, so Umami's `Location` never reaches the visitor (ASVS V15.3.2). */
+async function fetchWithoutRedirect(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const response = await fetch(input, { ...init, redirect: 'manual' })
+  if (response.status >= 300 && response.status < 400) {
+    throw createError({ statusCode: 502, statusMessage: 'Bad Gateway' })
+  }
+  return response
+}
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
   if (!config.umamiUrl) return
@@ -44,5 +53,5 @@ export default defineEventHandler(async (event) => {
     }
   }
   const body = raw ? new Uint8Array(raw) : undefined
-  return sendProxy(event, new URL(event.path, config.umamiUrl).href, { fetchOptions: { method: event.method, body, headers } })
+  return sendProxy(event, new URL(event.path, config.umamiUrl).href, { fetch: fetchWithoutRedirect, fetchOptions: { method: event.method, body, headers } })
 })
