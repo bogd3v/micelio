@@ -9,7 +9,7 @@ import type { Page, PageSection } from '~/interfaces/page'
 import type { StrapiRichText } from '~/interfaces/strapi-blocks'
 import { Category } from '~/interfaces/design'
 import { startMockStrapi } from './mock-strapi'
-import { MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
+import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
 import { resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
 import { contrastRatio, parseHex } from '~/helpers/color'
@@ -1614,6 +1614,8 @@ describe('Umami', () => {
     const response = await fetch('/bd.js', { headers: { 'x-mock-redirect': '1' }, redirect: 'manual' })
     expect(response.status).toBe(502)
     expect(response.headers.get('location')).toBeNull()
+    // The target is served by the mock itself, so a followed redirect would answer 200 and show up here, with no network involved
+    expect(umami.requests.map(request => request.path)).not.toContain(MOCK_REDIRECT_TARGET)
   })
 
   it('forwards collected events with the visitor IP', async () => {
