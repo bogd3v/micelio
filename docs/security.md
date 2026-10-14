@@ -47,7 +47,7 @@ The frontend authenticates to the CMS with two static secrets: the API token (`N
 | Build token (`BUILD_API_TOKEN`) | No expiry, find-only | Same schedule |
 | Forwarder secret | No expiry | Same schedule |
 
-An expiry would not make the site safer by itself: nothing renews a token that lapses, so the site would start answering 401 on the day it does. Rotation is therefore a scheduled operator task, and a shorter `lifespan` is a CMS improvement tracked outside this repository.
+An expiry would not make the site safer by itself: nothing renews a token that lapses, so the site would start answering 401 on the day it does. Rotation is therefore a scheduled operator task; the decision and the conditions under which it is revisited are [ADR 0012](adr/0012-static-cms-credentials.md).
 
 To rotate the API token, generate a new random value of at least 32 characters. Where the CMS creates the token from `FRONTEND_API_TOKEN` (or `BUILD_API_TOKEN`), set the new value there and in `NUXT_STRAPI_API_TOKEN`; the CMS replaces the key when it boots (`ensureEnvToken`). Restart the CMS first, then the frontend: until the frontend restarts, its calls to the CMS answer 401. Where the token was created by hand, create a new one in Strapi with the same permissions, set it in the frontend, and delete the old one. Rotate the forwarder secret on both sides together (`RATE_LIMIT_FORWARDER_SECRET` in the CMS); while the two differ, the CMS ignores the visitor's address the frontend sends and limits per server, and logs `a request sent a wrong forwarder secret`.
 

@@ -42,14 +42,14 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V10 OAuth and OIDC | L1 | 1 | 28 | 0 | 0 |
 | V11 Cryptography | L1 | 8 | 6 | 0 | 0 |
 | V12 Secure Communication | L1 | 3 | 6 | 0 | 0 |
-| V13 Configuration | L1 | 10 | 2 | 0 | 1 |
+| V13 Configuration | L1 | 11 | 2 | 0 | 0 |
 | V14 Data Protection | L1 | 8 | 0 | 1 | 0 |
 | V15 Secure Coding and Architecture | L1 | 12 | 0 | 0 | 1 |
 | V16 Security Logging and Error Handling | L1 | 12 | 3 | 0 | 1 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **132** | **104** | **11** | **6** |
+| **Total (253 requirements)** | | **134** | **104** | **11** | **4** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 18 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 6 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 16 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 4 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -275,7 +275,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
 | V13.1.1 | All communication needs documented, incl. user-supplied destinations | Met | `docs/operate/configure.md` (Strapi, SMTP, Umami, fediverse sections), `docs/security.md:5-15`, `:83`, ADR 0002; user-supplied URLs (comment avatar, page links, media) are never fetched by the server (`server/schemas/comments.ts:20-23`, `docs/security.md:54`). No test |
-| V13.2.1 | Backend calls authenticated without long-lived static credentials | Open (above target) | The frontend still authenticates with a static API token (created with `lifespan: null`, micelio-cms `src/migrations/api-tokens.ts:125`) and a static forwarder secret (`server/utils/strapi.ts:27-30`). What changed: the lifetime and rotation are decided and written (no expiry because nothing renews a lapsed token; rotation at least every 90 days and on exposure, with the procedure in `docs/security.md`, "Lifetime and rotation of the CMS credentials"). It stays open until a `lifespan` or short-lived credentials exist in the CMS, or an ADR accepts the risk. Tracked in #495 |
+| V13.2.1 | Backend calls authenticated without long-lived static credentials | Met | Accepted risk, ADR 0012. The API token (`lifespan: null`, micelio-cms `src/migrations/api-tokens.ts:125`) and the forwarder secret (`server/utils/strapi.ts:27-30`) stay static, under least privilege, TLS or a private network (ADR 0011), no exposure to the browser or logs, and rotation at least every 90 days (`docs/security.md`, "Lifetime and rotation of the CMS credentials"; `docs/security/keys.md`). Test: no test (documentation) |
 | V13.2.2 | Backend communication uses least-privilege accounts | Met | Custom token with the permissions of `docs/security.md:17-34`, identical to micelio-cms `src/migrations/api-tokens.ts:22-35` and `:47-53` (build token find-only); container runs as uid 65532 (`Dockerfile:72`). Test: none in this repo (the CMS migration has its own) |
 | V13.2.3 | No default credentials for service authentication | Met | All credentials default to empty (`nuxt.config.ts:93-104`) and missing ones are reported at boot (`server/plugins/runtimeConfigCheck.ts`). Test: `test/runtimeConfig.test.ts` |
 | V13.2.4 | Allowlist of external resources the app may contact | Met | Application layer: every CMS URL is the configured base plus a fixed path (`server/lib/strapiRequest.ts:16-17`, `test/strapiRequest.test.ts`); the Umami proxy matches two exact paths (`app/helpers/analytics.ts:39-42`); static media copy only from Strapi `/uploads/` and the media host (`modules/static-routes.ts:190-193`) |
