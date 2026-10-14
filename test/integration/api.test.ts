@@ -1261,6 +1261,25 @@ describe('/api/comments', () => {
     expect(mock.requests.filter(request => request.method === 'PUT' || request.method === 'DELETE')).toEqual([])
   })
 
+  it('counts the IPv6 addresses of one /64 as one visitor', async () => {
+    const body = { author: { name: 'Bot', email: 'bot6@example.com' }, content: 'Again.' }
+    for (let i = 1; i <= 10; i++) {
+      await $fetch('/api/comments', { method: 'POST', query: { relation }, headers: { 'origin': SITE_URL, 'x-forwarded-for': `2001:db8:77:1::${i}` }, body })
+    }
+    const blocked = await fetch(`/api/comments?relation=${relation}`, {
+      method: 'POST',
+      headers: { 'origin': SITE_URL, 'x-forwarded-for': '2001:db8:77:1::ffff', 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    expect(blocked.status).toBe(429)
+    const otherNetwork = await fetch(`/api/comments?relation=${relation}`, {
+      method: 'POST',
+      headers: { 'origin': SITE_URL, 'x-forwarded-for': '2001:db8:78:1::1', 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    expect(otherNetwork.status).toBe(200)
+  })
+
   it('limits how many comments one visitor can post', async () => {
     const headers = { 'origin': SITE_URL, 'x-forwarded-for': '203.0.113.10' }
     const body = { author: { name: 'Bot', email: 'bot@example.com' }, content: 'Again.' }
@@ -2421,5 +2440,22 @@ describe('visitor address for the CMS rate limits', () => {
     // The same bytes an in-process call would carry, sent from outside with a guessed nonce
     await fetch(`/api/comments/flat?relation=${relation}`, { headers: { 'x-micelio-internal-ip': '9.9.9.9', 'x-micelio-internal-nonce': '0'.repeat(64) } })
     expect(mock.requests.map(request => request.forwarder?.ip)).not.toContain('9.9.9.9')
+  })
+})
+
+// Last on purpose: the site-wide cap lives in the process and this test uses it up, so no later test may send a confirmation email
+describe('the site-wide cap on confirmation emails', () => {
+  it('caps the confirmation emails the site sends in an hour, whoever asks', async () => {
+    // Every request comes from another address and asks for another email, so only the global cap can answer
+    let blocked = 0
+    for (let i = 0; i < 120; i++) {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'origin': SITE_URL, 'content-type': 'application/json', 'x-forwarded-for': `198.51.${i >> 8}.${i & 255}` },
+        body: JSON.stringify({ email: `flood-${i}@example.com` }),
+      })
+      if (response.status === 429) blocked++
+    }
+    expect(blocked).toBeGreaterThanOrEqual(20)
   })
 })

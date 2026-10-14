@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { Comment, GuestComment } from '~/interfaces/comment'
 import { toPublicComment } from '~/helpers/comments'
 import { guestCommentSchema } from '../../schemas/comments'
+import { ipBucket } from '../../lib/clientIp'
 
 export default defineEventHandler(async (event): Promise<Comment> => {
   assertSameOrigin(event)
@@ -16,7 +17,7 @@ export default defineEventHandler(async (event): Promise<Comment> => {
     content: input.content,
     ...(input.threadOf ? { threadOf: input.threadOf } : {}),
   }
-  assertRateLimit(event, 'commentPerIp', clientIp(event))
+  assertRateLimit(event, 'commentPerIp', ipBucket(clientIp(event)))
 
   const url = `/api/comments/${relation}`
 
