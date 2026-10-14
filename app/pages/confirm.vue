@@ -8,6 +8,7 @@ const route = useRoute()
 const site = useSite()
 const token = String(route.query.token ?? '')
 const valid = isNewsletterToken(token)
+useForgetQueryParam('token')
 
 // Opening the link only shows the button: the subscription is confirmed by the click, so a scanner that fetches the link confirms nothing
 const status = ref<'ready' | 'loading' | 'success' | 'error'>(valid ? 'ready' : 'error')

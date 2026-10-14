@@ -17,10 +17,9 @@ const passwordRef = ref<{ focus: () => void }>()
 const confirmationRef = ref<{ focus: () => void }>()
 const errorRef = ref<{ focus: () => void }>()
 
-const code = computed<string>(() => {
-  const value = route.query.code
-  return typeof value === 'string' ? value : ''
-})
+// Read once: the address bar does not keep the code (useForgetQueryParam)
+const code = ref(typeof route.query.code === 'string' ? route.query.code : '')
+useForgetQueryParam('code')
 
 async function submit(): Promise<void> {
   if (submitting.value) return

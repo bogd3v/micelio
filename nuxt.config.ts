@@ -9,6 +9,9 @@ const privatePageHeaders = {
   'x-robots-tag': 'noindex, nofollow',
 }
 
+// The pages that open from an emailed link with a one-use secret in the query (a reset code, a newsletter token): no Referer leaves them
+const tokenPageHeaders = { ...privatePageHeaders, 'referrer-policy': 'no-referrer' }
+
 // CSS browser targets, shared by the Lightning CSS transformer and the minifier (build.cssTarget)
 const CSS_TARGETS: Record<string, [major: number, minor?: number]> = {
   chrome: [111],
@@ -141,6 +144,12 @@ export default defineNuxtConfig({
     '/es/drafts/**': { headers: privatePageHeaders },
     '/newsletter/**': { headers: privatePageHeaders },
     '/es/newsletter/**': { headers: privatePageHeaders },
+    '/account/reset-password': { headers: tokenPageHeaders },
+    '/es/account/reset-password': { headers: tokenPageHeaders },
+    '/confirm': { headers: tokenPageHeaders },
+    '/es/confirm': { headers: tokenPageHeaders },
+    '/newsletter/unsubscribe': { headers: tokenPageHeaders },
+    '/es/newsletter/unsubscribe': { headers: tokenPageHeaders },
     '/_theme': { headers: privatePageHeaders },
     '/es/_theme': { headers: privatePageHeaders },
     '/api/auth/**': { headers: { 'cache-control': 'private, no-store' } },
