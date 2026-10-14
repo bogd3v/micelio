@@ -17,7 +17,7 @@ export default defineEventHandler(async (event): Promise<SearchPostResult[]> => 
     return await searchArticles({ event, query: term, locale, content, limit: PALETTE_RESULTS })
   } catch (error: unknown) {
     noStoreOnUpstreamRateLimit(event, error)
-    console.error('Search error:', asUpstreamError(error).data || error)
+    console.error('Search error:', upstreamLogMessage(error))
     return []
   }
 })

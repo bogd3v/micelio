@@ -44,7 +44,7 @@ async function postsOf(section: PostListSection, locale: string | undefined): Pr
     const response = await strapiFetch<StrapiPaginatedResponse<PostListItem[]>>(`/api/articles?${query}`)
     return (response.data ?? []).slice(0, section.count)
   } catch (error: unknown) {
-    console.error('Strapi fetch page post-list error:', asUpstreamError(error).data || error)
+    console.error('Strapi fetch page post-list error:', upstreamLogMessage(error))
     return []
   }
 }
@@ -74,7 +74,7 @@ async function fetchPage(slug: string, locale: string | undefined): Promise<Page
   try {
     response = await strapiFetch<{ data?: unknown[] }>(`/api/pages?${query}`)
   } catch (error: unknown) {
-    console.error('Strapi fetch page error:', asUpstreamError(error).data || error)
+    console.error('Strapi fetch page error:', upstreamLogMessage(error))
     throw createError({
       statusCode: 502,
       message: upstreamErrorMessage(error, 'Failed to fetch page'),

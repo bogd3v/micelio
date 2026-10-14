@@ -55,7 +55,7 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
     return successResponse(language)
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
-    console.error('Newsletter subscription error:', error)
+    console.error('Newsletter subscription error:', upstreamLogMessage(error))
     throw createError({
       statusCode: 500,
       statusMessage:
