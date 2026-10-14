@@ -19,6 +19,18 @@ export interface LogEntry {
   cause?: string
 }
 
+/**
+ * What a log line says about an unexpected error: its name and `code`, never its message.
+ *
+ * @remarks
+ * The message of an error from our own code or a library can hold a URL, an address or a value the visitor sent, and nothing vets it (standard, section 4). The name and the code say what kind of failure it was; Nitro's own report of the error carries the rest.
+ */
+export function unexpectedErrorCause(error: unknown): string {
+  if (!(error instanceof Error)) return 'unknown error'
+  const code = (error as { code?: unknown }).code
+  return logText(typeof code === 'string' ? `${error.name} (${code})` : error.name)
+}
+
 /** Characters kept of a visitor hash: enough to tell visitors apart in a day's log, too few to look an address up. */
 const VISITOR_HASH_LENGTH = 12
 

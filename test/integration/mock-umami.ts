@@ -30,6 +30,11 @@ export async function startMockUmami(): Promise<MockUmamiResult> {
         headers: request.headers,
         body: Buffer.concat(chunks).toString('utf8'),
       })
+      if (request.headers['x-mock-destroy']) {
+        // The connection drops with no answer: the proxy's fetch fails
+        request.socket.destroy()
+        return
+      }
       if (request.headers['x-mock-redirect']) {
         response.writeHead(302, { location: `http://${request.headers.host}${MOCK_REDIRECT_TARGET}` })
         response.end()

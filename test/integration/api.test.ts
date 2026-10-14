@@ -2621,6 +2621,21 @@ describe('security event logs', () => {
     expect(JSON.stringify(got)).not.toMatch(/password1234|zz-invalid|some-code/)
   })
 
+  it('records a failed analytics proxy call, a dropped connection and a redirect alike, without the query', async () => {
+    const statuses: number[] = []
+    const got = await written(async () => {
+      statuses.push((await fetch('/bd.js', { headers: { 'x-mock-redirect': '1' }, redirect: 'manual' })).status)
+      statuses.push((await fetch('/api/bd?token=secret-in-query', { method: 'POST', headers: { 'content-type': 'application/json', 'x-mock-destroy': '1' }, body: '{}' })).status)
+    }, ['analytics.proxy'])
+    const proxy = got.filter(line => line.event === 'analytics.proxy')
+    expect(proxy).toHaveLength(2)
+    // The visitor's answer is a 502 either way, and the logged route has no query
+    expect(statuses).toEqual([502, 502])
+    expect(proxy.map(line => line.route).sort()).toEqual(['/api/bd', '/bd.js'])
+    expect(proxy.every(line => line.level === 'error' && /^upstream 502/.test(line.cause ?? '') && /^[0-9a-f-]{36}$/.test(line.requestId ?? ''))).toBe(true)
+    expect(JSON.stringify(got)).not.toContain('secret-in-query')
+  })
+
   it('records a rate-limit hit with its bucket', async () => {
     const relation = 'api::article.article:doc-vue'
     const body = JSON.stringify({ author: { name: 'Bot', email: 'bot-log@example.com' }, content: 'Again.' })
