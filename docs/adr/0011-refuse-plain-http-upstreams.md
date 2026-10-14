@@ -1,6 +1,6 @@
 # ADR-0011: Refuse plain http towards the CMS and Umami outside a private network
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-14
 **Deciders:** BogDev maintainer
 
