@@ -35,6 +35,20 @@ In production the server refuses to boot when `NUXT_PUBLIC_STRAPI_URL` or `NUXT_
 
 The token is a server-side secret. It must only be set as `NUXT_STRAPI_API_TOKEN`: plain `STRAPI_API_TOKEN` is ignored at runtime, and the server logs `Missing runtime settings` at startup when it is empty. Rotate it in Strapi (Settings → API Tokens) if it is ever printed or shared, and delete tokens nobody uses. A static build (`npm run generate`, ADR 0006) reads content at build time, only from `NUXT_STRAPI_API_TOKEN` in the build environment, and **must be given the CMS `build` token** (`BUILD_API_TOKEN` in micelio-cms, created by `src/migrations/api-tokens.ts`), never the frontend token, which can read and delete subscribers. The `build` token is Custom and find-only: Article, Category, Tag, About, Site-setting, Page and Author `find`, and nothing else (no comments, no subscribers, no writes). The route list (`modules/static-routes.ts`) and the prerendered pages call the same read routes as the dynamic site (articles, pages, site settings, categories, tags, authors, about). The generated site holds no token and calls no API.
 
+### Lifetime and rotation of the CMS credentials
+
+The frontend authenticates to the CMS with two static secrets: the API token (`NUXT_STRAPI_API_TOKEN`) and, when set, the forwarder secret (`NUXT_STRAPI_FORWARDER_SECRET`). ASVS V13.2.1 prefers credentials that do not live forever; this is the policy and why it is not shorter.
+
+| Credential | Lifetime | Rotate |
+| --- | --- | --- |
+| Frontend API token | No expiry (`lifespan: null`, set by `micelio-cms` `src/migrations/api-tokens.ts`) | At least every 90 days, at once when it was printed or shared, and when someone who held it leaves |
+| Build token (`BUILD_API_TOKEN`) | No expiry, find-only | Same schedule |
+| Forwarder secret | No expiry | Same schedule |
+
+An expiry would not make the site safer by itself: nothing renews a token that lapses, so the site would start answering 401 on the day it does. Rotation is therefore a scheduled operator task, and a shorter `lifespan` is a CMS improvement tracked outside this repository.
+
+To rotate the API token, generate a new random value of at least 32 characters. Where the CMS creates the token from `FRONTEND_API_TOKEN` (or `BUILD_API_TOKEN`), set the new value there and in `NUXT_STRAPI_API_TOKEN`; the CMS replaces the key when it boots (`ensureEnvToken`). Restart the CMS first, then the frontend: until the frontend restarts, its calls to the CMS answer 401. Where the token was created by hand, create a new one in Strapi with the same permissions, set it in the frontend, and delete the old one. Rotate the forwarder secret on both sides together (`RATE_LIMIT_FORWARDER_SECRET` in the CMS); while the two differ, the CMS ignores the visitor's address the frontend sends and limits per server, and logs `a request sent a wrong forwarder secret`.
+
 ### What the public role must allow
 
 The only anonymous calls are the fediverse stats and ranking routes, public by design in the backend (the sitemap now uses the API token like the feeds, so the public role needs no `find` on Article). Subscribers and users must stay closed to the public role (403); check it with:
