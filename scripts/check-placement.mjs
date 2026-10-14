@@ -105,8 +105,7 @@ export function findProblems(root = REPO_ROOT, exempt = root === REPO_ROOT ? EXE
   // Declarations: `export interface|type|const|enum Name`, with the kind
   const declarations = []
   for (const [file, source] of sources) {
-    // server/schemas/ is already the shared home of the zod validators, which are logic, not constants
-    if (isShared(file) || file.startsWith('server/schemas/')) continue
+    if (isShared(file)) continue
     for (const match of source.matchAll(/^export\s+(?:declare\s+)?(interface|type|const|enum)\s+([A-Za-z0-9_$]+)([^\n]*(?:\n[^\n]*)?)/gm)) {
       const [, kind, name, rest] = match
       const initializer = rest.includes('=') ? rest.slice(rest.indexOf('=') + 1) : ''
