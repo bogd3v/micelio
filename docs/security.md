@@ -256,8 +256,8 @@ These events are written on purpose (ASVS V16.3.1, V16.3.2, V16.3.3). Each line 
 | `authz.draft-refused` | `warn` | A draft request had no session, or the CMS refused the editor session (401 or 403) | `noSession` or `upstream 401`/`upstream 403` |
 | `limit.rate` | `warn` | The site's own rate limit refused a request | The bucket (`commentPerIp`, `newsletterPerEmail`…) |
 | `input.refused` | `warn` | A body or a query was refused by its schema, a payload was too large, or a newsletter confirmation or unsubscribe token was missing or unknown (repeated guessing shows here) | The names of the refused fields, `payloadTooLarge`, `missingToken` or `invalidToken` |
-| `analytics.proxy` | `error` | The call to Umami through the first-party proxy failed (no answer, or a redirect, which becomes a 502) | `upstream 502` |
-| `server.unhandled` | `error` | An error nobody handled (a bug, a crash) reached Nitro | The error's name and code, never its message |
+| `analytics.proxy` | `error` | The call to Umami through the first-party proxy failed (no answer, or a redirect, which becomes a 502) | `upstream 502`, with the name and code of the failure behind it when there is one (a socket or TLS error) |
+| `server.unhandled` | `error` | An error nobody handled reached Nitro: a bug in a request, an error raised outside one, or a crash (`uncaughtException`, `unhandledRejection`) | The error's name and code, never its message |
 
 A flood of refused requests writes a line per request: the platform that collects the logs decides how long they are kept and whether to sample them.
 

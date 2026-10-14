@@ -1,3 +1,4 @@
+import { unexpectedErrorCause } from '../lib/log'
 import { isUmamiProxyPath } from '~/helpers/analytics'
 
 /** Headers not passed on to Umami: ones a visitor writes to claim an address (the resolved one is sent instead), and credentials. */
@@ -57,7 +58,9 @@ export default defineEventHandler(async (event) => {
     return await sendProxy(event, new URL(event.path, config.umamiUrl).href, { fetch: fetchWithoutRedirect, fetchOptions: { method: event.method, body, headers } })
   } catch (error: unknown) {
     // The visitor's answer is the error as it was; the log says that analytics, not the page, failed (ASVS V16.3.4)
-    logError('analytics.proxy', 'The analytics proxy call failed', { event, error })
+    // The failure behind the 502 (a TLS or socket error, say) is named without its message or URL
+    const reason = (error as { cause?: unknown }).cause
+    logError('analytics.proxy', 'The analytics proxy call failed', { event, cause: `upstream 502${reason ? `: ${unexpectedErrorCause(reason)}` : ''}` })
     throw error
   }
 })
