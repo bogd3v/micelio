@@ -18,6 +18,32 @@ export const POST_CARD_POPULATE = {
   tags: { fields: ['name', 'slug'] },
 }
 
+/**
+ * The Strapi populate of the About page: every block of the dynamic zone with the nested components and images it renders.
+ *
+ * @remarks
+ * Strapi 5 drops what a fragment does not name, so a nested component or an image needs its own entry here; the scalars of a
+ * component always come with it. Keep it in step with `aboutBlocks` in `server/lib/publicShapes.ts`, which limits what leaves the server.
+ */
+export const ABOUT_POPULATE = {
+  blocks: {
+    on: {
+      'about.profile': { populate: { facts: true, links: true, photo: IMAGE } },
+      'about.statement': true,
+      'about.topics': { populate: { topics: true } },
+      'about.projects': { populate: { projects: { populate: { facts: true, stack: true, links: true } } } },
+      'about.principles': { populate: { principles: true } },
+      'about.open-source': { populate: { guide: true } },
+      'about.contact': { populate: { fediverseLink: true, extraLink: true, socials: true } },
+      'shared.rich-text': true,
+      'shared.quote': true,
+      'shared.media': { populate: { file: IMAGE, credit: true } },
+      'shared.slider': { populate: { items: { populate: { file: IMAGE, credit: true } }, files: IMAGE } },
+    },
+  },
+  seo: { populate: { metaImage: IMAGE } },
+}
+
 /** The Strapi populate of a full article, with every block of the dynamic zone. */
 export const ARTICLE_POPULATE = {
   cover: IMAGE,
