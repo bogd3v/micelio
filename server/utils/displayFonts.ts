@@ -1,3 +1,4 @@
+import { logError } from './log'
 import { DISPLAY_FONTS } from '~/interfaces/site'
 import type { DisplayFont } from '~/interfaces/site'
 
@@ -86,7 +87,7 @@ export function displayFontOverride(font: string | undefined, theme: ThemeDispla
   const stack = [`"${family}"`, `"${family} Fallback"`, tail(kind, theme)].join(',')
   const css = `@font-face{font-family:"${family}";font-style:normal;font-display:swap;font-weight:${weights};src:url("${href}") format("woff2");unicode-range:${UNICODE_RANGE}}${fallback}:root{--font-display:${stack}}`
   if (!DISPLAY_FONT_RULE.test(css)) {
-    console.error(`Display font "${id}" left out: the CSS does not match the expected shape`)
+    logError('theme.display-font', `Display font "${id}" left out: the CSS does not match the expected shape`)
     return null
   }
   return { css, href }

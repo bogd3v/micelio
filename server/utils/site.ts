@@ -46,7 +46,7 @@ export async function loadSite(locale: Locale, options: { quiet?: boolean } = {}
     const theme = resolveTheme(settings?.theme, { modes: paletteModes, rules: paletteRules }, buildTheme)
     loaded = { site: { ...mergeSite(defaults, settings), ...(theme && { theme }) }, fromStrapi: true }
   } catch (error: unknown) {
-    if (!options.quiet) console.error('Strapi fetch site-setting error:', upstreamLogMessage(error))
+    if (!options.quiet) logError('cms.site-setting', 'Fetching the site settings failed', { error })
     loaded = { site: defaults, fromStrapi: false }
   }
   return { ...loaded, site: { ...loaded.site, modules: effectiveModules(loaded.site.modules, requirements, buildSiteMode) } }

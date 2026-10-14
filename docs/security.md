@@ -230,7 +230,9 @@ What is not checked, and why:
 
 ## Logs
 
-The server writes plain lines to the standard output and the standard error (`console.error`, `console.warn`); it keeps no log file and sends logs nowhere else, so the destination is whatever the operator's platform does with the container's output (ASVS V16.2.3).
+The server writes one JSON object per line to the standard error through `logError` and `logWarn` (`server/utils/log.ts`); it keeps no log file and sends logs nowhere else, so the destination is whatever the operator's platform does with the container's output (ASVS V16.2.3). A test fails when a server file writes to `console` directly.
+
+A line has `time` (UTC, ISO 8601), `level` (`warn` or `error`), `event` (a stable dotted name such as `cms.search`), `message` (fixed text) and, when it comes from a request, `route`, `requestId` and `visitor`; `cause` holds what went wrong, as `upstreamLogMessage` says it (V16.2.1, V16.2.4). `requestId` is a random id drawn per request, never read from a header; each internal `/api` call of a page render is its own request. A line written outside a request, or by a helper that receives none (boot checks, site settings, page sections, theme), has no `route`, `requestId` or `visitor`. Nitro's own report of an unhandled error is not yet in this format (tracked in #494). `visitor` is the first 12 hex characters of an HMAC-SHA256 of the visitor's address with a key drawn at random when the process starts: it groups one visitor's lines without holding the address, and it changes on a restart and is not shared between instances.
 
 What a log line may hold (standard, section 4: no secrets, email addresses or raw IP addresses):
 
@@ -238,5 +240,5 @@ What a log line may hold (standard, section 4: no secrets, email addresses or ra
 - **A value from the CMS or a visitor** that is written into a message goes through `logText()`: control characters, line breaks included, become spaces and the text is cut at 300 characters, so a value cannot start a forged line (V16.4.1). `upstreamLogMessage` does it itself, and so does the theme log.
 - A unit test (`test/noRawErrorLogs.test.ts`) fails when a server file passes a caught error to `console` as it is.
 
-Not done yet: a log inventory, a structured format and request context in each line, a record of sign-ins and refusals (all above the target level, tracked in #494).
+Not done yet: a log inventory and a record of sign-ins and refusals (above the target level, tracked in #494).
 

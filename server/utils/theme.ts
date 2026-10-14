@@ -1,4 +1,5 @@
 import { logText } from './upstreamError'
+import { logError, logWarn } from './log'
 import { contrastRatio, mixOklab, nearestWhere, parseHex, toHex } from '~/helpers/color'
 import type { Rgb } from '~/helpers/color'
 import type { AccentColors, SiteTheme, ThemeSettings } from '~/interfaces/site'
@@ -33,7 +34,7 @@ function logOnce(raw: string): void {
   if (logged.has(message)) return
   if (logged.size >= MAX_LOGGED) logged.clear()
   logged.add(message)
-  console.warn(message)
+  logWarn('theme.adjusted', message)
 }
 
 /** For tests: forget what was logged. */
@@ -151,7 +152,7 @@ export function themeOverridesCss(theme: SiteTheme | undefined, modeIds: string[
   }).join('')
   if (!css) return null
   if (!OVERRIDE_RULE.test(css)) {
-    console.error('Theme overrides left out: the CSS does not match the expected shape')
+    logError('theme.overrides', 'Theme overrides left out: the CSS does not match the expected shape')
     return null
   }
   return css

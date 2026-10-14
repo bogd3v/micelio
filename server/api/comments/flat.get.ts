@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     return { ...response, data: toPublicComments(response?.data ?? []) }
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
-    console.error('Strapi fetch comments (flat) error:', upstreamLogMessage(error))
+    logError('cms.comments', 'Fetching the comments failed', { event, error })
     throw upstreamFailure(error, 'Failed to fetch comments')
   }
 })

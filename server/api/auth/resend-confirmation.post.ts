@@ -13,7 +13,7 @@ export default defineEventHandler(async (event): Promise<{ ok: true }> => {
       copyRetryAfter(event, error)
       throw authFailure('tooManyRequests')
     }
-    console.error('Strapi send-email-confirmation error:', upstreamLogMessage(error))
+    logError('cms.resend-confirmation', 'Sending the confirmation email failed', { event, error })
   }
   return { ok: true }
 })

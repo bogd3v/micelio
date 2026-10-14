@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
       { event },
     )
   } catch (error: unknown) {
-    console.error('Strapi fetch post error:', upstreamLogMessage(error))
+    logError('cms.post', 'Fetching the post failed', { event, error })
     throw upstreamFailure(error, 'Failed to fetch post')
   }
 

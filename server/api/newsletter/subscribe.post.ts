@@ -50,7 +50,7 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
         await deleteSubscriber(event, documentId)
       } catch {
         // The send error below is the one the caller needs; a pending record is replaced on the next request
-        console.error('Newsletter subscription rollback failed')
+        logError('cms.newsletter-rollback', 'Removing the pending subscriber failed', { event })
       }
       throw error
     }
@@ -58,7 +58,7 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
     return successResponse(language)
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
-    console.error('Newsletter subscription error:', upstreamLogMessage(error))
+    logError('cms.newsletter-subscribe', 'Subscribing failed', { event, error })
     throw createError({
       statusCode: 500,
       statusMessage:

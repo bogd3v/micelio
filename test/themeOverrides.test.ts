@@ -53,6 +53,11 @@ beforeEach(() => {
 })
 afterEach(() => warn.mockRestore())
 
+/** The `message` of each structured line written to the warning log (server/utils/log.ts). */
+function warned(): string[] {
+  return warn.mock.calls.map(call => JSON.parse(String(call[0])).message as string)
+}
+
 describe.each(THEMES)('accent override on %s', (_name, manifest) => {
   const modes = manifest.modes.map(mode => [mode.id, mode.scheme] as const)
 
@@ -64,7 +69,7 @@ describe.each(THEMES)('accent override on %s', (_name, manifest) => {
     expect(accents!.accent).not.toBe(bad)
     for (const value of Object.values(accents!)) expect(value).toMatch(/^#[\da-f]{6}$/)
     expect(contrastProblems(applied).filter(item => RULE_ROLES.includes(item.role)).map(item => item.message)).toEqual([])
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining(`mode "${modeId}" adjusted for contrast: ${bad} -> ${accents!.accent}`))
+    expect(warned()).toContainEqual(expect.stringContaining(`mode "${modeId}" adjusted for contrast: ${bad} -> ${accents!.accent}`))
   })
 
   it.each(modes)('an accent that already passes in %s (%s) is kept as is', (modeId, scheme) => {
@@ -122,7 +127,7 @@ describe('resolveTheme', () => {
   it('ignores a theme that is not the build, and says so, but keeps the rest', () => {
     const theme = resolve({ themeId: 'other', defaultMode: 'dia', displayFont: 'fraunces' })
     expect(theme).toEqual({ id: 'bogota', defaultMode: 'dia', displayFont: 'fraunces', accents: {} })
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('"other" is not installed'))
+    expect(warned()).toContainEqual(expect.stringContaining('"other" is not installed'))
     warn.mockClear()
     resolve({ themeId: 'bogota', defaultMode: 'dia' })
     expect(warn).not.toHaveBeenCalled()
@@ -152,7 +157,7 @@ describe('resolveTheme', () => {
       rules: [{ role: 'accent', surfaces: ['surface', 'surface-raised'], min: 10 }],
     }
     expect(resolveTheme({ accentOverrides: [{ mode: 'dia', color: '#8a1c1c' }] }, impossible, 'bogota')).toBeNull()
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('reaches no contrast'))
+    expect(warned()).toContainEqual(expect.stringContaining('reaches no contrast'))
   })
 })
 

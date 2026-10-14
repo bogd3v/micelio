@@ -20,17 +20,17 @@ export default defineNitroPlugin(() => {
   const mode = buildSiteMode
   const missing = missingRuntimeSettings(config, mode)
   if (missing.length) {
-    console.warn(`Missing runtime settings: ${missing.join(', ')}. Set them with these NUXT_* names; plain names are ignored.`)
+    logWarn('config.missing', `Missing runtime settings: ${missing.join(', ')}. Set them with these NUXT_* names; plain names are ignored.`)
   }
   const optional = missingOptionalRuntimeSettings(config, mode)
   if (optional.length) {
-    console.warn(`Optional runtime settings not set: ${optional.join(', ')}. Without them, Strapi's media host is not allowed in the CSP${isStaticMode(mode) ? '' : ' and the fediverse features are off'}.`)
+    logWarn('config.optional-missing', `Optional runtime settings not set: ${optional.join(', ')}. Without them, Strapi's media host is not allowed in the CSP${isStaticMode(mode) ? '' : ' and the fediverse features are off'}.`)
   }
   if (isStaticMode(mode)) return
   const requirements = moduleRequirements(config)
   const off = [!requirements.smtp && 'newsletter (no SMTP)', !requirements.fediverse && 'fediverse (no fediverse settings)'].filter(Boolean)
   if (off.length) {
-    console.warn(`Modules turned off by missing configuration: ${off.join(', ')}.`)
+    logWarn('config.modules-off', `Modules turned off by missing configuration: ${off.join(', ')}.`)
   }
   // Warn only, without holding the boot: loadSite() has a 3 s timeout and a failed load skips the warning
   void warnPrivacyContact()
@@ -40,7 +40,7 @@ async function warnPrivacyContact(): Promise<void> {
   try {
     const { site, fromStrapi } = await loadSite(Locale.English, { quiet: true })
     const warning = privacyContactWarning(site, fromStrapi)
-    if (warning) console.warn(warning)
+    if (warning) logWarn('config.privacy-contact', warning)
   } catch {
     // The check is advisory
   }

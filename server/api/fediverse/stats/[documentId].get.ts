@@ -27,7 +27,7 @@ export default defineEventHandler(async (event): Promise<FediverseStats> => {
       throw createError({ statusCode: 404, message: 'Article not federated' })
     }
     rethrowUpstreamRateLimit(event, error)
-    console.error('Strapi fetch fediverse stats error:', upstreamLogMessage(error))
+    logError('cms.fediverse-stats', 'Fetching the fediverse stats failed', { event, error })
     throw upstreamFailure(error, 'Failed to fetch fediverse stats')
   }
 

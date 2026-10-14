@@ -37,7 +37,7 @@ export default defineEventHandler(async (event): Promise<Record<string, Fedivers
     })
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
-    console.error('Strapi fetch fediverse batch stats error:', upstreamLogMessage(error))
+    logError('cms.fediverse-stats-batch', 'Fetching the fediverse stats failed', { event, error })
     throw upstreamFailure(error, 'Failed to fetch fediverse stats')
   }
 
