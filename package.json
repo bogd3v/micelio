@@ -50,7 +50,7 @@
     "@sqlite.org/sqlite-wasm": "3.53.4-build2",
     "@vueuse/nuxt": "^14.2.1",
     "marked": "^18.1.0",
-    "mermaid": "^12.1.0",
+    "mermaid": "^12.2.0",
     "nodemailer": "^10.0.15",
     "nuxt": "^4.5.2",
     "ofetch": "^1.5.1",
