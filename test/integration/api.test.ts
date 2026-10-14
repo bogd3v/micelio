@@ -730,8 +730,8 @@ describe('fields of an article that leave the server', () => {
 
   it('returns only the fields of the page for an article and for a list card', async () => {
     const article = mock.articles[0]!
-    const original = { cover: article.cover, author: article.author, seo: article.seo, blocks: article.blocks }
-    Object.assign(article, { internalNote: extras.internalNote })
+    const original = { cover: article.cover, author: article.author, seo: article.seo, blocks: article.blocks, content: article.content }
+    Object.assign(article, { internalNote: extras.internalNote, content: 'legacy body' })
     article.cover = { ...article.cover!, ...extras } as typeof article.cover
     article.author = { ...article.author!, ...extras } as typeof article.author
     article.seo = { ...(article.seo ?? { id: 1, metaTitle: 't', metaDescription: 'd' }), metaSocial: [{ id: 1, socialNetwork: 'Twitter', title: 'x', description: 'y' }], ...extras } as typeof article.seo
@@ -745,12 +745,15 @@ describe('fields of an article that leave the server', () => {
         for (const value of Object.values(extras)) expect(text).not.toContain(value)
         expect(text).not.toContain('metaSocial')
         expect(text).not.toContain('shared.unknown')
+        expect(text).not.toContain('legacy body')
       }
+      expect(post).not.toHaveProperty('content')
       expect(post).toMatchObject({ slug: article.slug, title: article.title, cover: { url: article.cover!.url }, author: { name: article.author!.name } })
       expect(card).toMatchObject({ slug: article.slug, title: article.title, cover: { url: article.cover!.url } })
     } finally {
       Object.assign(article, original)
       delete (article as Record<string, unknown>).internalNote
+      article.content = original.content
     }
   })
 })

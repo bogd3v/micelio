@@ -15,7 +15,6 @@ export function toStrapiPost(article: RawStrapiArticle): StrapiPost {
     title: article.title,
     slug: article.slug,
     description: article.description,
-    content: article.content,
     publishedAt: article.publishedAt,
     readTime: article.readTime,
     tags: article.tags,

@@ -53,11 +53,16 @@ export interface KnownDifference {
  * reported as stale: delete it.
  */
 export const KNOWN_DIFFERENCES: KnownDifference[] = [
-  ...['content', 'readTime'].map(field => ({
+  {
     route: '/api/articles',
-    issue: `$.data[].${field}: in the mock, not in the CMS`,
+    issue: '$.data[].content: in the mock, not in the CMS',
+    reason: 'The article schema of the CMS has no such field; the mock still sets it and the frontend drops it with the allow-list of server/lib/publicShapes.ts',
+  },
+  {
+    route: '/api/articles',
+    issue: '$.data[].readTime: in the mock, not in the CMS',
     reason: 'The article schema of the CMS has no such field, but the mock invents it and app/helpers/post.ts still reads it',
-  })),
+  },
   ...['blocks', 'references', 'coverCredit', 'localizations'].map(field => ({
     route: '/api/articles',
     issue: `$.data[].${field}: in the mock, not in the CMS`,

@@ -101,6 +101,7 @@ export interface RawStrapiArticle {
   title: string
   slug: string
   description?: string | null
+  /** @deprecated The legacy Markdown body: the CMS article has no such field and the route no longer returns it. Read `blocks`. Removed in the next major of the theme contract. */
   content?: string | null
   publishedAt?: string | null
   updatedAt?: string | null
@@ -176,6 +177,7 @@ export interface StrapiPost {
   title: string
   slug: string
   description?: string | null
+  /** @deprecated The legacy Markdown body: the CMS article has no such field and the route no longer returns it. Read `blocks`. Removed in the next major of the theme contract. */
   content?: string | null
   publishedAt?: string | null
   readTime?: number | null

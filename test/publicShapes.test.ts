@@ -39,6 +39,12 @@ describe('publicArticle', () => {
     expect(publicPostCard(dated)).not.toHaveProperty('updatedAt')
   })
 
+  it('does not return the legacy Markdown body: the blocks carry the article', () => {
+    const legacy = { ...article, content: '# Legacy body' } as unknown as RawStrapiArticle
+    expect(publicArticle(legacy)).not.toHaveProperty('content')
+    expect(publicArticle(legacy)).toHaveProperty('blocks')
+  })
+
   it('reduces a card to the list fields', () => {
     const card = publicPostCard({ ...article, blocks: [{ id: 1 }], content: 'body' } as unknown as RawStrapiArticle)
     expect(Object.keys(card).sort()).toEqual(['author', 'category', 'cover', 'documentId', 'id', 'seo', 'slug', 'title'])

@@ -40,6 +40,10 @@ describe('toStrapiPost', () => {
     expect(post.translations).toEqual([])
   })
 
+  it('does not carry the legacy Markdown body', () => {
+    expect(toStrapiPost({ ...article, content: 'x' })).not.toHaveProperty('content')
+  })
+
   it('drops fields that only the search and list responses carry', () => {
     expect(toStrapiPost(article)).not.toHaveProperty('snippet')
     expect(toStrapiPost(article)).not.toHaveProperty('localizations')
