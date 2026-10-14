@@ -32,6 +32,16 @@ describe('check-placement', () => {
     expect(problems[0]).toContain('constant MAX is used by 2 files')
   })
 
+  it('scans server/schemas: a shared constant is reported, a zod schema is logic', () => {
+    const problems = problemsOf({
+      'server/schemas/query.ts': 'export const MAX = 50\nexport const bodySchema = z.object({})\n',
+      'server/api/a.get.ts': 'import { MAX, bodySchema } from \'../schemas/query\'\n',
+      'server/api/b.get.ts': 'import { MAX, bodySchema } from \'../schemas/query\'\n',
+    })
+    expect(problems).toHaveLength(1)
+    expect(problems[0]).toContain('constant MAX is used by 2 files')
+  })
+
   it('reports a type imported by two files, with import type and aliases', () => {
     const problems = problemsOf({
       'app/helpers/shape.ts': 'export interface Shape { id: string }\n',

@@ -2,32 +2,13 @@ import qs from 'qs'
 import type { StrapiAbout, StrapiBlock } from '~/interfaces'
 import { renderBlocks } from '~/helpers/markdown'
 import { localeQuerySchema } from '../schemas/query'
+import { ABOUT_POPULATE } from '../lib/constants'
 import { publicAbout } from '../lib/publicShapes'
 
 export default defineEventHandler(async (event) => {
   const { locale } = validQuery(event, localeQuerySchema)
 
-  const params = qs.stringify({
-    locale,
-    populate: {
-      blocks: {
-        on: {
-          'about.profile': { populate: '*' },
-          'about.statement': { populate: '*' },
-          'about.topics': { populate: '*' },
-          'about.projects': { populate: { projects: { populate: '*' } } },
-          'about.principles': { populate: '*' },
-          'about.open-source': { populate: '*' },
-          'about.contact': { populate: '*' },
-          'shared.rich-text': { populate: '*' },
-          'shared.quote': { populate: '*' },
-          'shared.media': { populate: { file: true, credit: true } },
-          'shared.slider': { populate: { items: { populate: { file: true, credit: true } }, files: true } },
-        },
-      },
-      seo: { populate: '*' },
-    },
-  }, { skipNulls: true })
+  const params = qs.stringify({ locale, populate: ABOUT_POPULATE }, { skipNulls: true })
 
   setHeader(event, 'Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600')
 

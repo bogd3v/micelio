@@ -15,6 +15,9 @@ interface MockUmamiResult {
 
 export const MOCK_TRACKER_SCRIPT = '/* umami tracker */'
 
+/** Path a redirect from the mock points at; a request for it proves the proxy followed the redirect. */
+export const MOCK_REDIRECT_TARGET = '/followed-redirect'
+
 export async function startMockUmami(): Promise<MockUmamiResult> {
   const requests: UmamiRequest[] = []
   const server = createServer((request, response) => {
@@ -28,7 +31,7 @@ export async function startMockUmami(): Promise<MockUmamiResult> {
         body: Buffer.concat(chunks).toString('utf8'),
       })
       if (request.headers['x-mock-redirect']) {
-        response.writeHead(302, { location: 'https://evil.example/tracker.js' })
+        response.writeHead(302, { location: `http://${request.headers.host}${MOCK_REDIRECT_TARGET}` })
         response.end()
         return
       }

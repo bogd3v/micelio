@@ -25,7 +25,12 @@ const sharedBlocks = {
 const fact = fields({ id: true, label: true, value: true, mono: true })
 const link = fields({ id: true, label: true, url: true, variant: true })
 const item = fields({ id: true, title: true, text: true, html: true })
-const aboutBlocks = {
+/**
+ * The allow-list of each About block, by `__component`.
+ *
+ * @internal Exported for the test that keeps `ABOUT_POPULATE` in step with it.
+ */
+export const aboutBlocks: Record<string, Shape> = {
   'about.profile': fields({ id: true, __component: true, eyebrow: true, title: true, lead: true, facts: each(fact), links: each(link), photo: media, plateLabel: true, plateCoordinates: true, caption: true }),
   'about.statement': fields({ id: true, __component: true, eyebrow: true, statement: true, body: true }),
   'about.topics': fields({ id: true, __component: true, eyebrow: true, title: true, intro: true, topics: each(fields({ id: true, category: true, title: true, description: true })), footnoteLabel: true, footnote: true }),
