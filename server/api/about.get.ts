@@ -1,7 +1,8 @@
 import qs from 'qs'
-import type { StrapiBlock } from '~/interfaces'
+import type { StrapiAbout, StrapiBlock } from '~/interfaces'
 import { renderBlocks } from '~/helpers/markdown'
 import { localeQuerySchema } from '../schemas/query'
+import { publicAbout } from '../lib/publicShapes'
 
 export default defineEventHandler(async (event) => {
   const { locale } = validQuery(event, localeQuerySchema)
@@ -43,5 +44,5 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'About page not found' })
   }
 
-  return { ...data, blocks: renderBlocks(data.blocks, markdownRenderer(locale)) }
+  return publicAbout({ ...data, blocks: renderBlocks(data.blocks, markdownRenderer(locale)) } as StrapiAbout)
 })

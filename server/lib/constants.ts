@@ -6,30 +6,33 @@ export const INTERNAL_NONCE_HEADER = 'x-micelio-internal-nonce'
 /** The auth calls may send mail inside Strapi (register, password reset), so they wait longer than a read. */
 export const AUTH_TIMEOUT_MS = 30_000
 
+/** The fields of an image that a page reads; the rest of what the CMS stores about a file stays there. */
+const IMAGE = { fields: ['url', 'alternativeText', 'caption', 'width', 'height'] }
+
 /** The Strapi populate of a post card; shared by the blog list and the page sections. */
 export const POST_CARD_POPULATE = {
-  cover: { populate: '*' },
-  category: { populate: '*' },
-  author: { populate: '*' },
-  seo: { populate: '*' },
+  cover: IMAGE,
+  category: { fields: ['name', 'slug'] },
+  author: { fields: ['name'], populate: { avatar: IMAGE } },
+  seo: { populate: { metaImage: IMAGE } },
   tags: { fields: ['name', 'slug'] },
 }
 
 /** The Strapi populate of a full article, with every block of the dynamic zone. */
 export const ARTICLE_POPULATE = {
-  cover: { populate: '*' },
+  cover: IMAGE,
   coverCredit: true,
-  category: { populate: '*' },
-  author: { populate: '*' },
-  seo: { populate: '*' },
+  category: { fields: ['name', 'slug'] },
+  author: { fields: ['name'], populate: { avatar: IMAGE } },
+  seo: { populate: { metaImage: IMAGE } },
   tags: { fields: ['name', 'slug'] },
   blocks: {
     on: {
-      'shared.rich-text': { populate: '*' },
-      'shared.quote': { populate: '*' },
-      'shared.media': { populate: { file: true, credit: true } },
+      'shared.rich-text': true,
+      'shared.quote': true,
+      'shared.media': { populate: { file: IMAGE, credit: true } },
       'shared.playground': true,
-      'shared.slider': { populate: { items: { populate: { file: true, credit: true } }, files: true } },
+      'shared.slider': { populate: { items: { populate: { file: IMAGE, credit: true } }, files: IMAGE } },
     },
   },
   references: true,

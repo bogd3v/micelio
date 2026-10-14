@@ -485,8 +485,8 @@ describe('/api/posts/[slug]', () => {
     const upstream = mock.requests.filter(request => request.path === '/api/articles')
     const query = upstream[upstream.length - 1].query
     expect(getNestedValue(query, ['populate', 'coverCredit'])).toBe('true')
-    expect(getNestedValue(query, ['populate', 'blocks', 'on', 'shared.media', 'populate'])).toEqual({ file: 'true', credit: 'true' })
-    expect(getNestedValue(query, ['populate', 'blocks', 'on', 'shared.slider', 'populate', 'items', 'populate'])).toEqual({ file: 'true', credit: 'true' })
+    expect(getNestedValue(query, ['populate', 'blocks', 'on', 'shared.media', 'populate'])).toMatchObject({ credit: 'true' })
+    expect(getNestedValue(query, ['populate', 'blocks', 'on', 'shared.slider', 'populate', 'items', 'populate'])).toMatchObject({ credit: 'true' })
   })
 
   it('sets revalidation cache headers', async () => {
@@ -720,6 +720,37 @@ describe('errors from the CMS', () => {
       const response = await fetch(path, init)
       // A read answers 502 for a CMS 400; only posting a comment passes a 400 on
       expect(response.status, name).toBe(name === 'POST comment' ? 400 : 502)
+    }
+  })
+})
+
+describe('fields of an article that leave the server', () => {
+  // What the CMS stores about a file, an author or a share override is not for the browser, whatever populate asked for
+  const extras = { provider: 'storage-provider-x', hash: 'secret-hash', folderPath: '/1', email: 'author@example.com', internalNote: 'draft idea' }
+
+  it('returns only the fields of the page for an article and for a list card', async () => {
+    const article = mock.articles[0]!
+    const original = { cover: article.cover, author: article.author, seo: article.seo, blocks: article.blocks }
+    Object.assign(article, { internalNote: extras.internalNote })
+    article.cover = { ...article.cover!, ...extras } as typeof article.cover
+    article.author = { ...article.author!, ...extras } as typeof article.author
+    article.seo = { ...(article.seo ?? { id: 1, metaTitle: 't', metaDescription: 'd' }), metaSocial: [{ id: 1, socialNetwork: 'Twitter', title: 'x', description: 'y' }], ...extras } as typeof article.seo
+    article.blocks = [...(article.blocks ?? []), { id: 99, __component: 'shared.unknown', secret: 'x' } as never]
+    try {
+      const post = await $fetch<Record<string, unknown>>(`/api/posts/${article.slug}`, { query: { locale: 'en' } })
+      const list = await $fetch<{ data: Array<Record<string, unknown>> }>('/api/posts', { query: { locale: 'en' } })
+      const card = list.data.find(entry => entry.slug === article.slug)!
+      for (const body of [post, card]) {
+        const text = JSON.stringify(body)
+        for (const value of Object.values(extras)) expect(text).not.toContain(value)
+        expect(text).not.toContain('metaSocial')
+        expect(text).not.toContain('shared.unknown')
+      }
+      expect(post).toMatchObject({ slug: article.slug, title: article.title, cover: { url: article.cover!.url }, author: { name: article.author!.name } })
+      expect(card).toMatchObject({ slug: article.slug, title: article.title, cover: { url: article.cover!.url } })
+    } finally {
+      Object.assign(article, original)
+      delete (article as Record<string, unknown>).internalNote
     }
   })
 })

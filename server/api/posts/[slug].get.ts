@@ -3,6 +3,7 @@ import type { RawStrapiArticle } from '~/interfaces'
 import { renderArticleBlocks } from '~/helpers/markdown'
 import { localeQuerySchema, postParamsSchema } from '../../schemas/query'
 import { ARTICLE_POPULATE } from '../../lib/constants'
+import { publicArticle } from '../../lib/publicShapes'
 
 export default defineEventHandler(async (event) => {
   const route = postParamsSchema.safeParse({ slug: getRouterParam(event, 'slug') })
@@ -35,5 +36,5 @@ export default defineEventHandler(async (event) => {
   }
 
   const article = data[0]!
-  return { ...article, blocks: renderArticleBlocks(article.blocks, article.references, markdownRenderer(locale)) }
+  return publicArticle({ ...article, blocks: renderArticleBlocks(article.blocks, article.references, markdownRenderer(locale)) })
 })
