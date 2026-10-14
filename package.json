@@ -51,7 +51,7 @@
     "@vueuse/nuxt": "^14.2.1",
     "marked": "^18.1.0",
     "mermaid": "^12.2.0",
-    "nodemailer": "^10.0.15",
+    "nodemailer": "^10.1.0",
     "nuxt": "^4.5.2",
     "ofetch": "^1.5.1",
     "pyodide": "314.0.7",
@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@intlify/message-compiler": "^11.4.13",
+    "@intlify/message-compiler": "^11.4.14",
     "@nuxt/eslint": "^1.17.0",
     "@nuxt/test-utils": "^4.3.3",
     "@playwright/test": "^1.63.0",
@@ -89,7 +89,7 @@
     "pagefind": "1.5.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.71.1",
-    "vite": "^8.3.3",
+    "vite": "^8.3.4",
     "vitest": "^5.0.2",
     "vue-tsc": "^3.3.12"
   },
