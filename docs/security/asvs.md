@@ -43,7 +43,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V11 Cryptography | L1 | 8 | 6 | 0 | 0 |
 | V12 Secure Communication | L1 | 3 | 6 | 0 | 0 |
 | V13 Configuration | L1 | 10 | 2 | 0 | 1 |
-| V14 Data Protection | L1 | 5 | 0 | 1 | 3 |
+| V14 Data Protection | L1 | 7 | 0 | 1 | 1 |
 | V15 Secure Coding and Architecture | L1 | 12 | 0 | 0 | 1 |
 | V16 Security Logging and Error Handling | L1 | 12 | 3 | 0 | 1 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
@@ -292,12 +292,12 @@ An open requirement that an attacker could exploit is **not** described here or 
 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
-| V14.1.1 | Sensitive data identified and classified into protection levels | Open (above target) | No classification of the data the frontend handles (emails, JWT, reset codes, newsletter tokens, visitor IPs); `app/pages/privacy.vue` is visitor-facing, not a classification. Tracked in #495 |
-| V14.1.2 | Each protection level has documented protection requirements | Open (above target) | Depends on V14.1.1; no requirements per level (logging, retention, encryption). Tracked in #495 |
+| V14.1.1 | Sensitive data identified and classified into protection levels | Met | `docs/security/data.md`: three levels (Restricted, Personal, Public) and the data of each, with where it enters and who holds it. Test: no test (documentation) |
+| V14.1.2 | Each protection level has documented protection requirements | Met | `docs/security/data.md`, "Levels" and "Where a level's requirement is enforced": logging, caching, cookies, transport, third parties, rate limits and retention. Test: no test (documentation) |
 | V14.2.1 | Sensitive data never in URLs or query strings | Open | The reset code and the newsletter tokens arrive in an emailed link and leave the address bar once the page has read them (`app/composables/useForgetQueryParam.ts`; GHSA-p496-cm7x-29c3), but the server still looks subscribers up by email and token in the query string of its CMS request (`server/utils/subscribers.ts:20-24`), so they reach the CMS and proxy access logs. Tracked in #495 |
 | V14.2.2 | Sensitive data not cached in server components | Met | ISR only on public routes (`nuxt.config.ts:45-56`); private routes `private, no-store` (`nuxt.config.ts:134-149`); Nitro's cached render sees no cookie and stores no `Set-Cookie` (`docs/security.md:92`). Test: `test/integration/api.test.ts` (no `set-cookie` on cached pages, `private, no-store` on auth and drafts) |
 | V14.2.3 | Sensitive data not sent to untrusted parties or trackers | Met | The tracker leaves the query string out (`data-exclude-search`, `app/helpers/analytics.ts:36`), the analytics proxy drops `Referer` (`server/middleware/umami.ts:19`) and the reset, confirmation and unsubscribe pages, in both locales, send `Referrer-Policy: no-referrer` (`nuxt.config.ts:13`, `:147-152`). Published advisory GHSA-p496-cm7x-29c3. Tests: `test/analytics.test.ts:22`, `test/integration/api.test.ts:1505`, `:2012`, `:2019` |
-| V14.2.4 | Data protection controls implemented as documented per level | Open (above target) | Cannot be met before V14.1.1–V14.1.2 define the levels; current gaps include V16.2.5. Tracked in #495 |
+| V14.2.4 | Data protection controls implemented as documented per level | Open (above target) | The levels now exist (`docs/security/data.md`) and the controls match them, with one documented exception: Restricted data in a URL, the subscriber lookup by email and token in the query string of the CMS request (V14.2.1). V16.2.5 (logs) is Met. Closes when V14.2.1 does. Tracked in #495 |
 | V14.3.1 | Authenticated data cleared from client after logout | Met | `logout()` clears the user before it calls the server (`app/composables/useAuth.ts`), so the page shows nothing of the session even when the request fails (the error still reaches the caller); the draft count follows the editor flag (`app/plugins/drafts.client.ts`); the JWT is `httpOnly` (`server/utils/auth.ts:64`) and the server clears the cookie. `Clear-Site-Data` is not sent: its `storage` and `cache` types would also drop the reading history kept in the browser. Test: `test/nuxt/useAuthLogout.test.ts`, `e2e/account.spec.ts` |
 | V14.3.2 | Anti-caching headers so browsers don't keep sensitive data | Met | `preventCaching()` on every auth and draft route (`server/utils/auth.ts:40-42`), route rules for account, drafts, newsletter and their APIs (`nuxt.config.ts:134-149`). Test: `test/integration/api.test.ts` (`private, no-store` assertions) |
 | V14.3.3 | Browser storage holds no sensitive data except session tokens | Met | `localStorage` holds only the theme mode (`app/helpers/theme.ts:40-78`, `modules/theme/init-script.mjs`); the only cookie is the session (`docs/security.md:127`). Test: `test/themeInitScript.test.ts`; e2e checks the JWT never reaches page JavaScript (ADR 0003) |
