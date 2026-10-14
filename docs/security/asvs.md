@@ -41,15 +41,15 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V9 Self-contained Tokens | L1 | 0 | 5 | 0 | 2 |
 | V10 OAuth and OIDC | L1 | 1 | 28 | 0 | 0 |
 | V11 Cryptography | L1 | 6 | 6 | 0 | 2 |
-| V12 Secure Communication | L1 | 1 | 6 | 0 | 2 |
+| V12 Secure Communication | L1 | 3 | 6 | 0 | 0 |
 | V13 Configuration | L1 | 10 | 2 | 0 | 1 |
 | V14 Data Protection | L1 | 5 | 0 | 1 | 3 |
 | V15 Secure Coding and Architecture | L1 | 12 | 0 | 0 | 1 |
 | V16 Security Logging and Error Handling | L1 | 12 | 3 | 0 | 1 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **126** | **104** | **11** | **12** |
+| **Total (253 requirements)** | | **128** | **104** | **11** | **10** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 25 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 13 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 23 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 11 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -265,9 +265,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V12.1.3 | mTLS client certificates validated before use | N/A | No mTLS anywhere in the frontend |
 | V12.2.1 | TLS for all client connections, no insecure fallback | N/A | Operator/deployment: HTTPS redirect and TLS live in the reverse proxy; the app adds HSTS on every response (`app/helpers/securityHeaders.ts:43`, test `test/securityHeaders.test.ts`) |
 | V12.2.2 | Publicly trusted certificates on external services | N/A | Operator/deployment: certificates belong to the reverse proxy |
-| V12.3.1 | Encrypted protocol for all inbound and outbound connections | Open (above target) | `NUXT_PUBLIC_STRAPI_URL` may be plain `http://` to any host unless the forwarder secret is set (`server/plugins/runtimeConfigCheck.ts:16`), so the API token, user JWTs and passwords can travel unencrypted (`server/lib/strapiRequest.ts:28-33`); the Umami proxy has no such check (`server/middleware/umami.ts:44`). Tracked in #495 |
+| V12.3.1 | Encrypted protocol for all inbound and outbound connections | Met | In production the boot stops when `NUXT_PUBLIC_STRAPI_URL` or `NUXT_UMAMI_URL` is plain `http://` to a host outside a private network (`insecureUpstream`, `server/lib/upstreams.ts`, called from `server/plugins/runtimeConfigCheck.ts`; ADR 0011). Inbound TLS is the operator's proxy. Test: `test/upstreams.test.ts` (the plugin itself is not booted by a test) |
 | V12.3.2 | TLS clients validate server certificates | Met | Node `fetch` defaults (no `NODE_TLS_REJECT_UNAUTHORIZED` or `rejectUnauthorized: false` in the repo); SMTP requires TLS with certificate checks (`app/helpers/email.ts:34-36`). Test: `test/email.test.ts` |
-| V12.3.3 | TLS between internal HTTP services, no fallback | Open (above target) | CMS and Umami are reached over plain HTTP by default and in the documented examples (`docs/operate/configure.md:75`); nothing refuses `http://` for a non-private host (see V12.3.1). Tracked in #495 |
+| V12.3.3 | TLS between internal HTTP services, no fallback | Met | Same check: no `http://` fallback towards a public host. Inside a private network (service names, private addresses) `http://` stays allowed by ADR 0011, with TLS there left to the operator (`docs/operate/configure.md`, "Startup checks"). Test: `test/upstreams.test.ts` |
 | V12.3.4 | Internal TLS uses trusted or pinned internal CAs | N/A | Operator/deployment: which internal CA Node trusts is set by the operator (`NODE_EXTRA_CA_CERTS`) |
 
 ## V13 Configuration

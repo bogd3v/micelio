@@ -3,6 +3,7 @@ import { buildTheme } from '#micelio/build-theme'
 import { isStaticMode } from '~/helpers/siteMode'
 import { Locale } from '~/interfaces/locale'
 import { forwardHeaders, isSafeForwardTarget, parseTrustProxy } from '../lib/clientIp'
+import { insecureUpstream } from '../lib/upstreams'
 import { missingOptionalRuntimeSettings, missingRuntimeSettings, moduleRequirements, modeMismatch, privacyContactWarning, themeMismatch } from '~/helpers/runtimeConfig'
 
 export default defineNitroPlugin(() => {
@@ -17,6 +18,12 @@ export default defineNitroPlugin(() => {
     throw new Error('NUXT_STRAPI_FORWARDER_SECRET is set but NUXT_PUBLIC_STRAPI_URL is neither https nor a private address: the secret would travel in the clear')
   }
   if (import.meta.dev) return
+  // Production only: development talks to a local CMS over http (ADR 0011)
+  const insecure = insecureUpstream([
+    { variable: 'NUXT_PUBLIC_STRAPI_URL', url: config.public.strapiUrl },
+    { variable: 'NUXT_UMAMI_URL', url: config.umamiUrl },
+  ])
+  if (insecure) throw new Error(insecure)
   const mode = buildSiteMode
   const missing = missingRuntimeSettings(config, mode)
   if (missing.length) {

@@ -100,5 +100,6 @@ These stop the boot instead:
 - A mismatch between `NUXT_PUBLIC_SITE_MODE` at build and at runtime, or between `NUXT_PUBLIC_THEME` at build and at runtime.
 - An invalid `NUXT_TRUST_PROXY`.
 - `NUXT_STRAPI_FORWARDER_SECRET` set with a `NUXT_PUBLIC_STRAPI_URL` that is neither `https` nor a private address.
+- In production, a `NUXT_PUBLIC_STRAPI_URL` or `NUXT_UMAMI_URL` that is plain `http://` to a host outside a private network ([ADR 0011](../adr/0011-refuse-plain-http-upstreams.md)). `https`, a loopback or private address, `localhost`, a service name without dots (`http://strapi:1337`), `.internal` and `.local` are accepted. The message names the variable.
 
 Check the logs after each change. The warning names the variable to set.
