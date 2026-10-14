@@ -1478,7 +1478,7 @@ describe('/api/newsletter/subscribe', () => {
     const posts = mock.requests.filter(request => request.method === 'POST' && request.path === '/api/subscribers')
     const lastPost = posts[posts.length - 1]
     expect(lastPost?.body?.data).toMatchObject({ email: 'new@example.com', confirmed: false, language: 'en' })
-    expect(lastPost?.body?.data?.confirmationToken).toBeTruthy()
+    expect(lastPost?.body?.data?.confirmationToken).toMatch(/^[\w-]{43}$/)
     expect(lastPost?.body?.data?.unsubscribeToken).toMatch(/^[\w-]{43}$/)
     expect(lastPost?.body?.data).not.toHaveProperty('locale')
   })
