@@ -40,16 +40,16 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V8 Authorization | L2 | 6 | 1 | 0 | 0 |
 | V9 Self-contained Tokens | L1 | 0 | 5 | 0 | 2 |
 | V10 OAuth and OIDC | L1 | 1 | 28 | 0 | 0 |
-| V11 Cryptography | L1 | 6 | 6 | 0 | 2 |
+| V11 Cryptography | L1 | 8 | 6 | 0 | 0 |
 | V12 Secure Communication | L1 | 3 | 6 | 0 | 0 |
 | V13 Configuration | L1 | 10 | 2 | 0 | 1 |
 | V14 Data Protection | L1 | 5 | 0 | 1 | 3 |
 | V15 Secure Coding and Architecture | L1 | 12 | 0 | 0 | 1 |
 | V16 Security Logging and Error Handling | L1 | 12 | 3 | 0 | 1 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **128** | **104** | **11** | **10** |
+| **Total (253 requirements)** | | **130** | **104** | **11** | **8** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 23 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 11 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 21 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 9 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -244,8 +244,8 @@ An open requirement that an attacker could exploit is **not** described here or 
 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
-| V11.1.1 | Documented key management policy and key lifecycle | Open (above target) | `docs/security.md:34` gives rotation advice for the API token, but there is no key management policy (ownership, lifetimes, who may hold each secret). Tracked in #495 |
-| V11.1.2 | Maintained cryptographic inventory of keys, algorithms, certificates | Open (above target) | No inventory of the frontend's secrets (`NUXT_STRAPI_API_TOKEN`, `NUXT_STRAPI_FORWARDER_SECRET`, SMTP credentials, workflow tokens in `docs/security.md:148-155`) and algorithms (SHA-256 CSP hashes, CSPRNG tokens, TLS). Tracked in #495 |
+| V11.1.1 | Documented key management policy and key lifecycle | Met | `docs/security/keys.md`, "Policy": owner, where a secret lives, who may hold it, strength, lifetime and rotation, lifecycle and review; the rotation procedure is in `docs/security.md`. Test: no test (documentation) |
+| V11.1.2 | Maintained cryptographic inventory of keys, algorithms, certificates | Met | `docs/security/keys.md`: the secrets (API token, build token, forwarder secret, SMTP, session cookie, publishing tokens, process nonce and log key) and every algorithm in use with its file; the frontend holds no certificate or private key. Test: no test (documentation) |
 | V11.2.1 | Industry-validated crypto implementations are used | Met | Only `node:crypto` (OpenSSL): `server/utils/subscribers.ts:10`, `server/utils/rateLimit.ts:26`, `server/plugins/contentSecurityPolicy.ts:6`, `server/lib/clientIp.ts:234`. No test |
 | V11.2.2 | Crypto agility: algorithms and keys can be swapped | Met | No application-level encryption; TLS comes from Node, CSP hashes are fixed by the CSP spec; secrets are environment values rotated without code changes (`docs/security.md:34`). No test |
 | V11.2.3 | Primitives give at least 128 bits of security | Met | SHA-256 only (`server/plugins/contentSecurityPolicy.ts:6`, `modules/static-routes.ts:34`); 256-bit nonce and unsubscribe token. No test |
