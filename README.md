@@ -53,7 +53,7 @@ Commands, conventions and the project structure are in [AGENTS.md](AGENTS.md); `
 
 | You are | Start with |
 | --- | --- |
-| Running a site | [docs/operate/](docs/operate/): install, configure, upgrade, back up, static sites |
+| Running a site | [docs/operate/](docs/operate/): install, configure, upgrade, back up, logs, static sites |
 | Editing content | [docs/guide/](docs/guide/) |
 | Making a theme | [docs/themes/creating-a-theme.md](docs/themes/creating-a-theme.md) |
 | Integrating | [docs/api.md](docs/api.md) |
