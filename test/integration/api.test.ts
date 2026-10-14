@@ -53,6 +53,7 @@ beforeEach(() => {
   mock.failures.pathOrder = false
   mock.failures.about = false
   mock.failures.site = false
+  mock.failures.broken = ''
   mock.theme.value = null
   mock.homePage.value = null
   for (const module of Object.keys(mock.modules) as (keyof typeof mock.modules)[]) mock.modules[module] = true
@@ -685,12 +686,50 @@ describe('cookies without a session', () => {
   })
 })
 
+describe('errors from the CMS', () => {
+  const relation = 'api::article.article:doc-vue'
+  const routes: Array<[string, string, RequestInit?]> = [
+    ['GET about', '/api/about?locale=en'],
+    ['GET comments', `/api/comments?relation=${relation}`],
+    ['GET flat comments', `/api/comments/flat?relation=${relation}`],
+    ['POST comment', `/api/comments?relation=${relation}`, { method: 'POST', headers: { 'origin': SITE_URL, 'content-type': 'application/json' }, body: JSON.stringify({ author: { name: 'Dani', email: 'dani@example.com' }, content: 'Hello.' }) }],
+    ['GET post', '/api/posts/understanding-vue-composables'],
+    ['GET reading path', '/api/reading-path?category=linux&locale=en'],
+    ['GET page', '/api/pages/privacy'],
+    ['GET fediverse stats', '/api/fediverse/stats/doc-vue'],
+    ['GET fediverse stats batch', '/api/fediverse/stats?documentIds=doc-vue'],
+  ]
+
+  for (const mode of ['json', 'plain'] as const) {
+    it(`never put the CMS text, URL or query in a response body (${mode} failure)`, async () => {
+      mock.failures.broken = mode
+      for (const [name, path, init] of routes) {
+        const response = await fetch(path, init)
+        // Nitro's error body names the URL the visitor asked for, which is theirs; what must not appear is the CMS's
+        const { url: _asked, ...body } = JSON.parse(await response.text()) as Record<string, unknown>
+        const text = JSON.stringify(body)
+        expect(response.status, name).toBeGreaterThanOrEqual(400)
+        expect(text, `${name}: ${text}`).not.toMatch(/PROBE-CMS|select \* from|127\.0\.0\.1|localhost|populate|filters\[|\/api\/(articles|comments|about|pages|fediverse)/i)
+      }
+    })
+  }
+
+  it('does not tell a visitor how the API token is set: a CMS 401 or 403 is not copied', async () => {
+    mock.failures.broken = 'json'
+    for (const [name, path, init] of routes) {
+      const response = await fetch(path, init)
+      // A read answers 502 for a CMS 400; only posting a comment passes a 400 on
+      expect(response.status, name).toBe(name === 'POST comment' ? 400 : 502)
+    }
+  })
+})
+
 describe('/api/about', () => {
-  it('answers 502 with the Strapi message when Strapi rejects the query', async () => {
+  it('answers 502 with a fixed message when Strapi rejects the query, not with Strapi\'s text', async () => {
     mock.failures.about = true
     await expect($fetch('/api/about', { query: { locale: 'es' } })).rejects.toMatchObject({
       response: { status: 502 },
-      data: { message: 'Invalid key about.profile at blocks.on.about.profile' },
+      data: { message: 'Failed to fetch about page' },
     })
   })
 

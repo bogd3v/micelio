@@ -75,10 +75,7 @@ async function fetchPage(slug: string, locale: string | undefined): Promise<Page
     response = await strapiFetch<{ data?: unknown[] }>(`/api/pages?${query}`)
   } catch (error: unknown) {
     console.error('Strapi fetch page error:', upstreamLogMessage(error))
-    throw createError({
-      statusCode: 502,
-      message: upstreamErrorMessage(error, 'Failed to fetch page'),
-    })
+    throw upstreamFailure(error, 'Failed to fetch page')
   }
 
   const config = useRuntimeConfig()

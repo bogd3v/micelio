@@ -10,10 +10,16 @@ export function asUpstreamError(err: unknown): UpstreamFetchError {
   return (err ?? {}) as UpstreamFetchError
 }
 
-/** The message the CMS sent for `err`, else the error's own `message`, else `fallback`. */
-export function upstreamErrorMessage(err: unknown, fallback: string): string {
+/**
+ * The error a route answers when a call to the CMS failed: a fixed `message` that the route chooses, never the CMS's text or the request URL.
+ *
+ * @remarks
+ * The message of a failed call holds the CMS's own wording and the URL with its query (an internal host, a path, a filter), which a visitor must not read. The status is kept only when it is in `keep` (a 404 by default: the thing is not there; a route that passes visitor input on, like posting a comment, also keeps 400: the CMS refused it); anything else, a 401 or 403 included (it would show how the token's permissions are set), and a 400 on a read (our own query was wrong), is a 502. The cause goes to the log through `upstreamLogMessage`. A 429 is handled before this, with its `Retry-After`.
+ */
+export function upstreamFailure(err: unknown, message: string, keep: readonly number[] = [404]): Error {
   const e = asUpstreamError(err)
-  return e.data?.error?.message || e.message || fallback
+  const status = e.response?.status ?? e.statusCode
+  return createError({ statusCode: status !== undefined && keep.includes(status) ? status : 502, message })
 }
 
 const MAX_LOG_LENGTH = 300

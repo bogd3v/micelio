@@ -40,6 +40,8 @@ interface MockFailures {
   retryAfter: string
   /** Read paths (prefixes) that answer 429 as well; the rest of the API keeps working */
   rateLimitedReads: string[]
+  /** Every content and comment route fails: `json` answers 400 with a recognisable CMS message, `plain` a 502 with a plain body */
+  broken: '' | 'json' | 'plain'
 }
 
 type MockModules = Record<'newsletter' | 'comments' | 'accounts' | 'drafts' | 'fediverse' | 'search' | 'support', boolean>
@@ -449,7 +451,7 @@ function recordRequest(
 export async function startMockStrapi(): Promise<MockStrapiResult> {
   const requests: RecordedRequest[] = []
   const siteRequests: RecordedRequest[] = []
-  const failures: MockFailures = { pathOrder: false, about: false, site: false, rateLimited: false, retryAfter: '42', rateLimitedReads: [] }
+  const failures: MockFailures = { pathOrder: false, about: false, site: false, rateLimited: false, retryAfter: '42', rateLimitedReads: [], broken: '' }
   const modules: MockModules = { newsletter: true, comments: true, accounts: true, drafts: true, fediverse: true, search: true, support: true }
   const theme = { value: null as unknown }
   const homePage: MockStrapiResult['homePage'] = { value: null }
@@ -483,6 +485,15 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     if (auth) {
       res.writeHead(auth.status, auth.headers ?? { 'Content-Type': 'application/json' })
       res.end(auth.headers ? undefined : JSON.stringify(auth.body))
+      return
+    }
+
+    if (failures.broken && url.pathname.startsWith('/api/') && url.pathname !== '/api/site-setting') {
+      if (failures.broken === 'json') sendJson(res, 400, { data: null, error: { status: 400, name: 'ValidationError', message: 'PROBE-CMS-INTERNAL-MESSAGE select * from articles' } })
+      else {
+        res.writeHead(502, { 'Content-Type': 'text/plain' })
+        res.end('Bad Gateway')
+      }
       return
     }
 
