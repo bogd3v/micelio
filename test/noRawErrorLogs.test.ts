@@ -17,4 +17,10 @@ describe('server logs', () => {
     const found = files('server').filter(path => raw.test(readFileSync(path, 'utf8')))
     expect(found).toEqual([])
   })
+
+  it('write only through the structured logger', () => {
+    // server/utils/log.ts is the one file that writes to console (docs/security.md, "Logs")
+    const found = files('server').filter(path => path !== join('server', 'utils', 'log.ts') && /(?<!\w)console\.\w+\(/.test(readFileSync(path, 'utf8')))
+    expect(found).toEqual([])
+  })
 })

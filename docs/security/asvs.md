@@ -45,11 +45,11 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V13 Configuration | L1 | 10 | 2 | 0 | 1 |
 | V14 Data Protection | L1 | 5 | 0 | 1 | 3 |
 | V15 Secure Coding and Architecture | L1 | 12 | 0 | 0 | 1 |
-| V16 Security Logging and Error Handling | L1 | 6 | 3 | 0 | 7 |
+| V16 Security Logging and Error Handling | L1 | 7 | 3 | 0 | 6 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **119** | **104** | **11** | **19** |
+| **Total (253 requirements)** | | **120** | **104** | **11** | **18** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 32 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 20 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 31 requirements that are not met, **12 are at the target level** (1 of them tracked in private security advisories) and 19 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -324,17 +324,17 @@ An open requirement that an attacker could exploit is **not** described here or 
 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
-| V16.1.1 | Log inventory: events, format, storage, access, retention | Open (above target) | No log inventory; the server writes ad hoc `console.error`/`console.warn` lines to stdout/stderr. Tracked in #494 |
-| V16.2.1 | Each log entry has when, where, who, what | Open (above target) | Lines carry no timestamp, route, request id or (hashed) visitor, e.g. `server/api/comments/index.post.ts:32`, `server/utils/auth.ts:35`. Tracked in #494 |
-| V16.2.2 | Synchronised time sources and UTC timestamps | N/A | Operator/deployment: the app writes no timestamps; the container runtime's log driver stamps lines and the host keeps time |
-| V16.2.3 | Logs only go to documented destinations | Met | `docs/security.md`, "Logs": standard output and standard error only, no file and no other sink. Test: no test (documentation) |
-| V16.2.4 | Logs readable by the log processor, common format | Open (above target) | Free text plus `util.inspect` dumps of whole error objects over many lines (local probe), not a structured format. Tracked in #494 |
+| V16.1.1 | Log inventory: events, format, storage, access, retention | Open (above target) | No log inventory; the server writes structured lines to standard error (`docs/security.md`, "Logs") but the inventory of events, access and retention is not written. Tracked in #494 |
+| V16.2.1 | Each log entry has when, where, who, what | Met | `logError` and `logWarn` (`server/utils/log.ts`) write a line with the UTC time, the event name, the route, a request id and a keyed hash of the visitor's address (random key per process; no address, no email). Lines written outside a request (boot) or by helpers that receive no request (`cms.site-setting`, `cms.page`, `cms.page-post-list`, `theme.*`) carry time and event only. The request id is per request: each internal `/api` call of a page render has its own. Test: `test/serverLog.test.ts`, and `test/noRawErrorLogs.test.ts` fails when a server file writes to `console` directly |
+| V16.2.2 | Synchronised time sources and UTC timestamps | N/A | Operator/deployment: each line carries a UTC ISO 8601 `time` from the process clock; keeping the host clock synchronised is the platform's |
+| V16.2.3 | Logs only go to documented destinations | Met | `docs/security.md`, "Logs": standard error only, no file and no other sink. Test: no test (documentation) |
+| V16.2.4 | Logs readable by the log processor, common format | Open (above target) | Every line the app writes is one JSON object (`formatLogLine`, `server/lib/log.ts`; test: `test/serverLog.test.ts`), but Nitro's own handler still logs an unhandled error as free text over many lines, with the URL and its query (`[request error]`). To close with the Nitro error hook in the V16.3.4 change. Tracked in #494 |
 | V16.2.5 | Sensitive data logged according to its protection level | Met | Every failed CMS call is logged through `upstreamLogMessage` (status and the CMS's message, never the URL or its query); an error with a `code` keeps only its name and code (`server/utils/upstreamError.ts`). Test: `test/upstreamLog.test.ts`, and `test/noRawErrorLogs.test.ts` fails when a server file logs a caught error as it is |
 | V16.3.1 | All authentication attempts logged, success and failure | Open (above target) | Sign-in, registration, reset and logout log nothing on success or on a known refusal; only unrecognised CMS failures are logged (`server/utils/auth.ts:35`). Tracked in #494 |
 | V16.3.2 | Failed authorisation attempts logged | Open (above target) | Draft refusals (`server/utils/drafts.ts:46`) and `forbiddenOrigin` (`server/utils/auth.ts:56`) are not logged. Tracked in #494 |
 | V16.3.3 | Documented security events and control bypass attempts logged | Open (above target) | Rate-limit hits (`server/utils/rateLimit.ts:64-68`) and schema refusals (`server/utils/validation.ts:18`) are not logged; no list of security events exists. Tracked in #494 |
 | V16.3.4 | Unexpected errors and backend TLS failures logged | Open (above target) | Most CMS failures are logged, but a failed Umami proxy call becomes a 502 with no log line (`server/middleware/umami.ts:44`; local probe); `fetchPublishedVersion` swallows failures (`server/api/drafts/[documentId].get.ts:13`). Tracked in #494 |
-| V16.4.1 | Log data encoded to prevent log injection | Met | `logText` turns control characters into spaces and cuts the text; `upstreamLogMessage` and the theme log use it (`server/utils/upstreamError.ts`, `server/utils/theme.ts`). Test: `test/upstreamLog.test.ts` |
+| V16.4.1 | Log data encoded to prevent log injection | Met | `logText` turns control characters into spaces and cuts the text; `upstreamLogMessage` and the theme log use it (`server/utils/upstreamError.ts`, `server/utils/theme.ts`). `formatLogLine` (`server/lib/log.ts`) escapes the whole line as JSON. Test: `test/upstreamLog.test.ts`, `test/serverLog.test.ts` |
 | V16.4.2–V16.4.3 | Logs protected from tampering and shipped to a separate system | N/A | Operator/deployment: the app writes to stdout/stderr; collection, access control and shipping are the hosting platform's |
 | V16.5.1 | Generic message for unexpected or security-sensitive errors | Met | A failed CMS call answers with a fixed message the route chooses and a 502 (a 404, and a 400 when posting a comment, are kept); the CMS text, URL and query go to the log only (`upstreamFailure`, `server/utils/upstreamError.ts:19`; GHSA-rcx4-hg9p-9gj9). Tests: `test/integration/api.test.ts:704`, `:728` |
 | V16.5.2 | Secure operation when external resources fail | Met | Site settings fall back to `app.config.ts` (`server/utils/site.ts:49`), search answers `[]` (`server/api/search.get.ts:18-21`), fediverse ranking falls back to newest (`server/api/posts/index.get.ts:58-62`), post lists render empty (`server/utils/pageSections.ts:46-48`), short timeouts. Test: `test/integration/api.test.ts` (502 never cached, fallbacks) |

@@ -10,7 +10,7 @@ export default defineNitroPlugin((nitroApp) => {
   const config = useRuntimeConfig()
   // No safe fallback exists for the origin: say it at boot, and refuse to serve the Worker without its policy
   if (!workerPolicy(config.public.siteUrl, config.app.baseURL)) {
-    console.error('NUXT_PUBLIC_SITE_URL is unset or not a valid origin: the playground\'s Worker cannot get its CSP, so /_islands/workers/ answers 503 and runnable code stays on its fallback.')
+    logError('config.site-url', 'NUXT_PUBLIC_SITE_URL is unset or not a valid origin: the playground\'s Worker cannot get its CSP, so /_islands/workers/ answers 503 and runnable code stays on its fallback.')
   }
   nitroApp.hooks.hook('request', (event) => {
     const { app, public: site } = useRuntimeConfig(event)

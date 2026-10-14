@@ -34,7 +34,7 @@ export default defineEventHandler(async (event): Promise<ReadingPath> => {
     if (editorial.length > 0) return { category, editorial: true, steps: editorial }
     return { category, editorial: false, steps: await fetchSteps(false) }
   } catch (error: unknown) {
-    console.error('Strapi fetch reading path error:', upstreamLogMessage(error))
+    logError('cms.reading-path', 'Fetching the reading path failed', { event, error })
     throw upstreamFailure(error, 'Failed to fetch the reading path')
   }
 })

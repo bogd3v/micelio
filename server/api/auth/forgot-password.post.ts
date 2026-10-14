@@ -13,7 +13,7 @@ export default defineEventHandler(async (event): Promise<{ ok: true }> => {
       copyRetryAfter(event, error)
       throw authFailure('tooManyRequests')
     }
-    console.error('Strapi forgot-password error:', upstreamLogMessage(error))
+    logError('cms.forgot-password', 'Sending the reset email failed', { event, error })
   }
   return { ok: true }
 })

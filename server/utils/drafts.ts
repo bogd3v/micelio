@@ -44,7 +44,7 @@ export async function fetchAsEditor<T>(event: H3Event, jwt: string, path: string
   } catch (error: unknown) {
     const status = asUpstreamError(error).response?.status
     if (status === 401 || status === 403 || status === 404) throw draftNotFound()
-    console.error('Strapi drafts error:', upstreamLogMessage(error))
+    logError('cms.drafts', 'Fetching the drafts failed', { event, error })
     throw createError({ statusCode: 502, statusMessage: 'Failed to fetch drafts' })
   }
 }
