@@ -35,21 +35,21 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V3 Web Frontend Security | L1 | 17 | 2 | 0 | 0 |
 | V4 API and Web Service | L1 | 2 | 8 | 0 | 0 |
 | V5 File Handling | L1 | 2 | 7 | 0 | 0 |
-| V6 Authentication | L2 | 14 | 14 | 7 | 0 |
-| V7 Session Management | L2 | 9 | 5 | 4 | 0 |
+| V6 Authentication | L2 | 15 | 14 | 6 | 0 |
+| V7 Session Management | L2 | 10 | 5 | 3 | 0 |
 | V8 Authorization | L2 | 6 | 1 | 0 | 0 |
 | V9 Self-contained Tokens | L1 | 0 | 5 | 0 | 2 |
 | V10 OAuth and OIDC | L1 | 1 | 28 | 0 | 0 |
 | V11 Cryptography | L1 | 5 | 6 | 0 | 3 |
 | V12 Secure Communication | L1 | 1 | 6 | 0 | 2 |
 | V13 Configuration | L1 | 10 | 2 | 0 | 1 |
-| V14 Data Protection | L1 | 4 | 0 | 2 | 3 |
+| V14 Data Protection | L1 | 5 | 0 | 1 | 3 |
 | V15 Secure Coding and Architecture | L1 | 9 | 0 | 2 | 2 |
 | V16 Security Logging and Error Handling | L1 | 5 | 3 | 1 | 7 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **109** | **104** | **20** | **20** |
+| **Total (253 requirements)** | | **112** | **104** | **17** | **20** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 40 requirements that are not met, **20 are at the target level** (10 of them tracked in private security advisories) and 20 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 37 requirements that are not met, **17 are at the target level** (6 of them tracked in private security advisories) and 20 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -173,9 +173,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V6.3.2 | No default accounts present | N/A | The frontend has no accounts of its own; enforced in micelio-cms, see micelio-cms#128: `src/migrations/` seeds roles and permissions only, no users |
 | V6.3.3 | Multi-factor or combined authentication required | Met | Single factor by decision, with the rationale and the mitigating controls documented: ADR 0003, amendment of 2026-10-14 (accepted risk). Test: no test (documented decision) |
 | V6.3.4 | No undocumented auth pathways; controls consistent | Open | No undocumented pathway is left (`docs/security.md`, "Authentication and sessions"). The controls are not consistent: the 10-character minimum is enforced only by the frontend, and a direct sign-up or `change-password` call on the CMS has none (micelio-cms `config/plugins.ts:78-84`). Tracked in #491 and micelio-cms#177 |
-| V6.4.1 | Activation codes random, short-lived, single use | Open | Private advisory |
+| V6.4.1 | Activation codes random, short-lived, single use | Open | The reset code expires after an hour and works once (micelio-cms `src/extensions/users-permissions/reset-security.ts`, see V6.4.3). The email confirmation token is 20 random bytes and single use but never expires (`node_modules/@strapi/plugin-users-permissions/dist/server` 5.56.0 `services/user.js:179`, `controllers/auth.js:605-618`). Tracked in #491 |
 | V6.4.2 | No password hints or secret questions | Met | None in `app/pages/account/` or the CMS user model. No test |
-| V6.4.3 | Secure forgotten-password reset process | Open | Private advisory |
+| V6.4.3 | Secure forgotten-password reset process | Met | The CMS emails a link with a 64-byte random code, valid for one hour and one use; an expired code answers like a wrong one and is discarded, and a reset ends every earlier JWT (micelio-cms `src/extensions/users-permissions/reset-security.ts`, published advisory GHSA-xfrm-8c63-m3cj). The frontend answers `forgot-password` the same whether or not the account exists, and the code leaves the address bar and the analytics data once the page has read it (`app/composables/useForgetQueryParam.ts`, GHSA-p496-cm7x-29c3). No password hints. Tests: micelio-cms `tests/accounts.test.ts` ("password reset"), `test/nuxt/TokenPages.test.ts:17` |
 | V6.4.4 | Lost MFA factor needs identity proofing | N/A | No MFA factor exists |
 | V6.5.1–V6.5.5 | MFA lookup secrets, OOB codes and TOTP rules | N/A | No MFA: no lookup secrets, out-of-band codes or TOTP |
 | V6.6.1–V6.6.3 | Out-of-band authenticator rules (PSTN, binding, brute force) | N/A | No out-of-band authenticator is offered |
@@ -196,7 +196,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V7.3.2 | Absolute maximum session lifetime enforced | Met | 7 days: cookie `Max-Age` (`app/constants/auth.ts:9`, `server/utils/auth.ts:78-80`) and JWT `exp` (micelio-cms `config/plugins.ts:80`), ADR 0003. Tests: `test/integration/api.test.ts:1440`; micelio-cms `tests/accounts.test.ts:111` |
 | V7.4.1 | Terminated sessions cannot be reused | Met | Accepted risk, ADR 0003. Logout clears the cookie (`server/api/auth/logout.post.ts:4`, `server/utils/auth.ts:83-87`); the JWT itself is not revoked before expiry (`docs/adr/0003-session-in-httponly-cookie.md`, Trade-offs). Test: `test/integration/api.test.ts:1483` |
 | V7.4.2 | Disabled or deleted accounts lose all sessions | N/A | Enforced in micelio-cms, see micelio-cms#128: the strategy reloads the user on every request and rejects a missing or blocked one (`node_modules/@strapi/plugin-users-permissions/dist/server` 5.56.0 `strategies/users-permissions.js:30-58`); the BFF then clears the cookie (`server/api/auth/me.get.ts:13-15`) |
-| V7.4.3 | Offer ending other sessions after credential change | Open | A password reset leaves every issued JWT valid (legacy `jwtManagement`, `node_modules/@strapi/plugin-users-permissions/dist/server` 5.56.0 `controllers/auth.js:252-269`; `server/api/auth/reset-password.post.ts:10-19`). Tracked in #491 |
+| V7.4.3 | Offer ending other sessions after credential change | Met | A password reset or change ends every JWT issued before it, which is more than offering: the CMS rejects a token older than the last password change (micelio-cms `src/extensions/users-permissions/reset-security.ts`, GHSA-xfrm-8c63-m3cj). The token the reset returns keeps working. Test: micelio-cms `tests/accounts.test.ts` |
 | V7.4.4 | Visible logout on authenticated pages | Met | Header account menu on every page (`app/components/myc/MycAccountMenu.vue:90`) and profile (`app/pages/account/index.vue:56`). Test: `e2e/account.spec.ts:31` |
 | V7.4.5 | Admins can end sessions per user or all | Open | No per-user revocation; only blocking the user or rotating `JWT_SECRET`, neither documented. Tracked in #491 |
 | V7.5.1 | Re-authenticate before changing auth-related attributes | N/A | No route changes email or recovery data in a session (`server/api/auth/`); the Authenticated role has no `user.update` (micelio-cms `docs/ACCOUNTS.md:69`). Account deletion does re-check the password (`server/api/auth/me.delete.ts:11-31`) |
@@ -294,9 +294,9 @@ An open requirement that an attacker could exploit is **not** described here or 
 | --- | --- | --- | --- |
 | V14.1.1 | Sensitive data identified and classified into protection levels | Open (above target) | No classification of the data the frontend handles (emails, JWT, reset codes, newsletter tokens, visitor IPs); `app/pages/privacy.vue` is visitor-facing, not a classification. Tracked in #495 |
 | V14.1.2 | Each protection level has documented protection requirements | Open (above target) | Depends on V14.1.1; no requirements per level (logging, retention, encryption). Tracked in #495 |
-| V14.2.1 | Sensitive data never in URLs or query strings | Open | Private advisory |
+| V14.2.1 | Sensitive data never in URLs or query strings | Open | The reset code and the newsletter tokens arrive in an emailed link and leave the address bar once the page has read them (`app/composables/useForgetQueryParam.ts`; GHSA-p496-cm7x-29c3), but the server still looks subscribers up by email and token in the query string of its CMS request (`server/utils/subscribers.ts:20-24`), so they reach the CMS and proxy access logs. Tracked in #495 |
 | V14.2.2 | Sensitive data not cached in server components | Met | ISR only on public routes (`nuxt.config.ts:45-56`); private routes `private, no-store` (`nuxt.config.ts:134-149`); Nitro's cached render sees no cookie and stores no `Set-Cookie` (`docs/security.md:92`). Test: `test/integration/api.test.ts` (no `set-cookie` on cached pages, `private, no-store` on auth and drafts) |
-| V14.2.3 | Sensitive data not sent to untrusted parties or trackers | Open | Private advisory |
+| V14.2.3 | Sensitive data not sent to untrusted parties or trackers | Met | The tracker leaves the query string out (`data-exclude-search`, `app/helpers/analytics.ts:36`), the analytics proxy drops `Referer` (`server/middleware/umami.ts:19`) and the reset, confirmation and unsubscribe pages, in both locales, send `Referrer-Policy: no-referrer` (`nuxt.config.ts:13`, `:147-152`). Published advisory GHSA-p496-cm7x-29c3. Tests: `test/analytics.test.ts:22`, `test/integration/api.test.ts:1505`, `:2012`, `:2019` |
 | V14.2.4 | Data protection controls implemented as documented per level | Open (above target) | Cannot be met before V14.1.1–V14.1.2 define the levels; current gaps include V16.2.5. Tracked in #495 |
 | V14.3.1 | Authenticated data cleared from client after logout | Met | `logout()` clears the user before it calls the server (`app/composables/useAuth.ts`), so the page shows nothing of the session even when the request fails (the error still reaches the caller); the draft count follows the editor flag (`app/plugins/drafts.client.ts`); the JWT is `httpOnly` (`server/utils/auth.ts:64`) and the server clears the cookie. `Clear-Site-Data` is not sent: its `storage` and `cache` types would also drop the reading history kept in the browser. Test: `test/nuxt/useAuthLogout.test.ts`, `e2e/account.spec.ts` |
 | V14.3.2 | Anti-caching headers so browsers don't keep sensitive data | Met | `preventCaching()` on every auth and draft route (`server/utils/auth.ts:40-42`), route rules for account, drafts, newsletter and their APIs (`nuxt.config.ts:134-149`). Test: `test/integration/api.test.ts` (`private, no-store` assertions) |
