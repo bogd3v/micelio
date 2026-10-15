@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { z } from 'zod'
 import { authUserResponseSchema } from '../../app/schemas/auth'
 import { aboutSchema } from '../../app/schemas/blocks'
+import { siteSchema } from '../../app/schemas/site'
 import { articlePageSchema, articleSchema, categoryCountSchema, searchResultSchema, tagCountSchema } from '../../app/schemas/posts'
 import { DEMO, expectShape } from './support'
 
@@ -11,6 +12,8 @@ test('site settings: the identity, the modules and the social links', async ({ r
   const response = await request.get('/api/site?locale=en')
   expect(response.status()).toBe(200)
   const site = await response.json()
+  // The demo seed sets no theme override, so `theme` is absent
+  expect(siteSchema.safeParse(site).error?.issues ?? []).toEqual([])
   expectShape(site, { name: 'string', description: 'string', url: 'string', defaultLocale: 'string', socialLinks: 'array', modules: 'object', logo: 'object?', favicon: 'object?' })
   expect(site.name).toBe(DEMO.siteName)
   expectShape(site.modules, { newsletter: 'boolean', comments: 'boolean', accounts: 'boolean', drafts: 'boolean', fediverse: 'boolean', search: 'boolean', support: 'boolean' })
