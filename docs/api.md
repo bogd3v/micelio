@@ -4,7 +4,7 @@ Every route under `server/api/` and `server/routes/`: what it takes, what it ret
 
 Conventions:
 
-- **Errors** are Nitro errors: `{ statusCode, statusMessage, message, data? }`. Auth routes put a machine-readable code in `statusMessage` and `data.code` (see [Auth error codes](#auth-error-codes)); the client translates it.
+- **Errors** under `/api/` are answered as problem details ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457), `application/problem+json`, [ADR-0015](adr/0015-problem-details.md)): `type` (always `about:blank`), `title`, `status`, `detail` (a fixed English text for developers, never upstream text) and `code`, a stable camelCase identifier that a client branches on. For one release line the Nitro members `statusCode`, `statusMessage`, `message` and `data` (with `data.code` on auth routes) stay as extension members; the client translates by `code` (see [Auth error codes](#auth-error-codes)). An error nobody handled is a 500 with code `internalError`.
 - **Locales** are `en` and `es`. An unknown locale is a `400`; an empty one counts as absent.
 - **502** means Strapi failed or rejected the call. The message is a fixed one that the route chooses (`Failed to fetch comments`): Strapi's own text and the URL of the call are never returned, they go to the log. A 404 from Strapi stays a 404, a posted comment that Strapi refuses stays a 400, and any other status (a 401 or 403 included) is a 502.
 - **429** comes with `Retry-After` (seconds).

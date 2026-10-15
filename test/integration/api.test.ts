@@ -2674,3 +2674,72 @@ describe('security event logs', () => {
     expect(JSON.stringify(got)).not.toMatch(/2001:db8|bot-log@example\.com/)
   })
 })
+
+describe('problem details', () => {
+  const JSON_HEADERS = { 'origin': SITE_URL, 'content-type': 'application/json' }
+
+  interface Problem {
+    type: string
+    title: string
+    status: number
+    detail: string
+    code: string
+    statusCode: number
+    statusMessage: string
+    message: string
+    data?: { code?: string }
+  }
+
+  async function problemOf(response: Response): Promise<Problem> {
+    expect(response.headers.get('content-type')).toMatch(/^application\/problem\+json/)
+    return await response.json() as Problem
+  }
+
+  it.each([
+    ['400', () => fetch('/api/posts/a%20b'), 400, 'invalidRequest'],
+    ['401', () => fetch('/api/auth/change-password', { method: 'POST', headers: JSON_HEADERS, body: '{}' }), 401, 'unauthorized'],
+    ['403', () => fetch('/api/auth/login', { method: 'POST', headers: { ...JSON_HEADERS, origin: 'https://other.example' }, body: '{}' }), 403, 'forbiddenOrigin'],
+    ['404', () => fetch('/api/posts/unknown-slug'), 404, 'notFound'],
+    ['429', () => fetch('/api/auth/login', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ identifier: testUsers.rateLimited.username, password: testUsers.rateLimited.password }) }), 429, 'tooManyRequests'],
+    ['502', () => fetch('/api/posts/broken-article'), 502, 'upstreamUnavailable'],
+  ] as const)('answers a %s as application/problem+json, with the legacy members', async (_name, call, status, code) => {
+    const response = await call()
+    expect(response.status).toBe(status)
+    const body = await problemOf(response)
+    expect(body).toMatchObject({ type: 'about:blank', status, statusCode: status, code })
+    expect(body.title).toEqual(expect.any(String))
+    expect(body.detail).toEqual(expect.any(String))
+    expect(body.statusMessage).toEqual(expect.any(String))
+    expect(body.message).toEqual(expect.any(String))
+    if (status === 502) expect(response.headers.get('cache-control')).toBe('no-store')
+    // Routes that fail with an auth code keep it in data.code and as the status message
+    if (body.data?.code) expect(body.data.code).toBe(body.statusMessage)
+    // The detail is fixed text: nothing from Strapi, no URL
+    expect(body.detail).not.toContain(mock.url)
+    expect(body.detail).not.toMatch(/https?:\/\/|strapi/i)
+  })
+
+  it('keeps Retry-After on a rate-limited answer', async () => {
+    const relation = 'api::article.article:doc-vue'
+    const send = (): Promise<Response> => fetch(`/api/comments?relation=${relation}`, { method: 'POST', headers: { ...JSON_HEADERS, 'x-forwarded-for': '2001:db8:79:1::1' }, body: JSON.stringify({ author: { name: 'Bot', email: 'bot-pd@example.com' }, content: 'Again.' }) })
+    let last = await send()
+    for (let i = 0; i < 12 && last.status !== 429; i++) last = await send()
+    expect(last.status).toBe(429)
+    expect(Number(last.headers.get('retry-after'))).toBeGreaterThan(0)
+    expect((await problemOf(last)).code).toBe('tooManyRequests')
+  })
+
+  it('does not copy a Strapi message into detail', async () => {
+    mock.failures.about = true
+    const response = await fetch('/api/about?locale=es')
+    expect(response.status).toBe(502)
+    const body = await problemOf(response)
+    expect(body.detail).toBe('The content service failed or is unreachable.')
+  })
+
+  it('keeps the Nuxt error page for a page', async () => {
+    const response = await fetch('/blog/no-such-article', { headers: { accept: 'text/html' } })
+    expect(response.status).toBe(404)
+    expect(response.headers.get('content-type')).toMatch(/^text\/html/)
+  })
+})
