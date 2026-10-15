@@ -69,7 +69,7 @@ export function assertRateLimit(event: H3Event, bucket: keyof typeof RATE_LIMITS
   if (result.allowed) return
   setHeader(event, 'Retry-After', result.retryAfterSeconds)
   logWarn('limit.rate', 'Rate limit reached', { event, cause: bucket })
-  throw createError({ statusCode: 429, statusMessage: 'Too Many Requests' })
+  throw problem('tooManyRequests')
 }
 
 /** Longest `Retry-After` echoed to the browser, whatever the CMS says. */
@@ -97,7 +97,7 @@ export function rethrowUpstreamRateLimit(event: H3Event, error: unknown): void {
   if (!isUpstreamRateLimit(error)) return
   copyRetryAfter(event, error)
   setHeader(event, 'Cache-Control', 'no-store')
-  throw createError({ statusCode: 429, statusMessage: 'Too Many Requests' })
+  throw problem('tooManyRequests')
 }
 
 /** A degraded answer given because the CMS limited us must not be cached. */

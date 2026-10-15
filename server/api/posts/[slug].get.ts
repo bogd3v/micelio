@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
   const data = response.data
   if (!data || data.length === 0) {
-    throw createError({ statusCode: 404, message: 'Post not found' })
+    throw problem('notFound', { message: 'Post not found' })
   }
 
   const article = data[0]!

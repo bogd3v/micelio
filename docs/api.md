@@ -4,7 +4,7 @@ Every route under `server/api/` and `server/routes/`: what it takes, what it ret
 
 Conventions:
 
-- **Errors** under `/api/` are answered as problem details ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457), `application/problem+json`, [ADR-0015](adr/0015-problem-details.md)): `type` (always `about:blank`), `title`, `status`, `detail` (a fixed English text for developers, never upstream text) and `code`, a stable camelCase identifier that a client branches on. For one release line the Nitro members `statusCode`, `statusMessage`, `message` and `data` (with `data.code` on auth routes) stay as extension members; the client translates by `code` (see [Auth error codes](#auth-error-codes)). An error nobody handled is a 500 with code `internalError`.
+- **Errors** under `/api/` are answered as problem details ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457), `application/problem+json`, [ADR-0015](adr/0015-problem-details.md)): `type` (always `about:blank`), `title`, `status`, `detail` (a fixed English text for developers, never upstream text) and `code`, a stable camelCase identifier that a client branches on. For one release line the Nitro members `statusCode`, `statusMessage`, `message` and `data` (with `data.code` on every error; `statusMessage` is the code on auth routes and the status text or a fixed route text elsewhere) stay as extension members; the client translates by `code` (see [Error codes](#error-codes)). An error nobody handled is a 500 with code `internalError`.
 - **Locales** are `en` and `es`. An unknown locale is a `400`; an empty one counts as absent.
 - **502** means Strapi failed or rejected the call. The message is a fixed one that the route chooses (`Failed to fetch comments`): Strapi's own text and the URL of the call are never returned, they go to the log. A 404 from Strapi stays a 404, a posted comment that Strapi refuses stays a 400, and any other status (a 401 or 403 included) is a 502.
 - **429** comes with `Retry-After` (seconds).
@@ -14,15 +14,15 @@ Conventions:
 
 | Route | Query | Returns | Cache | Errors |
 | --- | --- | --- | --- | --- |
-| `GET /api/posts` | `page` (≥ 1, default 1), `pageSize` (1–50, default 10), `locale`, `category`, `tag` (slugs), `search` (≤ 200 chars; used from 3), `sort` (`recent` · `oldest` · `fediverse`, unknown → `recent`), `content` (`1`/`true`: search the body and return a `snippet`) | `StrapiPaginatedResponse<RawStrapiArticle[]>` | 5 min | 400 bad query |
-| `GET /api/posts/:slug` | `locale`; the slug is checked against the alphabet of a Strapi uid (letters, digits, `_`, `.`, `~`, `-`; 256 characters at most) before any CMS call | `RawStrapiArticle` | 5 min | 400 (`Invalid slug`, `Unsupported locale`), 404 not found, 502 |
-| `GET /api/search` | `q` (≤ 200; under 3 chars returns `[]`), `locale`, `content` | `SearchPostResult[]` (at most 10) | 1 min | 400; Strapi errors return `[]` |
-| `GET /api/categories` | `locale` (default `en`) | `CategoryCount[]` | 10 min | 400 |
-| `GET /api/tags` | `locale` (default `en`) | `TagCount[]` | 10 min | 400 |
-| `GET /api/reading-path` | `category` (required, a known category), `locale` | `ReadingPath` (`editorial` is false when Strapi has no `pathOrder` yet) | 5 min | 400 unknown category, 502 |
-| `GET /api/about` | `locale` | `StrapiAbout` | 5 min | 400, 404, 502 |
-| `GET /api/pages/:slug` | `locale` (optional; Strapi's default when absent); `slug` is a Strapi uid (`^[a-z0-9][a-z0-9_.~-]{0,63}$`) | `Page` | 5 min in Nitro's storage per locale and slug (`loadPage`, stale while revalidating); a 404 or 502 is never stored | 400 bad slug or locale, 404 no page, 502 |
-| `GET /api/site` | `locale` (default `en`) | `Site`: the site identity and its modules, including optional `theme` when overrides apply | 5 min; 30 s when Strapi fails | 400 unknown locale. Never fails because of Strapi |
+| `GET /api/posts` | `page` (≥ 1, default 1), `pageSize` (1–50, default 10), `locale`, `category`, `tag` (slugs), `search` (≤ 200 chars; used from 3), `sort` (`recent` · `oldest` · `fediverse`, unknown → `recent`), `content` (`1`/`true`: search the body and return a `snippet`) | `StrapiPaginatedResponse<RawStrapiArticle[]>` | 5 min | 400 `invalidRequest` bad query, 502 `upstreamUnavailable` |
+| `GET /api/posts/:slug` | `locale`; the slug is checked against the alphabet of a Strapi uid (letters, digits, `_`, `.`, `~`, `-`; 256 characters at most) before any CMS call | `RawStrapiArticle` | 5 min | 400 `invalidRequest` (`Invalid slug`, `Unsupported locale`), 404 `notFound`, 502 `upstreamUnavailable` |
+| `GET /api/search` | `q` (≤ 200; under 3 chars returns `[]`), `locale`, `content` | `SearchPostResult[]` (at most 10) | 1 min | 400 `invalidRequest`; Strapi errors return `[]` |
+| `GET /api/categories` | `locale` (default `en`) | `CategoryCount[]` | 10 min | 400 `invalidRequest` |
+| `GET /api/tags` | `locale` (default `en`) | `TagCount[]` | 10 min | 400 `invalidRequest` |
+| `GET /api/reading-path` | `category` (required, a known category), `locale` | `ReadingPath` (`editorial` is false when Strapi has no `pathOrder` yet) | 5 min | 400 `invalidRequest` unknown category, 502 `upstreamUnavailable` |
+| `GET /api/about` | `locale` | `StrapiAbout` | 5 min | 400 `invalidRequest`, 404 `notFound`, 502 `upstreamUnavailable` |
+| `GET /api/pages/:slug` | `locale` (optional; Strapi's default when absent); `slug` is a Strapi uid (`^[a-z0-9][a-z0-9_.~-]{0,63}$`) | `Page` | 5 min in Nitro's storage per locale and slug (`loadPage`, stale while revalidating); a 404 or 502 is never stored | 400 `invalidRequest` bad slug or locale, 404 `notFound` no page, 502 `upstreamUnavailable` |
+| `GET /api/site` | `locale` (default `en`) | `Site`: the site identity and its modules, including optional `theme` when overrides apply | 5 min; 30 s when Strapi fails | 400 `invalidRequest` unknown locale. Never fails because of Strapi |
 
 Types: `app/interfaces/strapi-post.ts` (`RawStrapiArticle`, `SearchPostResult`, `TagCount`), `strapi-response.ts`, `design.ts` (`CategoryCount`), `blog.ts` (`ReadingPath`), `strapi-about.ts`, `page.ts` (`Page`, `PageSection` and one interface per section).
 
@@ -56,7 +56,7 @@ Each site turns features on and off in Strapi's `site-setting.modules` (all on b
 | `search` | `/api/search` |
 | `support` | none (only the support button) |
 
-Pages match with or without the `/es` prefix. `server/middleware/modules.ts` answers before the route runs, so a switched-off module never reaches Strapi. It reads the modules through `loadSiteCached()`, which keeps the site for `NUXT_SITE_CACHE_SECONDS` (60 by default, at most 10 s after a Strapi failure; `0` turns the cache off). Client-side navigation is checked by `app/middleware/modules.global.ts`.
+A switched-off module answers `notFound`, the same as a route that does not exist. Pages match with or without the `/es` prefix. `server/middleware/modules.ts` answers before the route runs, so a switched-off module never reaches Strapi. It reads the modules through `loadSiteCached()`, which keeps the site for `NUXT_SITE_CACHE_SECONDS` (60 by default, at most 10 s after a Strapi failure; `0` turns the cache off). Client-side navigation is checked by `app/middleware/modules.global.ts`.
 
 ## Comments
 
@@ -64,9 +64,9 @@ Pages match with or without the `/es` prefix. `server/middleware/modules.ts` ans
 
 | Route | Input | Returns | Errors |
 | --- | --- | --- | --- |
-| `GET /api/comments` | Query: `relation`, `locale`, `page`, `pageSize` (≤ 50), `sort` (`field:asc` / `field:desc`) | `Comment[]` as a tree (`children`) | 400, 404, 502 |
-| `GET /api/comments/flat` | Same query | `CommentsResponse` (`data` flat, with `threadOf`) | 400, 404, 502 |
-| `POST /api/comments` | Query: `relation`. Body: `author.name` (≤ 100), `author.email` (≤ 254), `author.avatar` (http(s), optional, dropped if invalid), `content` (≤ 5000), `threadOf` (positive integer, optional), `locale` | `Comment` | 400 invalid body or locale, 403 other origin, 429 (10 per IP / 10 min, or the CMS limit, with its `Retry-After`), 400 or 404 when Strapi refuses the comment, 502 |
+| `GET /api/comments` | Query: `relation`, `locale`, `page`, `pageSize` (≤ 50), `sort` (`field:asc` / `field:desc`) | `Comment[]` as a tree (`children`) | 400 `invalidRequest`, 404 `notFound`, 502 `upstreamUnavailable` |
+| `GET /api/comments/flat` | Same query | `CommentsResponse` (`data` flat, with `threadOf`) | 400 `invalidRequest`, 404 `notFound`, 502 `upstreamUnavailable` |
+| `POST /api/comments` | Query: `relation`. Body: `author.name` (≤ 100), `author.email` (≤ 254), `author.avatar` (http(s), optional, dropped if invalid), `content` (≤ 5000), `threadOf` (positive integer, optional), `locale` | `Comment` | 400 `invalidInput` invalid body, 400 `invalidRequest` bad relation or locale, 403 `forbiddenOrigin`, 413 `payloadTooLarge`, 429 `tooManyRequests` (10 per IP / 10 min, or the CMS limit, with its `Retry-After`), 400 `invalidRequest` or 404 `notFound` when Strapi refuses the comment, 502 `upstreamUnavailable` |
 
 Every comment response hides `PENDING` and `REJECTED` comments and never includes the author's email. The author id of a posted comment is set by the server (`guest-<uuid>`). Types: `app/interfaces/comment.ts`.
 
@@ -74,8 +74,8 @@ Every comment response hides `PENDING` and `REJECTED` comments and never include
 
 | Route | Input | Returns | Cache | Errors |
 | --- | --- | --- | --- | --- |
-| `GET /api/fediverse/stats` | Query: `documentIds`, comma-separated or repeated, 1–50 ids (`[\w-]+`) | `Record<documentId, FediverseStats>` (likes, boosts) | 1 min | 400, 502 |
-| `GET /api/fediverse/stats/:documentId` | — | `FediverseStats` | 1 min | 400, 404 not federated, 502 |
+| `GET /api/fediverse/stats` | Query: `documentIds`, comma-separated or repeated, 1–50 ids (`[\w-]+`) | `Record<documentId, FediverseStats>` (likes, boosts) | 1 min | 400 `invalidRequest`, 502 `upstreamUnavailable` |
+| `GET /api/fediverse/stats/:documentId` | — | `FediverseStats` | 1 min | 400 `invalidRequest`, 404 `notFound` not federated, 502 `upstreamUnavailable` |
 
 These call Strapi anonymously. Type: `app/interfaces/fediverse.ts`.
 
@@ -83,9 +83,9 @@ These call Strapi anonymously. Type: `app/interfaces/fediverse.ts`.
 
 | Route | Input | Returns | Errors |
 | --- | --- | --- | --- |
-| `POST /api/newsletter/subscribe` | Body: `email` (≤ 254), `locale` (`es` or English for anything else) | `SubscribeResponse` — the same for new and already confirmed addresses | 400 `Email is required` / `Invalid email format`, 403 other origin, 429 (10 per IP and 3 per email / hour, or the CMS limit), 500 (also when the confirmation email cannot be sent: the pending record is deleted, so nothing is left stored) |
-| `POST /api/newsletter/confirm` | Body: `token`. Same-origin check; the `/confirm?token=` page sends it when the button is pressed, never on opening the link | `ConfirmResponse`; `alreadyConfirmed: true` when the link is used again | 400 missing token, 403 other origin, 404 unknown or malformed token, 500 |
-| `POST /api/newsletter/unsubscribe` | `token` in the body (unsubscribe page) or the query (RFC 8058 one-click) | `{ success: true }`, also for unknown or used tokens | 400 malformed token, 502 |
+| `POST /api/newsletter/subscribe` | Body: `email` (≤ 254), `locale` (`es` or English for anything else) | `SubscribeResponse` — the same for new and already confirmed addresses | 400 `invalidInput` (`Email is required` / `Invalid email format`), 403 `forbiddenOrigin`, 413 `payloadTooLarge`, 429 `tooManyRequests` (10 per IP and 3 per email / hour, or the CMS limit), 500 `internalError` (also when the confirmation email cannot be sent: the pending record is deleted, so nothing is left stored) |
+| `POST /api/newsletter/confirm` | Body: `token`. Same-origin check; the `/confirm?token=` page sends it when the button is pressed, never on opening the link | `ConfirmResponse`; `alreadyConfirmed: true` when the link is used again | 400 `invalidToken` missing token, 403 `forbiddenOrigin`, 404 `notFound` unknown or malformed token, 413 `payloadTooLarge`, 500 `internalError` |
+| `POST /api/newsletter/unsubscribe` | `token` in the body (unsubscribe page) or the query (RFC 8058 one-click) | `{ success: true }`, also for unknown or used tokens | 400 `invalidToken` malformed token, 413 `payloadTooLarge`, 502 `upstreamUnavailable` |
 
 Every newsletter response is `private, no-store`. The CMS stores the SHA-256 of the confirmation and unsubscribe tokens, not the tokens the emails carry, and the server looks a subscriber up by that hash, so a token never reaches the CMS's access logs (ASVS V14.2.1). Subscribers stored before this still have their tokens in the clear and keep working: if no hash matches, the server tries the token as it is, and a confirmation re-stores the unsubscribe token hashed. The unsubscribe token is created when the subscriber confirms, not when they subscribe. Types: `app/interfaces/newsletter.ts`.
 
@@ -107,27 +107,39 @@ All account routes answer `private, no-store`. The session is the `__Host-miceli
 
 Types: `app/interfaces/auth.ts`.
 
-### Auth error codes
+## Error codes
+
+Every `code` an `/api/*` error can carry, from `PROBLEM_CODES` in `server/utils/problem.ts`. `test/problemDocs.test.ts` fails when this table and the catalog differ. A route answers a code with the status listed here, and the route tables name the ones each route uses. The first twelve are the codes of the auth routes (`invalidInput` is also the code of a refused body on comments and the newsletter); the account forms translate each of those into the visitor's language, and other clients show their own text.
 
 | Code | Status | Meaning |
 | --- | --- | --- |
-| `invalidInput` | 400 | The body does not match the schema |
+| `invalidInput` | 400 | The body does not match the schema of the route |
 | `invalidCredentials` | 400 | Wrong identifier or password |
 | `emailNotConfirmed` | 400 | The account exists but its email is not confirmed |
 | `invalidCode` | 400 | Expired or unknown reset code |
-| `wrongPassword` | 400 | Password check failed when deleting the account |
+| `wrongPassword` | 400 | Password check failed when changing a password or deleting the account |
+| `weakPassword` | 400 | The password does not meet the strength rules |
+| `commonPassword` | 400 | The password is too common |
 | `unauthorized` | 401 | No valid session |
 | `forbiddenOrigin` | 403 | Missing `Origin` header or from another site |
 | `emailTaken` | 409 | Username or email already registered |
-| `tooManyRequests` | 429 | Strapi's rate limit |
-| `unknown` | 502 | Any other Strapi failure |
+| `tooManyRequests` | 429 | A rate limit, ours or the CMS's; `Retry-After` says when to retry |
+| `unknown` | 502 | Any other CMS failure on an auth route |
+| `invalidRequest` | 400 | A parameter of the query, the path or a CMS read is malformed or invalid |
+| `invalidToken` | 400 | A newsletter token is missing or malformed |
+| `notFound` | 404 | The resource does not exist, or its module is turned off (a closed module looks like absence) |
+| `methodNotAllowed` | 405 | The route does not accept the HTTP method; `Allow` lists the ones the site serves |
+| `payloadTooLarge` | 413 | The request body is larger than the route accepts |
+| `upstreamUnavailable` | 502 | The CMS (or the analytics server) failed or is unreachable; never carries its text |
+| `internalError` | 500 | The server failed, or an error nobody handled |
+| `requestRejected` | 400 | Any other refusal that has no code of its own |
 
 ## Drafts (editors)
 
 | Route | Query | Returns | Errors |
 | --- | --- | --- | --- |
-| `GET /api/drafts` | `locale` (optional) | `DraftListResponse`, newest edit first | 404 for anyone who is not an editor |
-| `GET /api/drafts/:documentId` | `locale` | `DraftArticleResponse`: the draft plus its published version, if any | 404 when missing or not an editor |
+| `GET /api/drafts` | `locale` (optional) | `DraftListResponse`, newest edit first | 404 `notFound` for anyone who is not an editor, 502 `upstreamUnavailable` |
+| `GET /api/drafts/:documentId` | `locale` | `DraftArticleResponse`: the draft plus its published version, if any | 404 `notFound` when missing or not an editor, 502 `upstreamUnavailable` |
 
 They use the editor's own JWT, never the API token, and answer `private, no-store`. Types: `app/interfaces/draft.ts`.
 

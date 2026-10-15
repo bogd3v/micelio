@@ -17,10 +17,7 @@ function successResponse(language: NewsletterLanguage): SubscribeResponse {
 
 export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
   assertSameOrigin(event)
-  const { email, locale: language } = await validBody(event, subscribeSchema, error => createError({
-    statusCode: 400,
-    statusMessage: error.issues[0]?.message ?? 'Invalid email format',
-  }))
+  const { email, locale: language } = await validBody(event, subscribeSchema, error => problem('invalidInput', { statusMessage: error.issues[0]?.message ?? 'Invalid email format' }))
   assertRateLimit(event, 'newsletterPerIp', ipBucket(clientIp(event)))
   assertRateLimit(event, 'newsletterPerEmail', email)
 
@@ -57,12 +54,10 @@ export default defineEventHandler(async (event): Promise<SubscribeResponse> => {
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
     logError('cms.newsletter-subscribe', 'Subscribing failed', { event, error })
-    throw createError({
-      statusCode: 500,
-      statusMessage:
-        language === 'es'
-          ? 'Error al procesar la suscripción'
-          : 'Error processing subscription',
+    throw problem('internalError', {
+      statusMessage: language === 'es'
+        ? 'Error al procesar la suscripción'
+        : 'Error processing subscription',
     })
   }
 })

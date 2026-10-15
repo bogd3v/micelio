@@ -24,7 +24,7 @@ export default defineEventHandler(async (event): Promise<Record<string, Fedivers
   const ids = parseIds(getQuery(event).documentIds)
 
   if (ids.length === 0 || ids.length > MAX_IDS || !ids.every(id => DOCUMENT_ID.test(id))) {
-    throw createError({ statusCode: 400, message: `documentIds needs between 1 and ${MAX_IDS} valid ids` })
+    throw problem('invalidRequest', { message: `documentIds needs between 1 and ${MAX_IDS} valid ids` })
   }
 
   let response: UpstreamStats

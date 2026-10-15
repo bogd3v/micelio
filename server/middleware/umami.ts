@@ -26,7 +26,7 @@ const PAYLOAD_METHODS = new Set(['PATCH', 'POST', 'PUT', 'DELETE'])
 async function fetchWithoutRedirect(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const response = await fetch(input, { ...init, redirect: 'manual' })
   if (response.status >= 300 && response.status < 400) {
-    throw createError({ statusCode: 502, statusMessage: 'Bad Gateway' })
+    throw problem('upstreamUnavailable')
   }
   return response
 }

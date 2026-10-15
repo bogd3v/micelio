@@ -2702,6 +2702,14 @@ describe('problem details', () => {
     ['404', () => fetch('/api/posts/unknown-slug'), 404, 'notFound'],
     ['429', () => fetch('/api/auth/login', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ identifier: testUsers.rateLimited.username, password: testUsers.rateLimited.password }) }), 429, 'tooManyRequests'],
     ['502', () => fetch('/api/posts/broken-article'), 502, 'upstreamUnavailable'],
+    ['400 token', () => fetch('/api/newsletter/confirm', { method: 'POST', headers: JSON_HEADERS, body: '{}' }), 400, 'invalidToken'],
+    ['400 unsubscribe token', () => fetch('/api/newsletter/unsubscribe', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ token: 'bad token' }) }), 400, 'invalidToken'],
+    ['404 module off', () => {
+      mock.modules.comments = false
+      return fetch('/api/comments?relation=api::article.article:doc-vue')
+    }, 404, 'notFound'],
+    ['405', () => fetch('/api/posts', { method: 'PROPFIND' }), 405, 'methodNotAllowed'],
+    ['413', () => fetch('/api/comments?relation=api::article.article:doc-vue', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ content: 'x'.repeat(70_000) }) }), 413, 'payloadTooLarge'],
   ] as const)('answers a %s as application/problem+json, with the legacy members', async (_name, call, status, code) => {
     const response = await call()
     expect(response.status).toBe(status)
@@ -2712,8 +2720,9 @@ describe('problem details', () => {
     expect(body.statusMessage).toEqual(expect.any(String))
     expect(body.message).toEqual(expect.any(String))
     if (status === 502) expect(response.headers.get('cache-control')).toBe('no-store')
-    // Routes that fail with an auth code keep it in data.code and as the status message
-    if (body.data?.code) expect(body.data.code).toBe(body.statusMessage)
+    // Every error carries its code in data.code; the auth codes are also the status message
+    expect(body.data?.code).toBe(code)
+    if (['unauthorized', 'forbiddenOrigin', 'tooManyRequests'].includes(code)) expect(body.statusMessage).toBe(code)
     // The detail is fixed text: nothing from Strapi, no URL
     expect(body.detail).not.toContain(mock.url)
     expect(body.detail).not.toMatch(/https?:\/\/|strapi/i)

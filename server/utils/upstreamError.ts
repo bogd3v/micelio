@@ -16,10 +16,13 @@ export function asUpstreamError(err: unknown): UpstreamFetchError {
  * @remarks
  * The message of a failed call holds the CMS's own wording and the URL with its query (an internal host, a path, a filter), which a visitor must not read. The status is kept only when it is in `keep` (a 404 by default: the thing is not there; a route that passes visitor input on, like posting a comment, also keeps 400: the CMS refused it); anything else, a 401 or 403 included (it would show how the token's permissions are set), and a 400 on a read (our own query was wrong), is a 502. The cause goes to the log through `upstreamLogMessage`. A 429 is handled before this, with its `Retry-After`.
  */
-export function upstreamFailure(err: unknown, message: string, keep: readonly number[] = [404]): Error {
+export function upstreamFailure(err: unknown, message: string, keep: readonly (400 | 404)[] = [404]): Error {
   const e = asUpstreamError(err)
   const status = e.response?.status ?? e.statusCode
-  return createError({ statusCode: status !== undefined && keep.includes(status) ? status : 502, message })
+  const kept = status === 400 || status === 404 ? status : undefined
+  const code = kept !== undefined && keep.includes(kept) ? (kept === 404 ? 'notFound' : 'invalidRequest') : 'upstreamUnavailable'
+  // `message` is the legacy member only: `detail` stays the catalog text, which never carries what the CMS said
+  return problem(code, { message })
 }
 
 const MAX_LOG_LENGTH = 300

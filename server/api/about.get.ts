@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
 
   const data = response.data as { blocks?: StrapiBlock[] | null } | undefined
   if (!data) {
-    throw createError({ statusCode: 404, message: 'About page not found' })
+    throw problem('notFound', { message: 'About page not found' })
   }
 
   return publicAbout({ ...data, blocks: renderBlocks(data.blocks, markdownRenderer(locale)) } as StrapiAbout)

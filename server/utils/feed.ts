@@ -129,13 +129,13 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
  */
 export async function sendFeed(event: H3Event, options: FeedOptions): Promise<string> {
   // A landing with no articles has no feeds (ADR 0006, section 1)
-  if (!isBlogEnabled(useRuntimeConfig(event).public.blogEnabled)) throw createError({ statusCode: 404, message: 'This site has no blog' })
+  if (!isBlogEnabled(useRuntimeConfig(event).public.blogEnabled)) throw problem('notFound', { message: 'This site has no blog' })
   setHeader(event, 'Content-Type', 'application/rss+xml; charset=utf-8')
   setHeader(event, 'Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=3600')
   try {
     return await renderFeed(options)
   } catch {
-    throw createError({ statusCode: 500, message: 'Failed to generate RSS feed' })
+    throw problem('internalError', { message: 'Failed to generate RSS feed' })
   }
 }
 
@@ -151,7 +151,7 @@ export function feedCategory(file: string | undefined): Category {
   const match = /^([a-z-]+)\.xml$/.exec(file ?? '')
   const slug = match?.[1]
   if (!slug || !isCategory(slug)) {
-    throw createError({ statusCode: 404, message: 'Feed not found' })
+    throw problem('notFound', { message: 'Feed not found' })
   }
   return slug
 }

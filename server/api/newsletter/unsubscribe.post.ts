@@ -19,10 +19,7 @@ export default defineEventHandler(async (event): Promise<UnsubscribeResponse> =>
 
   if (!isNewsletterToken(token)) {
     logWarn('input.refused', 'Unsubscribe token refused', { event, cause: 'invalidToken' })
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid unsubscribe token',
-    })
+    throw problem('invalidToken', { statusMessage: 'Invalid unsubscribe token' })
   }
 
   try {
@@ -31,10 +28,7 @@ export default defineEventHandler(async (event): Promise<UnsubscribeResponse> =>
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
     logError('cms.newsletter-unsubscribe', 'Unsubscribing failed', { event, error })
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Could not unsubscribe',
-    })
+    throw problem('upstreamUnavailable', { statusMessage: 'Could not unsubscribe' })
   }
 
   return { success: true }

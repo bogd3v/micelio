@@ -21,7 +21,7 @@ Every route follows the same contract. Skipping a step has already caused produc
 - User or editor calls send their own JWT (`fetchStrapiMe(event, jwt)`, `fetchAsEditor(event, jwt, …)`), never the API token.
 - A write to the CMS catches errors and calls `rethrowUpstreamRateLimit(event, error)` first, so a CMS 429 reaches the browser with `Retry-After`; a route that degrades instead of failing (empty search, ranking fallback) calls `noStoreOnUpstreamRateLimit(event, error)` so the degraded answer is not cached.
 - A new content type or action needs a permission on the **custom** API token in Strapi: add it to the table in `docs/security.md` and tell the user to grant it. A missing `update` on Subscriber once broke every newsletter confirmation.
-- Upstream errors: catch, `console.error`, then `createError({ statusCode: 502, message: upstreamErrorMessage(error, '…') })` (or Strapi's status where the client needs it).
+- Upstream errors: catch, log, then `throw upstreamFailure(error, 'Failed to …')` (a fixed message; 404 kept, 400 too when the route passes visitor input on). Never `createError` in `server/`: every error is `problem(code, options)` with a code of `PROBLEM_CODES` (ADR 0015).
 
 ## 3. Protections
 
@@ -33,7 +33,7 @@ Every route follows the same contract. Skipping a step has already caused produc
 | Session / account / drafts | `preventCaching(event)` and a `private, no-store` route rule |
 | Editor only | `editorSession(event)`; answer 404, not 403 |
 
-Auth routes fail with `authFailure('<code>')`; a new code goes in `AuthErrorCode`, `AUTH_ERROR_STATUS` and both i18n files.
+Auth routes fail with `authFailure('<code>')`; a new code goes in `AuthErrorCode`, `PROBLEM_CODES` (`server/utils/problem.ts`), the "Error codes" table of `docs/api.md` and both i18n files.
 
 ## 4. Tests
 

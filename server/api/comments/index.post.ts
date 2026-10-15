@@ -7,10 +7,7 @@ import { ipBucket } from '../../lib/clientIp'
 export default defineEventHandler(async (event): Promise<Comment> => {
   assertSameOrigin(event)
   const relation = commentRelation(event)
-  const input = await validBody(event, guestCommentSchema, () => createError({
-    statusCode: 400,
-    message: 'Content, author name and a valid email are required',
-  }))
+  const input = await validBody(event, guestCommentSchema, () => problem('invalidInput', { message: 'Content, author name and a valid email are required' }))
   const locale = commentLocale(input.locale)
   const comment: GuestComment = {
     author: { id: `guest-${randomUUID()}`, ...input.author },

@@ -9,7 +9,7 @@ import { isLocale } from '~/helpers/locale'
  * A missing session gets the same answer, so drafts do not show that they exist.
  */
 export function draftNotFound() {
-  return createError({ statusCode: 404, statusMessage: 'Not Found' })
+  return problem('notFound')
 }
 
 /**
@@ -49,6 +49,6 @@ export async function fetchAsEditor<T>(event: H3Event, jwt: string, path: string
     if (status === 401 || status === 403) logWarn('authz.draft-refused', 'The CMS refused the editor session', { event, cause: `upstream ${status}` })
     if (status === 401 || status === 403 || status === 404) throw draftNotFound()
     logError('cms.drafts', 'Fetching the drafts failed', { event, error })
-    throw createError({ statusCode: 502, statusMessage: 'Failed to fetch drafts' })
+    throw problem('upstreamUnavailable', { statusMessage: 'Failed to fetch drafts' })
   }
 }
