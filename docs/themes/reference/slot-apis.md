@@ -219,7 +219,7 @@ export interface ReadingPathStep {
   /** Strapi's document id, which stays the same across locales. */
   documentId: string
   slug: string
-  title: string
+  title: string | null
 }
 ```
 
@@ -1055,9 +1055,9 @@ The About page of the CMS, with its body blocks, as Strapi returns it.
 export interface StrapiAbout {
   id: number
   documentId: string
-  title: string
+  title: string | null
   locale: string
-  seo?: StrapiSEO
+  seo?: StrapiSEO | null
   /** The page body, in order; each block is discriminated by `__component`. */
   blocks: StrapiBlock[]
 }
@@ -1087,13 +1087,18 @@ A Strapi upload, as an image block, a slide or a file of a slider carries it.
 
 ```ts
 export interface StrapiMediaFile {
+  id?: number
+  documentId?: string
   /** A `/uploads/` path or an absolute URL; `getMediaUrl` makes a path absolute. */
   url: string
-  alternativeText?: string
-  /** The caption of the upload, used when the block has none of its own. */
-  caption?: string
-  width?: number
-  height?: number
+  /** The alt text of the upload; `null` when the editor left it empty. */
+  alternativeText?: string | null
+  /** The caption of the upload, used when the block has none of its own; `null` when empty. */
+  caption?: string | null
+  /** Pixels; `null` for a file that is not an image. */
+  width?: number | null
+  /** Pixels; `null` for a file that is not an image. */
+  height?: number | null
 }
 ```
 
@@ -1125,7 +1130,8 @@ An image block of an article, `shared.media`.
 export interface StrapiMedia {
   id: number
   __component: 'shared.media'
-  file: StrapiMediaFile
+  /** `null` when no file is attached. */
+  file: StrapiMediaFile | null
   /** The caption under the image; the file's own caption is the fallback. */
   caption?: string | null
   credit?: StrapiImageCredit | null
@@ -1377,7 +1383,7 @@ export interface StrapiRichText {
   id: number
   __component: 'shared.rich-text'
   /** The Markdown as the CMS stores it, before rendering. */
-  body: string
+  body: string | null
   /** The sanitized HTML of `body`; set on the server. */
   html?: string
 }
@@ -1392,11 +1398,11 @@ export interface StrapiQuote {
   id: number
   __component: 'shared.quote'
   /** The quoted text in Markdown, as the CMS stores it. */
-  body: string
+  body: string | null
   /** The sanitized HTML of `body`, rendered inline; set on the server. */
   html?: string
   /** The attribution shown after the quote. */
-  title?: string
+  title?: string | null
 }
 ```
 
@@ -1448,8 +1454,9 @@ export interface StrapiMediaRef {
   /** A `/uploads/` path or an absolute URL; `getMediaUrl` makes a path absolute. */
   url: string
   alternativeText?: string | null
-  width?: number
-  height?: number
+  caption?: string | null
+  width?: number | null
+  height?: number | null
 }
 ```
 
@@ -1489,7 +1496,7 @@ An article as Strapi returns it, before `toStrapiPost` turns it into a `StrapiPo
 export interface RawStrapiArticle {
   id: number
   documentId: string
-  title: string
+  title: string | null
   slug: string
   description?: string | null
   /** @deprecated The legacy Markdown body: the CMS article has no such field and the route no longer returns it. Read `blocks`. Removed in the next major of the theme contract. */
@@ -1539,7 +1546,7 @@ A full article as the frontend renders it, with its body, references and publish
 export interface StrapiPost {
   id: number
   documentId: string
-  title: string
+  title: string | null
   slug: string
   description?: string | null
   /** @deprecated The legacy Markdown body: the CMS article has no such field and the route no longer returns it. Read `blocks`. Removed in the next major of the theme contract. */
@@ -1710,7 +1717,7 @@ export interface StrapiMetaSocial {
     data: {
       attributes: {
         url: string
-        alternativeText?: string
+        alternativeText?: string | null
       }
     }
   }
@@ -1736,21 +1743,21 @@ export interface StrapiSEO {
     data?: {
       attributes: {
         url: string
-        alternativeText?: string
+        alternativeText?: string | null
         width?: number
         height?: number
       }
     }
-  }
+  } | null
   /** Share overrides per network; the frontend does not read them. */
   metaSocial?: StrapiMetaSocial[]
-  keywords?: string
-  metaRobots?: string
-  /** JSON-LD for the article page; when set it replaces the generated `BlogPosting` graph. */
-  structuredData?: Record<string, unknown>
+  keywords?: string | null
+  metaRobots?: string | null
+  /** JSON-LD for the article page; when set it replaces the generated `BlogPosting` graph. `null` when empty. */
+  structuredData?: Record<string, unknown> | unknown[] | null
   /** The viewport meta value; the frontend does not read it. */
-  metaViewport?: string
-  canonicalURL?: string
+  metaViewport?: string | null
+  canonicalURL?: string | null
 }
 ```
 

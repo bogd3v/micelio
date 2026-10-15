@@ -13,7 +13,7 @@ export interface StrapiMetaSocial {
     data: {
       attributes: {
         url: string
-        alternativeText?: string
+        alternativeText?: string | null
       }
     }
   }
@@ -38,19 +38,19 @@ export interface StrapiSEO {
     data?: {
       attributes: {
         url: string
-        alternativeText?: string
+        alternativeText?: string | null
         width?: number
         height?: number
       }
     }
-  }
+  } | null
   /** Share overrides per network; the frontend does not read them. */
   metaSocial?: StrapiMetaSocial[]
-  keywords?: string
-  metaRobots?: string
-  /** JSON-LD for the article page; when set it replaces the generated `BlogPosting` graph. */
-  structuredData?: Record<string, unknown>
+  keywords?: string | null
+  metaRobots?: string | null
+  /** JSON-LD for the article page; when set it replaces the generated `BlogPosting` graph. `null` when empty. */
+  structuredData?: Record<string, unknown> | unknown[] | null
   /** The viewport meta value; the frontend does not read it. */
-  metaViewport?: string
-  canonicalURL?: string
+  metaViewport?: string | null
+  canonicalURL?: string | null
 }

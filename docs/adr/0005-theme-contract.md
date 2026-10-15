@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-10-03
-**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice), 2026-10-06 (#238, #263, #306, #239), 2026-10-07 (#244, #276, #307), 2026-10-08 (#416)
+**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice), 2026-10-06 (#238, #263, #306, #239), 2026-10-07 (#244, #276, #307), 2026-10-08 (#416), 2026-10-15 (#558)
 **Deciders:** BogDev maintainer
 
 ## Context
@@ -189,6 +189,8 @@ What does not change: the core helpers that predate the prefix (`card`, `font-di
 **Proof, with real numbers in the pull request.** For both themes, every mode and the three widths: identical computed styles of every element before and after (`compare-styles.mjs --scope all --states`); the visual baselines of `test:theme` pass without regenerating any; `theme:check`, `lint:classes`, `lint:schema` and `lint:reference` pass with the regenerated schema and reference; and the performance budgets hold, with the change in CSS and HTML bytes recorded in `docs/performance.md` (each name is one byte longer before compression).
 
 **What is left out.** `docs/design/` is BogDev's redesign specification and design handoff, not documentation of the core. It leaves the repository in its own pull request before the classes are renamed, so nothing in it is renamed. The tracker paths `/bd.js` and `/api/bd` keep their names: they are defaults of the operator interface (`umamiScriptPath`, `NUXT_UMAMI_COLLECT_PATH`) that must match each site's Umami configuration, so a new default would make every operator change both sides, and the path tells a visitor nothing. They are the one place where `bd` remains. Where this record or ADR-0002 to ADR-0008 says `bd-`, read the new name.
+
+**Amendment (2026-10-15, #558):** correcting a `@public` slot API type to match what the CMS already sends is a fix, not a change of contract, because the effect decides (standard, section 7). `StrapiMediaFile`, `StrapiMediaRef`, `StrapiSEO`, the category and author names, the quote and rich-text bodies, `shared.media` `file`, and the `title` of articles, the About page and reading-path steps now admit the `null` the CMS has always delivered, and gain the optional `id`, `documentId` and `caption` the allow-list already sends. It is a patch; the upgrade note is in `docs/themes/creating-a-theme.md`.
 
 ### 7. Theme authoring
 

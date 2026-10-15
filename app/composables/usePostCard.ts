@@ -17,7 +17,7 @@ export function usePostCard(): (post: PostListItem) => PostCardProps {
   return function toPostCard(post: PostListItem): PostCardProps {
     const slug = post.category?.slug
     return {
-      title: post.title,
+      title: post.title ?? '',
       slug: post.slug,
       href: `${localizePath('/blog')}/${post.slug}`,
       excerpt: post.description ?? undefined,

@@ -72,7 +72,7 @@ export interface ReadingPathStep {
   /** Strapi's document id, which stays the same across locales. */
   documentId: string
   slug: string
-  title: string
+  title: string | null
 }
 
 /**

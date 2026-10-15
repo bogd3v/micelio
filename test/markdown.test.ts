@@ -112,4 +112,11 @@ describe('renderBlocks', () => {
     const [text] = renderBlocks([richText('**a**', 7)], renderer) as [StrapiRichText]
     expect(text).toMatchObject({ id: 7, __component: 'shared.rich-text', body: '**a**', html: '<p><strong>a</strong></p>\n' })
   })
+
+  it('renders an empty rich text and quote whose body the CMS sent as null', () => {
+    const quote: StrapiQuote = { id: 8, __component: 'shared.quote', body: null, title: null }
+    const [text, rendered] = renderBlocks([{ ...richText('', 7), body: null }, quote], renderer) as [StrapiRichText, StrapiQuote]
+    expect(text.html).toBe('')
+    expect(rendered.html).toBe('')
+  })
 })

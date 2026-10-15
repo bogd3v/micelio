@@ -4,13 +4,18 @@
  * @public
  */
 export interface StrapiMediaFile {
+  id?: number
+  documentId?: string
   /** A `/uploads/` path or an absolute URL; `getMediaUrl` makes a path absolute. */
   url: string
-  alternativeText?: string
-  /** The caption of the upload, used when the block has none of its own. */
-  caption?: string
-  width?: number
-  height?: number
+  /** The alt text of the upload; `null` when the editor left it empty. */
+  alternativeText?: string | null
+  /** The caption of the upload, used when the block has none of its own; `null` when empty. */
+  caption?: string | null
+  /** Pixels; `null` for a file that is not an image. */
+  width?: number | null
+  /** Pixels; `null` for a file that is not an image. */
+  height?: number | null
 }
 
 /**
@@ -67,7 +72,8 @@ export interface StrapiImageCredit {
 export interface StrapiMedia {
   id: number
   __component: 'shared.media'
-  file: StrapiMediaFile
+  /** `null` when no file is attached. */
+  file: StrapiMediaFile | null
   /** The caption under the image; the file's own caption is the fallback. */
   caption?: string | null
   credit?: StrapiImageCredit | null

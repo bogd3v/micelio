@@ -100,7 +100,7 @@ const structuredData = computed(() => {
       {
         '@type': 'BlogPosting',
         '@id': `${siteUrl.value}/blog/${slug}`,
-        'headline': post.value.title,
+        'headline': post.value.title || post.value.seo?.metaTitle || undefined,
         'description': post.value.description,
         'image': shareImageUrl.value,
         'datePublished': post.value.publishedAt,
@@ -146,7 +146,7 @@ const structuredData = computed(() => {
           {
             '@type': 'ListItem',
             'position': 3,
-            'name': post.value.title,
+            'name': post.value.title || post.value.seo?.metaTitle || 'Blog Post',
             'item': `${siteUrl.value}/blog/${slug}`,
           },
         ],

@@ -104,7 +104,7 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
         const postUrl = escapeXml(`${baseUrl}${itemLocale === 'es' ? '/es' : ''}/blog/${post.slug}`)
         const altPostUrl = escapeXml(`${baseUrl}${itemLocale === 'es' ? '' : '/es'}/blog/${post.slug}`)
         return `<item>
-      <title>${cdata(post.title)}</title>
+      <title>${cdata(post.title ?? '')}</title>
       <description>${cdata(itemDescription)}</description>
       <link>${postUrl}</link>
       <guid isPermaLink="true">${postUrl}</guid>

@@ -59,6 +59,11 @@ describe('StrapiMediaBlock', () => {
     expect(wrapper.find('.myc-credit').exists()).toBe(false)
   })
 
+  it('renders nothing when the file is null', async () => {
+    const wrapper = await mountSuspended(StrapiMediaBlock, { props: { block: { ...block, file: null } } })
+    expect(wrapper.find('figure').exists()).toBe(false)
+  })
+
   it('has no caption without caption or credit', async () => {
     const wrapper = await mountSuspended(StrapiMediaBlock, { props: { block: { ...block, caption: null, credit: null } } })
     expect(wrapper.find('figcaption').exists()).toBe(false)
