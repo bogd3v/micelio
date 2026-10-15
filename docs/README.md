@@ -9,7 +9,7 @@ The documentation is organised by who reads it. Find your reader in the table; e
 | Site editor | Build pages and publish content in the CMS | [`guide/`](guide/README.md) |
 | Theme creator | The guide, the contract reference and the theme tests | [`themes/`](themes/creating-a-theme.md): [creating a theme](themes/creating-a-theme.md), [reference](themes/reference/README.md), [theme testing](theme-testing.md) |
 | Integrator | Routes, inputs, outputs and errors | [`api.md`](api.md) |
-| Integrator and operator | The security model: token permissions and endpoint protections, and the ASVS verification mapping | [`security.md`](security.md), [`security/asvs.md`](security/asvs.md) |
+| Integrator and operator | The security model: token permissions and endpoint protections, and the ASVS verification mapping | [`security.md`](security.md), [`security/asvs.md`](security/asvs.md), [`security/scorecard.md`](security/scorecard.md) |
 | Contributor, human or agent | Rules, structure, how a subsystem works and the ASVS security mapping | [`engineering-standard.md`](engineering-standard.md), [`security/asvs.md`](security/asvs.md), [`../AGENTS.md`](../AGENTS.md), [`architecture/`](architecture/README.md): [CI pipeline](architecture/ci-pipeline.md), [releasing](architecture/releasing.md), [contract tests](architecture/contract-tests.md) |
 | Contributor | Budgets and their history | [`performance.md`](performance.md) |
 | Whoever asks "why is it like this?" | The decision, the options and the cost | [`adr/`](adr/README.md) |
