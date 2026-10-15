@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { z } from 'zod'
 import { authUserResponseSchema } from '../../app/schemas/auth'
+import { aboutSchema } from '../../app/schemas/blocks'
 import { articlePageSchema, articleSchema, categoryCountSchema, searchResultSchema, tagCountSchema } from '../../app/schemas/posts'
 import { DEMO, expectShape } from './support'
 
@@ -68,6 +69,8 @@ test('the about page: blocks with their rendered html', async ({ request }) => {
   const response = await request.get('/api/about?locale=en')
   expect(response.status()).toBe(200)
   const about = await response.json()
+  // Strapi sends `seo: null` for an empty component, which the demo About page has
+  expect(aboutSchema.safeParse(about).error?.issues ?? []).toEqual([])
   expectShape(about, { documentId: 'string', title: 'string', locale: 'string', blocks: 'array' })
   const richText = about.blocks.find((block: { __component: string }) => block.__component === 'shared.rich-text')
   expectShape(richText, { body: 'string', html: 'string' })

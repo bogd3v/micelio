@@ -13,6 +13,7 @@ import { HASHED_TOKENS, startMockStrapi } from './mock-strapi'
 import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
 import { resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
+import { aboutSchema } from '~/schemas/blocks'
 import { articlePageSchema, articleSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
 import { contrastRatio, parseHex } from '~/helpers/color'
 import { inlineScripts } from '~/helpers/securityHeaders'
@@ -769,6 +770,7 @@ describe('response schemas of the content routes', () => {
     const hits = z.array(searchResultSchema).parse(await $fetch('/api/search', { query: { q: 'ssh', locale: 'en', content: '1' } }))
     expect(hits.length).toBeGreaterThan(0)
     expect(readingPathSchema.parse(await $fetch('/api/reading-path', { query: { category: 'linux', locale: 'en' } })).steps.length).toBeGreaterThan(0)
+    expect(aboutSchema.parse(await $fetch('/api/about', { query: { locale: 'en' } })).blocks.length).toBeGreaterThan(0)
   })
 })
 

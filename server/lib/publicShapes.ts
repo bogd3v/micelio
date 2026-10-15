@@ -92,7 +92,12 @@ export const articleShape: Shape = fields({
  * @internal Exported for the test that keeps the response schemas in step with it.
  */
 export const cardShape: Shape = fields(cardFields)
-const aboutShape: Shape = fields({ id: true, documentId: true, title: true, locale: true, seo, blocks: each(variants('__component', { ...sharedBlocks, ...aboutBlocks })) })
+/**
+ * The allow-list of the About page.
+ *
+ * @internal Exported for the test that keeps the response schemas in step with it.
+ */
+export const aboutShape: Shape = fields({ id: true, documentId: true, title: true, locale: true, seo, blocks: each(variants('__component', { ...sharedBlocks, ...aboutBlocks })) })
 
 /** A full article as the CMS sent it, reduced to the fields the article page reads. */
 export function publicArticle(article: RawStrapiArticle): RawStrapiArticle {

@@ -25,6 +25,7 @@ import type {
   StrapiTopic,
   StrapiTopics,
 } from '~/interfaces/strapi-blocks'
+import type { StrapiAbout } from '~/interfaces/strapi-about'
 import type { StrapiMediaRef } from '~/interfaces/strapi-post'
 import type { StrapiMetaSocial, StrapiSEO } from '~/interfaces/strapi-seo'
 import { responseSchema } from './response'
@@ -303,4 +304,21 @@ export const strapiBlockSchema = responseSchema<StrapiBlock>()(
     openSourceSchema,
     contactSchema,
   ]).meta({ id: 'StrapiBlock', description: 'A block of a dynamic zone, discriminated by `__component`.' }),
+)
+
+/**
+ * The About page (`GET /api/about`).
+ *
+ * @remarks
+ * Rebuilt from the allow-list `aboutShape`, so unknown keys are rejected. The CMS sends `title: null` for an untitled page and `seo: null` for an empty SEO component.
+ */
+export const aboutSchema = responseSchema<StrapiAbout>()(
+  z.strictObject({
+    id: z.int(),
+    documentId: z.string(),
+    title: z.string().nullable(),
+    locale: z.string(),
+    seo: seoSchema.nullish(),
+    blocks: z.array(strapiBlockSchema),
+  }).meta({ id: 'StrapiAbout', description: 'The About page with its blocks, Markdown already rendered to sanitized HTML.' }),
 )
