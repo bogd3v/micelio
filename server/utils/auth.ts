@@ -4,24 +4,9 @@ import { strapiAuthErrorCode } from '~/helpers/auth'
 import { LEGACY_SESSION_COOKIE, PREVIOUS_SESSION_COOKIE, SESSION_COOKIE, SESSION_MAX_AGE } from '~/constants/auth'
 import { trustsForwardedHost } from '../lib/clientIp'
 
-const AUTH_ERROR_STATUS: Record<AuthErrorCode, number> = {
-  invalidCredentials: 400,
-  emailNotConfirmed: 400,
-  emailTaken: 409,
-  tooManyRequests: 429,
-  invalidCode: 400,
-  wrongPassword: 400,
-  weakPassword: 400,
-  commonPassword: 400,
-  invalidInput: 400,
-  unauthorized: 401,
-  forbiddenOrigin: 403,
-  unknown: 502,
-}
-
-/** The error of an auth route for `code`: the status of that code, with the code as the status message and in `data.code`. It is returned, so the caller throws it. */
-export function authFailure(code: AuthErrorCode) {
-  return createError({ statusCode: AUTH_ERROR_STATUS[code], statusMessage: code, data: { code } })
+/** The error of an auth route for `code`: the status of that code in `PROBLEM_CODES`, with the code as the status message and in `data.code`. It is returned, so the caller throws it. */
+export function authFailure(code: AuthErrorCode): ReturnType<typeof problem> {
+  return problem(code, { statusMessage: code })
 }
 
 /**

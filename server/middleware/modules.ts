@@ -7,6 +7,6 @@ export default defineEventHandler(async (event) => {
   if (!module) return
   const { site } = await loadSiteCached(defaultLocale)
   if (!isModuleEnabled(site.modules, module)) {
-    throw createError({ statusCode: 404, statusMessage: 'Page not found' })
+    throw problem('notFound', { statusMessage: 'Page not found' })
   }
 })

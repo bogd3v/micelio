@@ -143,9 +143,6 @@ export default defineEventHandler(async (event) => {
     })
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
-    throw createError({
-      statusCode: asUpstreamError(error).response?.status === 400 ? 400 : 502,
-      message: 'Failed to fetch posts',
-    })
+    throw problem(asUpstreamError(error).response?.status === 400 ? 'invalidRequest' : 'upstreamUnavailable', { message: 'Failed to fetch posts' })
   }
 })

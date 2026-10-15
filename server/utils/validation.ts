@@ -7,7 +7,7 @@ export const MAX_BODY_BYTES = 64 * 1024
 function payloadTooLarge(event: H3Event): Error {
   // The rest of the body is not read, so the connection cannot carry another request
   setResponseHeader(event, 'connection', 'close')
-  return createError({ statusCode: 413, statusMessage: 'Payload Too Large' })
+  return problem('payloadTooLarge', { statusMessage: 'Payload Too Large' })
 }
 
 /**
@@ -99,7 +99,7 @@ function refusedFields(error: z.ZodError, whole: string): string {
   return [...new Set(error.issues.map(issue => issue.path.map(String).join('.') || whole))].join(',')
 }
 
-/** The 400 error of a query that fails its schema, with the message of the first issue as the status message. */
+/** The 400 error of a query that fails its schema, with the message of the first issue as the legacy status message; its `detail` stays the catalog text. */
 export function invalidQuery(error: z.ZodError): Error {
-  return createError({ statusCode: 400, statusMessage: error.issues[0]?.message ?? 'Invalid query' })
+  return problem('invalidRequest', { statusMessage: error.issues[0]?.message ?? 'Invalid query' })
 }

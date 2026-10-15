@@ -12,7 +12,7 @@ export default defineEventHandler(async (event): Promise<FediverseStats> => {
   const documentId = getRouterParam(event, 'documentId') ?? ''
 
   if (!DOCUMENT_ID.test(documentId)) {
-    throw createError({ statusCode: 400, message: 'Invalid document id' })
+    throw problem('invalidRequest', { message: 'Invalid document id' })
   }
 
   let response: Partial<Record<keyof FediverseStats, unknown>>
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event): Promise<FediverseStats> => {
   } catch (error: unknown) {
     const status = asUpstreamError(error).response?.status
     if (status === 404) {
-      throw createError({ statusCode: 404, message: 'Article not federated' })
+      throw problem('notFound', { message: 'Article not federated' })
     }
     rethrowUpstreamRateLimit(event, error)
     logError('cms.fediverse-stats', 'Fetching the fediverse stats failed', { event, error })

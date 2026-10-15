@@ -23,6 +23,20 @@ export default withNuxt(
     },
   },
   {
+    // Every error of the server is a problem detail with a code (ADR 0015)
+    files: ['server/**/*.ts'],
+    ignores: ['server/utils/problem.ts', 'server/schemas/**'],
+    rules: {
+      'no-restricted-syntax': ['error', {
+        selector: 'CallExpression[callee.type=\'MemberExpression\'][callee.property.name=/^(then|catch|finally)$/]',
+        message: 'No promise chains: use await with try/catch (AGENTS.md, Async code).',
+      }, {
+        selector: 'CallExpression[callee.name=\'createError\']',
+        message: 'Throw problem(code, options) from server/utils/problem.ts instead of createError (ADR 0015).',
+      }],
+    },
+  },
+  {
     // zod schemas have their own .catch()
     files: ['server/schemas/**'],
     rules: {

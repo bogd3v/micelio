@@ -86,9 +86,6 @@ export default defineEventHandler(async (event) => {
 
     return sitemap
   } catch {
-    throw createError({
-      statusCode: 500,
-      message: 'Failed to generate sitemap',
-    })
+    throw problem('internalError', { message: 'Failed to generate sitemap' })
   }
 })

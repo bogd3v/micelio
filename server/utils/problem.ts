@@ -8,9 +8,9 @@ export type ProblemCode
     | 'methodNotAllowed'
     | 'payloadTooLarge'
     | 'invalidRequest'
+    | 'invalidToken'
     | 'upstreamUnavailable'
     | 'internalError'
-    | 'featureDisabled'
     | 'requestRejected'
 
 /** What the catalog says about one code: the HTTP status, its phrase and a fixed developer-facing explanation. */
@@ -39,6 +39,20 @@ interface ProblemBody {
 interface ProblemOptions {
   /** Replaces the catalog `detail`. It must be a fixed English literal chosen by the caller: never an upstream message, a URL or user input. */
   detail?: string
+  /**
+   * Legacy: the `message` member Nitro clients read. Defaults to `statusMessage`.
+   *
+   * @remarks
+   * Fixed text chosen by the route, never upstream text. Removed with the other legacy members after one release line (ADR 0015).
+   */
+  message?: string
+  /**
+   * Legacy: the HTTP status text, and `statusMessage` of the body. Defaults to the catalog `title`; auth errors pass the code (`authFailure`).
+   *
+   * @remarks
+   * Fixed text, or the message of a zod issue. Removed with the other legacy members after one release line (ADR 0015).
+   */
+  statusMessage?: string
   /** Extra members merged into `data` next to `code`. They are sent to the client as is, so they must hold nothing private. */
   data?: Record<string, unknown>
 }
@@ -52,7 +66,7 @@ const FORBIDDEN = 'Forbidden'
  * @remarks
  * Consumed by the OpenAPI document of #441.
  *
- * The key is the `code` extension member of the problem detail and the `statusMessage` of the error, so a client branches on it and never on text.
+ * The key is the `code` extension member of the problem detail (and, for auth errors, the legacy `statusMessage`), so a client branches on it and never on text.
  */
 export const PROBLEM_CODES: Record<ProblemCode, ProblemEntry> = {
   invalidCredentials: { status: 400, title: BAD_REQUEST, detail: 'The identifier or the password is wrong.' },
@@ -73,8 +87,8 @@ export const PROBLEM_CODES: Record<ProblemCode, ProblemEntry> = {
   invalidRequest: { status: 400, title: BAD_REQUEST, detail: 'The request is malformed or a parameter is invalid.' },
   upstreamUnavailable: { status: 502, title: 'Bad Gateway', detail: 'The content service failed or is unreachable.' },
   internalError: { status: 500, title: 'Internal Server Error', detail: 'The server failed to handle the request.' },
+  invalidToken: { status: 400, title: BAD_REQUEST, detail: 'The token is missing or malformed.' },
   requestRejected: { status: 400, title: BAD_REQUEST, detail: 'The server refused the request.' },
-  featureDisabled: { status: 404, title: 'Not Found', detail: 'The feature this route belongs to is turned off on this site.' },
 }
 
 /** Status phrases of RFC 9110, for statuses no catalog entry covers. */
@@ -125,10 +139,10 @@ const DETAIL_KEY = 'problemDetail'
  * Builds the error of a failed request for `code`, and returns it so the caller throws it.
  *
  * @remarks
- * The status comes from the catalog (`PROBLEM_CODES`), `statusMessage` is the code and `data` is `{ code, ...data }`, so clients that read those keep working. `server/plugins/problemDetails.ts` turns it into an `application/problem+json` response for `/api/*`.
+ * The status comes from the catalog (`PROBLEM_CODES`) and `data` is `{ code, ...data }`. `statusMessage` is the catalog `title` unless `options` overrides it (auth errors pass the code), and `message` follows it unless overridden: the text each route always sent, so clients that read it keep working. `server/plugins/problemDetails.ts` turns it into an `application/problem+json` response for `/api/*`.
  *
  * @param code - The catalog code.
- * @param options - A fixed developer `detail` and extra `data` members.
+ * @param options - A fixed developer `detail`, the legacy `message` and `statusMessage`, and extra `data` members.
  *
  * @example
  * ```ts
@@ -136,7 +150,13 @@ const DETAIL_KEY = 'problemDetail'
  * ```
  */
 export function problem(code: ProblemCode, options: ProblemOptions = {}): ReturnType<typeof createError> {
-  const error = createError({ statusCode: PROBLEM_CODES[code].status, statusMessage: code, data: { ...options.data, code } })
+  const entry = PROBLEM_CODES[code]
+  const error = createError({
+    statusCode: entry.status,
+    statusMessage: options.statusMessage ?? entry.title,
+    ...(options.message ? { message: options.message } : {}),
+    data: { ...options.data, code },
+  })
   if (options.detail) Object.assign(error, { [DETAIL_KEY]: options.detail })
   return error
 }

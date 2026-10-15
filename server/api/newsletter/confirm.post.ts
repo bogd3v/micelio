@@ -23,10 +23,7 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
 
   if (!token) {
     logWarn('input.refused', 'Confirmation token missing', { event, cause: 'missingToken' })
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Token is required',
-    })
+    throw problem('invalidToken', { statusMessage: 'Token is required' })
   }
 
   let subscriber: Awaited<ReturnType<typeof findSubscriberByToken>>
@@ -39,10 +36,7 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
 
   if (!subscriber) {
     logWarn('input.refused', 'Confirmation token refused', { event, cause: 'invalidToken' })
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Invalid confirmation token',
-    })
+    throw problem('notFound', { statusMessage: 'Invalid confirmation token' })
   }
 
   const language = newsletterLanguage(subscriber.language)
@@ -69,12 +63,10 @@ export default defineEventHandler(async (event): Promise<ConfirmResponse> => {
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
     logError('cms.newsletter-confirm', 'Confirming the subscription failed', { event, error })
-    throw createError({
-      statusCode: 500,
-      statusMessage:
-        language === 'es'
-          ? 'Error al confirmar la suscripción'
-          : 'Error confirming subscription',
+    throw problem('internalError', {
+      statusMessage: language === 'es'
+        ? 'Error al confirmar la suscripción'
+        : 'Error confirming subscription',
     })
   }
 

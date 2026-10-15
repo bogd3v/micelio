@@ -22,24 +22,86 @@ describe('PROBLEM_CODES', () => {
   })
 })
 
+/** The statuses the auth routes have always answered; the catalog must not drift from them. */
+const AUTH_STATUS: Record<string, number> = {
+  invalidCredentials: 400,
+  emailNotConfirmed: 400,
+  emailTaken: 409,
+  tooManyRequests: 429,
+  invalidCode: 400,
+  wrongPassword: 400,
+  weakPassword: 400,
+  commonPassword: 400,
+  invalidInput: 400,
+  unauthorized: 401,
+  forbiddenOrigin: 403,
+  unknown: 502,
+}
+
 describe('auth statuses', () => {
-  it('match the status of authFailure for every auth code', async () => {
+  it('authFailure answers the historical status, with the code as status message and in data.code', async () => {
     vi.stubGlobal('createError', createError)
+    vi.stubGlobal('problem', mod.problem)
     const auth = await import('../server/utils/auth')
-    for (const code of AUTH_ERROR_CODES) expect(auth.authFailure(code as never).statusCode, code).toBe(mod.PROBLEM_CODES[code as keyof typeof mod.PROBLEM_CODES].status)
+    expect(Object.keys(AUTH_STATUS).sort()).toEqual([...AUTH_ERROR_CODES].sort())
+    for (const code of AUTH_ERROR_CODES) {
+      const error = auth.authFailure(code as never)
+      expect([error.statusCode, error.statusMessage, error.data], code).toEqual([AUTH_STATUS[code], code, { code }])
+    }
+  })
+})
+
+describe('problem legacy members', () => {
+  it('keeps the status phrase of an auth code as statusMessage unless the caller passes the code', () => {
+    expect(mod.problem('tooManyRequests').statusMessage).toBe('Too Many Requests')
+    expect(mod.problem('invalidInput').statusMessage).toBe('Bad Request')
+    expect(mod.problem('invalidInput', { statusMessage: 'invalidInput' }).statusMessage).toBe('invalidInput')
+  })
+
+  it('sends the status phrase as statusMessage and message for a code that is not an auth code', () => {
+    const error = mod.problem('notFound')
+    expect([error.statusCode, error.statusMessage, error.message, error.data]).toEqual([404, 'Not Found', 'Not Found', { code: 'notFound' }])
+  })
+
+  it('keeps the message and statusMessage a route chooses, and leaves the detail to the catalog', () => {
+    const error = mod.problem('notFound', { message: 'Post not found' })
+    expect([error.statusMessage, error.message]).toEqual(['Not Found', 'Post not found'])
+    const body = mod.problemFromError(error)
+    expect([body.message, body.detail]).toEqual(['Post not found', mod.PROBLEM_CODES.notFound.detail])
+    expect(mod.problem('invalidRequest', { statusMessage: 'Invalid slug' }).message).toBe('Invalid slug')
+  })
+})
+
+describe('upstreamFailure', () => {
+  const failure = async (status: number, keep?: readonly (400 | 404)[]): Promise<string | undefined> => {
+    vi.stubGlobal('problem', mod.problem)
+    const { upstreamFailure } = await import('../server/utils/upstreamError')
+    const error = upstreamFailure({ response: { status }, message: 'Strapi said https://cms.example.com/x' }, 'Failed to fetch', keep) as { data?: { code?: string }, message: string }
+    expect(error.message).toBe('Failed to fetch')
+    return error.data?.code
+  }
+
+  it('keeps a 404 as notFound and a 400 as invalidRequest only when the route keeps it', async () => {
+    expect(await failure(404)).toBe('notFound')
+    expect(await failure(400, [400, 404])).toBe('invalidRequest')
+    expect(await failure(400)).toBe('upstreamUnavailable')
+  })
+
+  it('answers any other status, 401 and 403 included, as upstreamUnavailable', async () => {
+    for (const status of [401, 403, 500]) expect(await failure(status, [400, 404]), String(status)).toBe('upstreamUnavailable')
   })
 })
 
 describe('problem', () => {
-  it('keeps the legacy shape: status, the code as status message and data.code', () => {
+  it('keeps the legacy shape: status, the status phrase as status message and data.code', () => {
     const error = mod.problem('emailTaken', { data: { field: 'email' } })
-    expect([error.statusCode, error.statusMessage, error.data]).toEqual([409, 'emailTaken', { code: 'emailTaken', field: 'email' }])
+    expect([error.statusCode, error.statusMessage, error.data]).toEqual([409, 'Conflict', { code: 'emailTaken', field: 'email' }])
   })
 })
 
 describe('problemFromError', () => {
   it('describes a thrown problem from the catalog', () => {
-    expect(mod.problemFromError(mod.problem('notFound'))).toMatchObject({ type: 'about:blank', title: 'Not Found', status: 404, code: 'notFound', detail: 'The resource does not exist.', statusCode: 404, statusMessage: 'notFound' })
+    expect(mod.problemFromError(mod.problem('notFound'))).toMatchObject({ type: 'about:blank', title: 'Not Found', status: 404, code: 'notFound', detail: 'The resource does not exist.', statusCode: 404, statusMessage: 'Not Found' })
   })
 
   it('uses the detail the caller gave, not the error message', () => {
