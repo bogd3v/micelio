@@ -17,6 +17,7 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0012](0012-static-cms-credentials.md) | Accept static credentials towards the CMS, with a rotation policy | Accepted | 2026-10-14 |
 | [0013](0013-cms-hardening-operator-changes.md) | Record the operator-facing changes of the CMS hardening | Accepted | 2026-10-14 |
 | [0014](0014-cms-hardening-second-batch.md) | Record the second batch of operator-facing CMS changes | Accepted | 2026-10-14 |
+| [0015](0015-problem-details.md) | Errors as RFC 9457 problem details | Accepted | 2026-10-15 |
 
 ## Writing a new record
 
