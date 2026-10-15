@@ -72,7 +72,12 @@ export const aboutBlocks: Record<string, Shape> = {
 
 const cardFields = { id: true, documentId: true, title: true, slug: true, locale: true, description: true, publishedAt: true, readTime: true, tags: each(tag), cover: media, category, author, seo, snippet: true } as const
 
-const articleShape: Shape = fields({
+/**
+ * The allow-list of a full article.
+ *
+ * @internal Exported for the test that keeps the response schemas in step with it.
+ */
+export const articleShape: Shape = fields({
   ...cardFields,
   // The draft strip shows when the draft was last edited
   updatedAt: true,
@@ -81,7 +86,12 @@ const articleShape: Shape = fields({
   references: each(reference),
   localizations: each(localization),
 })
-const cardShape: Shape = fields(cardFields)
+/**
+ * The allow-list of an article card of a list.
+ *
+ * @internal Exported for the test that keeps the response schemas in step with it.
+ */
+export const cardShape: Shape = fields(cardFields)
 const aboutShape: Shape = fields({ id: true, documentId: true, title: true, locale: true, seo, blocks: each(variants('__component', { ...sharedBlocks, ...aboutBlocks })) })
 
 /** A full article as the CMS sent it, reduced to the fields the article page reads. */
