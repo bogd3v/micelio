@@ -22,10 +22,9 @@ on:
         type: string
         default: ''
 
+# Read-only by default; the release job asks for what it writes (Scorecard Token-Permissions, docs/security/scorecard.md)
 permissions:
-  contents: write
-  packages: write
-  actions: read
+  contents: read
 
 concurrency:
   group: release
@@ -41,6 +40,10 @@ jobs:
     name: Release
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
