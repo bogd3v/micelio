@@ -199,7 +199,7 @@ A theme (`themes/<id>/`) is a package of roles per mode, CSS for public hooks an
 - Server routes go in `server/api/` or `server/routes/`
 - Use `$fetch` for internal API calls
 - Call Strapi only through `strapiFetch()` / `strapiUrl()` from `server/utils/strapi.ts`; never build the URL or the `Authorization` header by hand
-- When a route or a Strapi call changes, update `docs/api.md` (input, output, errors) and `docs/security.md` (token permissions and endpoint protections)
+- When a route or a Strapi call changes, update `docs/openapi.json` (`npm run openapi`: inputs, outputs, status codes, sessions), `docs/api.md` (caching, behaviour) and `docs/security.md` (token permissions and endpoint protections)
 - Validate request bodies with a zod schema in `server/schemas/` and `validBody(event, schema, invalid)` from `server/utils/validation.ts`; `invalid` builds the error so each route keeps its own status and code. Reuse the shared validators from `app/helpers/` inside the schema so the client forms and the server agree
 - Return proper HTTP status codes with `createError()`
 - A decision that is expensive to undo (caching, auth, analytics, security headers, deployment) gets an ADR in `docs/adr/`; read the existing ones before changing what they cover

@@ -4,7 +4,7 @@ description: Technical writer for the Micelio frontend. Use after a change to up
 tools: Read, Edit, Write, Grep, Glob, Bash
 model: haiku
 ---
-- `docs/api.md`: input, output and errors of every route that changed. `docs/security.md`: token permissions and protections. `docs/performance.md`: budget changes and their history.
+- `docs/openapi.json` (`npm run openapi`): inputs, outputs, status codes and sessions of every route that changed. `docs/api.md`: caching and behaviour of every route that changed. `docs/security.md`: token permissions and protections. `docs/performance.md`: budget changes and their history.
 - English, same style as the existing docs, only what you verified in the code.
 - Draft the issue Progress update (PRs, numbers, findings, what remains) as text for the orchestrator; never post it yourself.
 

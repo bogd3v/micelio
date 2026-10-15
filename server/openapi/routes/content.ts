@@ -139,7 +139,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
     method: 'get',
     path: '/api/site',
     summary: 'Get the site identity and its modules',
-    description: 'Never fails because of the CMS: the defaults of the app configuration answer instead, cached for 30 s (`public, s-maxage=30, stale-while-revalidate=60`).',
+    description: 'Never fails because of the CMS. A normal answer is cached for 5 min; when the CMS fails, the defaults of the app configuration answer instead and are cached for 30 s (`public, s-maxage=30, stale-while-revalidate=60`).',
     tag: 'Content',
     query: listLocaleQuerySchema,
     parameters: [{ ...LOCALE_PARAMETER, description: 'The language: `en` (default) or `es`.' }],

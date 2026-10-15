@@ -4431,7 +4431,7 @@
       "get": {
         "operationId": "getApiSite",
         "summary": "Get the site identity and its modules",
-        "description": "Never fails because of the CMS: the defaults of the app configuration answer instead, cached for 30 s (`public, s-maxage=30, stale-while-revalidate=60`).",
+        "description": "Never fails because of the CMS. A normal answer is cached for 5 min; when the CMS fails, the defaults of the app configuration answer instead and are cached for 30 s (`public, s-maxage=30, stale-while-revalidate=60`).",
         "tags": [
           "Content"
         ],
