@@ -1,7 +1,8 @@
 import qs from 'qs'
 import { parsePage } from '../schemas/page'
 import { POST_CARD_POPULATE } from '../lib/constants'
-import type { Page, PageSection, PostListItem, PostListSection, StrapiPaginatedResponse } from '~/interfaces'
+import { publicPostCard } from '../lib/publicShapes'
+import type { Page, PageSection, PostListItem, PostListSection, RawStrapiArticle, StrapiPaginatedResponse } from '~/interfaces'
 
 // Strapi does not mix '*' with keyed entries: every relation of every section is named.
 // Links and media are listed explicitly so a new CMS field never widens the response.
@@ -41,8 +42,9 @@ async function postsOf(section: PostListSection, locale: string | undefined): Pr
     ...(Object.keys(filters).length > 0 && { filters }),
   }, { skipNulls: true })
   try {
-    const response = await strapiFetch<StrapiPaginatedResponse<PostListItem[]>>(`/api/articles?${query}`)
-    return (response.data ?? []).slice(0, section.count)
+    const response = await strapiFetch<StrapiPaginatedResponse<RawStrapiArticle[]>>(`/api/articles?${query}`)
+    // The same allow-list as /api/posts, so a card never carries a field the pages do not read
+    return (response.data ?? []).slice(0, section.count).map(publicPostCard)
   } catch (error: unknown) {
     logError('cms.page-post-list', 'Fetching the post list of a page failed', { error })
     return []

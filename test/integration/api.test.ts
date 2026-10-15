@@ -760,6 +760,30 @@ describe('fields of an article that leave the server', () => {
       article.content = original.content
     }
   })
+
+  it('returns only the fields of a card in the post lists of a page', async () => {
+    const originals = mock.articles.map(article => ({ article, cover: article.cover, author: article.author, content: article.content }))
+    for (const { article } of originals) {
+      Object.assign(article, { internalNote: extras.internalNote, content: 'legacy body' })
+      article.cover = { ...article.cover!, ...extras } as typeof article.cover
+      article.author = { ...article.author!, ...extras } as typeof article.author
+    }
+    // No locale: its own cache key, so the answer of the page tests below is not served from memory
+    try {
+      const page = await $fetch<{ sections: Array<{ __component: string, posts?: Array<Record<string, unknown>> }> }>('/api/pages/showcase')
+      const posts = page.sections.find(item => item.__component === 'section.post-list')!.posts!
+      expect(posts.length).toBeGreaterThan(0)
+      const text = JSON.stringify(posts)
+      for (const value of [...Object.values(extras), 'legacy body']) expect(text).not.toContain(value)
+      expect(posts[0]).toMatchObject({ slug: expect.any(String), title: expect.any(String) })
+      expect(posts[0]).not.toHaveProperty('content')
+    } finally {
+      for (const { article, cover, author, content } of originals) {
+        Object.assign(article, { cover, author, content })
+        delete (article as Record<string, unknown>).internalNote
+      }
+    }
+  })
 })
 
 describe('response schemas of the content routes', () => {
