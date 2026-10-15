@@ -224,6 +224,10 @@ The footer shows a link to the site's source code (`myc-foot-source`, from `runt
 
 A slot may call or import only the **slot APIs**: `useSite()`, the helpers of `~/helpers/categories`, the types of `~/interfaces`, and Vue, Nuxt (`<NuxtLink>`, `<NuxtImg>`, `useId()`, `useRuntimeConfig()`) and `useI18n()`. Signatures, summaries and examples of the slot APIs are in [reference/slot-apis.md](reference/slot-apis.md). A theme that keeps to them, to the public hooks and to the slot list may use any license, including a proprietary one ([theme exception](../../LICENSE-EXCEPTION.md)). `themes/starter/` is MIT-0, so a theme made with `npm run theme:new` can take any license (replace its `LICENSE`; a theme kept in this repository also gets an entry in [REUSE.toml](../../REUSE.toml) with its license, and OFL-1.1 for its fonts); a theme that copies `themes/bogota/` or core code is AGPL-3.0. Fonts and images keep their own licenses ([THIRD-PARTY.md](../../THIRD-PARTY.md)).
 
+### Slot API types now admit `null` (#558)
+
+The `@public` types that describe CMS data now say what the CMS has always sent: a field the editor left empty arrives as `null`, not as a missing key. The data the CMS sends does not change; the core now handles these nulls instead of failing. The types also gain the optional `id`, `documentId` and `caption` that the response allow-list already sends. A slot that reads these fields needs a null check to keep compiling: `width`, `height`, `alternativeText` and `caption` of `StrapiMediaFile` and `StrapiMediaRef`; `file` of `StrapiMedia`; `body` of `StrapiRichText` and `StrapiQuote`, and `title` of `StrapiQuote`; the SEO scalars (`keywords`, `metaRobots`, `structuredData`, `metaViewport`, `canonicalURL`) and `seo` of `StrapiAbout`; `name` of `StrapiCategoryRef` and `StrapiAuthorRef`; and `title` of articles, `PostListItem`, `ReadingPathStep` and `StrapiAbout`. Use `value ?? fallback` or `value || fallback`.
+
 ## 6. Accessibility handled by the core
 
 A theme gets these without doing anything, and cannot override most of them:

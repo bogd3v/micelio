@@ -14,8 +14,9 @@ export interface StrapiMediaRef {
   /** A `/uploads/` path or an absolute URL; `getMediaUrl` makes a path absolute. */
   url: string
   alternativeText?: string | null
-  width?: number
-  height?: number
+  caption?: string | null
+  width?: number | null
+  height?: number | null
 }
 
 /**
@@ -26,7 +27,7 @@ export interface StrapiMediaRef {
 export interface StrapiCategoryRef {
   id?: number
   documentId?: string
-  name?: string
+  name?: string | null
   slug?: string | null
 }
 
@@ -86,7 +87,7 @@ export interface PostTranslation {
 export interface StrapiAuthorRef {
   id?: number
   documentId?: string
-  name?: string
+  name?: string | null
   avatar?: StrapiMediaRef | null
 }
 
@@ -98,7 +99,7 @@ export interface StrapiAuthorRef {
 export interface RawStrapiArticle {
   id: number
   documentId: string
-  title: string
+  title: string | null
   slug: string
   description?: string | null
   /** @deprecated The legacy Markdown body: the CMS article has no such field and the route no longer returns it. Read `blocks`. Removed in the next major of the theme contract. */
@@ -128,7 +129,7 @@ export interface RawStrapiArticle {
 export interface PostListItem {
   id: number
   documentId?: string
-  title: string
+  title: string | null
   slug: string
   description?: string | null
   publishedAt?: string | null
@@ -174,7 +175,7 @@ export interface SearchPostResult {
 export interface StrapiPost {
   id: number
   documentId: string
-  title: string
+  title: string | null
   slug: string
   description?: string | null
   /** @deprecated The legacy Markdown body: the CMS article has no such field and the route no longer returns it. Read `blocks`. Removed in the next major of the theme contract. */

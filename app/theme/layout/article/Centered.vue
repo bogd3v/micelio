@@ -61,7 +61,7 @@ useMarkAsRead(prose, readDocumentId)
       <div class="myc-article-cover myc-post-media" :style="{ '--myc-vt-media': names.media }">
         <NuxtImg
           :src="coverUrl"
-          :alt="post.cover?.alternativeText || post.title"
+          :alt="post.cover?.alternativeText || post.title || ''"
           width="1200"
           height="675"
           format="webp"
@@ -107,7 +107,7 @@ useMarkAsRead(prose, readDocumentId)
         </div>
       </article>
 
-      <BlogShareButtons v-if="!draft" class="myc-article-share" :title="post.title" :url="shareUrl" />
+      <BlogShareButtons v-if="!draft" class="myc-article-share" :title="post.title ?? ''" :url="shareUrl" />
     </div>
 
     <template v-if="!draft">

@@ -41,7 +41,7 @@ export function useArticleState(props: ArticleProps): ArticleState {
     if (!references.value.length) return blockHeadings
     return [...blockHeadings, { id: 'references', text: t('post.references.title'), level: 2 }]
   })
-  const mastodonUrl = computed<string>(() => mastodonShareUrl(props.post.title, props.shareUrl))
+  const mastodonUrl = computed<string>(() => mastodonShareUrl(props.post.title ?? '', props.shareUrl))
   const publishedDate = computed<string>(() => formatDotDate(props.post.publishedAt))
   const federated = computed<boolean>(() => fediverseOn.value && !props.draft && locale.value === config.public.fediverseLocale && Boolean(props.post.documentId))
   const readDocumentId = computed<string | undefined>(() => props.draft ? undefined : props.post.documentId)

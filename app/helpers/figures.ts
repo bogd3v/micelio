@@ -76,7 +76,7 @@ export function mediaCaption(block: StrapiMedia): string {
 }
 
 function hasFigcaption(block: StrapiBlock): boolean {
-  if (block.__component === 'shared.media') return Boolean(mediaCaption(block) || block.credit)
+  if (block.__component === 'shared.media') return Boolean(block.file) && Boolean(mediaCaption(block) || block.credit)
   if (block.__component === 'shared.slider') return slidesOf(block).some(slide => Boolean(text(slide.caption) || slide.credit))
   return false
 }

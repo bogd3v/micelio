@@ -70,6 +70,14 @@ describe('mediaCaption', () => {
 })
 
 describe('figureNumbers', () => {
+  it('gives no number to a media block without a file', () => {
+    const blocks = [
+      { id: 1, __component: 'shared.media', file: null, caption: 'Lost' },
+      { id: 2, __component: 'shared.media', file: { url: '/a.jpg' }, caption: 'Kept' },
+    ] as StrapiBlock[]
+    expect(figureNumbers(blocks)).toEqual({ 'shared.media-2': 1 })
+  })
+
   it('numbers captioned figures in block order and counts a slider once', () => {
     const slider: StrapiSlider = {
       id: 4,

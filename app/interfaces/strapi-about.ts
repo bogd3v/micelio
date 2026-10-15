@@ -16,9 +16,9 @@ export type { StrapiSEO as StrapiAboutSEO }
 export interface StrapiAbout {
   id: number
   documentId: string
-  title: string
+  title: string | null
   locale: string
-  seo?: StrapiSEO
+  seo?: StrapiSEO | null
   /** The page body, in order; each block is discriminated by `__component`. */
   blocks: StrapiBlock[]
 }

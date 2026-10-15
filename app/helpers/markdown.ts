@@ -201,9 +201,9 @@ export function renderBlocks(blocks: StrapiBlock[] | null | undefined, renderer:
   return (blocks ?? []).map((block) => {
     switch (block.__component) {
       case 'shared.rich-text':
-        return { ...block, html: renderer.renderMarkdown(block.body, blockCitations(index, block)) }
+        return { ...block, html: renderer.renderMarkdown(block.body ?? '', blockCitations(index, block)) }
       case 'shared.quote':
-        return { ...block, html: renderer.renderInlineMarkdown(block.body, blockCitations(index, block)) }
+        return { ...block, html: renderer.renderInlineMarkdown(block.body ?? '', blockCitations(index, block)) }
       case 'about.open-source':
         return { ...block, guide: block.guide?.map(item => ({ ...item, html: renderer.renderInlineMarkdown(item.text) })) }
       default:

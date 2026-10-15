@@ -7,7 +7,7 @@ export interface StrapiRichText {
   id: number
   __component: 'shared.rich-text'
   /** The Markdown as the CMS stores it, before rendering. */
-  body: string
+  body: string | null
   /** The sanitized HTML of `body`; set on the server. */
   html?: string
 }
@@ -21,11 +21,11 @@ export interface StrapiQuote {
   id: number
   __component: 'shared.quote'
   /** The quoted text in Markdown, as the CMS stores it. */
-  body: string
+  body: string | null
   /** The sanitized HTML of `body`, rendered inline; set on the server. */
   html?: string
   /** The attribution shown after the quote. */
-  title?: string
+  title?: string | null
 }
 
 /**

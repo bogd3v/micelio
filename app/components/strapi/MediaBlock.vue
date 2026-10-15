@@ -10,18 +10,18 @@ const props = defineProps<{
 const { getMediaUrl } = useStrapi()
 const { t } = useI18n()
 
-const src = computed<string>(() => getMediaUrl(props.block.file.url))
+const src = computed<string>(() => props.block.file ? getMediaUrl(props.block.file.url) : '')
 const caption = computed<string>(() => mediaCaption(props.block))
 </script>
 
 <template>
-  <figure class="myc-fig">
+  <figure v-if="block.file" class="myc-fig">
     <div class="myc-fig-media">
       <NuxtImg
         :src="src"
         :alt="block.file.alternativeText || 'Media'"
         :width="block.file.width || 1000"
-        :height="block.file.height"
+        :height="block.file.height ?? undefined"
         format="webp"
         loading="lazy"
       />
