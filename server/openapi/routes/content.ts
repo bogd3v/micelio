@@ -1,3 +1,7 @@
+import { z } from 'zod'
+// `~/schemas/*` are the response schemas of `app/schemas/`; `../../schemas/*` are the request schemas of `server/schemas/`
+import { fediverseStatsByIdSchema, fediverseStatsSchema } from '~/schemas/fediverse'
+import { categoryCountSchema, tagCountSchema } from '~/schemas/posts'
 import { guestCommentSchema } from '../../schemas/comments'
 import { pageParamsSchema } from '../../schemas/page'
 import { commentsQuerySchema, listLocaleQuerySchema, localeQuerySchema, postParamsSchema, postsQuerySchema, readingPathQuerySchema, searchQuerySchema } from '../../schemas/query'
@@ -78,7 +82,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
     tag: 'Content',
     query: listLocaleQuerySchema,
     parameters: [{ ...LOCALE_PARAMETER, description: 'The language: `en` (default) or `es`.' }],
-    response: { status: 200, type: 'CategoryCount[]', description: 'Every category with the number of articles in it.', cache: READ_CACHE_10_MIN },
+    response: { status: 200, schema: z.array(categoryCountSchema), description: 'Every category with the number of articles in it.', cache: READ_CACHE_10_MIN },
     errors: ['invalidRequest'],
   },
   {
@@ -89,7 +93,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
     tag: 'Content',
     query: listLocaleQuerySchema,
     parameters: [{ ...LOCALE_PARAMETER, description: 'The language: `en` (default) or `es`.' }],
-    response: { status: 200, type: 'TagCount[]', description: 'Every tag with the number of articles that carry it.', cache: READ_CACHE_10_MIN },
+    response: { status: 200, schema: z.array(tagCountSchema), description: 'Every tag with the number of articles that carry it.', cache: READ_CACHE_10_MIN },
     errors: ['invalidRequest'],
   },
   {
@@ -208,7 +212,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
       description: 'Between 1 and 50 article document ids, comma-separated or repeated; each matches `[\\w-]+`.',
       schema: { type: 'array', items: { type: 'string', pattern: '^[\\w-]+$' }, minItems: 1, maxItems: 50 },
     }],
-    response: { status: 200, type: 'Record<string, FediverseStats>', description: 'Likes and boosts by document id; an article with no activity is absent.', cache: READ_CACHE_1_MIN },
+    response: { status: 200, schema: fediverseStatsByIdSchema, description: 'Likes and boosts by document id; an article with no activity is absent.', cache: READ_CACHE_1_MIN },
     errors: ['invalidRequest', 'notFound', 'upstreamUnavailable', 'tooManyRequests'],
   },
   {
@@ -218,7 +222,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
     summary: 'Get the fediverse reactions of one article',
     tag: 'Fediverse',
     parameters: [{ name: 'documentId', in: 'path', description: 'The article document id.', schema: { type: 'string', pattern: '^[\\w-]+$' } }],
-    response: { status: 200, type: 'FediverseStats', description: 'Likes and boosts.', cache: READ_CACHE_1_MIN },
+    response: { status: 200, schema: fediverseStatsSchema, description: 'Likes and boosts.', cache: READ_CACHE_1_MIN },
     errors: ['invalidRequest', 'notFound', 'upstreamUnavailable', 'tooManyRequests'],
   },
 ]

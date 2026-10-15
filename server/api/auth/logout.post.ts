@@ -1,4 +1,6 @@
-export default defineEventHandler((event): { ok: true } => {
+import type { OkResponse } from '~/interfaces/auth'
+
+export default defineEventHandler((event): OkResponse => {
   preventCaching(event)
   assertSameOrigin(event)
   clearSessionCookie(event)

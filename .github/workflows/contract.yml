@@ -14,6 +14,7 @@ on:
     paths:
       - server/**
       - app/interfaces/**
+      - app/schemas/**
       - e2e/mock-strapi.mjs
       - e2e/contract/**
       - playwright.contract.config.ts

@@ -26,7 +26,14 @@ export interface SuccessResponse {
   status: 200 | 201
   /** The media type of the body; JSON when absent. */
   contentType?: 'application/json' | 'application/xml' | 'application/rss+xml' | 'text/plain'
-  /** The TypeScript type of the body, named in the description because no zod schema describes a response. */
+  /**
+   * The zod schema of the JSON body as the route sends it, read as output.
+   *
+   * @remarks
+   * Tied to its interface in `app/schemas/` (`responseSchema`). Each schema with a `.meta({ id })` becomes an entry of `components.schemas` that the operation references. Wins over `type`.
+   */
+  schema?: z.ZodType
+  /** The TypeScript type of the body, named in the description for a route that has no `schema` yet. */
   type?: string
   description: string
   /** The `Cache-Control` the route sends, when it is public. */

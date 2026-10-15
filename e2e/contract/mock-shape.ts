@@ -31,12 +31,12 @@ export const MOCK_ROUTES: Record<string, string> = {
   'GET /api/about': 'compared',
   'GET /api/comments*': 'compared',
   'POST /api/comments*': 'a write: the contract suite makes it on the real CMS (writes.spec.ts)',
-  'GET /api/subscribers': 'the demo has the newsletter module off, so the frontend never asks for it',
+  'GET /api/subscribers': 'the newsletter module is off on the contract server (no SMTP), so the frontend never asks for it',
   'POST /api/subscribers': 'a write: the contract suite makes it on the real CMS (writes.spec.ts)',
   'DELETE /api/subscribers/*': 'a write: the contract suite makes it on the real CMS (writes.spec.ts)',
-  'GET /api/fediverse/articles/ranking': 'the demo has the fediverse off',
-  'GET /api/fediverse/articles/stats': 'the demo has the fediverse off',
-  'GET /api/fediverse/articles/doc-vue-es/stats': 'the demo has the fediverse off',
+  'GET /api/fediverse/articles/ranking': 'the fediverse module is off on the contract server (no fediverse configuration)',
+  'GET /api/fediverse/articles/stats': 'the fediverse module is off on the contract server (no fediverse configuration)',
+  'GET /api/fediverse/articles/doc-vue-es/stats': 'the fediverse module is off on the contract server (no fediverse configuration)',
   'GET /uploads/*': 'static files, not an API answer',
 }
 

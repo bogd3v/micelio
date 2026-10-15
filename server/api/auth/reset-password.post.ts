@@ -1,7 +1,8 @@
 import { AUTH_TIMEOUT_MS } from '../../lib/constants'
 import { resetPasswordSchema } from '../../schemas/auth'
+import type { OkResponse } from '~/interfaces/auth'
 
-export default defineEventHandler(async (event): Promise<{ ok: true }> => {
+export default defineEventHandler(async (event): Promise<OkResponse> => {
   preventCaching(event)
   assertSameOrigin(event)
   const { code, password, passwordConfirmation } = await validBody(event, resetPasswordSchema, () => authFailure('invalidInput'))

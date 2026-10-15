@@ -1,8 +1,8 @@
 import { AUTH_TIMEOUT_MS } from '../../lib/constants'
-import type { StrapiAuthUser } from '~/interfaces/auth'
+import type { OkResponse, StrapiAuthUser } from '~/interfaces/auth'
 import { changePasswordSchema } from '../../schemas/auth'
 
-export default defineEventHandler(async (event): Promise<{ ok: true }> => {
+export default defineEventHandler(async (event): Promise<OkResponse> => {
   preventCaching(event)
   assertSameOrigin(event)
   const jwt = getSessionToken(event)

@@ -29,7 +29,7 @@ test('a guest comment is stored, shown back and never carries the email', async 
   expect(flat.data.map((entry: { content: string }) => entry.content)).toContain(content)
 })
 
-// The demo has the newsletter module off, so the route is not served: the contract is the CMS calls of server/utils/subscribers.ts,
+// The newsletter module is off on the contract server (no SMTP), so the route is not served: the contract is the CMS calls of server/utils/subscribers.ts,
 // made with the same token (create, find by email, update, delete)
 test('the subscriber write: create, find by email, confirm and delete', async () => {
   const email = `contract-${randomUUID()}@example.com`

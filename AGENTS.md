@@ -237,6 +237,7 @@ app/
 ├── interfaces/          # TypeScript interfaces
 ├── islands/             # Heavy client-side islands and their loader
 ├── layouts/             # Page layouts
+├── schemas/             # Response schemas (zod) tied to the interfaces; server code and tests only (see the server-route skill)
 ├── theme/               # Theme hooks (hooks.json), default and layout parts
 └── pages/               # Route pages
     ├── index.vue        # Home (/)

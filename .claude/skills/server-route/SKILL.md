@@ -43,6 +43,8 @@ Auth routes fail with `authFailure('<code>')`; a new code goes in `AuthErrorCode
 
 ## 5. Docs
 
+A route with a response schema (#558): the interface in `app/interfaces/` stays the source and its schema goes in `app/schemas/<domain>.ts` as `responseSchema<Interface>()(z.object({ ... }).meta({ id: 'Interface' }))`, which fails `npm run typecheck` if either side drifts; the manifest entry sets `response.schema` (`type` stays only for a route with no schema yet). The schema describes what the route sends, is imported by server code and tests only, and gets a test that parses a realistic answer (and, for a route the demo CMS serves, a line in `e2e/contract/`).
+
 Update in the same PR: the route manifest in `server/openapi/routes/` (one entry per route file: method, path, schemas, error codes, session) and `docs/openapi.json` with `npm run openapi` (`npm run lint` fails on a route file without an entry and on a stale document), `docs/api.md` (caching and behaviour; its Error codes table when a code is added) and `docs/security.md` (access, protections, token permission). A new external domain for images or embeds also goes in the CSP (`app/helpers/securityHeaders.ts`) and the `sanitize-html` options.
 
 Then run the **verify-change** skill.
