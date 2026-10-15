@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { asApiError } from '~/helpers/apiError'
+import { problemCodeOf, statusOf } from '~/helpers/apiError'
 import { isNewsletterToken } from '~/helpers/newsletter'
 import type { ConfirmResponse } from '~/interfaces/newsletter'
 
@@ -26,10 +26,10 @@ async function confirmSubscription() {
     successMessage.value = t(response.alreadyConfirmed ? 'confirm.alreadyConfirmed' : 'confirm.successMessage', { site: site.value.name })
     status.value = 'success'
   } catch (err) {
-    const e = asApiError(err)
     status.value = 'error'
-    const statusCode = e.response?.status || e.statusCode
-    errorMessage.value = t(statusCode === 404 ? 'confirm.invalidToken' : 'confirm.serverError')
+    const code = problemCodeOf(err)
+    const isUnknownToken = code === 'notFound' || (code === undefined && statusOf(err) === 404)
+    errorMessage.value = t(isUnknownToken ? 'confirm.invalidToken' : 'confirm.serverError')
   }
 }
 
