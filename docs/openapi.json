@@ -70,11 +70,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The About page content. Body: `StrapiAbout` (`app/interfaces`). Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
+            "description": "The About page content. Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type StrapiAbout."
+                  "$ref": "#/components/schemas/StrapiAbout"
                 }
               }
             }
@@ -6145,6 +6145,53 @@
         ],
         "additionalProperties": false,
         "description": "Slides, or plain uploads when there are none."
+      },
+      "StrapiAbout": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "locale": {
+            "type": "string"
+          },
+          "seo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiSEO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiBlock"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "documentId",
+          "title",
+          "locale",
+          "blocks"
+        ],
+        "additionalProperties": false,
+        "description": "The About page with its blocks, Markdown already rendered to sanitized HTML."
       },
       "StrapiAuthorRef": {
         "type": "object",

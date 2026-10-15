@@ -739,8 +739,9 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
         data: {
           id: 1,
           documentId: 'about',
+          title: 'About',
           locale,
-          blocks: [{ id: 1, __component: 'shared.hero', title: 'About BogDev', subtitle: 'Personal blog' }],
+          blocks: [{ id: 1, __component: 'shared.rich-text', body: 'About this site.' }],
           seo: null,
         },
       })
