@@ -118,6 +118,9 @@ describe('strapiAuthErrorCode', () => {
 describe('authErrorCodeOf', () => {
   it('reads the code from a Nuxt error response', () => {
     expect(authErrorCodeOf({ data: { statusCode: 400, data: { code: 'wrongPassword' } } })).toBe('wrongPassword')
+    expect(authErrorCodeOf({ data: { type: 'about:blank', status: 400, code: 'invalidCode', data: { code: 'wrongPassword' } } })).toBe('invalidCode')
+    expect(authErrorCodeOf({ data: { code: 'tooManyRequests' } })).toBe('tooManyRequests')
+    expect(authErrorCodeOf({ data: { code: 'internalError' } })).toBe('unknown')
     expect(authErrorCodeOf(new Error('network'))).toBe('unknown')
     expect(authErrorCodeOf(null)).toBe('unknown')
   })

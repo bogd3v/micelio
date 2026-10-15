@@ -1,9 +1,24 @@
+import { problemCodeOf } from './apiError'
 import type { AuthErrorCode, AuthNotice, AuthUser, PasswordStrength, StrapiAuthUser } from '../interfaces/auth'
 
 const MIN_PASSWORD_LENGTH = 10
 // The CMS hashes with bcrypt, which reads 72 bytes and refuses more: say so before it does
 const MAX_PASSWORD_BYTES = 72
 const EDITOR_ROLE_TYPE = 'editor'
+const AUTH_ERROR_CODES: readonly AuthErrorCode[] = [
+  'invalidCredentials',
+  'emailNotConfirmed',
+  'emailTaken',
+  'tooManyRequests',
+  'invalidCode',
+  'wrongPassword',
+  'weakPassword',
+  'commonPassword',
+  'invalidInput',
+  'unauthorized',
+  'forbiddenOrigin',
+  'unknown',
+]
 
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/i
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
@@ -122,9 +137,9 @@ export function strapiAuthErrorCode(status: number | undefined, message: string 
  * The `AuthErrorCode` that the server put in an error, or `unknown` when the error has none.
  *
  * @remarks
- * It reads `data.data.code` of an error thrown by a request.
+ * It reads the `code` of the problem detail the request answered (`problemCodeOf`). A code that is not an auth code, like `internalError`, is `unknown`.
  */
 export function authErrorCodeOf(err: unknown): AuthErrorCode {
-  const data = (err as { data?: { data?: { code?: AuthErrorCode } } } | null)?.data
-  return data?.data?.code ?? 'unknown'
+  const code = problemCodeOf(err)
+  return AUTH_ERROR_CODES.find(known => known === code) ?? 'unknown'
 }
