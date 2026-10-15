@@ -29,6 +29,13 @@ export interface AuthUserResponse {
 }
 
 /**
+ * The answer of the auth routes that only change state. Not part of the theme contract.
+ */
+export interface OkResponse {
+  ok: true
+}
+
+/**
  * The error codes of the auth routes. `app/helpers/auth.ts` maps Strapi's messages to these codes, and the forms turn each code into a translated message.
  *
  * @public

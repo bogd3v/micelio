@@ -1,3 +1,5 @@
+// `~/schemas/*` are the response schemas of `app/schemas/`; `../../schemas/*` are the request schemas of `server/schemas/`
+import { confirmResponseSchema, subscribeResponseSchema, unsubscribeResponseSchema } from '~/schemas/newsletter'
 import { subscribeSchema } from '../../schemas/newsletter'
 import type { RouteEntry } from '../types'
 
@@ -14,7 +16,7 @@ export const NEWSLETTER_ROUTES: RouteEntry[] = [
     description: 'Sends a confirmation email. The answer is the same for a new and an already confirmed address. Answers `private, no-store`.',
     tag: NEWSLETTER_TAG,
     body: subscribeSchema,
-    response: { status: 200, type: 'SubscribeResponse', description: 'The subscription was recorded.' },
+    response: { status: 200, schema: subscribeResponseSchema, description: 'The subscription was recorded.' },
     errors: ['invalidInput', 'forbiddenOrigin', 'notFound', 'payloadTooLarge', 'tooManyRequests', 'internalError'],
   },
   {
@@ -29,7 +31,7 @@ export const NEWSLETTER_ROUTES: RouteEntry[] = [
       properties: { token: { type: 'string', pattern: TOKEN_PATTERN, description: 'The confirmation token from the email.' } },
       required: ['token'],
     },
-    response: { status: 200, type: 'ConfirmResponse', description: '`alreadyConfirmed` is true when the link was used before.' },
+    response: { status: 200, schema: confirmResponseSchema, description: '`alreadyConfirmed` is true when the link was used before.' },
     errors: ['invalidToken', 'forbiddenOrigin', 'notFound', 'payloadTooLarge', 'internalError', 'tooManyRequests'],
   },
   {
@@ -50,7 +52,7 @@ export const NEWSLETTER_ROUTES: RouteEntry[] = [
       properties: { token: { type: 'string', pattern: TOKEN_PATTERN, description: 'The unsubscribe token from the email.' } },
     },
     bodyOptional: true,
-    response: { status: 200, type: 'UnsubscribeResponse', description: '`{ success: true }`.' },
+    response: { status: 200, schema: unsubscribeResponseSchema, description: '`{ success: true }`.' },
     errors: ['invalidToken', 'notFound', 'payloadTooLarge', 'upstreamUnavailable', 'tooManyRequests'],
   },
 ]

@@ -3,7 +3,7 @@
   "info": {
     "title": "Micelio site API",
     "version": "0.2.0",
-    "description": "The HTTP routes every Micelio site serves: 32 paths and 34 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies are described by status and media type, naming their TypeScript type in `app/interfaces`; no route has a response schema yet.",
+    "description": "The HTTP routes every Micelio site serves: 32 paths and 34 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
     "license": {
       "name": "AGPL-3.0-only",
       "identifier": "AGPL-3.0-only"
@@ -207,11 +207,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "description": "The request was accepted.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type { ok: true }."
+                  "$ref": "#/components/schemas/OkResponse"
                 }
               }
             }
@@ -439,11 +439,11 @@
         },
         "responses": {
           "200": {
-            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "description": "The request was accepted.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type { ok: true }."
+                  "$ref": "#/components/schemas/OkResponse"
                 }
               }
             }
@@ -651,11 +651,11 @@
         },
         "responses": {
           "200": {
-            "description": "The signed-in user. The session cookie is set. Body: `AuthUserResponse` (`app/interfaces`).",
+            "description": "The signed-in user. The session cookie is set.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type AuthUserResponse."
+                  "$ref": "#/components/schemas/AuthUserResponse"
                 }
               }
             }
@@ -839,11 +839,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "description": "The request was accepted.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type { ok: true }."
+                  "$ref": "#/components/schemas/OkResponse"
                 }
               }
             }
@@ -925,11 +925,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The user, or `user: null`. Body: `AuthUserResponse` (`app/interfaces`).",
+            "description": "The user, or `user: null`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type AuthUserResponse."
+                  "$ref": "#/components/schemas/AuthUserResponse"
                 }
               }
             }
@@ -1068,11 +1068,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "description": "The request was accepted.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type { ok: true }."
+                  "$ref": "#/components/schemas/OkResponse"
                 }
               }
             }
@@ -1311,11 +1311,11 @@
         },
         "responses": {
           "201": {
-            "description": "The new user, not yet signed in. Body: `AuthUserResponse` (`app/interfaces`).",
+            "description": "The new user, not yet signed in.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type AuthUserResponse."
+                  "$ref": "#/components/schemas/AuthUserResponse"
                 }
               }
             }
@@ -1542,11 +1542,11 @@
         },
         "responses": {
           "200": {
-            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "description": "The request was accepted.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type { ok: true }."
+                  "$ref": "#/components/schemas/OkResponse"
                 }
               }
             }
@@ -1754,11 +1754,11 @@
         },
         "responses": {
           "200": {
-            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "description": "The request was accepted.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type { ok: true }."
+                  "$ref": "#/components/schemas/OkResponse"
                 }
               }
             }
@@ -1957,11 +1957,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Every category with the number of articles in it. Body: `CategoryCount[]` (`app/interfaces`). Cache-Control: `public, s-maxage=600, stale-while-revalidate=1200`.",
+            "description": "Every category with the number of articles in it. Cache-Control: `public, s-maxage=600, stale-while-revalidate=1200`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type CategoryCount[]."
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryCount"
+                  }
                 }
               }
             }
@@ -2868,11 +2871,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Likes and boosts by document id; an article with no activity is absent. Body: `Record<string, FediverseStats>` (`app/interfaces`). Cache-Control: `public, s-maxage=60, stale-while-revalidate=120`.",
+            "description": "Likes and boosts by document id; an article with no activity is absent. Cache-Control: `public, s-maxage=60, stale-while-revalidate=120`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type Record<string, FediverseStats>."
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/FediverseStats"
+                  }
                 }
               }
             }
@@ -3017,11 +3026,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Likes and boosts. Body: `FediverseStats` (`app/interfaces`). Cache-Control: `public, s-maxage=60, stale-while-revalidate=120`.",
+            "description": "Likes and boosts. Cache-Control: `public, s-maxage=60, stale-while-revalidate=120`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type FediverseStats."
+                  "$ref": "#/components/schemas/FediverseStats"
                 }
               }
             }
@@ -3175,11 +3184,11 @@
         },
         "responses": {
           "200": {
-            "description": "`alreadyConfirmed` is true when the link was used before. Body: `ConfirmResponse` (`app/interfaces`).",
+            "description": "`alreadyConfirmed` is true when the link was used before.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type ConfirmResponse."
+                  "$ref": "#/components/schemas/ConfirmResponse"
                 }
               }
             }
@@ -3383,11 +3392,11 @@
         },
         "responses": {
           "200": {
-            "description": "The subscription was recorded. Body: `SubscribeResponse` (`app/interfaces`).",
+            "description": "The subscription was recorded.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type SubscribeResponse."
+                  "$ref": "#/components/schemas/SubscribeResponse"
                 }
               }
             }
@@ -3598,11 +3607,11 @@
         },
         "responses": {
           "200": {
-            "description": "`{ success: true }`. Body: `UnsubscribeResponse` (`app/interfaces`).",
+            "description": "`{ success: true }`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type UnsubscribeResponse."
+                  "$ref": "#/components/schemas/UnsubscribeResponse"
                 }
               }
             }
@@ -4522,11 +4531,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Every tag with the number of articles that carry it. Body: `TagCount[]` (`app/interfaces`). Cache-Control: `public, s-maxage=600, stale-while-revalidate=1200`.",
+            "description": "Every tag with the number of articles that carry it. Cache-Control: `public, s-maxage=600, stale-while-revalidate=1200`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type TagCount[]."
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagCount"
+                  }
                 }
               }
             }
@@ -4959,6 +4971,146 @@
       }
     },
     "schemas": {
+      "AuthUser": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "reader",
+              "editor"
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "role",
+          "createdAt"
+        ],
+        "additionalProperties": false,
+        "description": "A signed-in account. `createdAt` is an ISO 8601 date, or null when the CMS returned none."
+      },
+      "AuthUserResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthUser"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "user"
+        ],
+        "additionalProperties": false,
+        "description": "The account, or `user: null` when the visitor is signed out."
+      },
+      "CategoryCount": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "count"
+        ],
+        "additionalProperties": false,
+        "description": "A category with the number of posts in it."
+      },
+      "ConfirmResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "alreadyConfirmed": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "success",
+          "alreadyConfirmed",
+          "message"
+        ],
+        "additionalProperties": false,
+        "description": "Whether the confirmation worked; `alreadyConfirmed` is true when the address was confirmed before."
+      },
+      "FediverseStats": {
+        "type": "object",
+        "properties": {
+          "likes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "boosts": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "likes",
+          "boosts"
+        ],
+        "additionalProperties": false,
+        "description": "The fediverse interactions with one article."
+      },
+      "OkResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false,
+        "description": "The request was accepted."
+      },
       "Problem": {
         "type": "object",
         "description": "A problem detail (RFC 9457) as Micelio sends it. A client branches on `code`, never on the text. The Nitro members stay for one release line (ADR 0015).",
@@ -5031,6 +5183,59 @@
             "description": "Legacy Nitro member; `data.code` equals `code`."
           }
         }
+      },
+      "SubscribeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ],
+        "additionalProperties": false,
+        "description": "Whether the sign-up worked, and the message to show in the visitor's language."
+      },
+      "TagCount": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "count"
+        ],
+        "additionalProperties": false,
+        "description": "A tag with the number of its articles in the requested locale; tags with none are left out."
+      },
+      "UnsubscribeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success"
+        ],
+        "additionalProperties": false,
+        "description": "The request was handled; an unknown or used token answers the same."
       }
     }
   }

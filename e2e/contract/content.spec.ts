@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test'
+import { z } from 'zod'
+import { authUserResponseSchema } from '../../app/schemas/auth'
+import { categoryCountSchema, tagCountSchema } from '../../app/schemas/posts'
 import { DEMO, expectShape } from './support'
 
 // What the frontend's read routes get from a real CMS: the keys and types the app's interfaces rely on (docs/api.md), on the demo seed.
@@ -79,10 +82,21 @@ test('search finds an article by its title', async ({ request }) => {
 
 test('categories and tags with their article counts', async ({ request }) => {
   const categories = await (await request.get('/api/categories?locale=en')).json()
+  expect(z.array(categoryCountSchema).safeParse(categories).error?.issues ?? []).toEqual([])
   for (const category of categories) expectShape(category, { id: 'number', slug: 'string', name: 'string', count: 'number' })
   for (const [slug, count] of Object.entries(DEMO.categories)) expect(categories.find((category: { slug: string }) => category.slug === slug)?.count).toBe(count)
 
   const tags = await (await request.get('/api/tags?locale=en')).json()
+  expect(z.array(tagCountSchema).safeParse(tags).error?.issues ?? []).toEqual([])
   for (const tag of tags) expectShape(tag, { slug: 'string', name: 'string', count: 'number' })
   for (const [slug, count] of Object.entries(DEMO.tags)) expect(tags.find((tag: { slug: string }) => tag.slug === slug)?.count).toBe(count)
+})
+
+// The schemas of app/schemas/ are what docs/openapi.json publishes: the real answer must satisfy them. The newsletter and fediverse modules are off
+// on the contract server (no SMTP and no fediverse configuration, `effectiveModules`), and the signed-in routes need a session, so only the session
+// check, which answers without a cookie, is parsed here
+test('the session check without a session answers user null, as its response schema says', async ({ request }) => {
+  const response = await request.get('/api/auth/me')
+  expect(response.status()).toBe(200)
+  expect(authUserResponseSchema.parse(await response.json())).toEqual({ user: null })
 })

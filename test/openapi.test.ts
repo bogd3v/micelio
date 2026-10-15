@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url'
 import { validate } from '@readme/openapi-parser'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { createError } from 'h3'
+import { z } from 'zod'
+import type { RouteEntry } from '../server/openapi/types'
 
 type ProblemModule = typeof import('../server/utils/problem')
 type DocumentModule = typeof import('../server/openapi/document')
@@ -163,6 +165,29 @@ describe('OpenAPI document', () => {
     expect(secured).toEqual(['delete /api/auth/me', 'get /api/auth/me', 'get /api/drafts', 'get /api/drafts/{documentId}', 'post /api/auth/change-password'])
     const scheme = (built.components as { securitySchemes: { sessionCookie: { in: string, name: string } } }).securitySchemes.sessionCookie
     expect(scheme).toMatchObject({ in: 'cookie', name: '__Host-micelio_session' })
+  })
+
+  it('references every response schema from components.schemas and resolves every $ref', () => {
+    const schemas = (built.components as { schemas: Record<string, unknown> }).schemas
+    const withSchema = manifest.ROUTES.filter(route => route.response.schema)
+    expect(withSchema.length).toBeGreaterThanOrEqual(15)
+    const refs = new Set<string>()
+    for (const [, , operation] of operations()) {
+      for (const match of JSON.stringify(operation).matchAll(/"\$ref":"#\/components\/schemas\/(\w+)"/g)) refs.add(match[1]!)
+    }
+    for (const name of refs) expect(schemas, name).toHaveProperty(name)
+    for (const name of ['AuthUserResponse', 'CategoryCount', 'ConfirmResponse', 'FediverseStats', 'OkResponse', 'SubscribeResponse', 'TagCount', 'UnsubscribeResponse']) expect(refs.has(name), name).toBe(true)
+    expect(JSON.stringify(schemas)).not.toContain('#/$defs/')
+    expect(JSON.stringify(built)).not.toContain('The TypeScript type SubscribeResponse')
+    const response = (built.paths as Paths)['/api/categories']!.get!.responses['200']!.content!['application/json'] as { schema: unknown }
+    expect(response.schema).toEqual({ type: 'array', items: { $ref: '#/components/schemas/CategoryCount' } })
+  })
+
+  it('refuses two different response schemas under one name', () => {
+    const route = (schema: z.ZodType): RouteEntry => ({ file: 'server/api/x.get.ts', method: 'get', path: '/api/x', summary: 's', tag: 'T', response: { status: 200, schema, description: 'd' }, errors: [] })
+    const one = z.object({ a: z.string() }).meta({ id: 'Clash' })
+    const other = z.object({ b: z.string() }).meta({ id: 'Clash' })
+    expect(() => documents.buildOpenApiDocument(VERSION, [route(one), { ...route(other), path: '/api/y' }])).toThrow(/named Clash/)
   })
 
   it('describes the feeds, sitemap and robots.txt as text', () => {

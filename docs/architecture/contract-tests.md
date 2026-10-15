@@ -35,7 +35,7 @@ The mock (`e2e/mock-strapi.mjs`) is what the fast suites run against, so it has 
 
 Two things to know about the suite:
 
-- The demo has the newsletter module off, so `/api/newsletter/subscribe` is not served there. The subscriber test makes the CMS calls of `server/utils/subscribers.ts` itself, with the same token.
+- The newsletter module is off on the contract server (the app runs without SMTP, so `effectiveModules` turns it off even though the demo enables it), so `/api/newsletter/subscribe` is not served there. The subscriber test makes the CMS calls of `server/utils/subscribers.ts` itself, with the same token.
 - The demo has no draft. The suite checks that the draft routes refuse a caller that is not an editor; a test that reads a draft needs one seeded in the demo, which is a change in `micelio-cms` first.
 
 ## Run it

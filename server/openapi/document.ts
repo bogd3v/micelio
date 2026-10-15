@@ -11,6 +11,8 @@ export const PLACEHOLDER_SERVER_URL = 'https://example.com'
 
 const PROBLEM_MEDIA_TYPE = 'application/problem+json'
 const JSON_MEDIA_TYPE = 'application/json'
+const DEFS_PREFIX = '#/$defs/'
+const COMPONENTS_PREFIX = '#/components/schemas/'
 const METHOD_ORDER: HttpMethod[] = ['get', 'post', 'delete']
 const TAG_DESCRIPTIONS: Record<string, string> = {
   'Account': 'Sign-in, registration, passwords and the profile. Needs the accounts module.',
@@ -46,15 +48,16 @@ const PROBLEM_SCHEMA: JsonSchema = {
  * Builds the OpenAPI 3.1 document of the site API from the route manifest and the zod schemas.
  *
  * @remarks
- * Pure and deterministic: paths and tags are sorted, so the same input gives the same text. Query, path and body schemas are read as input with `z.toJSONSchema`; responses are described by status and media type, naming the TypeScript type of the body, because no route has a zod response schema. Errors are `application/problem+json` (ADR 0015).
+ * Pure and deterministic: paths and tags are sorted, so the same input gives the same text. Query, path and body schemas are read as input with `z.toJSONSchema`; a response with a `schema` is read as output and referenced from `components.schemas` (the `id` in its `.meta`), and one without it is described by status and media type, naming the TypeScript type of the body. Errors are `application/problem+json` (ADR 0015).
  *
  * @param version - The version the document declares, normally the `version` of `package.json`.
  * @param routes - The route manifest.
  */
 export function buildOpenApiDocument(version: string, routes: RouteEntry[]): OpenApiDocument {
   const paths: Record<string, Record<string, unknown>> = {}
+  const schemas: Record<string, JsonSchema> = {}
   for (const route of [...routes].sort((a, b) => METHOD_ORDER.indexOf(a.method) - METHOD_ORDER.indexOf(b.method))) {
-    paths[route.path] = { ...paths[route.path], [route.method]: operationOf(route) }
+    paths[route.path] = { ...paths[route.path], [route.method]: operationOf(route, schemas) }
   }
   const tags = [...new Set(routes.map(route => route.tag))].sort().map(name => ({ name, description: TAG_DESCRIPTIONS[name] ?? name }))
   const operations = routes.length
@@ -63,7 +66,7 @@ export function buildOpenApiDocument(version: string, routes: RouteEntry[]): Ope
     info: {
       title: 'Micelio site API',
       version,
-      description: `The HTTP routes every Micelio site serves: ${Object.keys(paths).length} paths and ${operations} operations, from \`server/api\` and \`server/routes\`. Generated from \`server/openapi/\` and the zod schemas of \`server/schemas/\`; do not edit by hand. Errors under \`/api\` are problem details (RFC 9457). Response bodies are described by status and media type, naming their TypeScript type in \`app/interfaces\`; no route has a response schema yet.`,
+      description: `The HTTP routes every Micelio site serves: ${Object.keys(paths).length} paths and ${operations} operations, from \`server/api\` and \`server/routes\`. Generated from \`server/openapi/\` and the zod schemas of \`server/schemas/\`; do not edit by hand. Errors under \`/api\` are problem details (RFC 9457). Response bodies with a schema are in \`components.schemas\`; the others are described by status and media type, naming their TypeScript type in \`app/interfaces\`.`,
       license: { name: 'AGPL-3.0-only', identifier: 'AGPL-3.0-only' },
     },
     servers: [{ url: PLACEHOLDER_SERVER_URL, description: 'Your site. The API is served from the same origin as the pages.' }],
@@ -78,7 +81,7 @@ export function buildOpenApiDocument(version: string, routes: RouteEntry[]): Ope
           description: 'The session set by sign-in: HttpOnly, Secure, SameSite=Lax. Browsers send it; clients outside a browser rarely need it.',
         },
       },
-      schemas: { Problem: PROBLEM_SCHEMA },
+      schemas: Object.fromEntries(sortedEntries({ Problem: PROBLEM_SCHEMA, ...schemas })),
     },
   }
 }
@@ -140,13 +143,28 @@ function parametersOf(route: RouteEntry): Record<string, unknown>[] {
   return [...derived, ...extra].sort((a, b) => Number(b.in === 'path') - Number(a.in === 'path'))
 }
 
-function successResponse(route: RouteEntry): Record<string, unknown> {
+/** The JSON Schema of a response body as the route sends it; the named schemas it uses go into `components`, and a name that two different schemas claim is an error. */
+function responseSchemaOf(schema: z.ZodType, components: Record<string, JsonSchema>): JsonSchema {
+  // `$defs` holds the schemas that have a `.meta({ id })`; one without an id would come out as a generated `__schemaN`, so every response schema needs its own id.
+  // The refs are rewritten on the serialized text because they can sit at any depth.
+  const { $schema: _dialect, $defs, ...body } = z.toJSONSchema(schema, { io: 'output', unrepresentable: 'any' }) as JsonSchema & { $defs?: Record<string, JsonSchema> }
+  for (const [name, definition] of Object.entries($defs ?? {})) {
+    const rewritten = JSON.parse(JSON.stringify(definition).replaceAll(DEFS_PREFIX, COMPONENTS_PREFIX)) as JsonSchema
+    if (name === 'Problem' || (components[name] && JSON.stringify(components[name]) !== JSON.stringify(rewritten))) {
+      throw new Error(`Two different response schemas are named ${name}; give each its own \`.meta({ id })\`.`)
+    }
+    components[name] = rewritten
+  }
+  return JSON.parse(JSON.stringify(body).replaceAll(DEFS_PREFIX, COMPONENTS_PREFIX)) as JsonSchema
+}
+
+function successResponse(route: RouteEntry, components: Record<string, JsonSchema>): Record<string, unknown> {
   const { response } = route
   const contentType = response.contentType ?? JSON_MEDIA_TYPE
-  const typeNote = response.type ? ` Body: \`${response.type}\` (\`app/interfaces\`).` : ''
+  const typeNote = response.type && !response.schema ? ` Body: \`${response.type}\` (\`app/interfaces\`).` : ''
   const cacheNote = response.cache ? ` Cache-Control: \`${response.cache}\`.` : ''
   const description = `${response.description}${typeNote}${cacheNote}`
-  const schema: JsonSchema = contentType === JSON_MEDIA_TYPE ? { description: response.type ? `The TypeScript type ${response.type}.` : 'An object.' } : { type: 'string' }
+  const schema: JsonSchema = response.schema ? responseSchemaOf(response.schema, components) : contentType === JSON_MEDIA_TYPE ? { description: response.type ? `The TypeScript type ${response.type}.` : 'An object.' } : { type: 'string' }
   return { description, content: { [contentType]: { schema } } }
 }
 
@@ -186,7 +204,7 @@ function requestBodyOf(route: RouteEntry): Record<string, unknown> | undefined {
   return { required: !route.bodyOptional, content: { [JSON_MEDIA_TYPE]: { schema } } }
 }
 
-function operationOf(route: RouteEntry): Record<string, unknown> {
+function operationOf(route: RouteEntry, components: Record<string, JsonSchema>): Record<string, unknown> {
   const parameters = parametersOf(route)
   const requestBody = requestBodyOf(route)
   const sessionSecurity = route.session === 'required'
@@ -201,7 +219,7 @@ function operationOf(route: RouteEntry): Record<string, unknown> {
     ...(requestBody && { requestBody }),
     ...(sessionSecurity && { security: sessionSecurity }),
     responses: Object.fromEntries([
-      [String(route.response.status), successResponse(route)],
+      [String(route.response.status), successResponse(route, components)],
       ...errorResponses(route.errors),
       ...(route.path.startsWith('/api/') ? [['default', defaultResponse()]] : []),
     ]),

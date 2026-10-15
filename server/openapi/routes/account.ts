@@ -1,8 +1,10 @@
+// `~/schemas/*` are the response schemas of `app/schemas/`; `../../schemas/*` are the request schemas of `server/schemas/`
+import { authUserResponseSchema, okResponseSchema } from '~/schemas/auth'
 import { changePasswordSchema, deleteAccountSchema, emailSchema, loginSchema, registerSchema, resetPasswordSchema } from '../../schemas/auth'
 import type { RouteEntry } from '../types'
 
 const AUTH_TAG = 'Account'
-const OK_RESPONSE = { type: '{ ok: true }', description: 'The request was accepted.' } as const
+const OK_RESPONSE = { schema: okResponseSchema, description: 'The request was accepted.' } as const
 
 /** Operations of the accounts module: sign-in, registration, passwords and the profile. */
 export const ACCOUNT_ROUTES: RouteEntry[] = [
@@ -14,7 +16,7 @@ export const ACCOUNT_ROUTES: RouteEntry[] = [
     description: 'Sets the session cookie. Same-origin only. Answers `notFound` when the accounts module is off.',
     tag: AUTH_TAG,
     body: loginSchema,
-    response: { status: 200, type: 'AuthUserResponse', description: 'The signed-in user. The session cookie is set.' },
+    response: { status: 200, schema: authUserResponseSchema, description: 'The signed-in user. The session cookie is set.' },
     errors: ['invalidInput', 'invalidCredentials', 'emailNotConfirmed', 'tooManyRequests', 'forbiddenOrigin', 'notFound', 'payloadTooLarge', 'unknown'],
   },
   {
@@ -25,7 +27,7 @@ export const ACCOUNT_ROUTES: RouteEntry[] = [
     description: 'No session is set until the email address is confirmed.',
     tag: AUTH_TAG,
     body: registerSchema,
-    response: { status: 201, type: 'AuthUserResponse', description: 'The new user, not yet signed in.' },
+    response: { status: 201, schema: authUserResponseSchema, description: 'The new user, not yet signed in.' },
     errors: ['invalidInput', 'weakPassword', 'commonPassword', 'emailTaken', 'tooManyRequests', 'forbiddenOrigin', 'notFound', 'payloadTooLarge', 'unknown'],
   },
   {
@@ -90,7 +92,7 @@ export const ACCOUNT_ROUTES: RouteEntry[] = [
     description: 'Answers `user: null` without a valid session and clears an expired cookie.',
     tag: AUTH_TAG,
     session: 'optional',
-    response: { status: 200, type: 'AuthUserResponse', description: 'The user, or `user: null`.' },
+    response: { status: 200, schema: authUserResponseSchema, description: 'The user, or `user: null`.' },
     errors: ['notFound', 'unknown', 'tooManyRequests'],
   },
   {
