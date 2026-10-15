@@ -49,6 +49,6 @@ If the PR advances an issue of the Micelio plan (epic #240), update the issue's 
 Only the maintainer releases (standard, section 13): prepare it, never run it unasked. Versions are SemVer and come from the PR titles (ADR 0010; docs/architecture/releasing.md).
 
 1. Dry run: `gh workflow run Release --ref main` (the default input is `dry_run=true`). Read the computed version and the notes in the run summary.
-2. If `package.json` differs from that version, open `chore(release): X.Y.Z` setting it, and merge it before releasing.
+2. If `package.json` differs from that version, open `chore(release): X.Y.Z` setting it and run `npm run openapi` in the same PR (`docs/openapi.json` declares the version in `info.version`; `npm run lint` and the Release workflow fail otherwise), and merge it before releasing.
 3. Release: `gh workflow run Release --ref main -f dry_run=false -f cms_line=<X.Y> -f upgrade_notes="<text>"` (add `-f release_candidate=true` for an `-rc.N`). It re-tags the commit's images; it never rebuilds or moves a tag.
 4. Check the body (`gh release view <tag>`): PRs in "Other changes" need a type label (`gh pr edit <n> --add-label <label>`); a `!` in a title adds `breaking` by itself. Regenerate with the `releases/generate-notes` API and `configuration_file_path=.github/release.yml` if needed.

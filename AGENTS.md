@@ -29,7 +29,8 @@ npm run preview      # Preview production build locally
 # Type checking and linting
 npm run check        # The fast part of CI before a PR: typecheck, lint and test:coverage (standard, section 15)
 npm run typecheck    # Run Nuxt type checking
-npm run lint         # Run ESLint (flat config, @nuxt/eslint), the primitives, class and placement checks, and the theme schema and reference drift checks
+npm run lint         # Run ESLint (flat config, @nuxt/eslint), the primitives, class and placement checks, and the OpenAPI document and the theme schema and reference drift checks
+npm run openapi      # Regenerate docs/openapi.json (OpenAPI 3.1) from server/openapi/ and the zod schemas; run it after adding or changing a route or a schema (`lint:openapi` fails on drift or on a route file without a manifest entry)
 npm run theme:schema # Regenerate themes/theme.schema.json from modules/theme/contract.ts (run it after changing the contract)
 npm run theme:reference # Regenerate docs/themes/reference/ from the contract (run it after changing roles, layout variants, hooks, slots or the TSDoc of a `@public` slot API)
 npm run theme:new -- <id> # New theme: copies themes/starter/ to themes/<id>/ and renames it ([--name "Name"])
@@ -253,6 +254,7 @@ server/
 ├── api/                 # API routes: posts, search, comments, newsletter, auth, drafts, fediverse…
 ├── routes/              # feed.xml, sitemap.xml, robots.txt
 ├── middleware/          # Umami first-party proxy
+├── openapi/             # Route manifest and generator of docs/openapi.json (npm run openapi)
 ├── plugins/             # Content Security Policy, runtime config check
 └── utils/               # strapi.ts (strapiUrl, strapiFetch), auth, rate limit…
 
