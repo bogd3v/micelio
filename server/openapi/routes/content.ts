@@ -2,6 +2,7 @@ import { z } from 'zod'
 // `~/schemas/*` are the response schemas of `app/schemas/`; `../../schemas/*` are the request schemas of `server/schemas/`
 import { fediverseStatsByIdSchema, fediverseStatsSchema } from '~/schemas/fediverse'
 import { aboutSchema } from '~/schemas/blocks'
+import { siteSchema } from '~/schemas/site'
 import { articlePageSchema, articleSchema, categoryCountSchema, readingPathSchema, searchResultSchema, tagCountSchema } from '~/schemas/posts'
 import { guestCommentSchema } from '../../schemas/comments'
 import { pageParamsSchema } from '../../schemas/page'
@@ -148,7 +149,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
     tag: 'Content',
     query: listLocaleQuerySchema,
     parameters: [{ ...LOCALE_PARAMETER, description: 'The language: `en` (default) or `es`.' }],
-    response: { status: 200, type: 'Site', description: 'The site identity, its modules and, when overrides apply, its theme.', cache: READ_CACHE_5_MIN },
+    response: { status: 200, schema: siteSchema, description: 'The site identity, its modules and, when overrides apply, its theme.', cache: READ_CACHE_5_MIN },
     errors: ['invalidRequest'],
   },
   {
