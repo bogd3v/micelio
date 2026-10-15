@@ -1,0 +1,5037 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Micelio site API",
+    "version": "0.2.0",
+    "description": "The HTTP routes every Micelio site serves: 32 paths and 34 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies are described by status and media type, naming their TypeScript type in `app/interfaces`; no route has a response schema yet.",
+    "license": {
+      "name": "AGPL-3.0-only",
+      "identifier": "AGPL-3.0-only"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://example.com",
+      "description": "Your site. The API is served from the same origin as the pages."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Account",
+      "description": "Sign-in, registration, passwords and the profile. Needs the accounts module."
+    },
+    {
+      "name": "Comments",
+      "description": "Guest comments on articles. Needs the comments module."
+    },
+    {
+      "name": "Content",
+      "description": "The blog content, the CMS pages and the site identity."
+    },
+    {
+      "name": "Drafts",
+      "description": "Unpublished articles, for editors only. Needs the drafts module."
+    },
+    {
+      "name": "Fediverse",
+      "description": "Reactions from the fediverse. Needs the fediverse module."
+    },
+    {
+      "name": "Newsletter",
+      "description": "Subscription by email. Needs the newsletter module."
+    },
+    {
+      "name": "Site files",
+      "description": "RSS feeds, the sitemap and robots.txt, served outside `/api`."
+    }
+  ],
+  "paths": {
+    "/api/about": {
+      "get": {
+        "operationId": "getApiAbout",
+        "summary": "Get the About page",
+        "tags": [
+          "Content"
+        ],
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language of the content: `en` or `es`. An unknown value is a 400; an empty one counts as absent.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The About page content. Body: `StrapiAbout` (`app/interfaces`). Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type StrapiAbout."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/change-password": {
+      "post": {
+        "operationId": "postApiAuthChangePassword",
+        "summary": "Change the password of the signed-in user",
+        "description": "The CMS answers a new session, which replaces the cookie. An invalid session also clears the cookie.",
+        "tags": [
+          "Account"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "currentPassword": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1024
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "passwordConfirmation": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "currentPassword",
+                  "password",
+                  "passwordConfirmation"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type { ok: true }."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `commonPassword`: The password is too common.\n- `invalidInput`: The request body does not meet the schema of the route.\n- `weakPassword`: The password does not meet the strength rules.\n- `wrongPassword`: The current password is wrong.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "commonPassword",
+                            "invalidInput",
+                            "weakPassword",
+                            "wrongPassword"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `code` is one of:\n- `unauthorized`: A valid session is required.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "unauthorized"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `code` is one of:\n- `forbiddenOrigin`: The request does not come from the site origin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "forbiddenOrigin"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large. The `code` is one of:\n- `payloadTooLarge`: The request body is larger than the route accepts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "payloadTooLarge"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `unknown`: The content service failed or answered with something unexpected.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "unknown"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/forgot-password": {
+      "post": {
+        "operationId": "postApiAuthForgotPassword",
+        "summary": "Ask for a password reset email",
+        "description": "Answers the same whether or not the account exists.",
+        "tags": [
+          "Account"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type { ok: true }."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidInput`: The request body does not meet the schema of the route.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidInput"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `code` is one of:\n- `forbiddenOrigin`: The request does not come from the site origin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "forbiddenOrigin"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large. The `code` is one of:\n- `payloadTooLarge`: The request body is larger than the route accepts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "payloadTooLarge"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `unknown`: The content service failed or answered with something unexpected.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "unknown"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "postApiAuthLogin",
+        "summary": "Sign in",
+        "description": "Sets the session cookie. Same-origin only. Answers `notFound` when the accounts module is off.",
+        "tags": [
+          "Account"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 254
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1024
+                  }
+                },
+                "required": [
+                  "identifier",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The signed-in user. The session cookie is set. Body: `AuthUserResponse` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type AuthUserResponse."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `emailNotConfirmed`: The account email address has not been confirmed.\n- `invalidCredentials`: The identifier or the password is wrong.\n- `invalidInput`: The request body does not meet the schema of the route.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "emailNotConfirmed",
+                            "invalidCredentials",
+                            "invalidInput"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `code` is one of:\n- `forbiddenOrigin`: The request does not come from the site origin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "forbiddenOrigin"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large. The `code` is one of:\n- `payloadTooLarge`: The request body is larger than the route accepts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "payloadTooLarge"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `unknown`: The content service failed or answered with something unexpected.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "unknown"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "postApiAuthLogout",
+        "summary": "Sign out",
+        "description": "Clears the session cookie.",
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type { ok: true }."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `code` is one of:\n- `forbiddenOrigin`: The request does not come from the site origin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "forbiddenOrigin"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "getApiAuthMe",
+        "summary": "Get the signed-in user",
+        "description": "Answers `user: null` without a valid session and clears an expired cookie.",
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {},
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user, or `user: null`. Body: `AuthUserResponse` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type AuthUserResponse."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `unknown`: The content service failed or answered with something unexpected.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "unknown"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteApiAuthMe",
+        "summary": "Delete the account of the signed-in user",
+        "description": "The username must be the signed-in user. Deletes the user in the CMS and clears the cookie.",
+        "tags": [
+          "Account"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 254
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1024
+                  }
+                },
+                "required": [
+                  "username",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type { ok: true }."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidInput`: The request body does not meet the schema of the route.\n- `wrongPassword`: The current password is wrong.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidInput",
+                            "wrongPassword"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The `code` is one of:\n- `unauthorized`: A valid session is required.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "unauthorized"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `code` is one of:\n- `forbiddenOrigin`: The request does not come from the site origin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "forbiddenOrigin"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large. The `code` is one of:\n- `payloadTooLarge`: The request body is larger than the route accepts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "payloadTooLarge"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `unknown`: The content service failed or answered with something unexpected.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "unknown"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "operationId": "postApiAuthRegister",
+        "summary": "Create an account",
+        "description": "No session is set until the email address is confirmed.",
+        "tags": [
+          "Account"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "acceptPrivacy": {
+                    "type": "boolean",
+                    "const": true
+                  }
+                },
+                "required": [
+                  "username",
+                  "email",
+                  "password",
+                  "acceptPrivacy"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The new user, not yet signed in. Body: `AuthUserResponse` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type AuthUserResponse."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `commonPassword`: The password is too common.\n- `invalidInput`: The request body does not meet the schema of the route.\n- `weakPassword`: The password does not meet the strength rules.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "commonPassword",
+                            "invalidInput",
+                            "weakPassword"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `code` is one of:\n- `forbiddenOrigin`: The request does not come from the site origin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "forbiddenOrigin"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `code` is one of:\n- `emailTaken`: An account with this email address or username already exists.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "emailTaken"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large. The `code` is one of:\n- `payloadTooLarge`: The request body is larger than the route accepts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "payloadTooLarge"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `unknown`: The content service failed or answered with something unexpected.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "unknown"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/resend-confirmation": {
+      "post": {
+        "operationId": "postApiAuthResendConfirmation",
+        "summary": "Send the confirmation email again",
+        "description": "Answers the same whether or not the account exists.",
+        "tags": [
+          "Account"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type { ok: true }."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidInput`: The request body does not meet the schema of the route.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidInput"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `code` is one of:\n- `forbiddenOrigin`: The request does not come from the site origin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "forbiddenOrigin"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large. The `code` is one of:\n- `payloadTooLarge`: The request body is larger than the route accepts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "payloadTooLarge"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `unknown`: The content service failed or answered with something unexpected.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "unknown"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/reset-password": {
+      "post": {
+        "operationId": "postApiAuthResetPassword",
+        "summary": "Set a new password with the code from the email",
+        "tags": [
+          "Account"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[\\w-]{1,256}$"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "passwordConfirmation": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "password",
+                  "passwordConfirmation"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The request was accepted. Body: `{ ok: true }` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type { ok: true }."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `commonPassword`: The password is too common.\n- `invalidCode`: The code is invalid or has expired.\n- `invalidInput`: The request body does not meet the schema of the route.\n- `weakPassword`: The password does not meet the strength rules.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "commonPassword",
+                            "invalidCode",
+                            "invalidInput",
+                            "weakPassword"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `code` is one of:\n- `forbiddenOrigin`: The request does not come from the site origin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "forbiddenOrigin"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large. The `code` is one of:\n- `payloadTooLarge`: The request body is larger than the route accepts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "payloadTooLarge"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `unknown`: The content service failed or answered with something unexpected.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "unknown"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "operationId": "getApiCategories",
+        "summary": "List categories with their article count",
+        "tags": [
+          "Content"
+        ],
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language: `en` (default) or `es`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every category with the number of articles in it. Body: `CategoryCount[]` (`app/interfaces`). Cache-Control: `public, s-maxage=600, stale-while-revalidate=1200`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type CategoryCount[]."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/comments": {
+      "get": {
+        "operationId": "getApiComments",
+        "summary": "List the comments of an article as a tree",
+        "description": "Pending and rejected comments are hidden and the author email is never included. Answers `notFound` when the comments module is off.",
+        "tags": [
+          "Comments"
+        ],
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language of the content: `en` or `es`. An unknown value is a 400; an empty one counts as absent.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page number, from 1.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Comments per page, at most 50. The CMS default applies when absent.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "The order, `field:asc` or `field:desc`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z]+:(asc|desc)$"
+            }
+          },
+          {
+            "name": "relation",
+            "in": "query",
+            "description": "The article the comments belong to: `api::article.article:<documentId or slug>`.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^api::article\\.article:[\\w-]{1,128}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The comments, with answers nested in `children`. Body: `Comment[]` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type Comment[]."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postApiComments",
+        "summary": "Post a comment as a guest",
+        "description": "Same-origin only and rate limited. The author id is set by the server. Answers `notFound` when the comments module is off.",
+        "tags": [
+          "Comments"
+        ],
+        "parameters": [
+          {
+            "name": "relation",
+            "in": "query",
+            "description": "The article the comments belong to: `api::article.article:<documentId or slug>`.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^api::article\\.article:[\\w-]{1,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "author": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "email": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 254
+                      },
+                      "avatar": {}
+                    },
+                    "required": [
+                      "name",
+                      "email"
+                    ]
+                  },
+                  "content": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 5000
+                  },
+                  "threadOf": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "locale": {}
+                },
+                "required": [
+                  "author",
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The comment as stored; a new comment may await moderation. Body: `Comment` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type Comment."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidInput`: The request body does not meet the schema of the route.\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidInput",
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `code` is one of:\n- `forbiddenOrigin`: The request does not come from the site origin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "forbiddenOrigin"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large. The `code` is one of:\n- `payloadTooLarge`: The request body is larger than the route accepts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "payloadTooLarge"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/comments/flat": {
+      "get": {
+        "operationId": "getApiCommentsFlat",
+        "summary": "List the comments of an article, flat",
+        "description": "Same query as `GET /api/comments`; an answer carries `threadOf` instead of being nested.",
+        "tags": [
+          "Comments"
+        ],
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language of the content: `en` or `es`. An unknown value is a 400; an empty one counts as absent.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page number, from 1.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Comments per page, at most 50. The CMS default applies when absent.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "The order, `field:asc` or `field:desc`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z]+:(asc|desc)$"
+            }
+          },
+          {
+            "name": "relation",
+            "in": "query",
+            "description": "The article the comments belong to: `api::article.article:<documentId or slug>`.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^api::article\\.article:[\\w-]{1,128}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The comments in a flat list with their pagination. Body: `CommentsResponse` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type CommentsResponse."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/drafts": {
+      "get": {
+        "operationId": "getApiDrafts",
+        "summary": "List the drafts of the editor",
+        "description": "Editors only, with their own session. Anyone else, with no session or without the editor role, gets `notFound`. Answers `private, no-store`.",
+        "tags": [
+          "Drafts"
+        ],
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language of the draft: `en` or `es`. Optional.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The drafts, newest edit first. Body: `DraftListResponse` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type DraftListResponse."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/drafts/{documentId}": {
+      "get": {
+        "operationId": "getApiDraftsByDocumentId",
+        "summary": "Get a draft and its published version",
+        "description": "Editors only; anyone else gets `notFound`. Answers `private, no-store`.",
+        "tags": [
+          "Drafts"
+        ],
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "description": "The article document id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language of the draft: `en` or `es`. Optional.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The draft and, when there is one, its published version. Body: `DraftArticleResponse` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type DraftArticleResponse."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fediverse/stats": {
+      "get": {
+        "operationId": "getApiFediverseStats",
+        "summary": "Get the fediverse reactions of several articles",
+        "description": "Answers `notFound` when the fediverse module is off.",
+        "tags": [
+          "Fediverse"
+        ],
+        "parameters": [
+          {
+            "name": "documentIds",
+            "in": "query",
+            "description": "Between 1 and 50 article document ids, comma-separated or repeated; each matches `[\\w-]+`.",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[\\w-]+$"
+              },
+              "minItems": 1,
+              "maxItems": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Likes and boosts by document id; an article with no activity is absent. Body: `Record<string, FediverseStats>` (`app/interfaces`). Cache-Control: `public, s-maxage=60, stale-while-revalidate=120`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type Record<string, FediverseStats>."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fediverse/stats/{documentId}": {
+      "get": {
+        "operationId": "getApiFediverseStatsByDocumentId",
+        "summary": "Get the fediverse reactions of one article",
+        "tags": [
+          "Fediverse"
+        ],
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "description": "The article document id.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[\\w-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Likes and boosts. Body: `FediverseStats` (`app/interfaces`). Cache-Control: `public, s-maxage=60, stale-while-revalidate=120`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type FediverseStats."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/newsletter/confirm": {
+      "post": {
+        "operationId": "postApiNewsletterConfirm",
+        "summary": "Confirm a newsletter subscription",
+        "description": "Sent by the confirmation page when the visitor presses the button, never on opening the link. Same-origin only.",
+        "tags": [
+          "Newsletter"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[\\w-]{16,128}$",
+                    "description": "The confirmation token from the email."
+                  }
+                },
+                "required": [
+                  "token"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`alreadyConfirmed` is true when the link was used before. Body: `ConfirmResponse` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type ConfirmResponse."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidToken`: The token is missing or malformed.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidToken"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `code` is one of:\n- `forbiddenOrigin`: The request does not come from the site origin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "forbiddenOrigin"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large. The `code` is one of:\n- `payloadTooLarge`: The request body is larger than the route accepts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "payloadTooLarge"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error. The `code` is one of:\n- `internalError`: The server failed to handle the request.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "internalError"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/newsletter/subscribe": {
+      "post": {
+        "operationId": "postApiNewsletterSubscribe",
+        "summary": "Subscribe to the newsletter",
+        "description": "Sends a confirmation email. The answer is the same for a new and an already confirmed address. Answers `private, no-store`.",
+        "tags": [
+          "Newsletter"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 254,
+                    "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+                  },
+                  "locale": {}
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The subscription was recorded. Body: `SubscribeResponse` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type SubscribeResponse."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidInput`: The request body does not meet the schema of the route.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidInput"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The `code` is one of:\n- `forbiddenOrigin`: The request does not come from the site origin.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "forbiddenOrigin"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large. The `code` is one of:\n- `payloadTooLarge`: The request body is larger than the route accepts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "payloadTooLarge"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error. The `code` is one of:\n- `internalError`: The server failed to handle the request.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "internalError"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/newsletter/unsubscribe": {
+      "post": {
+        "operationId": "postApiNewsletterUnsubscribe",
+        "summary": "Unsubscribe from the newsletter",
+        "description": "The token comes in the body (the unsubscribe page) or in the query (RFC 8058 one-click). Answers success for an unknown or used token.",
+        "tags": [
+          "Newsletter"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "description": "The unsubscribe token from the email; alternative to the body.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[\\w-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[\\w-]{16,128}$",
+                    "description": "The unsubscribe token from the email."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "`{ success: true }`. Body: `UnsubscribeResponse` (`app/interfaces`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type UnsubscribeResponse."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidToken`: The token is missing or malformed.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidToken"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large. The `code` is one of:\n- `payloadTooLarge`: The request body is larger than the route accepts.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "payloadTooLarge"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pages/{slug}": {
+      "get": {
+        "operationId": "getApiPagesBySlug",
+        "summary": "Get a page",
+        "description": "A CMS page with its sections validated one by one; an invalid section is dropped alone.",
+        "tags": [
+          "Content"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "description": "The page slug, a Strapi uid in lowercase.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_.~-]{0,63}$"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language: `en` or `es`. The CMS default applies when absent.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The page. Body: `Page` (`app/interfaces`). Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type Page."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/posts": {
+      "get": {
+        "operationId": "getApiPosts",
+        "summary": "List articles",
+        "description": "A page of articles, newest first unless `sort` says otherwise. Search text is used from three characters.",
+        "tags": [
+          "Content"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page number, from 1. Defaults to 1.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Articles per page, 1 to 50. Defaults to 10; a larger value is clamped.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+$"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language of the content: `en` or `es`. An unknown value is a 400; an empty one counts as absent.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es"
+              ]
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Only articles of this category slug.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{1,64}$"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Only articles with this tag slug.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{1,64}$"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search text, at most 200 characters.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "The order. An unknown value reads as `recent`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "recent",
+                "oldest",
+                "fediverse"
+              ]
+            }
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "description": "`1` or `true` searches the article body too and adds a `snippet` to each result.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of articles. Body: `StrapiPaginatedResponse<RawStrapiArticle[]>` (`app/interfaces`). Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type StrapiPaginatedResponse<RawStrapiArticle[]>."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/posts/{slug}": {
+      "get": {
+        "operationId": "getApiPostsBySlug",
+        "summary": "Get an article",
+        "tags": [
+          "Content"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "description": "The article slug, in the alphabet and length of a Strapi uid (256 characters at most).",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.~-]{0,255}$"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language of the content: `en` or `es`. An unknown value is a 400; an empty one counts as absent.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The article with its blocks, rendered as sanitized HTML. Body: `RawStrapiArticle` (`app/interfaces`). Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type RawStrapiArticle."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reading-path": {
+      "get": {
+        "operationId": "getApiReadingPath",
+        "summary": "Get the reading path of a category",
+        "description": "The articles of a category in reading order. `editorial` is false when the CMS has no `pathOrder` yet.",
+        "tags": [
+          "Content"
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "description": "A known category slug, trimmed and lowercased.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language of the content: `en` or `es`. An unknown value is a 400; an empty one counts as absent.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The reading path. Body: `ReadingPath` (`app/interfaces`). Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type ReadingPath."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "operationId": "getApiSearch",
+        "summary": "Search articles",
+        "description": "At most ten results. A text under three characters answers an empty list, and so does a CMS failure.",
+        "tags": [
+          "Content"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "The search text, at most 200 characters.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language of the content: `en` or `es`. An unknown value is a 400; an empty one counts as absent.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es"
+              ]
+            }
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "description": "`1` or `true` searches the article body too.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The matching articles. Body: `SearchPostResult[]` (`app/interfaces`). Cache-Control: `public, s-maxage=60, stale-while-revalidate=120`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type SearchPostResult[]."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/site": {
+      "get": {
+        "operationId": "getApiSite",
+        "summary": "Get the site identity and its modules",
+        "description": "Never fails because of the CMS: the defaults of the app configuration answer instead, cached for 30 s (`public, s-maxage=30, stale-while-revalidate=60`).",
+        "tags": [
+          "Content"
+        ],
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language: `en` (default) or `es`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The site identity, its modules and, when overrides apply, its theme. Body: `Site` (`app/interfaces`). Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type Site."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tags": {
+      "get": {
+        "operationId": "getApiTags",
+        "summary": "List tags with their article count",
+        "tags": [
+          "Content"
+        ],
+        "parameters": [
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language: `en` (default) or `es`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "es"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every tag with the number of articles that carry it. Body: `TagCount[]` (`app/interfaces`). Cache-Control: `public, s-maxage=600, stale-while-revalidate=1200`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The TypeScript type TagCount[]."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/es/feed.xml": {
+      "get": {
+        "operationId": "getEsFeedXml",
+        "summary": "RSS feed of the latest articles, in Spanish",
+        "tags": [
+          "Site files"
+        ],
+        "responses": {
+          "200": {
+            "description": "An RSS 2.0 document. Cache-Control: `public, s-maxage=1800, stale-while-revalidate=3600`.",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error. The `code` is one of:\n- `internalError`: The server failed to handle the request.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "internalError"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/es/feed/{file}": {
+      "get": {
+        "operationId": "getEsFeedByFile",
+        "summary": "RSS feed of one category, in Spanish",
+        "tags": [
+          "Site files"
+        ],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "description": "The category slug followed by `.xml`, such as `linux.xml`. An unknown category is a 404.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z-]+\\.xml$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An RSS 2.0 document. Cache-Control: `public, s-maxage=1800, stale-while-revalidate=3600`.",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error. The `code` is one of:\n- `internalError`: The server failed to handle the request.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "internalError"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feed.xml": {
+      "get": {
+        "operationId": "getFeedXml",
+        "summary": "RSS feed of the latest articles",
+        "description": "RSS 2.0 of the latest 50 articles. Answers `notFound` on a site with no blog.",
+        "tags": [
+          "Site files"
+        ],
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "The language of the feed: `es` for Spanish, English for anything else.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An RSS 2.0 document. Cache-Control: `public, s-maxage=1800, stale-while-revalidate=3600`.",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error. The `code` is one of:\n- `internalError`: The server failed to handle the request.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "internalError"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feed/{file}": {
+      "get": {
+        "operationId": "getFeedByFile",
+        "summary": "RSS feed of one category",
+        "tags": [
+          "Site files"
+        ],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "description": "The category slug followed by `.xml`, such as `linux.xml`. An unknown category is a 404.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z-]+\\.xml$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An RSS 2.0 document. Cache-Control: `public, s-maxage=1800, stale-while-revalidate=3600`.",
+            "content": {
+              "application/rss+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error. The `code` is one of:\n- `internalError`: The server failed to handle the request.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "internalError"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/robots.txt": {
+      "get": {
+        "operationId": "getRobotsTxt",
+        "summary": "Crawl rules",
+        "description": "The crawl rules and the sitemap URL.",
+        "tags": [
+          "Site files"
+        ],
+        "responses": {
+          "200": {
+            "description": "Plain text in the robots exclusion format.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sitemap.xml": {
+      "get": {
+        "operationId": "getSitemapXml",
+        "summary": "Sitemap",
+        "description": "Every page, article and category in both languages, with `hreflang` alternates.",
+        "tags": [
+          "Site files"
+        ],
+        "responses": {
+          "200": {
+            "description": "A sitemap document. Cache-Control: `public, s-maxage=3600, stale-while-revalidate=7200`.",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error. The `code` is one of:\n- `internalError`: The server failed to handle the request.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "internalError"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-micelio_session",
+        "description": "The session set by sign-in: HttpOnly, Secure, SameSite=Lax. Browsers send it; clients outside a browser rarely need it."
+      }
+    },
+    "schemas": {
+      "Problem": {
+        "type": "object",
+        "description": "A problem detail (RFC 9457) as Micelio sends it. A client branches on `code`, never on the text. The Nitro members stay for one release line (ADR 0015).",
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "code"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "about:blank"
+          },
+          "title": {
+            "type": "string",
+            "description": "The status phrase."
+          },
+          "status": {
+            "type": "integer"
+          },
+          "detail": {
+            "type": "string",
+            "description": "A fixed English text for developers, never upstream text."
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "commonPassword",
+              "emailNotConfirmed",
+              "emailTaken",
+              "forbiddenOrigin",
+              "internalError",
+              "invalidCode",
+              "invalidCredentials",
+              "invalidInput",
+              "invalidRequest",
+              "invalidToken",
+              "methodNotAllowed",
+              "notFound",
+              "payloadTooLarge",
+              "requestRejected",
+              "tooManyRequests",
+              "unauthorized",
+              "unknown",
+              "upstreamUnavailable",
+              "weakPassword",
+              "wrongPassword"
+            ]
+          },
+          "statusCode": {
+            "type": "integer",
+            "deprecated": true,
+            "description": "Legacy Nitro member, equal to `status`."
+          },
+          "statusMessage": {
+            "type": "string",
+            "deprecated": true,
+            "description": "Legacy Nitro member."
+          },
+          "message": {
+            "type": "string",
+            "deprecated": true,
+            "description": "Legacy Nitro member."
+          },
+          "data": {
+            "type": "object",
+            "deprecated": true,
+            "description": "Legacy Nitro member; `data.code` equals `code`."
+          }
+        }
+      }
+    }
+  }
+}

@@ -147,6 +147,8 @@ jobs:
           fi
           actual=$(node -p "require('./package.json').version")
           [ "$actual" = "$expected" ] || fail "package.json says $actual but this release is $expected. Merge a chore(release) pull request that sets it."
+          documented=$(node -p "require('./docs/openapi.json').info.version")
+          [ "$documented" = "$expected" ] || fail "docs/openapi.json says $documented but this release is $expected. Run npm run openapi in the chore(release) pull request."
           if gh api "repos/$REPO/git/ref/tags/$TAG" >/dev/null 2>&1; then fail "The tag $TAG already exists. A published version never changes."; fi
           passed=$(gh run list --repo "$REPO" --workflow deploy.yml --branch main --event push --commit "$GITHUB_SHA" --status success --json conclusion -q 'length')
           [ "$passed" -ge 1 ] || fail "CI/CD Pipeline has not passed on $GITHUB_SHA."
