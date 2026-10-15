@@ -1,7 +1,7 @@
 import { z } from 'zod'
 // `~/schemas/*` are the response schemas of `app/schemas/`; `../../schemas/*` are the request schemas of `server/schemas/`
 import { fediverseStatsByIdSchema, fediverseStatsSchema } from '~/schemas/fediverse'
-import { categoryCountSchema, tagCountSchema } from '~/schemas/posts'
+import { articlePageSchema, articleSchema, categoryCountSchema, readingPathSchema, searchResultSchema, tagCountSchema } from '~/schemas/posts'
 import { guestCommentSchema } from '../../schemas/comments'
 import { pageParamsSchema } from '../../schemas/page'
 import { commentsQuerySchema, listLocaleQuerySchema, localeQuerySchema, postParamsSchema, postsQuerySchema, readingPathQuerySchema, searchQuerySchema } from '../../schemas/query'
@@ -40,7 +40,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
       { name: 'sort', in: 'query', description: 'The order. An unknown value reads as `recent`.', schema: { type: 'string', enum: ['recent', 'oldest', 'fediverse'] } },
       { name: 'content', in: 'query', description: '`1` or `true` searches the article body too and adds a `snippet` to each result.', schema: { type: 'string' } },
     ],
-    response: { status: 200, type: 'StrapiPaginatedResponse<RawStrapiArticle[]>', description: 'A page of articles.', cache: READ_CACHE_5_MIN },
+    response: { status: 200, schema: articlePageSchema, description: 'A page of articles.', cache: READ_CACHE_5_MIN },
     errors: ['invalidRequest', 'upstreamUnavailable', 'tooManyRequests'],
   },
   {
@@ -55,7 +55,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
       { name: 'slug', in: 'path', description: 'The article slug, in the alphabet and length of a Strapi uid (256 characters at most).' },
       LOCALE_PARAMETER,
     ],
-    response: { status: 200, type: 'RawStrapiArticle', description: 'The article with its blocks, rendered as sanitized HTML.', cache: READ_CACHE_5_MIN },
+    response: { status: 200, schema: articleSchema, description: 'The article with its blocks, rendered as sanitized HTML.', cache: READ_CACHE_5_MIN },
     errors: ['invalidRequest', 'notFound', 'upstreamUnavailable'],
   },
   {
@@ -71,7 +71,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
       LOCALE_PARAMETER,
       { name: 'content', in: 'query', description: '`1` or `true` searches the article body too.', schema: { type: 'string' } },
     ],
-    response: { status: 200, type: 'SearchPostResult[]', description: 'The matching articles.', cache: READ_CACHE_1_MIN },
+    response: { status: 200, schema: z.array(searchResultSchema), description: 'The matching articles.', cache: READ_CACHE_1_MIN },
     errors: ['invalidRequest', 'notFound'],
   },
   {
@@ -108,7 +108,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
       { name: 'category', in: 'query', description: 'A known category slug, trimmed and lowercased.' },
       LOCALE_PARAMETER,
     ],
-    response: { status: 200, type: 'ReadingPath', description: 'The reading path.', cache: READ_CACHE_5_MIN },
+    response: { status: 200, schema: readingPathSchema, description: 'The reading path.', cache: READ_CACHE_5_MIN },
     errors: ['invalidRequest', 'upstreamUnavailable'],
   },
   {

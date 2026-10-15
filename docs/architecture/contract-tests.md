@@ -16,7 +16,7 @@ It does not replace the mock suites: those stay the fast path. It adds a few sec
 2. Starts Postgres and the CMS on a private Docker network. The CMS is the demo instance (`MICELIO_DEMO=true`): it seeds a neutral bilingual site on boot and creates the frontend's API token from `FRONTEND_API_TOKEN`, with no manual step. The keys and the token are random for each run and never leave the machine.
 3. Runs `playwright.contract.config.ts`, which starts the production build (`npm run build` first) against that CMS, through a recording proxy (`scripts/contract/recording-proxy.mjs`), and the mock Strapi next to it, and runs `e2e/contract/`.
 
-The suite is at the HTTP level: it calls the frontend's `/api` routes with Playwright's `request`, and checks the keys and types the app's interfaces rely on (`expectShape` in `e2e/contract/support.ts`), plus the seeded values that are stable (names, counts).
+The suite is at the HTTP level: it calls the frontend's `/api` routes with Playwright's `request`, and checks the keys and types the app's interfaces rely on (`expectShape` in `e2e/contract/support.ts`), plus the seeded values that are stable (names, counts). Where a route has a response schema (`app/schemas/`, #558), the real answer is also parsed with it: the post list, a post, search, categories, tags and the signed-out session check. The reading path is not, because the demo categories are not among the five the route accepts.
 
 | Spec | Covers |
 | --- | --- |

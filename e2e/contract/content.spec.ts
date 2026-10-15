@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { z } from 'zod'
 import { authUserResponseSchema } from '../../app/schemas/auth'
-import { categoryCountSchema, tagCountSchema } from '../../app/schemas/posts'
+import { articlePageSchema, articleSchema, categoryCountSchema, searchResultSchema, tagCountSchema } from '../../app/schemas/posts'
 import { DEMO, expectShape } from './support'
 
 // What the frontend's read routes get from a real CMS: the keys and types the app's interfaces rely on (docs/api.md), on the demo seed.
@@ -20,6 +20,7 @@ for (const locale of ['en', 'es'] as const) {
     const response = await request.get(`/api/posts?locale=${locale}`)
     expect(response.status()).toBe(200)
     const body = await response.json()
+    expect(articlePageSchema.safeParse(body).error?.issues ?? []).toEqual([])
     expectShape(body, { data: 'array', meta: 'object' })
     expectShape(body.meta.pagination, { page: 'number', pageSize: 'number', pageCount: 'number', total: 'number' })
     expect(body.meta.pagination.total).toBe(DEMO.articles[locale])
@@ -34,6 +35,7 @@ test('one post: the blocks, the category and its other language', async ({ reque
   const response = await request.get(`/api/posts/${DEMO.firstArticle}?locale=en`)
   expect(response.status()).toBe(200)
   const article = await response.json()
+  expect(articleSchema.safeParse(article).error?.issues ?? []).toEqual([])
   expectShape(article, { documentId: 'string', title: 'string', slug: 'string', locale: 'string', blocks: 'array', tags: 'array', category: 'object?', references: 'array', localizations: 'array' })
   expect(article.slug).toBe(DEMO.firstArticle)
   expect(article.blocks.length).toBeGreaterThan(0)
@@ -71,11 +73,13 @@ test('the about page: blocks with their rendered html', async ({ request }) => {
   expectShape(richText, { body: 'string', html: 'string' })
 })
 
+// No reading-path check: its category must be one of the five slugs of the theme contract, and the demo categories (garden, kitchen) are not
 test('search finds an article by its title', async ({ request }) => {
   const response = await request.get('/api/search?q=compost&locale=en')
   expect(response.status()).toBe(200)
   const results = await response.json()
   expect(Array.isArray(results)).toBe(true)
+  expect(z.array(searchResultSchema).safeParse(results).error?.issues ?? []).toEqual([])
   const hit = results.find((result: { slug: string }) => result.slug === 'compost-in-a-small-space')
   expectShape(hit, { documentId: 'string', slug: 'string', title: 'string', description: 'string', publishedAt: 'string', matchedIn: 'string', snippet: 'string', category: 'object?' })
 })

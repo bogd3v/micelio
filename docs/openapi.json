@@ -3986,11 +3986,11 @@
         ],
         "responses": {
           "200": {
-            "description": "A page of articles. Body: `StrapiPaginatedResponse<RawStrapiArticle[]>` (`app/interfaces`). Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
+            "description": "A page of articles. Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type StrapiPaginatedResponse<RawStrapiArticle[]>."
+                  "$ref": "#/components/schemas/ArticlePage"
                 }
               }
             }
@@ -4124,11 +4124,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The article with its blocks, rendered as sanitized HTML. Body: `RawStrapiArticle` (`app/interfaces`). Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
+            "description": "The article with its blocks, rendered as sanitized HTML. Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type RawStrapiArticle."
+                  "$ref": "#/components/schemas/RawStrapiArticle"
                 }
               }
             }
@@ -4252,11 +4252,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The reading path. Body: `ReadingPath` (`app/interfaces`). Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
+            "description": "The reading path. Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type ReadingPath."
+                  "$ref": "#/components/schemas/ReadingPath"
                 }
               }
             }
@@ -4366,11 +4366,14 @@
         ],
         "responses": {
           "200": {
-            "description": "The matching articles. Body: `SearchPostResult[]` (`app/interfaces`). Cache-Control: `public, s-maxage=60, stale-while-revalidate=120`.",
+            "description": "The matching articles. Cache-Control: `public, s-maxage=60, stale-while-revalidate=120`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type SearchPostResult[]."
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SearchPostResult"
+                  }
                 }
               }
             }
@@ -4971,6 +4974,411 @@
       }
     },
     "schemas": {
+      "AboutContact": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "about.contact"
+          },
+          "eyebrow": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fediverseLabel": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fediverseHandle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fediverseLink": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiLink"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "extraLink": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiLink"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "socials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiContactLink"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "__component"
+        ],
+        "additionalProperties": false,
+        "description": "A fediverse handle and links."
+      },
+      "AboutOpenSource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "about.open-source"
+          },
+          "eyebrow": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "guideTitle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "guide": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiItem"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "__component"
+        ],
+        "additionalProperties": false,
+        "description": "A text, a shell command and a guide."
+      },
+      "AboutPrinciples": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "about.principles"
+          },
+          "eyebrow": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "principles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiItem"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "__component"
+        ],
+        "additionalProperties": false,
+        "description": "A numbered list of principles."
+      },
+      "AboutProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "about.profile"
+          },
+          "eyebrow": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "lead": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "facts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiFact"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiLink"
+            }
+          },
+          "photo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiMediaFile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "plateLabel": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "plateCoordinates": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "caption": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "__component",
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "The profile section: a title, a lead, facts and a photo on a plate."
+      },
+      "AboutProjects": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "about.projects"
+          },
+          "anchor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "eyebrow": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "intro": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiProject"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "__component"
+        ],
+        "additionalProperties": false,
+        "description": "The project cards."
+      },
+      "AboutStatement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "about.statement"
+          },
+          "eyebrow": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "statement": {
+            "type": "string"
+          },
+          "body": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "__component",
+          "statement"
+        ],
+        "additionalProperties": false,
+        "description": "A statement with an optional body text."
+      },
+      "AboutTopics": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "about.topics"
+          },
+          "eyebrow": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "intro": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiTopic"
+            }
+          },
+          "footnoteLabel": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "footnote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "__component"
+        ],
+        "additionalProperties": false,
+        "description": "One card per topic, with an optional footnote."
+      },
+      "ArticlePage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RawStrapiArticle"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "pagination": {
+                "$ref": "#/components/schemas/PaginationMeta"
+              }
+            },
+            "required": [
+              "pagination"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "additionalProperties": false,
+        "description": "A page of articles and its pagination."
+      },
       "AuthUser": {
         "type": "object",
         "properties": {
@@ -5097,6 +5505,53 @@
         "additionalProperties": false,
         "description": "The fediverse interactions with one article."
       },
+      "MediaBlock": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "shared.media"
+          },
+          "file": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiMediaFile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "caption": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "credit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiImageCredit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "__component",
+          "file"
+        ],
+        "additionalProperties": false,
+        "description": "An image with its caption and credit."
+      },
       "OkResponse": {
         "type": "object",
         "properties": {
@@ -5110,6 +5565,85 @@
         ],
         "additionalProperties": false,
         "description": "The request was accepted."
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "pageCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "pageCount",
+          "total"
+        ],
+        "additionalProperties": false,
+        "description": "The current page (from 1), the page size, the number of pages and the total."
+      },
+      "PlaygroundBlock": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "shared.playground"
+          },
+          "runtime": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "expectedOutput": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "setup": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "caption": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "__component",
+          "runtime",
+          "code"
+        ],
+        "additionalProperties": false,
+        "description": "Code with its runtime and expected output; `python`, `sql` and `javascript` can run."
       },
       "Problem": {
         "type": "object",
@@ -5183,6 +5717,1354 @@
             "description": "Legacy Nitro member; `data.code` equals `code`."
           }
         }
+      },
+      "QuoteBlock": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "shared.quote"
+          },
+          "body": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "html": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "__component",
+          "body"
+        ],
+        "additionalProperties": false,
+        "description": "A quote in Markdown, its inline HTML and the attribution."
+      },
+      "RawStrapiArticle": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "content": {
+            "description": "Never sent: the legacy Markdown body that `blocks` replaced.",
+            "deprecated": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "description": "Never sent: the allow-list leaves it out.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "locale": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "readTime": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StrapiTagRef"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cover": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiMediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coverCredit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiImageCredit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiCategoryRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "author": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiAuthorRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiSEO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "snippet": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "blocks": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StrapiBlock"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "references": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StrapiReference"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "localizations": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StrapiLocalization"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "documentId",
+          "title",
+          "slug"
+        ],
+        "additionalProperties": false,
+        "description": "An article as the route sends it: a card has no blocks, references or localizations, a whole article has no `snippet`."
+      },
+      "ReadingPath": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "privacidad",
+              "diy",
+              "ia",
+              "software",
+              "linux"
+            ]
+          },
+          "editorial": {
+            "type": "boolean"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadingPathStep"
+            }
+          }
+        },
+        "required": [
+          "category",
+          "editorial",
+          "steps"
+        ],
+        "additionalProperties": false,
+        "description": "Up to 50 articles of a category in reading order; `editorial` is false when they follow the publication date."
+      },
+      "ReadingPathStep": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "documentId",
+          "slug",
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "An article of a reading path."
+      },
+      "RichTextBlock": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "shared.rich-text"
+          },
+          "body": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "html": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "__component",
+          "body"
+        ],
+        "additionalProperties": false,
+        "description": "Markdown as stored, and its sanitized HTML."
+      },
+      "SearchPostResult": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "slug": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "slug"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "matchedIn": {
+            "type": "string",
+            "enum": [
+              "title",
+              "description",
+              "content"
+            ]
+          },
+          "snippet": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "documentId",
+          "title",
+          "slug",
+          "description",
+          "publishedAt",
+          "category",
+          "matchedIn",
+          "snippet"
+        ],
+        "additionalProperties": false,
+        "description": "An article that matched, the field that matched and an excerpt around the match (empty when there is none)."
+      },
+      "SliderBlock": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "__component": {
+            "type": "string",
+            "const": "shared.slider"
+          },
+          "items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StrapiSlide"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "files": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StrapiMediaFile"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "__component"
+        ],
+        "additionalProperties": false,
+        "description": "Slides, or plain uploads when there are none."
+      },
+      "StrapiAuthorRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "avatar": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiMediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "description": "The author of an article, with an optional avatar."
+      },
+      "StrapiBlock": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/RichTextBlock"
+          },
+          {
+            "$ref": "#/components/schemas/QuoteBlock"
+          },
+          {
+            "$ref": "#/components/schemas/MediaBlock"
+          },
+          {
+            "$ref": "#/components/schemas/PlaygroundBlock"
+          },
+          {
+            "$ref": "#/components/schemas/SliderBlock"
+          },
+          {
+            "$ref": "#/components/schemas/AboutProfile"
+          },
+          {
+            "$ref": "#/components/schemas/AboutStatement"
+          },
+          {
+            "$ref": "#/components/schemas/AboutTopics"
+          },
+          {
+            "$ref": "#/components/schemas/AboutProjects"
+          },
+          {
+            "$ref": "#/components/schemas/AboutPrinciples"
+          },
+          {
+            "$ref": "#/components/schemas/AboutOpenSource"
+          },
+          {
+            "$ref": "#/components/schemas/AboutContact"
+          }
+        ],
+        "description": "A block of a dynamic zone, discriminated by `__component`."
+      },
+      "StrapiCategoryRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "description": "The category of an article."
+      },
+      "StrapiContactLink": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "network": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "network",
+          "handle",
+          "url"
+        ],
+        "additionalProperties": false,
+        "description": "A social account: its network, handle and URL."
+      },
+      "StrapiFact": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "mono": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "value"
+        ],
+        "additionalProperties": false,
+        "description": "A label and value pair, shown as a definition list item."
+      },
+      "StrapiImageCredit": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "photo",
+              "illustration",
+              "diagram",
+              "screenshot"
+            ]
+          },
+          "author": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "authorUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourceUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "license": {
+            "type": "string",
+            "enum": [
+              "own-work",
+              "cc0",
+              "public-domain",
+              "cc-by-4.0",
+              "cc-by-sa-4.0",
+              "cc-by-nc-4.0",
+              "unsplash",
+              "permission",
+              "other"
+            ]
+          },
+          "licenseUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "modifications": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "license"
+        ],
+        "additionalProperties": false,
+        "description": "Who made an image, where it comes from and under which licence."
+      },
+      "StrapiItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "html": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text"
+        ],
+        "additionalProperties": false,
+        "description": "A principle or a guide step; `html` is the rendered `text` of a guide step."
+      },
+      "StrapiLink": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "label": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "secondary",
+              "text"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "url",
+          "variant"
+        ],
+        "additionalProperties": false,
+        "description": "A link button: an absolute URL or a path, and its style."
+      },
+      "StrapiLocalization": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "slug",
+          "locale"
+        ],
+        "additionalProperties": false,
+        "description": "The version of an article in another locale."
+      },
+      "StrapiMediaFile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "alternativeText": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "caption": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
+        "description": "An upload of a block, a slide or a slider: a `/uploads/` path or an absolute URL, with its text and size when the CMS has them."
+      },
+      "StrapiMediaRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "alternativeText": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "caption": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
+        "description": "An image of an article or an author: a `/uploads/` path or an absolute URL, with its text and size when the CMS has them."
+      },
+      "StrapiMetaSocial": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "socialNetwork": {
+            "type": "string",
+            "enum": [
+              "Facebook",
+              "Twitter"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "image": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "attributes": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "alternativeText": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "url"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "attributes"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "data"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "socialNetwork",
+          "title",
+          "description"
+        ],
+        "additionalProperties": false,
+        "description": "A social share override of the SEO component. The route does not send it."
+      },
+      "StrapiProject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "eyebrow": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "meta": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "facts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiFact"
+            }
+          },
+          "stack": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiTechItem"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiLink"
+            }
+          },
+          "featured": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "visual": {
+            "type": "string",
+            "enum": [
+              "none",
+              "fediverse",
+              "palette"
+            ]
+          },
+          "visualCaption": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "visual"
+        ],
+        "additionalProperties": false,
+        "description": "A project card of the projects section."
+      },
+      "StrapiReference": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "journal",
+              "conference",
+              "preprint",
+              "book",
+              "chapter",
+              "web",
+              "software",
+              "docs"
+            ]
+          },
+          "authors": {
+            "type": "string"
+          },
+          "year": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "container": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "volume": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "issue": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pages": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "venueLabel": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "doi": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "accessedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "type",
+          "authors",
+          "year",
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "A bibliographic reference an article cites by `key`."
+      },
+      "StrapiSEO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "metaTitle": {
+            "type": "string"
+          },
+          "metaDescription": {
+            "type": "string"
+          },
+          "metaImage": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "alternativeText": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "attributes": {
+                        "type": "object",
+                        "properties": {
+                          "url": {
+                            "type": "string"
+                          },
+                          "alternativeText": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "width": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "height": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "url"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "attributes"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metaSocial": {
+            "description": "Never sent: the allow-list leaves it out.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrapiMetaSocial"
+            }
+          },
+          "keywords": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "metaRobots": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "structuredData": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  },
+                  {
+                    "type": "array",
+                    "items": {}
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metaViewport": {
+            "description": "Never sent: the allow-list leaves it out.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "canonicalURL": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "metaTitle",
+          "metaDescription"
+        ],
+        "additionalProperties": false,
+        "description": "The SEO component of an entry: titles, share image, robots and optional JSON-LD."
+      },
+      "StrapiSlide": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "file": {
+            "$ref": "#/components/schemas/StrapiMediaFile"
+          },
+          "caption": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "credit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiImageCredit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "additionalProperties": false,
+        "description": "A slide with its own caption and credit."
+      },
+      "StrapiTagRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ],
+        "additionalProperties": false,
+        "description": "A tag of an article, with its name and slug."
+      },
+      "StrapiTechItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "description": "A technology of a project stack."
+      },
+      "StrapiTopic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "privacidad",
+              "diy",
+              "ia",
+              "software",
+              "linux"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "category",
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "A topic card and the category that sets its colour."
       },
       "SubscribeResponse": {
         "type": "object",

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { request as httpRequest } from 'node:http'
 import { join } from 'node:path'
+import { z } from 'zod'
 import { $fetch, fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
 import type { RawStrapiArticle } from '~/interfaces/strapi-post'
 import type { Page, PageSection } from '~/interfaces/page'
@@ -12,6 +13,7 @@ import { HASHED_TOKENS, startMockStrapi } from './mock-strapi'
 import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
 import { resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
+import { articlePageSchema, articleSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
 import { contrastRatio, parseHex } from '~/helpers/color'
 import { inlineScripts } from '~/helpers/securityHeaders'
 
@@ -755,6 +757,18 @@ describe('fields of an article that leave the server', () => {
       delete (article as Record<string, unknown>).internalNote
       article.content = original.content
     }
+  })
+})
+
+describe('response schemas of the content routes', () => {
+  it('describe what the real routes answer', async () => {
+    const page = articlePageSchema.parse(await $fetch('/api/posts', { query: { locale: 'en' } }))
+    expect(page.data.length).toBeGreaterThan(0)
+    const post = articleSchema.parse(await $fetch(`/api/posts/${page.data[0]!.slug}`, { query: { locale: 'en' } }))
+    expect(post.blocks?.length).toBeGreaterThan(0)
+    const hits = z.array(searchResultSchema).parse(await $fetch('/api/search', { query: { q: 'ssh', locale: 'en', content: '1' } }))
+    expect(hits.length).toBeGreaterThan(0)
+    expect(readingPathSchema.parse(await $fetch('/api/reading-path', { query: { category: 'linux', locale: 'en' } })).steps.length).toBeGreaterThan(0)
   })
 })
 
