@@ -601,6 +601,11 @@
     "confirmed": {
       "title": "Tu cuenta está lista",
       "lead": "Confirmaste tu correo. Ya puedes entrar.",
+      "readyTitle": "Confirma tu correo",
+      "readyLead": "Pulsa el botón para confirmar tu correo y terminar de crear tu cuenta.",
+      "action": "Confirmar mi correo",
+      "invalidToken": "El enlace de confirmación no es válido, venció o ya se usó. Entra a tu cuenta o pide otro enlace.",
+      "serverError": "No pudimos confirmar tu correo en este momento. Prueba el enlace de nuevo en unos minutos.",
       "signIn": "Entrar"
     },
     "recover": {

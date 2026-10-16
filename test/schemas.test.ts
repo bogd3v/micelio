@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { changePasswordSchema, deleteAccountSchema, emailSchema, loginSchema, registerSchema, resetPasswordSchema } from '../server/schemas/auth'
+import { changePasswordSchema, deleteAccountSchema, confirmEmailSchema, emailSchema, loginSchema, registerSchema, resetPasswordSchema } from '../server/schemas/auth'
 import { guestCommentSchema } from '../server/schemas/comments'
 import { subscribeSchema } from '../server/schemas/newsletter'
 import { commentsQuerySchema, DEFAULT_PAGE_SIZE, listLocaleQuerySchema, localeQuerySchema, MAX_PAGE_SIZE, postParamsSchema, postsQuerySchema, readingPathQuerySchema, searchQuerySchema } from '../server/schemas/query'
@@ -194,5 +194,16 @@ describe('auth schemas, upper bounds', () => {
     expect(resetPasswordSchema.safeParse({ ...good, code: 'a'.repeat(1000) }).success).toBe(false)
     expect(resetPasswordSchema.safeParse({ ...good, code: 'abc def' }).success).toBe(false)
     expect(resetPasswordSchema.safeParse({ ...good, code: '<script>' }).success).toBe(false)
+  })
+})
+
+describe('confirmEmailSchema', () => {
+  it('takes the 40 lowercase hexadecimal characters of the CMS and nothing else', () => {
+    const token = 'a1'.repeat(20)
+    expect(confirmEmailSchema.parse({ confirmation: token })).toEqual({ confirmation: token })
+    for (const confirmation of [token.slice(1), `${token}0`, token.toUpperCase(), `${token.slice(1)}g`, ` ${token}`, '', 42, null]) {
+      expect(confirmEmailSchema.safeParse({ confirmation }).success).toBe(false)
+    }
+    expect(confirmEmailSchema.safeParse({}).success).toBe(false)
   })
 })

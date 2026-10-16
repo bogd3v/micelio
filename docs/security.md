@@ -75,7 +75,7 @@ The routes of a module switched off in `site-setting.modules`, or off for lack o
 | `GET /api/fediverse/stats`, `/api/fediverse/stats/:documentId` | Public | Document id pattern, at most 50 ids |
 | `POST /api/newsletter/subscribe` | Public | Same-origin check, 10 per IP (an IPv6 address counts by its /64) and 3 per email every hour, and 100 confirmation emails an hour in total whoever asks; same answer for new and confirmed addresses |
 | `POST /api/newsletter/confirm`, `POST /api/newsletter/unsubscribe` | Holder of the emailed token | Token format check; confirm checks the same origin and is sent by a button on `/confirm`, so a link scanner that only fetches the link confirms nothing; unsubscribe also accepts RFC 8058 one-click POSTs from mail providers, so it has no origin check |
-| `POST /api/auth/login`, `register`, `forgot-password`, `reset-password`, `resend-confirmation`, `logout` | Public | Same-origin check, body schema, `no-store`; the CMS rate-limits the auth routes per visitor (see "Client IP and rate limits") |
+| `POST /api/auth/login`, `register`, `forgot-password`, `reset-password`, `resend-confirmation`, `confirm-email`, `logout` | Public | Same-origin check, body schema, `no-store`; the CMS rate-limits the auth routes per visitor (see "Client IP and rate limits") |
 | `POST /api/auth/change-password` | Session + current password | Same-origin check, body schema (new password at least 10 characters and different from the current one), `no-store`; the CMS re-checks the current password with the person's own JWT and answers a new JWT that replaces the cookie |
 | `GET /api/auth/me` | Session | `no-store` |
 | `DELETE /api/auth/me` | Session + password | Same-origin check, username and password re-checked by Strapi |
@@ -134,7 +134,7 @@ People sign in with a password: one factor, an account per email address. Accoun
 | --- | --- | --- |
 | Sign in | `POST /api/auth/login` of the frontend, which calls `POST /api/auth/local` of the CMS | Same-origin check, body schema, `no-store`; CMS limits per client (10 per 60 s per route), per login identifier across all addresses (10 per 15 min) and a confirmed email before the first sign-in |
 | Sign up | `POST /api/auth/register`, then the CMS register route | The same checks, a password of at least 10 characters in the frontend, and 5 emails per address per hour in the CMS; the account cannot sign in until its email is confirmed |
-| Email confirmation | The link in the email, `GET /api/auth/email-confirmation` of the CMS, which redirects to `/account/confirmed` | One-use token in the CMS; the frontend does not proxy this route |
+| Email confirmation | The link in the email lands on `/account/confirmed?confirmation=<token>`, which shows a button; the click calls `POST /api/auth/confirm-email` of the frontend, then `POST /api/auth/email-confirmation` of the CMS (ASVS V3.5.3: a sensitive function is not a GET). The CMS `GET` of the same path still confirms and redirects to `/account/confirmed` until it only redirects with the token | Same-origin check, a body schema (40 lowercase hexadecimal characters), `no-store`; one-use token and 10 requests per 60 s per client in the CMS; no session is set; a scanner that opens the link confirms nothing; the token leaves the address bar and is never logged |
 | Resend confirmation, forgot password, reset password | `POST /api/auth/resend-confirmation`, `forgot-password`, `reset-password` of the frontend, then the CMS routes | Same-origin check, body schema; 5 emails per address per hour; the same answer whether or not the address has an account |
 | Change the password | `POST /api/auth/change-password` of the frontend, which calls the CMS route with the person's own JWT | Session, same-origin check, the current password asked again, and a new password of at least 10 characters that differs from it; the cookie is renewed with the JWT the CMS answers |
 | Delete the account | `DELETE /api/auth/me` | Session, same-origin check, and the password asked again |
@@ -268,6 +268,7 @@ These events are written on purpose (ASVS V16.3.1, V16.3.2, V16.3.3). Each line 
 | `auth.register.success` | `info` | An account was created | |
 | `auth.password-reset.success`, `auth.password-change.success` | `info` | A password was reset or changed | |
 | `auth.account-delete.success`, `auth.logout` | `info` | An account was deleted, a visitor signed out | |
+| `auth.confirm-email.success` | `info` | The CMS confirmed the email address | |
 | `auth.forgot-password.requested`, `auth.resend-confirmation.requested` | `info` | The CMS accepted the request (the answer to the visitor is the same whether the address exists or not) | |
 | `auth.failure` | `warn` | An auth call was refused: wrong credentials, unconfirmed email, weak or common password, no session, the CMS's own rate limit | The auth error code (`invalidCredentials`, `emailNotConfirmed`, `weakPassword`, `unauthorized`, `tooManyRequests`…) |
 | `authz.origin-refused` | `warn` | A state-changing request came from another origin or without an `Origin` | |

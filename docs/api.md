@@ -95,6 +95,7 @@ All account routes answer `private, no-store`. The session is the `__Host-miceli
 | --- | --- |
 | `POST /api/auth/login` | `identifier` is the username or the email. |
 | `POST /api/auth/register` | `password` follows the rules in `app/helpers/auth.ts`. |
+| `POST /api/auth/confirm-email` | `confirmation` is the 40-hexadecimal-character token of the email link. Confirms the address and sets no session; an unknown or used token answers `invalidCode`. |
 | `POST /api/auth/resend-confirmation` | — |
 | `POST /api/auth/forgot-password` | — |
 | `POST /api/auth/reset-password` | — |
@@ -112,7 +113,7 @@ Every `code` an `/api/*` error can carry, from `PROBLEM_CODES` in `server/utils/
 | `invalidInput` | 400 | The body does not match the schema of the route |
 | `invalidCredentials` | 400 | Wrong identifier or password |
 | `emailNotConfirmed` | 400 | The account exists but its email is not confirmed |
-| `invalidCode` | 400 | Expired or unknown reset code |
+| `invalidCode` | 400 | Expired or unknown reset code, or an email confirmation token that is unknown or already used |
 | `wrongPassword` | 400 | Password check failed when changing a password or deleting the account |
 | `weakPassword` | 400 | The password does not meet the strength rules |
 | `commonPassword` | 400 | The password is too common |

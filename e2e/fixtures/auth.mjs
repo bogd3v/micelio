@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto'
+
 export const testUsers = {
   reader: { username: 'lectora', email: 'lectora@example.com', password: 'lectora-segura-1' },
   editor: { username: 'alejandro', email: 'alejandro@example.com', password: 'editor-seguro-1' },
@@ -35,8 +37,9 @@ function publicUser(user, withRole) {
   }
 }
 
+// 40 lowercase hex characters, like the CMS tokens
 export function confirmationToken(username) {
-  return `confirm-${username}`
+  return createHash('sha1').update(`confirm-${username}`).digest('hex')
 }
 
 export function resetCode(username) {
@@ -84,6 +87,14 @@ export function createAuthMock({ frontendUrl }) {
       if (!user) return strapiError(400, 'ValidationError', 'Invalid token')
       user.confirmed = true
       return { status: 302, headers: { Location: `${frontendUrl}/account/confirmed` } }
+    }
+
+    // The CMS POST (micelio-cms#221): no JWT, 204 on success, 400 `Invalid token` for a malformed, unknown or used token
+    if (method === 'POST' && pathname === '/api/auth/email-confirmation') {
+      const user = typeof input.confirmation === 'string' && /^[0-9a-f]{40}$/.test(input.confirmation) ? users.find(item => confirmationToken(item.username) === input.confirmation && !item.confirmed) : undefined
+      if (!user) return strapiError(400, 'ValidationError', 'Invalid token')
+      user.confirmed = true
+      return { status: 204, headers: { 'Cache-Control': 'private, no-store' } }
     }
 
     if (method === 'POST' && pathname === '/api/auth/send-email-confirmation') {

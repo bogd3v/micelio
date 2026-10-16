@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { isValidEmail, isValidPassword, isValidUsername } from '~/helpers/auth'
+import { isEmailConfirmationToken, isValidEmail, isValidPassword, isValidUsername } from '~/helpers/auth'
 
 // Upper bounds, so a body cannot make the server hold or hash something huge: an email address is at most 254 characters (RFC 5321),
 // a password typed into a form at most 1024, and a reset code is made of the characters the CMS uses
@@ -55,4 +55,9 @@ export const changePasswordSchema = z.object({
 export const deleteAccountSchema = z.object({
   username: z.string().min(1).max(MAX_EMAIL_LENGTH),
   password: typedPassword,
+})
+
+/** The body of `POST /api/auth/confirm-email`: the confirmation token of the email link, 40 lowercase hexadecimal characters. The CMS decides whether it exists and is unused. */
+export const confirmEmailSchema = z.object({
+  confirmation: z.string().refine(isEmailConfirmationToken),
 })
