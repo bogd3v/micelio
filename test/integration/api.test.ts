@@ -798,8 +798,6 @@ describe('response schemas of the content routes', () => {
     expect(readingPathSchema.parse(await $fetch('/api/reading-path', { query: { category: 'linux', locale: 'en' } })).steps.length).toBeGreaterThan(0)
     expect(aboutSchema.parse(await $fetch('/api/about', { query: { locale: 'en' } })).blocks.length).toBeGreaterThan(0)
     expect(siteSchema.parse(await $fetch('/api/site', { query: { locale: 'en' } })).name.length).toBeGreaterThan(0)
-    const showcase = await $fetch<Page>('/api/pages/muestra', { query: { locale: 'es' } })
-    expect(pageSchema.parse(showcase).sections.map(item => item.__component)).toEqual(showcase.sections.map(item => item.__component))
   })
 })
 
@@ -866,6 +864,8 @@ describe('/api/pages/[slug]', () => {
 
   it('resolves the post list on the server', async () => {
     const page = await $fetch<PageBody>('/api/pages/showcase', { query: { locale: 'en' } })
+    // Pages are cached per locale and slug and the tests above inspect the first read of some of them, so the response schema is checked here, on a page whose post list is resolved
+    expect(pageSchema.parse(page).sections.map(item => item.__component)).toEqual(page.sections.map(item => item.__component))
     const list = section(page, 'section.post-list')
     expect(list.category).toBe('software')
     expect(list.posts.length).toBeGreaterThan(0)
