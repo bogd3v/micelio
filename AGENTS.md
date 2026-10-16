@@ -6,6 +6,10 @@ This file contains instructions and guidelines for agentic coding agents working
 
 The rules shared by every Micelio repository live in [`docs/engineering-standard.md`](docs/engineering-standard.md). This file adds what is specific to this repository (stack, commands, folders, naming) and may tighten the standard, never relax it. When the two disagree, the standard wins.
 
+## Pre-1.0
+
+While the version is `0.y.z` Micelio is alpha and not stable (section 7 of the standard, "Before 1.0.0"). A breaking change raises `y` and needs no deprecation period and no ADR: only the `!` in the PR title, a `BREAKING CHANGE:` paragraph and upgrade notes. Do not add compatibility layers nobody asked for, and never describe a release as stable.
+
 ## Project Overview
 
 This is the frontend of Micelio, a site engine (a dynamic blog, a static site or a landing from the same content, ADR 0006) whose CMS lives in `micelio-cms`. BogDev (bogdev.com.co) is the reference site running it. Stack:

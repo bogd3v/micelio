@@ -10,6 +10,7 @@ The rules come from [ADR 0010](../adr/0010-semantic-versioning.md) and section 7
 - **CMS first.** Upgrade the CMS, then the frontend. The CMS of a release line also serves the frontend of the previous MINOR, so the site keeps working between the two steps.
 - **Within a MAJOR, no manual step.** The new version runs its database migrations when it boots. Across a MAJOR the release notes say the order and any step you must do by hand.
 - **Going back is not supported across a MINOR.** Restore the backup you took before the upgrade instead. See [Backup](backup.md).
+- **Before 1.0.0 nothing is stable.** A breaking change raises the second number (`0.y.z`) and may remove or rename a contract (content types, the API, the theme contract, environment variables, image names) without a deprecation period. Read the notes of every `0.y` you cross, and pin `X.Y.Z` instead of `latest` or `X.Y`. The guarantees in the other rules (the CMS also serving the previous MINOR, migrations with no manual step, deprecation before removal) are the target from 1.0.0; before it, the release notes say what holds.
 - **Only the latest release line gets fixes**, security fixes included. Move to it.
 
 ## 1. Read the release notes
