@@ -9,7 +9,7 @@ type MustMatch<S extends z.ZodType, T> = Same<z.output<S>, T> extends true ? unk
  * Ties a response schema to the interface that is the source of truth, so either one changing alone fails `npm run typecheck`.
  *
  * @remarks
- * Call it as `responseSchema<Interface>()(z.strictObject({ ... }))`. The schema must produce exactly `Interface` (checked in both directions, optional and nullable fields included). It describes what the route sends, and is read by server code and tests only, never by components. Build objects with `z.strictObject`, so parsing rejects an extra key like the published `additionalProperties: false`; a shape that passes Strapi fields through unchanged uses `z.looseObject` on purpose. Give every schema its own `.meta({ id: 'Interface' })` so the OpenAPI document names it under `components.schemas`.
+ * Call it as `responseSchema<Interface>()(z.strictObject({ ... }))`. The schema must produce exactly `Interface` (checked in both directions, optional and nullable fields included). It describes what the route sends, and is read by server code and tests only, never by components. Build objects with `z.strictObject`, so parsing rejects an extra key like the published `additionalProperties: false`; a shape that passes Strapi fields through unchanged uses `z.looseObject` on purpose, or stays strict when the CMS builds the shape field by field and its response-fields check pins the keys (the flat comments envelope, the draft rows). Give every schema its own `.meta({ id: 'Interface' })` so the OpenAPI document names it under `components.schemas`.
  *
  * @returns A function that takes the schema and returns it unchanged.
  */

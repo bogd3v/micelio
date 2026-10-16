@@ -68,7 +68,7 @@ A switched-off module answers `notFound`, the same as a route that does not exis
 | `GET /api/comments/flat` | — | A 429 is the CMS's own limit. |
 | `POST /api/comments` | — | A 429 comes at 10 per IP per 10 minutes, or from the CMS's limit, with its `Retry-After`. `author.avatar` is optional and must be `http(s)`; an invalid one is dropped, not refused. When Strapi refuses the comment, the answer is a 400 `invalidRequest` or a 404 `notFound`. |
 
-Every comment response hides `PENDING` and `REJECTED` comments and never includes the author's email. The author id of a posted comment is set by the server (`guest-<uuid>`). Types: `app/interfaces/comment.ts`.
+Every comment response hides `PENDING` and `REJECTED` comments and never includes the author's email. The author id of a posted comment is set by the server (`guest-<uuid>`). The tree answers a bare array; the flat list answers `data` with `pagination` beside it (the comments plugin does not use `meta`). Every comment is rebuilt by `toPublicComment` from a list of public fields; the envelope of the flat list is the CMS answer spread, with no allow-list. Types: `app/interfaces/comment.ts`; response schemas: `app/schemas/comments.ts` (`Comment`, `CommentTree`, `CommentsResponse` in `docs/openapi.json`).
 
 ## Fediverse
 
@@ -141,7 +141,7 @@ Every `code` an `/api/*` error can carry, from `PROBLEM_CODES` in `server/utils/
 | `GET /api/drafts` | Served to the editor's own session only. |
 | `GET /api/drafts/:documentId` | The draft and, when there is one, its published version. |
 
-They use the editor's own JWT, never the API token, and answer `private, no-store`. Types: `app/interfaces/draft.ts`.
+They use the editor's own JWT, never the API token, and answer `private, no-store`. The draft article goes through the article allow-list (`publicArticle`); the rows of the list are the CMS rows as they come, filtered to the known states, with no allow-list. Types: `app/interfaces/draft.ts`; response schemas: `app/schemas/drafts.ts` (`DraftListResponse`, `DraftArticleResponse` in `docs/openapi.json`).
 
 ## Routes outside `/api`
 

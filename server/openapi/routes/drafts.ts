@@ -1,3 +1,5 @@
+import { draftListResponseSchema } from '~/schemas/drafts'
+import { draftArticleResponseSchema } from '~/schemas/posts'
 import type { ParameterSpec, RouteEntry } from '../types'
 
 const LOCALE_PARAMETER: ParameterSpec = { name: 'locale', in: 'query', description: 'The language of the draft: `en` or `es`. Optional.' }
@@ -13,7 +15,7 @@ export const DRAFT_ROUTES: RouteEntry[] = [
     tag: 'Drafts',
     session: 'required',
     parameters: [LOCALE_PARAMETER],
-    response: { status: 200, type: 'DraftListResponse', description: 'The drafts, newest edit first.' },
+    response: { status: 200, schema: draftListResponseSchema, description: 'The drafts, newest edit first.' },
     errors: ['notFound', 'upstreamUnavailable'],
   },
   {
@@ -28,7 +30,7 @@ export const DRAFT_ROUTES: RouteEntry[] = [
       { name: 'documentId', in: 'path', description: 'The article document id.' },
       LOCALE_PARAMETER,
     ],
-    response: { status: 200, type: 'DraftArticleResponse', description: 'The draft and, when there is one, its published version.' },
+    response: { status: 200, schema: draftArticleResponseSchema, description: 'The draft and, when there is one, its published version.' },
     errors: ['notFound', 'upstreamUnavailable'],
   },
 ]

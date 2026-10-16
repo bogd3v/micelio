@@ -1,3 +1,5 @@
+import type { PaginationMeta } from './strapi-response'
+
 /**
  * The public author of a comment, as `toPublicComment` returns it.
  *
@@ -28,8 +30,8 @@ export interface Comment {
   blockedThread: boolean
   /** The moderator's reason for the block, when one was given. */
   blockReason: string | null
-  /** The account reference of a signed-in author; null for a guest. */
-  authorUser: string | null
+  /** The account reference of a signed-in author; null for a guest. The comments plugin does not return it, so the answer usually has none. */
+  authorUser?: string | null
   /** The comment was removed, for example because its fediverse note was deleted; the text is replaced by a notice. */
   removed: boolean | null
   /** The moderation state from the CMS: `PENDING` and `REJECTED` are hidden, `APPROVED` is shown. */
@@ -39,11 +41,11 @@ export interface Comment {
   author: CommentAuthor
   createdAt: string
   updatedAt: string
-  /** The article the comment belongs to. */
-  related: {
+  /** The article the comment belongs to. The plugin answers it as a relation string (`api::article.article:<id>`) on the flat list and a new comment, and leaves it out of the hierarchy. */
+  related?: {
     id: number
     documentId?: string
-  }
+  } | string
   /** Reports readers sent about the comment. */
   reports: CommentReport[]
   /** The replies, nested; present only in the hierarchy view. */
@@ -130,6 +132,9 @@ export interface GuestComment {
  */
 export interface CommentsResponse {
   data: Comment[]
+  /** The pagination, where the comments plugin puts it: beside `data`. */
+  pagination?: PaginationMeta
+  /** Strapi's usual place for the pagination; the comments plugin does not use it. */
   meta?: {
     pagination?: {
       page: number

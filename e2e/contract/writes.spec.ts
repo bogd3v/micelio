@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { test, expect } from '@playwright/test'
+import { commentSchema, commentsResponseSchema, commentTreeSchema } from '../../app/schemas/comments'
 import { DEMO, cmsFetch, expectShape } from './support'
 
 // What the frontend writes to a real CMS, and what it must not be given.
@@ -16,16 +17,19 @@ test('a guest comment is stored, shown back and never carries the email', async 
   })
   expect(posted.status()).toBe(200)
   const comment = await posted.json()
+  expect(commentSchema.safeParse(comment).error?.issues ?? []).toEqual([])
   expectShape(comment, { id: 'number', content: 'string', author: 'object', createdAt: 'string' })
   expect(comment.content).toBe(content)
   expect(JSON.stringify(comment)).not.toContain('contract@example.com')
 
   const tree = await (await request.get(`/api/comments?relation=${encodeURIComponent(relation)}&locale=en`)).json()
+  expect(commentTreeSchema.safeParse(tree).error?.issues ?? []).toEqual([])
   expect(tree.map((entry: { content: string }) => entry.content)).toContain(content)
   expect(JSON.stringify(tree)).not.toContain('contract@example.com')
 
   const flat = await (await request.get(`/api/comments/flat?relation=${encodeURIComponent(relation)}&locale=en`)).json()
   expectShape(flat, { data: 'array', pagination: 'object' })
+  expect(commentsResponseSchema.safeParse(flat).error?.issues ?? []).toEqual([])
   expect(flat.data.map((entry: { content: string }) => entry.content)).toContain(content)
 })
 
@@ -52,6 +56,7 @@ test('the subscriber write: create, find by email, confirm and delete', async ()
   expect((await cmsFetch(`/api/subscribers/${data.documentId}`, { method: 'DELETE' })).status).toBe(204)
 })
 
+// The drafts routes need an editor session, which the demo does not seed, so their response schemas (app/schemas/drafts.ts) are parsed in test/integration/api.test.ts only
 test('drafts are refused to a caller that is not an editor', async ({ request }) => {
   expect((await request.get('/api/drafts?locale=en')).status()).toBe(404)
   expect((await request.get('/api/drafts/does-not-matter?locale=en')).status()).toBe(404)

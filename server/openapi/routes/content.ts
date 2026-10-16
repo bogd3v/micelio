@@ -2,6 +2,7 @@ import { z } from 'zod'
 // `~/schemas/*` are the response schemas of `app/schemas/`; `../../schemas/*` are the request schemas of `server/schemas/`
 import { fediverseStatsByIdSchema, fediverseStatsSchema } from '~/schemas/fediverse'
 import { aboutSchema } from '~/schemas/blocks'
+import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/schemas/comments'
 import { siteSchema } from '~/schemas/site'
 import { pageSchema } from '~/schemas/pages'
 import { articlePageSchema, articleSchema, categoryCountSchema, readingPathSchema, searchResultSchema, tagCountSchema } from '~/schemas/posts'
@@ -168,7 +169,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
       { name: 'pageSize', in: 'query', description: 'Comments per page, at most 50. The CMS default applies when absent.' },
       { name: 'sort', in: 'query', description: 'The order, `field:asc` or `field:desc`.' },
     ],
-    response: { status: 200, type: 'Comment[]', description: 'The comments, with answers nested in `children`.' },
+    response: { status: 200, schema: commentTreeSchema, description: 'The comments, with answers nested in `children`.' },
     errors: ['invalidRequest', 'notFound', 'upstreamUnavailable', 'tooManyRequests'],
   },
   {
@@ -186,7 +187,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
       { name: 'pageSize', in: 'query', description: 'Comments per page, at most 50. The CMS default applies when absent.' },
       { name: 'sort', in: 'query', description: 'The order, `field:asc` or `field:desc`.' },
     ],
-    response: { status: 200, type: 'CommentsResponse', description: 'The comments in a flat list with their pagination.' },
+    response: { status: 200, schema: commentsResponseSchema, description: 'The comments in a flat list with their pagination.' },
     errors: ['invalidRequest', 'notFound', 'upstreamUnavailable', 'tooManyRequests'],
   },
   {
@@ -198,7 +199,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
     tag: 'Comments',
     parameters: [RELATION_PARAMETER],
     body: guestCommentSchema,
-    response: { status: 200, type: 'Comment', description: 'The comment as stored; a new comment may await moderation.' },
+    response: { status: 200, schema: commentSchema, description: 'The comment as stored; a new comment may await moderation.' },
     errors: ['invalidInput', 'invalidRequest', 'forbiddenOrigin', 'notFound', 'payloadTooLarge', 'tooManyRequests', 'upstreamUnavailable'],
   },
   {

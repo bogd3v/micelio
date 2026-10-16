@@ -2071,11 +2071,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The comments, with answers nested in `children`. Body: `Comment[]` (`app/interfaces`).",
+            "description": "The comments, with answers nested in `children`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type Comment[]."
+                  "$ref": "#/components/schemas/CommentTree"
                 }
               }
             }
@@ -2273,11 +2273,11 @@
         },
         "responses": {
           "200": {
-            "description": "The comment as stored; a new comment may await moderation. Body: `Comment` (`app/interfaces`).",
+            "description": "The comment as stored; a new comment may await moderation.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type Comment."
+                  "$ref": "#/components/schemas/Comment"
                 }
               }
             }
@@ -2515,11 +2515,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The comments in a flat list with their pagination. Body: `CommentsResponse` (`app/interfaces`).",
+            "description": "The comments in a flat list with their pagination.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type CommentsResponse."
+                  "$ref": "#/components/schemas/CommentsResponse"
                 }
               }
             }
@@ -2669,11 +2669,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The drafts, newest edit first. Body: `DraftListResponse` (`app/interfaces`).",
+            "description": "The drafts, newest edit first.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type DraftListResponse."
+                  "$ref": "#/components/schemas/DraftListResponse"
                 }
               }
             }
@@ -2774,11 +2774,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The draft and, when there is one, its published version. Body: `DraftArticleResponse` (`app/interfaces`).",
+            "description": "The draft and, when there is one, its published version.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type DraftArticleResponse."
+                  "$ref": "#/components/schemas/DraftArticleResponse"
                 }
               }
             }
@@ -5492,6 +5492,256 @@
         "additionalProperties": false,
         "description": "A category with the number of posts in it."
       },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "blocked": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "blockedThread": {
+            "type": "boolean"
+          },
+          "blockReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "authorUser": {
+            "description": "The comments plugin does not return it, so it is usually absent.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "removed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "approvalStatus": {
+            "description": "Only `APPROVED` comments are listed, but a comment just posted may be `PENDING`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isAdminComment": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "author": {
+            "$ref": "#/components/schemas/CommentAuthor"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "related": {
+            "description": "A relation string such as `api::article.article:<documentId>`; absent in the hierarchy.",
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "number"
+                  },
+                  "documentId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "reports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommentReport"
+            },
+            "description": "Always empty: the reports readers sent are never returned."
+          },
+          "threadOf": {
+            "description": "The parent of a reply, reduced to its id.",
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fediverseActorHandle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fediverseUri": {
+            "description": "An http(s) link only.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "content",
+          "blocked",
+          "blockedThread",
+          "blockReason",
+          "removed",
+          "approvalStatus",
+          "author",
+          "createdAt",
+          "updatedAt",
+          "reports"
+        ],
+        "additionalProperties": false,
+        "description": "A comment on an article, as the comments API returns it."
+      },
+      "CommentAuthor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "A user id, a `guest-<uuid>` or the actor URL of a fediverse author.",
+            "type": [
+              "string",
+              "number"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "description": "Never sent: the public shape drops it.",
+            "type": "string"
+          },
+          "avatar": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "description": "The public author of a comment."
+      },
+      "CommentReport": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "related": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "reason",
+          "createdAt"
+        ],
+        "additionalProperties": false,
+        "description": "A report a reader sent about a comment."
+      },
+      "CommentTree": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Comment"
+        },
+        "description": "The top-level comments of an article, with their replies nested in `children`."
+      },
+      "CommentsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          },
+          "meta": {
+            "description": "Strapi's usual place for the pagination; the comments plugin sends `pagination` beside `data` instead.",
+            "type": "object",
+            "properties": {
+              "pagination": {
+                "$ref": "#/components/schemas/PaginationMeta"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "additionalProperties": false,
+        "description": "A page of comments and its pagination."
+      },
       "ConfirmResponse": {
         "type": "object",
         "properties": {
@@ -5547,6 +5797,156 @@
         ],
         "additionalProperties": false,
         "description": "A call to action with up to two links."
+      },
+      "DraftArticleResponse": {
+        "type": "object",
+        "properties": {
+          "article": {
+            "$ref": "#/components/schemas/RawStrapiArticle"
+          },
+          "published": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PublishedVersion"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null when the article has no published version."
+          }
+        },
+        "required": [
+          "article",
+          "published"
+        ],
+        "additionalProperties": false,
+        "description": "A draft for the preview page, with its published version when it has one."
+      },
+      "DraftListItem": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "locale": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "description": "Null when the article was never published.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "never-published",
+              "modified"
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "slug": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "documentId",
+          "title",
+          "slug",
+          "locale",
+          "updatedAt",
+          "publishedAt",
+          "state",
+          "category",
+          "author"
+        ],
+        "additionalProperties": false,
+        "description": "A draft in the drafts list."
+      },
+      "DraftListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DraftListItem"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "count"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "additionalProperties": false,
+        "description": "The drafts, most recently updated first, with their count."
       },
       "FaqItem": {
         "type": "object",
@@ -6492,6 +6892,33 @@
             "description": "Legacy Nitro member; `data.code` equals `code`."
           }
         }
+      },
+      "PublishedVersion": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "slug",
+          "updatedAt",
+          "publishedAt"
+        ],
+        "additionalProperties": false,
+        "description": "The published version of a draft: its slug and its dates."
       },
       "QuoteBlock": {
         "type": "object",
