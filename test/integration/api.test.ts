@@ -14,6 +14,7 @@ import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './moc
 import { resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
 import { aboutSchema } from '~/schemas/blocks'
+import { pageSchema } from '~/schemas/pages'
 import { siteSchema } from '~/schemas/site'
 import { articlePageSchema, articleSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
 import { contrastRatio, parseHex } from '~/helpers/color'
@@ -797,6 +798,8 @@ describe('response schemas of the content routes', () => {
     expect(readingPathSchema.parse(await $fetch('/api/reading-path', { query: { category: 'linux', locale: 'en' } })).steps.length).toBeGreaterThan(0)
     expect(aboutSchema.parse(await $fetch('/api/about', { query: { locale: 'en' } })).blocks.length).toBeGreaterThan(0)
     expect(siteSchema.parse(await $fetch('/api/site', { query: { locale: 'en' } })).name.length).toBeGreaterThan(0)
+    const showcase = await $fetch<Page>('/api/pages/muestra', { query: { locale: 'es' } })
+    expect(pageSchema.parse(showcase).sections.map(item => item.__component)).toEqual(showcase.sections.map(item => item.__component))
   })
 })
 

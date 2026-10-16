@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { z } from 'zod'
 import { authUserResponseSchema } from '../../app/schemas/auth'
 import { aboutSchema } from '../../app/schemas/blocks'
+import { pageSchema } from '../../app/schemas/pages'
 import { siteSchema } from '../../app/schemas/site'
 import { articlePageSchema, articleSchema, categoryCountSchema, searchResultSchema, tagCountSchema } from '../../app/schemas/posts'
 import { DEMO, expectShape } from './support'
@@ -57,6 +58,7 @@ for (const locale of ['en', 'es'] as const) {
     const response = await request.get(`/api/pages/${DEMO.page[locale]}?locale=${locale}`)
     expect(response.status()).toBe(200)
     const page = await response.json()
+    expect(pageSchema.safeParse(page).error?.issues ?? []).toEqual([])
     expectShape(page, { documentId: 'string', title: 'string', slug: 'string', locale: 'string', sections: 'array' })
     expect(page.sections.length).toBeGreaterThan(0)
     for (const section of page.sections) expect(section.__component).toMatch(/^section\./)

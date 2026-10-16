@@ -131,6 +131,7 @@ export interface PostListItem {
   documentId?: string
   title: string | null
   slug: string
+  locale?: string | null
   description?: string | null
   publishedAt?: string | null
   readTime?: number | null
