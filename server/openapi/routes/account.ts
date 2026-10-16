@@ -1,6 +1,6 @@
 // `~/schemas/*` are the response schemas of `app/schemas/`; `../../schemas/*` are the request schemas of `server/schemas/`
 import { authUserResponseSchema, okResponseSchema } from '~/schemas/auth'
-import { changePasswordSchema, deleteAccountSchema, emailSchema, loginSchema, registerSchema, resetPasswordSchema } from '../../schemas/auth'
+import { changePasswordSchema, deleteAccountSchema, confirmEmailSchema, emailSchema, loginSchema, registerSchema, resetPasswordSchema } from '../../schemas/auth'
 import type { RouteEntry } from '../types'
 
 const AUTH_TAG = 'Account'
@@ -29,6 +29,17 @@ export const ACCOUNT_ROUTES: RouteEntry[] = [
     body: registerSchema,
     response: { status: 201, schema: authUserResponseSchema, description: 'The new user, not yet signed in.' },
     errors: ['invalidInput', 'weakPassword', 'commonPassword', 'emailTaken', 'tooManyRequests', 'forbiddenOrigin', 'notFound', 'payloadTooLarge', 'unknown'],
+  },
+  {
+    file: 'server/api/auth/confirm-email.post.ts',
+    method: 'post',
+    path: '/api/auth/confirm-email',
+    summary: 'Confirm the email address with the token of the email link',
+    description: 'Confirms only on this POST, so a scanner that opens the link confirms nothing. No session is set; the person signs in afterwards. An unknown or used token answers `invalidCode`.',
+    tag: AUTH_TAG,
+    body: confirmEmailSchema,
+    response: { ...OK_RESPONSE, status: 200 },
+    errors: ['invalidInput', 'invalidCode', 'tooManyRequests', 'forbiddenOrigin', 'notFound', 'payloadTooLarge', 'unknown'],
   },
   {
     file: 'server/api/auth/resend-confirmation.post.ts',

@@ -249,3 +249,45 @@ test('sign up refuses a password built from the username or the site name before
   }
   expect(requests).toEqual([])
 })
+
+test('confirms the email only when the button is pressed, and a scanner that opens the link confirms nothing', async ({ page }) => {
+  const user = uniqueUser('boton')
+  await page.goto('/account/sign-up', { waitUntil: 'networkidle' })
+  await page.getByLabel('Username', { exact: true }).fill(user.username)
+  await page.getByLabel('Email', { exact: true }).fill(user.email)
+  await page.getByLabel('Password', { exact: true }).fill(user.password)
+  await page.getByRole('checkbox').check()
+  await page.getByRole('button', { name: 'Create account' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Check your email' })).toBeFocused()
+
+  const calls: string[] = []
+  page.on('request', (request) => {
+    if (request.url().includes('/api/auth/confirm-email')) calls.push(request.method())
+  })
+  await page.goto(`/account/confirmed?confirmation=${confirmationToken(user.username)}`, { waitUntil: 'networkidle' })
+  await expect(page).toHaveURL(/\/account\/confirmed$/)
+  await expect(page.getByRole('heading', { level: 1, name: 'Confirm your email' })).toBeVisible()
+  expect(calls).toEqual([])
+
+  await page.goto('/account/sign-in', { waitUntil: 'networkidle' })
+  await signIn(page, user.email, user.password)
+  await expect(page.getByRole('alert')).toContainText('haven\'t confirmed your email')
+
+  await page.goto(`/account/confirmed?confirmation=${confirmationToken(user.username)}`, { waitUntil: 'networkidle' })
+  await page.getByRole('button', { name: 'Confirm my email' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('heading', { level: 1, name: 'Your account is ready' })).toBeFocused()
+  expect(calls).toEqual(['POST'])
+  await page.getByRole('link', { name: 'Sign in' }).last().click()
+  await page.waitForLoadState('networkidle')
+  await signIn(page, user.email, user.password)
+  await expect(page).toHaveURL(/\/account$/)
+})
+
+test('explains a malformed or used confirmation link', async ({ page }) => {
+  await page.goto('/account/confirmed?confirmation=nope', { waitUntil: 'networkidle' })
+  await expect(page.getByRole('alert')).toContainText('invalid')
+  await page.goto(`/account/confirmed?confirmation=${'f'.repeat(40)}`, { waitUntil: 'networkidle' })
+  await page.getByRole('button', { name: 'Confirm my email' }).click()
+  await expect(page.getByRole('alert')).toContainText('invalid')
+})

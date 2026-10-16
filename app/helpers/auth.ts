@@ -22,11 +22,17 @@ const AUTH_ERROR_CODES: readonly AuthErrorCode[] = [
 
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/i
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+const EMAIL_CONFIRMATION_PATTERN = /^[0-9a-f]{40}$/
 const AUTH_NOTICES: readonly AuthNotice[] = ['signed-out', 'account-deleted', 'password-reset']
 
 /** Whether a username is 3 to 30 letters, digits, dots, underscores or hyphens, ignoring surrounding spaces. */
 export function isValidUsername(value: string): boolean {
   return USERNAME_PATTERN.test(value.trim())
+}
+
+/** Whether a value has the shape of an email confirmation token of the CMS: 40 lowercase hexadecimal characters. It does not check that the token exists. */
+export function isEmailConfirmationToken(value: unknown): value is string {
+  return typeof value === 'string' && EMAIL_CONFIRMATION_PATTERN.test(value)
 }
 
 /** Whether a value has the shape of an email address. It does not check that the address exists. */

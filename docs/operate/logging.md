@@ -23,7 +23,7 @@ Nitro and Nuxt still print their own free-text `[request error]` report, over se
 
 | Group | Events | Level |
 | --- | --- | --- |
-| Sign-ins | `auth.login.success`, `auth.register.success`, `auth.password-reset.success`, `auth.password-change.success`, `auth.account-delete.success`, `auth.logout`, `auth.forgot-password.requested`, `auth.resend-confirmation.requested` | `info` |
+| Sign-ins | `auth.login.success`, `auth.register.success`, `auth.password-reset.success`, `auth.confirm-email.success`, `auth.password-change.success`, `auth.account-delete.success`, `auth.logout`, `auth.forgot-password.requested`, `auth.resend-confirmation.requested` | `info` |
 | Refusals | `auth.failure`, `authz.origin-refused`, `authz.draft-refused`, `limit.rate`, `input.refused` | `warn` |
 | Failures of what the site calls | `cms.*` (the CMS), `analytics.proxy` (Umami), `newsletter.welcome-email` (mail), `theme.*` | `error` or `warn` |
 | Boot checks | `config.*`: a missing or unusable setting (see [configure.md](configure.md)) | `error` or `warn` |

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   authErrorCodeOf,
   authNotice,
+  isEmailConfirmationToken,
   isValidEmail,
   isPasswordTooLong,
   isValidPassword,
@@ -131,5 +132,16 @@ describe('display helpers', () => {
     expect(maskEmail('lectora@correo.co')).toBe('l•••@correo.co')
     expect(maskEmail('a@correo.co')).toBe('a@correo.co')
     expect(userInitial('lectora')).toBe('L')
+  })
+})
+
+describe('isEmailConfirmationToken', () => {
+  it('accepts 40 lowercase hexadecimal characters only', () => {
+    expect(isEmailConfirmationToken('0123456789abcdef0123456789abcdef01234567')).toBe(true)
+    expect(isEmailConfirmationToken('0123456789ABCDEF0123456789abcdef01234567')).toBe(false)
+    expect(isEmailConfirmationToken('0123456789abcdef0123456789abcdef0123456')).toBe(false)
+    expect(isEmailConfirmationToken('0123456789abcdef0123456789abcdef012345678')).toBe(false)
+    expect(isEmailConfirmationToken('g123456789abcdef0123456789abcdef01234567')).toBe(false)
+    expect(isEmailConfirmationToken(undefined)).toBe(false)
   })
 })

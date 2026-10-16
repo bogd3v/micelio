@@ -11,7 +11,7 @@ import type { StrapiRichText } from '~/interfaces/strapi-blocks'
 import { Category } from '~/interfaces/design'
 import { HASHED_TOKENS, startMockStrapi } from './mock-strapi'
 import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
-import { resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
+import { confirmationToken, resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
 import { aboutSchema } from '~/schemas/blocks'
 import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/schemas/comments'
@@ -1954,6 +1954,32 @@ describe('/api/auth', () => {
     expect(limited.status).toBe(429)
   })
 
+  it('confirms the email only on the POST, with no session, and refuses a bad or used token before or at the CMS', async () => {
+    // Its own account: confirming a seeded one would change other tests
+    mock.users.push({ id: 152, username: 'porconfirmar', email: 'porconfirmar@example.com', password: 'por-confirmar-1', confirmed: false, role: 'authenticated' })
+    const token = confirmationToken('porconfirmar')
+    mock.requests.length = 0
+    for (const confirmation of ['nope', token.toUpperCase(), token.slice(1), '']) {
+      const malformed = await post('/api/auth/confirm-email', { confirmation })
+      expect([malformed.status, await errorCode(malformed)], confirmation).toEqual([400, 'invalidInput'])
+    }
+    const foreign = await post('/api/auth/confirm-email', { confirmation: token }, { origin: 'https://evil.example' })
+    expect(foreign.status).toBe(403)
+    expect(mock.requests).toEqual([])
+
+    const confirmed = await post('/api/auth/confirm-email', { confirmation: token })
+    expect([confirmed.status, await confirmed.json()]).toEqual([200, { ok: true }])
+    expect(sessionCookie(confirmed)).toBe('')
+    expect(confirmed.headers.get('cache-control')).toContain('no-store')
+    expect(mock.requests.map(request => [request.method, request.path, request.authorization])).toEqual([['POST', '/api/auth/email-confirmation', undefined]])
+    expect(mock.users.find(user => user.username === 'porconfirmar')).toMatchObject({ confirmed: true })
+
+    const reused = await post('/api/auth/confirm-email', { confirmation: token })
+    expect([reused.status, await errorCode(reused)]).toEqual([400, 'invalidCode'])
+    const unknown = await post('/api/auth/confirm-email', { confirmation: 'f'.repeat(40) })
+    expect([unknown.status, await errorCode(unknown)]).toEqual([400, 'invalidCode'])
+  })
+
   it('resets the password with a valid code without starting a session', async () => {
     const invalid = await post('/api/auth/reset-password', { code: 'nope', password: 'otra-frase-larga', passwordConfirmation: 'otra-frase-larga' })
     expect([invalid.status, await errorCode(invalid)]).toEqual([400, 'invalidCode'])
@@ -2551,6 +2577,9 @@ describe('visitor address for the CMS rate limits', () => {
     const login = await post('/api/auth/login', { identifier: 'someone', password: 'password-1' })
     expect(login.status).toBe(429)
     expect(login.headers.get('retry-after')).toBe('42')
+    const confirm = await post('/api/auth/confirm-email', { confirmation: confirmationToken(testUsers.unconfirmed.username) })
+    expect(confirm.status).toBe(429)
+    expect(confirm.headers.get('retry-after')).toBe('42')
     mock.failures.retryAfter = '99999'
     const forgot = await post('/api/auth/forgot-password', { email: 'someone@example.com' })
     expect(forgot.status).toBe(429)
