@@ -39,6 +39,8 @@ The bump is computed from the titles of the pull requests merged since the last 
 
 While the version is `0.y.z`, a breaking change raises `y` and everything else raises `z`. Breaking changes still need their ADR and upgrade notes. `1.0.0` is cut by an ADR, when the theme registry accepts third-party themes or the first site outside bogd3v runs in production, whichever comes first.
 
+Amendment (2026-10-15): before `1.0.0` the project is alpha. A breaking change needs no ADR and no deprecation period, only the `!` in the pull request title, a `BREAKING CHANGE:` paragraph and upgrade notes. Section 7 of the engineering standard (version 1.2) states the rule.
+
 ### 5. First release and the old tag
 
 The first release is `v0.1.0` in both repositories (`micelio-cms` already declares 0.1.0). The tag `v2026.10.02` is renamed `snapshot-2026-10-02`, because every tool that sorts versions puts 2026.10.2 above any real one. A published SemVer version is never moved; the rename happens once, before `v0.1.0`, and is done by #415 with the maintainer's approval.
