@@ -3794,11 +3794,11 @@
         ],
         "responses": {
           "200": {
-            "description": "The page. Body: `Page` (`app/interfaces`). Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
+            "description": "The page. Cache-Control: `public, s-maxage=300, stale-while-revalidate=600`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The TypeScript type Page."
+                  "$ref": "#/components/schemas/Page"
                 }
               }
             }
@@ -5513,6 +5513,146 @@
         "additionalProperties": false,
         "description": "Whether the confirmation worked; `alreadyConfirmed` is true when the address was confirmed before."
       },
+      "CtaSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.cta"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "banner",
+              "card"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "primaryLink": {
+            "$ref": "#/components/schemas/PageLink"
+          },
+          "secondaryLink": {
+            "$ref": "#/components/schemas/PageLink"
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "A call to action with up to two links."
+      },
+      "FaqItem": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "html": {
+            "type": "string",
+            "description": "Sanitized HTML of the Markdown answer."
+          }
+        },
+        "required": [
+          "question",
+          "html"
+        ],
+        "additionalProperties": false,
+        "description": "One question of a FAQ section."
+      },
+      "FaqSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.faq"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "list",
+              "two-columns"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FaqItem"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "items"
+        ],
+        "additionalProperties": false,
+        "description": "A list of questions and answers."
+      },
+      "FeatureGridSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.feature-grid"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "grid",
+              "list",
+              "bento"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeatureItem"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "items"
+        ],
+        "additionalProperties": false,
+        "description": "A grid, a list or a bento layout of features."
+      },
+      "FeatureItem": {
+        "type": "object",
+        "properties": {
+          "icon": {
+            "$ref": "#/components/schemas/PageMedia"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "One feature of a feature grid."
+      },
       "FediverseStats": {
         "type": "object",
         "properties": {
@@ -5533,6 +5673,130 @@
         ],
         "additionalProperties": false,
         "description": "The fediverse interactions with one article."
+      },
+      "GallerySection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.gallery"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "grid",
+              "masonry"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageMedia"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "images"
+        ],
+        "additionalProperties": false,
+        "description": "A grid or a masonry of images."
+      },
+      "HeroSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.hero"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "centered",
+              "split",
+              "full-bleed"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "primaryLink": {
+            "$ref": "#/components/schemas/PageLink"
+          },
+          "secondaryLink": {
+            "$ref": "#/components/schemas/PageLink"
+          },
+          "media": {
+            "$ref": "#/components/schemas/PageMedia"
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "title"
+        ],
+        "additionalProperties": false,
+        "description": "The opening section of a page: a title, an optional text, up to two links and a media."
+      },
+      "LogoCloudSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.logo-cloud"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "row",
+              "marquee"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "logos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LogoItem"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "logos"
+        ],
+        "additionalProperties": false,
+        "description": "A row or a moving strip of logos."
+      },
+      "LogoItem": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "$ref": "#/components/schemas/PageMedia"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "description": "http(s) only.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image",
+          "name"
+        ],
+        "additionalProperties": false,
+        "description": "One logo of a logo cloud."
       },
       "MediaBlock": {
         "type": "object",
@@ -5581,6 +5845,74 @@
         "additionalProperties": false,
         "description": "An image with its caption and credit."
       },
+      "MediaShowcaseSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.media-showcase"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right",
+              "stacked"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "html": {
+            "description": "Sanitized HTML of the Markdown text.",
+            "type": "string"
+          },
+          "media": {
+            "$ref": "#/components/schemas/PageMedia"
+          },
+          "link": {
+            "$ref": "#/components/schemas/PageLink"
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "media"
+        ],
+        "additionalProperties": false,
+        "description": "A media file with a text beside it."
+      },
+      "NewsletterSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.newsletter"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "inline",
+              "card"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "buttonLabel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "__component",
+          "variant"
+        ],
+        "additionalProperties": false,
+        "description": "The newsletter sign-up form."
+      },
       "OkResponse": {
         "type": "object",
         "properties": {
@@ -5594,6 +5926,192 @@
         ],
         "additionalProperties": false,
         "description": "The request was accepted."
+      },
+      "Page": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "Strapi's document id."
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "locale": {
+            "description": "The locale of the page: `en` or `es`.",
+            "type": "string"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/PageSeo"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageSection"
+            },
+            "description": "The sections that passed validation, in order; an invalid or unknown one is left out."
+          },
+          "translations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageTranslation"
+            }
+          }
+        },
+        "required": [
+          "documentId",
+          "title",
+          "slug",
+          "sections",
+          "translations"
+        ],
+        "additionalProperties": false,
+        "description": "A page as the server returns it after validation."
+      },
+      "PageLink": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "An http(s) or `mailto:` URL, or a path on the site."
+          }
+        },
+        "required": [
+          "label",
+          "url"
+        ],
+        "additionalProperties": false,
+        "description": "A link of a page section, to another page or to an external address."
+      },
+      "PageMedia": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "A `/uploads/` path, or an http(s) URL on the CMS or a configured media origin."
+          },
+          "alternativeText": {
+            "type": "string"
+          },
+          "width": {
+            "type": "number"
+          },
+          "height": {
+            "type": "number"
+          },
+          "mime": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
+        "description": "An image, a video or a 3D model file of a page section, validated by the server."
+      },
+      "PageSection": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/HeroSection"
+          },
+          {
+            "$ref": "#/components/schemas/FeatureGridSection"
+          },
+          {
+            "$ref": "#/components/schemas/MediaShowcaseSection"
+          },
+          {
+            "$ref": "#/components/schemas/StatsSection"
+          },
+          {
+            "$ref": "#/components/schemas/LogoCloudSection"
+          },
+          {
+            "$ref": "#/components/schemas/TestimonialsSection"
+          },
+          {
+            "$ref": "#/components/schemas/PricingSection"
+          },
+          {
+            "$ref": "#/components/schemas/FaqSection"
+          },
+          {
+            "$ref": "#/components/schemas/CtaSection"
+          },
+          {
+            "$ref": "#/components/schemas/PostListSection"
+          },
+          {
+            "$ref": "#/components/schemas/NewsletterSection"
+          },
+          {
+            "$ref": "#/components/schemas/RichTextSection"
+          },
+          {
+            "$ref": "#/components/schemas/GallerySection"
+          },
+          {
+            "$ref": "#/components/schemas/SceneSection"
+          }
+        ],
+        "description": "Any section of a page, discriminated by `__component`."
+      },
+      "PageSeo": {
+        "type": "object",
+        "properties": {
+          "metaTitle": {
+            "type": "string"
+          },
+          "metaDescription": {
+            "type": "string"
+          },
+          "metaImage": {
+            "$ref": "#/components/schemas/PageMedia"
+          },
+          "metaRobots": {
+            "type": "string"
+          },
+          "keywords": {
+            "type": "string"
+          },
+          "canonicalURL": {
+            "description": "An absolute http(s) URL on the site's own origin.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metaTitle",
+          "metaDescription"
+        ],
+        "additionalProperties": false,
+        "description": "The search and share metadata of a page, validated by the server."
+      },
+      "PageTranslation": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ]
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "locale",
+          "slug"
+        ],
+        "additionalProperties": false,
+        "description": "The same page in another locale."
       },
       "PaginationMeta": {
         "type": "object",
@@ -5673,6 +6191,234 @@
         ],
         "additionalProperties": false,
         "description": "Code with its runtime and expected output; `python`, `sql` and `javascript` can run."
+      },
+      "PostListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "slug": {
+            "type": "string"
+          },
+          "locale": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "readTime": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StrapiTagRef"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cover": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiMediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiCategoryRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "author": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiAuthorRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiSEO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "snippet": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug"
+        ],
+        "additionalProperties": false,
+        "description": "An article card of a post list section."
+      },
+      "PostListSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.post-list"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "cards",
+              "list"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "category": {
+            "description": "Category slug the list is filtered by; never sent together with `tag`.",
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "posts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PostListItem"
+            },
+            "description": "The newest published posts, resolved on the server for the first four post lists of a page; empty for the others."
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "count",
+          "posts"
+        ],
+        "additionalProperties": false,
+        "description": "A list of the newest published posts, optionally filtered by a category or a tag."
+      },
+      "PricingPlan": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "string"
+          },
+          "period": {
+            "type": "string"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "One feature per line of the CMS text; empty when it has none."
+          },
+          "link": {
+            "$ref": "#/components/schemas/PageLink"
+          },
+          "recommended": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "price",
+          "features",
+          "recommended"
+        ],
+        "additionalProperties": false,
+        "description": "One plan of a pricing section."
+      },
+      "PricingSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.pricing"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "cards",
+              "table"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "plans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PricingPlan"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "plans"
+        ],
+        "additionalProperties": false,
+        "description": "Plans as cards or as a comparison table."
       },
       "Problem": {
         "type": "object",
@@ -6051,6 +6797,66 @@
         "additionalProperties": false,
         "description": "Markdown as stored, and its sanitized HTML."
       },
+      "RichTextSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.rich-text"
+          },
+          "html": {
+            "type": "string",
+            "description": "Sanitized HTML of the Markdown body."
+          }
+        },
+        "required": [
+          "__component",
+          "html"
+        ],
+        "additionalProperties": false,
+        "description": "A text block written in Markdown."
+      },
+      "SceneSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.scene"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "background",
+              "inline"
+            ]
+          },
+          "model": {
+            "description": "A binary glTF file (`.glb`); with any other file the server drops the section.",
+            "$ref": "#/components/schemas/PageMedia"
+          },
+          "poster": {
+            "$ref": "#/components/schemas/PageMedia"
+          },
+          "alt": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "model",
+          "poster",
+          "alt"
+        ],
+        "additionalProperties": false,
+        "description": "A 3D model with a poster image, shown as a background or inline."
+      },
       "SearchPostResult": {
         "type": "object",
         "properties": {
@@ -6425,6 +7231,56 @@
         ],
         "additionalProperties": false,
         "description": "A link to one social network or profile of the site."
+      },
+      "StatItem": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "Shown as written, so `12k` or `99%` need no conversion."
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "label"
+        ],
+        "additionalProperties": false,
+        "description": "One figure of a stats section."
+      },
+      "StatsSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.stats"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "row",
+              "cards"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatItem"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "items"
+        ],
+        "additionalProperties": false,
+        "description": "A row or a set of cards of figures."
       },
       "StrapiAbout": {
         "type": "object",
@@ -7432,6 +8288,62 @@
         ],
         "additionalProperties": false,
         "description": "A tag with the number of its articles in the requested locale; tags with none are left out."
+      },
+      "TestimonialItem": {
+        "type": "object",
+        "properties": {
+          "quote": {
+            "type": "string",
+            "description": "Plain text, not Markdown."
+          },
+          "author": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "avatar": {
+            "$ref": "#/components/schemas/PageMedia"
+          }
+        },
+        "required": [
+          "quote",
+          "author"
+        ],
+        "additionalProperties": false,
+        "description": "One quote of a testimonials section."
+      },
+      "TestimonialsSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.testimonials"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "single",
+              "grid"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestimonialItem"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "items"
+        ],
+        "additionalProperties": false,
+        "description": "One quote or a grid of quotes."
       },
       "UnsubscribeResponse": {
         "type": "object",

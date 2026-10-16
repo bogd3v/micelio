@@ -2,7 +2,7 @@ import { z } from 'zod'
 import type { CategoryCount } from '~/interfaces/design'
 import type { ReadingPath, ReadingPathStep } from '~/interfaces/blog'
 import type { PaginationMeta, StrapiPaginatedResponse } from '~/interfaces/strapi-response'
-import type { RawStrapiArticle, SearchPostResult, StrapiAuthorRef, StrapiCategoryRef, StrapiLocalization, StrapiTagRef, TagCount } from '~/interfaces/strapi-post'
+import type { PostListItem, RawStrapiArticle, SearchPostResult, StrapiAuthorRef, StrapiCategoryRef, StrapiLocalization, StrapiTagRef, TagCount } from '~/interfaces/strapi-post'
 import type { StrapiReference } from '~/interfaces/strapi-reference'
 import { categorySchema, imageCreditSchema, mediaRefSchema, seoSchema, strapiBlockSchema } from './blocks'
 import { responseSchema } from './response'
@@ -87,6 +87,32 @@ export const articleSchema = responseSchema<RawStrapiArticle>()(
     references: z.array(referenceSchema).nullish(),
     localizations: z.array(localizationSchema).nullish(),
   }).meta({ id: 'RawStrapiArticle', description: 'An article as the route sends it: a card has no blocks, references or localizations, a whole article has no `snippet`.' }),
+)
+
+/**
+ * A post card of a `post-list` section.
+ *
+ * @remarks
+ * The page route reduces each card with the allow-list of `GET /api/posts` (`publicPostCard`, `cardShape`), so the keys here are
+ * the ones of `cardShape`; `test/pagesResponse.test.ts` parses a card built by `publicPostCard`.
+ */
+export const postListItemSchema = responseSchema<PostListItem>()(
+  z.strictObject({
+    id: z.int(),
+    documentId: z.string().optional(),
+    title: z.string().nullable(),
+    slug: z.string(),
+    locale: z.string().nullish(),
+    description: z.string().nullish(),
+    publishedAt: z.string().nullish(),
+    readTime: z.number().nullish(),
+    tags: z.array(tagRefSchema).nullish(),
+    cover: mediaRefSchema.nullish(),
+    category: categoryRefSchema.nullish(),
+    author: authorRefSchema.nullish(),
+    seo: seoSchema.nullish(),
+    snippet: z.string().nullish(),
+  }).meta({ id: 'PostListItem', description: 'An article card of a post list section.' }),
 )
 
 /** The pagination of a list answer. */

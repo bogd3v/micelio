@@ -14,6 +14,7 @@ import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './moc
 import { resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
 import { aboutSchema } from '~/schemas/blocks'
+import { pageSchema } from '~/schemas/pages'
 import { siteSchema } from '~/schemas/site'
 import { articlePageSchema, articleSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
 import { contrastRatio, parseHex } from '~/helpers/color'
@@ -863,6 +864,8 @@ describe('/api/pages/[slug]', () => {
 
   it('resolves the post list on the server', async () => {
     const page = await $fetch<PageBody>('/api/pages/showcase', { query: { locale: 'en' } })
+    // Pages are cached per locale and slug and the tests above inspect the first read of some of them, so the response schema is checked here, on a page whose post list is resolved
+    expect(pageSchema.parse(page).sections.map(item => item.__component)).toEqual(page.sections.map(item => item.__component))
     const list = section(page, 'section.post-list')
     expect(list.category).toBe('software')
     expect(list.posts.length).toBeGreaterThan(0)

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { fediverseStatsByIdSchema, fediverseStatsSchema } from '~/schemas/fediverse'
 import { aboutSchema } from '~/schemas/blocks'
 import { siteSchema } from '~/schemas/site'
+import { pageSchema } from '~/schemas/pages'
 import { articlePageSchema, articleSchema, categoryCountSchema, readingPathSchema, searchResultSchema, tagCountSchema } from '~/schemas/posts'
 import { guestCommentSchema } from '../../schemas/comments'
 import { pageParamsSchema } from '../../schemas/page'
@@ -137,7 +138,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
       { name: 'slug', in: 'path', description: 'The page slug, a Strapi uid in lowercase.' },
       { ...LOCALE_PARAMETER, description: 'The language: `en` or `es`. The CMS default applies when absent.' },
     ],
-    response: { status: 200, type: 'Page', description: 'The page.', cache: READ_CACHE_5_MIN },
+    response: { status: 200, schema: pageSchema, description: 'The page.', cache: READ_CACHE_5_MIN },
     errors: ['invalidRequest', 'notFound', 'upstreamUnavailable'],
   },
   {

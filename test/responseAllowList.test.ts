@@ -3,7 +3,7 @@ import type { z } from 'zod'
 import { fields, variants } from '~/helpers/allowList'
 import type { Shape } from '~/helpers/allowList'
 import { aboutSchema, strapiBlockSchema } from '~/schemas/blocks'
-import { articleSchema } from '~/schemas/posts'
+import { articleSchema, postListItemSchema } from '~/schemas/posts'
 import { aboutShape, articleShape, cardShape } from '../server/lib/publicShapes'
 
 // The allow-list decides what a route sends and the schema describes it; this walks both so a key added to one and not the other fails here
@@ -64,6 +64,7 @@ describe('response schemas follow the allow-lists of publicShapes', () => {
     expect(missing(articleShape, articleSchema, 'article')).toEqual([])
     expect(missing(cardShape, articleSchema, 'card')).toEqual([])
     expect(missing(aboutShape, aboutSchema, 'about')).toEqual([])
+    expect(missing(cardShape, postListItemSchema, 'page card')).toEqual([])
   })
 
   it('list only the known keys the routes never send', () => {
@@ -71,6 +72,10 @@ describe('response schemas follow the allow-lists of publicShapes', () => {
     expect(unsent(cardShape, articleSchema).sort()).toEqual(['blocks', 'content', 'coverCredit', 'createdAt', 'localizations', 'references', 'updatedAt'])
     const seo = (define(unwrap(articleSchema as unknown as ZodNode)).shape as Record<string, ZodNode>).seo as unknown as z.ZodType
     expect(unsent((articleShape as { fields: Record<string, Shape> }).fields.seo!, seo).sort()).toEqual(['metaSocial', 'metaViewport'])
+  })
+
+  it('lists no key of the page card that the route never sends', () => {
+    expect(unsent(cardShape, postListItemSchema)).toEqual([])
   })
 
   it('lists no key of the About page that the route never sends', () => {
