@@ -3,7 +3,7 @@ import type { z } from 'zod'
 import { fields, variants } from '~/helpers/allowList'
 import type { Shape } from '~/helpers/allowList'
 import { aboutSchema, strapiBlockSchema } from '~/schemas/blocks'
-import { articleSchema, postListItemSchema } from '~/schemas/posts'
+import { articleSchema, draftArticleResponseSchema, postListItemSchema } from '~/schemas/posts'
 import { aboutShape, articleShape, cardShape } from '../server/lib/publicShapes'
 
 // The allow-list decides what a route sends and the schema describes it; this walks both so a key added to one and not the other fails here
@@ -65,6 +65,12 @@ describe('response schemas follow the allow-lists of publicShapes', () => {
     expect(missing(cardShape, articleSchema, 'card')).toEqual([])
     expect(missing(aboutShape, aboutSchema, 'about')).toEqual([])
     expect(missing(cardShape, postListItemSchema, 'page card')).toEqual([])
+  })
+
+  it('describe the article of a draft with the article allow-list, since the drafts route rebuilds it with publicArticle', () => {
+    const article = (define(draftArticleResponseSchema as unknown as ZodNode).shape as Record<string, ZodNode>).article as unknown as z.ZodType
+    expect(missing(articleShape, article, 'draft article')).toEqual([])
+    expect(unsent(articleShape, article)).toEqual(['content', 'createdAt'])
   })
 
   it('list only the known keys the routes never send', () => {

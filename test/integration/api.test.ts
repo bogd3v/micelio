@@ -14,9 +14,11 @@ import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './moc
 import { resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
 import { aboutSchema } from '~/schemas/blocks'
+import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/schemas/comments'
+import { draftListResponseSchema } from '~/schemas/drafts'
 import { pageSchema } from '~/schemas/pages'
 import { siteSchema } from '~/schemas/site'
-import { articlePageSchema, articleSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
+import { articlePageSchema, articleSchema, draftArticleResponseSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
 import { contrastRatio, parseHex } from '~/helpers/color'
 import { inlineScripts } from '~/helpers/securityHeaders'
 
@@ -1256,6 +1258,7 @@ describe('/api/comments', () => {
     const response = await $fetch<{ data: Array<Record<string, unknown>> }>('/api/comments/flat', { query: { relation } })
     const byId = new Map(response.data.map(comment => [comment.id, comment]))
 
+    expect(commentsResponseSchema.safeParse(response).error?.issues ?? []).toEqual([])
     expect([...byId.keys()]).toEqual([201, 202, 203, 205])
     expect(byId.get(201)).toMatchObject({
       content: 'Great introduction to composables.',
@@ -1300,12 +1303,14 @@ describe('/api/comments', () => {
       headers: { origin: SITE_URL },
       body: { author: { name: 'Dani', email: 'dani@example.com' }, content: 'Replying.', threadOf: 201 },
     })
+    expect(commentSchema.safeParse(response).error?.issues ?? []).toEqual([])
     expect(JSON.stringify(response)).not.toContain('ana@example.com')
     expect(response.threadOf).toEqual({ id: 201 })
   })
 
   it('prunes hidden comments from the hierarchy, children included', async () => {
     const response = await $fetch<Array<{ id: number, children?: Array<{ id: number }> }>>('/api/comments', { query: { relation } })
+    expect(commentTreeSchema.safeParse(response).error?.issues ?? []).toEqual([])
     expect(response.map(comment => comment.id)).toEqual([201, 202])
     expect(response[1]?.children?.map(child => child.id)).toEqual([203])
   })
@@ -1317,6 +1322,7 @@ describe('/api/comments', () => {
       headers: { origin: SITE_URL },
       body: { author: { name: 'Dani', email: 'dani@example.com' }, content: 'Nice post.' },
     })
+    expect(commentSchema.safeParse(response).error?.issues ?? []).toEqual([])
     expect(response).toMatchObject({
       content: 'Nice post.',
       author: { name: 'Dani' },
@@ -2137,6 +2143,7 @@ describe('/api/drafts', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('cache-control')).toBe('private, no-store')
     const body = await response.json() as { data: Array<{ documentId: string, locale: string, state: string }>, meta: { count: number } }
+    expect(draftListResponseSchema.safeParse(body).error?.issues ?? []).toEqual([])
     expect(body.meta.count).toBe(2)
     expect(body.data.map(draft => [draft.documentId, draft.locale, draft.state])).toEqual([
       ['doc-draft-pihole', 'es', 'never-published'],
@@ -2151,6 +2158,7 @@ describe('/api/drafts', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('cache-control')).toBe('private, no-store')
     const body = await response.json() as { article: { title: string, blocks: unknown[] }, published: { slug: string } | null }
+    expect(draftArticleResponseSchema.safeParse(body).error?.issues ?? []).toEqual([])
     expect(body.article.title).toBe('Linux Server Hardening Guide, second edition')
     expect(body.article.blocks).toHaveLength(1)
     expect(body.published).toMatchObject({ slug: 'linux-server-hardening-guide' })
@@ -2167,6 +2175,7 @@ describe('/api/drafts', () => {
   it('marks a never published draft and answers 404 to an unknown one', async () => {
     const cookie = await sessionFor(testUsers.editor.username, testUsers.editor.password)
     const draft = await $fetch<{ article: { slug: string }, published: unknown }>('/api/drafts/doc-draft-pihole', { query: { locale: 'es' }, headers: { cookie } })
+    expect(draftArticleResponseSchema.safeParse(draft).error?.issues ?? []).toEqual([])
     expect(draft).toMatchObject({ article: { slug: 'pi-hole-raspberry-pi' }, published: null })
     const missing = await fetch('/api/drafts/doc-nope?locale=es', { headers: { cookie } })
     expect(missing.status).toBe(404)

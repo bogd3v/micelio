@@ -2,6 +2,7 @@ import { z } from 'zod'
 import type { CategoryCount } from '~/interfaces/design'
 import type { ReadingPath, ReadingPathStep } from '~/interfaces/blog'
 import type { PaginationMeta, StrapiPaginatedResponse } from '~/interfaces/strapi-response'
+import type { DraftArticleResponse, PublishedVersion } from '~/interfaces/draft'
 import type { PostListItem, RawStrapiArticle, SearchPostResult, StrapiAuthorRef, StrapiCategoryRef, StrapiLocalization, StrapiTagRef, TagCount } from '~/interfaces/strapi-post'
 import type { StrapiReference } from '~/interfaces/strapi-reference'
 import { categorySchema, imageCreditSchema, mediaRefSchema, seoSchema, strapiBlockSchema } from './blocks'
@@ -116,7 +117,7 @@ export const postListItemSchema = responseSchema<PostListItem>()(
 )
 
 /** The pagination of a list answer. */
-const paginationMetaSchema = responseSchema<PaginationMeta>()(
+export const paginationMetaSchema = responseSchema<PaginationMeta>()(
   z.strictObject({ page: z.int().min(1), pageSize: z.int().min(0), pageCount: z.int().min(0), total: z.int().min(0) }).meta({ id: 'PaginationMeta', description: 'The current page (from 1), the page size, the number of pages and the total.' }),
 )
 
@@ -147,4 +148,18 @@ const readingPathStepSchema = responseSchema<ReadingPathStep>()(
 /** The reading path of a category (`GET /api/reading-path`). */
 export const readingPathSchema = responseSchema<ReadingPath>()(
   z.strictObject({ category: categorySchema, editorial: z.boolean(), steps: z.array(readingPathStepSchema) }).meta({ id: 'ReadingPath', description: 'Up to 50 articles of a category in reading order; `editorial` is false when they follow the publication date.' }),
+)
+
+/**
+ * The published version of a draft.
+ *
+ * @internal Exported for the tests.
+ */
+export const publishedVersionSchema = responseSchema<PublishedVersion>()(
+  z.strictObject({ slug: z.string(), updatedAt: z.string().nullable(), publishedAt: z.string().nullable() }).meta({ id: 'PublishedVersion', description: 'The published version of a draft: its slug and its dates.' }),
+)
+
+/** A draft and its published version (`GET /api/drafts/{documentId}`). */
+export const draftArticleResponseSchema = responseSchema<DraftArticleResponse>()(
+  z.strictObject({ article: articleSchema, published: publishedVersionSchema.nullable().meta({ description: 'Null when the article has no published version.' }) }).meta({ id: 'DraftArticleResponse', description: 'A draft for the preview page, with its published version when it has one.' }),
 )

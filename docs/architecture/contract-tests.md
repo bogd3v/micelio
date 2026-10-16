@@ -22,7 +22,7 @@ The suite is at the HTTP level: it calls the frontend's `/api` routes with Playw
 | --- | --- |
 | `content.spec.ts` | Site settings, the post list in both languages, one post, a page with sections in both languages, the about page, search, categories and tags, and the 404 of a post and a page that do not exist |
 | `mock-shape.spec.ts` | The mock Strapi against the real CMS, see below |
-| `writes.spec.ts` | A guest comment (stored, shown back, no email), the subscriber write with the frontend's token (create, find by email, confirm, delete) and drafts refused to a caller that is not an editor |
+| `writes.spec.ts` | A guest comment (stored, shown back, no email; the posted comment, the tree and the flat list are parsed with the comment response schemas), the subscriber write with the frontend's token (create, find by email, confirm, delete) and drafts refused to a caller that is not an editor |
 
 ## The mock check
 
@@ -36,7 +36,7 @@ The mock (`e2e/mock-strapi.mjs`) is what the fast suites run against, so it has 
 Two things to know about the suite:
 
 - The newsletter module is off on the contract server (the app runs without SMTP, so `effectiveModules` turns it off even though the demo enables it), so `/api/newsletter/subscribe` is not served there. The subscriber test makes the CMS calls of `server/utils/subscribers.ts` itself, with the same token.
-- The demo has no draft. The suite checks that the draft routes refuse a caller that is not an editor; a test that reads a draft needs one seeded in the demo, which is a change in `micelio-cms` first.
+- The demo has no draft. The suite checks that the draft routes refuse a caller that is not an editor; a test that reads a draft needs one seeded in the demo, which is a change in `micelio-cms` first. For the same reason the draft response schemas (`app/schemas/drafts.ts`) are parsed only in `test/integration/api.test.ts`, against the mock.
 
 ## Run it
 

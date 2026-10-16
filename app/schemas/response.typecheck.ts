@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { Comment } from '~/interfaces/comment'
 import { responseSchema } from './response'
 
 interface Pair { a: string, b: number | null }
@@ -18,3 +19,10 @@ export function responseSchemaRejectsDrift(): void {
   // @ts-expect-error the schema lacks a field of the interface
   responseSchema<Pair>()(z.strictObject({ a: z.string() }))
 }
+
+type Same<A, B> = (<X>() => X extends A ? 1 : 2) extends (<X>() => X extends B ? 1 : 2) ? true : false
+
+// `commentSchema` adds `children` by annotation, which checks it one way only (app/schemas/comments.ts); this pins the other way: the
+// interface's `children` must stay exactly an optional list of comments, as the schema's getter builds it
+const childrenStayOptionalComments: Same<Pick<Comment, 'children'>, { children?: Comment[] }> = true
+void childrenStayOptionalComments
