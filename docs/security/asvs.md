@@ -13,7 +13,7 @@ The mapping covers every level 1 and level 2 requirement of the 17 chapters, so 
 
 | Status | Meaning |
 | --- | --- |
-| Met | Enforced here, with the file, ADR and test that show it. A row may say it is an accepted risk and name the ADR |
+| Met | Enforced here, with the file, ADR and test that show it. It also covers a requirement the project knowingly leaves unmet as an accepted risk: the row starts with "Accepted risk" and names the ADR or document that records the controls and the conditions |
 | N/A | Does not apply to a frontend like this one, with the reason |
 | Open | Not met or not verifiable at the level this chapter aims at (see Target below). The row names the issue (label `security`) that tracks it, or says "Private advisory". An open gap that an attacker could exploit is always Open, at any level |
 | Open (above target) | Not met, and the requirement is of a higher level than the chapter's target: it is an improvement, tracked in an issue, and it does not fail the level the standard asks for |
