@@ -7,7 +7,7 @@ import { SECURITY_HEADERS } from './securityHeaders'
 import type { SpeculationRules } from './speculation'
 import { defaultLocale, Locale } from '../interfaces/locale'
 
-const SCRIPT_TAG = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
+const SCRIPT_TAG = /<script\b([^>]*)>([\s\S]*?)<\/script(?=[\s/>])[^>]*>/gi
 const LINK_TAG = /<link\b([^>]*)>/gi
 const NUXT_ASSET_JS = /\/_nuxt\/[^"'\s>]*\.m?js\b/
 const NUXT_STATE = /__NUXT__|__NUXT_DATA__|data-nuxt-data/
