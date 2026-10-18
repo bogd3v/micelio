@@ -5,7 +5,7 @@ import type { Category, Locale, RawStrapiArticle } from '~/interfaces'
 import { isCategory } from '~/helpers/categories'
 import { feedPath } from '~/helpers/feed'
 import { isBlogEnabled } from '~/helpers/siteMode'
-import { ARTICLE_HAS_SLUG } from '../lib/constants'
+import { ARTICLE_HAS_SLUG, FEED_POPULATE } from '../lib/constants'
 import en from '../../i18n/locales/en.json'
 import es from '../../i18n/locales/es.json'
 
@@ -49,7 +49,7 @@ function channelDescription(site: { name: string, description: string }, locale:
 async function fetchFeedPosts({ locale, category }: FeedOptions): Promise<RawStrapiArticle[]> {
   const params = qs.stringify({
     pagination: { pageSize: FEED_SIZE },
-    populate: ['cover', 'category', 'author'],
+    populate: FEED_POPULATE,
     sort: 'publishedAt:desc',
     locale,
     filters: { ...ARTICLE_HAS_SLUG, ...(category ? { category: { slug: { $eq: category } } } : {}) },
