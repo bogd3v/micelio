@@ -172,7 +172,7 @@ The filters of the blog list, as the URL query carries them.
 
 ```ts
 export interface BlogFilters {
-  category?: Category
+  category?: string
   tag?: string
   search?: string
   page: number
@@ -229,7 +229,7 @@ The reading path of a category: up to 50 posts in reading order.
 
 ```ts
 export interface ReadingPath {
-  category: Category
+  category: string
   /** True when the steps follow the editors' `pathOrder`; false when they are the category's posts by date. */
   editorial: boolean
   steps: ReadingPathStep[]

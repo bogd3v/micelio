@@ -64,6 +64,7 @@ beforeEach(() => {
   mock.failures.pathOrder = false
   mock.failures.about = false
   mock.failures.site = false
+  mock.failures.categories = false
   mock.failures.broken = ''
   mock.theme.value = null
   mock.homePage.value = null
@@ -74,8 +75,30 @@ beforeEach(() => {
 /** The CMS route that finds a subscriber by a request body. */
 const LOOKUP_PATH = '/api/subscribers/lookup'
 
+// Nitro caches the category list for ten minutes per locale and a failure is never stored. The server reads the English list while it boots,
+// so these tests use the Spanish one, which nothing has read yet: they must stay before every other test that asks for Spanish categories
+describe('when the CMS cannot list the categories', () => {
+  it('still redirects a legacy filter of a built-in category, falling back to the constant', async () => {
+    mock.failures.categories = true
+    const response = await fetch('/es/blog?category=linux', { redirect: 'manual' })
+    expect(response.status).toBe(301)
+    expect(response.headers.get('location')).toBe('/es/blog/category/linux')
+  })
+
+  it('answers 502 for the category list and the category feed, and stores nothing', async () => {
+    mock.failures.categories = true
+    await expect($fetch('/api/categories', { query: { locale: 'es' } })).rejects.toMatchObject({ response: { status: 502 } })
+    expect((await fetch('/es/feed/linux.xml')).status).toBe(502)
+  })
+
+  it('serves the list again once the CMS recovers', async () => {
+    const result = await $fetch<unknown[]>('/api/categories', { query: { locale: 'es' } })
+    expect(result.length).toBeGreaterThan(0)
+  })
+})
+
 describe('/api/categories', () => {
-  it('returns the five redesign categories in order, including empty ones, and hides unknown empty ones', async () => {
+  it('returns the categories of the CMS by order, whatever their slugs, and hides those without a slug', async () => {
     const result = await $fetch<Array<{ slug: string | null, name: string, count: number }>>('/api/categories', { query: { locale: 'en' } })
     expect(result.map(category => [category.slug, category.count])).toEqual([
       [Category.Privacy, 0],
@@ -83,13 +106,28 @@ describe('/api/categories', () => {
       [Category.Ai, 0],
       [Category.Software, 1],
       [Category.Linux, 1],
+      ['garden', 0],
+      ['kitchen', 0],
     ])
+    expect(Object.keys(result[0]!).sort()).toEqual(['count', 'id', 'name', 'slug'])
   })
 
   it('counts articles of the requested locale only', async () => {
     const result = await $fetch<Array<{ slug: string | null, count: number }>>('/api/categories', { query: { locale: 'es' } })
     expect(result.find(category => category.slug === Category.Software)?.count).toBe(1)
     expect(result.find(category => category.slug === Category.Linux)?.count).toBe(0)
+  })
+
+  it('names each category in the requested locale and falls back to the slug when it has no translation', async () => {
+    const english = await $fetch<Array<{ slug: string, name: string }>>('/api/categories', { query: { locale: 'en' } })
+    expect(english.find(category => category.slug === 'linux')?.name).toBe('Linux and open source')
+    expect(english.find(category => category.slug === 'kitchen')?.name).toBe('Kitchen')
+    const spanish = await $fetch<Array<{ slug: string, name: string }>>('/api/categories', { query: { locale: 'es' } })
+    expect(spanish.find(category => category.slug === 'linux')?.name).toBe('Linux y código abierto')
+    expect(spanish.find(category => category.slug === 'garden')?.name).toBe('Jardín')
+    expect(spanish.find(category => category.slug === 'kitchen')?.name).toBe('kitchen')
+    // Every category stays in the list, in the order of the default locale
+    expect(spanish.map(category => category.slug)).toEqual(english.map(category => category.slug))
   })
 })
 
@@ -305,8 +343,14 @@ describe('/api/reading-path', () => {
     expect(mock.requests).toEqual([])
   })
 
-  it('rejects unknown categories without calling Strapi', async () => {
+  it('serves a category the CMS has even when no site constant knows it', async () => {
+    const path = await $fetch<{ category: string, editorial: boolean, steps: unknown[] }>('/api/reading-path', { query: { category: 'garden', locale: 'en' } })
+    expect(path).toMatchObject({ category: 'garden', editorial: false, steps: [] })
+  })
+
+  it('rejects a category the CMS does not have, or a malformed one, without reading articles', async () => {
     await expect($fetch('/api/reading-path', { query: { category: 'cooking' } })).rejects.toMatchObject({ response: { status: 400 } })
+    await expect($fetch('/api/reading-path', { query: { category: 'not a slug' } })).rejects.toMatchObject({ response: { status: 400 } })
     await expect($fetch('/api/reading-path')).rejects.toMatchObject({ response: { status: 400 } })
     expect(mock.requests.some(item => item.path === '/api/articles')).toBe(false)
   })
@@ -431,6 +475,25 @@ describe('RSS feeds', () => {
     expect(privacy.body).toContain('<title>Micelio - Privacy</title>')
     expect(privacy.body).not.toContain('<item>')
     expect(privacy.body.trim().endsWith('</channel>\n</rss>')).toBe(true)
+  })
+
+  it('serves the feed of a category the CMS has even when no site constant knows it', async () => {
+    const garden = await feed('/feed/garden.xml')
+    expect(garden.status).toBe(200)
+    expect(garden.body).toContain('<title>Micelio - Garden</title>')
+    expect(garden.body).toContain(`<link>${SITE_URL}/blog/category/garden</link>`)
+    expect(garden.body).not.toContain('<item>')
+  })
+
+  it('names the Spanish feed of an untranslated category after its slug', async () => {
+    const kitchen = await feed('/es/feed/kitchen.xml')
+    expect(kitchen.status).toBe(200)
+    expect(kitchen.body).toContain('<title>Micelio - kitchen</title>')
+  })
+
+  it('answers 404 for the feed of an unknown category', async () => {
+    expect((await feed('/feed/cooking.xml')).status).toBe(404)
+    expect((await feed('/es/feed/cooking.xml')).status).toBe(404)
   })
 
   it('names the feed from app.config.ts (the neutral name) when Strapi has no site-setting', async () => {
@@ -700,14 +763,23 @@ describe('/sitemap.xml', () => {
     }
   })
 
-  it('lists the category pages of the blog in both languages and no tag or page paths', async () => {
+  it('lists the category pages that have an article, in both languages, and no tag or page paths', async () => {
     const xml = await sitemap()
-    for (const category of ['privacidad', 'diy', 'ia', 'software', 'linux']) {
+    for (const empty of ['privacidad', 'diy', 'ia', 'garden', 'kitchen']) expect(xml).not.toContain(`/blog/category/${empty}`)
+    for (const category of ['software', 'linux']) {
       expect(entry(xml, `/blog/category/${category}`)).toContain(`hreflang="es" href="${SITE_URL}/es/blog/category/${category}"`)
       expect(entry(xml, `/es/blog/category/${category}`)).toContain(`hreflang="en" href="${SITE_URL}/blog/category/${category}"`)
     }
     expect(xml).not.toContain('/blog/tag/')
     expect(xml).not.toContain('/blog/page/')
+  })
+})
+
+describe('legacy blog URLs', () => {
+  it('moves a query-string filter of a category the CMS has to its path, not to a tag', async () => {
+    const response = await fetch('/blog?category=garden', { redirect: 'manual' })
+    expect(response.status).toBe(301)
+    expect(response.headers.get('location')).toBe('/blog/category/garden')
   })
 })
 

@@ -11,7 +11,7 @@ Every route follows the same contract. Skipping a step has already caused produc
 
 - Body: zod schema in `server/schemas/<area>.ts` + `validBody(event, schema, invalid)` (`server/utils/validation.ts`). `invalid` builds the error, so the route keeps its own status and code.
 - Query: schema in `server/schemas/query.ts` + `validQuery(event, schema)` (400 with the first issue's message).
-- Reuse the validators in `app/helpers/` (`isValidEmail`, `isCategory`, `isNewsletterToken`…) inside the schema so client forms and server agree.
+- Reuse the validators in `app/helpers/` (`isValidEmail`, `isNewsletterToken`…) inside the schema so client forms and server agree.
 - Locales are `en`/`es`; unknown → 400, empty → absent. Treat `''` as missing with `preprocess`. A key that only has a `transform` needs `.optional()` first (zod 4 makes it required otherwise).
 - Never read `getQuery(event).x as string`: repeated parameters arrive as arrays.
 

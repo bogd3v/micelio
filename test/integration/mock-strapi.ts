@@ -36,6 +36,8 @@ interface MockFailures {
   pathOrder: boolean
   about: boolean
   site: boolean
+  /** `GET /api/categories` answers 500 */
+  categories: boolean
   /** Comment writes and subscriber calls answer 429 with Retry-After, as the CMS limiter does */
   rateLimited: boolean
   /** The `Retry-After` those 429s carry */
@@ -121,7 +123,32 @@ const emptyCategories: StrapiCategoryRef[] = [
   { id: 24, documentId: 'cat-diy', name: 'DIY · Hazlo tú mismo', slug: 'diy' },
   { id: 25, documentId: 'cat-ia', name: 'Inteligencia artificial', slug: 'ia' },
   { id: 26, documentId: 'cat-tutorial', name: 'tutorial', slug: null },
+  // Categories no site constant knows (ADR 0016): the core takes whatever the CMS has
+  { id: 27, documentId: 'cat-garden', name: 'Garden', slug: 'garden' },
+  { id: 28, documentId: 'cat-kitchen', name: 'Kitchen', slug: 'kitchen' },
 ]
+
+/** The fields only `/api/categories` sends: the editor's order, a description and the legacy `pillar` flag. */
+const categoryExtras: Record<string, { order: number, description: string, pillar?: boolean }> = {
+  privacidad: { order: 1, description: 'Privacy tools', pillar: true },
+  diy: { order: 2, description: 'Make it yourself', pillar: true },
+  ia: { order: 3, description: 'Artificial intelligence' },
+  software: { order: 4, description: 'Software development' },
+  linux: { order: 5, description: 'Linux and open source' },
+  garden: { order: 6, description: 'Plants and soil' },
+  kitchen: { order: 7, description: 'Recipes' },
+}
+
+/** The localized `name` of the categories that have one per locale; kitchen has no Spanish version, as an untranslated category in Strapi. */
+const categoryNames: Record<string, Partial<Record<'en' | 'es', string>>> = {
+  privacidad: { en: 'Privacy', es: 'Privacidad' },
+  diy: { en: 'DIY', es: 'DIY · Hazlo tú mismo' },
+  ia: { en: 'Artificial intelligence', es: 'Inteligencia artificial' },
+  software: { en: 'Software development', es: 'Desarrollo de software' },
+  linux: { en: 'Linux and open source', es: 'Linux y código abierto' },
+  garden: { en: 'Garden', es: 'Jardín' },
+  kitchen: { en: 'Kitchen' },
+}
 
 const tagVue: StrapiTagRef = { id: 51, documentId: 'tag-vue', name: 'Vue', slug: 'vue' }
 const tagTypeScript: StrapiTagRef = { id: 52, documentId: 'tag-typescript', name: 'TypeScript', slug: 'typescript' }
@@ -495,7 +522,7 @@ function recordRequest(
 export async function startMockStrapi(): Promise<MockStrapiResult> {
   const requests: RecordedRequest[] = []
   const siteRequests: RecordedRequest[] = []
-  const failures: MockFailures = { pathOrder: false, about: false, site: false, rateLimited: false, retryAfter: '42', rateLimitedReads: [], broken: '' }
+  const failures: MockFailures = { pathOrder: false, about: false, site: false, categories: false, rateLimited: false, retryAfter: '42', rateLimitedReads: [], broken: '' }
   const modules: MockModules = { newsletter: true, comments: true, accounts: true, drafts: true, fediverse: true, search: true, support: true }
   const theme = { value: null as unknown }
   const leaks: MockStrapiResult['leaks'] = { commentsEnvelope: {}, draftRow: {} }
@@ -689,11 +716,21 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     }
 
     if (method === 'GET' && url.pathname === '/api/categories') {
-      const localeFilter = getNestedValue(query, ['populate', 'articles', 'filters', 'locale', '$eq']) as string | undefined ?? 'en'
-      const categories = [categoryVue, categoryLinux, ...emptyCategories].map(category => ({
+      if (failures.categories) {
+        sendJson(res, 500, { data: null, error: { status: 500, name: 'InternalServerError', message: 'categories failure' } })
+        return
+      }
+      const localeFilter = (query.locale as string | undefined) ?? 'en'
+      const categories = [categoryVue, categoryLinux, ...emptyCategories].flatMap((category) => {
+        const names = category.slug ? categoryNames[category.slug] : undefined
+        const name = names ? names[localeFilter as 'en' | 'es'] : category.name
+        // No version in this locale: Strapi does not list it
+        return name === undefined ? [] : [{ ...category, name }]
+      }).map(category => ({
         id: category.id,
         name: category.name,
         slug: category.slug,
+        ...(category.slug ? categoryExtras[category.slug] : undefined),
         articles: articles
           .filter(article => article.category?.slug === category.slug && article.locale === localeFilter)
           .map(article => ({ id: article.id })),

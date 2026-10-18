@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { Locale } from '~/interfaces/locale'
-import { isCategory } from '~/helpers/categories'
 import { isContentSearch } from '~/helpers/search'
 import { parseSort } from '~/helpers/blog'
+import { SLUG_PATTERN } from '../lib/constants'
 
 /** The largest page size of the list routes: a larger `pageSize` is clamped to it. */
 export const MAX_PAGE_SIZE = 50
@@ -11,7 +11,6 @@ export const DEFAULT_PAGE_SIZE = 10
 /** The longest search text the query schemas accept; a longer one is a 400 `Search is too long`. */
 export const MAX_SEARCH_LENGTH = 200
 
-const SLUG_PATTERN = /^[a-z0-9-]{1,64}$/
 // The alphabet of a Strapi uid, which does not lower-case what an editor types, and a length of 256 at most
 const POST_SLUG_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.~-]{0,255}$/
 const COMMENT_SORT_PATTERN = /^[a-zA-Z]+:(asc|desc)$/
@@ -73,9 +72,9 @@ export const searchQuerySchema = z.object({
   content,
 })
 
-/** The query of `GET /api/reading-path`: a category slug, trimmed and lowercased, that must be a known category (a 400 `Unknown category` otherwise), and an optional locale. */
+/** The query of `GET /api/reading-path`: a category slug, trimmed and lowercased, of the shape of a slug (a 400 `Unknown category` otherwise; the route checks that the CMS has it, ADR 0016), and an optional locale. */
 export const readingPathQuerySchema = z.object({
-  category: z.preprocess(lowerTrimmed, z.string({ error: 'Unknown category' }).refine(isCategory, 'Unknown category')),
+  category: z.preprocess(lowerTrimmed, z.string({ error: 'Unknown category' }).regex(SLUG_PATTERN, 'Unknown category')),
   locale,
 })
 

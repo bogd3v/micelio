@@ -132,8 +132,10 @@ function isSamePath(a: string, b: string): boolean {
 /**
  * The canonical URL for a blog list request, or null when it already is: old query-string filters
  * (`/blog?category=x&page=2`), a category in capitals, a padded page number or `/page/1`.
+ *
+ * @param isKnownCategory - Whether a lowercase slug is a category; the server passes the CMS list, the default is the built-in constant.
  */
-export function legacyBlogRedirect(pathname: string, search: string): string | null {
+export function legacyBlogRedirect(pathname: string, search: string, isKnownCategory: (slug: string) => boolean = isCategory): string | null {
   const match = BLOG_URL_PATH.exec(pathname)
   if (!match) return null
   const [, base = BLOG_BASE, kind, rawSlug, pageText] = match
@@ -147,11 +149,11 @@ export function legacyBlogRedirect(pathname: string, search: string): string | n
   const tag = (kind === 'tag' ? slug : queryFilters ? params.get('tag') : '')?.trim() ?? ''
   const page = Number.parseInt(pageText ?? (queryFilters ? params.get('page') ?? '' : ''), 10)
   // An unknown category or page 0 in a path is a 404, not a redirect
-  if (kind === 'category' && !isCategory(category)) return null
+  if (kind === 'category' && !isKnownCategory(category)) return null
   if (pageText !== undefined && page < 1) return null
   const location = blogPath({
-    category: isCategory(category) ? category : undefined,
-    tag: isCategory(category) ? undefined : tag || undefined,
+    category: isKnownCategory(category) ? category : undefined,
+    tag: isKnownCategory(category) ? undefined : tag || undefined,
     page: Number.isFinite(page) && page > 1 ? page : 1,
   }, base)
   const rest = new URLSearchParams()

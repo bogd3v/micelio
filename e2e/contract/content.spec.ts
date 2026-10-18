@@ -4,7 +4,7 @@ import { authUserResponseSchema } from '../../app/schemas/auth'
 import { aboutSchema } from '../../app/schemas/blocks'
 import { pageSchema } from '../../app/schemas/pages'
 import { siteSchema } from '../../app/schemas/site'
-import { articlePageSchema, articleSchema, categoryCountSchema, searchResultSchema, tagCountSchema } from '../../app/schemas/posts'
+import { articlePageSchema, articleSchema, categoryCountSchema, readingPathSchema, searchResultSchema, tagCountSchema } from '../../app/schemas/posts'
 import { DEMO, expectShape } from './support'
 
 // What the frontend's read routes get from a real CMS: the keys and types the app's interfaces rely on (docs/api.md), on the demo seed.
@@ -81,7 +81,12 @@ test('the about page: blocks with their rendered html', async ({ request }) => {
   expectShape(richText, { body: 'string', html: 'string' })
 })
 
-// No reading-path check: its category must be one of the five slugs of the theme contract, and the demo categories (garden, kitchen) are not
+test('the reading path of a category the CMS has, whatever its slug', async ({ request }) => {
+  const response = await request.get('/api/reading-path?category=garden&locale=en')
+  expect(response.status()).toBe(200)
+  expect(readingPathSchema.safeParse(await response.json()).error?.issues ?? []).toEqual([])
+})
+
 test('search finds an article by its title', async ({ request }) => {
   const response = await request.get('/api/search?q=compost&locale=en')
   expect(response.status()).toBe(200)
@@ -97,6 +102,15 @@ test('categories and tags with their article counts', async ({ request }) => {
   expect(z.array(categoryCountSchema).safeParse(categories).error?.issues ?? []).toEqual([])
   for (const category of categories) expectShape(category, { id: 'number', slug: 'string', name: 'string', count: 'number' })
   for (const [slug, count] of Object.entries(DEMO.categories)) expect(categories.find((category: { slug: string }) => category.slug === slug)?.count).toBe(count)
+
+  // The count is of the requested locale: every category stays listed, with at most the articles of that locale
+  const spanish = await (await request.get('/api/categories?locale=es')).json()
+  expect(z.array(categoryCountSchema).safeParse(spanish).error?.issues ?? []).toEqual([])
+  // Same categories in both languages; the order may differ when no `order` is set, because the tie is broken by the localized name
+  const slugsOf = (list: Array<{ slug: string }>): string[] => list.map(category => category.slug).sort()
+  expect(slugsOf(spanish)).toEqual(slugsOf(categories))
+  const spanishTotal = spanish.reduce((total: number, category: { count: number }) => total + category.count, 0)
+  expect(spanishTotal).toBeLessThanOrEqual(DEMO.articles.es)
 
   const tags = await (await request.get('/api/tags?locale=en')).json()
   expect(z.array(tagCountSchema).safeParse(tags).error?.issues ?? []).toEqual([])

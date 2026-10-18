@@ -5,7 +5,7 @@ import type { PaginationMeta, StrapiPaginatedResponse } from '~/interfaces/strap
 import type { DraftArticleResponse, PublishedVersion } from '~/interfaces/draft'
 import type { PostListItem, RawStrapiArticle, SearchPostResult, StrapiAuthorRef, StrapiCategoryRef, StrapiLocalization, StrapiTagRef, TagCount } from '~/interfaces/strapi-post'
 import type { StrapiReference } from '~/interfaces/strapi-reference'
-import { categorySchema, imageCreditSchema, mediaRefSchema, seoSchema, strapiBlockSchema } from './blocks'
+import { imageCreditSchema, mediaRefSchema, seoSchema, strapiBlockSchema } from './blocks'
 import { responseSchema } from './response'
 
 /** A category with the number of posts in it (`GET /api/categories`). */
@@ -147,7 +147,7 @@ const readingPathStepSchema = responseSchema<ReadingPathStep>()(
 
 /** The reading path of a category (`GET /api/reading-path`). */
 export const readingPathSchema = responseSchema<ReadingPath>()(
-  z.strictObject({ category: categorySchema, editorial: z.boolean(), steps: z.array(readingPathStepSchema) }).meta({ id: 'ReadingPath', description: 'Up to 50 articles of a category in reading order; `editorial` is false when they follow the publication date.' }),
+  z.strictObject({ category: z.string(), editorial: z.boolean(), steps: z.array(readingPathStepSchema) }).meta({ id: 'ReadingPath', description: 'Up to 50 articles of a category in reading order; `editorial` is false when they follow the publication date.' }),
 )
 
 /**
