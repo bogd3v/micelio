@@ -106,7 +106,9 @@ test('categories and tags with their article counts', async ({ request }) => {
   // The count is of the requested locale: every category stays listed, with at most the articles of that locale
   const spanish = await (await request.get('/api/categories?locale=es')).json()
   expect(z.array(categoryCountSchema).safeParse(spanish).error?.issues ?? []).toEqual([])
-  expect(spanish.map((category: { slug: string }) => category.slug)).toEqual(categories.map((category: { slug: string }) => category.slug))
+  // Same categories in both languages; the order may differ when no `order` is set, because the tie is broken by the localized name
+  const slugsOf = (list: Array<{ slug: string }>): string[] => list.map(category => category.slug).sort()
+  expect(slugsOf(spanish)).toEqual(slugsOf(categories))
   const spanishTotal = spanish.reduce((total: number, category: { count: number }) => total + category.count, 0)
   expect(spanishTotal).toBeLessThanOrEqual(DEMO.articles.es)
 
