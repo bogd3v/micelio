@@ -168,14 +168,14 @@ function successResponse(route: RouteEntry, components: Record<string, JsonSchem
   return { description, content: { [contentType]: { schema } } }
 }
 
-function errorResponses(codes: RouteEntry['errors']): [string, Record<string, unknown>][] {
+function errorResponses(codes: RouteEntry['errors'], details: RouteEntry['errorDetails'] = {}): [string, Record<string, unknown>][] {
   const byStatus = new Map<number, ProblemCode[]>()
   for (const code of [...new Set(codes)].sort()) {
     const status = PROBLEM_CODES[code].status
     byStatus.set(status, [...(byStatus.get(status) ?? []), code])
   }
   return [...byStatus.entries()].sort(([a], [b]) => a - b).map(([status, statusCodes]) => {
-    const lines = statusCodes.map(code => `- \`${code}\`: ${PROBLEM_CODES[code].detail}`)
+    const lines = statusCodes.map(code => `- \`${code}\`: ${details[code] ?? PROBLEM_CODES[code].detail}`)
     const response: Record<string, unknown> = {
       description: `${PROBLEM_CODES[statusCodes[0]!].title}. The \`code\` is one of:\n${lines.join('\n')}`,
       content: {
@@ -220,7 +220,7 @@ function operationOf(route: RouteEntry, components: Record<string, JsonSchema>):
     ...(sessionSecurity && { security: sessionSecurity }),
     responses: Object.fromEntries([
       [String(route.response.status), successResponse(route, components)],
-      ...errorResponses(route.errors),
+      ...errorResponses(route.errors, route.errorDetails),
       ...(route.path.startsWith('/api/') ? [['default', defaultResponse()]] : []),
     ]),
   }

@@ -123,7 +123,7 @@ Every `code` an `/api/*` error can carry, from `PROBLEM_CODES` in `server/utils/
 | `tooManyRequests` | 429 | A rate limit, ours or the CMS's; `Retry-After` says when to retry |
 | `unknown` | 502 | Any other CMS failure on an auth route |
 | `invalidRequest` | 400 | A parameter of the query, the path or a CMS read is malformed or invalid |
-| `invalidToken` | 400 | A newsletter token is missing or malformed |
+| `invalidToken` | 400 | A newsletter token is missing (`confirm`) or missing or malformed (`unsubscribe`); `confirm` answers an unknown or malformed token with `notFound` |
 | `notFound` | 404 | The resource does not exist, or its module is turned off (a closed module looks like absence) |
 | `methodNotAllowed` | 405 | The route does not accept the HTTP method; `Allow` lists the ones the site serves |
 | `payloadTooLarge` | 413 | The request body is larger than the route accepts |

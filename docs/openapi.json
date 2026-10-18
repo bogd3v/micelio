@@ -3399,7 +3399,7 @@
             }
           },
           "400": {
-            "description": "Bad Request. The `code` is one of:\n- `invalidToken`: The token is missing or malformed.",
+            "description": "Bad Request. The `code` is one of:\n- `invalidToken`: The token is missing.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3447,7 +3447,7 @@
             }
           },
           "404": {
-            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The token is unknown or malformed.",
             "content": {
               "application/problem+json": {
                 "schema": {
