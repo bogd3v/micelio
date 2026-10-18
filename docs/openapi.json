@@ -5858,10 +5858,6 @@
           "name": {
             "type": "string"
           },
-          "email": {
-            "description": "Never sent: the public shape drops it.",
-            "type": "string"
-          },
           "avatar": {
             "type": [
               "string",
@@ -5929,16 +5925,6 @@
           },
           "pagination": {
             "$ref": "#/components/schemas/PaginationMeta"
-          },
-          "meta": {
-            "description": "Strapi's usual place for the pagination; the comments plugin sends `pagination` beside `data` instead.",
-            "type": "object",
-            "properties": {
-              "pagination": {
-                "$ref": "#/components/schemas/PaginationMeta"
-              }
-            },
-            "additionalProperties": false
           }
         },
         "required": [
@@ -6546,8 +6532,11 @@
             "type": "string"
           },
           "locale": {
-            "description": "The locale of the page: `en` or `es`.",
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ]
           },
           "seo": {
             "$ref": "#/components/schemas/PageSeo"

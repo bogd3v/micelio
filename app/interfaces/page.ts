@@ -1,3 +1,4 @@
+import type { Locale } from './locale'
 import type { PostListItem, PostTranslation } from './strapi-post'
 
 /**
@@ -342,7 +343,8 @@ export interface Page {
   documentId: string
   title: string
   slug: string
-  locale?: string
+  /** `en` or `es`. */
+  locale?: Locale
   seo?: PageSeo
   /** Sections that failed validation are left out */
   sections: PageSection[]

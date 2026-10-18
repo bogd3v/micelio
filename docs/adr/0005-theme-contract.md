@@ -192,6 +192,8 @@ What does not change: the core helpers that predate the prefix (`card`, `font-di
 
 **Amendment (2026-10-15, #558):** correcting a `@public` slot API type to match what the CMS already sends is a fix, not a change of contract, because the effect decides (standard, section 7). `StrapiMediaFile`, `StrapiMediaRef`, `StrapiSEO`, the category and author names, the quote and rich-text bodies, `shared.media` `file`, and the `title` of articles, the About page and reading-path steps now admit the `null` the CMS has always delivered, and gain the optional `id`, `documentId` and `caption` the allow-list already sends (and `PostListItem` the optional `locale`). The same applies to the comments types: `Comment.related` is a relation string (or absent in the hierarchy view), `Comment.authorUser` is absent because the plugin does not return it, and `CommentsResponse` gains the `pagination` the plugin sends beside `data`. It is a patch; the upgrade note is in `docs/themes/creating-a-theme.md`.
 
+**Amendment (2026-10-18, #570):** the same rule applies to what the server never sends. `Page.locale` is narrowed from `string` to `Locale` (`en` or `es`, all `parsePage` emits), and three members are removed: `CommentAuthor.email` (the public shape drops it), `CommentsResponse.meta` (the plugin sends `pagination` beside `data`) and the unused `PostCommentResponse`. No theme in `themes/` reads them. It is a patch; the upgrade note is in `docs/themes/creating-a-theme.md`.
+
 ### 7. Theme authoring
 
 Writing a theme must not require reading the core. The contract ships with:
