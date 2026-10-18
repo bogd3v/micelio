@@ -3,8 +3,8 @@ export const INTERNAL_IP_HEADER = 'x-micelio-internal-ip'
 /** The header that carries the per-process nonce proving the internal IP header was set by this process. */
 export const INTERNAL_NONCE_HEADER = 'x-micelio-internal-nonce'
 
-/** The shape of a category or tag slug in a query: lowercase letters, digits and hyphens, 1 to 64 characters. */
-export const SLUG_PATTERN = /^[a-z0-9-]{1,64}$/
+/** The most categories one read of the CMS list returns (one page); the server list and the static build both stop here. */
+export const MAX_CATEGORIES = 100
 
 /** The auth calls may send mail inside Strapi (register, password reset), so they wait longer than a read. */
 export const AUTH_TIMEOUT_MS = 30_000

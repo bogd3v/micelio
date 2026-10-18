@@ -1,4 +1,4 @@
-import { CATEGORIES } from '../constants/categories'
+import { SLUG_PATTERN } from '../constants/slug'
 import { feedPath } from './feed'
 import { localePrefixSource } from './localePrefix'
 import { MODEL_MAX_BYTES } from '../islands/constants'
@@ -33,9 +33,13 @@ export function noScriptsViolations(html: string): string[] {
   return [...found]
 }
 
-/** Routes of the files that are not pages: the feeds, the sitemap and robots.txt, in every locale. A build with no blog has no feeds. */
-export function staticFileRoutes(blogEnabled = true): string[] {
-  const feeds = blogEnabled ? Object.values(Locale).flatMap(locale => [feedPath(locale), ...CATEGORIES.map(category => feedPath(locale, category))]) : []
+/**
+ * Routes of the files that are not pages: the feeds, the sitemap and robots.txt, in every locale. A build with no blog has no feeds.
+ *
+ * @param categories - The category slugs of each locale (`categorySlugsByLocale`); each gets a feed in its locale. None for a site without categories.
+ */
+export function staticFileRoutes(blogEnabled = true, categories: Partial<Record<Locale, readonly string[]>> = {}): string[] {
+  const feeds = blogEnabled ? Object.values(Locale).flatMap(locale => [feedPath(locale), ...(categories[locale] ?? []).map(category => feedPath(locale, category))]) : []
   return [...feeds, '/sitemap.xml', '/robots.txt']
 }
 
@@ -52,6 +56,30 @@ export function articleRoute(slug: string, locale: Locale): string {
 /** The static route of a section page in a locale: `/<slug>`, with the locale prefix except for the default locale. */
 export function sectionPageRoute(slug: string, locale: Locale): string {
   return localized(`/${slug}`, locale)
+}
+
+/** The static route of the first page of a category in a locale: `/blog/category/<slug>`, with the locale prefix except for the default locale. */
+export function categoryRoute(slug: string, locale: Locale): string {
+  return localized(`/blog/category/${slug}`, locale)
+}
+
+/**
+ * The category slugs each locale lists, by the rule of the server (`mergeLocalized`, ADR 0016, section 2): the default locale lists only its own categories, every other locale lists the default ones plus its own.
+ *
+ * @remarks
+ * A category with a version in a non-default locale only is therefore a page and a feed in that locale and a 404 in the default one. Slugs no route can address are dropped and each list is sorted, so the build is deterministic.
+ *
+ * @param own - The slugs the CMS answered for each locale on its own.
+ */
+export function categorySlugsByLocale(own: Readonly<Record<Locale, readonly string[]>>): Record<Locale, string[]> {
+  const usable = (slugs: readonly string[]): string[] => slugs.filter(slug => SLUG_PATTERN.test(slug))
+  const base = usable(own[defaultLocale] ?? [])
+  const result = {} as Record<Locale, string[]>
+  for (const locale of Object.values(Locale)) {
+    const slugs = locale === defaultLocale ? base : [...base, ...usable(own[locale] ?? [])]
+    result[locale] = [...new Set(slugs)].sort()
+  }
+  return result
 }
 
 /**

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createMarkdownRenderer } from '../app/helpers/markdown'
 import { Locale } from '../app/interfaces/locale'
-import { articleRoute, failsBuild, headersFile, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
+import { articleRoute, categoryRoute, categorySlugsByLocale, failsBuild, headersFile, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
 import { SECURITY_HEADERS, contentSecurityPolicy } from '../app/helpers/securityHeaders'
 import { strapiRequest, strapiRequestUrl } from '../server/lib/strapiRequest'
 
@@ -41,8 +41,35 @@ describe('static routes', () => {
   })
 
   it('lists the feeds of both locales, the sitemap and robots.txt', () => {
-    const routes = staticFileRoutes()
-    expect(routes).toEqual(expect.arrayContaining(['/feed.xml', '/es/feed.xml', '/feed/linux.xml', '/es/feed/linux.xml', '/sitemap.xml', '/robots.txt']))
+    const routes = staticFileRoutes(true, { [Locale.English]: ['garden'], [Locale.SpanishColombia]: ['garden'] })
+    expect(routes).toEqual(expect.arrayContaining(['/feed.xml', '/es/feed.xml', '/feed/garden.xml', '/es/feed/garden.xml', '/sitemap.xml', '/robots.txt']))
+  })
+
+  it('has a feed per category of each locale and none for a slug it does not list', () => {
+    const categories = { [Locale.English]: ['garden'], [Locale.SpanishColombia]: ['garden', 'invierno'] }
+    const routes = staticFileRoutes(true, categories)
+    expect(routes).toEqual(expect.arrayContaining(['/feed/garden.xml', '/es/feed/garden.xml', '/es/feed/invierno.xml']))
+    expect(routes).not.toContain('/feed/invierno.xml')
+    expect(routes).not.toContain('/feed/linux.xml')
+    expect(staticFileRoutes()).toEqual(['/feed.xml', '/es/feed.xml', '/sitemap.xml', '/robots.txt'])
+  })
+
+  it('prefixes the category page of the non-default locale', () => {
+    expect(categoryRoute('garden', Locale.English)).toBe('/blog/category/garden')
+    expect(categoryRoute('garden', Locale.SpanishColombia)).toBe('/es/blog/category/garden')
+  })
+
+  it('lists the default locale alone and every other locale as the default plus its own, like the server', () => {
+    const lists = categorySlugsByLocale({
+      [Locale.English]: ['kitchen', 'garden', 'Bad Slug'],
+      [Locale.SpanishColombia]: ['garden', 'invierno', ''],
+    })
+    expect(lists[Locale.English]).toEqual(['garden', 'kitchen'])
+    expect(lists[Locale.SpanishColombia]).toEqual(['garden', 'invierno', 'kitchen'])
+  })
+
+  it('lists nothing for a site without categories', () => {
+    expect(categorySlugsByLocale({ [Locale.English]: [], [Locale.SpanishColombia]: [] })).toEqual({ [Locale.English]: [], [Locale.SpanishColombia]: [] })
   })
 })
 

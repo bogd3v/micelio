@@ -98,10 +98,10 @@ export function useStrapi() {
     })
   }
 
-  function fetchCategories(locale?: Locale) {
-    return useAsyncData(`categories-${locale || defaultLocale}`, async () => {
+  function fetchCategories(locale?: MaybeRef<Locale | undefined>) {
+    return useAsyncData(() => `categories-${toValue(locale) || defaultLocale}`, async () => {
       const query = toQueryString({
-        locale: locale || undefined,
+        locale: toValue(locale) || undefined,
       })
 
       return requestFetch<CategoryCount[]>(

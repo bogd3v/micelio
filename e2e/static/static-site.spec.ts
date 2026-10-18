@@ -71,7 +71,7 @@ test('the API is not part of the site', async ({ request }) => {
 })
 
 test('feeds, sitemap and robots.txt are files', async ({ request }) => {
-  for (const path of ['/feed.xml', '/es/feed.xml', '/feed/linux.xml', '/es/feed/linux.xml']) {
+  for (const path of ['/feed.xml', '/es/feed.xml', '/feed/linux.xml', '/es/feed/linux.xml', '/feed/garden.xml', '/es/feed/garden.xml']) {
     const response = await request.get(path)
     expect(response.status(), path).toBe(200)
     expect(response.headers()['content-type']).toContain('xml')
@@ -83,6 +83,20 @@ test('feeds, sitemap and robots.txt are files', async ({ request }) => {
   const robots = await request.get('/robots.txt')
   expect(robots.status()).toBe(200)
   expect(await robots.text()).toMatch(/^Sitemap: .+\/sitemap\.xml$/m)
+})
+
+test('the pages of the categories of the CMS are files, and an unknown category is the 404 page', async ({ request }) => {
+  for (const path of ['/blog/category/garden', '/es/blog/category/garden', '/blog/category/linux']) {
+    const response = await request.get(path)
+    expect(response.status(), path).toBe(200)
+    expect(await response.text(), path).toContain('<h1')
+  }
+  expect((await request.get('/blog/category/cooking')).status()).toBe(404)
+})
+
+test('a category that exists only in Spanish is a page and a feed in Spanish and a 404 in English', async ({ request }) => {
+  for (const path of ['/es/blog/category/invierno', '/es/feed/invierno.xml']) expect((await request.get(path)).status(), path).toBe(200)
+  for (const path of ['/blog/category/invierno', '/feed/invierno.xml']) expect((await request.get(path)).status(), path).toBe(404)
 })
 
 test('an unknown path answers the 404 page', async ({ request }) => {
