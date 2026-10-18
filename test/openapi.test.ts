@@ -196,6 +196,14 @@ describe('OpenAPI document', () => {
     expect(Object.keys(paths['/sitemap.xml']!.get!.responses['200']!.content!)).toEqual(['application/xml'])
     expect(Object.keys(paths['/robots.txt']!.get!.responses['200']!.content!)).toEqual(['text/plain'])
   })
+
+  it('describes the token error of each newsletter route as the route answers it', () => {
+    const paths = built.paths as Paths
+    const description = (path: string, status: string): string => (paths[path]!.post!.responses[status] as { description: string }).description
+    expect(description('/api/newsletter/confirm', '400')).toContain('`invalidToken`: The token is missing.')
+    expect(description('/api/newsletter/confirm', '404')).toContain('`notFound`: The token is unknown or malformed.')
+    expect(description('/api/newsletter/unsubscribe', '400')).toContain('`invalidToken`: The token is missing or malformed.')
+  })
 })
 
 describe('drift check', () => {

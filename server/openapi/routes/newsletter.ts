@@ -33,6 +33,10 @@ export const NEWSLETTER_ROUTES: RouteEntry[] = [
     },
     response: { status: 200, schema: confirmResponseSchema, description: '`alreadyConfirmed` is true when the link was used before.' },
     errors: ['invalidToken', 'forbiddenOrigin', 'notFound', 'payloadTooLarge', 'internalError', 'tooManyRequests'],
+    errorDetails: {
+      invalidToken: 'The token is missing.',
+      notFound: 'The token is unknown or malformed.',
+    },
   },
   {
     file: 'server/api/newsletter/unsubscribe.post.ts',
@@ -54,5 +58,8 @@ export const NEWSLETTER_ROUTES: RouteEntry[] = [
     bodyOptional: true,
     response: { status: 200, schema: unsubscribeResponseSchema, description: '`{ success: true }`.' },
     errors: ['invalidToken', 'notFound', 'payloadTooLarge', 'upstreamUnavailable', 'tooManyRequests'],
+    errorDetails: {
+      invalidToken: 'The token is missing or malformed.',
+    },
   },
 ]

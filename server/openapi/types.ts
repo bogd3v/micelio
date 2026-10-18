@@ -69,5 +69,7 @@ export interface RouteEntry {
   response: SuccessResponse
   /** The problem codes the route can answer; their statuses become the error responses. */
   errors: ProblemCode[]
+  /** What a code means on this route, where the catalog text of `server/utils/problem.ts` does not fit it. */
+  errorDetails?: Partial<Record<ProblemCode, string>>
   session?: SessionRequirement
 }
