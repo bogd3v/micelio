@@ -18,7 +18,7 @@ The frontend stores nothing of its own. Accounts, comments and subscribers live 
 | --- | --- | --- | --- | --- |
 | Passwords | Restricted | Sign-in, sign-up, reset and change forms | The CMS (hashed there) | Bounded, validated and forwarded; never stored or logged by the frontend |
 | Session JWT | Restricted | The CMS, at sign-in | The visitor's cookie `__Host-micelio_session` | `httpOnly`, never readable by page JavaScript (ADR 0003) |
-| Password-reset code, confirmation and unsubscribe tokens | Restricted | An emailed link | The CMS keeps the SHA-256 of the newsletter tokens; the visitor's email holds the tokens | The page takes them out of the address bar; the server looks a subscriber up by the hash, so the token is not in the CMS request. Rows stored before hashing keep the token in the clear until they are used |
+| Password-reset code, confirmation and unsubscribe tokens | Restricted | An emailed link | The CMS keeps the SHA-256 of the newsletter tokens; the visitor's email holds the tokens | The page takes them out of the address bar; the server looks a subscriber up by the hash in the body of a `POST`, so the token is in no URL. The CMS hashes rows stored in the clear on boot |
 | API token, build token, forwarder secret, SMTP password | Restricted | The operator's environment | The process | [keys.md](keys.md) |
 | Email addresses (accounts, subscribers, guest comments) | Personal | Forms | The CMS | Lowercased and validated; the rate limiter holds an address in memory for the length of a window, with up to 10,000 keys, lost on restart |
 | Names and profile fields, comment text | Personal | Account and comment forms | The CMS | Comment responses hide the email and the author id is set by the server |
@@ -38,8 +38,3 @@ The frontend stores nothing of its own. Accounts, comments and subscribers live 
 | Not sent to third parties | Pages make no third-party request; the analytics proxy drops `Referer` and cookies | ADR 0002 |
 | Rate limited | Auth, comments, newsletter, search | [security.md, Client IP and rate limits](../security.md#client-ip-and-rate-limits) |
 | Retention | None in the frontend. Logs are kept as long as the operator's platform keeps them | [operate/logging.md](../operate/logging.md#retention) |
-
-## Known exceptions
-
-- **Email in a CMS query.** The server looks a subscriber up by email in the query string of its request to the CMS (`findSubscriber`, `server/utils/subscribers.ts`), because Strapi's REST API filters only through the URL. The email is Personal, not Restricted, and it goes only to the CMS, so the level allows it; it can appear in the CMS's and its proxy's access logs, which is why those logs fall under the retention the operator chooses. It is why V14.2.1 stays open.
-- **Subscribers stored before tokens were hashed.** Until their link is used, their token is in the clear in the CMS, and a lookup that finds no hash sends the token as it is. A confirmation re-stores the unsubscribe token as a hash; an unsubscribe deletes the row.

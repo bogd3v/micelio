@@ -27,9 +27,9 @@ Create a **Custom** token, never Full Access or Read Only, with exactly these pe
 | Page | `find` | Section pages (`/api/pages/:slug`, looked up by slug through the filtered `find`; `findOne` is not granted and not needed) |
 | Site-setting | `find` | Site identity and modules (`/api/site`, RSS feeds, newsletter emails). Without it Strapi answers 403 and everything falls back to `app.config.ts` |
 | Comments (plugin) | read (hierarchy and flat), create | Comment threads and guest comments |
-| Subscriber | `find`, `create`, `update`, `delete` | Newsletter: subscribe, confirm, unsubscribe. Tokens are stored as SHA-256 hashes and looked up by hash (`hashToken`, `server/utils/subscribers.ts`) |
+| Subscriber | `lookup`, `create`, `update`, `delete`; `find` stays for the previous release line | Newsletter: subscribe, confirm, unsubscribe. `lookup` is `POST /api/subscribers/lookup` with `{ field, value }` in the body, so no email or token is in a URL (V14.2.1). Tokens are stored as SHA-256 hashes and looked up by hash (`hashToken`, `server/utils/subscribers.ts`) |
 
-`update` on Subscriber is easy to miss: without it a subscription is created but confirming it fails with a 500.
+`update` on Subscriber is easy to miss: without it a subscription is created but confirming it fails with a 500. Without `lookup` every subscribe, confirm and unsubscribe fails: the frontend of this line needs a CMS that serves the route (`micelio-cms` from the release that added it). The frontend no longer calls `GET /api/subscribers`.
 
 In production the server refuses to boot when `NUXT_PUBLIC_STRAPI_URL` or `NUXT_UMAMI_URL` is plain `http://` to a host outside a private network (`insecureUpstream`, `server/lib/upstreams.ts`; [ADR 0011](adr/0011-refuse-plain-http-upstreams.md)): the token, the visitors' sessions and the analytics payload would cross the internet in the clear. `https`, loopback and private addresses, `localhost`, dotless service names, `.internal` and `.local` pass; TLS inside a private network is the operator's call.
 

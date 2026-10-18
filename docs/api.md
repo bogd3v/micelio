@@ -87,7 +87,7 @@ These call Strapi anonymously.
 | `POST /api/newsletter/confirm` | A missing token is a 400 `invalidToken`; an unknown or malformed one is a 404 `notFound`. A 429 is the CMS's own limit. |
 | `POST /api/newsletter/unsubscribe` | A malformed token is a 400 `invalidToken`. A 429 is the CMS's own limit. |
 
-Every newsletter response is `private, no-store`. The CMS stores the SHA-256 of the confirmation and unsubscribe tokens, not the tokens the emails carry, and the server looks a subscriber up by that hash, so a token never reaches the CMS's access logs (ASVS V14.2.1). Subscribers stored before this still have their tokens in the clear and keep working: if no hash matches, the server tries the token as it is, and a confirmation re-stores the unsubscribe token hashed. The unsubscribe token is created when the subscriber confirms, not when they subscribe.
+Every newsletter response is `private, no-store`. The CMS stores the SHA-256 of the confirmation and unsubscribe tokens, not the tokens the emails carry, and the server looks a subscriber up with `POST /api/subscribers/lookup` and `{ field, value }` in the body, by email or by that hash, so neither an email nor a token reaches the CMS's access logs (ASVS V14.2.1). The CMS hashes the tokens still stored in the clear on boot, so the emailed links keep working. This needs a CMS that serves the lookup route: upgrade the CMS first. The unsubscribe token is created when the subscriber confirms, not when they subscribe.
 
 ## Account
 

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { createServer } from 'node:http'
 import qs from 'qs'
 import { aboutBlocks } from './fixtures/about.mjs'
@@ -335,6 +336,11 @@ const publishedArticles = [
 const noArticles = process.env.MOCK_NO_ARTICLES === '1'
 const articles = noArticles ? [] : publishedArticles
 
+/** The CMS stores the SHA-256 of a newsletter token, as the frontend sends it. */
+function sha256(value) {
+  return createHash('sha256').update(value).digest('hex')
+}
+
 let nextSubscriberId = 7
 
 const subscribers = [
@@ -343,7 +349,7 @@ const subscribers = [
     documentId: 'sub-confirmed',
     email: 'confirmed@example.com',
     confirmationToken: null,
-    unsubscribeToken: 'unsubscribe-token-confirmed-0001',
+    unsubscribeToken: sha256('unsubscribe-token-confirmed-0001'),
     confirmed: true,
     language: 'en',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -353,8 +359,8 @@ const subscribers = [
     id: 6,
     documentId: 'sub-pending',
     email: 'pending@example.com',
-    confirmationToken: 'confirmation-token-pending-0001',
-    unsubscribeToken: 'unsubscribe-token-pending-0001',
+    confirmationToken: sha256('confirmation-token-pending-0001'),
+    unsubscribeToken: sha256('unsubscribe-token-pending-0001'),
     confirmed: false,
     language: 'en',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -688,11 +694,15 @@ const server = createServer(async (req, res) => {
     return
   }
 
-  if (method === 'GET' && url.pathname === '/api/subscribers') {
-    const field = ['email', 'confirmationToken', 'unsubscribeToken'].find(name => getNestedValue(query, ['filters', name, '$eq']) !== undefined)
-    const value = field ? getNestedValue(query, ['filters', field, '$eq']) : undefined
-    const data = field ? subscribers.filter(subscriber => subscriber[field] === value) : []
-    sendJson(res, 200, { data })
+  // The lookup takes its field and value in the body, so an email or a token never travels in a URL
+  if (method === 'POST' && url.pathname === '/api/subscribers/lookup') {
+    const field = body?.field
+    const allowed = ['email', 'confirmationToken', 'unsubscribeToken']
+    if (!allowed.includes(field) || typeof body?.value !== 'string' || body.value === '') {
+      sendJson(res, 400, { data: null, error: { status: 400, name: 'BadRequestError', message: 'field must be one of email, confirmationToken, unsubscribeToken', details: {} } })
+      return
+    }
+    sendJson(res, 200, { data: subscribers.find(subscriber => subscriber[field] === body.value) ?? null })
     return
   }
 

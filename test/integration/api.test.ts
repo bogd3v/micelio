@@ -71,6 +71,9 @@ beforeEach(() => {
   umami.requests.length = 0
 })
 
+/** The CMS route that finds a subscriber by a request body. */
+const LOOKUP_PATH = '/api/subscribers/lookup'
+
 describe('/api/categories', () => {
   it('returns the five redesign categories in order, including empty ones, and hides unknown empty ones', async () => {
     const result = await $fetch<Array<{ slug: string | null, name: string, count: number }>>('/api/categories', { query: { locale: 'en' } })
@@ -1560,14 +1563,14 @@ describe('/api/newsletter/subscribe', () => {
 
   it('answers an already confirmed subscriber like a new one, without touching it', async () => {
     expect(await subscribe({ email: 'confirmed@example.com' })).toMatchObject({ success: true })
-    const writes = mock.requests.filter(request => request.method !== 'GET' && request.path.startsWith('/api/subscribers'))
+    const writes = mock.requests.filter(request => request.method !== 'GET' && request.path.startsWith('/api/subscribers') && request.path !== LOOKUP_PATH)
     expect(writes).toEqual([])
   })
 
   it('deletes the subscriber it created when the confirmation email cannot be sent', async () => {
     const email = 'rollback@example.com'
     await expect(subscribe({ email })).rejects.toMatchObject({ response: { status: 500 } })
-    const calls = mock.requests.filter(request => request.path.startsWith('/api/subscribers') && request.method !== 'GET')
+    const calls = mock.requests.filter(request => request.path.startsWith('/api/subscribers') && request.method !== 'GET' && request.path !== LOOKUP_PATH)
     const created = calls.findIndex(request => request.method === 'POST' && request.body?.data?.email === email)
     expect(created).toBeGreaterThanOrEqual(0)
     // The record the route just made is deleted, by the id the CMS gave it
@@ -1644,9 +1647,9 @@ describe('/api/newsletter/confirm', () => {
   it('looks a hashed token up by its hash, so the token never reaches the CMS', async () => {
     const result = await confirm(HASHED_TOKENS.confirm)
     expect(result).toMatchObject({ success: true, alreadyConfirmed: false })
-    const lookups = mock.requests.filter(request => request.method === 'GET' && request.path === '/api/subscribers')
+    const lookups = mock.requests.filter(request => request.path === LOOKUP_PATH)
     expect(lookups).toHaveLength(1)
-    expect(JSON.stringify(lookups[0]?.query)).not.toContain(HASHED_TOKENS.confirm)
+    expect(lookups[0]?.rawBody).toEqual({ field: 'confirmationToken', value: createHash('sha256').update(HASHED_TOKENS.confirm).digest('hex') })
     const update = mock.requests.find(request => request.method === 'PUT' && request.path === '/api/subscribers/sub-hashed-to-confirm')
     expect(update?.body?.data?.unsubscribeToken).toMatch(/^[0-9a-f]{64}$/)
   })
@@ -1654,7 +1657,7 @@ describe('/api/newsletter/confirm', () => {
   it('answers a reopened link as already confirmed without writing again', async () => {
     const result = await confirm('confirmation-token-to-confirm-0001')
     expect(result).toMatchObject({ success: true, alreadyConfirmed: true })
-    expect(mock.requests.filter(request => request.method !== 'GET')).toEqual([])
+    expect(mock.requests.filter(request => request.method !== 'GET' && request.path !== LOOKUP_PATH)).toEqual([])
   })
 
   it('answers 404 for an unknown or malformed token and 400 for none', async () => {
@@ -1716,12 +1719,31 @@ describe('/api/newsletter/unsubscribe', () => {
   })
 })
 
+describe('the newsletter requests to the CMS', () => {
+  it('carry no email and no token in a URL, only in the body of the lookup', async () => {
+    const visitor = { 'x-forwarded-for': '203.0.113.90' }
+    const email = 'confirmed@example.com'
+    const tokens = ['confirmation-token-to-confirm-0001', 'unsubscribe-token-leaving-0001']
+    await ignoreError($fetch('/api/newsletter/subscribe', { method: 'POST', headers: { origin: SITE_URL, ...visitor }, body: { email, locale: 'en' } }))
+    await ignoreError($fetch('/api/newsletter/confirm', { method: 'POST', headers: { origin: SITE_URL }, body: { token: tokens[0] } }))
+    await $fetch('/api/newsletter/unsubscribe', { method: 'POST', body: { token: tokens[1] } })
+    const calls = mock.requests.filter(request => request.path.startsWith('/api/subscribers'))
+    expect(calls.map(request => request.path)).toContain(LOOKUP_PATH)
+    for (const call of calls) {
+      expect(call.path, call.path).not.toMatch(/@|%40/)
+      expect(JSON.stringify(call.query), call.path).toBe('{}')
+      for (const token of tokens) expect(call.path).not.toContain(token)
+    }
+    expect(calls.some(request => request.method === 'GET')).toBe(false)
+  })
+})
+
 describe('/api/newsletter/unsubscribe with hashed tokens', () => {
   it('deletes the subscriber without sending the token to the CMS', async () => {
     expect(await $fetch('/api/newsletter/unsubscribe', { method: 'POST', body: { token: HASHED_TOKENS.unsubscribe } })).toEqual({ success: true })
     expect(mock.requests.some(request => request.method === 'DELETE' && request.path === '/api/subscribers/sub-hashed-leaving')).toBe(true)
-    const lookups = mock.requests.filter(request => request.method === 'GET' && request.path === '/api/subscribers')
-    expect(JSON.stringify(lookups.map(request => request.query))).not.toContain(HASHED_TOKENS.unsubscribe)
+    const lookups = mock.requests.filter(request => request.path === LOOKUP_PATH)
+    expect(JSON.stringify(lookups.map(request => request.rawBody))).not.toContain(`"${HASHED_TOKENS.unsubscribe}"`)
   })
 
   it('does not accept a stored hash as the token', async () => {
@@ -2434,7 +2456,7 @@ describe('Strapi API token', () => {
     await $fetch('/api/tags')
     await $fetch('/api/comments/flat', { query: { relation: 'api::article.article:doc-vue' } })
     await ignoreError($fetch('/api/newsletter/confirm', { method: 'POST', headers: { origin: SITE_URL }, body: { token: 'confirmation-token-unknown-0002' } }))
-    const paths = ['/api/articles', '/api/tags', '/api/comments/api::article.article:doc-vue/flat', '/api/subscribers']
+    const paths = ['/api/articles', '/api/tags', '/api/comments/api::article.article:doc-vue/flat', LOOKUP_PATH]
     for (const path of paths) {
       const request = mock.requests.find(recorded => recorded.path === path)
       expect(request, path).toBeDefined()
@@ -2610,7 +2632,7 @@ describe('visitor address for the CMS rate limits', () => {
     expect(written.status).toBeLessThan(500)
     expect(seen(`/api/comments/${relation}`, 'POST')?.forwarder).toEqual({ secret: FORWARDER_SECRET, ip: '203.0.113.80' })
     await fetch('/api/newsletter/subscribe', { method: 'POST', headers, body: JSON.stringify({ email: 'fwd2@example.com' }) })
-    expect(seen('/api/subscribers', 'GET')?.forwarder).toEqual({ secret: FORWARDER_SECRET, ip: '203.0.113.80' })
+    expect(seen(LOOKUP_PATH, 'POST')?.forwarder).toEqual({ secret: FORWARDER_SECRET, ip: '203.0.113.80' })
   })
 
   it('carries the visitor through the server-side render, which calls /api in process', async () => {
