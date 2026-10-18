@@ -141,7 +141,7 @@ People sign in with a password: one factor, an account per email address. Accoun
 | Third-party sign-in | `/api/connect/*` of the CMS | Off unless the operator enables a provider in the CMS admin panel; the frontend has no flow for it. A site that turns one on adds a pathway with its own strength and must document it here |
 | CMS admin panel | `/admin` of the CMS | Separate administrator accounts, with their own limits (20 per 300 s per client); not part of the frontend |
 
-The CMS routes `/api/auth/*` and `/api/users/me` can also be called directly by anyone who reaches the CMS address. They carry the CMS limits listed above and the same confirmed-email rule, **but the 10-character minimum is enforced only by the frontend**: a direct sign-up or `change-password` call is bound by Strapi's own minimum. That gap is tracked in [micelio-cms#177](https://github.com/bogd3v/micelio-cms/issues/177) and #491. The strength every pathway must hold is: a confirmed email, a password of at least 10 characters, and the rate limits above.
+The CMS routes `/api/auth/*` and `/api/users/me` can also be called directly by anyone who reaches the CMS address. They carry the CMS limits listed above and the same confirmed-email rule. The 10-character minimum is enforced only by the frontend; a direct sign-up, reset or `change-password` call on the CMS is held to 8 characters, the lists of common and breached passwords and the context words (micelio-cms#177, `docs/security/authentication.md` there). The strength every pathway must hold is: a confirmed email, a password of at least 8 characters outside those lists, and the rate limits above.
 
 ### Sessions
 
@@ -152,7 +152,7 @@ The CMS routes `/api/auth/*` and `/api/users/me` can also be called directly by 
 | Concurrent sessions | Not limited: every sign-in issues its own JWT and none ends another, so there is no maximum to reach and no behaviour for reaching it |
 | Sign out | Clears the cookie of that browser. The JWT itself stays valid until it expires, which ADR 0003 accepts |
 
-Why there is no inactivity timeout, which departs from some readings of NIST SP 800-63B: a password alone is authenticator assurance level 1, for which the guideline asks to re-authenticate at least every 30 days and asks for no inactivity limit; 7 days is stricter on lifetime. The accounts hold an email address and a username, comment, and (editors) read drafts, with no payment or other personal data. An inactivity timeout needs a server-side record of the last use, which a stateless JWT does not have; the CMS offers one only in its `refresh` session mode, which would supersede part of ADR 0003. It is left out for now and tracked in #491 (ASVS V7.3.1). Check this against the current revision of the guideline when it changes, and when accounts hold more than they do.
+Why there is no inactivity timeout, which departs from some readings of NIST SP 800-63B: a password alone is authenticator assurance level 1, for which the guideline asks to re-authenticate at least every 30 days and asks for no inactivity limit; 7 days is stricter on lifetime. The accounts hold an email address and a username, comment, and (editors) read drafts, with no payment or other personal data. An inactivity timeout needs a server-side record of the last use, which a stateless JWT does not have; the CMS offers one only in its `refresh` session mode, which would supersede part of ADR 0003. It is left out by decision of 2026-10-14 and recorded as an accepted risk (ASVS V7.3.1 and V7.5.2); the ADR 0003 amendment has the reasoning. Check this against the current revision of the guideline when it changes, and when accounts hold more than they do.
 
 ### Request size
 
@@ -259,7 +259,7 @@ What a new password must satisfy (ASVS V6.1.2, V6.2.4, V6.2.11, V6.2.12). The fr
 
 What is not checked, and why:
 
-- **The context words at reset.** The reset route receives a code and a password, not the account, so it cannot know the username or the address; the CMS can. This is tracked with the CMS minimum in micelio-cms#177 and #491. The change route knows the account (it reads the person's profile first) and applies both checks.
+- **The context words at reset, in the frontend.** The reset route receives a code and a password, not the account, so it cannot know the username or the address; the CMS can, and it checks them for readers (micelio-cms#177, ASVS V6.2.11). The change route knows the account (it reads the person's profile first) and applies both checks.
 - **Breached password sets (ASVS V6.2.12), accepted risk.** Beyond the list above, a password is not compared with the large sets of leaked passwords. Doing it means asking a third-party service (even by hash prefix) or shipping a set of hundreds of millions of entries; the first breaks the rule that the site makes no request to a third party (standard, section 9), and the second is out of proportion for accounts that only comment and subscribe. Length (10 or more, and the interface suggests a long phrase) and the list of common passwords are the compensation. Revisit it if the accounts hold more than an email and a username.
 
 ## Logs
