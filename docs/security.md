@@ -222,6 +222,22 @@ State on 2026-10-14, from `npm audit` (13 high, no low, no critical). None of th
 | `node-forge` 1.4.0 or lower, through `nuxt`, `@nuxt/cli` and `listhen` | GHSA-86w9-cpqp-85rv | High | No fixed release exists (1.4.0 is the latest `node-forge`). It is pulled in by the dev and preview server of Nuxt (`listhen`), which the production image does not run | At every release |
 | `braces` 3.0.3 or lower, through `@nuxtjs/i18n`, `@intlify/unplugin-vue-i18n`, `fast-glob` and `micromatch` (and `globby` through `nitropack`) | GHSA-vfj7-8cjw-p6xm | High | Build time only, on the file patterns of this repository, which nobody outside the build controls; `npm audit` offers a downgrade of `@nuxtjs/i18n` to 7.3.1, a breaking change that is not applied | At every release |
 
+### Code scanning (CodeQL)
+
+State on 2026-10-18, from the first scan of `main` (#549): 10 alerts. Two are fixed in #589 (`js/bad-tag-filter` in `securityHeaders.ts` and `staticBuild.ts`). The other eight are dismissed in code scanning, each with the reason on the dismissal, because none of them is in code that handles a visitor's input:
+
+| Alert | Rule | Where | Reason |
+| --- | --- | --- | --- |
+| 15 | `js/bad-tag-filter` | `scripts/perf/measure.mjs` | Reads our own production HTML to measure it; it is not a sanitizer, and Nuxt emits lowercase tags |
+| 16 | `js/incomplete-sanitization` | `e2e/account.spec.ts` | A test escapes a fixed message of our locale files for a `RegExp` |
+| 17, 18 | `js/incomplete-sanitization` | `scripts/check-primitives.mjs`, `scripts/check-placement.mjs` | Lint scripts build a regex from names in this repository |
+| 19 | `js/bad-code-sanitization` | `modules/theme/init-script.mjs` | False positive: the values are build-time constants and mode ids and schemes validated by the theme contract (`^[\w-]+$`, `light` or `dark`), serialised with `JSON.stringify` |
+| 20 | `js/insecure-randomness` | `e2e/account.spec.ts` | `Math.random()` only makes a unique test username |
+| 21 | `js/clear-text-logging` | `scripts/contract/run.mjs` | An opt-in debug line (`CONTRACT_KEEP`) prints the token of a throwaway CMS container |
+| 22 | `js/weak-cryptographic-algorithm` | `e2e/fixtures/auth.mjs` | A fixture derives a fake confirmation token from a made-up username with SHA-1 |
+
+Review them if one of these files starts handling data from outside the repository.
+
 ## Static site publishing tokens
 
 The workflow `.github/workflows/static-site.yml` ([operate/static-site.md](operate/static-site.md)) and the CMS rebuild hook hold two more credentials, none of them in the generated site:
