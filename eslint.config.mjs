@@ -18,7 +18,7 @@ export default withNuxt(
   },
   {
     // Response schemas are for server code and tests; a component importing zod would ship it to the browser
-    files: ['app/{components,pages,composables,layouts,islands,plugins,middleware}/**/*.{ts,vue}'],
+    files: ['app/{components,pages,composables,layouts,islands,plugins,middleware,helpers,interfaces}/**/*.{ts,vue}', 'themes/**/*.{ts,vue}'],
     rules: {
       'no-restricted-imports': ['error', {
         patterns: [{
