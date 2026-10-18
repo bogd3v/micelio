@@ -75,7 +75,7 @@ beforeEach(() => {
 const LOOKUP_PATH = '/api/subscribers/lookup'
 
 describe('/api/categories', () => {
-  it('returns the five redesign categories in order, including empty ones, and hides unknown empty ones', async () => {
+  it('returns the categories of the CMS by order, whatever their slugs, and hides those without a slug', async () => {
     const result = await $fetch<Array<{ slug: string | null, name: string, count: number }>>('/api/categories', { query: { locale: 'en' } })
     expect(result.map(category => [category.slug, category.count])).toEqual([
       [Category.Privacy, 0],
@@ -83,7 +83,10 @@ describe('/api/categories', () => {
       [Category.Ai, 0],
       [Category.Software, 1],
       [Category.Linux, 1],
+      ['garden', 0],
+      ['kitchen', 0],
     ])
+    expect(Object.keys(result[0]!).sort()).toEqual(['count', 'id', 'name', 'slug'])
   })
 
   it('counts articles of the requested locale only', async () => {
@@ -305,8 +308,14 @@ describe('/api/reading-path', () => {
     expect(mock.requests).toEqual([])
   })
 
-  it('rejects unknown categories without calling Strapi', async () => {
+  it('serves a category the CMS has even when no site constant knows it', async () => {
+    const path = await $fetch<{ category: string, editorial: boolean, steps: unknown[] }>('/api/reading-path', { query: { category: 'garden', locale: 'en' } })
+    expect(path).toMatchObject({ category: 'garden', editorial: false, steps: [] })
+  })
+
+  it('rejects a category the CMS does not have, or a malformed one, without reading articles', async () => {
     await expect($fetch('/api/reading-path', { query: { category: 'cooking' } })).rejects.toMatchObject({ response: { status: 400 } })
+    await expect($fetch('/api/reading-path', { query: { category: 'not a slug' } })).rejects.toMatchObject({ response: { status: 400 } })
     await expect($fetch('/api/reading-path')).rejects.toMatchObject({ response: { status: 400 } })
     expect(mock.requests.some(item => item.path === '/api/articles')).toBe(false)
   })
@@ -407,8 +416,8 @@ describe('RSS feeds', () => {
     expect(linux.status).toBe(200)
     expect(linux.type).toBe('application/rss+xml; charset=utf-8')
     expect(linux.cache).toBe('public, s-maxage=1800, stale-while-revalidate=3600')
-    expect(linux.body).toContain('<title>Micelio - Linux and open source</title>')
-    expect(linux.body).toContain('<description>Micelio articles about Linux and open source.</description>')
+    expect(linux.body).toContain('<title>Micelio - Linux y código abierto</title>')
+    expect(linux.body).toContain('<description>Micelio articles about Linux y código abierto.</description>')
     expect(linux.body).toContain(`<link>${SITE_URL}/blog/category/linux</link>`)
     expect(linux.body).toContain(`<atom:link href="${SITE_URL}/feed/linux.xml" rel="self" type="application/rss+xml"/>`)
     expect(linux.body).toContain(`<atom:link href="${SITE_URL}/es/feed/linux.xml" rel="alternate" type="application/rss+xml" hreflang="es"/>`)
@@ -428,9 +437,22 @@ describe('RSS feeds', () => {
   it('returns a valid empty feed for a category without articles', async () => {
     const privacy = await feed('/feed/privacidad.xml')
     expect(privacy.status).toBe(200)
-    expect(privacy.body).toContain('<title>Micelio - Privacy</title>')
+    expect(privacy.body).toContain('<title>Micelio - Privacidad</title>')
     expect(privacy.body).not.toContain('<item>')
     expect(privacy.body.trim().endsWith('</channel>\n</rss>')).toBe(true)
+  })
+
+  it('serves the feed of a category the CMS has even when no site constant knows it', async () => {
+    const garden = await feed('/feed/garden.xml')
+    expect(garden.status).toBe(200)
+    expect(garden.body).toContain('<title>Micelio - Garden</title>')
+    expect(garden.body).toContain(`<link>${SITE_URL}/blog/category/garden</link>`)
+    expect(garden.body).not.toContain('<item>')
+  })
+
+  it('answers 404 for the feed of an unknown category', async () => {
+    expect((await feed('/feed/cooking.xml')).status).toBe(404)
+    expect((await feed('/es/feed/cooking.xml')).status).toBe(404)
   })
 
   it('names the feed from app.config.ts (the neutral name) when Strapi has no site-setting', async () => {
@@ -702,12 +724,20 @@ describe('/sitemap.xml', () => {
 
   it('lists the category pages of the blog in both languages and no tag or page paths', async () => {
     const xml = await sitemap()
-    for (const category of ['privacidad', 'diy', 'ia', 'software', 'linux']) {
+    for (const category of ['privacidad', 'diy', 'ia', 'software', 'linux', 'garden', 'kitchen']) {
       expect(entry(xml, `/blog/category/${category}`)).toContain(`hreflang="es" href="${SITE_URL}/es/blog/category/${category}"`)
       expect(entry(xml, `/es/blog/category/${category}`)).toContain(`hreflang="en" href="${SITE_URL}/blog/category/${category}"`)
     }
     expect(xml).not.toContain('/blog/tag/')
     expect(xml).not.toContain('/blog/page/')
+  })
+})
+
+describe('legacy blog URLs', () => {
+  it('moves a query-string filter of a category the CMS has to its path, not to a tag', async () => {
+    const response = await fetch('/blog?category=garden', { redirect: 'manual' })
+    expect(response.status).toBe(301)
+    expect(response.headers.get('location')).toBe('/blog/category/garden')
   })
 })
 

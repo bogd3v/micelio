@@ -2,7 +2,6 @@ import { escapeXml } from '~/helpers/xml'
 import qs from 'qs'
 import { defaultLocale, Locale, type LocalePaths, type RawStrapiArticle } from '~/interfaces'
 import { blogPath } from '~/helpers/blog'
-import { CATEGORIES } from '~/constants/categories'
 import { localizedPath } from '~/helpers/locale'
 import { isBlogEnabled } from '~/helpers/siteMode'
 import { ARTICLE_HAS_SLUG } from '../lib/constants'
@@ -31,11 +30,13 @@ export default defineEventHandler(async (event) => {
 
     // A landing with no articles has no blog or about page to list (ADR 0006, section 1)
     const blogEnabled = isBlogEnabled(config.public.blogEnabled)
+    // Slugs are not localized, so one locale gives the URLs of both
+    const categories = blogEnabled ? await loadCategories(defaultLocale) : []
     const staticPages = blogEnabled
       ? [
           { path: '/', changefreq: 'daily', priority: '1.0' },
           { path: '/blog', changefreq: 'daily', priority: '0.9' },
-          ...CATEGORIES.map(category => ({ path: blogPath({ category, page: 1 }), changefreq: 'daily', priority: '0.6' })),
+          ...categories.map(({ slug }) => ({ path: blogPath({ category: slug, page: 1 }), changefreq: 'daily', priority: '0.6' })),
           { path: '/about', changefreq: 'weekly', priority: '0.7' },
           { path: '/privacy', changefreq: 'yearly', priority: '0.3' },
         ]

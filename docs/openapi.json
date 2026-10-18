@@ -4438,7 +4438,8 @@
             "description": "A known category slug, trimmed and lowercased.",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^[a-z0-9-]{1,64}$"
             }
           },
           {
@@ -7337,14 +7338,7 @@
         "type": "object",
         "properties": {
           "category": {
-            "type": "string",
-            "enum": [
-              "privacidad",
-              "diy",
-              "ia",
-              "software",
-              "linux"
-            ]
+            "type": "string"
           },
           "editorial": {
             "type": "boolean"

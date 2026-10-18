@@ -63,7 +63,21 @@ const emptyCategories = [
   { id: 24, documentId: 'cat-diy', name: 'DIY · Hazlo tú mismo', slug: 'diy' },
   { id: 25, documentId: 'cat-ia', name: 'Inteligencia artificial', slug: 'ia' },
   { id: 26, documentId: 'cat-tutorial', name: 'tutorial', slug: null },
+  // Categories no site constant knows (ADR 0016): the core takes whatever the CMS has
+  { id: 27, documentId: 'cat-garden', name: 'Garden', slug: 'garden' },
+  { id: 28, documentId: 'cat-kitchen', name: 'Kitchen', slug: 'kitchen' },
 ]
+
+/** The fields only `/api/categories` sends: the editor's order, a description and the legacy `pillar` flag. */
+const categoryExtras = {
+  privacidad: { order: 1, description: 'Privacy tools', pillar: true },
+  diy: { order: 2, description: 'Make it yourself', pillar: true },
+  ia: { order: 3, description: 'Artificial intelligence' },
+  software: { order: 4, description: 'Software development' },
+  linux: { order: 5, description: 'Linux and open source' },
+  garden: { order: 6, description: 'Plants and soil' },
+  kitchen: { order: 7, description: 'Recipes' },
+}
 
 const seoVue = {
   id: 41,
@@ -549,6 +563,7 @@ const server = createServer(async (req, res) => {
       id: category.id,
       name: category.name,
       slug: category.slug,
+      ...(category.slug ? categoryExtras[category.slug] : undefined),
       articles: articles
         .filter(article => article.category?.slug === category.slug && article.locale === localeFilter)
         .map(article => ({ id: article.id })),

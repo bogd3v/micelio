@@ -74,6 +74,7 @@ describe('server calls to the CMS', () => {
   it('pass the visitor request inside the options of every strapiFetch, except the documented cached ones', () => {
     const notVisitor = new Set([
       join('server', 'utils', 'site.ts'),
+      join('server', 'utils', 'categories.ts'),
       join('server', 'utils', 'pageSections.ts'),
       join('server', 'utils', 'feed.ts'),
       join('server', 'routes', 'sitemap.xml.ts'),

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Category, PostListItem } from '~/interfaces'
+import type { PostListItem } from '~/interfaces'
 import { formatDotDate } from '~/helpers/formatDate'
 import { padCount } from '~/helpers/search'
 import { CATEGORIES } from '~/constants/categories'
@@ -7,7 +7,7 @@ import { feedPath } from '~/helpers/feed'
 
 defineProps<{
   recentPosts: PostListItem[]
-  category?: Category
+  category?: string
 }>()
 
 const { t, locale } = useI18n()

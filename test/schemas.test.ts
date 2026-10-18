@@ -126,7 +126,7 @@ describe('query schemas', () => {
   it('keeps the error messages the routes used to send', () => {
     expect(postsQuerySchema.safeParse({ page: 'abc' }).error?.issues[0]?.message).toBe('Invalid pagination')
     expect(localeQuerySchema.safeParse({ locale: 'fr' }).error?.issues[0]?.message).toBe('Unsupported locale')
-    expect(readingPathQuerySchema.safeParse({ category: 'cocina' }).error?.issues[0]?.message).toBe('Unknown category')
+    expect(readingPathQuerySchema.safeParse({ category: 'not a slug' }).error?.issues[0]?.message).toBe('Unknown category')
   })
 
   it('defaults the category and tag lists to English', () => {
@@ -138,6 +138,8 @@ describe('query schemas', () => {
     expect(searchQuerySchema.parse({ q: ' vue ', locale: 'en', content: 'true' })).toEqual({ q: 'vue', locale: 'en', content: true })
     expect(searchQuerySchema.parse({})).toEqual({ q: '', content: false })
     expect(readingPathQuerySchema.parse({ category: ' Software ' })).toEqual({ category: 'software' })
+    // Existence is checked against the CMS list in the route, so the schema accepts any slug shape
+    expect(readingPathQuerySchema.parse({ category: 'garden' })).toEqual({ category: 'garden' })
   })
 
   it('accepts only a field:direction sort and capped pagination for comments', () => {

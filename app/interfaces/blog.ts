@@ -1,4 +1,3 @@
-import type { Category } from './design'
 import type { PostListItem } from './strapi-post'
 
 /**
@@ -21,7 +20,7 @@ export type BlogSort = 'recent' | 'oldest' | 'fediverse'
  * @public
  */
 export interface BlogFilters {
-  category?: Category
+  category?: string
   tag?: string
   search?: string
   page: number
@@ -81,7 +80,7 @@ export interface ReadingPathStep {
  * @public
  */
 export interface ReadingPath {
-  category: Category
+  category: string
   /** True when the steps follow the editors' `pathOrder`; false when they are the category's posts by date. */
   editorial: boolean
   steps: ReadingPathStep[]

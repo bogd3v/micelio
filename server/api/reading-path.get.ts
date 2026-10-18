@@ -8,6 +8,9 @@ const MAX_STEPS = 50
 export default defineEventHandler(async (event): Promise<ReadingPath> => {
   const { category, locale } = validQuery(event, readingPathQuerySchema)
 
+  // The slug has the shape of one; whether the CMS has it is checked against the list (ADR 0016, section 7)
+  if (!await findCategory(category, locale)) throw problem('invalidRequest', { statusMessage: 'Unknown category' })
+
   async function fetchSteps(editorial: boolean): Promise<ReadingPathStep[]> {
     const params = qs.stringify({
       filters: {

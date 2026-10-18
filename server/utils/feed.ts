@@ -1,11 +1,11 @@
 import { escapeXml } from '~/helpers/xml'
 import qs from 'qs'
 import type { H3Event } from 'h3'
-import type { Category, Locale, RawStrapiArticle } from '~/interfaces'
-import { isCategory } from '~/helpers/categories'
+import type { Locale, RawStrapiArticle } from '~/interfaces'
 import { feedPath } from '~/helpers/feed'
 import { isBlogEnabled } from '~/helpers/siteMode'
 import { ARTICLE_HAS_SLUG, FEED_POPULATE } from '../lib/constants'
+import type { LoadedCategory } from '../lib/types'
 import en from '../../i18n/locales/en.json'
 import es from '../../i18n/locales/es.json'
 
@@ -13,7 +13,7 @@ type FeedLocale = 'en' | 'es'
 
 interface FeedOptions {
   locale: FeedLocale
-  category?: Category
+  category?: LoadedCategory
 }
 
 const MESSAGES = { en, es } as const
@@ -31,16 +31,16 @@ function cdata(value: string): string {
   return `<![CDATA[${value.replaceAll(']]>', ']]]]><![CDATA[>')}]]>`
 }
 
-function categoryMessage(message: string, siteName: string, locale: FeedLocale, category: Category): string {
-  return message.replace('{site}', siteName).replace('{category}', MESSAGES[locale].myc.categories[category])
+function categoryMessage(message: string, siteName: string, locale: FeedLocale, category: LoadedCategory): string {
+  return message.replace('{site}', siteName).replace('{category}', category.name)
 }
 
-function channelTitle(siteName: string, locale: FeedLocale, category?: Category): string {
+function channelTitle(siteName: string, locale: FeedLocale, category?: LoadedCategory): string {
   if (!category) return `${siteName}${locale === 'es' ? ' (Español)' : ''}`
   return categoryMessage(MESSAGES[locale].feed.categoryTitle, siteName, locale, category)
 }
 
-function channelDescription(site: { name: string, description: string }, locale: FeedLocale, category?: Category): string {
+function channelDescription(site: { name: string, description: string }, locale: FeedLocale, category?: LoadedCategory): string {
   const siteName = site.name
   if (!category) return site.description || MESSAGES[locale].feed.channelDescription.replace('{site}', siteName)
   return categoryMessage(MESSAGES[locale].feed.categoryDescription, siteName, locale, category)
@@ -52,7 +52,7 @@ async function fetchFeedPosts({ locale, category }: FeedOptions): Promise<RawStr
     populate: FEED_POPULATE,
     sort: 'publishedAt:desc',
     locale,
-    filters: { ...ARTICLE_HAS_SLUG, ...(category ? { category: { slug: { $eq: category } } } : {}) },
+    filters: { ...ARTICLE_HAS_SLUG, ...(category ? { category: { slug: { $eq: category.slug } } } : {}) },
   })
   const response = await strapiFetch<{ data: RawStrapiArticle[] }>(`/api/articles?${params}`)
   return response.data || []
@@ -70,10 +70,10 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
   const baseUrl = config.public.siteUrl
   const [posts, { site }] = await Promise.all([fetchFeedPosts(options), loadSite(locale as Locale)])
 
-  const feedUrl = escapeXml(`${baseUrl}${feedPath(locale, category)}`)
-  const altFeedUrl = escapeXml(`${baseUrl}${feedPath(otherLocale(locale), category)}`)
+  const feedUrl = escapeXml(`${baseUrl}${feedPath(locale, category?.slug)}`)
+  const altFeedUrl = escapeXml(`${baseUrl}${feedPath(otherLocale(locale), category?.slug)}`)
   const channelLink = escapeXml(category
-    ? `${baseUrl}${localePrefix(locale)}/blog/category/${category}`
+    ? `${baseUrl}${localePrefix(locale)}/blog/category/${category.slug}`
     : `${baseUrl}${localePrefix(locale)}`)
   const title = escapeXml(channelTitle(site.name, locale, category))
   const description = escapeXml(channelDescription(site, locale, category))
@@ -141,18 +141,17 @@ export async function sendFeed(event: H3Event, options: FeedOptions): Promise<st
 }
 
 /**
- * The category of a feed file such as `name.xml`, for the category feeds.
+ * The category of a feed file such as `name.xml`, read from the CMS list of the locale (`loadCategories`).
  *
  * @param file - The `file` route parameter, with its `.xml` suffix; undefined when the route has none.
+ * @param locale - The locale of the feed, which gives the category its name.
  *
  * @throws
- * A 404 error with the message `Feed not found` when the name is not a lowercase slug of a known category.
+ * A 404 error with the message `Feed not found` when the name is not the slug of a category of the CMS.
  */
-export function feedCategory(file: string | undefined): Category {
-  const match = /^([a-z-]+)\.xml$/.exec(file ?? '')
-  const slug = match?.[1]
-  if (!slug || !isCategory(slug)) {
-    throw problem('notFound', { message: 'Feed not found' })
-  }
-  return slug
+export async function feedCategory(file: string | undefined, locale: FeedLocale): Promise<LoadedCategory> {
+  const slug = /^([a-z0-9-]+)\.xml$/.exec(file ?? '')?.[1]
+  const category = slug ? await findCategory(slug, locale) : undefined
+  if (!category) throw problem('notFound', { message: 'Feed not found' })
+  return category
 }

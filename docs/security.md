@@ -68,7 +68,7 @@ The routes of a module switched off in `site-setting.modules`, or off for lack o
 
 | Endpoint | Access | Protections |
 | --- | --- | --- |
-| `GET /api/posts`, `/api/posts/:slug`, `/api/search`, `/api/categories`, `/api/tags`, `/api/about`, `/api/reading-path`, `/api/site` | Public | Query schema: known locales only, `pageSize` ≤ 50, slugs, search ≤ 200 chars |
+| `GET /api/posts`, `/api/posts/:slug`, `/api/search`, `/api/categories`, `/api/tags`, `/api/about`, `/api/reading-path`, `/api/site` | Public | Query schema: known locales only, `pageSize` ≤ 50, slugs, search ≤ 200 chars; a category is checked for the shape of a slug and then against the CMS list (`loadCategories`), never against a constant |
 | `GET /api/pages/:slug` | Public | Slug checked against the Strapi uid shape and locale against the known ones before any Strapi call; the response is rebuilt from a zod schema (unknown sections and fields dropped). Links: `http(s)`, `mailto:` or a path with one leading `/` and no backslash (`//host` and `/\host` are open redirects in browsers). Media URLs: site paths or the image origins of the CSP only. `canonicalURL` only on the site origin, `metaRobots` only known directives. Markdown comes out as sanitized HTML (`sanitize-html`, same options as articles). Only published content is read (`find` without `status=draft`). Post lists: at most four resolved per page. No rate limit, as on `/api/posts/:slug`: a random slug costs one Strapi call, and the 5 min cache (`loadPage`) bounds repeated hits on the same key; not found and errors are not stored |
 | `GET /api/comments`, `/api/comments/flat` | Public | Relation must be `api::article.article:<documentId>`; pagination and sort validated; email and hidden comments never returned |
 | `POST /api/comments` | Public | Same-origin check, 10 per IP (an IPv6 address counts by its /64) every 10 min, allow-listed fields and lengths, author id set by the server |
@@ -116,7 +116,7 @@ Notes on what counts as a visitor:
 - `NITRO_UNIX_SOCKET` (listening on a unix socket) is unsupported for per-visitor limits: there is no remote address, so every visitor resolves to `unknown` and nothing is forwarded.
 - A secret set only in `nuxt.config.ts` goes through `String()` and cannot be recovered if it looks like a number; set it by environment variable.
 
-What does not forward (the CMS counts these against the API token's bucket): the cached site settings and pages (`loadSite`, `loadPage`, shared between visitors), the feeds and the sitemap (crawler and CDN-cached traffic), and the static build. A call without the visitor, such as a failed address (`unknown`), sends no headers.
+What does not forward (the CMS counts these against the API token's bucket): the cached site settings and pages (`loadSite`, `loadPage`, `loadCategories`, shared between visitors), the feeds and the sitemap (crawler and CDN-cached traffic), and the static build. A call without the visitor, such as a failed address (`unknown`), sends no headers.
 
 `strapiFetch(path, { event })` adds the headers, and every call to the CMS goes through it (`test/strapiRequest.test.ts` fails on a `$fetch(strapiUrl(...))` or a `strapiFetch` outside the exceptions above whose options lack `event`), including the token-less ones (`auth: 'none'`) and those with a user's JWT (`auth: { jwt }`). Extra headers can never carry `Authorization`. The auth calls wait up to 30 s (register and password mails are sent inside Strapi); other calls 10 s.
 

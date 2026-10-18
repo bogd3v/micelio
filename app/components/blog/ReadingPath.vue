@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { Category, ReadingPath, ReadingPathStep } from '~/interfaces'
+import type { ReadingPath, ReadingPathStep } from '~/interfaces'
 import { padCount } from '~/helpers/search'
 
 const MIN_STEPS = 2
 
 const props = defineProps<{
-  category: Category
+  category: string
   currentDocumentId?: string
 }>()
 

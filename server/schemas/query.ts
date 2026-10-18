@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { Locale } from '~/interfaces/locale'
-import { isCategory } from '~/helpers/categories'
 import { isContentSearch } from '~/helpers/search'
 import { parseSort } from '~/helpers/blog'
 
@@ -73,9 +72,9 @@ export const searchQuerySchema = z.object({
   content,
 })
 
-/** The query of `GET /api/reading-path`: a category slug, trimmed and lowercased, that must be a known category (a 400 `Unknown category` otherwise), and an optional locale. */
+/** The query of `GET /api/reading-path`: a category slug, trimmed and lowercased, of the shape of a slug (a 400 `Unknown category` otherwise; the route checks that the CMS has it, ADR 0016), and an optional locale. */
 export const readingPathQuerySchema = z.object({
-  category: z.preprocess(lowerTrimmed, z.string({ error: 'Unknown category' }).refine(isCategory, 'Unknown category')),
+  category: z.preprocess(lowerTrimmed, z.string({ error: 'Unknown category' }).regex(SLUG_PATTERN, 'Unknown category')),
   locale,
 })
 

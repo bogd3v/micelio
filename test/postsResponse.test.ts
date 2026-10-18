@@ -131,7 +131,7 @@ describe('searchResultSchema and readingPathSchema', () => {
     expect(searchResultSchema.safeParse({ ...hit, matchedIn: 'body' }).success).toBe(false)
     expect(searchResultSchema.safeParse({ ...hit, extra: 1 }).success).toBe(false)
     expect(searchResultSchema.safeParse({ ...hit, snippet: undefined }).success).toBe(false)
-    expect(readingPathSchema.safeParse({ category: 'cooking', editorial: true, steps: [] }).success).toBe(false)
+    expect(readingPathSchema.safeParse({ category: 5, editorial: true, steps: [] }).success).toBe(false)
     expect(readingPathSchema.safeParse({ category: 'linux', editorial: true, steps: [{ documentId: 'd', slug: 's', title: 't', extra: 1 }] }).success).toBe(false)
   })
 })

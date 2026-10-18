@@ -17,9 +17,9 @@ Conventions:
 | `GET /api/posts` | 5 min | A 429 is the CMS's own limit; the route has none of its own. |
 | `GET /api/posts/:slug` | 5 min | The slug is checked against the alphabet of a Strapi uid before any CMS call. The 400 message is `Invalid slug` or `Unsupported locale`. |
 | `GET /api/search` | 1 min | — |
-| `GET /api/categories` | 10 min | — |
+| `GET /api/categories` | 10 min in Nitro's storage per locale (`loadCategories`, stale while revalidating); a failure is never stored | The categories of the CMS, whatever their slugs (ADR 0016), sorted by `order` ascending (empty last), then `name`, with the published articles of the locale in `count`. A category without a lowercase-slug `slug` is left out; one with no articles stays. |
 | `GET /api/tags` | 10 min | — |
-| `GET /api/reading-path` | 5 min | A 400 when the category is unknown. |
+| `GET /api/reading-path` | 5 min | The `category` query is checked for the shape of a slug (lowercase letters, digits, hyphen) and then against `loadCategories`; a 400 `Unknown category` when the CMS does not have it. |
 | `GET /api/about` | 5 min | — |
 | `GET /api/pages/:slug` | 5 min in Nitro's storage per locale and slug (`loadPage`, stale while revalidating); a 404 or 502 is never stored | — |
 | `GET /api/site` | 5 min; 30 s when Strapi fails | Answers the `app.config.ts` values when Strapi fails (see Site identity). |
@@ -146,10 +146,10 @@ They use the editor's own JWT, never the API token, and answer `private, no-stor
 
 | Route | Notes |
 | --- | --- |
-| `GET /feed.xml`, `/es/feed.xml`, `/feed/:category.xml`, `/es/feed/:category.xml` | The feeds of the latest articles and of one category. |
+| `GET /feed.xml`, `/es/feed.xml`, `/feed/:category.xml`, `/es/feed/:category.xml` | The feeds of the latest articles and of one category. The category must be in `loadCategories` (`404 Feed not found` otherwise) and its CMS `name` titles the feed. |
 | `GET /blog/category/:slug`, `/blog/tag/:slug`, `/blog/page/:n`, `/blog/category/:slug/page/:n`, `/blog/tag/:slug/page/:n` (and under `/es`) | The blog list with one filter (a category or a tag) and a page; `sort`, `view` and `search` stay in the query. Unknown category or page 0: `404`. `<link rel="canonical">` is the path form (no search, sort or view). hreflang points at the same filter in each language on the first page and is omitted on page 2 and above; the language switcher goes to the first page |
-| `GET /blog?category=&tag=&page=` (and `/es/blog`), `/blog/**/page/1` | `301` to the path form (`server/middleware/blog-redirects.ts`, before the ISR handler); the category wins over the tag; other parameters are kept. `/blog/category/Linux` becomes lowercase and `/blog/page/02` loses the padding |
-| `GET /sitemap.xml` | Tag and page paths are not listed. |
+| `GET /blog?category=&tag=&page=` (and `/es/blog`), `/blog/**/page/1` | `301` to the path form (`server/middleware/blog-redirects.ts`, before the ISR handler; a URL that is not yet canonical tells a category from a tag with `loadCategories`); the category wins over the tag; other parameters are kept. `/blog/category/Linux` becomes lowercase and `/blog/page/02` loses the padding |
+| `GET /sitemap.xml` | The category paths come from `loadCategories`. Tag and page paths are not listed. |
 | `GET /robots.txt` | The sitemap URL is `Sitemap: <NUXT_PUBLIC_SITE_URL>/sitemap.xml`; there is no `public/robots.txt`, which would shadow the route. |
 | `/bd.js`, `/api/bd` | Umami tracker and collect endpoint, proxied by `server/middleware/umami.ts` when `NUXT_UMAMI_URL` is set |
 
