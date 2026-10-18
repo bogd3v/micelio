@@ -2,13 +2,14 @@
 
 The [OpenSSF Scorecard](https://securityscorecards.dev/) runs weekly and on every push to `main` (`.github/workflows/scorecard.yml`) and uploads its findings to code scanning. Section 10 of the [engineering standard](../engineering-standard.md) asks that each finding is fixed or written down with the reason. This page is that record.
 
-Last reviewed: 2026-10-18, score 7.3 of 10 on `0796a13` (6.1 on `ef5fb21`, the first run, 2026-10-15). Review it when the score moves or a check changes.
+Last reviewed: 2026-10-18, score 7.4 of 10 on `dc7a9b1` (6.1 on `ef5fb21`, the first run, 2026-10-15). Review it when the score moves or a check changes.
 
 ## Fixed
 
 | Check | Finding | Fix |
 | --- | --- | --- |
 | Token-Permissions | `release.yml` asked for `contents: write` and `packages: write` for the whole workflow | The workflow is read-only; the single `release` job asks for its writes |
+| Pinned-Dependencies | The three `FROM` lines of the `Dockerfile` used tags that move (9 of 10) | Each is pinned by digest (#548); CI keeps the Docker Hub rate-limit protection through a GHCR copy named by tag and digest ([the CI pipeline](../architecture/ci-pipeline.md#the-node-base-image)). 10 of 10 on `dc7a9b1` |
 
 ## Accepted
 
@@ -29,7 +30,6 @@ These need a change of their own and are not part of this record's pull request:
 
 | Check | Score | What closes it |
 | --- | --- | --- |
-| Pinned-Dependencies | 9 | Pinned by digest since #548 (the mirror matches the digest-pinned reference, see [the CI pipeline](../architecture/ci-pipeline.md#the-node-base-image)); pending: the score is read again on the next run after it merges |
 | Vulnerabilities | 8 | Two Dependabot alerts on the default branch; see [`../security.md`](../security.md#dependencies) |
 
 ## Not measured
