@@ -21,6 +21,10 @@ describe('inlineScripts', () => {
   it('keeps multi-line content exactly as written', () => {
     expect(inlineScripts('<script>\n  var a = 1;\n</script>')).toEqual(['\n  var a = 1;\n'])
   })
+
+  it('ends a script at a closing tag with whitespace, as the browser does', () => {
+    expect(inlineScripts('<script>window.a=1</script ><p>after</p><script>window.b=2</script\n>')).toEqual(['window.a=1', 'window.b=2'])
+  })
 })
 
 describe('cspOrigin', () => {

@@ -20,6 +20,10 @@ describe('noScriptsViolations', () => {
     expect(noScriptsViolations('<link rel="preload" as="fetch" href="/blog/_payload.json">')).toEqual(['a preload of _payload.json'])
   })
 
+  it('finds a script whose closing tag has whitespace, as the browser reads it', () => {
+    expect(noScriptsViolations('<script>window.__NUXT__={}</script ><p>after</p>')).toEqual(['the Nuxt state (__NUXT__)'])
+  })
+
   it('lets an island script through', () => {
     expect(noScriptsViolations('<script type="module" src="/_islands/search-AbC123.js"></script>')).toEqual([])
   })
