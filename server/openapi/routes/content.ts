@@ -109,7 +109,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
     tag: 'Content',
     query: readingPathQuerySchema,
     parameters: [
-      { name: 'category', in: 'query', description: 'A known category slug, trimmed and lowercased.' },
+      { name: 'category', in: 'query', description: 'The shape of a category slug (lowercase letters, digits and hyphens, at most 64), trimmed and lowercased; a 400 `Unknown category` when the CMS list has no such category.' },
       LOCALE_PARAMETER,
     ],
     response: { status: 200, schema: readingPathSchema, description: 'The reading path.', cache: READ_CACHE_5_MIN },

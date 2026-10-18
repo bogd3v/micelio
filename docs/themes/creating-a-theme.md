@@ -322,3 +322,7 @@ The 25 KB gzip CSS limit and the two font families are `theme:check` static budg
 - [ ] Animations are under `prefers-reduced-motion: no-preference`
 - [ ] A budget exception, if any, is in `scripts/perf/budgets.json` with its reason
 - [ ] Baselines come from the CI artifact (`docs/theme-testing.md`)
+
+## Upgrade notes
+
+- **Category slugs are strings (0.y, before contract 2).** `BlogFilters.category` and `ReadingPath.category` (slot APIs) and the `category` prop of the blog sidebar and reading path are `string`, no longer `Category`, because categories come from the CMS (ADR 0016). A slot that passes `path.category` or `filters.category` to `categoryColor`, or that indexes a `Record<Category, …>` with them, must accept a `string`. Contract 2 removes the `Category` enum, `CATEGORIES` and `CATEGORY_INFO` and changes `isCategory` and `categoryColor` to take the list from `useCategories()`.

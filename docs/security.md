@@ -105,7 +105,7 @@ The server calls the CMS from one address, so the CMS limits would be shared by 
 
 What forwards:
 
-- Every browser request to `/api/*` (comments, newsletter, auth, posts, search, categories, tags, about, reading path, drafts, fediverse), with the address resolved from its socket.
+- Every browser request to `/api/*` (comments, newsletter, auth, posts, search, tags, about, reading path, drafts, fediverse; `/api/categories` and the category checks read the shared cached `loadCategories`, which does not forward), with the address resolved from its socket.
 - Server-side rendering. SSR calls `/api/*` in process, with no socket address, through Nuxt's `event.$fetch` (`useRequestFetch`, `useFetch`, and `useStrapi`). `server/plugins/internalClientIp.ts` adds the outer request's resolved address and a per-process random nonce (`x-micelio-internal-ip`, `x-micelio-internal-nonce`) to those calls; `clientIp()` accepts them only when the socket has no remote address and the nonce matches (timing-safe). A request from outside carrying those headers, with a wrong nonce or none, is ignored (and has a socket address anyway). The nonce never leaves the process; the headers are never sent to the CMS or to Umami. A plain global `$fetch` carries nothing, so SSR code that calls `/api` must use `useRequestFetch()`.
 
 Notes on what counts as a visitor:

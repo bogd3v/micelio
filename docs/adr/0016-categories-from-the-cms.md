@@ -1,6 +1,6 @@
 # ADR-0016: Categories come from the CMS
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-18
 **Deciders:** Micelio maintainer
 

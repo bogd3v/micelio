@@ -32,7 +32,8 @@ function cdata(value: string): string {
 }
 
 function categoryMessage(message: string, siteName: string, locale: FeedLocale, category: LoadedCategory): string {
-  return message.replace('{site}', siteName).replace('{category}', category.name)
+  // One pass, so a placeholder inside the site name or the category name is not expanded again
+  return message.replace(/\{(site|category)\}/g, (_, key: string) => key === 'site' ? siteName : category.name)
 }
 
 function channelTitle(siteName: string, locale: FeedLocale, category?: LoadedCategory): string {
@@ -123,14 +124,23 @@ export async function renderFeed(options: FeedOptions): Promise<string> {
 }
 
 /**
+ * Throws a 404 `This site has no blog` when the blog is disabled (ADR 0006, section 1): a landing with no articles has no feeds.
+ *
+ * @remarks
+ * The category feed routes call it before `feedCategory`, so a landing answers 404 without reading the category list.
+ */
+export function assertBlogEnabled(event: H3Event): void {
+  if (!isBlogEnabled(useRuntimeConfig(event).public.blogEnabled)) throw problem('notFound', { message: 'This site has no blog' })
+}
+
+/**
  * Answers a feed request with the document of `renderFeed`.
  *
  * @remarks
  * Sets the RSS content type and `public, s-maxage=1800, stale-while-revalidate=3600`. Throws a 404 when the blog is disabled (ADR 0006), and a 500 `Failed to generate RSS feed` when rendering fails.
  */
 export async function sendFeed(event: H3Event, options: FeedOptions): Promise<string> {
-  // A landing with no articles has no feeds (ADR 0006, section 1)
-  if (!isBlogEnabled(useRuntimeConfig(event).public.blogEnabled)) throw problem('notFound', { message: 'This site has no blog' })
+  assertBlogEnabled(event)
   setHeader(event, 'Content-Type', 'application/rss+xml; charset=utf-8')
   setHeader(event, 'Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=3600')
   try {

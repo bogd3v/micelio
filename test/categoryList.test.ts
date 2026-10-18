@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shapeCategories, sortCategories } from '../server/lib/categoryList'
+import { mergeLocalized, shapeCategories, sortCategories } from '../server/lib/categoryList'
 
 describe('sortCategories', () => {
   it('sorts by order ascending, then those without one, then by name', () => {
@@ -51,5 +51,24 @@ describe('shapeCategories', () => {
       { id: 3, name: 'C', slug: 'c', featured: true },
     ])
     expect(shaped.map(category => category.featured)).toEqual([true, false, true])
+  })
+})
+
+describe('mergeLocalized', () => {
+  const base = shapeCategories([
+    { id: 1, name: 'Garden', slug: 'garden', description: 'Plants', order: 1, articles: [{ id: 1 }] },
+    { id: 2, name: 'Kitchen', slug: 'kitchen', order: 2, articles: [{ id: 2 }] },
+  ])
+
+  it('takes name and count from the locale and keeps the order of the default one', () => {
+    const localized = shapeCategories([{ id: 1, name: 'Jardin', slug: 'garden', order: 1, articles: [{ id: 5 }, { id: 6 }] }])
+    const merged = mergeLocalized(base, localized)
+    expect(merged.map(category => [category.slug, category.name, category.count])).toEqual([['garden', 'Jardin', 2], ['kitchen', 'kitchen', 0]])
+    expect(merged[0]?.description).toBe('Plants')
+  })
+
+  it('adds a category only the locale has', () => {
+    const localized = shapeCategories([{ id: 9, name: 'Solo', slug: 'solo', order: 3 }])
+    expect(mergeLocalized(base, localized).map(category => category.slug)).toEqual(['garden', 'kitchen', 'solo'])
   })
 })

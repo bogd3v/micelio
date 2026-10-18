@@ -12,9 +12,8 @@ export default defineEventHandler(async (event) => {
   let known: ReadonlySet<string> | undefined
   try {
     known = new Set((await loadCategories(locale)).map(category => category.slug))
-  } catch (error: unknown) {
-    // The list is only used to tell a category from a tag; without it the built-in constant keeps the old behaviour
-    logError('cms.categories', 'Reading the categories for a blog redirect failed', { error })
+  } catch {
+    // The list is only used to tell a category from a tag, and fetchCategories logged the cause: the built-in constant keeps the old behaviour
   }
   const target = legacyBlogRedirect(pathname, search, known ? slug => known.has(slug) : isCategory)
   if (target) return sendRedirect(event, target, 301)

@@ -4435,7 +4435,7 @@
           {
             "name": "category",
             "in": "query",
-            "description": "A known category slug, trimmed and lowercased.",
+            "description": "The shape of a category slug (lowercase letters, digits and hyphens, at most 64), trimmed and lowercased; a 400 `Unknown category` when the CMS list has no such category.",
             "required": true,
             "schema": {
               "type": "string",

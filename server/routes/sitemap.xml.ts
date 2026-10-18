@@ -5,7 +5,18 @@ import { blogPath } from '~/helpers/blog'
 import { localizedPath } from '~/helpers/locale'
 import { isBlogEnabled } from '~/helpers/siteMode'
 import { ARTICLE_HAS_SLUG } from '../lib/constants'
+import type { LoadedCategory } from '../lib/types'
 import { articlePaths, publishedTranslations } from '~/helpers/translations'
+
+/** The categories with a published article, which are the ones the sitemap lists. A CMS failure lists none, so the articles still get their sitemap. */
+async function sitemapCategories(): Promise<LoadedCategory[]> {
+  try {
+    return (await loadCategories(defaultLocale)).filter(category => category.count > 0)
+  } catch (error: unknown) {
+    logError('cms.categories', 'Listing the categories for the sitemap failed', { error })
+    return []
+  }
+}
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -31,7 +42,7 @@ export default defineEventHandler(async (event) => {
     // A landing with no articles has no blog or about page to list (ADR 0006, section 1)
     const blogEnabled = isBlogEnabled(config.public.blogEnabled)
     // Slugs are not localized, so one locale gives the URLs of both
-    const categories = blogEnabled ? await loadCategories(defaultLocale) : []
+    const categories = blogEnabled ? await sitemapCategories() : []
     const staticPages = blogEnabled
       ? [
           { path: '/', changefreq: 'daily', priority: '1.0' },

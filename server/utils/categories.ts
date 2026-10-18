@@ -1,46 +1,58 @@
 import qs from 'qs'
-import { shapeCategories, type RawCategory } from '../lib/categoryList'
+import { defaultLocale } from '~/interfaces/locale'
+import { mergeLocalized, shapeCategories, type RawCategory } from '../lib/categoryList'
 import type { LoadedCategory } from '../lib/types'
 
 const MAX_CATEGORIES = 100
 
-async function fetchCategories(locale: string | undefined): Promise<LoadedCategory[]> {
+async function fetchLocale(locale: string): Promise<LoadedCategory[]> {
   const params = qs.stringify({
     pagination: { pageSize: MAX_CATEGORIES },
+    // `featured` is not requested until the CMS has the field: Strapi rejects an unknown field (ADR 0016, section 10)
     fields: ['name', 'slug', 'description', 'order', 'pillar'],
     locale,
     populate: {
       articles: {
         fields: ['id'],
-        filters: { locale: { $eq: locale ?? 'en' } },
+        filters: { locale: { $eq: locale } },
       },
     },
-  }, { skipNulls: true })
+  })
+  const response = await strapiFetch<{ data?: RawCategory[] }>(`/api/categories?${params}`)
+  return shapeCategories(response.data ?? [])
+}
+
+async function fetchCategories(locale: string): Promise<LoadedCategory[]> {
   try {
-    const response = await strapiFetch<{ data?: RawCategory[] }>(`/api/categories?${params}`)
-    return shapeCategories(response.data ?? [])
+    if (locale === defaultLocale) return await fetchLocale(locale)
+    const [base, localized] = await Promise.all([fetchLocale(defaultLocale), fetchLocale(locale)])
+    return mergeLocalized(base, localized)
   } catch (error: unknown) {
     logError('cms.categories', 'Fetching the categories failed', { error })
     throw upstreamFailure(error, 'Failed to fetch categories')
   }
 }
 
-/**
- * The categories of the CMS with their published article counts in one locale, sorted by `order`, then `name`.
- *
- * @remarks
- * Cached for 10 minutes per locale, stale while revalidating; a failure is thrown and not stored. This is the only source of categories on the server: routes check a slug against it, never against a constant (ADR 0016). A new category takes up to the cache time to appear.
- *
- * @throws A problem detail from `upstreamFailure` when the CMS fails.
- */
-export const loadCategories = defineCachedFunction(fetchCategories, {
+const cachedCategories = defineCachedFunction(fetchCategories, {
   name: 'categories',
-  getKey: (locale: string | undefined) => locale ?? 'default',
+  getKey: (locale: string) => locale,
   maxAge: 600,
   swr: true,
 })
 
-/** The category with this slug in the list of the locale, or undefined when the CMS has none. */
-export async function findCategory(slug: string, locale: string | undefined): Promise<LoadedCategory | undefined> {
-  return (await loadCategories(locale)).find(category => category.slug === slug)
+/**
+ * The categories of the CMS with their published article counts in one locale, sorted by `order`, then `name`.
+ *
+ * @remarks
+ * Cached for 10 minutes per locale, stale while revalidating; a failure is thrown and not stored. This is the only source of categories on the server: routes check a slug against it, never against a constant (ADR 0016). A new category takes up to the cache time to appear. It reads at most 100 categories (one page). A category with no translation in the locale is listed with its slug as its name and no articles; an absent locale is the default one.
+ *
+ * @throws A problem detail from `upstreamFailure` when the CMS fails.
+ */
+export function loadCategories(locale?: string): Promise<LoadedCategory[]> {
+  return cachedCategories(locale ?? defaultLocale)
+}
+
+/** The category with this slug in the list of the locale, or null when the CMS has none. */
+export async function findCategory(slug: string, locale?: string): Promise<LoadedCategory | null> {
+  return (await loadCategories(locale)).find(category => category.slug === slug) ?? null
 }
