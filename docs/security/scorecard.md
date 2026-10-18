@@ -29,7 +29,7 @@ These need a change of their own and are not part of this record's pull request:
 | Check | Score | What closes it |
 | --- | --- | --- |
 | Pinned-Dependencies | 9 | The three `FROM` lines of the `Dockerfile` use tags. CI replaces the Node image with a copy in GHCR through a build context named by tag (`.github/actions/node-base`), so a digest in the `FROM` line changes that name; the pin and the mirror have to change together |
-| SAST | 0 | No CodeQL workflow here yet; `micelio-cms` has one |
+| SAST | 0 | `.github/workflows/codeql.yml` runs CodeQL since #549; the score is recorded here after the next Scorecard run |
 | Vulnerabilities | 8 | Two Dependabot alerts on the default branch; see [`../security.md`](../security.md#dependencies) |
 
 ## Not measured
