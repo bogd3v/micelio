@@ -31,7 +31,7 @@ export const MOCK_ROUTES: Record<string, string> = {
   'GET /api/about': 'compared',
   'GET /api/comments*': 'compared',
   'POST /api/comments*': 'a write: the contract suite makes it on the real CMS (writes.spec.ts)',
-  'GET /api/subscribers': 'the newsletter module is off on the contract server (no SMTP), so the frontend never asks for it',
+  'POST /api/subscribers/lookup': 'a lookup by request body: the contract suite makes it on the real CMS (writes.spec.ts)',
   'POST /api/subscribers': 'a write: the contract suite makes it on the real CMS (writes.spec.ts)',
   'DELETE /api/subscribers/*': 'a write: the contract suite makes it on the real CMS (writes.spec.ts)',
   'GET /api/fediverse/articles/ranking': 'the fediverse module is off on the contract server (no fediverse configuration)',

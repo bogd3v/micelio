@@ -345,7 +345,7 @@ const subscribers: MockSubscriber[] = [
     documentId: 'sub-confirmed',
     email: 'confirmed@example.com',
     confirmationToken: null,
-    unsubscribeToken: 'unsubscribe-token-confirmed-0001',
+    unsubscribeToken: sha256('unsubscribe-token-confirmed-0001'),
     confirmed: true,
     language: 'en',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -355,8 +355,8 @@ const subscribers: MockSubscriber[] = [
     id: 6,
     documentId: 'sub-pending',
     email: 'pending@example.com',
-    confirmationToken: 'confirmation-token-pending-0001',
-    unsubscribeToken: 'unsubscribe-token-pending-0001',
+    confirmationToken: sha256('confirmation-token-pending-0001'),
+    unsubscribeToken: sha256('unsubscribe-token-pending-0001'),
     confirmed: false,
     language: 'es',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -366,7 +366,7 @@ const subscribers: MockSubscriber[] = [
     id: 3,
     documentId: 'sub-to-confirm',
     email: 'to-confirm@example.com',
-    confirmationToken: 'confirmation-token-to-confirm-0001',
+    confirmationToken: sha256('confirmation-token-to-confirm-0001'),
     unsubscribeToken: null,
     confirmed: false,
     language: 'es',
@@ -378,7 +378,7 @@ const subscribers: MockSubscriber[] = [
     documentId: 'sub-leaving',
     email: 'leaving@example.com',
     confirmationToken: null,
-    unsubscribeToken: 'unsubscribe-token-leaving-0001',
+    unsubscribeToken: sha256('unsubscribe-token-leaving-0001'),
     confirmed: true,
     language: 'en',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -389,7 +389,7 @@ const subscribers: MockSubscriber[] = [
     documentId: 'sub-one-click',
     email: 'one-click@example.com',
     confirmationToken: null,
-    unsubscribeToken: 'unsubscribe-token-one-click-0001',
+    unsubscribeToken: sha256('unsubscribe-token-one-click-0001'),
     confirmed: true,
     language: 'en',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -849,12 +849,14 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
       return
     }
 
-    if (method === 'GET' && url.pathname === '/api/subscribers') {
-      const fields = ['email', 'confirmationToken', 'unsubscribeToken'] as const
-      const field = fields.find(name => getNestedValue(query, ['filters', name, '$eq']) !== undefined)
-      const value = field ? getNestedValue(query, ['filters', field, '$eq']) : undefined
-      const data = field ? subscribers.filter(subscriber => subscriber[field] === value) : []
-      sendJson(res, 200, { data })
+    // The lookup takes its field and value in the body, so an email or a token never travels in a URL
+    if (method === 'POST' && url.pathname === '/api/subscribers/lookup') {
+      const field = (['email', 'confirmationToken', 'unsubscribeToken'] as const).find(name => name === body?.field)
+      if (!field || typeof body?.value !== 'string' || body.value === '') {
+        sendJson(res, 400, { data: null, error: { status: 400, name: 'BadRequestError', message: 'field must be one of email, confirmationToken, unsubscribeToken', details: {} } })
+        return
+      }
+      sendJson(res, 200, { data: subscribers.find(subscriber => subscriber[field] === body.value) ?? null })
       return
     }
 

@@ -34,7 +34,7 @@ test('a guest comment is stored, shown back and never carries the email', async 
 })
 
 // The newsletter module is off on the contract server (no SMTP), so the route is not served: the contract is the CMS calls of server/utils/subscribers.ts,
-// made with the same token (create, find by email, update, delete)
+// made with the same token (create, find by email through the lookup route, update, delete)
 test('the subscriber write: create, find by email, confirm and delete', async () => {
   const email = `contract-${randomUUID()}@example.com`
   const created = await cmsFetch('/api/subscribers', {
@@ -45,9 +45,11 @@ test('the subscriber write: create, find by email, confirm and delete', async ()
   const { data } = await created.json()
   expectShape(data, { documentId: 'string', email: 'string', confirmed: 'boolean', language: 'string' })
 
-  const found = await (await cmsFetch(`/api/subscribers?${new URLSearchParams({ 'filters[email][$eq]': email })}`)).json()
-  expect(found.data).toHaveLength(1)
-  expect(found.data[0].documentId).toBe(data.documentId)
+  // The email travels in the body, never in a URL (ASVS V14.2.1)
+  const found = await (await cmsFetch('/api/subscribers/lookup', { method: 'POST', body: { field: 'email', value: email } })).json()
+  expect(found.data.documentId).toBe(data.documentId)
+  const missing = await (await cmsFetch('/api/subscribers/lookup', { method: 'POST', body: { field: 'email', value: `none-${email}` } })).json()
+  expect(missing.data).toBeNull()
 
   const updated = await cmsFetch(`/api/subscribers/${data.documentId}`, { method: 'PUT', body: { data: { confirmed: true } } })
   expect(updated.status).toBe(200)
