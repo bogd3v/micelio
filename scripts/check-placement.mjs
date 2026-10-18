@@ -26,12 +26,12 @@ const AUTO_IMPORTS = [
   { scope: 'app/', matches: file => /^app\/(?:composables|utils)\/(?:[^/]+|[^/]+\/index\.\w+)$/.test(file) },
 ]
 
-// An initializer that is a function or a call is logic, not a constant (`defineCachedFunction(…)`, arrows, `function`)
+// An initializer that is a function or a call is logic, not a constant (`defineCachedFunction(…)`, `fn<T>(…)`, arrows, `function`)
 function isFunctionValued(initializer) {
   const text = initializer.trimStart()
   if (/^(?:async\b|function\b)/.test(text)) return true
   if (/^(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*(?::[^=]+)?=>/.test(text)) return true
-  return /^[A-Za-z_$][\w$.]*\s*\(/.test(text) && !text.startsWith('new ')
+  return /^[A-Za-z_$][\w$.]*\s*(?:<[^(]*>)?\s*\(/.test(text) && !text.startsWith('new ')
 }
 
 // The code of the bound attributes (`:a`, `v-*`, `@e`, `#slot`) of a .vue template, whose string values stripNoise would blank

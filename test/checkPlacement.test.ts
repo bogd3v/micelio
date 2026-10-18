@@ -171,6 +171,14 @@ describe('check-placement', () => {
     })).toEqual([])
   })
 
+  it('treats a call with type arguments as logic, like a call without', () => {
+    expect(problemsOf({
+      'server/utils/load.ts': 'export const pick = pickOne<string>(1)\nexport const schema = responseSchema<Post>()(z.strictObject({}))\nexport const nested = a.b<Map<string, number>>(2)\n',
+      'server/api/a.get.ts': 'export default () => [pick, schema, nested]\n',
+      'server/api/b.get.ts': 'export default () => [pick, schema, nested]\n',
+    })).toEqual([])
+  })
+
   it('does not count a type of server/utils as auto-imported', () => {
     expect(problemsOf({
       'server/utils/shape.ts': 'export interface Shape { id: string }\n',
