@@ -20,6 +20,11 @@ export default defineConfig({
   retries: 0,
   reporter: process.env.CI ? 'github' : 'list',
   use: { baseURL: `http://127.0.0.1:${appPort}` },
+  // mock-shape.spec.ts repeats the requests the other specs recorded (the comment tree is made by writes.spec.ts), so it runs after them
+  projects: [
+    { name: 'requests', testIgnore: /mock-shape\.spec\.ts/ },
+    { name: 'mock-shape', testMatch: /mock-shape\.spec\.ts/, dependencies: ['requests'] },
+  ],
   webServer: [
     {
       command: `PROXY_PORT=${proxyPort} TARGET_URL=${cmsUrl} RECORD_FILE=${recordFile} node scripts/contract/recording-proxy.mjs`,
