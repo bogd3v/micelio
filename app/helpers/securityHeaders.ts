@@ -18,7 +18,7 @@ interface ContentSecurityPolicyOptions {
   formOrigins?: string[]
 }
 
-const SCRIPT_PATTERN = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi
+const SCRIPT_PATTERN = /<script\b([^>]*)>([\s\S]*?)<\/script(?=[\s/>])[^>]*>/gi
 const SRC_PATTERN = /(?:^|\s)src\s*=/i
 const TYPE_PATTERN = /(?:^|\s)type\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i
 // `speculationrules` is not executed, but the browser checks it against `script-src`: it is hashed like the rest (ADR 0004 amendment)

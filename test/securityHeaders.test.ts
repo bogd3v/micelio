@@ -24,6 +24,7 @@ describe('inlineScripts', () => {
 
   it('ends a script at a closing tag with whitespace, as the browser does', () => {
     expect(inlineScripts('<script>window.a=1</script ><p>after</p><script>window.b=2</script\n>')).toEqual(['window.a=1', 'window.b=2'])
+    expect(inlineScripts('<script>window.a=1</script\t\n bar><script>window.b=2</script/><script>window.c=3</scripts>x</script>')).toEqual(['window.a=1', 'window.b=2', 'window.c=3</scripts>x'])
   })
 })
 
