@@ -587,6 +587,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
       const categoryFilter = getNestedValue(query, ['filters', 'category', 'slug', '$eq']) as string | undefined
       const tagFilter = getNestedValue(query, ['filters', 'tags', 'slug', '$eq']) as string | undefined
       const documentIdFilter = getNestedValue(query, ['filters', 'documentId', '$in']) as string[] | undefined
+      const slugNotNull = getNestedValue(query, ['filters', 'slug', '$notNull'])
       const pathFilter = getNestedValue(query, ['filters', 'pathOrder', '$notNull'])
       const sorts = ([] as unknown[]).concat(query.sort ?? [])
       const ascending = sorts[0] === 'publishedAt:asc'
@@ -622,6 +623,9 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
       }
 
       let data = articles.map(populated)
+      if (slugNotNull !== undefined) {
+        data = data.filter(article => Boolean(article.slug))
+      }
       if (localeFilter) {
         data = data.filter(article => article.locale === localeFilter)
       }
