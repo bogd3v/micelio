@@ -20,7 +20,7 @@ const RELATION_PARAMETER: ParameterSpec = {
   name: 'relation',
   in: 'query',
   required: true,
-  description: 'The article the comments belong to: `api::article.article:<documentId or slug>`.',
+  description: 'The article the comments belong to: `api::article.article:<documentId>`. A slug passes validation but the CMS rejects it with a 400.',
   schema: { type: 'string', pattern: '^api::article\\.article:[\\w-]{1,128}$' },
 }
 

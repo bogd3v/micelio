@@ -51,7 +51,7 @@ CMD ["generate"]
 FROM gcr.io/distroless/nodejs22-debian12:latest@sha256:8a3e96fe3345b5d83ecec2066e7c498139a02a6d1214e4f6c39f9ce359f3f5bc
 
 LABEL org.opencontainers.image.title="Micelio"
-LABEL org.opencontainers.image.description="Micelio blog engine: Nuxt frontend"
+LABEL org.opencontainers.image.description="Micelio site engine: Nuxt frontend"
 LABEL org.opencontainers.image.source="https://github.com/bogd3v/micelio"
 LABEL org.opencontainers.image.revision="${GIT_COMMIT_SHA}"
 LABEL org.opencontainers.image.created="${GIT_COMMIT_DATE}"
