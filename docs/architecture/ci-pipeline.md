@@ -21,13 +21,17 @@ The server, DNS and reverse proxy (Traefik on Dokploy) are managed with Terrafor
 
 ## The Node base image
 
-The `Dockerfile` pulls `node:22.23-slim` from Docker Hub, which rate-limits anonymous pulls (`429 Too Many Requests` failed two builds of `main` before the deploy). The two image jobs (`build-and-push` and `build-builder`) therefore run the `node-base` action (`.github/actions/node-base`, `scripts/ci/resolve-node-base.sh`, which uses the generic `scripts/ci/mirror-image.sh`, also used for the Postgres of [the contract tests](contract-tests.md)) after logging in to GHCR:
+The `Dockerfile` pulls `node:22.23-slim` (pinned by digest, see below) from Docker Hub, which rate-limits anonymous pulls (`429 Too Many Requests` failed two builds of `main` before the deploy). The two image jobs (`build-and-push` and `build-builder`) therefore run the `node-base` action (`.github/actions/node-base`, `scripts/ci/resolve-node-base.sh`, which uses the generic `scripts/ci/mirror-image.sh`, also used for the Postgres of [the contract tests](contract-tests.md)) after logging in to GHCR:
 
-1. It reads the tag of the first `FROM node:` line of the `Dockerfile`, so a Dependabot bump of the base image needs no change here.
-2. If `ghcr.io/<owner>/node:<tag>` does not exist, it copies the multi-architecture image there with `docker buildx imagetools create`, using the workflow's own `GITHUB_TOKEN` (no secret to add). This is the only pull from Docker Hub, once per tag.
-3. It gives `build-push-action` a `build-contexts` entry that replaces `node:<tag>` with the copy. The `Dockerfile` stays unchanged, so local builds and forks keep using Docker Hub.
+1. It reads the reference of the first `FROM node:` line of the `Dockerfile`, tag and digest, so a Dependabot bump of the base image needs no change here.
+2. If `ghcr.io/<owner>/node:<tag>-<digest hex>` does not exist, it copies the multi-architecture image there from the digest with `docker buildx imagetools create`, using the workflow's own `GITHUB_TOKEN` (no secret to add). This is the only contact with Docker Hub, once per tag and digest. The name holds the digest and is never moved, so a rerun of an older commit pulls its own base layers, and checking the copy needs GHCR only.
+3. It gives `build-push-action` a `build-contexts` entry that replaces `node:<tag>@sha256:<digest>` with the copy. BuildKit matches the context by the full reference, digest included. The `Dockerfile` stays unchanged, so local builds and forks keep using Docker Hub.
 
 If the copy or the lookup fails, the entry is empty and the build uses Docker Hub as before, with a warning in the log. The copy is a package of the owner: make it public in the package settings if forks or other repositories must pull it.
+
+### Base image digests
+
+Every `FROM` line of the `Dockerfile` carries a tag for readers and the digest of the multi-architecture index (`FROM node:22.23-slim@sha256:… AS builder`), so two builds of one commit start from the same base layers. The tag of the Node image matches the major in `.nvmrc`. Dependabot's `docker` ecosystem (`.github/dependabot.yml`, weekly) proposes a bump of tag and digest together as a `chore(docker)` pull request; a Node major bump is ignored there and is done by hand with `.nvmrc`. To pin by hand, read the index digest with `docker buildx imagetools inspect <image>:<tag> --format '{{ .Manifest.Digest }}'`.
 
 ## Static sites
 

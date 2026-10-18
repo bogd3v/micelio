@@ -1,5 +1,5 @@
 name: Resolve the Node base image
-description: Copies the Dockerfile's Node base image to GHCR once per tag and outputs the `build-contexts` entry that makes the build pull it from there. Empty when the copy is unavailable (the build then uses Docker Hub). Run after logging in to GHCR.
+description: Copies the Dockerfile's Node base image to GHCR once per tag and digest and outputs the `build-contexts` entry that makes the build pull it from there. Empty when the copy is unavailable (the build then uses Docker Hub). Run after logging in to GHCR.
 
 outputs:
   build-context:

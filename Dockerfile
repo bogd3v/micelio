@@ -1,4 +1,4 @@
-FROM node:22.23-slim AS builder
+FROM node:22.23-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392 AS builder
 
 ARG GIT_COMMIT_SHA=unknown
 ARG GIT_COMMIT_DATE=unknown
@@ -15,7 +15,7 @@ RUN npm rebuild && npm run build
 
 # Builder image (ghcr.io/bogd3v/micelio-builder): generates a static site at run time and serves it.
 # Declared before the production stage, which must stay last (the default target). docs/operate/static-site.md
-FROM node:22.23-slim AS static
+FROM node:22.23-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392 AS static
 
 ARG GIT_COMMIT_SHA=unknown
 ARG GIT_COMMIT_DATE=unknown
@@ -48,7 +48,7 @@ EXPOSE 8080
 ENTRYPOINT ["/usr/local/bin/micelio-builder"]
 CMD ["generate"]
 
-FROM gcr.io/distroless/nodejs22-debian12
+FROM gcr.io/distroless/nodejs22-debian12:latest@sha256:8a3e96fe3345b5d83ecec2066e7c498139a02a6d1214e4f6c39f9ce359f3f5bc
 
 LABEL org.opencontainers.image.title="Micelio"
 LABEL org.opencontainers.image.description="Micelio blog engine: Nuxt frontend"
