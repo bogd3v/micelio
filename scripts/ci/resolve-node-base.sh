@@ -8,7 +8,8 @@ set -uo pipefail
 dockerfile="${1:-Dockerfile}"
 here="$(dirname "${BASH_SOURCE[0]}")"
 
-# `FROM node:22.23-slim AS builder`: both stages use the same tag, and the first one decides
+# `FROM node:22.23-slim@sha256:… AS builder`: both stages use the same reference, and the first one decides. BuildKit matches a build
+# context by the full reference, digest included, so that is the name the context takes.
 ref="$(sed -n 's/^FROM \(node:[^ ]*\).*/\1/p' "${dockerfile}" | head -n 1)"
 if [ -z "${ref}" ]; then
   echo "::warning::resolve-node-base: no 'FROM node:' line in ${dockerfile}; building from Docker Hub" >&2

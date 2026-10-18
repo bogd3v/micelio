@@ -29,7 +29,7 @@ These need a change of their own and are not part of this record's pull request:
 
 | Check | Score | What closes it |
 | --- | --- | --- |
-| Pinned-Dependencies | 9 | The three `FROM` lines of the `Dockerfile` use tags. CI replaces the Node image with a copy in GHCR through a build context named by tag (`.github/actions/node-base`), so a digest in the `FROM` line changes that name; the pin and the mirror have to change together |
+| Pinned-Dependencies | 9 | Pinned by digest since #548 (the mirror matches the digest-pinned reference, see [the CI pipeline](../architecture/ci-pipeline.md#the-node-base-image)); the score is read again on the next run after it merges |
 | Vulnerabilities | 8 | Two Dependabot alerts on the default branch; see [`../security.md`](../security.md#dependencies) |
 
 ## Not measured
