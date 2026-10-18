@@ -228,6 +228,10 @@ A slot may call or import only the **slot APIs**: `useSite()`, the helpers of `~
 
 The `@public` types that describe CMS data now say what the CMS has always sent: a field the editor left empty arrives as `null`, not as a missing key. The data the CMS sends does not change; the core now handles these nulls instead of failing. The types also gain the optional `id`, `documentId` and `caption` that the response allow-list already sends, and `PostListItem` gains the optional `locale` its cards already carry. A slot that reads these fields needs a null check to keep compiling: `width`, `height`, `alternativeText` and `caption` of `StrapiMediaFile` and `StrapiMediaRef`; `file` of `StrapiMedia`; `body` of `StrapiRichText` and `StrapiQuote`, and `title` of `StrapiQuote`; the SEO scalars (`keywords`, `metaRobots`, `structuredData`, `metaViewport`, `canonicalURL`) and `seo` of `StrapiAbout`; `name` of `StrapiCategoryRef` and `StrapiAuthorRef`; and `title` of articles, `PostListItem`, `ReadingPathStep` and `StrapiAbout`. Use `value ?? fallback` or `value || fallback`. `Comment.related` may be a string or absent and `Comment.authorUser` may be absent, so guard with `typeof` before reading them.
 
+### Slot API types match what the server sends (#570)
+
+`Page.locale` is now `Locale` (`en` or `es`) instead of `string`. `CommentAuthor.email`, `CommentsResponse.meta` and `PostCommentResponse` are removed: the server never sent the first two (the public comment drops the email, and the plugin puts the pagination in `CommentsResponse.pagination`) and nothing used the third. A slot that read one of them stops compiling; read `pagination` instead of `meta.pagination`.
+
 ## 6. Accessibility handled by the core
 
 A theme gets these without doing anything, and cannot override most of them:

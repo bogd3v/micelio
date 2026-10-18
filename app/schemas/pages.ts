@@ -268,7 +268,7 @@ export const pageSchema = responseSchema<Page>()(
     documentId: z.string().meta({ description: 'Strapi\'s document id.' }),
     title: z.string(),
     slug: z.string(),
-    locale: z.string().optional().meta({ description: 'The locale of the page: `en` or `es`.' }),
+    locale: localeSchema.optional(),
     seo: pageSeoSchema.optional(),
     sections: z.array(pageSectionSchema).meta({ description: 'The sections that passed validation, in order; an invalid or unknown one is left out.' }),
     translations: z.array(pageTranslationSchema),

@@ -1,5 +1,5 @@
 import qs from 'qs'
-import type { Comment, CommentsResponse } from '~/interfaces/comment'
+import type { Comment } from '~/interfaces/comment'
 import { toPublicComments } from '~/helpers/comments'
 import { commentsQuerySchema } from '../../schemas/query'
 
@@ -16,9 +16,7 @@ export default defineEventHandler(async (event) => {
   const url = `/api/comments/${relation}${params ? '?' + params : ''}`
 
   try {
-    const response = await strapiFetch<Comment[] | CommentsResponse>(url, { event })
-    if (Array.isArray(response)) return toPublicComments(response)
-    return { ...response, data: toPublicComments(response?.data ?? []) }
+    return toPublicComments(await strapiFetch<Comment[]>(url, { event }))
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
     logError('cms.comments', 'Fetching the comments failed', { event, error })

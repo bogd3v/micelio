@@ -6,12 +6,11 @@ import { responseSchema } from './response'
 // What the comment routes send: every comment goes through `toPublicComment` (app/helpers/comments.ts), which builds it from a list of
 // public fields, so every object is strict. The envelope of the flat list is the CMS answer spread (`{ ...response, data }`), not an allow-list.
 
-/** The author of a comment, with no email. */
+/** The author of a comment. */
 const commentAuthorSchema = responseSchema<CommentAuthor>()(
   z.strictObject({
     id: z.union([z.string(), z.number()]).optional().meta({ description: 'A user id, a `guest-<uuid>` or the actor URL of a fediverse author.' }),
     name: z.string(),
-    email: z.string().optional().meta({ description: 'Never sent: the public shape drops it.' }),
     avatar: z.string().nullish(),
   }).meta({ id: 'CommentAuthor', description: 'The public author of a comment.' }),
 )
@@ -74,6 +73,5 @@ export const commentsResponseSchema = responseSchema<CommentsResponse>()(
   z.strictObject({
     data: z.array(commentSchema),
     pagination: paginationMetaSchema.optional(),
-    meta: z.strictObject({ pagination: paginationMetaSchema.optional() }).optional().meta({ description: 'Strapi\'s usual place for the pagination; the comments plugin sends `pagination` beside `data` instead.' }),
   }).meta({ id: 'CommentsResponse', description: 'A page of comments and its pagination.' }),
 )

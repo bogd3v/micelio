@@ -248,7 +248,6 @@ export interface ReadingPath {
 | `GuestCommentInput` | interface | A guest comment as the form sends it, with the locale of the page. |
 | `GuestComment` | interface | A guest comment as the server stores it: the author gets a generated id. |
 | `CommentsResponse` | interface | A page of comments from the comments API. |
-| `PostCommentResponse` | interface | The answer to posting a comment; `error` carries the message when the server reports one. |
 
 #### `CommentAuthor`
 
@@ -258,8 +257,6 @@ The public author of a comment, as `toPublicComment` returns it.
 export interface CommentAuthor {
   id?: string | number
   name: string
-  /** Kept for the server only: the public shape drops it. */
-  email?: string
   /** Null when the author has no avatar. */
   avatar?: string | null
 }
@@ -366,15 +363,6 @@ export interface CommentsResponse {
   data: Comment[]
   /** The pagination, where the comments plugin puts it: beside `data`. */
   pagination?: PaginationMeta
-  /** Strapi's usual place for the pagination; the comments plugin does not use it. */
-  meta?: {
-    pagination?: {
-      page: number
-      pageSize: number
-      pageCount: number
-      total: number
-    }
-  }
 }
 ```
 
@@ -908,7 +896,8 @@ export interface Page {
   documentId: string
   title: string
   slug: string
-  locale?: string
+  /** `en` or `es`. */
+  locale?: Locale
   seo?: PageSeo
   /** Sections that failed validation are left out */
   sections: PageSection[]

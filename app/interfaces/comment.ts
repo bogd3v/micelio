@@ -8,8 +8,6 @@ import type { PaginationMeta } from './strapi-response'
 export interface CommentAuthor {
   id?: string | number
   name: string
-  /** Kept for the server only: the public shape drops it. */
-  email?: string
   /** Null when the author has no avatar. */
   avatar?: string | null
 }
@@ -134,23 +132,4 @@ export interface CommentsResponse {
   data: Comment[]
   /** The pagination, where the comments plugin puts it: beside `data`. */
   pagination?: PaginationMeta
-  /** Strapi's usual place for the pagination; the comments plugin does not use it. */
-  meta?: {
-    pagination?: {
-      page: number
-      pageSize: number
-      pageCount: number
-      total: number
-    }
-  }
-}
-
-/**
- * The answer to posting a comment; `error` carries the message when the server reports one.
- *
- * @public
- */
-export interface PostCommentResponse {
-  data: Comment
-  error?: string
 }
