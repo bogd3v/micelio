@@ -15,6 +15,10 @@ The pipeline can also be started by hand from the Actions tab (`workflow_dispatc
 
 The server, DNS and reverse proxy (Traefik on Dokploy) are managed with Terraform in the private `bogdev-infra` repository.
 
+## Code scanning
+
+`.github/workflows/codeql.yml` runs CodeQL (`javascript-typescript`, `build-mode: none`) on pull requests to `main`, on pushes to `main`, weekly and by hand. It is apart from `deploy.yml`, so it never slows the required checks, and it is not a required check of `main`. Results appear in code scanning; an alert is fixed in its own pull request or dismissed with its reason, which is also recorded in [the Scorecard record](../security/scorecard.md) or in [the accepted risks](../security.md#accepted-risks).
+
 ## The Node base image
 
 The `Dockerfile` pulls `node:22.23-slim` from Docker Hub, which rate-limits anonymous pulls (`429 Too Many Requests` failed two builds of `main` before the deploy). The two image jobs (`build-and-push` and `build-builder`) therefore run the `node-base` action (`.github/actions/node-base`, `scripts/ci/resolve-node-base.sh`, which uses the generic `scripts/ci/mirror-image.sh`, also used for the Postgres of [the contract tests](contract-tests.md)) after logging in to GHCR:
