@@ -35,7 +35,7 @@ export function setupSpecimen(ctx: ThemeContext): void {
   // The page's messages ship only with the page
   const langDir = join(DIR, 'locales')
   ctx.nuxt.hook('i18n:registerModule', (register) => {
-    register({ langDir, locales: ['en', 'es'].map(code => ({ code, file: `${code}.json` })) })
+    register({ langDir, locales: (['en', 'es'] as const).map(code => ({ code, file: `${code}.json` })) })
   })
   // The specimen's own images, same-origin at /_theme/media/ (only when the page exists)
   ;(ctx.nuxt.options.nitro.publicAssets ||= []).push({ dir: join(DIR, 'media'), baseURL: '/_theme/media' })

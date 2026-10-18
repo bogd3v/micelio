@@ -27,6 +27,6 @@ describe('allow', () => {
   })
 
   it('does not read inherited keys', () => {
-    expect(allow({}, fields({ toString: true }))).toEqual({})
+    expect(allow({}, fields({ toString: true as const }))).toEqual({})
   })
 })

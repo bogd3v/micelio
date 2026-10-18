@@ -32,7 +32,7 @@ npm run preview      # Preview production build locally
 
 # Type checking and linting
 npm run check        # The fast part of CI before a PR: typecheck, lint and test:coverage (standard, section 15)
-npm run typecheck    # Run Nuxt type checking
+npm run typecheck    # Nuxt type checking, then `vue-tsc -p test` for test/ and e2e/ (test/tsconfig.json)
 npm run lint         # Run ESLint (flat config, @nuxt/eslint), the primitives, class and placement checks, and the OpenAPI document and the theme schema and reference drift checks
 npm run openapi      # Regenerate docs/openapi.json (OpenAPI 3.1) from server/openapi/ and the zod schemas; run it after adding or changing a route or a schema (`lint:openapi` fails on drift or on a route file without a manifest entry)
 npm run theme:schema # Regenerate themes/theme.schema.json from modules/theme/contract.ts (run it after changing the contract)

@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { createError } from 'h3'
+import type { H3Error } from 'h3'
 
 const AUTH_ERROR_CODES = ['invalidCredentials', 'emailNotConfirmed', 'emailTaken', 'tooManyRequests', 'invalidCode', 'wrongPassword', 'weakPassword', 'commonPassword', 'invalidInput', 'unauthorized', 'forbiddenOrigin', 'unknown']
 
@@ -66,7 +67,7 @@ describe('problem legacy members', () => {
   it('keeps the message and statusMessage a route chooses, and leaves the detail to the catalog', () => {
     const error = mod.problem('notFound', { message: 'Post not found' })
     expect([error.statusMessage, error.message]).toEqual(['Not Found', 'Post not found'])
-    const body = mod.problemFromError(error)
+    const body = mod.problemFromError(error as H3Error)
     expect([body.message, body.detail]).toEqual(['Post not found', mod.PROBLEM_CODES.notFound.detail])
     expect(mod.problem('invalidRequest', { statusMessage: 'Invalid slug' }).message).toBe('Invalid slug')
   })
@@ -101,12 +102,12 @@ describe('problem', () => {
 
 describe('problemFromError', () => {
   it('describes a thrown problem from the catalog', () => {
-    expect(mod.problemFromError(mod.problem('notFound'))).toMatchObject({ type: 'about:blank', title: 'Not Found', status: 404, code: 'notFound', detail: 'The resource does not exist.', statusCode: 404, statusMessage: 'Not Found' })
+    expect(mod.problemFromError(mod.problem('notFound') as H3Error)).toMatchObject({ type: 'about:blank', title: 'Not Found', status: 404, code: 'notFound', detail: 'The resource does not exist.', statusCode: 404, statusMessage: 'Not Found' })
   })
 
   it('uses the detail the caller gave, not the error message', () => {
     const error = mod.problem('invalidRequest', { detail: 'The slug is not a uid.' })
-    expect(mod.problemFromError(error).detail).toBe('The slug is not a uid.')
+    expect(mod.problemFromError(error as H3Error).detail).toBe('The slug is not a uid.')
   })
 
   it.each([[400, 'invalidRequest'], [404, 'notFound'], [405, 'methodNotAllowed'], [413, 'payloadTooLarge'], [429, 'tooManyRequests'], [502, 'upstreamUnavailable'], [500, 'internalError'], [503, 'internalError']])('derives the code of a plain %s', (statusCode, code) => {

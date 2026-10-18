@@ -91,7 +91,7 @@ export interface ProbeReport {
 export async function probeWorker(page: Page, realWorker: string): Promise<ProbeReport> {
   await page.route('**/_islands/workers/probe.js', async (route) => {
     const real = await route.fetch({ url: new URL(realWorker, page.url()).href })
-    const headers = { ...real.headers(), 'content-type': 'text/javascript' }
+    const headers: Record<string, string> = { ...real.headers(), 'content-type': 'text/javascript' }
     delete headers['content-length']
     delete headers['content-encoding']
     await route.fulfill({ status: 200, headers, body: PROBE_SCRIPT })

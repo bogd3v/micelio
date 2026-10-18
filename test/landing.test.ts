@@ -76,7 +76,7 @@ describe('landingLinks', () => {
 })
 
 describe('headerLinks', () => {
-  const links = [
+  const links: Array<{ id: string, anchor?: boolean, action?: boolean }> = [
     ...Array.from({ length: 6 }, (_, index) => ({ id: `a${index}`, anchor: true })),
     ...Array.from({ length: 3 }, (_, index) => ({ id: `l${index}`, action: true })),
     { id: 'blog' },
@@ -87,7 +87,7 @@ describe('headerLinks', () => {
   })
 
   it('leaves the navigation of the other modes as it is', () => {
-    const plain = [{ id: 'home' }, { id: 'blog' }, { id: 'about' }]
+    const plain: Array<{ id: string, anchor?: boolean }> = [{ id: 'home' }, { id: 'blog' }, { id: 'about' }]
     expect(headerLinks(plain)).toEqual(plain)
   })
 })

@@ -104,7 +104,7 @@ describe('JavaScript runtime', () => {
 
   it('never keeps one huge line whole', async () => {
     const runtime = await loadJavaScript()
-    const output = runtime.run('console.log("x".repeat(30 * 1024 * 1024))', '', LIMITS)
+    const output = await runtime.run('console.log("x".repeat(30 * 1024 * 1024))', '', LIMITS)
     expect(output.length).toBeLessThanOrEqual(128 * 1024)
     expect(runtime.recycle?.()).toBe(true)
   })

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-// @ts-expect-error plain ESM script without types
 import { collectSamples, medianSample, readSample } from '../scripts/perf/lighthouse-samples.mjs'
 
 function lhr(overrides: { lcp?: number | null, performance?: number | null } = {}) {
@@ -44,13 +43,13 @@ describe('medianSample', () => {
 describe('collectSamples', () => {
   function sequence(results: object[]) {
     let calls = 0
-    return { measureOnce: async () => results[calls++], calls: () => calls }
+    return { measureOnce: async () => results[calls++]!, calls: () => calls }
   }
 
   it('retries an empty result and still gets the wanted samples', async () => {
     const run = sequence([lhr(), lhr({ performance: null }), lhr(), lhr()])
     const metrics = await collectSamples(run.measureOnce, 3)
-    expect(metrics.performance).toBe(100)
+    expect(metrics?.performance).toBe(100)
     expect(run.calls()).toBe(4)
   })
 

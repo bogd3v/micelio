@@ -87,7 +87,7 @@ describe('parseSection', () => {
     expect(parseSection(section('section.hero'), context)).toMatchObject({
       media: { url: '/uploads/a.png', width: 800, height: 600, mime: 'image/png' },
     })
-    const hero = parseSection(section('section.hero'), context) as { media: Record<string, unknown>, id?: number, text?: string }
+    const hero = parseSection(section('section.hero'), context) as unknown as { media: Record<string, unknown>, id?: number, text?: string }
     expect(hero.media).not.toHaveProperty('formats')
     expect(hero.media.alternativeText).toBeUndefined()
     expect(hero).not.toHaveProperty('id')

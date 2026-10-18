@@ -98,7 +98,7 @@ function setupMessages(ctx: ThemeContext): void {
   const langDir = join(ctx.dir, 'i18n')
   if (!existsSync(langDir)) return
   const files = readdirSync(langDir).filter(file => file.endsWith('.json'))
-  const locales = files.map(file => ({ code: basename(file, '.json'), file }))
+  const locales = files.map(file => ({ code: basename(file, '.json') as 'en' | 'es', file }))
   ctx.nuxt.hook('i18n:registerModule', (register) => {
     register({ langDir, locales })
   })

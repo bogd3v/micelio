@@ -50,7 +50,7 @@ function problemsOf(root: string): string[] {
 }
 
 function setRole(manifest: Manifest, group: string, name: string, value: unknown): void {
-  manifest[group].tokens.find((token: { name: string }) => token.name === name).value = value
+  (manifest[group] as Group).tokens.find(token => token.name === name)!.value = value
 }
 
 describe('the fixture themes', () => {
@@ -170,7 +170,7 @@ describe('contract validation', () => {
   it('misses a font family or a type step', () => {
     const problems = problemsOf(install('type', (m) => {
       delete m.type.families.mono
-      m.type.groups[0].styles = m.type.groups[0].styles.filter((style: { name: string }) => style.name !== 'display-xl')
+      m.type.groups[0]!.styles = m.type.groups[0]!.styles.filter((style: { name: string }) => style.name !== 'display-xl')
     }))
     expect(problems).toContain('misses the font family "mono" in "type.families"')
     expect(problems).toContain('misses the type step "display-xl" in "type.groups"')

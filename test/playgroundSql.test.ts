@@ -61,7 +61,7 @@ describe('SQL runtime', () => {
 
   it('still stops a query that never ends at the output cap', async () => {
     const sql = await load()
-    const output = sql.run('WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n) SELECT i FROM n;', '', { ...LIMITS, outputBytes: 1024 })
+    const output = await sql.run('WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n) SELECT i FROM n;', '', { ...LIMITS, outputBytes: 1024 })
     // The row estimate counts a number as 20 characters, so it stops early and well under twice the cap
     expect(output.startsWith('i\n--\n1\n2\n')).toBe(true)
     expect(output.length).toBeLessThan(2048)

@@ -123,6 +123,7 @@ const ARTICLE_BLOCKS: StrapiBlock[] = [{ id: 11, __component: 'shared.rich-text'
 /** An article for the article region: draft mode skips comments, related posts and the reading path. */
 export const ARTICLE: StrapiPost = {
   ...post(100, Category.Linux, 'A specimen article'),
+  documentId: 'specimen-post-100',
   content: null,
   tags: [{ name: 'specimen', slug: 'specimen' }, { name: 'theme', slug: 'theme' }],
   coverCredit: CREDIT,

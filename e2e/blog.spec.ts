@@ -222,7 +222,7 @@ test('lists hreflang on the first page only and the switch goes to the first pag
 })
 
 test('redirects capitals and padded pages in the path', async ({ request }) => {
-  for (const [from, to] of [['/blog/category/Linux', '/blog/category/linux'], ['/es/blog/page/02', '/es/blog/page/2']]) {
+  for (const [from, to] of [['/blog/category/Linux', '/blog/category/linux'], ['/es/blog/page/02', '/es/blog/page/2']] as const) {
     const response = await request.get(from, { maxRedirects: 0 })
     expect(response.status(), from).toBe(301)
     expect(response.headers().location).toBe(to)

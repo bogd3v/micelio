@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import qs from 'qs'
-import type { RawStrapiArticle, StrapiAuthorRef, StrapiCategoryRef, StrapiLocalization, StrapiMediaRef, StrapiSEO, StrapiTagRef } from '~/interfaces/strapi-post'
+import type { RawStrapiArticle, StrapiAuthorRef, StrapiCategoryRef, StrapiLocalization, StrapiMediaRef, StrapiTagRef } from '~/interfaces/strapi-post'
+import type { StrapiSEO } from '~/interfaces/strapi-seo'
 import type { StrapiRichText } from '~/interfaces/strapi-blocks'
 import { createAuthMock } from '../../e2e/fixtures/auth.mjs'
 import { createDraftsMock } from '../../e2e/fixtures/drafts.mjs'
@@ -522,7 +523,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
       return
     }
 
-    const auth = authMock.handle(method, url.pathname, query, body, req.headers)
+    const auth = authMock.handle(method, url.pathname, query, body, req.headers) as { status: number, body?: unknown, headers?: Record<string, string> } | null | undefined
     if (auth) {
       res.writeHead(auth.status, auth.headers ?? { 'Content-Type': 'application/json' })
       res.end(auth.headers ? undefined : JSON.stringify(auth.body))
@@ -634,7 +635,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
       }
       if (titleFilter) {
         const term = titleFilter.toLowerCase()
-        data = data.filter(article => article.title.toLowerCase().includes(term))
+        data = data.filter(article => (article.title ?? '').toLowerCase().includes(term))
       }
       if (tagFilter) {
         data = data.filter(article => article.tags?.some(tag => tag.slug === tagFilter))
@@ -769,7 +770,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
         .filter(article => article.locale === locale)
         .filter(article => !query.category || article.category?.slug === query.category)
         .filter(article => !query.tag || article.tags?.some(tag => tag.slug === query.tag))
-        .filter(article => !term || article.title.toLowerCase().includes(term))
+        .filter(article => !term || (article.title ?? '').toLowerCase().includes(term))
         .sort((a, b) => (scores[b.documentId] ?? 0) - (scores[a.documentId] ?? 0))
       const page = Number(query.page || 1)
       const pageSize = Number(query.pageSize || 6)
@@ -866,7 +867,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     }
 
     if (method === 'POST' && url.pathname === '/api/subscribers') {
-      const data = body?.data ?? {}
+      const data = (body?.data ?? {}) as Partial<MockSubscriber>
       const now = new Date().toISOString()
       const id = nextSubscriberId++
       const newSubscriber: MockSubscriber = {

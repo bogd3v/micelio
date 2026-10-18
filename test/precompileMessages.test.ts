@@ -15,8 +15,8 @@ function keys(messages: Messages, prefix = ''): string[] {
 }
 
 function render(messages: unknown, key: string, count: number): unknown {
-  const context = createCoreContext({ locale: 'x', messages: { x: messages }, messageCompiler: compile })
-  return translate(context, key, { count, n: count, total: count, name: 'Ada' }, count)
+  const context = createCoreContext({ locale: 'en', messages: { en: messages as Messages, es: {} }, messageCompiler: compile })
+  return translate(context as Parameters<typeof translate>[0], key, { count, n: count, total: count, name: 'Ada' }, count)
 }
 
 describe('compileMessages', () => {

@@ -12,7 +12,8 @@ function comment(overrides: Partial<Comment> = {}): Comment {
     authorUser: null,
     removed: false,
     approvalStatus: 'APPROVED',
-    author: { id: 'guest-1', name: 'Ana', email: 'ana@example.com' },
+    // The CMS sends the email; the public shape drops it
+    author: { id: 'guest-1', name: 'Ana', email: 'ana@example.com' } as Comment['author'],
     createdAt: '2026-02-03T10:00:00.000Z',
     updatedAt: '2026-02-03T10:00:00.000Z',
     related: { id: 1 },

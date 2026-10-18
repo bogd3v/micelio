@@ -4,7 +4,8 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { request as httpRequest } from 'node:http'
 import { join } from 'node:path'
 import { z } from 'zod'
-import { $fetch, fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch as typedFetch, fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
+import type { FetchOptions } from 'ofetch'
 import type { RawStrapiArticle } from '~/interfaces/strapi-post'
 import type { Page, PageSection } from '~/interfaces/page'
 import type { StrapiRichText } from '~/interfaces/strapi-blocks'
@@ -23,6 +24,9 @@ import { contrastRatio, parseHex } from '~/helpers/color'
 import { inlineScripts } from '~/helpers/securityHeaders'
 
 const SITE_URL = 'https://bogdev.test'
+
+/** `$fetch` without the typed Nitro routes, whose type instantiation passes the compiler's depth limit in a file this long. */
+const $fetch = typedFetch as <T = unknown>(request: string, options?: FetchOptions) => Promise<T>
 
 const mock = await startMockStrapi()
 const umami = await startMockUmami()
@@ -91,7 +95,7 @@ describe('/api/posts category filter', () => {
     const result = await $fetch<{ data: Array<{ slug: string }> }>('/api/posts', { query: { locale: 'en', category: Category.Linux } })
     expect(result.data.map(post => post.slug)).toEqual(['linux-server-hardening-guide'])
     const strapiRequests = mock.requests.filter(request => request.method === 'GET' && request.path === '/api/articles')
-    expect(getNestedValue(strapiRequests[strapiRequests.length - 1].query, ['filters', 'category', 'slug', '$eq'])).toBe(Category.Linux)
+    expect(getNestedValue(strapiRequests.at(-1)!.query, ['filters', 'category', 'slug', '$eq'])).toBe(Category.Linux)
   })
 })
 
@@ -254,13 +258,13 @@ describe('/api/posts search', () => {
     const result = await $fetch<{ data: Array<{ slug: string }> }>('/api/posts', { query: { locale: 'en', search: 'vue', category: Category.Software } })
     expect(result.data.map(post => post.slug)).toEqual(['understanding-vue-composables'])
     const strapiRequests = mock.requests.filter(request => request.method === 'GET' && request.path === '/api/articles')
-    expect(getNestedValue(strapiRequests[strapiRequests.length - 1].query, ['filters', 'title', '$containsi'])).toBe('vue')
+    expect(getNestedValue(strapiRequests.at(-1)!.query, ['filters', 'title', '$containsi'])).toBe('vue')
   })
 
   it('ignores searches shorter than three letters', async () => {
     await $fetch('/api/posts', { query: { locale: 'en', search: 'vu' } })
     const strapiRequests = mock.requests.filter(request => request.method === 'GET' && request.path === '/api/articles')
-    expect(getNestedValue(strapiRequests[strapiRequests.length - 1].query, ['filters', 'title', '$containsi'])).toBeUndefined()
+    expect(getNestedValue(strapiRequests.at(-1)!.query, ['filters', 'title', '$containsi'])).toBeUndefined()
   })
 })
 
@@ -512,13 +516,13 @@ describe('/api/posts/[slug]', () => {
   it('asks Strapi for the article references', async () => {
     await $fetch('/api/posts/understanding-vue-composables', { query: { locale: 'en' } })
     const upstream = mock.requests.filter(request => request.path === '/api/articles')
-    expect(getNestedValue(upstream[upstream.length - 1].query, ['populate', 'references'])).toBe('true')
+    expect(getNestedValue(upstream.at(-1)!.query, ['populate', 'references'])).toBe('true')
   })
 
   it('asks Strapi for the cover credit and the credit of every figure', async () => {
     await $fetch('/api/posts/understanding-vue-composables', { query: { locale: 'en' } })
     const upstream = mock.requests.filter(request => request.path === '/api/articles')
-    const query = upstream[upstream.length - 1].query
+    const query = upstream.at(-1)!.query
     expect(getNestedValue(query, ['populate', 'coverCredit'])).toBe('true')
     expect(getNestedValue(query, ['populate', 'blocks', 'on', 'shared.media', 'populate'])).toMatchObject({ credit: 'true' })
     expect(getNestedValue(query, ['populate', 'blocks', 'on', 'shared.slider', 'populate', 'items', 'populate'])).toMatchObject({ credit: 'true' })
@@ -557,7 +561,7 @@ describe('/api/posts/[slug]', () => {
       { id: 1, documentId: 'doc-vue', slug: 'understanding-vue-composables', locale: 'en', publishedAt: '2026-02-01T10:00:00.000Z' },
     ])
     const upstream = mock.requests.filter(request => request.path === '/api/articles')
-    expect(getNestedValue(upstream[upstream.length - 1].query, ['populate', 'localizations', 'fields'])).toEqual(['slug', 'locale', 'publishedAt'])
+    expect(getNestedValue(upstream.at(-1)!.query, ['populate', 'localizations', 'fields'])).toEqual(['slug', 'locale', 'publishedAt'])
   })
 })
 
@@ -787,7 +791,7 @@ describe('fields of an article that leave the server', () => {
       expect(card).toMatchObject({ slug: article.slug, title: article.title, cover: { url: article.cover!.url } })
     } finally {
       Object.assign(article, original)
-      delete (article as Record<string, unknown>).internalNote
+      delete (article as unknown as Record<string, unknown>).internalNote
       article.content = original.content
     }
   })
@@ -811,7 +815,7 @@ describe('fields of an article that leave the server', () => {
     } finally {
       for (const { article, cover, author, content } of originals) {
         Object.assign(article, { cover, author, content })
-        delete (article as Record<string, unknown>).internalNote
+        delete (article as unknown as Record<string, unknown>).internalNote
       }
     }
   })
@@ -959,7 +963,7 @@ describe('/api/pages/[slug]', () => {
     expect(missing.headers.get('cache-control')).not.toContain('public')
     expect((await fetch('/api/pages/showcase?locale=es')).status).toBe(404)
 
-    const late = { documentId: 'page-late', title: 'Late', slug: 'late-page', locale: 'en', seo: null, sections: [], localizations: [] }
+    const late = { id: 99, documentId: 'page-late', title: 'Late', slug: 'late-page', locale: 'en', seo: null, sections: [], localizations: [] }
     pageFixtures.push(late)
     try {
       mock.requests.length = 0
@@ -1375,7 +1379,7 @@ describe('/api/comments', () => {
 
   it('rejects a comment from another origin or without one before calling Strapi', async () => {
     const body = { author: { name: 'Mallory', email: 'm@example.com' }, content: 'Spam.' }
-    for (const headers of [{ origin: 'https://otro.sitio' }, {}]) {
+    for (const headers of [{ origin: 'https://otro.sitio' }, {}] as Array<Record<string, string>>) {
       await expect($fetch('/api/comments', { method: 'POST', query: { relation }, headers, body })).rejects.toMatchObject({ response: { status: 403 } })
     }
     expect(mock.requests).toEqual([])
@@ -1494,7 +1498,7 @@ describe('/api/comments', () => {
 
 describe('/api/newsletter/subscribe', () => {
   const headers = { origin: SITE_URL }
-  const subscribe = (body: unknown, extra: Record<string, string> = {}) =>
+  const subscribe = (body: Record<string, unknown>, extra: Record<string, string> = {}) =>
     $fetch('/api/newsletter/subscribe', { method: 'POST', headers: { ...headers, ...extra }, body })
 
   it('returns 400 when email is missing', async () => {
@@ -1636,7 +1640,7 @@ describe('/api/newsletter/confirm', () => {
 
   it('refuses a request from another origin or without one before calling Strapi', async () => {
     const before = mock.requests.length
-    for (const headers of [{ origin: 'https://otro.sitio' }, {}]) {
+    for (const headers of [{ origin: 'https://otro.sitio' }, {}] as Array<Record<string, string>>) {
       await expect(confirm('confirmation-token-to-confirm-0001', headers)).rejects.toMatchObject({ response: { status: 403 } })
     }
     expect(mock.requests.slice(before)).toEqual([])
@@ -2086,7 +2090,7 @@ describe('/api/auth', () => {
       mock.requests.length = 0
       const noSession = await change({ currentPassword: OLD, password: NEW, passwordConfirmation: NEW }, { origin })
       expect([noSession.status, await errorCode(noSession)]).toEqual([401, 'unauthorized'])
-      for (const headers of [{ origin: 'https://otro.sitio', cookie }, { cookie }]) {
+      for (const headers of [{ origin: 'https://otro.sitio', cookie }, { cookie }] as Array<Record<string, string>>) {
         const response = await change({ currentPassword: OLD, password: NEW, passwordConfirmation: NEW }, headers)
         expect([response.status, await errorCode(response)]).toEqual([403, 'forbiddenOrigin'])
       }

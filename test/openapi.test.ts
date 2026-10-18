@@ -89,7 +89,7 @@ describe('route manifest against the route sources', () => {
 
 describe('OpenAPI document', () => {
   it('is a valid OpenAPI 3.1 document', async () => {
-    const result = await validate(structuredClone(built))
+    const result = await validate(structuredClone(built) as Parameters<typeof validate>[0])
     expect(result.valid ? [] : result.errors).toEqual([])
     expect(built.openapi).toBe('3.1.0')
   })
