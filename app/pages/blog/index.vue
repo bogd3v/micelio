@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { layout } from '#micelio/theme'
 import { Locale } from '~/interfaces'
-import type { BlogFilters, BlogSort, BlogView, Category, PostListItem, TagCount } from '~/interfaces'
+import type { BlogFilters, BlogSort, BlogView, PostListItem, TagCount } from '~/interfaces'
 import { BLOG_SORTS, blogLocation, blogPageSize, blogPath, hasActiveFilters, isBlogRouteValid, parseBlogRoute, parseSort, searchTerm } from '~/helpers/blog'
-import { isCategory } from '~/helpers/categories'
 import { feedPath } from '~/helpers/feed'
 import { padCount } from '~/helpers/search'
 import { popularTags as pickPopularTags } from '~/helpers/tags'
 import { pageTitle } from '~/helpers/site'
 
-// An unknown category, or a page that has its own URL (/blog), is a 404 on every navigation
+// A category that is not a slug, or a page that has its own URL (/blog), is a 404 on every navigation; a slug the CMS does not have is a 404 once the list has loaded
 definePageMeta({ key: 'blog-list', validate: route => isBlogRouteValid(route.params) })
 
 const RECENT_SIZE = 4
@@ -24,7 +23,7 @@ const route = useRoute()
 const router = useRouter()
 const { localizePath } = useLocaleUtils()
 const { setAlternates } = useLocaleAlternates()
-const { fetchPosts, fetchCategories, fetchTags } = useStrapi()
+const { fetchPosts, fetchTags } = useStrapi()
 const { siteUrl } = useSiteUrl()
 const defaultOgImage = useDefaultOgImage()
 const site = useSite()
@@ -56,7 +55,7 @@ const { data: postsResult, status } = fetchPosts({
   content: computed(() => filters.value.content),
 })
 const { data: recentResult } = fetchPosts({ pageSize: RECENT_SIZE, locale: currentLocale })
-const { data: categories } = fetchCategories(locale.value as Locale)
+const { categories, failed: categoriesFailed, has: hasCategory, loaded: categoriesLoaded } = useCategories()
 const { data: tags } = fetchTags(locale.value as Locale)
 
 const results = useSettledData(postsResult, status)
@@ -66,12 +65,8 @@ const posts = computed<PostListItem[]>(() => results.value?.data ?? [])
 const totalPages = computed<number>(() => results.value?.pagination.pageCount ?? 1)
 const recentPosts = computed<PostListItem[]>(() => recentResult.value?.data ?? [])
 const total = computed<number>(() => recentResult.value?.pagination.total ?? 0)
-const counts = computed<Partial<Record<Category, number>>>(() =>
-  Object.fromEntries(
-    (categories.value ?? [])
-      .filter(category => isCategory(category.slug))
-      .map(category => [category.slug, category.count]),
-  ),
+const counts = computed<Record<string, number>>(() =>
+  Object.fromEntries(categories.value.map(category => [category.slug, category.count])),
 )
 const popularTags = computed<TagCount[]>(() => pickPopularTags(tags.value ?? [], POPULAR_TAGS, filters.value.tag))
 const resultCount = computed<number | undefined>(() =>
@@ -82,6 +77,20 @@ const federated = computed<boolean>(() => fediverseOn.value && locale.value === 
 // The fediverse ranking needs the fediverse module
 const sortOptions = computed<BlogSort[]>(() => BLOG_SORTS.filter(option => option !== 'fediverse' || fediverseOn.value))
 const eyebrow = computed<string>(() => t('blog.eyebrow', { count: padCount(total.value) }, total.value))
+
+// A failed list says nothing about the category: the page shows what it has instead of a 404
+function isUnknownCategory(): boolean {
+  const slug = filters.value.category
+  return Boolean(slug) && !categoriesFailed.value && !hasCategory(slug!)
+}
+
+function notFound(): Error {
+  return createError({ statusCode: 404, statusMessage: 'Not Found', fatal: true })
+}
+
+// The requests above are already running: waiting for the list adds no round trip. A 404 here is a real status on the server and in a static build
+await categoriesLoaded()
+if (isUnknownCategory()) throw notFound()
 
 const applySearch = useDebounceFn(() => {
   const search = searchTerm(searchInput.value)
@@ -122,6 +131,11 @@ function clearFilters(): void {
 }
 
 watch(searchInput, () => applySearch())
+
+// The page is reused between categories, so setup does not run again: check the new one
+watch(() => filters.value.category, () => {
+  if (isUnknownCategory()) showError(notFound())
+})
 
 watch(() => filters.value.search, (search) => {
   if (search !== searchTerm(searchInput.value)) searchInput.value = search ?? ''

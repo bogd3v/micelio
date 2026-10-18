@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { Locale } from '~/interfaces/locale'
 import { isContentSearch } from '~/helpers/search'
 import { parseSort } from '~/helpers/blog'
-import { SLUG_PATTERN } from '../lib/constants'
+import { SLUG_PATTERN } from '~/constants/slug'
 
 /** The largest page size of the list routes: a larger `pageSize` is clamped to it. */
 export const MAX_PAGE_SIZE = 50

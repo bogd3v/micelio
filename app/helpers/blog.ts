@@ -2,6 +2,7 @@ import type { LocationQuery, RouteParams } from 'vue-router'
 import type { BlogFilters, BlogSort, BlogView, PaginationItem, PostMonth } from '../interfaces/blog'
 import type { PostListItem } from '../interfaces/strapi-post'
 import { defaultLocale, Locale } from '../interfaces/locale'
+import { SLUG_PATTERN } from '../constants/slug'
 import { isCategory } from './categories'
 import { isContentSearch } from './search'
 import { MIN_SEARCH_LENGTH } from '../constants/search'
@@ -30,6 +31,10 @@ function firstValue(value: LocationQuery[string] | RouteParams[string] | undefin
   return typeof raw === 'string' ? raw.trim() : ''
 }
 
+function isSlug(value: string): boolean {
+  return SLUG_PATTERN.test(value)
+}
+
 /** The trimmed search text, or undefined when it is shorter than `MIN_SEARCH_LENGTH`. */
 export function searchTerm(input: string): string | undefined {
   const term = input.trim()
@@ -40,7 +45,7 @@ export function searchTerm(input: string): string | undefined {
  * The blog list filters read from the route params and the query, with unknown or empty values left out.
  *
  * @remarks
- * When the path names both a category and a tag, the category wins. The page is 1 unless it is a number above 1.
+ * When the path names both a category and a tag, the category wins. The category is kept when it has the shape of a slug; whether the CMS has it is checked by the page (ADR 0016, section 7). The page is 1 unless it is a number above 1.
  */
 export function parseBlogRoute(params: RouteParams, query: LocationQuery): BlogFilters {
   const category = firstValue(params.category).toLowerCase()
@@ -48,8 +53,8 @@ export function parseBlogRoute(params: RouteParams, query: LocationQuery): BlogF
   const page = Number.parseInt(firstValue(params.page), 10)
   return {
     // A path carries one filter: the category wins over the tag
-    category: isCategory(category) ? category : undefined,
-    tag: isCategory(category) ? undefined : tag || undefined,
+    category: isSlug(category) ? category : undefined,
+    tag: isSlug(category) ? undefined : tag || undefined,
     search: searchTerm(firstValue(query.search)),
     page: Number.isFinite(page) && page > 1 ? page : 1,
     view: parseView(firstValue(query.view)),
@@ -104,10 +109,15 @@ const LOCALE_PREFIXES = Object.values(Locale).filter(code => code !== defaultLoc
 const BLOG_URL_PATH = new RegExp(`^((?:/(?:${LOCALE_PREFIXES}))?${BLOG_BASE})(?:/(category|tag)/([^/]+))?(?:/page/(\\d+))?/?$`)
 const LEGACY_PARAMS = ['category', 'tag', 'page']
 
-/** Whether the path parameters of a blog list route name a real category and a page above the first. */
+/**
+ * Whether the path parameters of a blog list route have a category with the shape of a slug and a page above the first.
+ *
+ * @remarks
+ * It cannot tell whether the CMS has the category: the page answers 404 for an unknown one once the list has loaded (ADR 0016, section 7).
+ */
 export function isBlogRouteValid(params: RouteParams): boolean {
   const category = firstValue(params.category)
-  if (category && !isCategory(category.toLowerCase())) return false
+  if (category && !isSlug(category.toLowerCase())) return false
   return params.page === undefined || Number.parseInt(firstValue(params.page), 10) >= 2
 }
 

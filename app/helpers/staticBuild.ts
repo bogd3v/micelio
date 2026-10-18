@@ -1,4 +1,4 @@
-import { CATEGORIES } from '../constants/categories'
+import { SLUG_PATTERN } from '../constants/slug'
 import { feedPath } from './feed'
 import { localePrefixSource } from './localePrefix'
 import { MODEL_MAX_BYTES } from '../islands/constants'
@@ -33,9 +33,13 @@ export function noScriptsViolations(html: string): string[] {
   return [...found]
 }
 
-/** Routes of the files that are not pages: the feeds, the sitemap and robots.txt, in every locale. A build with no blog has no feeds. */
-export function staticFileRoutes(blogEnabled = true): string[] {
-  const feeds = blogEnabled ? Object.values(Locale).flatMap(locale => [feedPath(locale), ...CATEGORIES.map(category => feedPath(locale, category))]) : []
+/**
+ * Routes of the files that are not pages: the feeds, the sitemap and robots.txt, in every locale. A build with no blog has no feeds.
+ *
+ * @param categories - The slugs of the CMS categories (`categorySlugs`); each gets a feed per locale. None for a site without categories.
+ */
+export function staticFileRoutes(blogEnabled = true, categories: readonly string[] = []): string[] {
+  const feeds = blogEnabled ? Object.values(Locale).flatMap(locale => [feedPath(locale), ...categories.map(category => feedPath(locale, category))]) : []
   return [...feeds, '/sitemap.xml', '/robots.txt']
 }
 
@@ -52,6 +56,25 @@ export function articleRoute(slug: string, locale: Locale): string {
 /** The static route of a section page in a locale: `/<slug>`, with the locale prefix except for the default locale. */
 export function sectionPageRoute(slug: string, locale: Locale): string {
   return localized(`/${slug}`, locale)
+}
+
+/** The static route of the first page of a category in a locale: `/blog/category/<slug>`, with the locale prefix except for the default locale. */
+export function categoryRoute(slug: string, locale: Locale): string {
+  return localized(`/blog/category/${slug}`, locale)
+}
+
+/**
+ * The category slugs a build prerenders: those the CMS lists in any locale, without duplicates or a slug no route can address, sorted so the build is deterministic.
+ *
+ * @remarks
+ * Same rule as the server list (ADR 0016, section 2): a category with a version in one locale only is listed in all of them, the missing one showing its slug as its name.
+ *
+ * @param perLocale - The slugs the CMS answered for each locale.
+ */
+export function categorySlugs(perLocale: Iterable<readonly string[]>): string[] {
+  const found = new Set<string>()
+  for (const slugs of perLocale) for (const slug of slugs) if (SLUG_PATTERN.test(slug)) found.add(slug)
+  return [...found].sort()
 }
 
 /**

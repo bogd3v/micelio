@@ -11,7 +11,7 @@ import { contentSecurityPolicy, inlineScripts, islandPolicyOptions, workerPolicy
 import { isStaticMode } from '../app/helpers/siteMode'
 import { speculationRules } from '../app/helpers/speculation'
 import type { SiteMode } from '../app/interfaces/site'
-import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, failsBuild, headersFile, initialRoutes, injectCspMeta, injectSpeculationRules, isCopyableMedia, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
+import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, categoryRoute, categorySlugs, failsBuild, headersFile, initialRoutes, injectCspMeta, injectSpeculationRules, isCopyableMedia, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
 import { HEAVY_ISLANDS } from '../app/islands/lib/constants'
 import { strapiRequest } from '../server/lib/strapiRequest'
 import type { StrapiRequestConfig } from '../server/lib/types'
@@ -47,7 +47,7 @@ async function hasHomePage(config: StrapiRequestConfig, locale: Locale): Promise
   return Boolean(response.data?.homePage?.slug)
 }
 
-async function fetchSlugs(config: StrapiRequestConfig, collection: 'articles' | 'pages', locale: Locale): Promise<string[]> {
+async function fetchSlugs(config: StrapiRequestConfig, collection: 'articles' | 'pages' | 'categories', locale: Locale): Promise<string[]> {
   const slugs: string[] = []
   for (let page = 1, pageCount = 1; page <= pageCount; page++) {
     const query = qs.stringify({ locale, fields: ['slug'], pagination: { page, pageSize: PAGE_SIZE }, sort: 'slug:asc' })
@@ -143,6 +143,7 @@ export default defineNuxtModule({
 
         let articles = 0
         let pages = 0
+        const categories = new Map<Locale, string[]>()
         try {
           for (const locale of Object.values(Locale)) {
             for (const slug of articleSlugs.get(locale) ?? await fetchSlugs(config, 'articles', locale)) {
@@ -153,15 +154,19 @@ export default defineNuxtModule({
               listed.add(sectionPageRoute(slug, locale))
               pages++
             }
+            // A site with no blog has no category pages or feeds (ADR 0016, section 6)
+            if (blogEnabled) categories.set(locale, await fetchSlugs(config, 'categories', locale))
           }
         } catch (error) {
           const reason = error instanceof Error ? error.message : String(error)
-          throw new Error(`Site mode "${mode}": could not read the content from Strapi at ${config.strapiUrl} (${reason}). Check that it is reachable and that the token can read articles and pages.`, { cause: error })
+          throw new Error(`Site mode "${mode}": could not read the content from Strapi at ${config.strapiUrl} (${reason}). Check that it is reachable and that the token can read articles, pages and categories.`, { cause: error })
         }
-        for (const route of staticFileRoutes(blogEnabled)) listed.add(route)
+        const slugs = categorySlugs(categories.values())
+        for (const slug of slugs) for (const locale of Object.values(Locale)) listed.add(categoryRoute(slug, locale))
+        for (const route of staticFileRoutes(blogEnabled, slugs)) listed.add(route)
         if (!blogEnabled) for (const route of routes) if (BLOG_ROUTES.test(route) || ABOUT_ROUTES.test(route)) routes.delete(route)
         for (const route of listed) routes.add(route)
-        logger.info(`Static routes: ${articles} articles and ${pages} pages from Strapi, plus ${blogEnabled ? 'feeds, ' : ''}sitemap and robots.txt`)
+        logger.info(`Static routes: ${articles} articles, ${pages} pages and ${slugs.length} categories from Strapi, plus ${blogEnabled ? 'feeds, ' : ''}sitemap and robots.txt`)
       })
 
       // Static pages load no Nuxt client and copy their images and media into the site: no image origin is needed

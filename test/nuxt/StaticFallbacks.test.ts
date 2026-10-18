@@ -19,7 +19,8 @@ import Header from '~/theme/layout/header/Bar.vue'
 import Footer from '~/theme/layout/footer/Columns.vue'
 
 registerEndpoint('/api/posts', () => ({ data: [], meta: { pagination: { page: 1, pageSize: 6, pageCount: 1, total: 0 } } }))
-registerEndpoint('/api/categories', () => [])
+// The blog page answers 404 for a category the list does not have (ADR 0016, section 7)
+registerEndpoint('/api/categories', () => [{ id: 1, slug: 'ia', name: 'IA', count: 0 }])
 registerEndpoint('/api/tags', () => [])
 
 // Static pages run no Vue (ADR 0006, section 3): shared controls fall back to plain HTML

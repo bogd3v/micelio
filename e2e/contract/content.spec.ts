@@ -87,6 +87,12 @@ test('the reading path of a category the CMS has, whatever its slug', async ({ r
   expect(readingPathSchema.safeParse(await response.json()).error?.issues ?? []).toEqual([])
 })
 
+test('the blog page of a category the CMS has, and a 404 for one it does not', async ({ request }) => {
+  expect((await request.get('/blog/category/garden')).status()).toBe(200)
+  expect((await request.get('/es/blog/category/garden')).status()).toBe(200)
+  expect((await request.get('/blog/category/cooking')).status()).toBe(404)
+})
+
 test('search finds an article by its title', async ({ request }) => {
   const response = await request.get('/api/search?q=compost&locale=en')
   expect(response.status()).toBe(200)

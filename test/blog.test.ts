@@ -14,8 +14,12 @@ describe('parseBlogRoute', () => {
     expect(parseBlogRoute({ tag: 'Vue' }, {}).tag).toBe('Vue')
   })
 
+  it('keeps a category the built-in constants do not know: the page checks the CMS list', () => {
+    expect(parseBlogRoute({ category: 'Garden' }, {}).category).toBe('garden')
+  })
+
   it('drops invalid values', () => {
-    expect(parseBlogRoute({ category: 'unknown', page: '-2' }, { search: 'vu' })).toEqual({
+    expect(parseBlogRoute({ category: 'not a slug', page: '-2' }, { search: 'vu' })).toEqual({
       category: undefined,
       tag: undefined,
       search: undefined,
@@ -76,14 +80,16 @@ describe('blogPath', () => {
 })
 
 describe('isBlogRouteValid', () => {
-  it('accepts a known category and a page above the first', () => {
+  it('accepts a category of any slug shape and a page above the first', () => {
     expect(isBlogRouteValid({})).toBe(true)
     expect(isBlogRouteValid({ category: 'Linux', page: '2' })).toBe(true)
+    expect(isBlogRouteValid({ category: 'garden' })).toBe(true)
     expect(isBlogRouteValid({ tag: 'anything', page: '10' })).toBe(true)
   })
 
-  it('rejects an unknown category and pages 0 and 1', () => {
-    expect(isBlogRouteValid({ category: 'cooking' })).toBe(false)
+  it('rejects a category that is not a slug and pages 0 and 1', () => {
+    expect(isBlogRouteValid({ category: 'not a slug' })).toBe(false)
+    expect(isBlogRouteValid({ category: 'a'.repeat(65) })).toBe(false)
     expect(isBlogRouteValid({ page: '0' })).toBe(false)
     expect(isBlogRouteValid({ page: '1' })).toBe(false)
   })

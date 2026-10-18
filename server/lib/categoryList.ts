@@ -1,4 +1,4 @@
-import { SLUG_PATTERN } from './constants'
+import { SLUG_PATTERN } from '~/constants/slug'
 import type { LoadedCategory } from './types'
 
 /** A category as the CMS returns it; every field but `id` may be missing. */

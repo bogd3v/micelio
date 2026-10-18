@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createMarkdownRenderer } from '../app/helpers/markdown'
 import { Locale } from '../app/interfaces/locale'
-import { articleRoute, failsBuild, headersFile, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
+import { articleRoute, categoryRoute, categorySlugs, failsBuild, headersFile, injectCspMeta, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
 import { SECURITY_HEADERS, contentSecurityPolicy } from '../app/helpers/securityHeaders'
 import { strapiRequest, strapiRequestUrl } from '../server/lib/strapiRequest'
 
@@ -41,8 +41,23 @@ describe('static routes', () => {
   })
 
   it('lists the feeds of both locales, the sitemap and robots.txt', () => {
-    const routes = staticFileRoutes()
-    expect(routes).toEqual(expect.arrayContaining(['/feed.xml', '/es/feed.xml', '/feed/linux.xml', '/es/feed/linux.xml', '/sitemap.xml', '/robots.txt']))
+    const routes = staticFileRoutes(true, ['garden'])
+    expect(routes).toEqual(expect.arrayContaining(['/feed.xml', '/es/feed.xml', '/feed/garden.xml', '/es/feed/garden.xml', '/sitemap.xml', '/robots.txt']))
+  })
+
+  it('has a feed per category of the CMS and none for a slug it does not list', () => {
+    expect(staticFileRoutes(true, ['garden'])).not.toContain('/feed/linux.xml')
+    expect(staticFileRoutes()).toEqual(['/feed.xml', '/es/feed.xml', '/sitemap.xml', '/robots.txt'])
+  })
+
+  it('prefixes the category page of the non-default locale', () => {
+    expect(categoryRoute('garden', Locale.English)).toBe('/blog/category/garden')
+    expect(categoryRoute('garden', Locale.SpanishColombia)).toBe('/es/blog/category/garden')
+  })
+
+  it('merges the category slugs of every locale, sorted and without duplicates or unusable slugs', () => {
+    expect(categorySlugs([['kitchen', 'garden'], ['garden', 'Bad Slug', '']])).toEqual(['garden', 'kitchen'])
+    expect(categorySlugs([])).toEqual([])
   })
 })
 

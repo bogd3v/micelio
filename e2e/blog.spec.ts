@@ -230,9 +230,28 @@ test('redirects capitals and padded pages in the path', async ({ request }) => {
 })
 
 test('answers 404 for an unknown category and for page 0', async ({ page }) => {
-  for (const path of ['/blog/category/cooking', '/es/blog/category/cooking', '/blog/page/0']) {
+  for (const path of ['/blog/category/cooking', '/es/blog/category/cooking', '/blog/category/cooking/page/2', '/blog/page/0']) {
     expect((await page.goto(path))?.status(), path).toBe(404)
   }
+  await page.goto('/blog/category/cooking')
+  await expect(page.locator('.myc-error-code-text')).toHaveText('404')
+})
+
+test('serves a category the CMS has and no constant knows', async ({ page }) => {
+  for (const path of ['/blog/category/garden', '/es/blog/category/garden', '/blog/category/kitchen', '/es/blog/category/kitchen']) {
+    const response = await page.goto(path, { waitUntil: 'networkidle' })
+    expect(response?.status(), path).toBe(200)
+    await expect(page.getByRole('heading', { level: 1 }), path).toBeVisible()
+  }
+})
+
+test('answers 404 when the visitor navigates to an unknown category', async ({ page }) => {
+  await page.goto('/blog/category/garden', { waitUntil: 'networkidle' })
+  await page.evaluate(async () => {
+    const root = document.querySelector('#__nuxt') as unknown as { __vue_app__: { config: { globalProperties: { $router: { push: (path: string) => Promise<unknown> } } } } }
+    await root.__vue_app__.config.globalProperties.$router.push('/blog/category/cooking')
+  })
+  await expect(page.locator('.myc-error-code-text')).toHaveText('404')
 })
 
 test.describe('old query URLs', () => {
