@@ -79,6 +79,17 @@ const categoryExtras = {
   kitchen: { order: 7, description: 'Recipes' },
 }
 
+/** The localized `name` of the categories that have one per locale; kitchen has no Spanish version, as an untranslated category in Strapi. */
+const categoryNames = {
+  privacidad: { en: 'Privacy', es: 'Privacidad' },
+  diy: { en: 'DIY', es: 'DIY · Hazlo tú mismo' },
+  ia: { en: 'Artificial intelligence', es: 'Inteligencia artificial' },
+  software: { en: 'Software development', es: 'Desarrollo de software' },
+  linux: { en: 'Linux and open source', es: 'Linux y código abierto' },
+  garden: { en: 'Garden', es: 'Jardín' },
+  kitchen: { en: 'Kitchen' },
+}
+
 const seoVue = {
   id: 41,
   metaTitle: 'Vue Composables',
@@ -559,7 +570,13 @@ const server = createServer(async (req, res) => {
 
   if (method === 'GET' && url.pathname === '/api/categories') {
     const localeFilter = getNestedValue(query, ['populate', 'articles', 'filters', 'locale', '$eq']) ?? 'en'
-    const categories = [categoryVue, categoryLinux, ...emptyCategories].map(category => ({
+    const requestedLocale = query.locale ?? 'en'
+    const categories = [categoryVue, categoryLinux, ...emptyCategories].flatMap((category) => {
+      const names = category.slug ? categoryNames[category.slug] : undefined
+      const name = names ? names[requestedLocale] : category.name
+      // No version in this locale: Strapi does not list it
+      return name === undefined ? [] : [{ ...category, name }]
+    }).map(category => ({
       id: category.id,
       name: category.name,
       slug: category.slug,
