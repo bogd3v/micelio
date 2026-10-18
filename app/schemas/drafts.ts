@@ -2,9 +2,8 @@ import { z } from 'zod'
 import type { DraftListItem, DraftListResponse } from '~/interfaces/draft'
 import { responseSchema } from './response'
 
-// The article of a draft (`draftArticleResponseSchema`) is in posts.ts, next to `articleSchema`, which it wraps. The list rows are the CMS rows as they
-// come: the CMS builds each by hand and its `articles.drafts` response-fields check pins the keys, but the route has no allow-list yet, so a key the
-// CMS added would be sent. The schema is strict so a test notices it.
+// The article of a draft (`draftArticleResponseSchema`) is in posts.ts, next to `articleSchema`, which it wraps. The list rows are rebuilt by
+// `publicDraftRow` (server/lib/publicShapes.ts), so a key the CMS adds never leaves the server.
 
 /**
  * A draft in the list.

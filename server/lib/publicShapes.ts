@@ -1,5 +1,8 @@
 import { allow, each, fields, variants } from '~/helpers/allowList'
 import type { Shape } from '~/helpers/allowList'
+import { toPublicComments } from '~/helpers/comments'
+import type { CommentsResponse } from '~/interfaces/comment'
+import type { DraftListItem } from '~/interfaces/draft'
 import type { PostListItem, RawStrapiArticle, StrapiAbout } from '~/interfaces'
 
 // The fields of each CMS answer that may leave the server (ASVS V15.3.1). They follow the interfaces in `app/interfaces/`: a field the pages
@@ -112,4 +115,38 @@ export function publicPostCard(article: RawStrapiArticle): PostListItem {
 /** The About page as the CMS sent it, reduced to the fields its blocks render. */
 export function publicAbout(about: StrapiAbout): StrapiAbout {
   return allow(about, aboutShape) as StrapiAbout
+}
+
+/**
+ * The allow-list of the flat comments list: the comments and their pagination.
+ *
+ * @internal Exported for the test that keeps the response schemas in step with it.
+ */
+export const commentsPageShape: Shape = fields({ data: true, pagination: fields({ page: true, pageSize: true, pageCount: true, total: true }) })
+
+/**
+ * The allow-list of a row of the drafts list.
+ *
+ * @internal Exported for the test that keeps the response schemas in step with it.
+ */
+export const draftRowShape: Shape = fields({
+  documentId: true,
+  title: true,
+  slug: true,
+  locale: true,
+  updatedAt: true,
+  publishedAt: true,
+  state: true,
+  category: fields({ name: true, slug: true }),
+  author: fields({ name: true }),
+})
+
+/** A page of the flat comments list: the envelope reduced to `data` and `pagination`, and each comment made public with `toPublicComments`. */
+export function publicCommentsPage(response: CommentsResponse): CommentsResponse {
+  return { ...allow(response, commentsPageShape) as CommentsResponse, data: toPublicComments(response?.data ?? []) }
+}
+
+/** A row of the drafts list as the CMS sent it, reduced to the keys the list shows. */
+export function publicDraftRow(row: DraftListItem): DraftListItem {
+  return allow(row, draftRowShape) as DraftListItem
 }

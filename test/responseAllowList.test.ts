@@ -3,8 +3,10 @@ import type { z } from 'zod'
 import { fields, variants } from '~/helpers/allowList'
 import type { Shape } from '~/helpers/allowList'
 import { aboutSchema, strapiBlockSchema } from '~/schemas/blocks'
+import { commentsResponseSchema } from '~/schemas/comments'
+import { draftListItemSchema } from '~/schemas/drafts'
 import { articleSchema, draftArticleResponseSchema, postListItemSchema } from '~/schemas/posts'
-import { aboutShape, articleShape, cardShape } from '../server/lib/publicShapes'
+import { aboutShape, articleShape, cardShape, commentsPageShape, draftRowShape } from '../server/lib/publicShapes'
 
 // The allow-list decides what a route sends and the schema describes it; this walks both so a key added to one and not the other fails here
 
@@ -86,6 +88,13 @@ describe('response schemas follow the allow-lists of publicShapes', () => {
 
   it('lists no key of the About page that the route never sends', () => {
     expect(unsent(aboutShape, aboutSchema)).toEqual([])
+  })
+
+  it('describe every key of the flat comments list and of a draft row, and send all of them', () => {
+    expect(missing(commentsPageShape, commentsResponseSchema, 'comments page')).toEqual([])
+    expect(unsent(commentsPageShape, commentsResponseSchema)).toEqual([])
+    expect(missing(draftRowShape, draftListItemSchema, 'draft row')).toEqual([])
+    expect(unsent(draftRowShape, draftListItemSchema)).toEqual([])
   })
 
   it('notice a key the schema lacks', () => {
