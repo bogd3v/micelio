@@ -5,6 +5,7 @@ import { blogPath } from '~/helpers/blog'
 import { CATEGORIES } from '~/constants/categories'
 import { localizedPath } from '~/helpers/locale'
 import { isBlogEnabled } from '~/helpers/siteMode'
+import { ARTICLE_HAS_SLUG } from '../lib/constants'
 import { articlePaths, publishedTranslations } from '~/helpers/translations'
 
 export default defineEventHandler(async (event) => {
@@ -23,6 +24,7 @@ export default defineEventHandler(async (event) => {
         fields: ['slug', 'locale', 'publishedAt', 'updatedAt'],
         populate: { localizations: { fields: ['slug', 'locale', 'publishedAt'] } },
         sort: 'publishedAt:desc',
+        filters: ARTICLE_HAS_SLUG,
       })
       return strapiFetch<{ data: RawStrapiArticle[] }>(`/api/articles?${params}`)
     }))

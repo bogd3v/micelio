@@ -5,6 +5,7 @@ import type { Category, Locale, RawStrapiArticle } from '~/interfaces'
 import { isCategory } from '~/helpers/categories'
 import { feedPath } from '~/helpers/feed'
 import { isBlogEnabled } from '~/helpers/siteMode'
+import { ARTICLE_HAS_SLUG } from '../lib/constants'
 import en from '../../i18n/locales/en.json'
 import es from '../../i18n/locales/es.json'
 
@@ -51,7 +52,7 @@ async function fetchFeedPosts({ locale, category }: FeedOptions): Promise<RawStr
     populate: ['cover', 'category', 'author'],
     sort: 'publishedAt:desc',
     locale,
-    ...(category ? { filters: { category: { slug: { $eq: category } } } } : {}),
+    filters: { ...ARTICLE_HAS_SLUG, ...(category ? { category: { slug: { $eq: category } } } : {}) },
   })
   const response = await strapiFetch<{ data: RawStrapiArticle[] }>(`/api/articles?${params}`)
   return response.data || []

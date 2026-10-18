@@ -1,6 +1,6 @@
 import qs from 'qs'
 import { parsePage } from '../schemas/page'
-import { POST_CARD_POPULATE } from '../lib/constants'
+import { ARTICLE_HAS_SLUG, POST_CARD_POPULATE } from '../lib/constants'
 import { publicPostCard } from '../lib/publicShapes'
 import type { Page, PageSection, PostListItem, PostListSection, RawStrapiArticle, StrapiPaginatedResponse } from '~/interfaces'
 
@@ -31,7 +31,7 @@ const PAGE_POPULATE = {
 
 /** The newest published posts of a `post-list` section; none (or a Strapi failure) gives an empty list. */
 async function postsOf(section: PostListSection, locale: string | undefined): Promise<PostListItem[]> {
-  const filters: Record<string, unknown> = {}
+  const filters: Record<string, unknown> = { ...ARTICLE_HAS_SLUG }
   if (section.category) filters.category = { slug: { $eq: section.category } }
   if (section.tag) filters.tags = { slug: { $eq: section.tag } }
   const query = qs.stringify({
@@ -39,7 +39,7 @@ async function postsOf(section: PostListSection, locale: string | undefined): Pr
     locale,
     sort: 'publishedAt:desc',
     pagination: { page: 1, pageSize: section.count },
-    ...(Object.keys(filters).length > 0 && { filters }),
+    filters,
   }, { skipNulls: true })
   try {
     const response = await strapiFetch<StrapiPaginatedResponse<RawStrapiArticle[]>>(`/api/articles?${query}`)

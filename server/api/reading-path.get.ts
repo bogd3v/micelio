@@ -1,6 +1,7 @@
 import qs from 'qs'
 import type { RawStrapiArticle, ReadingPath, ReadingPathStep, StrapiPaginatedResponse } from '~/interfaces'
 import { readingPathQuerySchema } from '../schemas/query'
+import { ARTICLE_HAS_SLUG } from '../lib/constants'
 
 const MAX_STEPS = 50
 
@@ -10,6 +11,7 @@ export default defineEventHandler(async (event): Promise<ReadingPath> => {
   async function fetchSteps(editorial: boolean): Promise<ReadingPathStep[]> {
     const params = qs.stringify({
       filters: {
+        ...ARTICLE_HAS_SLUG,
         category: { slug: { $eq: category } },
         ...(editorial ? { pathOrder: { $notNull: true } } : {}),
       },

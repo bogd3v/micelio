@@ -64,3 +64,6 @@ export const ARTICLE_POPULATE = {
   references: true,
   localizations: { fields: ['slug', 'locale', 'publishedAt'] },
 }
+
+/** Strapi filter that leaves out an article without a slug: the CMS `uid` is optional, and every route and link keys on the slug. */
+export const ARTICLE_HAS_SLUG = { slug: { $notNull: true } }

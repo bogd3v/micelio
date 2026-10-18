@@ -220,7 +220,7 @@ describe('content search', () => {
     expect(response.data.map(post => post.documentId)).toEqual(['doc-linux'])
     expect(response.data[0]?.snippet).toBe('Start with SSH key authentication.')
     const articles = mock.requests.find(request => request.path === '/api/articles')
-    expect(articles?.query.filters).toEqual({ documentId: { $in: ['doc-linux'] } })
+    expect(articles?.query.filters).toEqual({ slug: { $notNull: 'true' }, documentId: { $in: ['doc-linux'] } })
 
     const titlesOnly = await $fetch<PostsPage>('/api/posts', { query: { locale: 'en', search: 'ssh' } })
     expect(titlesOnly.data).toEqual([])
@@ -302,6 +302,34 @@ describe('/api/reading-path', () => {
     await expect($fetch('/api/reading-path', { query: { category: 'cooking' } })).rejects.toMatchObject({ response: { status: 400 } })
     await expect($fetch('/api/reading-path')).rejects.toMatchObject({ response: { status: 400 } })
     expect(mock.requests.some(item => item.path === '/api/articles')).toBe(false)
+  })
+})
+
+describe('articles without a slug', () => {
+  const slugless = { ...mock.articles[0], id: 9001, documentId: 'doc-slugless', title: 'Draft without a slug', slug: '' } as RawStrapiArticle
+
+  beforeEach(() => {
+    mock.articles.push(slugless)
+    return () => {
+      mock.articles.splice(mock.articles.indexOf(slugless), 1)
+    }
+  })
+
+  it('leaves them out of the list and asks Strapi for slugs only', async () => {
+    const list = await $fetch<{ data: Array<{ documentId: string, slug: string }> }>('/api/posts', { query: { locale: 'en' } })
+    expect(list.data.length).toBeGreaterThan(0)
+    expect(list.data.map(post => post.documentId)).not.toContain('doc-slugless')
+    expect(list.data.every(post => post.slug)).toBe(true)
+    const request = mock.requests.filter(item => item.path === '/api/articles').at(-1)
+    expect(getNestedValue(request?.query ?? {}, ['filters', 'slug', '$notNull'])).toBe('true')
+  })
+
+  it('leaves them out of the sitemap', async () => {
+    const xml = await (await fetch('/sitemap.xml')).text()
+    expect(xml).not.toMatch(/\/blog\/<\/loc>/)
+    for (const request of mock.requests.filter(item => item.path === '/api/articles').slice(-2)) {
+      expect(getNestedValue(request.query, ['filters', 'slug', '$notNull'])).toBe('true')
+    }
   })
 })
 
