@@ -159,6 +159,8 @@ A theme's own classes, inside its slots, use its id as prefix (`bogota-`). The v
 
 **Amendment (2026-10-06, #324):** removing a requirement that no installed theme can depend on stays in v1. `space-16`, `space-24`, `category-6` and `category-6-soft` are no longer required roles: the core never read them (it has five categories, `Category` in `app/interfaces/design.ts`), and a theme that still declares them keeps validating, because an extra name in a group is a theme primitive. `ThemeDivider`'s `placement` narrows to `'footer'`: the core is the only caller and only ever passed `footer`, so a slot that still accepts `'section'` keeps working. Reintroducing a sixth category or a larger space step is an optional role with a core default, also in v1.
 
+**Amendment (2026-10-18, #462):** [ADR-0016](0016-categories-from-the-cms.md) removes the five hard-coded categories and their helpers from the slot APIs, which is `contract: 2`. The sentence above about the core having five categories no longer holds once it is accepted.
+
 **Amendment (2026-10-08, #416): the core prefix is `myc`, and `micelio` where a name is seen outside the code.** `bd` was BogDev's prefix, and the core carries no site. Every `bd` name of the core is renamed before the first theme package is published (#313), one to one and with no other change. The short prefix, from *mycelium*, is for names that repeat in every file and every page. The full name is for the few that a visitor, an operator or the privacy page sees, as the code already does with `#micelio/…`, `MICELIO_*`, `micelio-search` and `X-Micelio-Client-IP`.
 
 | Surface | Before | After | Count today |
