@@ -763,6 +763,40 @@ describe('errors from the CMS', () => {
   })
 })
 
+describe('the flat comments list and the draft list rebuild their answer', () => {
+  const relation = 'api::article.article:doc-vue'
+  const leak = { token: 'cms-internal-token', debug: { sql: 'select 1' } }
+
+  it('drops a top-level key the CMS adds to the flat comments list', async () => {
+    mock.leaks.commentsEnvelope = { internalNote: leak, meta: leak }
+    try {
+      const body = await $fetch<Record<string, unknown>>('/api/comments/flat', { query: { relation, locale: 'en' } })
+      expect(Object.keys(body).sort()).toEqual(['data', 'pagination'])
+      expect(JSON.stringify(body)).not.toContain(leak.token)
+    } finally {
+      mock.leaks.commentsEnvelope = {}
+    }
+  })
+
+  it('drops a key the CMS adds to a draft row', async () => {
+    const login = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'origin': SITE_URL },
+      body: JSON.stringify({ identifier: testUsers.editor.username, password: testUsers.editor.password }),
+    })
+    const cookie = login.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_session='))!.split(';')[0]!
+    mock.leaks.draftRow = { createdBy: leak, internalNote: leak.token }
+    try {
+      const body = await (await fetch('/api/drafts', { headers: { cookie } })).json() as { data: Array<Record<string, unknown>> }
+      expect(body.data.length).toBeGreaterThan(0)
+      for (const row of body.data) expect(Object.keys(row).sort()).toEqual(['author', 'category', 'documentId', 'locale', 'publishedAt', 'slug', 'state', 'title', 'updatedAt'])
+      expect(JSON.stringify(body)).not.toContain(leak.token)
+    } finally {
+      mock.leaks.draftRow = {}
+    }
+  })
+})
+
 describe('fields of an article that leave the server', () => {
   // What the CMS stores about a file, an author or a share override is not for the browser, whatever populate asked for
   const extras = { provider: 'storage-provider-x', hash: 'secret-hash', folderPath: '/1', email: 'author@example.com', internalNote: 'draft idea' }

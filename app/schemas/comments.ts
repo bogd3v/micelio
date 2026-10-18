@@ -4,7 +4,7 @@ import { paginationMetaSchema } from './posts'
 import { responseSchema } from './response'
 
 // What the comment routes send: every comment goes through `toPublicComment` (app/helpers/comments.ts), which builds it from a list of
-// public fields, so every object is strict. The envelope of the flat list is the CMS answer spread (`{ ...response, data }`), not an allow-list.
+// public fields, so every object is strict. The envelope of the flat list is rebuilt by `publicCommentsPage` (server/lib/publicShapes.ts).
 
 /** The author of a comment. */
 const commentAuthorSchema = responseSchema<CommentAuthor>()(

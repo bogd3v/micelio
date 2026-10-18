@@ -62,6 +62,8 @@ interface MockStrapiResult {
   /** The `homePage` relation site-setting answers with, by locale (null when never set) */
   homePage: { value: { en?: string, es?: string } | null }
   users: Array<{ id: number, username: string, email: string, password: string, confirmed: boolean, role: string }>
+  /** Extra keys the CMS answers carry, to prove they do not reach the client; a test that sets one clears it */
+  leaks: { commentsEnvelope: Record<string, unknown>, draftRow: Record<string, unknown> }
   /** The articles the mock serves; a test that changes one restores it */
   articles: RawStrapiArticle[]
 }
@@ -496,6 +498,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
   const failures: MockFailures = { pathOrder: false, about: false, site: false, rateLimited: false, retryAfter: '42', rateLimitedReads: [], broken: '' }
   const modules: MockModules = { newsletter: true, comments: true, accounts: true, drafts: true, fediverse: true, search: true, support: true }
   const theme = { value: null as unknown }
+  const leaks: MockStrapiResult['leaks'] = { commentsEnvelope: {}, draftRow: {} }
   const homePage: MockStrapiResult['homePage'] = { value: null }
   const authMock = createAuthMock({ frontendUrl: 'https://bogdev.test' })
   const draftsMock = createDraftsMock({ userFromAuth: authMock.userFromAuth, publishedArticles: articles })
@@ -541,7 +544,8 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
 
     const drafts = draftsMock.handle(method, url.pathname, query, req.headers)
     if (drafts) {
-      sendJson(res, drafts.status, drafts.body)
+      const rows = url.pathname === '/api/articles/drafts' && Array.isArray((drafts.body as { data?: unknown }).data)
+      sendJson(res, drafts.status, rows ? { ...drafts.body, data: (drafts.body as { data: object[] }).data.map(row => ({ ...row, ...leaks.draftRow })) } : drafts.body)
       return
     }
 
@@ -822,7 +826,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
 
     if (method === 'GET' && url.pathname === '/api/comments/api::article.article:doc-vue/flat') {
       const data = query.locale === 'es' ? [spanishComment] : flatComments
-      sendJson(res, 200, { data, pagination: { page: 1, pageSize: 10, pageCount: 1, total: data.length } })
+      sendJson(res, 200, { data, pagination: { page: 1, pageSize: 10, pageCount: 1, total: data.length }, ...leaks.commentsEnvelope })
       return
     }
 
@@ -913,7 +917,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address()
       const port = typeof address === 'object' && address !== null ? address.port : 0
-      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, users: authMock.users, articles })
+      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, users: authMock.users, leaks, articles })
     })
   })
 }

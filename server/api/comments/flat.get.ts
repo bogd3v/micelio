@@ -1,6 +1,6 @@
 import qs from 'qs'
 import type { CommentsResponse } from '~/interfaces/comment'
-import { toPublicComments } from '~/helpers/comments'
+import { publicCommentsPage } from '../../lib/publicShapes'
 import { commentsQuerySchema } from '../../schemas/query'
 
 export default defineEventHandler(async (event) => {
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const response = await strapiFetch<CommentsResponse>(url, { event })
-    return { ...response, data: toPublicComments(response?.data ?? []) }
+    return publicCommentsPage(response)
   } catch (error: unknown) {
     rethrowUpstreamRateLimit(event, error)
     logError('cms.comments', 'Fetching the comments failed', { event, error })
