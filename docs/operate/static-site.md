@@ -14,7 +14,7 @@ How to build and publish a Micelio site with `NUXT_PUBLIC_SITE_MODE=static` or `
 2. micelio-cms calls `REBUILD_HOOK_URL` (debounced 60 s) with a GitHub `repository_dispatch` of type `micelio-content`.
 3. `.github/workflows/static-site.yml` runs `npm run generate` against Strapi, then `wrangler pages deploy .output/public`. A newer run cancels one in progress.
 
-The build prerenders `/blog/category/<slug>`, its `/es/` page and `/feed/<slug>.xml` for every category the CMS has, in any language (ADR 0016). The CMS rebuild hook ignores categories, so a new or renamed category appears at the next rebuild caused by an article, a page or the site settings; until then its route is a 404.
+The build prerenders `/blog/category/<slug>`, `/es/blog/category/<slug>` and `/feed/<slug>.xml` (and the `/es/` one) for the categories each language lists, by the same rule as the server: the default language lists the categories that have a version in it, every other language lists those plus the ones that have a version in it (ADR 0016). A category that exists only in Spanish is therefore a page and a feed under `/es/` and a 404 in English. The build reads one page of at most 100 categories per language (`MAX_CATEGORIES`, the same limit as the dynamic site) and fails, naming the limit, when Strapi reports more. The CMS rebuild hook ignores categories, so a new or renamed category appears at the next rebuild caused by an article, a page or the site settings; until then its route is a 404.
 
 The workflow runs only when the repository variable `STATIC_SITE_ENABLED` is `true`, so forks and dynamic sites never run it. You can also start it by hand from the Actions tab (`workflow_dispatch`).
 

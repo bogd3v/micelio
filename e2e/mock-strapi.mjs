@@ -66,6 +66,8 @@ const emptyCategories = [
   // Categories no site constant knows (ADR 0016): the core takes whatever the CMS has
   { id: 27, documentId: 'cat-garden', name: 'Garden', slug: 'garden' },
   { id: 28, documentId: 'cat-kitchen', name: 'Kitchen', slug: 'kitchen' },
+  // Only in Spanish: the default-locale list does not have it, the Spanish one does
+  { id: 29, documentId: 'cat-invierno', name: 'Invierno', slug: 'invierno' },
 ]
 
 /** The fields only `/api/categories` sends: the editor's order, a description and the legacy `pillar` flag. */
@@ -77,6 +79,7 @@ const categoryExtras = {
   linux: { order: 5, description: 'Linux and open source' },
   garden: { order: 6, description: 'Plants and soil' },
   kitchen: { order: 7, description: 'Recipes' },
+  invierno: { order: 8, description: 'Solo en español' },
 }
 
 /** The localized `name` of the categories that have one per locale; kitchen has no Spanish version, as an untranslated category in Strapi. */
@@ -88,6 +91,7 @@ const categoryNames = {
   linux: { en: 'Linux and open source', es: 'Linux y código abierto' },
   garden: { en: 'Garden', es: 'Jardín' },
   kitchen: { en: 'Kitchen' },
+  invierno: { es: 'Invierno' },
 }
 
 const seoVue = {

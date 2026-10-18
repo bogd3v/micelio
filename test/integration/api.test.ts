@@ -126,8 +126,9 @@ describe('/api/categories', () => {
     expect(spanish.find(category => category.slug === 'linux')?.name).toBe('Linux y código abierto')
     expect(spanish.find(category => category.slug === 'garden')?.name).toBe('Jardín')
     expect(spanish.find(category => category.slug === 'kitchen')?.name).toBe('kitchen')
-    // Every category stays in the list, in the order of the default locale
-    expect(spanish.map(category => category.slug)).toEqual(english.map(category => category.slug))
+    // Every category of the default locale stays in the list, in its order; one that exists only in Spanish is added at the end
+    expect(english.map(category => category.slug)).not.toContain('invierno')
+    expect(spanish.map(category => category.slug)).toEqual([...english.map(category => category.slug), 'invierno'])
   })
 })
 

@@ -103,7 +103,7 @@ describe('the blog switch', () => {
     expect(initialRoutes(false)).toEqual(['/', '/es'])
     expect(staticFileRoutes(false)).toEqual(['/sitemap.xml', '/robots.txt'])
     expect(staticFileRoutes()).toContain('/feed.xml')
-    expect(staticFileRoutes(false, ['garden'])).toEqual(['/sitemap.xml', '/robots.txt'])
+    expect(staticFileRoutes(false, { en: ['garden'] })).toEqual(['/sitemap.xml', '/robots.txt'])
   })
 
   it('matches the blog, its filters and the feeds in every locale and nothing else', () => {

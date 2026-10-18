@@ -94,6 +94,11 @@ test('the pages of the categories of the CMS are files, and an unknown category 
   expect((await request.get('/blog/category/cooking')).status()).toBe(404)
 })
 
+test('a category that exists only in Spanish is a page and a feed in Spanish and a 404 in English', async ({ request }) => {
+  for (const path of ['/es/blog/category/invierno', '/es/feed/invierno.xml']) expect((await request.get(path)).status(), path).toBe(200)
+  for (const path of ['/blog/category/invierno', '/feed/invierno.xml']) expect((await request.get(path)).status(), path).toBe(404)
+})
+
 test('an unknown path answers the 404 page', async ({ request }) => {
   const response = await request.get('/blog/does-not-exist')
   expect(response.status()).toBe(404)

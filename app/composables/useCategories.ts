@@ -14,7 +14,7 @@ export interface UseCategories {
 }
 
 /**
- * The categories of the CMS, shared by every component of a page: it wraps the `fetchCategories` request, whose key is per locale, so a page makes one request to `/api/categories` (ADR 0016, section 2).
+ * The categories of the CMS, shared by every component of a page: it wraps the `fetchCategories` request, whose key follows the locale, so a page makes one request to `/api/categories` (ADR 0016, section 2).
  *
  * @remarks
  * Call it in `setup`. Await `loaded()` where the answer decides the page, such as a 404 for an unknown category.
@@ -23,7 +23,8 @@ export function useCategories(): UseCategories {
   const { locale } = useI18n()
   const { fetchCategories } = useStrapi()
 
-  const request = fetchCategories(locale.value as Locale)
+  // The key follows the locale: the blog page is reused when the language changes, so setup does not run again
+  const request = fetchCategories(computed(() => locale.value as Locale))
   const categories = computed<CategoryCount[]>(() => request.data.value ?? [])
   const failed = computed<boolean>(() => Boolean(request.error.value))
 

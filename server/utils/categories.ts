@@ -1,9 +1,8 @@
 import qs from 'qs'
 import { defaultLocale } from '~/interfaces/locale'
 import { mergeLocalized, shapeCategories, type RawCategory } from '../lib/categoryList'
+import { MAX_CATEGORIES } from '../lib/constants'
 import type { LoadedCategory } from '../lib/types'
-
-const MAX_CATEGORIES = 100
 
 async function fetchLocale(locale: string): Promise<LoadedCategory[]> {
   const params = qs.stringify({

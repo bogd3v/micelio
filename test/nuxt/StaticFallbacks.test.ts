@@ -20,7 +20,7 @@ import Footer from '~/theme/layout/footer/Columns.vue'
 
 registerEndpoint('/api/posts', () => ({ data: [], meta: { pagination: { page: 1, pageSize: 6, pageCount: 1, total: 0 } } }))
 // The blog page answers 404 for a category the list does not have (ADR 0016, section 7)
-registerEndpoint('/api/categories', () => [{ id: 1, slug: 'ia', name: 'IA', count: 0 }])
+registerEndpoint('/api/categories', () => [{ id: 1, slug: 'garden', name: 'Garden', count: 0 }])
 registerEndpoint('/api/tags', () => [])
 
 // Static pages run no Vue (ADR 0006, section 3): shared controls fall back to plain HTML
@@ -179,7 +179,7 @@ describe('static fallbacks', () => {
 
     it('links "clear filters" and has no view, sort or search controls on the blog in static', async () => {
       setMode('static')
-      const wrapper = await mountSuspended(BlogPage, { route: '/blog/category/ia' })
+      const wrapper = await mountSuspended(BlogPage, { route: '/blog/category/garden' })
       await flushPromises()
       expect(wrapper.find('.myc-blog-controls').exists()).toBe(false)
       expect(wrapper.find('input[type="search"]').exists()).toBe(false)

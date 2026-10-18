@@ -11,8 +11,9 @@ import { contentSecurityPolicy, inlineScripts, islandPolicyOptions, workerPolicy
 import { isStaticMode } from '../app/helpers/siteMode'
 import { speculationRules } from '../app/helpers/speculation'
 import type { SiteMode } from '../app/interfaces/site'
-import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, categoryRoute, categorySlugs, failsBuild, headersFile, initialRoutes, injectCspMeta, injectSpeculationRules, isCopyableMedia, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
+import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, categoryRoute, categorySlugsByLocale, failsBuild, headersFile, initialRoutes, injectCspMeta, injectSpeculationRules, isCopyableMedia, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
 import { HEAVY_ISLANDS } from '../app/islands/lib/constants'
+import { MAX_CATEGORIES } from '../server/lib/constants'
 import { strapiRequest } from '../server/lib/strapiRequest'
 import type { StrapiRequestConfig } from '../server/lib/types'
 
@@ -47,7 +48,15 @@ async function hasHomePage(config: StrapiRequestConfig, locale: Locale): Promise
   return Boolean(response.data?.homePage?.slug)
 }
 
-async function fetchSlugs(config: StrapiRequestConfig, collection: 'articles' | 'pages' | 'categories', locale: Locale): Promise<string[]> {
+// One page, in the order the server reads it (no sort): above the limit the build and the site would list different categories
+async function fetchCategorySlugs(config: StrapiRequestConfig, locale: Locale): Promise<string[]> {
+  const query = qs.stringify({ locale, fields: ['slug'], pagination: { page: 1, pageSize: MAX_CATEGORIES } })
+  const response = await strapiRequest<SlugList>(config, `/api/categories?${query}`, { timeout: 30_000 })
+  if ((response.meta?.pagination?.pageCount ?? 1) > 1) throw new Error(`Strapi has more than ${MAX_CATEGORIES} categories in ${locale}; the site reads at most ${MAX_CATEGORIES} (MAX_CATEGORIES)`)
+  return (response.data ?? []).flatMap(({ slug }) => slug ? [slug] : [])
+}
+
+async function fetchSlugs(config: StrapiRequestConfig, collection: 'articles' | 'pages', locale: Locale): Promise<string[]> {
   const slugs: string[] = []
   for (let page = 1, pageCount = 1; page <= pageCount; page++) {
     const query = qs.stringify({ locale, fields: ['slug'], pagination: { page, pageSize: PAGE_SIZE }, sort: 'slug:asc' })
@@ -143,7 +152,7 @@ export default defineNuxtModule({
 
         let articles = 0
         let pages = 0
-        const categories = new Map<Locale, string[]>()
+        const ownCategories = {} as Record<Locale, string[]>
         try {
           for (const locale of Object.values(Locale)) {
             for (const slug of articleSlugs.get(locale) ?? await fetchSlugs(config, 'articles', locale)) {
@@ -155,18 +164,18 @@ export default defineNuxtModule({
               pages++
             }
             // A site with no blog has no category pages or feeds (ADR 0016, section 6)
-            if (blogEnabled) categories.set(locale, await fetchSlugs(config, 'categories', locale))
+            ownCategories[locale] = blogEnabled ? await fetchCategorySlugs(config, locale) : []
           }
         } catch (error) {
           const reason = error instanceof Error ? error.message : String(error)
           throw new Error(`Site mode "${mode}": could not read the content from Strapi at ${config.strapiUrl} (${reason}). Check that it is reachable and that the token can read articles, pages and categories.`, { cause: error })
         }
-        const slugs = categorySlugs(categories.values())
-        for (const slug of slugs) for (const locale of Object.values(Locale)) listed.add(categoryRoute(slug, locale))
-        for (const route of staticFileRoutes(blogEnabled, slugs)) listed.add(route)
+        const categories = categorySlugsByLocale(ownCategories)
+        for (const locale of Object.values(Locale)) for (const slug of categories[locale]) listed.add(categoryRoute(slug, locale))
+        for (const route of staticFileRoutes(blogEnabled, categories)) listed.add(route)
         if (!blogEnabled) for (const route of routes) if (BLOG_ROUTES.test(route) || ABOUT_ROUTES.test(route)) routes.delete(route)
         for (const route of listed) routes.add(route)
-        logger.info(`Static routes: ${articles} articles, ${pages} pages and ${slugs.length} categories from Strapi, plus ${blogEnabled ? 'feeds, ' : ''}sitemap and robots.txt`)
+        logger.info(`Static routes: ${articles} articles, ${pages} pages and ${Object.values(categories).reduce((total, list) => total + list.length, 0)} category pages from Strapi, plus ${blogEnabled ? 'feeds, ' : ''}sitemap and robots.txt`)
       })
 
       // Static pages load no Nuxt client and copy their images and media into the site: no image origin is needed

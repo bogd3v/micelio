@@ -36,10 +36,10 @@ export function noScriptsViolations(html: string): string[] {
 /**
  * Routes of the files that are not pages: the feeds, the sitemap and robots.txt, in every locale. A build with no blog has no feeds.
  *
- * @param categories - The slugs of the CMS categories (`categorySlugs`); each gets a feed per locale. None for a site without categories.
+ * @param categories - The category slugs of each locale (`categorySlugsByLocale`); each gets a feed in its locale. None for a site without categories.
  */
-export function staticFileRoutes(blogEnabled = true, categories: readonly string[] = []): string[] {
-  const feeds = blogEnabled ? Object.values(Locale).flatMap(locale => [feedPath(locale), ...categories.map(category => feedPath(locale, category))]) : []
+export function staticFileRoutes(blogEnabled = true, categories: Partial<Record<Locale, readonly string[]>> = {}): string[] {
+  const feeds = blogEnabled ? Object.values(Locale).flatMap(locale => [feedPath(locale), ...(categories[locale] ?? []).map(category => feedPath(locale, category))]) : []
   return [...feeds, '/sitemap.xml', '/robots.txt']
 }
 
@@ -64,17 +64,22 @@ export function categoryRoute(slug: string, locale: Locale): string {
 }
 
 /**
- * The category slugs a build prerenders: those the CMS lists in any locale, without duplicates or a slug no route can address, sorted so the build is deterministic.
+ * The category slugs each locale lists, by the rule of the server (`mergeLocalized`, ADR 0016, section 2): the default locale lists only its own categories, every other locale lists the default ones plus its own.
  *
  * @remarks
- * Same rule as the server list (ADR 0016, section 2): a category with a version in one locale only is listed in all of them, the missing one showing its slug as its name.
+ * A category with a version in a non-default locale only is therefore a page and a feed in that locale and a 404 in the default one. Slugs no route can address are dropped and each list is sorted, so the build is deterministic.
  *
- * @param perLocale - The slugs the CMS answered for each locale.
+ * @param own - The slugs the CMS answered for each locale on its own.
  */
-export function categorySlugs(perLocale: Iterable<readonly string[]>): string[] {
-  const found = new Set<string>()
-  for (const slugs of perLocale) for (const slug of slugs) if (SLUG_PATTERN.test(slug)) found.add(slug)
-  return [...found].sort()
+export function categorySlugsByLocale(own: Readonly<Record<Locale, readonly string[]>>): Record<Locale, string[]> {
+  const usable = (slugs: readonly string[]): string[] => slugs.filter(slug => SLUG_PATTERN.test(slug))
+  const base = usable(own[defaultLocale] ?? [])
+  const result = {} as Record<Locale, string[]>
+  for (const locale of Object.values(Locale)) {
+    const slugs = locale === defaultLocale ? base : [...base, ...usable(own[locale] ?? [])]
+    result[locale] = [...new Set(slugs)].sort()
+  }
+  return result
 }
 
 /**
