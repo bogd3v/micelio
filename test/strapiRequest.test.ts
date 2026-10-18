@@ -5,13 +5,13 @@ import { strapiRequest } from '../server/lib/strapiRequest'
 
 const config = { strapiUrl: 'https://cms.example.org/', strapiApiToken: 'api-token' }
 
-function lastHeaders(fetchMock: ReturnType<typeof vi.fn>): Headers {
+function lastHeaders(fetchMock: ReturnType<typeof stubFetch>): Headers {
   const init = fetchMock.mock.calls.at(-1)![1] as { headers: HeadersInit }
   return new Headers(init.headers)
 }
 
 function stubFetch() {
-  const fetchMock = vi.fn(async () => new Response('{}', { headers: { 'content-type': 'application/json' } }))
+  const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response('{}', { headers: { 'content-type': 'application/json' } }))
   vi.stubGlobal('fetch', fetchMock)
   return fetchMock
 }

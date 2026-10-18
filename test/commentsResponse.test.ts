@@ -126,7 +126,7 @@ describe('commentTreeSchema and commentsResponseSchema', () => {
 describe('the comment schemas in the OpenAPI document', () => {
   it('refers to itself with a $ref instead of unfolding the replies', () => {
     const { schemas } = z.toJSONSchema(z.registry<{ id: string }>().add(commentSchema, { id: 'Comment' }), { uri: id => `#/components/schemas/${id}` })
-    const comment = schemas.Comment as { properties: { children: { items: unknown } }, additionalProperties: unknown }
+    const comment = schemas.Comment as unknown as { properties: { children: { items: unknown } }, additionalProperties: unknown }
     expect(comment.properties.children.items).toEqual({ $ref: '#/components/schemas/Comment' })
     expect(comment.additionalProperties).toBe(false)
   })

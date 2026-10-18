@@ -1,0 +1,10 @@
+{
+  // The unit, integration and e2e suites, which no Nuxt-generated project covers (standard, section 4). Run by `npm run typecheck`.
+  "extends": "../.nuxt/tsconfig.app.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["../.nuxt/nuxt.d.ts", "./**/*.ts", "../e2e/**/*.ts", "../app/**/*"],
+  "exclude": ["../node_modules"]
+}

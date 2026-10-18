@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { MockInstance } from 'vitest'
 import { fileURLToPath } from 'node:url'
 import { contrastProblems } from '../modules/theme/contrast'
 import { buildPalette } from '../modules/theme/palette'
@@ -46,7 +47,7 @@ function setup(manifest: ThemeManifest, settings: ThemeSettings): { palette: The
   return { palette, theme, applied: withTokens(manifest, patch) }
 }
 
-let warn: ReturnType<typeof vi.spyOn>
+let warn: MockInstance<typeof console.warn>
 beforeEach(() => {
   resetThemeLog()
   warn = vi.spyOn(console, 'warn').mockImplementation(() => {})

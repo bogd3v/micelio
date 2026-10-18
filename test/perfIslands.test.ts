@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-// @ts-expect-error plain ESM script without types
 import { budgetKeysOf, islandBudgetErrors, islandElement, islandMetrics, islandProblems, isStrayRequest } from '../scripts/perf/islands.mjs'
 import type { HeavyIsland } from '../app/islands/types'
 

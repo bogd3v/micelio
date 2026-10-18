@@ -6,7 +6,7 @@ const localize = (path: string): string => `/es${path}`
 describe('resolveLink', () => {
   it('keeps external links as they are', () => {
     expect(resolveLink('https://github.com/ale9420', localize)).toEqual({ href: 'https://github.com/ale9420', external: true })
-    expect(resolveLink('mailto:hola@bogdev.com.co', localize).external).toBe(true)
+    expect(resolveLink('mailto:hola@bogdev.com.co', localize)?.external).toBe(true)
   })
 
   it('localizes site paths and leaves in-page anchors alone', () => {

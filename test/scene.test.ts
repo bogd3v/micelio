@@ -5,7 +5,7 @@ import { MODEL_MAX_BYTES } from '../app/islands/constants'
 import { isCopyableMedia } from '../app/helpers/staticBuild'
 
 /** A minimal binary glTF: the 12-byte header only (what the checks read). */
-function glb(options: { magic?: number, version?: number, length?: number, size?: number } = {}): Uint8Array {
+function glb(options: { magic?: number, version?: number, length?: number, size?: number } = {}): Uint8Array<ArrayBuffer> {
   const size = options.size ?? 12
   const bytes = new Uint8Array(size)
   const view = new DataView(bytes.buffer)
