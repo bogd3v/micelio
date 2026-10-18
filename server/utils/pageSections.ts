@@ -1,33 +1,8 @@
 import qs from 'qs'
 import { parsePage } from '../schemas/page'
-import { ARTICLE_HAS_SLUG, POST_CARD_POPULATE } from '../lib/constants'
+import { ARTICLE_HAS_SLUG, PAGE_POPULATE, POST_CARD_POPULATE } from '../lib/constants'
 import { publicPostCard } from '../lib/publicShapes'
 import type { Page, PageSection, PostListItem, PostListSection, RawStrapiArticle, StrapiPaginatedResponse } from '~/interfaces'
-
-// Strapi does not mix '*' with keyed entries: every relation of every section is named.
-// Links and media are listed explicitly so a new CMS field never widens the response.
-const PAGE_POPULATE = {
-  seo: { populate: '*' },
-  localizations: { fields: ['slug', 'locale'] },
-  sections: {
-    on: {
-      'section.hero': { populate: { primaryLink: true, secondaryLink: true, media: true } },
-      'section.feature-grid': { populate: { items: { populate: { icon: true } } } },
-      'section.media-showcase': { populate: { media: true, link: true } },
-      'section.stats': { populate: { items: true } },
-      'section.logo-cloud': { populate: { logos: { populate: { image: true } } } },
-      'section.testimonials': { populate: { items: { populate: { avatar: true } } } },
-      'section.pricing': { populate: { plans: { populate: { link: true } } } },
-      'section.faq': { populate: { items: true } },
-      'section.cta': { populate: { primaryLink: true, secondaryLink: true } },
-      'section.post-list': { populate: { category: { fields: ['slug'] }, tag: { fields: ['slug'] } } },
-      'section.newsletter': { populate: '*' },
-      'section.rich-text': { populate: '*' },
-      'section.gallery': { populate: { images: true } },
-      'section.scene': { populate: { model: true, poster: true } },
-    },
-  },
-}
 
 /** The newest published posts of a `post-list` section; none (or a Strapi failure) gives an empty list. */
 async function postsOf(section: PostListSection, locale: string | undefined): Promise<PostListItem[]> {

@@ -7,25 +7,13 @@ import type { Locale, Site, AppSiteConfig } from '~/interfaces'
 import { effectiveModules } from '~/helpers/modules'
 import { moduleRequirements } from '~/helpers/runtimeConfig'
 import { mergeSite, resolveSiteMedia, siteFromAppConfig } from '~/helpers/site'
+import { SITE_POPULATE } from '../lib/constants'
 import { parseSiteSettings } from '../schemas/site'
 
 // Strapi is optional for the identity, so a slow answer should not hold the page
 const SITE_TIMEOUT_MS = 3000
 // Module checks run on every request; a short cache keeps them off Strapi (docs/api.md)
 const FAILED_CACHE_MS = 10_000
-
-// Strapi does not mix '*' with keyed entries; one per relation or component parseSiteSettings reads.
-// `accentOverrides` sits inside `theme`, one level down, so it needs its own populate.
-const SITE_POPULATE = {
-  author: true,
-  logo: true,
-  favicon: true,
-  defaultOgImage: true,
-  socialLinks: true,
-  modules: true,
-  theme: { populate: '*' },
-  homePage: { fields: ['slug'] },
-}
 
 interface LoadedSite {
   site: Site

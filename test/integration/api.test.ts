@@ -909,19 +909,19 @@ describe('/api/pages/[slug]', () => {
       locale: 'es',
       pagination: { limit: '1' },
       populate: {
-        seo: { populate: '*' },
+        seo: { populate: { metaImage: { fields: ['url', 'alternativeText', 'width', 'height', 'mime'] } } },
         localizations: { fields: ['slug', 'locale'] },
         sections: {
           on: {
-            'section.hero': { populate: { primaryLink: 'true', secondaryLink: 'true', media: 'true' } },
-            'section.feature-grid': { populate: { items: { populate: { icon: 'true' } } } },
-            'section.media-showcase': { populate: { media: 'true', link: 'true' } },
-            'section.logo-cloud': { populate: { logos: { populate: { image: 'true' } } } },
-            'section.testimonials': { populate: { items: { populate: { avatar: 'true' } } } },
+            'section.hero': { populate: { primaryLink: 'true', secondaryLink: 'true', media: { fields: ['url', 'alternativeText', 'width', 'height', 'mime'] } } },
+            'section.feature-grid': { populate: { items: { populate: { icon: { fields: ['url', 'alternativeText', 'width', 'height', 'mime'] } } } } },
+            'section.media-showcase': { populate: { media: { fields: ['url', 'alternativeText', 'width', 'height', 'mime'] }, link: 'true' } },
+            'section.logo-cloud': { populate: { logos: { populate: { image: { fields: ['url', 'alternativeText', 'width', 'height', 'mime'] } } } } },
+            'section.testimonials': { populate: { items: { populate: { avatar: { fields: ['url', 'alternativeText', 'width', 'height', 'mime'] } } } } },
             'section.pricing': { populate: { plans: { populate: { link: 'true' } } } },
             'section.post-list': { populate: { category: { fields: ['slug'] }, tag: { fields: ['slug'] } } },
-            'section.gallery': { populate: { images: 'true' } },
-            'section.scene': { populate: { model: 'true', poster: 'true' } },
+            'section.gallery': { populate: { images: { fields: ['url', 'alternativeText', 'width', 'height', 'mime'] } } },
+            'section.scene': { populate: { model: { fields: ['url', 'alternativeText', 'width', 'height', 'mime'] }, poster: { fields: ['url', 'alternativeText', 'width', 'height', 'mime'] } } },
           },
         },
       },
@@ -1048,7 +1048,7 @@ describe('/api/site', () => {
     })
     expect(mock.siteRequests).toEqual([expect.objectContaining({
       path: '/api/site-setting',
-      query: { populate: { author: 'true', logo: 'true', favicon: 'true', defaultOgImage: 'true', socialLinks: 'true', modules: 'true', theme: { populate: '*' }, homePage: { fields: ['slug'] } }, locale: 'es' },
+      query: { populate: { author: { fields: ['name', 'url'] }, logo: { fields: ['url', 'alternativeText', 'width', 'height'] }, favicon: { fields: ['url', 'alternativeText', 'width', 'height'] }, defaultOgImage: { fields: ['url', 'alternativeText', 'width', 'height'] }, socialLinks: 'true', modules: 'true', theme: { populate: '*' }, homePage: { fields: ['slug'] } }, locale: 'es' },
       authorization: 'Bearer test-api-token',
     })])
   })
