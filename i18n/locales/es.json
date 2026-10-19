@@ -8,7 +8,7 @@
     "metaDescription": "Últimos artículos de {site}.",
     "hero": {
       "eyebrow": "Bitácora técnica · {count} artículo | Bitácora técnica · {count} artículos",
-      "title": "Explorando privacidad, DIY, IA, software y Linux.",
+      "title": "Artículos, notas e ideas.",
       "subtitle": "Artículos y notas técnicas.",
       "read": "Leer artículos"
     },
@@ -136,7 +136,8 @@
     "noPosts": "No se encontraron artículos",
     "categories": "Categorías",
     "all": "Todos",
-    "exploreArticles": "Explora todos los artículos sobre privacidad, DIY, IA, software y Linux.",
+    "exploreArticles": "Explora todos los artículos.",
+    "metaDescription": "Todos los artículos publicados en {site}.",
     "tryAdjustingFilters": "Intenta ajustar los filtros",
     "noArticlesYet": "Aún no hay artículos publicados",
     "clearFilters": "Limpiar filtros",
@@ -489,7 +490,7 @@
       }
     },
     "footer": {
-      "tagline": "Explorando privacidad, DIY, IA, software y Linux.",
+      "tagline": "Artículos, notas e ideas.",
       "social": "Redes",
       "navigate": "Navegar",
       "topics": "Temas",

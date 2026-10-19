@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test('renders a single h1 and the featured post', async ({ page }) => {
   await page.goto('/')
   await expect(page.locator('h1')).toHaveCount(1)
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Exploring privacy, DIY, AI, software and Linux.')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Articles, notes and ideas.')
   await expect(page.getByRole('heading', { name: 'Understanding Vue Composables', level: 2 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Linux Server Hardening Guide', level: 3 }).getByRole('link', { name: 'Linux Server Hardening Guide' })).toBeVisible()
 })

@@ -8,7 +8,7 @@
     "metaDescription": "Latest articles from {site}.",
     "hero": {
       "eyebrow": "Field log · {count} article | Field log · {count} articles",
-      "title": "Exploring privacy, DIY, AI, software and Linux.",
+      "title": "Articles, notes and ideas.",
       "subtitle": "Articles and technical notes.",
       "read": "Read articles"
     },
@@ -136,7 +136,8 @@
     "noPosts": "No articles found",
     "categories": "Categories",
     "all": "All",
-    "exploreArticles": "Explore every article on privacy, DIY, AI, software and Linux.",
+    "exploreArticles": "Explore every article.",
+    "metaDescription": "Every article published on {site}.",
     "tryAdjustingFilters": "Try adjusting your filters",
     "noArticlesYet": "No articles published yet",
     "clearFilters": "Clear filters",
@@ -489,7 +490,7 @@
       }
     },
     "footer": {
-      "tagline": "Exploring privacy, DIY, AI, software and Linux.",
+      "tagline": "Articles, notes and ideas.",
       "social": "Social",
       "navigate": "Navigate",
       "topics": "Topics",
