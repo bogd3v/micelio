@@ -89,9 +89,12 @@ export async function open(page: Page, entry: ThemePage): Promise<void> {
   await openPage(page, entry)
 }
 
-/** The mock Strapi accepts `mock-jwt-<id>` as a session (e2e/native-ui/dialogs.spec.ts); seeded under the previous cookie name, which the server still reads (TODO(#422)) */
-export async function signInAsReader(page: Page, baseURL: string | undefined): Promise<void> {
-  await page.context().addCookies([{ name: 'micelio_session', value: 'mock-jwt-101', url: baseURL!, httpOnly: true, secure: true, sameSite: 'Lax' }])
+/**
+ * Signs the reader in for the server render: the `__Host-` session cookie cannot be seeded over http (Chromium refuses it),
+ * so the cookie travels as a request header of the page. The account menu then renders on the server, as for a signed-in visitor.
+ */
+export async function signInAsReader(page: Page): Promise<void> {
+  await page.setExtraHTTPHeaders({ cookie: '__Host-micelio_session=mock-jwt-101' })
 }
 
 export function accountToggle(page: Page): Locator {

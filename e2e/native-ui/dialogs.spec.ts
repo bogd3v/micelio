@@ -4,12 +4,14 @@ import { tabThroughDialog } from '../fixtures/focus'
 
 // Dialogs and the account popover rely on the engine's own focus, Escape and dismiss rules (#245).
 
-// The mock Strapi accepts `mock-jwt-<id>` as a session; seeding the cookie skips a sign-in form that
-// WebKit cannot complete over http (it drops the Secure session cookie the server sets). The seed is
-// the previous cookie name: Chromium refuses to seed a `__Host-` cookie over http, and the server still
-// reads the previous name (TODO(#422): sign in through the API when that fallback goes)
-async function signInAsReader(page: Page, baseURL: string | undefined): Promise<void> {
-  await page.context().addCookies([{ name: 'micelio_session', value: 'mock-jwt-101', url: baseURL!, httpOnly: true, secure: true, sameSite: 'Lax' }])
+// The session cookie is `__Host-` prefixed and Secure: Chromium refuses to seed it over http and WebKit drops the
+// one the server sets, so the reader is signed in by answering the page's own `GET /api/auth/me` (the server
+// render stays anonymous, the client resolves the session on load). The cookie itself is covered by e2e/account.spec.ts.
+async function signInAsReader(page: Page): Promise<void> {
+  await page.route('**/api/auth/me', route => route.fulfill({
+    json: { user: { username: testUsers.reader.username, email: testUsers.reader.email, role: 'reader', createdAt: '2026-09-29T15:00:00.000Z' } },
+    headers: { 'cache-control': 'private, no-store' },
+  }))
 }
 
 test.describe('search palette', () => {
@@ -44,8 +46,8 @@ test.describe('menu sheet', () => {
 })
 
 test.describe('account menu popover', () => {
-  test('opens, orders the items for the keyboard and closes with Escape', async ({ page, baseURL }) => {
-    await signInAsReader(page, baseURL)
+  test('opens, orders the items for the keyboard and closes with Escape', async ({ page }) => {
+    await signInAsReader(page)
     await page.goto('/blog', { waitUntil: 'networkidle' })
     const toggle = page.getByRole('button', { name: `Your account menu, ${testUsers.reader.username}` }).first()
     // The expanded state comes from popovertarget, not from an authored aria-expanded
@@ -67,8 +69,8 @@ test.describe('account menu popover', () => {
     await expect(toggle).toBeFocused()
   })
 
-  test('light dismisses on an outside click and closes on navigation', async ({ page, baseURL }) => {
-    await signInAsReader(page, baseURL)
+  test('light dismisses on an outside click and closes on navigation', async ({ page }) => {
+    await signInAsReader(page)
     await page.goto('/blog', { waitUntil: 'networkidle' })
     const toggle = page.getByRole('button', { name: `Your account menu, ${testUsers.reader.username}` }).first()
     await toggle.click()
@@ -87,8 +89,8 @@ test.describe('account menu popover', () => {
   })
 
   for (const anchored of [true, false]) {
-    test(`sits below the toggle inside the viewport (${anchored ? 'anchor positioning' : 'fixed fallback'})`, async ({ page, baseURL }, info) => {
-      await signInAsReader(page, baseURL)
+    test(`sits below the toggle inside the viewport (${anchored ? 'anchor positioning' : 'fixed fallback'})`, async ({ page }, info) => {
+      await signInAsReader(page)
       await page.goto('/blog', { waitUntil: 'networkidle' })
       const anchorSupport = await page.evaluate(() => CSS.supports('anchor-name', '--a'))
       info.annotations.push({ type: 'anchor-positioning', description: `${info.project.name}: ${anchorSupport}` })
