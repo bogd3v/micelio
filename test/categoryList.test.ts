@@ -28,9 +28,9 @@ describe('shapeCategories', () => {
       { id: 3, name: 'Loose', slug: 'loose' },
     ])
     expect(shaped).toEqual([
-      { id: 1, slug: 'garden', name: 'Garden', description: 'Plants', order: 1, featured: false, count: 2 },
-      { id: 2, slug: 'kitchen', name: 'Kitchen', description: null, order: 2, featured: false, count: 0 },
-      { id: 3, slug: 'loose', name: 'Loose', description: null, order: null, featured: false, count: 0 },
+      { id: 1, slug: 'garden', name: 'Garden', description: 'Plants', order: 1, featured: false, color: null, count: 2 },
+      { id: 2, slug: 'kitchen', name: 'Kitchen', description: null, order: 2, featured: false, color: null, count: 0 },
+      { id: 3, slug: 'loose', name: 'Loose', description: null, order: null, featured: false, color: null, count: 0 },
     ])
   })
 
@@ -44,13 +44,19 @@ describe('shapeCategories', () => {
     expect(shaped.map(category => [category.slug, category.name])).toEqual([['plain', 'plain']])
   })
 
-  it('reads featured, falling back to pillar', () => {
+  it('reads featured as a boolean', () => {
     const shaped = shapeCategories([
-      { id: 1, name: 'A', slug: 'a', pillar: true },
-      { id: 2, name: 'B', slug: 'b', featured: false, pillar: true },
+      { id: 1, name: 'A', slug: 'a' },
+      { id: 2, name: 'B', slug: 'b', featured: false },
       { id: 3, name: 'C', slug: 'c', featured: true },
     ])
-    expect(shaped.map(category => category.featured)).toEqual([true, false, true])
+    expect(shaped.map(category => category.featured)).toEqual([false, false, true])
+  })
+
+  it('keeps a color from 1 to 5 and drops anything else to null', () => {
+    const colors = [1, 5, 0, 6, 2.5, null, undefined, '3' as unknown as number]
+    const shaped = shapeCategories(colors.map((color, index) => ({ id: index, name: `C${index}`, slug: `c${index}`, color, order: index })))
+    expect(shaped.map(category => category.color)).toEqual([1, 5, null, null, null, null, null, null])
   })
 })
 

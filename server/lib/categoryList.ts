@@ -9,8 +9,13 @@ export interface RawCategory {
   description?: string | null
   order?: number | null
   featured?: boolean | number | null
-  pillar?: boolean | number | null
+  color?: number | null
   articles?: Array<{ id: number }> | null
+}
+
+/** The color role the editor pinned when it is an integer from 1 to 5, else null: the CMS is not trusted. */
+function validColor(value: unknown): number | null {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 5 ? value : null
 }
 
 /**
@@ -31,7 +36,7 @@ export function sortCategories<T extends { order: number | null, name: string }>
  * Turns the CMS answer into the sorted list of usable categories.
  *
  * @remarks
- * A category without a slug of `SLUG_PATTERN` is dropped, because no route can address it. A missing `name` falls back to the slug. `featured` is the CMS `featured` when it sends one, else `pillar` (ADR 0016, section 10).
+ * A category without a slug of `SLUG_PATTERN` is dropped, because no route can address it. A missing `name` falls back to the slug. `featured` is the CMS `featured`. `color` is the pinned color role when it is an integer from 1 to 5, else null (ADR 0016, section 3).
  */
 export function shapeCategories(raw: readonly RawCategory[]): LoadedCategory[] {
   const categories: LoadedCategory[] = []
@@ -44,7 +49,8 @@ export function shapeCategories(raw: readonly RawCategory[]): LoadedCategory[] {
       name: item.name?.trim() || slug,
       description: item.description?.trim() || null,
       order: typeof item.order === 'number' && Number.isFinite(item.order) ? item.order : null,
-      featured: Boolean(item.featured ?? item.pillar),
+      featured: Boolean(item.featured),
+      color: validColor(item.color),
       count: item.articles?.length ?? 0,
     })
   }

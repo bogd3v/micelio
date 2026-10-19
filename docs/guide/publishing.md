@@ -78,7 +78,8 @@ Things to know:
 The site lists the categories you create in the Content Manager, with no setting to turn that on. A site with no category shows no category menu, filters or feeds.
 
 - **Name**: translate each category in both languages. A language with no translation of the category shows its slug instead of a name.
-- **Order**: the number in **order** sets the position in menus and filters; the lowest comes first, and a category with no number comes last, by name. Colors follow the order (the number, then the slug), not the translated name, so a category has the same color in both languages. Set **order** on every category to keep colors stable. A category that exists in one language only can still shift the colors after it in that language. The optional `color` field of ADR 0016 (section 10) will pin a color.
+- **Order**: the number in **order** sets the position in menus and filters; the lowest comes first, and a category with no number comes last, by name. A category with no **color** takes one of the theme's five colors by its position: the number in **order**, then the slug, never the translated name, so it has the same color in both languages. Set **order** on every category to keep those colors stable. A category that exists in one language only can still shift the colors after it in that language.
+- **Color**: a number from 1 to 5 pins the category to that theme color in every language and everywhere it appears (tags, cards, illustrations). Pinning one category never changes the color of another, and its color does not move when you add or reorder categories. Leave it empty to use the position; the site ignores any other value. Two categories can share a color: the site does not stop you.
 - **Empty categories are hidden**: menus, filters, feeds and the footer list only the categories that have a published article in the language of the page. The category's own address still opens.
 - **Featured**: the home page highlights the featured categories first in its topic guide, up to six topics in all.
 
@@ -88,7 +89,7 @@ Since the site lists your categories instead of a fixed set:
 
 - Translate the **name** and the **description** of every category in both languages. Labels come from the CMS now, with no names in the site's own messages (so no more "DIY · Do it yourself" unless you write it).
 - Set **order** on every category to keep colors stable.
-- Check **featured** (or **pillar**, which the site still reads): the home topic guide puts those first and numbers them.
+- Check **featured**: the home topic guide puts those first and numbers them.
 - The topic guide on the home page shows each category's **description**; it is left out when the description is empty.
 - A category with no published article in the language is hidden from menus, filters, the footer and search.
 

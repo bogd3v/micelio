@@ -50,6 +50,8 @@ export interface CategoryEntry {
   order: number | null
   /** Whether the home page highlights it. */
   featured: boolean
+  /** The color role number (1 to 5) the editor pinned, non-localized; null or absent when none, and the rank gives the color. */
+  color?: number | null
 }
 
 /**

@@ -103,3 +103,7 @@ Records are not rewritten; this amends the sections below as implemented in cont
 - **Section 3.** The color ranks categories by `order`, then by `slug`, never by the localized `name`, so both languages agree on a category's color. This is a promise of the `@public` `categoryColor(categories, slug)`, which `useCategories().colorOf` shares.
 - **Section 8.** The fallback of `bogota` for a slug it does not know is no art: the slot renders nothing and the core hides the empty box. An invented generic bird is design work and is not part of this change.
 - **Section 9.** The removed slot APIs are the `Category` enum, `CATEGORIES`, `CATEGORY_INFO`, `CategoryInfo`, `isCategory` (removed, not re-signed; use `useCategories().has(slug)`), `categoryOrder` and `CategoryCount` (now `CategoryEntry`). `categoryColor` becomes `categoryColor(categories, slug)`, and `ThemeIllustration` takes `category: string` and the required `color`.
+
+## Amendment (2026-10-19, PR 5 of #462)
+
+PR 5 implemented section 10 on the frontend side: `loadCategories` requests `featured` and `color` and no longer reads `pillar`, `/api/categories` sends `color` (an integer from 1 to 5, else `null`), and `categoryColor` / `useCategories().colorOf` return the pinned role, else the rank over the whole list (a pin changes only its own category). It needs a CMS of the 0.4 line, which has the two fields; an older CMS rejects them, with no fallback (the project is pre-1.0).

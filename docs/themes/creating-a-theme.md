@@ -343,8 +343,8 @@ What to do:
 | `CATEGORIES`, `categoryOrder` | `useCategories().categories` (the CMS order), `.listed` for those with articles |
 | `CATEGORY_INFO`, `CategoryInfo` (`pillar`) | `CategoryEntry.featured`; the guide numbers the featured ones |
 | `isCategory(value)` | `useCategories().has(slug)` |
-| `categoryColor(category)` | `categoryColor(categories, slug)`, or `useCategories().colorOf(slug)`: the rank by `order` then `slug`, modulo five; `var(--ink-muted)` for an unknown slug |
-| `CategoryCount` | `CategoryEntry` (adds `description`, `order`, `featured`) |
+| `categoryColor(category)` | `categoryColor(categories, slug)`, or `useCategories().colorOf(slug)`: the pinned `color` (1 to 5) when the CMS has one, else the rank by `order` then `slug`, modulo five; `var(--ink-muted)` for an unknown slug |
+| `CategoryCount` | `CategoryEntry` (adds `description`, `order`, `featured` and the optional `color`, the number 1 to 5 the editor pinned) |
 | `ThemeIllustration` prop `category: Category` | `category: string` and the new required `color: string` (the same color as the category's tag; the core always passes it) |
 | `PostCardProps.category`, `FieldGuideTopic.category`, `StrapiTopic.category` | `string` |
 

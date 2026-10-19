@@ -3,8 +3,8 @@ import type { CategoryEntry } from '~/interfaces'
 import { categoryColor } from '~/helpers/categories'
 import { categoryNameIn, fieldGuideTopics } from '~/helpers/categoryList'
 
-function category(slug: string, count: number, featured = false, order: number | null = null, name = slug.toUpperCase()): CategoryEntry {
-  return { id: 1, slug, name, description: null, order, featured, count }
+function category(slug: string, count: number, featured = false, order: number | null = null, name = slug.toUpperCase(), color: number | null = null): CategoryEntry {
+  return { id: 1, slug, name, description: null, order, featured, color, count }
 }
 
 const SEVEN = ['a', 'b', 'c', 'd', 'e', 'f', 'g'].map(slug => category(slug, 1))
@@ -42,6 +42,39 @@ describe('color ranking', () => {
     const spanish = [category('kitchen', 1, false, null, 'Cocina'), category('garden', 1, false, null, 'Jardín')]
     for (const slug of ['garden', 'kitchen']) expect(categoryColor(spanish, slug)).toBe(categoryColor(english, slug))
     expect(categoryColor(english, 'garden')).toBe('var(--category-1)')
+  })
+})
+
+describe('pinned color', () => {
+  const list = (): CategoryEntry[] => [category('a', 1, false, 1), category('b', 1, false, 2, 'B', 5), category('c', 1, false, 3)]
+
+  it('wins over the rank, and the others keep theirs', () => {
+    expect(['a', 'b', 'c'].map(slug => categoryColor(list(), slug))).toEqual(['var(--category-1)', 'var(--category-5)', 'var(--category-3)'])
+  })
+
+  it('ignores a color that is not an integer from 1 to 5', () => {
+    for (const bad of [0, 6, 2.5, -1, Number.NaN]) {
+      expect(categoryColor([category('a', 1, false, 1, 'A', bad)], 'a')).toBe('var(--category-1)')
+    }
+  })
+
+  it('does not move when the others are reordered, added or removed', () => {
+    const others = [category('x', 1, false, 0), category('y', 1, false, 9)]
+    expect(categoryColor([...list(), ...others], 'b')).toBe('var(--category-5)')
+    expect(categoryColor([...list().reverse(), ...others], 'b')).toBe('var(--category-5)')
+    expect(categoryColor([list()[1]!], 'b')).toBe('var(--category-5)')
+  })
+
+  it('does not change the rank color of the others when a pin is added', () => {
+    const plain = [category('a', 1, false, 1), category('b', 1, false, 2), category('c', 1, false, 3)]
+    expect(categoryColor(plain, 'c')).toBe(categoryColor(list(), 'c'))
+  })
+
+  it('is the same in both languages', () => {
+    const english = [category('garden', 1, false, null, 'Garden', 4), category('kitchen', 1, false, null, 'Kitchen')]
+    const spanish = [category('kitchen', 1, false, null, 'Cocina'), category('garden', 1, false, null, 'Jardín', 4)]
+    for (const slug of ['garden', 'kitchen']) expect(categoryColor(spanish, slug)).toBe(categoryColor(english, slug))
+    expect(categoryColor(english, 'garden')).toBe('var(--category-4)')
   })
 })
 

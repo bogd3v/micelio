@@ -7,8 +7,8 @@ import type { LoadedCategory } from '../lib/types'
 async function fetchLocale(locale: string): Promise<LoadedCategory[]> {
   const params = qs.stringify({
     pagination: { pageSize: MAX_CATEGORIES },
-    // `featured` is not requested until the CMS has the field: Strapi rejects an unknown field (ADR 0016, section 10)
-    fields: ['name', 'slug', 'description', 'order', 'pillar'],
+    // Needs a CMS with `featured` and `color` (the 0.4 line): Strapi rejects an unknown field (ADR 0016, section 10)
+    fields: ['name', 'slug', 'description', 'order', 'featured', 'color'],
     locale,
     populate: {
       articles: {

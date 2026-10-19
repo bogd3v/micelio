@@ -130,12 +130,12 @@ const emptyCategories: StrapiCategoryRef[] = [
   { id: 29, documentId: 'cat-invierno', name: 'Invierno', slug: 'invierno' },
 ]
 
-/** The fields only `/api/categories` sends: the editor's order, a description and the legacy `pillar` flag. */
-const categoryExtras: Record<string, { order: number, description: string, pillar?: boolean }> = {
-  privacidad: { order: 1, description: 'Privacy tools', pillar: true },
-  diy: { order: 2, description: 'Make it yourself', pillar: true },
+/** The fields only `/api/categories` sends: the editor's order, a description and `featured` and a pinned `color`. */
+const categoryExtras: Record<string, { order: number, description: string, featured?: boolean, color?: number }> = {
+  privacidad: { order: 1, description: 'Privacy tools', featured: true },
+  diy: { order: 2, description: 'Make it yourself', featured: true },
   ia: { order: 3, description: 'Artificial intelligence' },
-  software: { order: 4, description: 'Software development' },
+  software: { order: 4, description: 'Software development', color: 2 },
   linux: { order: 5, description: 'Linux and open source' },
   garden: { order: 6, description: 'Plants and soil' },
   kitchen: { order: 7, description: 'Recipes' },

@@ -17,8 +17,9 @@ export const categoryCountSchema = responseSchema<CategoryEntry>()(
     description: z.string().nullable(),
     order: z.number().nullable(),
     featured: z.boolean(),
+    color: z.int().min(1).max(5).nullable().optional(),
     count: z.int().min(0),
-  }).meta({ id: 'CategoryEntry', description: 'A category of the CMS in the requested locale, with its name, description, position, whether the home page highlights it and the number of its published posts.' }),
+  }).meta({ id: 'CategoryEntry', description: 'A category of the CMS in the requested locale, with its name, description, position, whether the home page highlights it, its pinned color role and the number of its published posts.' }),
 )
 
 /** A tag with the number of its articles in one locale (`GET /api/tags`). */
