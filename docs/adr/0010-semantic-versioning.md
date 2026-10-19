@@ -35,6 +35,8 @@ The bump is computed from the titles of the pull requests merged since the last 
 - **BogDev** keeps deploying on every merge, so its Dokploy application changes from `:latest` to `:edge` when #415 lands. This is a manual change by the maintainer, done in the same window as that merge. Its site does not change.
 - Compose files for trying Micelio default to the `X.Y` of the release they ship with, never to a moving build of `main`.
 
+Amendment (2026-10, #462 item 9): a test in each repository fails when a Compose default differs from the `X.Y` of `package.json`, and the `chore(release)` pull request updates them. The CMS is released first, so the frontend image of that `X.Y` must be published right after, or the trial files cannot pull it.
+
 ### 4. Before 1.0.0
 
 While the version is `0.y.z`, a breaking change raises `y` and everything else raises `z`. Breaking changes still need their ADR and upgrade notes. `1.0.0` is cut by an ADR, when the theme registry accepts third-party themes or the first site outside bogd3v runs in production, whichever comes first.
