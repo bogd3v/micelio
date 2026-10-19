@@ -169,6 +169,9 @@ export default defineNuxtConfig({
   },
   nitro: {
     static: staticSite,
+    // Nuxt's page error handler without Nitro's free-text report (server/errorHandler.ts, ASVS V16.2.4)
+    errorHandler: fileURLToPath(new URL('./server/errorHandler.ts', import.meta.url)),
+    alias: { '#nuxt-error-handler': fileURLToPath(new URL('./runtime/handlers/error.mjs', import.meta.resolve('@nuxt/nitro-server'))) },
     // `nuxt generate` picks the static preset
     ...(staticSite ? {} : { preset: 'node-server' }),
     ...(staticSite && {
