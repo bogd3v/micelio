@@ -10,7 +10,7 @@ describe('BlogPagination', () => {
     const nav = wrapper.get('nav')
     expect(nav.attributes('aria-label')).toBe('Pagination')
     const pages = wrapper.findAll('.myc-page-list a')
-    expect(pages.map(page => page.text())).toEqual(['01', '02', '03'])
+    expect(pages.map(page => page.text())).toEqual(['Page 01', 'Page 02', 'Page 03'])
     expect(pages.map(page => page.attributes('href'))).toEqual([
       '/blog/category/garden',
       '/blog/category/garden/page/2',

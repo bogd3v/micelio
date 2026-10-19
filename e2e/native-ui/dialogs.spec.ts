@@ -175,7 +175,7 @@ test.describe('motion allowed', () => {
     await input.fill('composables')
     await expect(palette.getByRole('option', { name: /Understanding Vue Composables/ })).toBeVisible()
     // Escape would clear a search field before the dialog closes: close it with the Esc button
-    await palette.getByRole('button', { name: 'Close search' }).click()
+    await palette.getByRole('button', { name: 'Esc: close search' }).click()
     expect(await page.locator('#myc-palette-input').inputValue()).toBe('composables')
     await expect(palette).toBeHidden()
     await page.keyboard.press('ControlOrMeta+k')

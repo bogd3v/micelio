@@ -48,9 +48,8 @@ function linkTo(page: number): RouteLocationRaw {
             :to="linkTo(item)"
             class="myc-page"
             :aria-current="item === current ? 'page' : undefined"
-            :aria-label="t('blog.pagination.page', { page: item })"
           >
-            {{ padCount(item) }}
+            <span class="myc-sr">{{ `${t('blog.pagination.pageLabel')} ` }}</span>{{ padCount(item) }}
           </NuxtLink>
         </li>
       </ol>

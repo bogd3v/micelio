@@ -71,7 +71,7 @@ test('shows the empty state and clears the filters', async ({ page }) => {
 test('paginates inside a labelled nav', async ({ page }) => {
   await page.goto('/blog', { waitUntil: 'networkidle' })
   const pagination = page.getByRole('navigation', { name: 'Pagination' })
-  await expect(pagination.getByRole('link', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page')
+  await expect(pagination.getByRole('link', { name: 'Page 01' })).toHaveAttribute('aria-current', 'page')
   await expect(pagination).toContainText('Page 01 of 01')
 })
 
