@@ -17,6 +17,12 @@ path = "themes/starter/**"
 SPDX-FileCopyrightText = "2026 Alejandro Ramirez Garcia and the Micelio contributors"
 SPDX-License-Identifier = "MIT-0"
 
+# The Code of Conduct is the Contributor Covenant 2.1, CC BY-SA 4.0
+[[annotations]]
+path = "CODE_OF_CONDUCT.md"
+SPDX-FileCopyrightText = "Organization for Ethical Source"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
 # Fonts and their license texts
 [[annotations]]
 path = [
@@ -85,6 +91,12 @@ path = [
 ]
 SPDX-FileCopyrightText = "Tailwind Labs, Inc."
 SPDX-License-Identifier = "MIT"
+
+# The Micelio logo and mark: a trademark, outside the AGPL (TRADEMARKS.md)
+[[annotations]]
+path = "brand/**"
+SPDX-FileCopyrightText = "2026 Alejandro Ramirez Garcia"
+SPDX-License-Identifier = "LicenseRef-Micelio-Trademark"
 
 # The Mastodon logo, a trademark used only to link to Mastodon
 [[annotations]]

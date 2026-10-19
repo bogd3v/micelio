@@ -61,7 +61,7 @@ Logos of other projects are used only to link to them, unmodified, and remain tr
 
 ## Names and marks of Micelio and BogDev
 
-The names Micelio and BogDev, the BogDev logos and the Bogotá theme's mark (`themes/bogota/images/bogdev*.svg`, `copeton.png`, `og-image.png`) are the maintainer's own work. Their files are distributed with the code under the AGPL, but no trademark rights are granted (AGPL section 7(e)): a fork or another site may not present itself as BogDev or as the official Micelio.
+The names Micelio and BogDev, the Micelio logo and mark (`brand/`, outside the AGPL, see [TRADEMARKS.md](TRADEMARKS.md)), the BogDev logos and the Bogotá theme's mark (`themes/bogota/images/bogdev*.svg`, `copeton.png`, `og-image.png`) are the maintainer's own work. Their files are distributed with the code under the AGPL, but no trademark rights are granted (AGPL section 7(e)): a fork or another site may not present itself as BogDev or as the official Micelio.
 
 ## Themes in this repository
 
