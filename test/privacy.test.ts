@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
-import { BROWSER_STORAGE_KEYS, PRIVACY_NOTICE_STORAGE_KEY, SITE_COOKIES, dismissPrivacyNotice, isPrivacyNoticeDismissed, privacyRightsKey } from '../app/helpers/privacy'
+import { BROWSER_STORAGE_KEYS, PRIVACY_NOTICE_STORAGE_KEY, SITE_COOKIES, dismissPrivacyNotice, isPrivacyNoticeDismissed, privacyRightsLeadKey } from '../app/helpers/privacy'
 import { migrateStoredMode } from '../app/helpers/theme'
 
 const MODES = [{ id: 'noche', scheme: 'dark' as const }, { id: 'dia', scheme: 'light' as const }]
@@ -130,14 +130,12 @@ describe('migrateStoredMode', () => {
   })
 })
 
-describe('privacyRightsKey', () => {
+describe('privacyRightsLeadKey', () => {
   it('names no law when the site has no jurisdiction', () => {
-    expect(privacyRightsKey('', true)).toBe('privacy.rights.body')
-    expect(privacyRightsKey('', false)).toBe('privacy.rights.bodyNoContact')
+    expect(privacyRightsLeadKey('')).toBe('privacy.rights.lead')
   })
 
-  it('picks the text of the jurisdiction, with or without a contact email', () => {
-    expect(privacyRightsKey('colombia', true)).toBe('privacy.rights.colombia.body')
-    expect(privacyRightsKey('colombia', false)).toBe('privacy.rights.colombia.bodyNoContact')
+  it('picks the opening that cites the law of the jurisdiction', () => {
+    expect(privacyRightsLeadKey('colombia')).toBe('privacy.rights.leadColombia')
   })
 })

@@ -800,12 +800,10 @@
     "rights": {
       "label": "Your rights",
       "title": "Know, correct or delete",
-      "body": "You can access, update, correct and ask for the deletion of your personal data. Write to {email} and we will reply.",
-      "bodyNoContact": "You can access, update, correct and ask for the deletion of your personal data.",
-      "colombia": {
-        "body": "Under Colombia’s Law 1581 of 2012, you can access, update, correct and ask for the deletion of your personal data. Write to {email} and we will reply.",
-        "bodyNoContact": "Under Colombia’s Law 1581 of 2012, you can access, update, correct and ask for the deletion of your personal data."
-      }
+      "body": "{lead} access, update, correct and ask for the deletion of your personal data. Write to {email} and we will reply.",
+      "bodyNoContact": "{lead} access, update, correct and ask for the deletion of your personal data.",
+      "lead": "You can",
+      "leadColombia": "Under Colombia’s Law 1581 of 2012, you can"
     }
   },
   "newsletter": {
