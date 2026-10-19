@@ -169,9 +169,9 @@ useSeoMeta({
   title: () => pageTitle('Blog', site.value.name),
   ogTitle: () => pageTitle('Blog', site.value.name),
   description:
-    'Browse all articles on AI, software development, Linux, DevOps, and more. Find tutorials, tips, and insights from my tech journey.',
+    () => t('blog.metaDescription', { site: site.value.name }),
   ogDescription:
-    'Browse all articles on AI, software development, Linux, DevOps, and more. Find tutorials, tips, and insights from my tech journey.',
+    () => t('blog.metaDescription', { site: site.value.name }),
   ogUrl: () => canonicalUrl.value,
   ogImage: () => defaultOgImage.value,
   ogImageAlt: () => `${site.value.name} — Blog`,
@@ -179,7 +179,7 @@ useSeoMeta({
   twitterImage: () => defaultOgImage.value,
   twitterTitle: () => pageTitle('Blog', site.value.name),
   twitterDescription:
-    'Browse all articles on AI, software development, Linux, DevOps, and more.',
+    () => t('blog.metaDescription', { site: site.value.name }),
 })
 </script>
 
