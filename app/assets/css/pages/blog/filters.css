@@ -26,6 +26,9 @@
 
 .myc-blog-search:focus-within::before {
     box-shadow: var(--glow-link);
+    /* The glow is a role a theme may set to none: the outline is what makes the field's focus visible (WCAG 2.4.7) */
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
 }
 
 .myc-blog-search-prompt {
