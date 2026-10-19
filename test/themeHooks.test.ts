@@ -52,12 +52,9 @@ describe('theme CSS rules', () => {
     expect(problems(':host { top: 0 }')).toEqual([])
   })
 
-  it('names the new class for a selector written with the old bd- prefix', () => {
-    expect(problems('.bd-card { top: 0 }')).toEqual(['theme.css: ".bd-card" was renamed ".myc-card" (ADR 0005, amendment of 2026-10-08)'])
-    expect(problems('.bd-nothing { top: 0 }').join()).toContain('".bd-nothing" was renamed ".myc-nothing"; ".myc-nothing" is not a public hook either')
-    expect(problems('.myc-header:is(.bd-seg) { top: 0 }').join()).toContain('".bd-seg" was renamed ".myc-seg"')
-    expect(problems('[data-bd-lang] { top: 0 }')).toEqual(['theme.css: "[data-bd-lang]" was renamed "[data-myc-lang]" (ADR 0005, amendment of 2026-10-08)'])
-    expect(problems('[class*="bd-card"] { top: 0 }').join()).toContain('were renamed from bd-* to myc-*')
+  it('treats a bd- selector as a class of the theme, not as a renamed hook', () => {
+    expect(problems('.bd-card { top: 0 }')).toEqual([])
+    expect(problems('[data-bd-lang] { top: 0 }')).toEqual(['theme.css: "[data-bd-lang]" is not a public hook (a theme\'s own attributes start with data-sample-)'])
   })
 
   it('flags a class attribute selector that matches myc- classes', () => {

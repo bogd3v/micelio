@@ -1,8 +1,5 @@
-import { afterEach, describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { BROWSER_STORAGE_KEYS, PRIVACY_NOTICE_STORAGE_KEY, SITE_COOKIES, dismissPrivacyNotice, isPrivacyNoticeDismissed, privacyRightsLeadKey } from '../app/helpers/privacy'
-import { migrateStoredMode } from '../app/helpers/theme'
-
-const MODES = [{ id: 'noche', scheme: 'dark' as const }, { id: 'dia', scheme: 'light' as const }]
 
 function memoryStorage(initial: Record<string, string> = {}) {
   const data = new Map(Object.entries(initial))
@@ -37,30 +34,11 @@ describe('privacy notice storage', () => {
   })
 })
 
-describe('privacy notice migration', () => {
-  it('reads the pre-rename key, writes the new one and removes the old one', () => {
+describe('privacy notice storage, old key', () => {
+  it('ignores the pre-rename key', () => {
     const storage = memoryStorage({ 'bd-privacy-notice': '1' })
-    expect(isPrivacyNoticeDismissed(storage)).toBe(true)
-    expect(Object.fromEntries(storage.data)).toEqual({ 'micelio-privacy-notice': '1' })
-  })
-
-  it('prefers the new key and never writes the old one', () => {
-    const storage = memoryStorage({ 'micelio-privacy-notice': '1' })
-    expect(isPrivacyNoticeDismissed(storage)).toBe(true)
-    dismissPrivacyNotice(storage)
-    expect([...storage.data.keys()]).toEqual(['micelio-privacy-notice'])
-  })
-
-  it('ignores a pre-rename value that is not the dismissal', () => {
-    const storage = memoryStorage({ 'bd-privacy-notice': '0' })
     expect(isPrivacyNoticeDismissed(storage)).toBe(false)
-    expect(Object.fromEntries(storage.data)).toEqual({ 'bd-privacy-notice': '0' })
-  })
-
-  it('removes the old key when dismissing', () => {
-    const storage = memoryStorage({ 'bd-privacy-notice': '1' })
-    dismissPrivacyNotice(storage)
-    expect(Object.fromEntries(storage.data)).toEqual({ 'micelio-privacy-notice': '1' })
+    expect(Object.fromEntries(storage.data)).toEqual({ 'bd-privacy-notice': '1' })
   })
 })
 
@@ -68,65 +46,6 @@ describe('privacy inventory', () => {
   it('lists every browser storage key and cookie the site writes', () => {
     expect(BROWSER_STORAGE_KEYS).toEqual(['micelio-theme', 'micelio-privacy-notice', 'micelio-read-articles'])
     expect(SITE_COOKIES).toEqual([{ name: '__Host-micelio_session', maxAgeDays: 7 }])
-  })
-})
-
-describe('migrateStoredMode', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals()
-  })
-
-  function migrate(initial: Record<string, string>, modes = MODES): Map<string, string> {
-    const storage = memoryStorage(initial)
-    vi.stubGlobal('localStorage', storage)
-    migrateStoredMode(modes)
-    return storage.data
-  }
-
-  it('moves the previous theme key to micelio-theme', () => {
-    expect(Object.fromEntries(migrate({ 'devbog-theme': 'dia' }))).toEqual({ 'micelio-theme': 'dia' })
-  })
-
-  it('maps the legacy color mode', () => {
-    expect(Object.fromEntries(migrate({ 'devbog-color-mode': 'dark' }))).toEqual({ 'micelio-theme': 'noche' })
-  })
-
-  it('keeps the current theme and drops the legacy keys', () => {
-    expect(Object.fromEntries(migrate({ 'micelio-theme': 'noche', 'devbog-theme': 'dia', 'devbog-color-mode': 'light' }))).toEqual({ 'micelio-theme': 'noche' })
-  })
-
-  it('moves bd-theme to micelio-theme and removes it, ahead of the devbog keys', () => {
-    expect(Object.fromEntries(migrate({ 'bd-theme': 'dia' }))).toEqual({ 'micelio-theme': 'dia' })
-    expect(Object.fromEntries(migrate({ 'bd-theme': 'dia', 'devbog-theme': 'noche', 'devbog-color-mode': 'dark' }))).toEqual({ 'micelio-theme': 'dia' })
-  })
-
-  it('falls through to the devbog keys when bd-theme is not a mode', () => {
-    expect(Object.fromEntries(migrate({ 'bd-theme': 'sepia', 'devbog-theme': 'dia' }))).toEqual({ 'micelio-theme': 'dia' })
-  })
-
-  it('removes bd-theme once micelio-theme holds a mode', () => {
-    expect(Object.fromEntries(migrate({ 'micelio-theme': 'noche', 'bd-theme': 'dia' }))).toEqual({ 'micelio-theme': 'noche' })
-  })
-
-  it('keeps a stored value that is not a mode, without touching the legacy keys', () => {
-    expect(Object.fromEntries(migrate({ 'micelio-theme': 'sepia', 'devbog-theme': 'dia' }))).toEqual({ 'micelio-theme': 'sepia', 'devbog-theme': 'dia' })
-  })
-
-  it('maps the legacy color mode with three modes and with a light-first theme', () => {
-    const three = [{ id: 'dusk', scheme: 'dark' as const }, { id: 'sand', scheme: 'light' as const }, { id: 'dawn', scheme: 'light' as const }]
-    expect(Object.fromEntries(migrate({ 'devbog-color-mode': 'light' }, three))).toEqual({ 'micelio-theme': 'sand' })
-    const lightFirst = [{ id: 'paper', scheme: 'light' as const }, { id: 'ink', scheme: 'dark' as const }]
-    expect(Object.fromEntries(migrate({ 'devbog-color-mode': 'light' }, lightFirst))).toEqual({ 'micelio-theme': 'paper' })
-    expect(Object.fromEntries(migrate({ 'devbog-color-mode': 'dark' }, lightFirst))).toEqual({ 'micelio-theme': 'ink' })
-  })
-
-  it('drops invalid legacy values without storing a theme', () => {
-    expect(Object.fromEntries(migrate({ 'devbog-theme': 'sepia', 'devbog-color-mode': 'system' }))).toEqual({})
-  })
-
-  it('survives blocked storage', () => {
-    vi.stubGlobal('localStorage', brokenStorage)
-    expect(() => migrateStoredMode(MODES)).not.toThrow()
   })
 })
 
