@@ -13,6 +13,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const site = useSite()
 const { localizePath } = useLocaleUtils()
 const { isRead } = useReadArticles()
 const postStats = usePostStats(toRef(props, 'posts'), toRef(props, 'federated'))
@@ -23,7 +24,7 @@ const postStats = usePostStats(toRef(props, 'posts'), toRef(props, 'federated'))
     <h2 class="myc-sr">{{ t("blog.listTitle") }}</h2>
     <ol class="myc-post-rows">
       <li v-for="post in posts" :key="post.id" class="myc-post-row">
-        <time class="myc-meta myc-post-row-date" :datetime="post.publishedAt ?? undefined">{{ formatDotDate(post.publishedAt) }}</time>
+        <time class="myc-meta myc-post-row-date" :datetime="post.publishedAt ?? undefined">{{ formatDotDate(post.publishedAt, site.timezone) }}</time>
         <div class="myc-post-row-text">
           <h3 class="myc-post-row-title">
             <NuxtLink :to="`${localizePath('/blog')}/${post.slug}`" class="myc-post-row-link">{{ post.title }}</NuxtLink>

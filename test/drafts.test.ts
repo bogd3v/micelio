@@ -62,9 +62,9 @@ describe('draftStateKey', () => {
 })
 
 describe('formatDotDateTime', () => {
-  it('formats date and time in Bogotá', () => {
-    expect(formatDotDateTime('2026-09-28T23:42:00.000Z')).toBe('28.09.2026 · 18:42')
-    expect(formatDotDateTime('2026-09-29T04:05:00.000Z')).toBe('28.09.2026 · 23:05')
+  it('formats date and time in the given zone', () => {
+    expect(formatDotDateTime('2026-09-28T23:42:00.000Z', 'America/Bogota')).toBe('28.09.2026 · 18:42')
+    expect(formatDotDateTime('2026-09-29T04:05:00.000Z', 'America/Bogota')).toBe('28.09.2026 · 23:05')
   })
 
   it('returns an empty string without a date', () => {

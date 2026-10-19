@@ -73,6 +73,7 @@ export const siteSchema = responseSchema<Site>()(
     privacyContactEmail: z.string(),
     privacyUpdatedAt: z.string(),
     privacyJurisdiction: z.enum([...PRIVACY_JURISDICTIONS, '']),
+    timezone: z.string(),
     supportHandle: z.string(),
     modules: siteModulesSchema,
     theme: siteThemeSchema.optional(),

@@ -52,7 +52,7 @@ const rows = computed<DraftRow[]>(() =>
     categoryName: draft.category?.name ?? undefined,
     language: draft.locale.toUpperCase(),
     editedAt: draft.updatedAt,
-    edited: formatDotDateTime(draft.updatedAt),
+    edited: formatDotDateTime(draft.updatedAt, site.value.timezone),
     state: draft.state,
     to: { path: localizePath(`/drafts/${encodeURIComponent(draft.documentId)}`), query: { locale: draft.locale } },
   })),

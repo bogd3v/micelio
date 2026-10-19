@@ -222,16 +222,28 @@ describe('groupPostsByMonth', () => {
     post(4, null),
   ]
 
-  it('groups posts by month in Bogotá time, keeping their order', () => {
-    const months = groupPostsByMonth(posts, 'en')
+  it('groups posts by month in the given zone, keeping their order', () => {
+    const months = groupPostsByMonth(posts, 'en', 'America/Bogota')
     expect(months.map(month => month.key)).toEqual(['2026-09', '2026-08'])
     expect(months[0]!.posts.map(item => item.id)).toEqual([1, 2])
     expect(months[1]!.posts.map(item => item.id)).toEqual([3])
   })
 
+  it('counts months in UTC without a zone', () => {
+    const months = groupPostsByMonth(posts, 'en')
+    expect(months.map(month => month.key)).toEqual(['2026-10', '2026-09', '2026-08'])
+    expect(months[0]!.posts.map(item => item.id)).toEqual([1])
+  })
+
+  it('puts a post at the month boundary on either side by zone', () => {
+    const edge = [post(5, '2026-11-01T02:00:00.000Z')]
+    expect(groupPostsByMonth(edge, 'en', 'UTC').map(month => month.key)).toEqual(['2026-11'])
+    expect(groupPostsByMonth(edge, 'en', 'America/Bogota').map(month => month.key)).toEqual(['2026-10'])
+  })
+
   it('names the months in the active language', () => {
-    expect(groupPostsByMonth(posts, 'en').map(month => month.label)).toEqual(['September 2026', 'August 2026'])
-    expect(groupPostsByMonth(posts, 'es').map(month => month.label)).toEqual(['septiembre 2026', 'agosto 2026'])
+    expect(groupPostsByMonth(posts, 'en', 'America/Bogota').map(month => month.label)).toEqual(['September 2026', 'August 2026'])
+    expect(groupPostsByMonth(posts, 'es', 'America/Bogota').map(month => month.label)).toEqual(['septiembre 2026', 'agosto 2026'])
   })
 })
 

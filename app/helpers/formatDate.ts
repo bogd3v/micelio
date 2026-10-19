@@ -30,19 +30,21 @@ export function formatDate(date: string | null | undefined, style: DateFormatSty
 }
 
 /**
- * Formats an ISO date as `DD.MM.YYYY` in the `America/Bogota` time zone, whatever the reader's zone.
+ * Formats an ISO date as `DD.MM.YYYY` in `timeZone`, whatever the reader's zone.
  *
  * @remarks
  * Empty for a falsy input.
+ *
+ * @param timeZone - IANA time zone name, the site's `timezone`; `UTC` when omitted.
  */
-export function formatDotDate(date: string | null | undefined): string {
+export function formatDotDate(date: string | null | undefined, timeZone: string = 'UTC'): string {
   if (!date) return ''
 
   const parts = new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-    timeZone: 'America/Bogota',
+    timeZone,
   }).formatToParts(new Date(date))
   const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find(p => p.type === type)?.value ?? ''
 
@@ -50,21 +52,23 @@ export function formatDotDate(date: string | null | undefined): string {
 }
 
 /**
- * Formats an ISO date as `DD.MM.YYYY · HH:MM` in the `America/Bogota` time zone, with a 24-hour clock.
+ * Formats an ISO date as `DD.MM.YYYY · HH:MM` in `timeZone`, with a 24-hour clock.
  *
  * @remarks
  * Empty for a falsy input.
+ *
+ * @param timeZone - IANA time zone name, the site's `timezone`; `UTC` when omitted.
  */
-export function formatDotDateTime(date: string | null | undefined): string {
+export function formatDotDateTime(date: string | null | undefined, timeZone: string = 'UTC'): string {
   if (!date) return ''
 
   const parts = new Intl.DateTimeFormat('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
     hourCycle: 'h23',
-    timeZone: 'America/Bogota',
+    timeZone,
   }).formatToParts(new Date(date))
   const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find(p => p.type === type)?.value ?? ''
 
-  return `${formatDotDate(date)} · ${part('hour')}:${part('minute')}`
+  return `${formatDotDate(date, timeZone)} · ${part('hour')}:${part('minute')}`
 }

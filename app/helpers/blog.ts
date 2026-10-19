@@ -23,7 +23,6 @@ const BLOG_BASE = '/blog'
 const LOG_VIEW = 'log'
 /** The sort options of the blog list, in display order. */
 export const BLOG_SORTS: BlogSort[] = ['recent', 'oldest', 'fediverse']
-const TIME_ZONE = 'America/Bogota'
 
 function firstValue(value: LocationQuery[string] | RouteParams[string] | undefined): string {
   const raw = Array.isArray(value) ? value[0] : value
@@ -173,8 +172,8 @@ export function legacyBlogRedirect(pathname: string, search: string, isKnownCate
   return isSamePath(location, pathname) && !queryFilters ? null : target
 }
 
-function monthKey(date: string): string {
-  const parts = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', timeZone: TIME_ZONE }).formatToParts(new Date(date))
+function monthKey(date: string, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', timeZone }).formatToParts(new Date(date))
   const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find(item => item.type === type)?.value ?? ''
   return `${part('year')}-${part('month')}`
 }
@@ -189,15 +188,16 @@ function monthLabel(key: string, locale: string): string {
  * The posts grouped by the month of their publication, in the order given, with each month labelled in the language of `locale`.
  *
  * @remarks
- * Posts without a publication date are left out. Months are counted in the time zone `America/Bogota`.
+ * Posts without a publication date are left out. Months are counted in `timeZone`.
  *
  * @param locale - The language tag of the month names, such as `en` or `es`.
+ * @param timeZone - IANA time zone name, the site's `timezone`; `UTC` when omitted.
  */
-export function groupPostsByMonth(posts: PostListItem[], locale: string): PostMonth[] {
+export function groupPostsByMonth(posts: PostListItem[], locale: string, timeZone: string = 'UTC'): PostMonth[] {
   const months = new Map<string, PostListItem[]>()
   for (const post of posts) {
     if (!post.publishedAt) continue
-    const key = monthKey(post.publishedAt)
+    const key = monthKey(post.publishedAt, timeZone)
     months.set(key, [...(months.get(key) ?? []), post])
   }
   return Array.from(months, ([key, items]) => ({ key, label: monthLabel(key, locale), posts: items }))

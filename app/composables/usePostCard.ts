@@ -15,6 +15,7 @@ export function usePostCard(): (post: PostListItem) => PostCardData {
   const { getMediaUrl } = useStrapi()
   const { localizePath } = useLocaleUtils()
   const { isRead } = useReadArticles()
+  const site = useSite()
 
   return function toPostCard(post: PostListItem): PostCardData {
     return {
@@ -25,7 +26,7 @@ export function usePostCard(): (post: PostListItem) => PostCardData {
       snippet: post.snippet ?? undefined,
       category: post.category?.slug ?? undefined,
       categoryName: post.category?.name ?? undefined,
-      date: formatDotDate(post.publishedAt) || undefined,
+      date: formatDotDate(post.publishedAt, site.value.timezone) || undefined,
       dateTime: post.publishedAt ?? undefined,
       author: post.author?.name ?? undefined,
       readTime: post.readTime ? t('post.minRead', { minutes: post.readTime }) : undefined,

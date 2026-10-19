@@ -5,6 +5,7 @@ import { formatDotDate } from '~/helpers/formatDate'
 const props = defineProps<{ section: PostListSection }>()
 
 const { localizePath } = useLocaleUtils()
+const site = useSite()
 const toPostCard = usePostCard()
 const { isStatic } = useStaticSite()
 const titleId = useId()
@@ -20,7 +21,7 @@ const posts = computed(() => props.section.posts ?? [])
       <SectionHead :title="section.title" :title-id="titleId" />
       <ul v-if="section.variant === 'list'" class="myc-section-items">
         <li v-for="post in posts" :key="post.id" class="myc-section-item">
-          <time v-if="post.publishedAt" class="myc-meta" :datetime="post.publishedAt">{{ formatDotDate(post.publishedAt) }}</time>
+          <time v-if="post.publishedAt" class="myc-meta" :datetime="post.publishedAt">{{ formatDotDate(post.publishedAt, site.timezone) }}</time>
           <component :is="itemLevel" class="myc-section-item-title">
             <NuxtLink :to="`${localizePath('/blog')}/${post.slug}`">{{ post.title }}</NuxtLink>
           </component>

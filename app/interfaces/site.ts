@@ -155,6 +155,8 @@ export interface Site {
   privacyUpdatedAt: string
   /** The law the rights text of the privacy page cites; empty names none. */
   privacyJurisdiction: PrivacyJurisdiction | ''
+  /** IANA time zone name (`UTC`, `America/Bogota`) in which dates are shown and months are counted; `UTC` unless the site sets one. */
+  timezone: string
   /** Handle of the support account; the support link is shown only when it is set. */
   supportHandle: string
   /** Which optional modules are on. */
@@ -199,6 +201,8 @@ export interface AppSiteConfig {
   name: string
   description: string
   url: string
+  /** IANA time zone name used until the CMS answers; neutral `UTC`. */
+  timezone: string
   author: { name: string, url: string }
   /** Fallback favicon, used when Strapi has none. */
   favicon?: SiteImage

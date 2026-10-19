@@ -13,6 +13,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const site = useSite()
 
 const name = computed<string>(() => props.comment.author?.name || t('post.anonymous'))
 const fediverse = computed<boolean>(() => isFediverseComment(props.comment))
@@ -33,7 +34,7 @@ const showActions = computed<boolean>(() => Boolean((props.canReply && !props.co
           <span aria-hidden="true">◆</span> {{ fediverseLabel }}
         </span>
         <span v-if="comment.isAdminComment" class="myc-comment-badge myc-comment-badge-author">{{ t('comments.authorBadge') }}</span>
-        <time class="myc-meta myc-comment-date" :datetime="comment.createdAt">{{ formatDotDate(comment.createdAt) }}</time>
+        <time class="myc-meta myc-comment-date" :datetime="comment.createdAt">{{ formatDotDate(comment.createdAt, site.timezone) }}</time>
       </header>
       <p v-if="comment.removed" class="myc-comment-text myc-comment-removed">{{ t('comments.removed') }}</p>
       <p v-else class="myc-comment-text">{{ comment.content }}</p>

@@ -10,6 +10,7 @@ defineProps<{
 }>()
 
 const { t, locale } = useI18n()
+const site = useSite()
 const { localizePath } = useLocaleUtils()
 const fediverseUser = useFediverseUser()
 const fediverseOn = useModule('fediverse')
@@ -37,7 +38,7 @@ function clearHistory(): void {
         :to="`${localizePath('/blog')}/${post.slug}`"
         class="myc-blog-recent"
       >
-        <time class="myc-meta" :datetime="post.publishedAt ?? undefined">{{ formatDotDate(post.publishedAt) }}</time>
+        <time class="myc-meta" :datetime="post.publishedAt ?? undefined">{{ formatDotDate(post.publishedAt, site.timezone) }}</time>
         <span class="myc-blog-recent-title">{{ post.title }}</span>
       </NuxtLink>
     </section>
