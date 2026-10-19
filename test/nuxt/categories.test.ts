@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, h } from 'vue'
 import ThemeIllustration from '~~/themes/bogota/slots/ThemeIllustration.vue'
@@ -7,6 +7,7 @@ import { useIllustrationCaption } from '~/composables/useIllustrationCaption'
 import { useCategoryLabel } from '~/composables/useCategoryLabel'
 import { CATEGORIES } from '~/constants/categories'
 import { Category } from '~/interfaces/design'
+import { serveCategories } from './categoriesFixture'
 
 describe('ThemeIllustration (Bogotá)', () => {
   it('draws a distinct bird for each category in its color', async () => {
@@ -54,7 +55,8 @@ describe('useIllustrationCaption', () => {
 })
 
 describe('useCategoryLabel', () => {
-  it('translates known slugs and falls back to the Strapi name', async () => {
+  it('gives the localized name of the list, else the name it came with, else the slug', async () => {
+    serveCategories()
     let label: ReturnType<typeof useCategoryLabel> = () => ''
     await mountSuspended(defineComponent({
       setup() {
@@ -62,8 +64,10 @@ describe('useCategoryLabel', () => {
         return () => h('div')
       },
     }))
-    expect(label({ slug: Category.Ai, name: 'Inteligencia artificial' })).toBe('Artificial intelligence')
-    expect(label({ slug: Category.Diy })).toBe('DIY · Do it yourself')
+    await vi.waitFor(() => expect(label({ slug: 'garden', name: 'Jardín' })).toBe('Garden'))
+    expect(label({ slug: 'kitchen' })).toBe('Kitchen')
+    expect(label({ slug: 'attic', name: 'Attic' })).toBe('Attic')
+    expect(label({ slug: 'attic' })).toBe('attic')
     expect(label({ slug: null, name: 'Tech culture' })).toBe('Tech culture')
     expect(label(null)).toBe('')
   })

@@ -106,7 +106,7 @@ test('search finds an article by its title', async ({ request }) => {
 test('categories and tags with their article counts', async ({ request }) => {
   const categories = await (await request.get('/api/categories?locale=en')).json()
   expect(z.array(categoryCountSchema).safeParse(categories).error?.issues ?? []).toEqual([])
-  for (const category of categories) expectShape(category, { id: 'number', slug: 'string', name: 'string', count: 'number' })
+  for (const category of categories) expectShape(category, { id: 'number', slug: 'string', name: 'string', featured: 'boolean', count: 'number' })
   for (const [slug, count] of Object.entries(DEMO.categories)) expect(categories.find((category: { slug: string }) => category.slug === slug)?.count).toBe(count)
 
   // The count is of the requested locale: every category stays listed, with at most the articles of that locale

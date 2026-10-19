@@ -1,0 +1,68 @@
+import { describe, expect, it } from 'vitest'
+import type { CategoryEntry } from '~/interfaces'
+import { categoryColorIn, categoryNameIn, fieldGuideTopics } from '~/helpers/categoryList'
+
+function category(slug: string, count: number, featured = false, order: number | null = null, name = slug.toUpperCase()): CategoryEntry {
+  return { id: 1, slug, name, description: null, order, featured, count }
+}
+
+const SEVEN = ['a', 'b', 'c', 'd', 'e', 'f', 'g'].map(slug => category(slug, 1))
+
+describe('categoryColorIn', () => {
+  it('gives each category the role of its position and wraps after the fifth', () => {
+    expect(SEVEN.map(({ slug }) => categoryColorIn(SEVEN, slug))).toEqual([
+      'var(--category-1)', 'var(--category-2)', 'var(--category-3)', 'var(--category-4)', 'var(--category-5)', 'var(--category-1)', 'var(--category-2)',
+    ])
+  })
+
+  it('counts empty categories in the position, so hiding one moves no color', () => {
+    const list = [category('a', 0), category('b', 2)]
+    expect(categoryColorIn(list, 'b')).toBe('var(--category-2)')
+  })
+
+  it('is neutral for an unknown or missing slug', () => {
+    expect(categoryColorIn(SEVEN, 'zzz')).toBe('var(--ink-muted)')
+    expect(categoryColorIn(SEVEN, null)).toBe('var(--ink-muted)')
+    expect(categoryColorIn([], 'a')).toBe('var(--ink-muted)')
+  })
+})
+
+describe('color ranking', () => {
+  it('ranks by order, those without one last, then by slug, whatever the list order', () => {
+    const list = [category('z', 1, false, 1), category('m', 1), category('b', 1, false, 2), category('a', 1), category('y', 1, false, 1)]
+    expect(['y', 'z', 'b', 'a', 'm'].map(slug => categoryColorIn(list, slug))).toEqual([
+      'var(--category-1)', 'var(--category-2)', 'var(--category-3)', 'var(--category-4)', 'var(--category-5)',
+    ])
+  })
+
+  it('gives a category the same color in both languages when the names sort differently', () => {
+    // No `order`: the display order follows the localized name (garden, kitchen in English; cocina, jardin in Spanish)
+    const english = [category('garden', 1, false, null, 'Garden'), category('kitchen', 1, false, null, 'Kitchen')]
+    const spanish = [category('kitchen', 1, false, null, 'Cocina'), category('garden', 1, false, null, 'Jardín')]
+    for (const slug of ['garden', 'kitchen']) expect(categoryColorIn(spanish, slug)).toBe(categoryColorIn(english, slug))
+    expect(categoryColorIn(english, 'garden')).toBe('var(--category-1)')
+  })
+})
+
+describe('categoryNameIn', () => {
+  it('gives the name of the list, else the slug, else nothing', () => {
+    expect(categoryNameIn(SEVEN, 'c')).toBe('C')
+    expect(categoryNameIn(SEVEN, 'zzz')).toBe('zzz')
+    expect(categoryNameIn(SEVEN, undefined)).toBe('')
+  })
+})
+
+describe('fieldGuideTopics', () => {
+  it('puts the featured categories first, drops the empty ones and keeps the CMS order in each group', () => {
+    const list = [category('a', 1), category('b', 0, true), category('c', 3, true), category('d', 2), category('e', 4, true)]
+    expect(fieldGuideTopics(list, 6)).toEqual([
+      { category: 'c', count: 3 }, { category: 'e', count: 4 }, { category: 'a', count: 1 }, { category: 'd', count: 2 },
+    ])
+  })
+
+  it('shows at most the limit and nothing for an empty or all-empty list', () => {
+    expect(fieldGuideTopics(SEVEN, 6)).toHaveLength(6)
+    expect(fieldGuideTopics([], 6)).toEqual([])
+    expect(fieldGuideTopics([category('a', 0, true)], 6)).toEqual([])
+  })
+})

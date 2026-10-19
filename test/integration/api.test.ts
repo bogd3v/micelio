@@ -19,7 +19,7 @@ import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/sche
 import { draftListResponseSchema } from '~/schemas/drafts'
 import { pageSchema } from '~/schemas/pages'
 import { siteSchema } from '~/schemas/site'
-import { articlePageSchema, articleSchema, draftArticleResponseSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
+import { articlePageSchema, articleSchema, categoryCountSchema, draftArticleResponseSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
 import { contrastRatio, parseHex } from '~/helpers/color'
 import { inlineScripts } from '~/helpers/securityHeaders'
 
@@ -109,7 +109,8 @@ describe('/api/categories', () => {
       ['garden', 0],
       ['kitchen', 0],
     ])
-    expect(Object.keys(result[0]!).sort()).toEqual(['count', 'id', 'name', 'slug'])
+    expect(Object.keys(result[0]!).sort()).toEqual(['count', 'description', 'featured', 'id', 'name', 'order', 'slug'])
+    expect(z.array(categoryCountSchema).safeParse(result).error?.issues ?? []).toEqual([])
   })
 
   it('counts articles of the requested locale only', async () => {

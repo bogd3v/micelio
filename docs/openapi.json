@@ -2168,7 +2168,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CategoryCount"
+                    "$ref": "#/components/schemas/CategoryEntry"
                   }
                 }
               }
@@ -5666,7 +5666,7 @@
         "additionalProperties": false,
         "description": "The account, or `user: null` when the visitor is signed out."
       },
-      "CategoryCount": {
+      "CategoryEntry": {
         "type": "object",
         "properties": {
           "id": {
@@ -5675,13 +5675,25 @@
             "maximum": 9007199254740991
           },
           "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
             "type": [
               "string",
               "null"
             ]
           },
-          "name": {
-            "type": "string"
+          "order": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "featured": {
+            "type": "boolean"
           },
           "count": {
             "type": "integer",
@@ -5693,10 +5705,13 @@
           "id",
           "slug",
           "name",
+          "description",
+          "order",
+          "featured",
           "count"
         ],
         "additionalProperties": false,
-        "description": "A category with the number of posts in it."
+        "description": "A category of the CMS in the requested locale, with its name, description, position, whether the home page highlights it and the number of its published posts."
       },
       "Comment": {
         "type": "object",

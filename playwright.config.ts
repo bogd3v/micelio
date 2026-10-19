@@ -10,13 +10,14 @@ export default defineConfig({
   // Needs its own servers with every module off: playwright.modules-off.config.ts
   // theme-overrides.spec.ts: playwright.theme-overrides.config.ts, a mock Strapi that serves a theme
   // home-page.spec.ts: playwright.home-page.config.ts, a mock Strapi whose site settings name a home page
+  // categories.spec.ts: playwright.categories.config.ts, a mock Strapi with articles in garden, kitchen and invierno
   // e2e/theme runs in playwright.theme.config.ts (per theme and mode, in the Playwright image)
   // e2e/static runs in playwright.static.config.ts against a generated site (npm run test:static)
   // e2e/playground runs in playwright.playground.config.ts (Chromium, Firefox and WebKit, against the build)
   // e2e/scene runs in playwright.scene.config.ts (Chromium, Firefox and WebKit, against the build)
   // e2e/native-ui runs in playwright.native-ui.config.ts (Chromium, Firefox and WebKit)
   // e2e/landing runs in playwright.landing.config.ts against a generated landing (npm run test:landing)
-  testIgnore: ['modules-off.spec.ts', 'empty-site.spec.ts', 'theme-overrides.spec.ts', 'home-page.spec.ts', 'theme/**', 'static/**', 'landing/**', 'playground/**', 'contract/**', 'scene/**', 'native-ui/**'],
+  testIgnore: ['modules-off.spec.ts', 'empty-site.spec.ts', 'theme-overrides.spec.ts', 'home-page.spec.ts', 'categories.spec.ts', 'theme/**', 'static/**', 'landing/**', 'playground/**', 'contract/**', 'scene/**', 'native-ui/**'],
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,

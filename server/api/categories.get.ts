@@ -1,11 +1,12 @@
-import type { CategoryCount } from '~/interfaces'
+import type { CategoryEntry } from '~/interfaces'
 import { listLocaleQuerySchema } from '../schemas/query'
 
-export default defineEventHandler(async (event): Promise<CategoryCount[]> => {
+export default defineEventHandler(async (event): Promise<CategoryEntry[]> => {
   const { locale } = validQuery(event, listLocaleQuerySchema)
 
   setHeader(event, 'Cache-Control', 'public, s-maxage=600, stale-while-revalidate=1200')
 
   const categories = await loadCategories(locale)
-  return categories.map(({ id, slug, name, count }) => ({ id, slug, name, count }))
+  // Listed by hand: a field the loader gains later is not public until it is added here and in the schema
+  return categories.map(({ id, slug, name, description, order, featured, count }) => ({ id, slug, name, description, order, featured, count }))
 })

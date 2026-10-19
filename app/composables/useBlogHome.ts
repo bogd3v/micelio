@@ -1,40 +1,35 @@
 import type { ComputedRef } from 'vue'
-import type { Category, FieldGuideTopic, Locale, PostListItem } from '~/interfaces'
-import { isCategory } from '~/helpers/categories'
-import { CATEGORIES } from '~/constants/categories'
+import type { FieldGuideTopic, Locale, PostListItem } from '~/interfaces'
+import { fieldGuideTopics } from '~/helpers/categoryList'
 import { siteLogoUrl } from '~/helpers/site'
 
 interface BlogHome {
   featuredPost: ComputedRef<PostListItem | undefined>
   total: ComputedRef<number>
-  counts: ComputedRef<Partial<Record<Category, number>>>
+  counts: ComputedRef<Record<string, number>>
   topics: ComputedRef<FieldGuideTopic[]>
 }
+
+const GUIDE_SIZE = 6
 
 /** The data and the head of the blog home page (`/`), used when no page is set as the home page. */
 export function useBlogHome(): BlogHome {
   const { locale, t } = useI18n()
-  const { fetchPosts, fetchCategories } = useStrapi()
+  const { fetchPosts } = useStrapi()
   const { siteUrl } = useSiteUrl()
   const defaultOgImage = useDefaultOgImage()
   const site = useSite()
   const { canonicalUrl } = useCanonicalUrl('/')
 
   const { data: postsResult } = fetchPosts({ pageSize: 1, locale: locale.value as Locale })
-  const { data: categories } = fetchCategories(locale.value as Locale)
+  const { categories } = useCategories()
 
   const featuredPost = computed<PostListItem | undefined>(() => postsResult.value?.data[0])
   const total = computed<number>(() => postsResult.value?.pagination.total ?? 0)
-  const counts = computed<Partial<Record<Category, number>>>(() =>
-    Object.fromEntries(
-      (categories.value ?? [])
-        .filter(category => isCategory(category.slug))
-        .map(category => [category.slug, category.count]),
-    ),
+  const counts = computed<Record<string, number>>(() =>
+    Object.fromEntries(categories.value.map(category => [category.slug, category.count])),
   )
-  const topics = computed<FieldGuideTopic[]>(() =>
-    CATEGORIES.map(category => ({ category, count: counts.value[category] ?? 0 })),
-  )
+  const topics = computed<FieldGuideTopic[]>(() => fieldGuideTopics(categories.value, GUIDE_SIZE))
 
   const metaDescription = computed<string>(() => site.value.description || t('home.metaDescription', { site: site.value.name }))
 

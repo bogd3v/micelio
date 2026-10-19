@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { Category, PostTransitionNames } from '~/interfaces'
-import { categoryColor } from '~/helpers/categories'
+import type { PostTransitionNames } from '~/interfaces'
 import { postTransitionNames } from '~/helpers/postTransition'
 
 const props = withDefaults(defineProps<{
@@ -12,7 +11,10 @@ const props = withDefaults(defineProps<{
   excerpt?: string
   snippet?: string
   highlight?: string
-  category?: Category
+  /** Slug of a category of the CMS; colors the card from `useCategories()` */
+  category?: string
+  /** The name of the post's category as the CMS sent it; shown when the list does not have it */
+  categoryName?: string
   date?: string
   dateTime?: string
   author?: string
@@ -33,6 +35,7 @@ const props = withDefaults(defineProps<{
   snippet: undefined,
   highlight: undefined,
   category: undefined,
+  categoryName: undefined,
   date: undefined,
   dateTime: undefined,
   author: undefined,
@@ -48,12 +51,13 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useI18n()
+const { colorOf } = useCategories()
 
 const eyebrowText = computed<string>(() => props.eyebrow ?? t('myc.card.featured'))
 const moreText = computed<string>(() => props.moreLabel ?? t('myc.card.more'))
 const byline = computed<string>(() => [props.author, props.readTime].filter(Boolean).join(' · '))
 const categoryStyle = computed<Record<string, string> | undefined>(() =>
-  props.category ? { '--cat': categoryColor(props.category) } : undefined,
+  props.category ? { '--cat': colorOf(props.category) } : undefined,
 )
 const names = computed<PostTransitionNames | undefined>(() =>
   props.transition && props.slug ? postTransitionNames(props.slug) : undefined,
@@ -83,7 +87,7 @@ const imageSize = computed<{ width: number, height: number }>(() =>
     <div class="myc-card-body">
       <span v-if="featured" class="myc-eyebrow myc-card-eyebrow">{{ eyebrowText }}</span>
       <div v-if="category || date || read" class="myc-card-meta">
-        <MycCategoryTag v-if="category" :category="category" />
+        <MycCategoryTag v-if="category" :category="category" :name="categoryName" />
         <span class="myc-card-meta-end">
           <span v-if="read" class="myc-meta myc-read-mark"><span aria-hidden="true">✓</span> {{ t('myc.card.read') }}</span>
           <time v-if="date" class="myc-meta" :datetime="dateTime">{{ date }}</time>

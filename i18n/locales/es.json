@@ -22,11 +22,7 @@
       "archiveMeta": "/blog · FILTRAR · BUSCAR · RSS",
       "empty": {
         "all": "Aún no hay artículos",
-        "privacidad": "Aún no hay artículos en privacidad",
-        "diy": "Aún no hay artículos en DIY",
-        "ia": "Aún no hay artículos en IA",
-        "software": "Aún no hay artículos en desarrollo de software",
-        "linux": "Aún no hay artículos en Linux"
+        "category": "Aún no hay artículos en {category}"
       },
       "showAll": "Ver todos",
       "emptyNote": "Vuelve pronto"
@@ -35,25 +31,6 @@
       "pillar": "Pilar {number}",
       "figure": "Fig. {number}",
       "count": "Sin artículos aún | {count} artículo | {count} artículos",
-      "topics": {
-        "privacidad": {
-          "title": "Privacidad",
-          "description": "Soberanía digital, autoalojamiento y herramientas para cuidar tus datos."
-        },
-        "diy": {
-          "title": "Hazlo tú mismo",
-          "description": "Laboratorios locales, hardware y proyectos construidos en casa."
-        },
-        "ia": {
-          "title": "Inteligencia artificial"
-        },
-        "software": {
-          "title": "Desarrollo de software"
-        },
-        "linux": {
-          "title": "Linux y código abierto"
-        }
-      },
       "eyebrow": "Temas",
       "title": "Explora por tema",
       "description": "Todos los artículos del blog, agrupados por tema."
@@ -379,13 +356,6 @@
     "goHome": "Ir al Inicio"
   },
   "myc": {
-    "categories": {
-      "privacidad": "Privacidad",
-      "diy": "DIY · Hazlo tú mismo",
-      "ia": "Inteligencia artificial",
-      "software": "Desarrollo de software",
-      "linux": "Linux y código abierto"
-    },
     "figure": {
       "number": "Fig. {n}",
       "kind": {
@@ -489,13 +459,6 @@
       "topics": "Temas",
       "theme": "Tema",
       "language": "Idioma"
-    },
-    "categoryShort": {
-      "privacidad": "Privacidad",
-      "diy": "DIY",
-      "ia": "IA",
-      "software": "Software",
-      "linux": "Linux"
     },
     "search": {
       "dialog": "Buscar en {site}",

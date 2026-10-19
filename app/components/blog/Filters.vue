@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import type { BlogFilters, Category, StrapiTagRef } from '~/interfaces'
-import { categoryColor } from '~/helpers/categories'
-import { CATEGORIES } from '~/constants/categories'
+import type { BlogFilters, StrapiTagRef } from '~/interfaces'
 import { blogLocation, hasActiveFilters } from '~/helpers/blog'
 import { tagLabel } from '~/helpers/tags'
 import { padCount } from '~/helpers/search'
@@ -14,7 +12,6 @@ interface ActiveFilter {
 const props = defineProps<{
   filters: BlogFilters
   total: number
-  counts: Partial<Record<Category, number>>
   tags: StrapiTagRef[]
   resultCount?: number
 }>()
@@ -29,6 +26,7 @@ const search = defineModel<string>('search', { required: true })
 
 const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
+const { categories, colorOf, labelOf } = useCategories()
 
 const { isStatic } = useStaticSite()
 
@@ -39,18 +37,15 @@ function filterLocation(patch: Pick<BlogFilters, 'category' | 'tag'>): ReturnTyp
   return blogLocation({ ...props.filters, ...patch, page: 1 }, blogBase.value)
 }
 
-const categoryChips = computed<{ id: Category | undefined, label: string, color: string, count: string }[]>(() => [
+// The category being viewed stays a chip even when it has no articles, so the page shows where it is
+const shown = computed(() => categories.value.filter(category => category.count > 0 || category.slug === props.filters.category))
+const categoryChips = computed<{ id: string | undefined, label: string, color: string, count: string }[]>(() => [
   { id: undefined, label: t('blog.all'), color: 'var(--ink-muted)', count: padCount(props.total) },
-  ...CATEGORIES.map(category => ({
-    id: category,
-    label: t(`myc.categoryShort.${category}`),
-    color: categoryColor(category),
-    count: padCount(props.counts[category] ?? 0),
-  })),
+  ...shown.value.map(category => ({ id: category.slug, label: category.name, color: colorOf(category.slug), count: padCount(category.count) })),
 ])
 const activeFilters = computed<ActiveFilter[]>(() => {
   const active: ActiveFilter[] = []
-  if (props.filters.category) active.push({ id: 'category', label: t(`myc.categoryShort.${props.filters.category}`) })
+  if (props.filters.category) active.push({ id: 'category', label: labelOf(props.filters.category) })
   if (props.filters.tag) active.push({ id: 'tag', label: `#${tagLabel(props.tags, props.filters.tag)}` })
   if (props.filters.search) active.push({ id: 'search', label: `«${props.filters.search}»` })
   return active
@@ -86,7 +81,7 @@ const resultLabel = computed<string>(() =>
       </label>
     </div>
 
-    <div class="myc-blog-filter-row">
+    <div v-if="shown.length" class="myc-blog-filter-row">
       <span class="myc-eyebrow myc-blog-filter-label">{{ t('blog.categories') }}</span>
       <div class="myc-blog-chips" role="group" :aria-label="t('blog.filterCategory')">
         <NuxtLink

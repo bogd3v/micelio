@@ -22,11 +22,7 @@
       "archiveMeta": "/blog · FILTER · SEARCH · RSS",
       "empty": {
         "all": "No articles yet",
-        "privacidad": "No articles on privacy yet",
-        "diy": "No articles on DIY yet",
-        "ia": "No articles on AI yet",
-        "software": "No articles on software development yet",
-        "linux": "No articles on Linux yet"
+        "category": "No articles in {category} yet"
       },
       "showAll": "Show all",
       "emptyNote": "Check back soon"
@@ -35,25 +31,6 @@
       "pillar": "Pillar {number}",
       "figure": "Fig. {number}",
       "count": "No articles yet | {count} article | {count} articles",
-      "topics": {
-        "privacidad": {
-          "title": "Privacy",
-          "description": "Digital sovereignty, self-hosting and tools to look after your data."
-        },
-        "diy": {
-          "title": "Do it yourself",
-          "description": "Home labs, hardware and projects built at home."
-        },
-        "ia": {
-          "title": "Artificial intelligence"
-        },
-        "software": {
-          "title": "Software development"
-        },
-        "linux": {
-          "title": "Linux and open source"
-        }
-      },
       "eyebrow": "Topics",
       "title": "Browse by topic",
       "description": "Every article on the blog, grouped by subject."
@@ -379,13 +356,6 @@
     "goHome": "Go Home"
   },
   "myc": {
-    "categories": {
-      "privacidad": "Privacy",
-      "diy": "DIY · Do it yourself",
-      "ia": "Artificial intelligence",
-      "software": "Software development",
-      "linux": "Linux and open source"
-    },
     "figure": {
       "number": "Fig. {n}",
       "kind": {
@@ -489,13 +459,6 @@
       "topics": "Topics",
       "theme": "Theme",
       "language": "Language"
-    },
-    "categoryShort": {
-      "privacidad": "Privacy",
-      "diy": "DIY",
-      "ia": "AI",
-      "software": "Software",
-      "linux": "Linux"
     },
     "search": {
       "dialog": "Search {site}",

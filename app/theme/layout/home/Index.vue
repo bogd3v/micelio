@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Category, FieldGuideTopic, PostListItem } from '~/interfaces'
+import type { FieldGuideTopic, PostListItem } from '~/interfaces'
 
 defineOptions({ name: 'RegionHomeIndex' })
 
@@ -7,7 +7,7 @@ defineOptions({ name: 'RegionHomeIndex' })
 defineProps<{
   featuredPost?: PostListItem
   total: number
-  counts: Partial<Record<Category, number>>
+  counts: Record<string, number>
   topics: FieldGuideTopic[]
 }>()
 

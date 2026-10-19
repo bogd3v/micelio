@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { getQuery } from 'h3'
 import MycSearchPalette from '~/components/myc/MycSearchPalette.vue'
+import { categoriesSettled, serveCategories } from './categoriesFixture'
 
 const searches: Record<string, unknown>[] = []
 
@@ -19,14 +20,10 @@ registerEndpoint('/api/search', (event) => {
   ]
 })
 
-registerEndpoint('/api/categories', () => [
-  { id: 1, slug: 'software', name: 'Software', count: 2 },
-  { id: 2, slug: 'linux', name: 'Linux', count: 1 },
-])
-
 async function mountOpen() {
   const wrapper = await mountSuspended(MycSearchPalette, { props: { open: false } })
   await wrapper.setProps({ open: true })
+  await categoriesSettled()
   return wrapper
 }
 
@@ -37,6 +34,7 @@ function labels(wrapper: Awaited<ReturnType<typeof mountOpen>>): string[] {
 describe('MycSearchPalette', () => {
   beforeEach(() => {
     searches.length = 0
+    serveCategories()
     useTheme().sync('noche')
   })
 
@@ -50,18 +48,19 @@ describe('MycSearchPalette', () => {
     expect(wrapper.get('label').attributes('for')).toBe(input.attributes('id'))
     expect(wrapper.get('#myc-palette-list').attributes('role')).toBe('listbox')
     expect(wrapper.findAll('[role="group"]').map(group => group.get('.myc-palette-heading').text())).toEqual(['Topics', 'Actions'])
+    // The CMS names, in its order, only the categories with articles
     expect(labels(wrapper)).toEqual([
-      'Privacy', 'DIY · Do it yourself', 'Artificial intelligence', 'Software development', 'Linux and open source',
+      'Garden', 'Kitchen', 'Workshop', 'Cellar', 'Loft',
       'Switch to the Day theme', 'Follow on the fediverse',
     ])
-    await vi.waitFor(() => expect(wrapper.get('#topic-software .myc-result-hint').text()).toBe('02'))
+    expect(wrapper.get('#topic-garden .myc-result-hint').text()).toBe('03')
     expect(wrapper.get('.myc-palette-note').text()).toBe('Type 3 or more letters to search articles')
   })
 
   it('filters topics locally without calling the API for short queries', async () => {
     const wrapper = await mountOpen()
-    await wrapper.get('input').setValue('ux')
-    expect(labels(wrapper)).toEqual(['Linux and open source', 'Switch to the Day theme', 'Follow on the fediverse'])
+    await wrapper.get('input').setValue('el')
+    expect(labels(wrapper)).toEqual(['Cellar', 'Switch to the Day theme', 'Follow on the fediverse'])
     expect(searches).toHaveLength(0)
   })
 
@@ -111,14 +110,21 @@ describe('MycSearchPalette', () => {
     const input = wrapper.get('input')
     expect(input.attributes('aria-activedescendant')).toBeUndefined()
     await input.trigger('keydown', { key: 'ArrowDown' })
-    expect(input.attributes('aria-activedescendant')).toBe('topic-privacidad')
-    expect(wrapper.get('#topic-privacidad').attributes('aria-selected')).toBe('true')
+    expect(input.attributes('aria-activedescendant')).toBe('topic-garden')
+    expect(wrapper.get('#topic-garden').attributes('aria-selected')).toBe('true')
     await input.trigger('keydown', { key: 'ArrowUp' })
     await input.trigger('keydown', { key: 'ArrowUp' })
     expect(input.attributes('aria-activedescendant')).toBe('action-theme')
     await input.trigger('keydown', { key: 'Enter' })
     expect(document.documentElement.getAttribute('data-theme')).toBe('dia')
     expect(wrapper.emitted('close')).toHaveLength(1)
+  })
+
+  it('lists no topics for a site without categories', async () => {
+    serveCategories([])
+    const wrapper = await mountOpen()
+    expect(wrapper.findAll('[role="group"]').map(group => group.get('.myc-palette-heading').text())).toEqual(['Actions'])
+    expect(wrapper.find('[id^="topic-"]').exists()).toBe(false)
   })
 
   it('closes with Esc, the Esc button and the backdrop, and resets when it opens again', async () => {

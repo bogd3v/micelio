@@ -2,7 +2,6 @@
 import type { PostListItem } from '~/interfaces'
 import { formatDotDate } from '~/helpers/formatDate'
 import { padCount } from '~/helpers/search'
-import { CATEGORIES } from '~/constants/categories'
 import { feedPath } from '~/helpers/feed'
 
 defineProps<{
@@ -14,6 +13,7 @@ const { t, locale } = useI18n()
 const { localizePath } = useLocaleUtils()
 const fediverseUser = useFediverseUser()
 const fediverseOn = useModule('fediverse')
+const { listed } = useCategories()
 const { count: readCount, clear: clearRead } = useReadArticles()
 
 const cleared = ref(false)
@@ -49,18 +49,18 @@ function clearHistory(): void {
     <section class="myc-blog-aside-group" aria-labelledby="myc-blog-subscribe">
       <h2 id="myc-blog-subscribe" class="myc-eyebrow myc-home-eyebrow">{{ t('myc.footer.subscribe') }}</h2>
       <a :href="feedPath(locale)" class="myc-blog-aside-link" target="_blank" rel="noopener noreferrer">{{ t('blog.rss') }} <span aria-hidden="true">↗</span></a>
-      <div class="myc-blog-feeds">
+      <div v-if="listed.length" class="myc-blog-feeds">
         <p id="myc-blog-feeds-label" class="myc-blog-feeds-label">{{ t('blog.feeds.label') }}</p>
         <ul class="myc-meta myc-blog-feeds-list" aria-labelledby="myc-blog-feeds-label">
-          <li v-for="slug in CATEGORIES" :key="slug">
+          <li v-for="entry in listed" :key="entry.slug">
             <a
-              :href="feedPath(locale, slug)"
+              :href="feedPath(locale, entry.slug)"
               class="myc-blog-feed-link"
               target="_blank"
               rel="noopener noreferrer"
-              :aria-label="t('blog.feeds.aria', { category: t(`myc.categoryShort.${slug}`) })"
+              :aria-label="t('blog.feeds.aria', { category: entry.name })"
             >
-              {{ t(`myc.categoryShort.${slug}`) }} <span aria-hidden="true">↗</span>
+              {{ entry.name }} <span aria-hidden="true">↗</span>
             </a>
           </li>
         </ul>

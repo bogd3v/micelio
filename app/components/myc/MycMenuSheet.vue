@@ -2,8 +2,6 @@
 import { blogPath } from '~/helpers/blog'
 import type { HeaderSection } from '~/interfaces'
 import { modes } from '#micelio/theme'
-import { categoryColor } from '~/helpers/categories'
-import { CATEGORIES } from '~/constants/categories'
 
 const SWIPE_CLOSE_DISTANCE = 80
 
@@ -26,6 +24,7 @@ const accountsOn = useModule('accounts')
 const draftsOn = useModule('drafts')
 const fediverseOn = useModule('fediverse')
 const { user, isEditor } = useAuth()
+const { listed, colorOf } = useCategories()
 
 const dialogRef = ref<HTMLElement>()
 const isOpen = computed<boolean>(() => props.open)
@@ -34,11 +33,11 @@ let dragStart: number | null = null
 
 const sections = useNavLinks()
 const topics = computed<{ slug: string, label: string, color: string, to: string }[]>(() =>
-  CATEGORIES.map(slug => ({
-    slug,
-    label: t(`myc.categoryShort.${slug}`),
-    color: categoryColor(slug),
-    to: blogPath({ category: slug, page: 1 }, localizePath('/blog')),
+  listed.value.map(category => ({
+    slug: category.slug,
+    label: category.name,
+    color: colorOf(category.slug),
+    to: blogPath({ category: category.slug, page: 1 }, localizePath('/blog')),
   })),
 )
 const panelStyle = computed<Record<string, string> | undefined>(() =>
@@ -146,8 +145,8 @@ watch(() => route.fullPath, () => {
         {{ t('myc.header.drafts') }} <span aria-hidden="true" class="myc-sheet-arrow">→</span>
       </NuxtLink>
 
-      <section class="myc-sheet-group" aria-labelledby="myc-sheet-topics">
-        <h2 id="myc-sheet-topics" class="myc-eyebrow myc-sheet-label">{{ t('myc.mobile.topics') }}</h2>
+      <section v-if="topics.length || fediverseOn" class="myc-sheet-group" :aria-labelledby="topics.length ? 'myc-sheet-topics' : undefined">
+        <h2 v-if="topics.length" id="myc-sheet-topics" class="myc-eyebrow myc-sheet-label">{{ t('myc.mobile.topics') }}</h2>
         <div class="myc-sheet-topics">
           <NuxtLink v-for="topic in topics" :key="topic.slug" :to="topic.to" class="myc-sheet-cat">
             <span class="myc-sheet-dot" :style="{ background: topic.color }" aria-hidden="true" />{{ topic.label }}

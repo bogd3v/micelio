@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import MycPostCard from '~/components/myc/MycPostCard.vue'
-import { Category } from '~/interfaces/design'
+import { serveCategories } from './categoriesFixture'
 
 const base = {
   title: 'Soberanía digital y laboratorios locales',
   href: '/blog/soberania-digital',
   excerpt: 'Primer artículo de este blog.',
-  category: Category.Privacy,
+  category: 'kitchen',
   date: '24.09.2026',
   dateTime: '2026-09-24T15:00:00.000Z',
   author: 'Alejandro Ramírez',
@@ -15,6 +15,8 @@ const base = {
 }
 
 describe('MycPostCard', () => {
+  beforeEach(() => serveCategories())
+
   it('exposes a single link named by the title', async () => {
     const wrapper = await mountSuspended(MycPostCard, { props: base })
     const links = wrapper.findAll('a')
@@ -27,7 +29,6 @@ describe('MycPostCard', () => {
 
   it('renders category, date, excerpt and byline', async () => {
     const wrapper = await mountSuspended(MycPostCard, { props: base })
-    expect(wrapper.get('.myc-tag').classes()).toContain('myc-tag-privacidad')
     const time = wrapper.get('time')
     expect(time.text()).toBe('24.09.2026')
     expect(time.attributes('datetime')).toBe(base.dateTime)
@@ -38,10 +39,11 @@ describe('MycPostCard', () => {
 
   it('shows scanlines tinted by the category when there is no image', async () => {
     const wrapper = await mountSuspended(MycPostCard, { props: base })
+    await vi.waitFor(() => expect(wrapper.attributes('style')).toContain('--cat: var(--category-2)'))
     const media = wrapper.get('.myc-card-media')
     expect(media.classes()).toContain('myc-card-media-empty')
     expect(media.attributes('aria-hidden')).toBe('true')
-    expect(wrapper.attributes('style')).toContain('--cat: var(--category-1)')
+    expect(wrapper.attributes('style')).toContain('--cat: var(--category-2)')
   })
 
   it('loads images lazily unless the card has priority', async () => {

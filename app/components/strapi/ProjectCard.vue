@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { StrapiProject } from '~/interfaces'
 
-// One swatch per category role, in CATEGORIES order
+// One swatch per category role, of the theme
 const SWATCHES: readonly string[] = [1, 2, 3, 4, 5].map(n => `var(--category-${n})`)
 
 defineProps<{

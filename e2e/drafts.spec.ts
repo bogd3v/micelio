@@ -41,7 +41,7 @@ test('lists the drafts for an editor and filters them by state', async ({ page }
   await expect(rows.nth(0)).toContainText('ES')
   await expect(rows.nth(0)).toContainText('28.09.2026 · 18:42')
   await expect(rows.nth(1)).toContainText('Published with changes')
-  await expect(rows.nth(1).locator('.myc-tag-linux')).toBeVisible()
+  await expect(rows.nth(1).locator('.myc-tag')).toHaveText('Linux and open source')
 
   const filters = page.getByRole('group', { name: 'Filter drafts' })
   await filters.getByRole('button', { name: /^With changes/ }).click()
