@@ -17,7 +17,7 @@ The frontend writes one JSON object per line to the standard error (`server/util
 | `visitor` | The first 12 hex characters of an HMAC-SHA256 of the visitor's address, with a key drawn at random when the process starts. It groups the lines of one visitor, it changes on a restart and it is not shared between instances. Absent outside a request |
 | `cause` | What went wrong, as a fixed word or an error name and code. Never a password, email address, token, address or query |
 
-Nitro and Nuxt still print their own free-text `[request error]` report, over several lines and with the URL and its query, when an error nobody handled reaches them. The `server.unhandled` line is the structured record of the same error; a collector should expect both.
+An error nobody handled, on a page or on an `/api/*` route, is written only as the `server.unhandled` line: Nitro's own free-text `[request error]` report, which held the URL and its query, is silenced.
 
 ## What is logged
 
