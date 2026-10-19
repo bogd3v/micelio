@@ -1169,6 +1169,7 @@ describe('/api/site', () => {
     const site = await $fetch<{ description: string, privacyContactEmail: string }>('/api/site', { query: { locale: 'en' } })
     expect(site.description).toBe('')
     expect(site.privacyContactEmail).toBe('')
+    expect(site).toMatchObject({ privacyJurisdiction: '' })
   })
 
   it('answers with app.config\'s values, cached briefly, when Strapi fails', async () => {

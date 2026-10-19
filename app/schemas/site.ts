@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { Locale } from '~/interfaces/locale'
-import { DISPLAY_FONTS, SOCIAL_NETWORKS } from '~/interfaces/site'
+import { DISPLAY_FONTS, PRIVACY_JURISDICTIONS, SOCIAL_NETWORKS } from '~/interfaces/site'
 import type { AccentColors, Site, SiteAuthor, SiteImage, SiteModules, SiteTheme, SocialLink } from '~/interfaces/site'
 import { responseSchema } from './response'
 
@@ -72,6 +72,7 @@ export const siteSchema = responseSchema<Site>()(
     contactEmail: z.string(),
     privacyContactEmail: z.string(),
     privacyUpdatedAt: z.string(),
+    privacyJurisdiction: z.enum([...PRIVACY_JURISDICTIONS, '']),
     supportHandle: z.string(),
     modules: siteModulesSchema,
     theme: siteThemeSchema.optional(),

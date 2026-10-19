@@ -22,6 +22,7 @@ export function siteFromAppConfig(config: AppSiteConfig, themeFavicon?: string):
     contactEmail: config.privacy.contactEmail,
     privacyContactEmail: config.privacy.contactEmail,
     privacyUpdatedAt: config.privacy.updatedAt,
+    privacyJurisdiction: '',
     supportHandle: config.support.buyMeACoffee,
     modules: { ...ALL_MODULES_ON },
   }
@@ -76,6 +77,7 @@ export function mergeSite(defaults: Site, settings: SiteSettings | null | undefi
     contactEmail: pick(settings.contactEmail, defaults.contactEmail),
     privacyContactEmail: pick(settings.privacyContactEmail, defaults.privacyContactEmail),
     privacyUpdatedAt: pick(settings.privacyUpdatedAt, defaults.privacyUpdatedAt),
+    privacyJurisdiction: pick(settings.privacyJurisdiction, defaults.privacyJurisdiction),
     supportHandle: pick(settings.supportHandle, defaults.supportHandle),
     modules: Object.fromEntries(
       SITE_MODULES.map(module => [module, pick(settings.modules?.[module], defaults.modules[module])]),

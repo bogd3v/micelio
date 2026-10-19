@@ -37,6 +37,7 @@ describe('siteFromAppConfig', () => {
       contactEmail: 'ada@example.org',
       privacyContactEmail: 'ada@example.org',
       privacyUpdatedAt: '2026-10-01T12:00:00-05:00',
+      privacyJurisdiction: '',
       supportHandle: 'ada',
       modules: ALL_MODULES_ON,
     })
@@ -326,8 +327,15 @@ describe('empty app.config defaults', () => {
       contactEmail: '',
       privacyContactEmail: '',
       privacyUpdatedAt: '',
+      privacyJurisdiction: '',
       supportHandle: '',
     })
+  })
+
+  it('takes the jurisdiction Strapi sets and drops one it does not know', () => {
+    expect(mergeSite(neutral, parseSiteSettings({ privacyJurisdiction: 'colombia' })).privacyJurisdiction).toBe('colombia')
+    expect(mergeSite(neutral, parseSiteSettings({ privacyJurisdiction: 'narnia' })).privacyJurisdiction).toBe('')
+    expect(mergeSite(neutral, parseSiteSettings({ privacyJurisdiction: null })).privacyJurisdiction).toBe('')
   })
 
   it('takes every value Strapi sets', () => {

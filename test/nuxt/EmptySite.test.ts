@@ -38,8 +38,7 @@ describe('the privacy page without contact email or date', () => {
     await flushPromises()
     expect(wrapper.find('a[href^="mailto:"]').exists()).toBe(false)
     expect(wrapper.get('.myc-privacy-updated').text()).toBe('Legal')
-    expect(wrapper.get('#rights p').text()).not.toContain('Write to')
-    expect(wrapper.get('#rights p').text()).not.toContain('{email}')
+    expect(wrapper.get('#rights p:not(.myc-eyebrow)').text()).toBe('You can access, update, correct and ask for the deletion of your personal data.')
   })
 })
 

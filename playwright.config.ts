@@ -26,5 +26,5 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'html',
   use: { baseURL: `http://127.0.0.1:${appPort}`, colorScheme: 'light' },
-  webServer: webServers({ mockPort, appPort }),
+  webServer: webServers({ mockPort, appPort, privacyJurisdiction: 'colombia' }),
 })

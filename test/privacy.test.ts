@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
-import { BROWSER_STORAGE_KEYS, PRIVACY_NOTICE_STORAGE_KEY, SITE_COOKIES, dismissPrivacyNotice, isPrivacyNoticeDismissed } from '../app/helpers/privacy'
+import { BROWSER_STORAGE_KEYS, PRIVACY_NOTICE_STORAGE_KEY, SITE_COOKIES, dismissPrivacyNotice, isPrivacyNoticeDismissed, privacyRightsLeadKey } from '../app/helpers/privacy'
 import { migrateStoredMode } from '../app/helpers/theme'
 
 const MODES = [{ id: 'noche', scheme: 'dark' as const }, { id: 'dia', scheme: 'light' as const }]
@@ -127,5 +127,15 @@ describe('migrateStoredMode', () => {
   it('survives blocked storage', () => {
     vi.stubGlobal('localStorage', brokenStorage)
     expect(() => migrateStoredMode(MODES)).not.toThrow()
+  })
+})
+
+describe('privacyRightsLeadKey', () => {
+  it('names no law when the site has no jurisdiction', () => {
+    expect(privacyRightsLeadKey('')).toBe('privacy.rights.lead')
+  })
+
+  it('picks the opening that cites the law of the jurisdiction', () => {
+    expect(privacyRightsLeadKey('colombia')).toBe('privacy.rights.leadColombia')
   })
 })

@@ -769,6 +769,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
           contactEmail: 'hola@micelio.test',
           privacyContactEmail: null,
           privacyUpdatedAt: null,
+          privacyJurisdiction: null,
           supportHandle: 'micelio',
           securityContact: securityContact.value,
           modules: { id: 1, ...modules },
