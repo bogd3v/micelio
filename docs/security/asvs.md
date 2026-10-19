@@ -18,13 +18,7 @@ The mapping covers every level 1 and level 2 requirement of the 17 chapters, so 
 | Open | Not met or not verifiable at the level this chapter aims at (see Target below). The row names the issue (label `security`) that tracks it, or says "Private advisory". An open gap that an attacker could exploit is always Open, at any level |
 | Open (above target) | Not met, and the requirement is of a higher level than the chapter's target: it is an improvement, tracked in an issue, and it does not fail the level the standard asks for |
 
-An open requirement that an attacker could exploit is **not** described here or in a public issue: it is reported through a private security advisory, as [`SECURITY.md`](../../SECURITY.md) says, and its row says only "Private advisory". Open items that are not exploitable are grouped in five issues:
-
-- #491: Password rules and session lifetime (all its rows are Met, some as accepted risks)
-- #492: Browser headers, session cookie and HTTP details
-- #493: Input, output encoding and response shape
-- #494: Security logging and log content
-- #495: Keys, transport, data classification and supply chain
+An open requirement that an attacker could exploit is **not** described here or in a public issue: it is reported through a private security advisory, as [`SECURITY.md`](../../SECURITY.md) says, and its row says only "Private advisory". Open items that are not exploitable were grouped in five issues, all closed now (#491 passwords and sessions, #492 browser headers and cookie, #493 input and output, #494 logging, #495 keys, data and supply chain). A row that is still open names the issue that tracks it.
 
 ## Totals
 
@@ -44,12 +38,12 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V12 Secure Communication | L1 | 3 | 6 | 0 | 0 |
 | V13 Configuration | L1 | 11 | 2 | 0 | 0 |
 | V14 Data Protection | L1 | 9 | 0 | 0 | 0 |
-| V15 Secure Coding and Architecture | L1 | 12 | 0 | 0 | 1 |
+| V15 Secure Coding and Architecture | L1 | 13 | 0 | 0 | 0 |
 | V16 Security Logging and Error Handling | L1 | 12 | 3 | 0 | 1 |
 | V17 WebRTC | L1 | 0 | 7 | 0 | 0 |
-| **Total (253 requirements)** | | **146** | **104** | **1** | **2** |
+| **Total (253 requirements)** | | **147** | **104** | **1** | **1** |
 
-**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 3 requirements that are not met, **1 is at the target level** (tracked in a private security advisory) and 2 are above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
+**Target level.** Section 9 of the standard asks for level 2 in V1, V2, V6, V7 and V8 and level 1 in the other chapters, so a level 2 requirement of a level 1 chapter is above the target. Of the 2 requirements that are not met, **1 is at the target level** (tracked in a private security advisory) and 1 is above it. A requirement that holds a level 1 part and a level 2 clause (V3.4.1) is judged at the chapter's target, and the row says what the higher clause asks.
 
 ## Keeping it true
 
@@ -307,7 +301,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | Id | Requirement | Status | Evidence |
 | --- | --- | --- | --- |
 | V15.1.1 | Documented remediation time frames for vulnerable components | Met | `docs/security.md`, "Remediation time frames": 14 days for critical and high findings in what runs in production or in the browser, the next planned release for the rest and for build tooling; a finding with no fix is listed with its reason. `SECURITY.md` points to it. Test: no test (documentation) |
-| V15.1.2 | SBOM of third-party components, trusted sources verified | Open (above target) | The lockfile is committed, but the image builds (`.github/workflows/deploy.yml:421`, `:484`) publish no SBOM and no signed provenance, which the standard (section 10) requires. Tracked in #495 |
+| V15.1.2 | SBOM of third-party components, trusted sources verified | Met | The lockfile is committed, and every image build publishes an SBOM and a signed build provenance attestation (`sbom: true`, `provenance: mode=max` and `actions/attest-build-provenance` in `.github/workflows/deploy.yml`); `docs/operate/verify-image.md` says how to verify them. Test: the `deploy.yml` run itself, no unit test |
 | V15.1.3 | Resource-heavy functionality and its availability defences documented | Met | `docs/security.md:53-54` (page size, search length, post lists, caching), `:66` (rate limits), `server/lib/strapiRequest.ts:5` (CMS timeout), `:111-119` (playground limits). No test |
 | V15.2.1 | Components within the documented remediation time frames | Met | `npm audit` on 2026-10-14: 13 high, no low, no critical. The high ones (`node-forge`, the `braces` chain) are build and development tooling, not in `.output/server/node_modules`, with no fixed release (`node-forge`) or no fix that is not a breaking change (`braces`), and are listed in `docs/security.md`, "Accepted risks". The low `katex` finding was fixed by Mermaid 12.2.0. Run: `npm audit`. Test: CI fails on a critical finding |
 | V15.2.2 | Defences against availability loss from heavy functionality | Met | A request body is read within 64 KB and answers 413 before any route logic (`server/utils/validation.ts:5-45`), inputs have upper bounds (`server/schemas/auth.ts`), and the rate limiter holds at most 10,000 keys (`app/helpers/rateLimit.ts:25`). Heavy islands load only where used (ADR 0006). Tests: `test/integration/api.test.ts:531`, `test/rateLimit.test.ts:32` (GHSA-xjjv-c6cr-w4p6, GHSA-p9c9-2w7f-67wv) |
@@ -328,7 +322,7 @@ An open requirement that an attacker could exploit is **not** described here or 
 | V16.2.1 | Each log entry has when, where, who, what | Met | `logError` and `logWarn` (`server/utils/log.ts`) write a line with the UTC time, the event name, the route, a request id and a keyed hash of the visitor's address (random key per process; no address, no email). Lines written outside a request (boot) or by helpers that receive no request (`cms.site-setting`, `cms.page`, `cms.page-post-list`, `theme.*`) carry time and event only. The request id is per request: each internal `/api` call of a page render has its own. Test: `test/serverLog.test.ts`, and `test/noRawErrorLogs.test.ts` fails when a server file writes to `console` directly |
 | V16.2.2 | Synchronised time sources and UTC timestamps | N/A | Operator/deployment: each line carries a UTC ISO 8601 `time` from the process clock; keeping the host clock synchronised is the platform's |
 | V16.2.3 | Logs only go to documented destinations | Met | `docs/security.md`, "Logs": standard error only, no file and no other sink. Test: no test (documentation) |
-| V16.2.4 | Logs readable by the log processor, common format | Open (above target) | Every line the app writes is one JSON object (`formatLogLine`, `server/lib/log.ts`; test: `test/serverLog.test.ts`), but for a page Nitro still writes its own `[request error]` report of an unhandled error as free text over several lines, with the URL and its query (`defaultHandler`, called by Nuxt's error handler). For `/api/*` it is gone: `server/plugins/problemDetails.ts` answers the error and only `server.unhandled`, the structured record, is written. Pages remain open Tracked in #494 |
+| V16.2.4 | Logs readable by the log processor, common format | Open (above target) | Every line the app writes is one JSON object (`formatLogLine`, `server/lib/log.ts`; test: `test/serverLog.test.ts`), but for a page Nitro still writes its own `[request error]` report of an unhandled error as free text over several lines, with the URL and its query (`defaultHandler`, called by Nuxt's error handler). For `/api/*` it is gone: `server/plugins/problemDetails.ts` answers the error and only `server.unhandled`, the structured record, is written. Pages remain open. #494 closed without this part: it needs its own issue |
 | V16.2.5 | Sensitive data logged according to its protection level | Met | Every failed CMS call is logged through `upstreamLogMessage` (status and the CMS's message, never the URL or its query); an error with a `code` keeps only its name and code (`server/utils/upstreamError.ts`). Test: `test/upstreamLog.test.ts`, and `test/noRawErrorLogs.test.ts` fails when a server file logs a caught error as it is |
 | V16.3.1 | All authentication attempts logged, success and failure | Met | Sign-in, registration, password reset and change, logout and account deletion log `auth.*.success`; every refusal (CMS error, password rules, no session) logs `auth.failure` with its error code (`strapiAuthFailure` in `server/utils/auth.ts`, `server/utils/passwordRules.ts`). No password, identifier or email in a line. Event table: `docs/security.md`, "Security events". Test: `test/integration/api.test.ts` ("security event logs") |
 | V16.3.2 | Failed authorisation attempts logged | Met | `authz.origin-refused` (`assertSameOrigin`, `server/utils/auth.ts`) and `authz.draft-refused` (`editorSession` and `fetchAsEditor`, `server/utils/drafts.ts`: no session, CMS 401 or 403). A draft the CMS answers 404 is not a refusal and is not logged. Test: `test/integration/api.test.ts` ("security event logs") |
