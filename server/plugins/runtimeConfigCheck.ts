@@ -25,9 +25,9 @@ export default defineNitroPlugin(() => {
   ])
   if (insecure) throw new Error(insecure)
   const mode = buildSiteMode
-  const missing = missingRuntimeSettings(config, mode)
+  const missing = missingRuntimeSettings(config)
   if (missing.length) {
-    logWarn('config.missing', `Missing runtime settings: ${missing.join(', ')}. Set them with these NUXT_* names; plain names are ignored.`)
+    throw new Error(`Missing runtime settings: ${missing.join(', ')}. Set them with these NUXT_* names; plain names are ignored.`)
   }
   const optional = missingOptionalRuntimeSettings(config, mode)
   if (optional.length) {

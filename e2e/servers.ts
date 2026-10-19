@@ -34,6 +34,7 @@ export function webServers({ mockPort, appPort, modulesOff = false, themeOverrid
         'MICELIO_SPECIMEN=1',
         `NUXT_PUBLIC_STRAPI_URL=http://127.0.0.1:${mockPort}`,
         `NUXT_PUBLIC_SITE_URL=${siteUrl}`,
+        'NUXT_STRAPI_API_TOKEN=e2e-api-token',
         ...(emptySite
           ? [
               'NUXT_MEDIA_URL=https://resources.example.com',

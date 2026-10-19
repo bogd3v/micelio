@@ -89,14 +89,14 @@ The published images set these; you do not need to change them.
 
 ## Startup checks
 
-At startup the server checks the values above and logs what is missing; it does not stop for these:
+At startup the server checks the values above. These only log a warning:
 
-- A required value that is missing produces a warning that names it, outside development. Static and landing sites check `NUXT_PUBLIC_STRAPI_URL`, `NUXT_STRAPI_API_TOKEN` and `NUXT_PUBLIC_SITE_URL`; a dynamic site also checks `NUXT_SMTP_HOST`, `NUXT_SMTP_USER`, `NUXT_SMTP_PASS` and `NUXT_NEWSLETTER_FROM`.
-- An optional value left empty (the media host, the fediverse settings) produces a second warning.
-- A module turned off by missing configuration (the newsletter without SMTP, the fediverse without its settings) produces a third.
+- An optional value left empty (the media host, the fediverse settings) produces a warning.
+- A module turned off by missing configuration (the newsletter without SMTP, the fediverse without its settings) produces another.
 
 These stop the boot instead:
 
+- A required value that is missing, outside development: `NUXT_PUBLIC_STRAPI_URL`, `NUXT_STRAPI_API_TOKEN` or `NUXT_PUBLIC_SITE_URL`, in every site mode. The error names each one. The SMTP settings are not required: without them the newsletter is off (a warning).
 - A mismatch between `NUXT_PUBLIC_SITE_MODE` at build and at runtime, or between `NUXT_PUBLIC_THEME` at build and at runtime.
 - An invalid `NUXT_TRUST_PROXY`.
 - `NUXT_STRAPI_FORWARDER_SECRET` set with a `NUXT_PUBLIC_STRAPI_URL` that is neither `https` nor a private address.
