@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { contractProblems } from './contract'
 import { checkCss, checkThemeCss } from './css-rules'
 import { buildTokensCss } from './tokens.mjs'
-import { SLOT_NAMES } from './constants'
+import { CONTRACT_VERSION, SLOT_NAMES } from './constants'
 import { readThemeFile } from './files'
 import { slotProblems } from './island'
 import type { Hooks, InstalledTheme } from './types'
@@ -56,5 +56,5 @@ export function themeProblems(theme: InstalledTheme, hooks: Hooks): string[] {
 /** Throws one Error that lists, for each invalid theme, its name and every problem. */
 export function validateThemes(themes: InstalledTheme[], hooks: Hooks): void {
   const lines = themes.flatMap(theme => themeProblems(theme, hooks).map(problem => `Theme "${theme.id}": ${problem}`))
-  if (lines.length) throw new Error(`Invalid theme${lines.length > 1 ? 's' : ''} (contract v1, ADR 0005):\n${lines.join('\n')}`)
+  if (lines.length) throw new Error(`Invalid theme${lines.length > 1 ? 's' : ''} (contract v${CONTRACT_VERSION}, ADR 0005):\n${lines.join('\n')}`)
 }

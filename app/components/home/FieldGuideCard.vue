@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { blogPath } from '~/helpers/blog'
-import type { Category } from '~/interfaces'
 import { padCount } from '~/helpers/search'
 
 const props = defineProps<{
@@ -13,14 +12,12 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const { categories } = useCategories()
+const { categories, colorOf } = useCategories()
 const { localizePath } = useLocaleUtils()
 
 const caption = useIllustrationCaption()
 const themeMessage = useThemeMessage()
 
-// TODO(#462): the theme slot APIs take a plain string slug with the contract 2 types
-const themeCategory = computed<Category>(() => props.category as Category)
 const entry = computed(() => categories.value.find(category => category.slug === props.category))
 const label = computed<string>(() =>
   props.pillar
@@ -41,12 +38,12 @@ const countLabel = computed<string>(() => t('home.guide.count', { count: padCoun
       <span class="myc-meta myc-guide-label">{{ label }}</span>
     </div>
     <div class="myc-guide-art">
-      <ThemeIllustration :category="themeCategory" :size="200" />
+      <ThemeIllustration :category="category" :color="colorOf(category)" :size="200" />
     </div>
     <h3 class="myc-guide-title">{{ entry?.name ?? category }}</h3>
     <p v-if="pillar && entry?.description" class="myc-guide-description">{{ entry.description }}</p>
     <div class="myc-guide-species">
-      <p v-if="caption(themeCategory)" class="myc-guide-bird">{{ caption(themeCategory)!.name }} · <i>{{ caption(themeCategory)!.scientific }}</i></p>
+      <p v-if="caption(category)" class="myc-guide-bird">{{ caption(category)!.name }} · <i>{{ caption(category)!.scientific }}</i></p>
       <p v-if="pillar && note" class="myc-guide-note">{{ note }}</p>
     </div>
     <div class="myc-meta myc-guide-foot">

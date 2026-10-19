@@ -2,7 +2,7 @@
 
 # Roles
 
-Roles of contract v1, by `theme.json` group. Contrast (the last two columns: the role as foreground on those surfaces, and the foregrounds checked on the role) is checked per mode by `npm run theme:check` (WCAG 2 AA; text 4.5:1, controls and focus 3:1); an optional role a theme omits is checked with its core default. Guide: [../creating-a-theme.md](../creating-a-theme.md).
+Roles of contract v2, by `theme.json` group. Contrast (the last two columns: the role as foreground on those surfaces, and the foregrounds checked on the role) is checked per mode by `npm run theme:check` (WCAG 2 AA; text 4.5:1, controls and focus 3:1); an optional role a theme omits is checked with its core default. Guide: [../creating-a-theme.md](../creating-a-theme.md).
 
 ## `color`
 
@@ -32,15 +32,15 @@ Color roles. A `value` is one string or one value per mode id; contrast is check
 | `danger-soft` | required | Background of an error message. | none | `danger` ≥ 4.5:1 |
 | `info` | required | Informative state. | `surface`, `surface-raised`, `surface-sunken`, `info-soft` ≥ 4.5:1 | none |
 | `info-soft` | required | Background of an informative message. | none | `info` ≥ 4.5:1 |
-| `category-1` | required | Color of category 1: categories take the roles in order (`categoryColor()`). | `surface`, `surface-raised`, `surface-sunken`, `category-1-soft` ≥ 4.5:1 | none |
+| `category-1` | required | Color of category 1: a category takes a role by its rank in the CMS list, modulo five (`categoryColor()`, ADR 0016). | `surface`, `surface-raised`, `surface-sunken`, `category-1-soft` ≥ 4.5:1 | none |
 | `category-1-soft` | required | Tinted background behind category 1 text. | none | `category-1` ≥ 4.5:1 |
-| `category-2` | required | Color of category 2: categories take the roles in order (`categoryColor()`). | `surface`, `surface-raised`, `surface-sunken`, `category-2-soft` ≥ 4.5:1 | none |
+| `category-2` | required | Color of category 2: a category takes a role by its rank in the CMS list, modulo five (`categoryColor()`, ADR 0016). | `surface`, `surface-raised`, `surface-sunken`, `category-2-soft` ≥ 4.5:1 | none |
 | `category-2-soft` | required | Tinted background behind category 2 text. | none | `category-2` ≥ 4.5:1 |
-| `category-3` | required | Color of category 3: categories take the roles in order (`categoryColor()`). | `surface`, `surface-raised`, `surface-sunken`, `category-3-soft` ≥ 4.5:1 | none |
+| `category-3` | required | Color of category 3: a category takes a role by its rank in the CMS list, modulo five (`categoryColor()`, ADR 0016). | `surface`, `surface-raised`, `surface-sunken`, `category-3-soft` ≥ 4.5:1 | none |
 | `category-3-soft` | required | Tinted background behind category 3 text. | none | `category-3` ≥ 4.5:1 |
-| `category-4` | required | Color of category 4: categories take the roles in order (`categoryColor()`). | `surface`, `surface-raised`, `surface-sunken`, `category-4-soft` ≥ 4.5:1 | none |
+| `category-4` | required | Color of category 4: a category takes a role by its rank in the CMS list, modulo five (`categoryColor()`, ADR 0016). | `surface`, `surface-raised`, `surface-sunken`, `category-4-soft` ≥ 4.5:1 | none |
 | `category-4-soft` | required | Tinted background behind category 4 text. | none | `category-4` ≥ 4.5:1 |
-| `category-5` | required | Color of category 5: categories take the roles in order (`categoryColor()`). | `surface`, `surface-raised`, `surface-sunken`, `category-5-soft` ≥ 4.5:1 | none |
+| `category-5` | required | Color of category 5: a category takes a role by its rank in the CMS list, modulo five (`categoryColor()`, ADR 0016). | `surface`, `surface-raised`, `surface-sunken`, `category-5-soft` ≥ 4.5:1 | none |
 | `category-5-soft` | required | Tinted background behind category 5 text. | none | `category-5` ≥ 4.5:1 |
 | `code-ink` | required | Code text. | `surface-sunken` ≥ 4.5:1 | none |
 | `code-muted` | required | Comments and punctuation in code. | `surface-sunken` ≥ 4.5:1 | none |

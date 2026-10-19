@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { CATEGORIES } from '~/constants/categories'
-import { AUTHOR, CREDIT } from '../fixtures'
+import { AUTHOR, CATEGORIES_SAMPLE, CREDIT } from '../fixtures'
 
 const { t } = useI18n()
 </script>
@@ -10,10 +9,10 @@ const { t } = useI18n()
     <div>
       <h3 class="myc-specimen-label">{{ t('specimen.labels.categories') }}</h3>
       <div class="myc-specimen-row">
-        <MycCategoryTag v-for="category in CATEGORIES" :key="category" :category="category" />
+        <MycCategoryTag v-for="category in CATEGORIES_SAMPLE" :key="category.slug" :category="category.slug" />
       </div>
       <div class="myc-specimen-row">
-        <MycCategoryTag v-for="category in CATEGORIES" :key="category" :category="category" href="#labels" />
+        <MycCategoryTag v-for="category in CATEGORIES_SAMPLE" :key="category.slug" :category="category.slug" href="#labels" />
       </div>
     </div>
 

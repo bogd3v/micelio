@@ -5,7 +5,7 @@ description: Create, adapt or restyle a Micelio theme (themes/<id>/ - roles, mod
 
 # Create a theme
 
-You do not need to read `app/`. A theme is `themes/<id>/`: `theme.json` (roles per mode, type, layout variants), optional `theme.css`, `fonts.css`, `slots/`, `i18n/`, `images/`, validated against contract v1 (ADR 0005). Guide: `docs/themes/creating-a-theme.md`. Reference generated from the contract: `docs/themes/reference/`.
+You do not need to read `app/`. A theme is `themes/<id>/`: `theme.json` (roles per mode, type, layout variants), optional `theme.css`, `fonts.css`, `slots/`, `i18n/`, `images/`, validated against contract v2 (ADR 0005). Guide: `docs/themes/creating-a-theme.md`. Reference generated from the contract: `docs/themes/reference/`.
 
 Use it to make a theme or change how one looks. Not for core components, pages or global CSS (that is `ui-component`), nor for the contract itself (`architect`, ADR 0005).
 
@@ -35,7 +35,7 @@ Use it to make a theme or change how one looks. Not for core components, pages o
 - Slots: only the listed names, no `<style>` (CSS goes in `slots/*.css`), static unless `"island": true` in `theme.json`.
 - Every animation under `@media (prefers-reduced-motion: no-preference)` (review by hand).
 - User-facing text in `i18n/<locale>.json` under `theme.*`, files `en` and `es` (review by hand: another file name adds a locale).
-- `id` equals the folder name; `"contract": 1`; `$schema` is `../theme.schema.json` (review by hand).
+- `id` equals the folder name; `"contract": 2`; `$schema` is `../theme.schema.json` (review by hand).
 - Budgets: theme CSS at most 25 KB gzipped, at most 2 font families, fonts 100 KB target and 150.8 KB maximum.
 - Font fallbacks: `scripts/perf/font-fallbacks.py` only handles `bogota` and `starter`, with fixed fonts and paths. For another font add a function for your theme there, or hand-tune `font-fallbacks.css` (one `"<Family> Fallback"` face with `size-adjust`, `ascent-override`, `descent-override`). Never run it with `--theme starter` for your theme: it overwrites the starter's file. Once tuned, the file's "generated" header no longer holds.
 - Contrast is checked in every mode (matrix in ADR 0005, section 1); every `color` and `shadow` role needs a value for each mode.

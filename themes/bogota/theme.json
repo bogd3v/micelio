@@ -1,6 +1,6 @@
 {
  "$schema": "../theme.schema.json",
- "contract": 1,
+ "contract": 2,
  "id": "bogota",
  "name": "BogDev",
  "modes": [
@@ -430,7 +430,7 @@
    {
     "name": "category-1",
     "value": "{pinchaflor}",
-    "usage": "Category 1 (CATEGORIES order); illustrations use the category roles as the theme palette"
+    "usage": "Category 1 (rank in the category list); illustrations use the category roles as the theme palette"
    },
    {
     "name": "category-1-soft",
@@ -440,7 +440,7 @@
    {
     "name": "category-2",
     "value": "{golondrina}",
-    "usage": "Category 2 (CATEGORIES order); illustrations use the category roles as the theme palette"
+    "usage": "Category 2 (rank in the category list); illustrations use the category roles as the theme palette"
    },
    {
     "name": "category-2-soft",
@@ -450,7 +450,7 @@
    {
     "name": "category-3",
     "value": "{chillon}",
-    "usage": "Category 3 (CATEGORIES order); illustrations use the category roles as the theme palette"
+    "usage": "Category 3 (rank in the category list); illustrations use the category roles as the theme palette"
    },
    {
     "name": "category-3-soft",
@@ -460,7 +460,7 @@
    {
     "name": "category-4",
     "value": "{mirla}",
-    "usage": "Category 4 (CATEGORIES order); illustrations use the category roles as the theme palette"
+    "usage": "Category 4 (rank in the category list); illustrations use the category roles as the theme palette"
    },
    {
     "name": "category-4-soft",
@@ -470,7 +470,7 @@
    {
     "name": "category-5",
     "value": "{monjita}",
-    "usage": "Category 5 (CATEGORIES order); illustrations use the category roles as the theme palette"
+    "usage": "Category 5 (rank in the category list); illustrations use the category roles as the theme palette"
    },
    {
     "name": "category-5-soft",

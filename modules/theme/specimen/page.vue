@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { SPECIMEN_SECTIONS } from './sections'
+import { CATEGORIES_SAMPLE } from './fixtures'
+import { CATEGORIES_SOURCE } from '~/composables/useCategories'
 
 defineOptions({ name: 'ThemeSpecimenPage' })
 
 const { t } = useI18n()
+
+// The specimen shows its own categories, so it needs no CMS
+provide(CATEGORIES_SOURCE, CATEGORIES_SAMPLE)
 
 useSeoMeta({
   title: () => t('specimen.title'),

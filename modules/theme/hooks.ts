@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { z } from 'zod'
+import { CONTRACT_VERSION } from './constants'
 import type { Hooks } from './types'
 
 // The public hooks (ADR 0005, section 5) live in app/theme/hooks.json; the validator reads them here.
@@ -19,12 +20,12 @@ const Hook = z.union([
  * The shape of `app/theme/hooks.json`: the public `data-*` attributes and `myc-*` classes, each with what it describes.
  *
  * @remarks
- * `contract` must be `1`. A hook is a string, or an object with its `describes` text and the layouts, states and values it covers. `parseHooks` reads
+ * `contract` must be `CONTRACT_VERSION`. A hook is a string, or an object with its `describes` text and the layouts, states and values it covers. `parseHooks` reads
  * the parsed file against it.
  */
 export const HooksSchema = z.strictObject({
   $comment: z.string().optional(),
-  contract: z.literal(1),
+  contract: z.literal(CONTRACT_VERSION),
   attributes: z.record(z.string().regex(/^data-[a-z-]+$/), Hook),
   classes: z.record(z.string().regex(/^myc-[a-z0-9-]+$/), Hook),
 })

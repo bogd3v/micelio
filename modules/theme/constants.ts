@@ -1,3 +1,13 @@
+/**
+ * The theme contract version this build implements: a `theme.json` must declare the same `contract` number to pass validation.
+ *
+ * @remarks
+ * Adding an optional role, layout variant, hook or slot with a core default keeps the number (ADR 0005, section 6). A breaking
+ * change to roles, modes, variants, hooks, slots or the package layout is the next number, with a migration note. The number is
+ * also printed in the generated theme reference. Contract 2 removed the five built-in categories from the slot APIs (ADR 0016).
+ */
+export const CONTRACT_VERSION = 2
+
 /** The regions of the page whose layout variant a theme can choose (ADR 0005). */
 export const LAYOUT_REGIONS = ['header', 'home', 'postList', 'article', 'footer'] as const
 
@@ -24,6 +34,6 @@ export interface SlotApiGroup {
  */
 export const SLOT_API_GROUPS: readonly SlotApiGroup[] = [
   { title: 'Site', intro: 'The composable for the site identity (name, description, links, modules); Nuxt auto-imports it.', files: ['app/composables/useSite.ts'] },
-  { title: 'Category helpers', intro: 'Import from `~/helpers/categories`; `CATEGORIES` and `CATEGORY_INFO` are re-exported there.', files: ['app/helpers/categories.ts', 'app/constants/categories.ts'] },
+  { title: 'Categories', intro: 'The categories are data from the CMS (ADR 0016): `useCategories()` (Nuxt auto-imports it) gives the list, and `categoryColor` from `~/helpers/categories` ranks a slug in it. The core names no category.', files: ['app/composables/useCategories.ts', 'app/helpers/categories.ts'] },
   { title: 'Types', intro: 'Import from `~/interfaces`. Constants that a type is derived from are listed with it.', dir: 'app/interfaces' },
 ]

@@ -64,6 +64,11 @@
     padding: var(--space-2) 0;
 }
 
+/* A theme with no art for the category renders nothing in the slot: no empty band */
+.myc-guide-art:empty {
+    display: none;
+}
+
 .myc-guide-art svg {
     display: block;
     width: 180px;

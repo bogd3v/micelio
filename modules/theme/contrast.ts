@@ -15,10 +15,10 @@ const CONTROL_MIN = 3
 
 const SURFACES = ['surface', 'surface-raised', 'surface-sunken']
 const STATES = ['success', 'warning', 'danger', 'info']
-const CATEGORIES = [1, 2, 3, 4, 5].map(n => `category-${n}`)
+const CATEGORY_ROLES = [1, 2, 3, 4, 5].map(n => `category-${n}`)
 
 /** Text roles: on the three surfaces and on their own `-soft` (when it exists). */
-const SOFT_TEXT = ['accent', 'link', ...STATES, ...CATEGORIES]
+const SOFT_TEXT = ['accent', 'link', ...STATES, ...CATEGORY_ROLES]
 
 /**
  * The contrast every installed theme must meet in every mode (ADR 0005, section 1 and its 2026-10-06 amendment).

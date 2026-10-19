@@ -32,6 +32,11 @@
     padding: var(--space-1) 0;
 }
 
+/* A theme with no art for the category renders nothing in the slot: no empty band */
+.myc-topic-art:empty {
+    display: none;
+}
+
 .myc-topic-art svg {
     display: block;
     width: 180px;

@@ -45,11 +45,12 @@ No props.
 
 ## `ThemeIllustration`
 
-Illustration of a category on the topic cards of the home guide and of topic blocks.
+Illustration of a category on the topic cards of the home guide and of topic blocks. Categories are data, so the slug can be one the theme never saw.
 
 | Prop | Type | Required | Description |
 | --- | --- | --- | --- |
-| `category` | `Category` | yes | The category slug; `categoryColor(category)` gives its color role. |
+| `category` | `string` | yes | The slug of a category of the CMS. It can be any slug: the core knows none, so render a neutral fallback or nothing for a slug the theme has no art for. |
+| `color` | `string` | no | The category's color role, `var(--category-N)`, from the same ranking as its tag (`categoryColor`); the neutral `var(--ink-muted)` when omitted. |
 | `size` | `number` | no | Width in px; the core passes 200. |
 
 - Core default: Nothing.

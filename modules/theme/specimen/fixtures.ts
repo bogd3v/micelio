@@ -2,9 +2,8 @@ import type {
   CtaSection, FaqItem, FaqSection, FeatureGridSection, FeatureItem, GallerySection, HeroSection, LogoCloudSection, LogoItem,
   MediaShowcaseSection, NewsletterSection, PageLink, PageMedia, PageSection, PageSectionKind, PostListItem, PostListSection,
   PricingPlan, PricingSection, RichTextSection, SceneSection, StatItem, StatsSection, StrapiBlock, StrapiImageCredit, StrapiPost,
-  TestimonialItem, TestimonialsSection,
+  CategoryEntry, TestimonialItem, TestimonialsSection,
 } from '~/interfaces'
-import { Category } from '~/interfaces'
 import { renderCalloutHtml } from '~/helpers/callout'
 import { renderCodeBlockHtml } from '~/helpers/code'
 import { renderMermaidBlockHtml } from '~/helpers/mermaid'
@@ -84,7 +83,26 @@ export const CREDIT: StrapiImageCredit = {
 /** The author of every specimen post and article, and of the author badge samples. */
 export const AUTHOR = { id: 1, documentId: 'specimen-author', name: 'Specimen Author', avatar: null }
 
-function post(id: number, category: Category, title: string): PostListItem {
+function category(id: number, slug: string, name: string, featured: boolean): CategoryEntry {
+  return { id, slug, name, count: id, description: `${name}, a sample category`, order: id, featured }
+}
+
+/**
+ * The categories of the specimen: neutral slugs, two featured, six in all so the sixth wraps to the first color role (ADR 0016, section 3).
+ *
+ * @remarks
+ * The specimen page supplies them to `useCategories()`, so it needs no CMS and shows the same on any site.
+ */
+export const CATEGORIES_SAMPLE: CategoryEntry[] = [
+  category(1, 'garden', 'Garden', true),
+  category(2, 'kitchen', 'Kitchen', true),
+  category(3, 'travel', 'Travel', false),
+  category(4, 'music', 'Music', false),
+  category(5, 'books', 'Books', false),
+  category(6, 'workshop', 'Workshop', false),
+]
+
+function post(id: number, category: string, title: string): PostListItem {
   return {
     id,
     documentId: `specimen-post-${id}`,
@@ -98,13 +116,13 @@ function post(id: number, category: Category, title: string): PostListItem {
   }
 }
 
-/** One post per category, enough to fill a grid. */
+/** One post for each of the first five categories, enough to fill a grid. */
 export const POSTS: PostListItem[] = [
-  post(1, Category.Privacy, 'Keeping your data at home'),
-  post(2, Category.Diy, 'A home lab on a shelf'),
-  post(3, Category.Ai, 'Small models, real work'),
-  post(4, Category.Software, 'Composables that last'),
-  post(5, Category.Linux, 'Hardening a server in an hour'),
+  post(1, 'garden', 'Keeping a garden through winter'),
+  post(2, 'kitchen', 'A pantry on a shelf'),
+  post(3, 'travel', 'Two days by train'),
+  post(4, 'music', 'Learning a song by ear'),
+  post(5, 'books', 'Notes on a slow read'),
 ]
 
 /** The featured post of the home region and of the featured card sample: the first of `POSTS`. */
@@ -122,7 +140,7 @@ const ARTICLE_BLOCKS: StrapiBlock[] = [{ id: 11, __component: 'shared.rich-text'
 
 /** An article for the article region: draft mode skips comments, related posts and the reading path. */
 export const ARTICLE: StrapiPost = {
-  ...post(100, Category.Linux, 'A specimen article'),
+  ...post(100, 'workshop', 'A specimen article'),
   documentId: 'specimen-post-100',
   content: null,
   tags: [{ name: 'specimen', slug: 'specimen' }, { name: 'theme', slug: 'theme' }],

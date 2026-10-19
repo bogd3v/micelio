@@ -84,8 +84,8 @@ describe('slot API groups', () => {
     roots.push(root)
     for (const [file, text] of Object.entries({
       'app/composables/useSite.ts': '/** The site.\n * @public\n */\nexport function useSite(): string { return "" }',
-      'app/helpers/categories.ts': '/** Is it.\n * @public\n */\nexport function isCategory(): boolean { return true }',
-      'app/constants/categories.ts': '/** All.\n * @public\n */\nexport const CATEGORIES: readonly string[] = []',
+      'app/composables/useCategories.ts': '/** The list.\n * @public\n */\nexport function useCategories(): string[] { return [] }',
+      'app/helpers/categories.ts': '/** Its color.\n * @public\n */\nexport function categoryColor(): string { return "" }',
       'app/interfaces/site.ts': '/** A site.\n * @public\n */\nexport interface Site { name: string }',
       ...extra,
     })) {

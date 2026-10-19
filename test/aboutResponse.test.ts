@@ -27,9 +27,13 @@ describe('aboutSchema', () => {
     expect(aboutSchema.parse({ id: 1, documentId: 'a', title: null, locale: 'en', seo: null, blocks: [block] }).blocks).toEqual([block])
   })
 
-  it('rejects an unknown block, a wrong category and an extra key', () => {
+  it('takes the topics of any category slug, since the CMS defines them (ADR 0016)', () => {
+    expect(aboutSchema.safeParse({ ...about, blocks: [{ id: 1, __component: 'about.topics', topics: [{ id: 1, category: 'cooking', title: 'x' }] }] }).success).toBe(true)
+  })
+
+  it('rejects an unknown block, a category that is not a slug and an extra key', () => {
     expect(aboutSchema.safeParse({ ...about, blocks: [{ id: 1, __component: 'about.unknown' }] }).success).toBe(false)
-    expect(aboutSchema.safeParse({ ...about, blocks: [{ id: 1, __component: 'about.topics', topics: [{ id: 1, category: 'cooking', title: 'x' }] }] }).success).toBe(false)
+    expect(aboutSchema.safeParse({ ...about, blocks: [{ id: 1, __component: 'about.topics', topics: [{ id: 1, category: 'Not A Slug', title: 'x' }] }] }).success).toBe(false)
     expect(aboutSchema.safeParse({ ...about, extra: 1 }).success).toBe(false)
     expect(aboutSchema.safeParse({ ...about, title: undefined }).success).toBe(false)
   })

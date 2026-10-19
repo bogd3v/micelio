@@ -1,21 +1,12 @@
 import { z } from 'zod'
 import { QUOTED_VALUE, REQUIRED_ROLES, TYPE_FAMILIES, TYPE_STEPS, UNSAFE_VALUE } from './roles.mjs'
 import type { RoleGroup } from './roles.mjs'
-import { LAYOUT_REGIONS, SLOT_NAMES } from './constants'
+import { CONTRACT_VERSION, LAYOUT_REGIONS, SLOT_NAMES } from './constants'
 import { REGION_VARIANTS } from './layout/variants'
 
-// Contract v1 (ADR 0005, section 6), defined once: the build validates every installed theme with it
+// Contract v2 (ADR 0005, section 6), defined once: the build validates every installed theme with it
 // and `npm run theme:schema` generates themes/theme.schema.json from it.
 
-/**
- * The theme contract version this build implements: a `theme.json` must declare the same `contract` number to pass validation.
- *
- * @remarks
- * Adding an optional role, layout variant, hook or slot with a core default keeps the number (ADR 0005, section 6). A breaking
- * change to roles, modes, variants, hooks, slots or the package layout is the next number, with a migration note. The number is
- * also printed in the generated theme reference.
- */
-export const CONTRACT_VERSION = 1
 /** The init script stays under 2 KB (ADR 0004: it is inline on every page). */
 export const MAX_MODES = 6
 /**
@@ -136,10 +127,10 @@ const Layout = z.strictObject(
   { error: iss => iss.code === 'unrecognized_keys' ? `names the region "${iss.keys.join('", "')}", which is not one of ${LAYOUT_REGIONS.join(', ')}` : undefined },
 )
 
-/** Contract v1 as zod. Cross-field rules (roles per mode) are in the refinement at the end. */
+/** The current contract as zod. Cross-field rules (roles per mode) are in the refinement at the end. */
 export const ThemeSchema = z.strictObject({
   $schema: z.string().optional(),
-  contract: z.literal(CONTRACT_VERSION, { error: iss => `declares contract ${JSON.stringify(iss.input)}, this build implements contract ${CONTRACT_VERSION}` }),
+  contract: z.literal(CONTRACT_VERSION, { error: iss => `declares contract ${JSON.stringify(iss.input)}, this build implements contract ${CONTRACT_VERSION} (see "Upgrade notes" in docs/themes/creating-a-theme.md)` }),
   id: z.string().regex(THEME_ID, { error: `"id" must match ${THEME_ID}` }).refine(id => !RESERVED_THEME_IDS.includes(id), { error: iss => themeIdProblem(String(iss.input)) ?? 'reserved id' }).describe('The folder name.'),
   name: z.string().optional(),
   modes: Modes,
@@ -230,6 +221,6 @@ export function themeJsonSchema(): Record<string, unknown> {
   return {
     ...schema,
     $id: 'https://github.com/bogd3v/micelio/blob/main/themes/theme.schema.json',
-    title: 'Micelio theme.json (contract v1)',
+    title: `Micelio theme.json (contract v${CONTRACT_VERSION})`,
   }
 }

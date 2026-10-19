@@ -3,7 +3,6 @@ import type { BlogFilters, BlogSort, BlogView, PaginationItem, PostMonth } from 
 import type { PostListItem } from '../interfaces/strapi-post'
 import { defaultLocale, Locale } from '../interfaces/locale'
 import { SLUG_PATTERN } from '../constants/slug'
-import { isCategory } from './categories'
 import { isContentSearch } from './search'
 import { MIN_SEARCH_LENGTH } from '../constants/search'
 
@@ -143,9 +142,9 @@ function isSamePath(a: string, b: string): boolean {
  * The canonical URL for a blog list request, or null when it already is: old query-string filters
  * (`/blog?category=x&page=2`), a category in capitals, a padded page number or `/page/1`.
  *
- * @param isKnownCategory - Whether a lowercase slug is a category; the server passes the CMS list, the default is the built-in constant.
+ * @param isKnownCategory - Whether a lowercase slug is a category of the CMS list; it tells a category from a tag in the old query string.
  */
-export function legacyBlogRedirect(pathname: string, search: string, isKnownCategory: (slug: string) => boolean = isCategory): string | null {
+export function legacyBlogRedirect(pathname: string, search: string, isKnownCategory: (slug: string) => boolean): string | null {
   const match = BLOG_URL_PATH.exec(pathname)
   if (!match) return null
   const [, base = BLOG_BASE, kind, rawSlug, pageText] = match

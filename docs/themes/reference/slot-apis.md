@@ -16,48 +16,55 @@ The site identity from GET /api/site, with app.config.ts's values until it answe
 export function useSite(): ComputedRef<Site>
 ```
 
-## Category helpers
+## Categories
 
-Import from `~/helpers/categories`; `CATEGORIES` and `CATEGORY_INFO` are re-exported there.
+The categories are data from the CMS (ADR 0016): `useCategories()` (Nuxt auto-imports it) gives the list, and `categoryColor` from `~/helpers/categories` ranks a slug in it. The core names no category.
 
-### `isCategory`
+### `UseCategories`
 
-Whether `value` is one of the category slugs; narrows it to `Category` when so.
+The categories of the CMS in the current locale and the ways to ask about them.
 
 ```ts
-export function isCategory(value: unknown): value is Category
+export interface UseCategories {
+  /** Every category in the CMS order (`order`, then `name`), empty ones included. Empty while loading, on a failure, for a site with none and for a site with no blog. */
+  categories: ComputedRef<CategoryEntry[]>
+  /** The categories with published articles, in the same order: what menus, filters and feeds list. */
+  listed: ComputedRef<CategoryEntry[]>
+  /** Whether the request failed, so an empty list does not mean "no categories". */
+  failed: ComputedRef<boolean>
+  /** Whether the CMS has a category with this slug. */
+  has: (slug: string) => boolean
+  /** The color role of a category by its rank in the full list (`categoryColor`); neutral for an unknown slug. */
+  colorOf: (slug: string | null | undefined) => string
+  /** The localized name of a category; its slug when the list does not have it. */
+  labelOf: (slug: string | null | undefined) => string
+  /** Resolves once the list has loaded, on the server and on the client. */
+  loaded: () => Promise<void>
+}
+```
+
+### `useCategories`
+
+The categories of the CMS, shared by every component of a page: it wraps the `fetchCategories` request, whose key follows the locale, so a page makes one request to `/api/categories` (ADR 0016, section 2).
+
+```ts
+export function useCategories(): UseCategories
 ```
 
 ### `categoryColor`
 
-The category's color role: `var(--category-N)`, N being its position in CATEGORIES.
+The color role of a category: `var(--category-N)`, N being its rank by (`order`, `slug`) in the whole list, modulo the five roles, plus one.
 
 ```ts
-export function categoryColor(category: Category): string
+export function categoryColor(categories: readonly CategoryEntry[], slug: string | null | undefined): string
 ```
 
-### `categoryOrder`
-
-The display position of a category slug. Unknown or missing slugs sort after every category.
-
-```ts
-export function categoryOrder(slug: string | null | undefined): number
-```
-
-### `CATEGORIES`
-
-The categories in display order; a category's color role is its position here (`categoryColor`).
+- `categories`: The whole list, as `useCategories().categories` gives it.
+- `slug`: The category slug to color.
 
 ```ts
-export const CATEGORIES: readonly Category[]
-```
-
-### `CATEGORY_INFO`
-
-Per-category data: the pillar (1 or 2) of the two that have one, else null.
-
-```ts
-export const CATEGORY_INFO: Readonly<Record<Category, CategoryInfo>>
+const { categories } = useCategories()
+categoryColor(categories.value, 'kitchen') // 'var(--category-2)' when it ranks second
 ```
 
 ## Types
@@ -370,13 +377,11 @@ export interface CommentsResponse {
 
 | Name | Kind | Summary |
 | --- | --- | --- |
-| `Category` | enum | The five categories a post can belong to. Each value is the category's slug in the CMS. |
 | `ButtonVariant` | type | The visual style of a `MycButton`: primary, secondary, accent, or plain text. |
 | `ButtonSize` | type | The size of a `MycButton`: `md` or the compact `sm`. |
 | `CalloutTone` | type | The tone of a `MycCallout`: a note, a warning or a danger. |
 | `CodeLine` | interface | One line of a code block. A line that starts with a prompt (`$ `) has `prompt` set and the prompt removed from `text`. |
-| `CategoryInfo` | interface | The editorial data of a category, from `CATEGORY_INFO`. |
-| `CategoryCount` | interface | A category with the number of posts in it, as the categories API returns it. |
+| `CategoryEntry` | interface | A category of the CMS as `GET /api/categories` and `useCategories()` serve it, in the requested locale (ADR 0016). |
 | `CategoryLike` | interface | The name and slug of a category as the CMS returns it; either may be missing. |
 | `NewsletterStatus` | type | The state of the newsletter form after a submit. |
 | `NewsletterResult` | interface | The outcome of a newsletter sign-up, for the form to show. |
@@ -394,28 +399,24 @@ export interface CommentsResponse {
 | `InstanceError` | type | Why a fediverse instance name was rejected: it is `empty`, or `invalid`. |
 | `InstanceResult` | interface | The result of normalising a fediverse instance name: the bare host name, or the reason it was rejected. |
 
-#### `CategoryInfo`
+#### `CategoryEntry`
 
-The editorial data of a category, from `CATEGORY_INFO`.
-
-```ts
-export interface CategoryInfo {
-  /** The home page field guide pillar (1 or 2) of the two categories that have one; null for the others. */
-  pillar: 1 | 2 | null
-}
-```
-
-#### `CategoryCount`
-
-A category with the number of posts in it, as the categories API returns it.
+A category of the CMS as `GET /api/categories` and `useCategories()` serve it, in the requested locale (ADR 0016).
 
 ```ts
-export interface CategoryCount {
+export interface CategoryEntry {
   id: number
-  slug: string | null
+  slug: string
+  /** The localized name; the slug when the language has none. */
   name: string
-  /** Number of posts in the category. */
+  /** Number of published posts in the category. */
   count: number
+  /** The localized description; null when the editor wrote none. */
+  description: string | null
+  /** The editor's position, non-localized; null when none was set. */
+  order: number | null
+  /** Whether the home page highlights it. */
+  featured: boolean
 }
 ```
 
@@ -446,7 +447,8 @@ export interface PostCardProps {
   excerpt?: string
   /** A text fragment around the search match, shown with the match highlighted instead of the excerpt. */
   snippet?: string
-  category?: Category
+  /** The slug of the post's category; the card shows its name and color. */
+  category?: string
   /** The formatted date shown on the card. */
   date?: string
   /** The machine-readable date for the `datetime` attribute of the `<time>` element. */
@@ -497,6 +499,18 @@ export interface PaletteOption {
   to?: string
   /** The action to run instead of opening a route. */
   action?: PaletteAction
+}
+```
+
+#### `FieldGuideTopic`
+
+A category shown in the home page field guide, with its post count.
+
+```ts
+export interface FieldGuideTopic {
+  /** The category slug. */
+  category: string
+  count: number
 }
 ```
 
@@ -1234,8 +1248,8 @@ A topic of the topics section, with the category it belongs to, `about.topic`.
 ```ts
 export interface StrapiTopic {
   id: number
-  /** The category: it sets the colour of the topic and whether it is a pillar. */
-  category: Category
+  /** The slug of a category of the CMS: it sets the colour of the topic and whether it is a pillar (a featured category). */
+  category: string
   title: string
   description?: string | null
 }

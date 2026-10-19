@@ -7,7 +7,7 @@
     },
     "contract": {
       "type": "number",
-      "const": 1
+      "const": 2
     },
     "id": {
       "type": "string",
@@ -827,5 +827,5 @@
   ],
   "additionalProperties": false,
   "$id": "https://github.com/bogd3v/micelio/blob/main/themes/theme.schema.json",
-  "title": "Micelio theme.json (contract v1)"
+  "title": "Micelio theme.json (contract v2)"
 }

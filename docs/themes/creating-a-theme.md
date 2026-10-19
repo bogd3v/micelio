@@ -1,6 +1,6 @@
 # How to create a theme
 
-A theme is a package of **roles, CSS and optional slots**, validated against contract v1 and installed in the repository. It changes colors, type, space, shape, motion and the look of every public hook without touching the core. The contract is ADR 0005 (`docs/adr/0005-theme-contract.md`); this guide is the path through it. The testing side (visual regression and axe) is `docs/theme-testing.md`.
+A theme is a package of **roles, CSS and optional slots**, validated against contract v2 and installed in the repository. It changes colors, type, space, shape, motion and the look of every public hook without touching the core. The contract is ADR 0005 (`docs/adr/0005-theme-contract.md`); this guide is the path through it. The testing side (visual regression and axe) is `docs/theme-testing.md`.
 
 What a theme can change, in order of preference (ADR 0005, section 5):
 
@@ -29,7 +29,7 @@ Then edit `themes/my-theme/theme.json`:
 
 - `id` must equal the folder name and match `^[a-z0-9-]+$` (the build fails otherwise). `myc` and `micelio` are reserved for the core, and `bd` too until the transition messages are removed (ADR 0005, amendment of 2026-10-08): a theme's own `<id>-*` classes must not be confusable with the core's.
 - `$schema` points to `../../../../themes/theme.schema.json` in the fixture; inside `themes/` change it to `../theme.schema.json`. The schema gives autocomplete and is generated from `modules/theme/contract.ts` (`npm run theme:schema`).
-- `"contract": 1` is required; any other value fails.
+- `"contract": 2` is required; any other value fails, and a theme that declares 1 gets a message that points to the [upgrade notes](#upgrade-notes).
 - `name` is optional.
 
 To start from Bogotá instead (`cp -r themes/bogota themes/my-theme`), which is the opposite of the starter (square, neon, bar and grid layouts, two web fonts: Archivo for display and sans, JetBrains Mono), rename its own classes and attributes: slots and CSS use the `bogota-*` classes and `data-bogota-*` attributes, and a theme may only use `data-<its id>-*` for attributes of its own (see "theme.css").
@@ -222,7 +222,7 @@ The footer shows a link to the site's source code (`myc-foot-source`, from `runt
 
 ### What slots may use, and the license of a theme
 
-A slot may call or import only the **slot APIs**: `useSite()`, the helpers of `~/helpers/categories`, the types of `~/interfaces`, and Vue, Nuxt (`<NuxtLink>`, `<NuxtImg>`, `useId()`, `useRuntimeConfig()`) and `useI18n()`. Signatures, summaries and examples of the slot APIs are in [reference/slot-apis.md](reference/slot-apis.md). A theme that keeps to them, to the public hooks and to the slot list may use any license, including a proprietary one ([theme exception](../../LICENSE-EXCEPTION.md)). `themes/starter/` is MIT-0, so a theme made with `npm run theme:new` can take any license (replace its `LICENSE`; a theme kept in this repository also gets an entry in [REUSE.toml](../../REUSE.toml) with its license, and OFL-1.1 for its fonts); a theme that copies `themes/bogota/` or core code is AGPL-3.0. Fonts and images keep their own licenses ([THIRD-PARTY.md](../../THIRD-PARTY.md)).
+A slot may call or import only the **slot APIs**: `useSite()`, `useCategories()`, `categoryColor` from `~/helpers/categories`, the types of `~/interfaces`, and Vue, Nuxt (`<NuxtLink>`, `<NuxtImg>`, `useId()`, `useRuntimeConfig()`) and `useI18n()`. Signatures, summaries and examples of the slot APIs are in [reference/slot-apis.md](reference/slot-apis.md). A theme that keeps to them, to the public hooks and to the slot list may use any license, including a proprietary one ([theme exception](../../LICENSE-EXCEPTION.md)). `themes/starter/` is MIT-0, so a theme made with `npm run theme:new` can take any license (replace its `LICENSE`; a theme kept in this repository also gets an entry in [REUSE.toml](../../REUSE.toml) with its license, and OFL-1.1 for its fonts); a theme that copies `themes/bogota/` or core code is AGPL-3.0. Fonts and images keep their own licenses ([THIRD-PARTY.md](../../THIRD-PARTY.md)).
 
 ### Slot API types now admit `null` (#558)
 
@@ -312,7 +312,7 @@ The 25 KB gzip CSS limit and the two font families are `theme:check` static budg
 
 ## 10. Checklist
 
-- [ ] `id` equals the folder name, `"contract": 1`, `$schema` is `../theme.schema.json`
+- [ ] `id` equals the folder name, `"contract": 2`, `$schema` is `../theme.schema.json`
 - [ ] Classes and attributes of the theme carry its id; nothing left from `bogota-*` if you copied Bogotá
 - [ ] `NUXT_PUBLIC_THEME=<id> npm run dev` starts, and `/_theme` looks right in every mode
 - [ ] `npm run theme:check -- <id>` shows `ok` (a font warning is acceptable when the PR explains it)
@@ -325,5 +325,59 @@ The 25 KB gzip CSS limit and the two font families are `theme:check` static budg
 
 ## Upgrade notes
 
-- **Category slugs are strings (0.y, before contract 2).** `BlogFilters.category` and `ReadingPath.category` (slot APIs) and the `category` prop of the blog sidebar and reading path are `string`, no longer `Category`, because categories come from the CMS (ADR 0016). A slot that passes `path.category` or `filters.category` to `categoryColor`, or that indexes a `Record<Category, …>` with them, must accept a `string`. Contract 2 removes the `Category` enum, `CATEGORIES` and `CATEGORY_INFO` and changes `isCategory` and `categoryColor` to take the list from `useCategories()`.
+### Contract 1 to 2: the core knows no category (ADR 0016)
+
+Contract 2 ships in `feat(theme)!` (0.y, so it raises `y`). The core no longer carries the five categories of one site: a category is a `slug` and a `name` that come from the CMS, so the slot APIs are data. A theme that declares `"contract": 1` fails the build and `theme:check` with `declares contract 1, this build implements contract 2`.
+
+What to do:
+
+1. Set `"contract": 2` in `theme.json`.
+2. Stop importing what was removed (the table). Nothing in the core replaces the constants, because the list is the CMS's.
+3. If you ship `slots/ThemeIllustration.vue`, type `category` as `string`, take the color from the new `color` prop, and render nothing (or a neutral picture) for a slug you have no art for.
+4. Keep theme messages keyed by slug (`theme.illustration.<slug>`, `theme.guide.note.<slug>`) if you want them; the core reads them with `te()` and skips a slug that has none.
+5. Re-run `npm run theme:check` and look at `/_theme`: it now shows six neutral categories (two featured), so the sixth wraps to `--category-1`.
+
+| Removed or changed | Use instead |
+| --- | --- |
+| `Category` enum | `string`: any slug of the CMS |
+| `CATEGORIES`, `categoryOrder` | `useCategories().categories` (the CMS order), `.listed` for those with articles |
+| `CATEGORY_INFO`, `CategoryInfo` (`pillar`) | `CategoryEntry.featured`; the guide numbers the featured ones |
+| `isCategory(value)` | `useCategories().has(slug)` |
+| `categoryColor(category)` | `categoryColor(categories, slug)`, or `useCategories().colorOf(slug)`: the rank by `order` then `slug`, modulo five; `var(--ink-muted)` for an unknown slug |
+| `CategoryCount` | `CategoryEntry` (adds `description`, `order`, `featured`) |
+| `ThemeIllustration` prop `category: Category` | `category: string` and the new optional `color: string` (the same color as the category's tag) |
+| `PostCardProps.category`, `FieldGuideTopic.category`, `StrapiTopic.category` | `string` |
+
+Before and after, a bird per slug (the bogota slot):
+
+```vue
+<!-- contract 1 -->
+<script setup lang="ts">
+import { Category } from '~/interfaces'
+import { categoryColor } from '~/helpers/categories'
+const props = defineProps<{ category: Category, size?: number }>()
+const color = computed(() => categoryColor(props.category))
+</script>
+<template>
+  <svg :style="{ color }">
+    <path v-if="category === Category.Privacy" d="..." />
+  </svg>
+</template>
+
+<!-- contract 2 -->
+<script setup lang="ts">
+const BIRDS = ['privacidad', 'diy']
+const props = withDefaults(defineProps<{ category: string, color?: string, size?: number }>(), { color: 'var(--ink-muted)', size: 200 })
+const hasBird = computed(() => BIRDS.includes(props.category))
+</script>
+<template>
+  <svg v-if="hasBird" :style="{ color: props.color }">
+    <path v-if="category === 'privacidad'" d="..." />
+  </svg>
+</template>
+```
+
+The `starter` theme needed only the version bump, because it ships no illustration. The `bogota` theme keeps BogDev's birds as theme messages and art keyed by BogDev's slugs, and draws nothing for any other slug. The role descriptions of `category-1` to `category-5` say the roles are taken by rank. The hooks file moved to contract 2 with no change to a hook.
+
+- **Category slugs are strings (0.y, contract 2 item 1).** `BlogFilters.category` and `ReadingPath.category` (slot APIs) and the `category` prop of the blog sidebar and reading path are `string`, no longer `Category`, because categories come from the CMS (ADR 0016). A slot that passes `path.category` or `filters.category` to `categoryColor`, or that indexes a `Record<Category, …>` with them, must accept a `string`.
 - **The core lists the categories of the CMS (0.y, ADR 0016).** Menus, filters, the footer, the search palette, the feeds list and the home topic guide show the categories with published articles, named by the CMS and colored by their position in its list (`--category-1` to `--category-5`, repeating after the fifth, neutral `--ink-muted` for an unknown slug). The `myc-tag-<slug>` classes are gone: `.myc-tag-dot` takes its color from `--tag-color`, which the tag sets inline. A theme that styled a tag by BogDev's slug sets `--tag-color` or `.myc-tag-dot` instead. `myc.categories.*`, `myc.categoryShort.*` and `home.guide.topics.*` are removed from the core messages; the guide takes each topic's name and description from the CMS.

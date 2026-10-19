@@ -12,7 +12,8 @@ const SCANNED = ['app', 'server', 'modules']
 const STRICT = process.argv.includes('--strict')
 // `file:name` → reason. A reason is mandatory: an entry without one is reported
 const EXEMPT = new Map([
-  ['modules/theme/specimen/fixtures.ts:POSTS', 'built with the `post()` builder that ARTICLE also uses and with the `Category` enum, which a shared file may not import at runtime; a literal copy would duplicate the post shape'],
+  ['modules/theme/specimen/fixtures.ts:POSTS', 'built with the `post()` builder that ARTICLE also uses; a literal copy would duplicate the post shape'],
+  ['modules/theme/specimen/fixtures.ts:CATEGORIES_SAMPLE', 'the specimen\'s sample data, shared by its page and its sections; fixtures.ts holds all of it next to the posts that use these slugs'],
   ['modules/theme/specimen/fixtures.ts:FEATURED_POST', 'the first of POSTS (see above)'],
 ])
 

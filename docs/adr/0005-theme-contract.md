@@ -161,6 +161,8 @@ A theme's own classes, inside its slots, use its id as prefix (`bogota-`). The v
 
 **Amendment (2026-10-18, #462):** [ADR-0016](0016-categories-from-the-cms.md) removes the five hard-coded categories and their helpers from the slot APIs, which is `contract: 2`. The sentence above about the core having five categories no longer holds once it is accepted.
 
+**Amendment (2026-10-18, #462, ADR-0016 accepted):** contract 2 is implemented (`CONTRACT_VERSION = 2`, `"contract": 2` in every installed theme, the schema and the reference). The #324 sentence that the core "has five categories" no longer holds: the core knows no category, and the slot APIs are data (`useCategories()`, `categoryColor(categories, slug)`, `ThemeIllustration` with `category: string` and `color`). The migration note is in `docs/themes/creating-a-theme.md`, Upgrade notes.
+
 **Amendment (2026-10-08, #416): the core prefix is `myc`, and `micelio` where a name is seen outside the code.** `bd` was BogDev's prefix, and the core carries no site. Every `bd` name of the core is renamed before the first theme package is published (#313), one to one and with no other change. The short prefix, from *mycelium*, is for names that repeat in every file and every page. The full name is for the few that a visitor, an operator or the privacy page sees, as the code already does with `#micelio/…`, `MICELIO_*`, `micelio-search` and `X-Micelio-Client-IP`.
 
 | Surface | Before | After | Count today |

@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import type { StrapiBlock, StrapiContact, StrapiOpenSource, StrapiPrinciples, StrapiProfile, StrapiProjects, StrapiTopics } from '~/interfaces'
+import type { CategoryEntry, StrapiBlock, StrapiContact, StrapiOpenSource, StrapiPrinciples, StrapiProfile, StrapiProjects, StrapiTopics } from '~/interfaces'
 import { aboutBlocks } from '../../e2e/fixtures/about.mjs'
 import StrapiBlocksRenderer from '~/components/strapi/BlocksRenderer.vue'
 import StrapiProfileBlock from '~/components/strapi/ProfileBlock.vue'
@@ -10,6 +10,7 @@ import StrapiPrinciplesBlock from '~/components/strapi/PrinciplesBlock.vue'
 import StrapiOpenSourceBlock from '~/components/strapi/OpenSourceBlock.vue'
 import StrapiContactBlock from '~/components/strapi/ContactBlock.vue'
 import { createMarkdownRenderer, renderBlocks } from '~/helpers/markdown'
+import { categoriesSettled, serveCategories } from './categoriesFixture'
 
 const blocks = aboutBlocks('en') as StrapiBlock[]
 
@@ -49,11 +50,19 @@ describe('StrapiProfileBlock', () => {
   })
 })
 
+function listed(slugs: string[], featured: string[]): CategoryEntry[] {
+  return slugs.map((slug, index) => ({ id: index + 1, slug, name: slug, description: null, order: index + 1, featured: featured.includes(slug), count: 1 }))
+}
+
 describe('StrapiTopicsBlock', () => {
+  // The order, the pillars and the colors of the topics come from the CMS list, so the fixture's topics need one
+  beforeEach(() => serveCategories(listed(['privacidad', 'diy', 'ia', 'software', 'linux'], ['privacidad', 'diy'])))
+
   it('puts the two pillars first and labels the rest by number', async () => {
     const topics = block<StrapiTopics>('about.topics')
     const shuffled = { ...topics, topics: [...topics.topics!].reverse() }
     const wrapper = await mountSuspended(StrapiTopicsBlock, { props: { block: shuffled } })
+    await vi.waitFor(() => expect(wrapper.findAll('.myc-topic-pillar')).toHaveLength(2))
     const cards = wrapper.findAll('.myc-topic')
     expect(cards.map(card => card.get('.myc-topic-title').text())).toEqual([
       'Privacy', 'Do it yourself', 'Artificial intelligence', 'Software development', 'Linux and open source',
@@ -62,6 +71,31 @@ describe('StrapiTopicsBlock', () => {
     expect(cards[0]!.classes()).toContain('myc-topic-pillar')
     expect(cards[0]!.get('.myc-topic-bird').text()).toBe('Masked flowerpiercer · Diglossa cyanea')
     expect(wrapper.get('.myc-topic-footnote').text()).toContain('Hands-on tutorials')
+  })
+
+  it('renders topics of any category slug: the CMS list sets the order, the pillars and the colors, and the theme art is skipped for a slug it does not know', async () => {
+    serveCategories(listed(['garden', 'kitchen', 'shed'], ['kitchen']))
+    const topics = block<StrapiTopics>('about.topics')
+    const custom: StrapiTopics = {
+      ...topics,
+      topics: [
+        { id: 1, category: 'shed', title: 'The shed' },
+        { id: 2, category: 'attic', title: 'The attic, not in the list' },
+        { id: 3, category: 'kitchen', title: 'The kitchen' },
+        { id: 4, category: 'garden', title: 'The garden' },
+      ],
+    }
+    const wrapper = await mountSuspended(StrapiTopicsBlock, { props: { block: custom } })
+    await vi.waitFor(() => expect(wrapper.findAll('.myc-topic-pillar')).toHaveLength(1))
+    await categoriesSettled()
+    const cards = wrapper.findAll('.myc-topic')
+    expect(cards.map(card => card.get('.myc-topic-title').text())).toEqual(['The kitchen', 'The garden', 'The shed', 'The attic, not in the list'])
+    expect(cards.map(card => card.get('.myc-topic-label').text())).toEqual(['Pillar 01', '01', '03', '04'])
+    expect(cards.map(card => card.get('.myc-tag').attributes('style'))).toEqual([
+      expect.stringContaining('var(--category-2)'), expect.stringContaining('var(--category-1)'), expect.stringContaining('var(--category-3)'), expect.stringContaining('var(--ink-muted)'),
+    ])
+    // No bird and no caption for slugs the theme has no message for
+    expect(wrapper.find('.myc-topic-bird').exists()).toBe(false)
   })
 })
 

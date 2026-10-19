@@ -52,7 +52,7 @@ export const ROLE_PURPOSES = {
   'info': 'Informative state.',
   'info-soft': 'Background of an informative message.',
   ...Object.fromEntries([1, 2, 3, 4, 5].flatMap(n => [
-    [`category-${n}`, `Color of category ${n}: categories take the roles in order (\`categoryColor()\`).`],
+    [`category-${n}`, `Color of category ${n}: a category takes a role by its rank in the CMS list, modulo five (\`categoryColor()\`, ADR 0016).`],
     [`category-${n}-soft`, `Tinted background behind category ${n} text.`],
   ])),
   'code-ink': 'Code text.',

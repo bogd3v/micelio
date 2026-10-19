@@ -2,7 +2,7 @@
 
 # Hooks
 
-Public styling hooks of contract v1, from `app/theme/hooks.json`. A theme's `theme.css` and slot CSS may select only these `myc-*` classes and core `data-*` attributes; every other one is internal and can change in any release. Adding a hook stays in contract v1; removing or renaming one is a contract change. A state is a class or attribute the hook takes.
+Public styling hooks of contract v2, from `app/theme/hooks.json`. A theme's `theme.css` and slot CSS may select only these `myc-*` classes and core `data-*` attributes; every other one is internal and can change in any release. Adding a hook stays in contract v2; removing or renaming one is a contract change. A state is a class or attribute the hook takes.
 
 ## Attributes
 

@@ -2,11 +2,10 @@
 // `npm run theme:reference` writes it; `npm run lint:reference` (part of `npm run lint`) fails when a file is out of date.
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { CONTRACT_VERSION } from '../modules/theme/contract'
 import { CONTRAST_RULES } from '../modules/theme/contrast'
 import type { ContrastRule, LayoutRegion } from '../modules/theme/types'
 import { DEFAULT_LAYOUT, SLOT_SPECS } from '../modules/theme/data'
-import { LAYOUT_REGIONS, SLOT_NAMES } from '../modules/theme/constants'
+import { CONTRACT_VERSION, LAYOUT_REGIONS, SLOT_NAMES } from '../modules/theme/constants'
 import { REGION_VARIANTS, VARIANT_DESCRIPTIONS } from '../modules/theme/layout/variants'
 import { OPTIONAL_ROLES, REQUIRED_ROLES, ROLE_PURPOSES, TYPE_FAMILIES, TYPE_STEPS } from '../modules/theme/roles.mjs'
 import type { RoleGroup } from '../modules/theme/roles.mjs'

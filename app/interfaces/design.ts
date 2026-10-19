@@ -1,17 +1,4 @@
 /**
- * The five categories a post can belong to. Each value is the category's slug in the CMS.
- *
- * @public
- */
-export enum Category {
-  Privacy = 'privacidad',
-  Diy = 'diy',
-  Ai = 'ia',
-  Software = 'software',
-  Linux = 'linux',
-}
-
-/**
  * The visual style of a `MycButton`: primary, secondary, accent, or plain text.
  *
  * @public
@@ -43,36 +30,20 @@ export interface CodeLine {
 }
 
 /**
- * The editorial data of a category, from `CATEGORY_INFO`.
- *
- * @public
- */
-export interface CategoryInfo {
-  /** The home page field guide pillar (1 or 2) of the two categories that have one; null for the others. */
-  pillar: 1 | 2 | null
-}
-
-/**
- * A category with the number of posts in it, as the categories API returns it.
- *
- * @public
- */
-export interface CategoryCount {
-  id: number
-  slug: string | null
-  name: string
-  /** Number of posts in the category. */
-  count: number
-}
-
-/**
- * A category of the CMS as `GET /api/categories` and `useCategories()` serve it (ADR 0016).
+ * A category of the CMS as `GET /api/categories` and `useCategories()` serve it, in the requested locale (ADR 0016).
  *
  * @remarks
- * Not part of the theme contract yet: contract 2 replaces `CategoryCount` with it.
+ * The core knows no category: a slug is any string a site defines. `categoryColor(categories, slug)` gives its color role.
+ *
+ * @public
  */
-export interface CategoryEntry extends CategoryCount {
+export interface CategoryEntry {
+  id: number
   slug: string
+  /** The localized name; the slug when the language has none. */
+  name: string
+  /** Number of published posts in the category. */
+  count: number
   /** The localized description; null when the editor wrote none. */
   description: string | null
   /** The editor's position, non-localized; null when none was set. */
@@ -124,7 +95,8 @@ export interface PostCardProps {
   excerpt?: string
   /** A text fragment around the search match, shown with the match highlighted instead of the excerpt. */
   snippet?: string
-  category?: Category
+  /** The slug of the post's category; the card shows its name and color. */
+  category?: string
   /** The formatted date shown on the card. */
   date?: string
   /** The machine-readable date for the `datetime` attribute of the `<time>` element. */
@@ -274,7 +246,8 @@ export interface ContourSet {
  * @public
  */
 export interface FieldGuideTopic {
-  category: Category
+  /** The category slug. */
+  category: string
   count: number
 }
 

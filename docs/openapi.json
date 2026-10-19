@@ -8853,13 +8853,7 @@
           },
           "category": {
             "type": "string",
-            "enum": [
-              "privacidad",
-              "diy",
-              "ia",
-              "software",
-              "linux"
-            ]
+            "pattern": "^[a-z0-9-]{1,64}$"
           },
           "title": {
             "type": "string"
@@ -8877,7 +8871,7 @@
           "title"
         ],
         "additionalProperties": false,
-        "description": "A topic card and the category that sets its colour."
+        "description": "A topic card and the slug of the category that sets its colour."
       },
       "SubscribeResponse": {
         "type": "object",

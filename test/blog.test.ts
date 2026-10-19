@@ -1,12 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { BLOG_PAGE_SIZE, LOG_PAGE_SIZE, blogPageSize, blogLocation, blogPath, blogQuery, groupPostsByMonth, hasActiveFilters, isBlogRouteValid, legacyBlogRedirect, paginationItems, parseBlogRoute, parseSort, searchTerm } from '../app/helpers/blog'
 import type { PostListItem } from '../app/interfaces/strapi-post'
-import { Category } from '../app/interfaces/design'
 
 describe('parseBlogRoute', () => {
   it('reads the filter and the page from the path and the rest from the query', () => {
-    expect(parseBlogRoute({ category: 'Linux', page: '3' }, { search: '  vue  ' })).toEqual({
-      category: Category.Linux,
+    expect(parseBlogRoute({ category: 'Garden', page: '3' }, { search: '  vue  ' })).toEqual({
+      category: 'garden',
       tag: undefined,
       search: 'vue',
       page: 3,
@@ -28,8 +27,8 @@ describe('parseBlogRoute', () => {
   })
 
   it('keeps one filter: the category wins over the tag', () => {
-    const filters = parseBlogRoute({ category: 'linux', tag: 'vue' }, {})
-    expect(filters.category).toBe(Category.Linux)
+    const filters = parseBlogRoute({ category: 'garden', tag: 'vue' }, {})
+    expect(filters.category).toBe('garden')
     expect(filters.tag).toBeUndefined()
   })
 
@@ -48,7 +47,7 @@ describe('parseBlogRoute', () => {
 describe('blogQuery', () => {
   it('keeps only search, view, sort and content', () => {
     expect(blogQuery({ page: 1 })).toEqual({})
-    expect(blogQuery({ category: Category.Ai, tag: 'RAG', search: 'llm', page: 2, sort: 'oldest', content: true })).toEqual({
+    expect(blogQuery({ category: 'orchard', tag: 'RAG', search: 'llm', page: 2, sort: 'oldest', content: true })).toEqual({
       search: 'llm',
       sort: 'oldest',
       content: '1',
@@ -60,20 +59,20 @@ describe('blogPath', () => {
   it('builds the path of each filter and page', () => {
     expect(blogPath({ page: 1 })).toBe('/blog')
     expect(blogPath({ page: 2 })).toBe('/blog/page/2')
-    expect(blogPath({ category: Category.Ai, page: 1 })).toBe('/blog/category/ia')
-    expect(blogPath({ category: Category.Ai, page: 3 })).toBe('/blog/category/ia/page/3')
+    expect(blogPath({ category: 'orchard', page: 1 })).toBe('/blog/category/orchard')
+    expect(blogPath({ category: 'orchard', page: 3 })).toBe('/blog/category/orchard/page/3')
     expect(blogPath({ tag: 'vue', page: 1 })).toBe('/blog/tag/vue')
     expect(blogPath({ tag: 'vue', page: 2 }, '/es/blog')).toBe('/es/blog/tag/vue/page/2')
   })
 
   it('lets the category win and encodes the tag', () => {
-    expect(blogPath({ category: Category.Linux, tag: 'vue', page: 1 })).toBe('/blog/category/linux')
+    expect(blogPath({ category: 'garden', tag: 'vue', page: 1 })).toBe('/blog/category/garden')
     expect(blogPath({ tag: 'c++ y más', page: 1 })).toBe('/blog/tag/c%2B%2B%20y%20m%C3%A1s')
   })
 
   it('builds a location with the query that stays', () => {
-    expect(blogLocation({ category: Category.Linux, page: 2, search: 'ssh', view: 'log' }, '/es/blog')).toEqual({
-      path: '/es/blog/category/linux/page/2',
+    expect(blogLocation({ category: 'garden', page: 2, search: 'ssh', view: 'log' }, '/es/blog')).toEqual({
+      path: '/es/blog/category/garden/page/2',
       query: { search: 'ssh', view: 'log' },
     })
   })
@@ -82,7 +81,7 @@ describe('blogPath', () => {
 describe('isBlogRouteValid', () => {
   it('accepts a category of any slug shape and a page above the first', () => {
     expect(isBlogRouteValid({})).toBe(true)
-    expect(isBlogRouteValid({ category: 'Linux', page: '2' })).toBe(true)
+    expect(isBlogRouteValid({ category: 'Garden', page: '2' })).toBe(true)
     expect(isBlogRouteValid({ category: 'garden' })).toBe(true)
     expect(isBlogRouteValid({ tag: 'anything', page: '10' })).toBe(true)
   })
@@ -95,65 +94,72 @@ describe('isBlogRouteValid', () => {
   })
 })
 
+// The CMS list of the site: only these slugs are categories, anything else in the query is a tag
+const KNOWN = new Set(['garden', 'kitchen', 'orchard'])
+
+function redirect(pathname: string, search: string): string | null {
+  return legacyBlogRedirect(pathname, search, slug => KNOWN.has(slug))
+}
+
 describe('legacyBlogRedirect', () => {
   it('moves category, tag and page to the path in both languages', () => {
-    expect(legacyBlogRedirect('/blog', '?category=linux')).toBe('/blog/category/linux')
-    expect(legacyBlogRedirect('/es/blog', 'category=Linux&page=2')).toBe('/es/blog/category/linux/page/2')
-    expect(legacyBlogRedirect('/blog', 'tag=vue')).toBe('/blog/tag/vue')
-    expect(legacyBlogRedirect('/blog/', 'page=3')).toBe('/blog/page/3')
+    expect(redirect('/blog', '?category=garden')).toBe('/blog/category/garden')
+    expect(redirect('/es/blog', 'category=Garden&page=2')).toBe('/es/blog/category/garden/page/2')
+    expect(redirect('/blog', 'tag=vue')).toBe('/blog/tag/vue')
+    expect(redirect('/blog/', 'page=3')).toBe('/blog/page/3')
   })
 
   it('keeps sort, view, search and any other parameter', () => {
-    expect(legacyBlogRedirect('/blog', 'sort=oldest&category=linux&view=log&search=ssh&utm=x'))
-      .toBe('/blog/category/linux?sort=oldest&view=log&search=ssh&utm=x')
+    expect(redirect('/blog', 'sort=oldest&category=garden&view=log&search=ssh&utm=x'))
+      .toBe('/blog/category/garden?sort=oldest&view=log&search=ssh&utm=x')
   })
 
   it('lets the category win when both filters are present', () => {
-    expect(legacyBlogRedirect('/blog', 'tag=vue&category=software&page=2')).toBe('/blog/category/software/page/2')
+    expect(redirect('/blog', 'tag=vue&category=kitchen&page=2')).toBe('/blog/category/kitchen/page/2')
   })
 
   it('falls back to the tag when the category is unknown and drops empty values', () => {
-    expect(legacyBlogRedirect('/blog', 'category=nope&tag=vue')).toBe('/blog/tag/vue')
-    expect(legacyBlogRedirect('/blog', 'category=nope&page=1')).toBe('/blog')
-    expect(legacyBlogRedirect('/blog', 'page=abc&search=x')).toBe('/blog?search=x')
+    expect(redirect('/blog', 'category=nope&tag=vue')).toBe('/blog/tag/vue')
+    expect(redirect('/blog', 'category=nope&page=1')).toBe('/blog')
+    expect(redirect('/blog', 'page=abc&search=x')).toBe('/blog?search=x')
   })
 
   it('redirects the first page path to the unpaged one', () => {
-    expect(legacyBlogRedirect('/blog/page/1', '')).toBe('/blog')
-    expect(legacyBlogRedirect('/es/blog/category/ia/page/1', 'sort=oldest')).toBe('/es/blog/category/ia?sort=oldest')
+    expect(redirect('/blog/page/1', '')).toBe('/blog')
+    expect(redirect('/es/blog/category/orchard/page/1', 'sort=oldest')).toBe('/es/blog/category/orchard?sort=oldest')
   })
 
   it('lowercases the category and unpads the page', () => {
-    expect(legacyBlogRedirect('/blog/category/Linux', '')).toBe('/blog/category/linux')
-    expect(legacyBlogRedirect('/es/blog/category/Linux/page/02', 'view=log')).toBe('/es/blog/category/linux/page/2?view=log')
-    expect(legacyBlogRedirect('/blog/page/02', '')).toBe('/blog/page/2')
-    expect(legacyBlogRedirect('/blog/tag/vue/page/002', '')).toBe('/blog/tag/vue/page/2')
+    expect(redirect('/blog/category/Garden', '')).toBe('/blog/category/garden')
+    expect(redirect('/es/blog/category/Garden/page/02', 'view=log')).toBe('/es/blog/category/garden/page/2?view=log')
+    expect(redirect('/blog/page/02', '')).toBe('/blog/page/2')
+    expect(redirect('/blog/tag/vue/page/002', '')).toBe('/blog/tag/vue/page/2')
   })
 
   it('leaves a tag that is named like a category alone and keeps the 404 cases out', () => {
-    expect(legacyBlogRedirect('/blog/tag/linux', '')).toBeNull()
-    expect(legacyBlogRedirect('/blog/category/cooking', '')).toBeNull()
-    expect(legacyBlogRedirect('/blog/page/0', '')).toBeNull()
+    expect(redirect('/blog/tag/garden', '')).toBeNull()
+    expect(redirect('/blog/category/cooking', '')).toBeNull()
+    expect(redirect('/blog/page/0', '')).toBeNull()
   })
 
   it('leaves a tag with an encoded character alone, whether the path arrives encoded or decoded', () => {
     for (const path of ['/blog/tag/a%20b', '/blog/tag/a b', '/blog/tag/caf%C3%A9', '/blog/tag/café', '/blog/tag/caf%c3%a9', '/es/blog/tag/a%20b/page/2', '/blog/tag/a%2Fb']) {
-      expect(legacyBlogRedirect(path, ''), path).toBeNull()
+      expect(redirect(path, ''), path).toBeNull()
     }
   })
 
   it('leaves a tag with a malformed escape to the route instead of redirecting', () => {
-    expect(legacyBlogRedirect('/blog/tag/%E0%A4%A', '')).toBeNull()
+    expect(redirect('/blog/tag/%E0%A4%A', '')).toBeNull()
   })
 
   it('leaves other URLs alone', () => {
-    expect(legacyBlogRedirect('/blog', '')).toBeNull()
-    expect(legacyBlogRedirect('/blog', 'sort=oldest')).toBeNull()
-    expect(legacyBlogRedirect('/blog/some-post', 'page=2')).toBeNull()
-    expect(legacyBlogRedirect('/about', 'category=linux')).toBeNull()
-    expect(legacyBlogRedirect('/blog/page/2', '')).toBeNull()
-    expect(legacyBlogRedirect('/blog/category/linux/page/2', 'sort=oldest')).toBeNull()
-    expect(legacyBlogRedirect('/fr/blog', 'category=linux')).toBeNull()
+    expect(redirect('/blog', '')).toBeNull()
+    expect(redirect('/blog', 'sort=oldest')).toBeNull()
+    expect(redirect('/blog/some-post', 'page=2')).toBeNull()
+    expect(redirect('/about', 'category=garden')).toBeNull()
+    expect(redirect('/blog/page/2', '')).toBeNull()
+    expect(redirect('/blog/category/garden/page/2', 'sort=oldest')).toBeNull()
+    expect(redirect('/fr/blog', 'category=garden')).toBeNull()
   })
 })
 
