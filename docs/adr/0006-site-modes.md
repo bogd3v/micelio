@@ -93,7 +93,9 @@ The same element works in every mode, so a heavy island is written once.
 
 **Where the build runs.** In a GitHub Actions workflow of the site's repository, with a read-only Strapi token that can fetch published content only (`docs/security.md`). Strapi must therefore be reachable from the runner, with its admin and every write route closed to the internet. A site that keeps Strapi fully private builds on a machine that can reach it and deploys with the host's CLI; the guide documents both.
 
-**Rebuild on publish.** Strapi webhooks cannot shape the body GitHub's `repository_dispatch` requires (`event_type`), so micelio-cms (#75) gets a lifecycle hook on publish, unpublish and delete of `article`, `page` and `site-setting` that calls a configured `REBUILD_HOOK_URL` with an optional bearer token, debounced 60 s. The workflow uses a `concurrency` group that cancels a running build when a newer one starts.
+**Rebuild on publish.** Strapi webhooks cannot shape the body GitHub's `repository_dispatch` requires (`event_type`), so micelio-cms (#75) gets a lifecycle hook on publish, unpublish and delete of `article` and `page`, and on every save of `site-setting`, `about` and `category`, which have no draft state, that calls a configured `REBUILD_HOOK_URL` with an optional bearer token, debounced 60 s. The workflow uses a `concurrency` group that cancels a running build when a newer one starts.
+
+Amendment (2026-10, #462 item 6): About and categories join the triggers. The static build lists the categories from the CMS ([ADR-0016](0016-categories-from-the-cms.md)), so a category change alone must rebuild. Tags and authors do not: the static build renders no page for them, only labels inside pages.
 
 **Reference host: Cloudflare Pages.** The domains already use Cloudflare DNS, it serves the `_headers` file the security headers need, and it applies brotli. Netlify reads the same `_headers` format. GitHub Pages is not a reference: it cannot send security headers.
 

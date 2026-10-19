@@ -37,7 +37,7 @@ A package is the theme folder of ADR-0005 section 4, packed by `npm run theme:pa
 
 ### 2. Compatibility
 
-The contract gets minor versions (#308). `contract` in `theme.json` takes `1` (meaning `1.0`) or `"1.N"`; `modules/theme/contract.ts` exports the version the core implements. The validator computes the minimum minor a theme uses (slots, layout variants, optional roles, hooks) and fails when the theme declares less, so the declaration cannot lie. The build fails when a theme needs a newer minor or another major than the core implements. What each minor added is listed in `docs/themes/contract-changelog.md`; adding to v1 now means bumping the minor. ADR-0005 section 6 still decides what is a major.
+The contract gets minor versions (#308). `contract` in `theme.json` takes `1` (meaning `1.0`) or `"1.N"` for contract 1, and `2` (meaning `2.0`) or `"2.N"` for contract 2 ([ADR-0016](0016-categories-from-the-cms.md)); `modules/theme/contract.ts` exports the version the core implements. The validator computes the minimum minor a theme uses (slots, layout variants, optional roles, hooks) and fails when the theme declares less, so the declaration cannot lie. The build fails when a theme needs a newer minor or another major than the core implements. What each minor added is listed in `docs/themes/contract-changelog.md`; adding to v1 now means bumping the minor. ADR-0005 section 6 still decides what is a major.
 
 ### 3. Where packages live
 
