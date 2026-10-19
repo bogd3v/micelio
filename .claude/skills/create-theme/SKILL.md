@@ -24,6 +24,7 @@ Use it to make a theme or change how one looks. Not for core components, pages o
 7. `NUXT_PUBLIC_THEME=<id> npm run dev`, open `/_theme` and review every mode. The core styles every layout variant from your roles; your own rules for variants you do not use are optional, but `/_theme` shows all of them and CI captures them, so look.
 8. `npm run lint` (if it fails with `Cannot find module '.nuxt/eslint.config.mjs'`, run `npx nuxt prepare` once).
 9. Baselines come from the CI artifact, never from local screenshots (`docs/theme-testing.md`).
+10. Run the manual accessibility check (`docs/themes/accessibility-checklist.md`) for a new theme and for a version that changes CSS, markup or slots, and record the result as that file says.
 
 ## Rules a theme cannot break
 
@@ -70,4 +71,5 @@ Apply the `suggestion` only for that mode and re-run: fixing one surface can cha
 - Guide: `docs/themes/creating-a-theme.md`; reference: `docs/themes/reference/` (do not edit; `npm run theme:reference`)
 - Contract and decisions: `docs/adr/0005-theme-contract.md`
 - Visual regression and baselines: `docs/theme-testing.md`
+- Manual accessibility check for admission: `docs/themes/accessibility-checklist.md`
 - Template: `themes/starter/`; smallest valid theme: `test/fixtures/themes/minimal`
