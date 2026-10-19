@@ -642,6 +642,7 @@ const server = createServer(async (req, res) => {
           privacyContactEmail: null,
           privacyUpdatedAt: null,
           supportHandle: null,
+          securityContact: null,
           homePage: null,
           modules: { id: 1, ...Object.fromEntries(['newsletter', 'comments', 'accounts', 'drafts', 'fediverse', 'search', 'support'].map(module => [module, true])) },
         },
@@ -672,6 +673,7 @@ const server = createServer(async (req, res) => {
         privacyContactEmail: 'gx_alejandro@hotmail.com',
         privacyUpdatedAt: '2026-10-01T17:00:00.000Z',
         supportHandle: 'ale9420',
+        securityContact: 'mailto:security@example.com',
         // MOCK_MODULES_OFF=1 runs e2e/modules-off.spec.ts against a site with every module off
         // MOCK_HOME_PAGE=1 makes the showcase page the home page of each locale (e2e/home-page.spec.ts); unset, there is no homePage
         homePage: process.env.MOCK_HOME_PAGE === '1' ? { id: 1, documentId: 'page-showcase', slug: locale === 'es' ? 'muestra' : 'showcase' } : null,

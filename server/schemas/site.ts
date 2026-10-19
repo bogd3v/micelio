@@ -1,9 +1,11 @@
 import { z } from 'zod'
 import { isValidEmail } from '~/helpers/auth'
+import { validSecurityContact } from '~/helpers/securityTxt'
 import { Locale } from '~/interfaces/locale'
 import { PAGE_SLUG_PATTERN } from '~/constants/pages'
 import { DISPLAY_FONTS, SITE_MODULES, SOCIAL_NETWORKS } from '~/interfaces/site'
-import type { SiteModules, SiteSettings } from '~/interfaces/site'
+import type { SiteModules } from '~/interfaces/site'
+import type { ParsedSiteSettings } from '../lib/types'
 
 // Every field is optional and drops itself when invalid, so one bad value falls back alone (docs/api.md)
 function lenient<T extends z.ZodType>(schema: T) {
@@ -76,13 +78,14 @@ export const siteSettingsSchema = z.object({
   privacyContactEmail: lenient(email),
   privacyUpdatedAt: lenient(z.iso.datetime({ offset: true })),
   supportHandle: lenient(text.regex(/^[A-Za-z0-9_-]+$/)),
+  securityContact: lenient(z.string().transform(value => validSecurityContact(value)).pipe(z.string())),
   modules: lenient(modules),
   theme: lenient(theme),
   homePage: lenient(homePage.nullish().transform(value => value ?? undefined)),
 })
 
 /** The site settings from a CMS body, or null when the body is not an object. */
-export function parseSiteSettings(data: unknown): SiteSettings | null {
+export function parseSiteSettings(data: unknown): ParsedSiteSettings | null {
   const parsed = siteSettingsSchema.safeParse(data)
   return parsed.success ? parsed.data : null
 }

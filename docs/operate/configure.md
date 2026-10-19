@@ -26,6 +26,12 @@ Start from `.env.example` in the repository. Nuxt reads only the `NUXT_*` names 
 | `NUXT_PUBLIC_SOURCE_URL` | No | the upstream repository | Runtime | Link to the source code in the footer, required by the AGPL when you run a modified copy ([ADR 0007](../adr/0007-license.md)). A value that is not an `http(s)` URL falls back to the upstream repository. |
 | `NUXT_MEDIA_URL` | No | empty | Runtime | Host of the Strapi uploads when they are served from another host, added to the images Content Security Policy. Empty: only the site and Strapi load. |
 
+## Security contact
+
+The site serves `/.well-known/security.txt` ([RFC 9116](https://www.rfc-editor.org/rfc/rfc9116)) only when the owner fills in **Security contact** in the CMS site settings: a `mailto:` or `https://` URI. It is public, so use a mailbox or page meant for reports, never a private address. With no contact the route answers 404; the engine never invents one.
+
+`Expires` is the render date plus 180 days. A dynamic site renders it on each request (cached for an hour), so it never expires. A static or landing site writes it at build time: if the site is not rebuilt for 180 days, the file it serves is expired, and RFC 9116 tells readers to ignore an expired file. Rebuild at least twice a year, or schedule a periodic rebuild. A build reads the contact once: after you change it in the CMS, rebuild.
+
 ## Client address and proxy
 
 | Variable | Required | Default | Read | What it does |

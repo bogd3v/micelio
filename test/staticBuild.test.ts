@@ -54,6 +54,12 @@ describe('static routes', () => {
     expect(staticFileRoutes()).toEqual(['/feed.xml', '/es/feed.xml', '/sitemap.xml', '/robots.txt'])
   })
 
+  it('lists security.txt only when the site has a security contact', () => {
+    expect(staticFileRoutes(true, {}, true)).toContain('/.well-known/security.txt')
+    expect(staticFileRoutes(false, {}, true)).toEqual(['/sitemap.xml', '/robots.txt', '/.well-known/security.txt'])
+    expect(staticFileRoutes()).not.toContain('/.well-known/security.txt')
+  })
+
   it('prefixes the category page of the non-default locale', () => {
     expect(categoryRoute('garden', Locale.English)).toBe('/blog/category/garden')
     expect(categoryRoute('garden', Locale.SpanishColombia)).toBe('/es/blog/category/garden')

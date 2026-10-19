@@ -130,6 +130,12 @@ test('the sitemap lists no blog URL and robots.txt points at it', async ({ reque
   expect(await (await request.get('/robots.txt')).text()).toContain('Sitemap:')
 })
 
+test('security.txt is a file when the CMS has a security contact', async ({ request }) => {
+  const response = await request.get('/.well-known/security.txt')
+  expect(response.status()).toBe(200)
+  expect(await response.text()).toContain('Contact: mailto:security@example.com')
+})
+
 test('the 404 page does not offer the blog', async ({ page }) => {
   const response = await page.goto('/blog')
   expect(response?.status()).toBe(404)

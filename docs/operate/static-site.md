@@ -95,6 +95,10 @@ Rules:
 
 Try it with `npm run test:landing`: it generates a landing against the mock Strapi (`MOCK_HOME_PAGE=1 MOCK_NO_ARTICLES=1`), runs `e2e/landing/`, then generates it again with `NUXT_PUBLIC_THEME=starter` and checks the same page renders. `LANDING_MOCK_PORT`, `LANDING_APP_PORT`, `LANDING_SKIP_GENERATE=1` and `LANDING_SKIP_THEME=1` change its ports and steps.
 
+## Security contact
+
+If the CMS site settings have a security contact, the build writes `.output/public/.well-known/security.txt`; without one it writes nothing and the host answers 404. The file's `Expires` is the build date plus 180 days: rebuild before then or it is served expired (see [configure](configure.md#security-contact)). Check that your host serves dotfolders (`.well-known/`); Cloudflare Pages and Netlify do.
+
 ## Headers, 404 and analytics
 
 - Security headers and CSP come from the `_headers` file the build writes into `.output/public`. Cloudflare Pages and Netlify read it. A host without `_headers` support gets the CSP from the `<meta>` fallback only (no framing, HSTS or other header-only protections); configure the same headers at the host.

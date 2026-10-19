@@ -67,6 +67,7 @@ beforeEach(() => {
   mock.failures.broken = ''
   mock.theme.value = null
   mock.homePage.value = null
+  mock.securityContact.value = null
   for (const module of Object.keys(mock.modules) as (keyof typeof mock.modules)[]) mock.modules[module] = true
   umami.requests.length = 0
 })
@@ -709,6 +710,38 @@ describe('/robots.txt', () => {
     expect(body).toContain('User-agent: *')
     expect(body).toContain('Allow: /')
     expect(body).toContain(`Sitemap: ${SITE_URL}/sitemap.xml`)
+  })
+})
+
+describe('/.well-known/security.txt', () => {
+  it('answers 404 with an empty body when the site has no security contact', async () => {
+    const response = await fetch('/.well-known/security.txt')
+    expect(response.status).toBe(404)
+    expect(await response.text()).toBe('')
+  })
+
+  it('answers 404 for a contact that is not a mailto: or https: URI', async () => {
+    mock.securityContact.value = 'http://example.com/security'
+    expect((await fetch('/.well-known/security.txt')).status).toBe(404)
+  })
+
+  it('serves the contact, the expiry, the languages and the canonical URL', async () => {
+    mock.securityContact.value = 'mailto:security@example.com'
+    const response = await fetch('/.well-known/security.txt')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8')
+    const body = await response.text()
+    expect(body).toContain('Contact: mailto:security@example.com\n')
+    expect(body).toMatch(/^Expires: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/m)
+    expect(body).toContain('Preferred-Languages: en, es\n')
+    expect(body).toContain(`Canonical: ${SITE_URL}/.well-known/security.txt\n`)
+    const expires = Date.parse(/^Expires: (.+)$/m.exec(body)![1]!)
+    expect(Math.round((expires - Date.now()) / 86_400_000)).toBe(180)
+  })
+
+  it('answers 404 when the CMS fails, never a default contact', async () => {
+    mock.failures.site = true
+    expect((await fetch('/.well-known/security.txt')).status).toBe(404)
   })
 })
 

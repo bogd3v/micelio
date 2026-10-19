@@ -1,3 +1,4 @@
+import { SECURITY_TXT_PATH } from '../constants/security'
 import { SLUG_PATTERN } from '../constants/slug'
 import { feedPath } from './feed'
 import { localePrefixSource } from './localePrefix'
@@ -37,10 +38,11 @@ export function noScriptsViolations(html: string): string[] {
  * Routes of the files that are not pages: the feeds, the sitemap and robots.txt, in every locale. A build with no blog has no feeds.
  *
  * @param categories - The category slugs of each locale (`categorySlugsByLocale`); each gets a feed in its locale. None for a site without categories.
+ * @param hasSecurityContact - Whether the site settings have a security contact; without one the route answers 404, which would fail the build, so `security.txt` is not listed.
  */
-export function staticFileRoutes(blogEnabled = true, categories: Partial<Record<Locale, readonly string[]>> = {}): string[] {
+export function staticFileRoutes(blogEnabled = true, categories: Partial<Record<Locale, readonly string[]>> = {}, hasSecurityContact = false): string[] {
   const feeds = blogEnabled ? Object.values(Locale).flatMap(locale => [feedPath(locale), ...(categories[locale] ?? []).map(category => feedPath(locale, category))]) : []
-  return [...feeds, '/sitemap.xml', '/robots.txt']
+  return [...feeds, '/sitemap.xml', '/robots.txt', ...(hasSecurityContact ? [SECURITY_TXT_PATH] : [])]
 }
 
 // Not localizedPath(): this file is imported by a build module, where the ~ alias does not resolve in type checking

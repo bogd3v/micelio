@@ -9,7 +9,7 @@ const CATEGORY_FEED_PARAMETER = {
   schema: { type: 'string', pattern: '^[a-z-]+\\.xml$' },
 } as const
 
-/** Operations outside `/api`: the RSS feeds, the sitemap and `robots.txt`. They answer text, not JSON. */
+/** Operations outside `/api`: the RSS feeds, the sitemap, `robots.txt` and `security.txt`. They answer text, not JSON. */
 export const SITE_FILE_ROUTES: RouteEntry[] = [
   {
     file: 'server/routes/feed.xml.ts',
@@ -70,5 +70,16 @@ export const SITE_FILE_ROUTES: RouteEntry[] = [
     tag: FEED_TAG,
     response: { status: 200, contentType: 'text/plain', description: 'Plain text in the robots exclusion format.' },
     errors: [],
+  },
+  {
+    file: 'server/routes/.well-known/security.txt.ts',
+    method: 'get',
+    path: '/.well-known/security.txt',
+    summary: 'Security contact',
+    description: 'The security contact of the site (RFC 9116): `Contact` from the site settings, `Expires` 180 days after the render, `Preferred-Languages` and `Canonical`. Answers `notFound` with an empty body when the settings have no valid contact, and never invents one.',
+    tag: FEED_TAG,
+    response: { status: 200, contentType: 'text/plain', description: 'Plain text in the `security.txt` format.', cache: 'public, max-age=3600' },
+    errors: ['notFound'],
+    errorDetails: { notFound: 'The body is empty, not a problem document: a client of `security.txt` expects a plain 404.' },
   },
 ]

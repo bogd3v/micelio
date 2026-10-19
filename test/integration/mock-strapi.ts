@@ -63,6 +63,8 @@ interface MockStrapiResult {
   theme: { value: unknown }
   /** The `homePage` relation site-setting answers with, by locale (null when never set) */
   homePage: { value: { en?: string, es?: string } | null }
+  /** The `securityContact` site-setting answers with (null when never set) */
+  securityContact: { value: string | null }
   users: Array<{ id: number, username: string, email: string, password: string, confirmed: boolean, role: string }>
   /** Extra keys the CMS answers carry, to prove they do not reach the client; a test that sets one clears it */
   leaks: { commentsEnvelope: Record<string, unknown>, draftRow: Record<string, unknown> }
@@ -531,6 +533,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
   const theme = { value: null as unknown }
   const leaks: MockStrapiResult['leaks'] = { commentsEnvelope: {}, draftRow: {} }
   const homePage: MockStrapiResult['homePage'] = { value: null }
+  const securityContact: MockStrapiResult['securityContact'] = { value: null }
   const authMock = createAuthMock({ frontendUrl: 'https://bogdev.test' })
   const draftsMock = createDraftsMock({ userFromAuth: authMock.userFromAuth, publishedArticles: articles })
 
@@ -767,6 +770,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
           privacyContactEmail: null,
           privacyUpdatedAt: null,
           supportHandle: 'micelio',
+          securityContact: securityContact.value,
           modules: { id: 1, ...modules },
           theme: theme.value,
           homePage: homePage.value?.[locale as 'en' | 'es'] ? { id: 1, documentId: 'home-page', slug: homePage.value[locale as 'en' | 'es'] } : null,
@@ -960,7 +964,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address()
       const port = typeof address === 'object' && address !== null ? address.port : 0
-      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, users: authMock.users, leaks, articles })
+      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, securityContact, users: authMock.users, leaks, articles })
     })
   })
 }
