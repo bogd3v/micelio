@@ -1,8 +1,8 @@
 # The frontend's server routes against a real CMS: the demo image of micelio-cms (Postgres included), started by
 # `npm run test:contract` (scripts/contract/run.mjs). Docs: docs/architecture/contract-tests.md.
 #
-# It runs on every push to main and on the pull requests that touch what the routes ask the CMS for. It does not gate `deploy`: the
-# check is marked as required in the branch protection by the maintainer once it has proven stable. micelio-cms calls it with
+# It runs on every push to main and on every pull request to main, so it can be a required check of `main` (a required check from a
+# workflow that is skipped by a path filter never reports and blocks the pull request). It does not gate `deploy`. micelio-cms calls it with
 # `uses: bogd3v/micelio/.github/workflows/contract.yml@<ref>` and the image it built (`cms_image`), to run the same suite against a CMS
 # built from one of its pull requests.
 name: Contract tests
@@ -11,17 +11,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    paths:
-      - server/**
-      - app/interfaces/**
-      - app/schemas/**
-      - e2e/mock-strapi.mjs
-      - e2e/contract/**
-      - playwright.contract.config.ts
-      - scripts/contract/**
-      - scripts/ci/mirror-image.sh
-      - package-lock.json
-      - .github/workflows/contract.yml
+    branches: [main]
   workflow_dispatch:
     inputs:
       cms_image:

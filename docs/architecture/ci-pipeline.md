@@ -17,7 +17,7 @@ The server, DNS and reverse proxy (Traefik on Dokploy) are managed with Terrafor
 
 ## Code scanning
 
-`.github/workflows/codeql.yml` runs CodeQL (`javascript-typescript`, `build-mode: none`) on pull requests to `main`, on pushes to `main`, weekly and by hand. It is apart from `deploy.yml`, so it never slows the required checks, and it is not a required check of `main`. Results appear in code scanning; an alert is fixed in its own pull request or dismissed with its reason, which is also recorded in [the Scorecard record](../security/scorecard.md) or in [the accepted risks](../security.md#accepted-risks).
+`.github/workflows/codeql.yml` runs CodeQL (`javascript-typescript`, `build-mode: none`) on pull requests to `main`, on pushes to `main`, weekly and by hand. It is apart from `deploy.yml`, so it never slows `deploy`, and its `analyze` check is a required check of `main`. Results appear in code scanning; an alert is fixed in its own pull request or dismissed with its reason, which is also recorded in [the Scorecard record](../security/scorecard.md) or in [the accepted risks](../security.md#accepted-risks).
 
 ## The Node base image
 

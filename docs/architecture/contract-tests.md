@@ -52,11 +52,11 @@ CONTRACT_CMS_URL=http://127.0.0.1:1337 CONTRACT_STRAPI_TOKEN=... npm run test:co
 
 Other variables: `CONTRACT_POSTGRES_IMAGE` (default `postgres:18-alpine`), `CONTRACT_CMS_PORT` (1347) and `CONTRACT_APP_PORT` (3270).
 
-Run it when a change touches what the server routes ask the CMS for (`server/`, `app/interfaces/`), the mock, or the suite, and before releasing. The workflow `.github/workflows/contract.yml` does it on every push to `main` and on the pull requests that touch those paths.
+Run it when a change touches what the server routes ask the CMS for (`server/`, `app/interfaces/`), the mock, or the suite, and before releasing. The workflow `.github/workflows/contract.yml` does it on every push to `main` and on every pull request to `main`, with no path filter, because a required check that a filter skips never reports.
 
 ## In CI
 
 - The workflow starts Postgres from a copy in GHCR (`scripts/ci/mirror-image.sh`), for the reason in [the CI pipeline](ci-pipeline.md#the-node-base-image).
-- It does not gate `deploy`. The maintainer marks the `Contract Tests` check as required in the branch protection once it has proven stable.
+- It does not gate `deploy`. `Contract Tests` is a required check of `main` (standard, section 15).
 - `micelio-cms` runs the same suite against an image built from one of its pull requests by calling the workflow: `uses: bogd3v/micelio/.github/workflows/contract.yml@<ref>` with `cms_image` set to the image it built. The caller's token needs `packages: write` for the Postgres copy; without it the run pulls Postgres from Docker Hub.
 - The image tag follows `latest` until `micelio-cms` publishes `edge` (cms#114); then the default changes in one line, in `scripts/contract/run.mjs` and the workflow.
