@@ -15,6 +15,13 @@
     transition: all 0.2s var(--ease-emphasized);
 }
 
+/* On a phone the privacy notice spans the width above the tab bar: the link rides over it so it never sits underneath */
+@media (max-width: 767.98px) {
+    .myc-back-to-top {
+        bottom: calc(var(--myc-tabbar-h) + var(--myc-notice-h, 0px) + 1.5rem);
+    }
+}
+
 /* Static builds have no JS: the link is hidden, and only a scroll timeline shows it past 200px */
 .myc-back-to-top[data-static] {
     opacity: 0;
