@@ -89,12 +89,12 @@ export async function open(page: Page, entry: ThemePage): Promise<void> {
   await openPage(page, entry)
 }
 
-/** Signs the reader in by answering the page's `GET /api/auth/me`: the `__Host-` session cookie cannot be seeded over http (see e2e/native-ui/dialogs.spec.ts). */
+/**
+ * Signs the reader in for the server render: the `__Host-` session cookie cannot be seeded over http (Chromium refuses it),
+ * so the cookie travels as a request header of the page. The account menu then renders on the server, as for a signed-in visitor.
+ */
 export async function signInAsReader(page: Page): Promise<void> {
-  await page.route('**/api/auth/me', route => route.fulfill({
-    json: { user: { username: testUsers.reader.username, email: testUsers.reader.email, role: 'reader', createdAt: '2026-09-29T15:00:00.000Z' } },
-    headers: { 'cache-control': 'private, no-store' },
-  }))
+  await page.setExtraHTTPHeaders({ cookie: '__Host-micelio_session=mock-jwt-101' })
 }
 
 export function accountToggle(page: Page): Locator {
