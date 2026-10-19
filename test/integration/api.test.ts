@@ -1921,7 +1921,7 @@ describe('Umami', () => {
         'true-client-ip': '9.9.9.9',
         'x-client-ip': '5.5.5.5',
         'forwarded': 'for=4.4.4.4',
-        'cookie': 'bd_session=secret-session',
+        'cookie': '__Host-micelio_session=secret-session',
         'authorization': 'Bearer secret',
       },
       body: '{}',
@@ -2024,84 +2024,15 @@ describe('/api/auth', () => {
     expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=;.*Max-Age=0/)
   })
 
-  describe('session cookie rename', () => {
-    function legacyCookie(response: Response): string {
-      return response.headers.getSetCookie().find(cookie => cookie.startsWith('bd_session=')) ?? ''
+  it('treats the cookies of earlier releases as no session, and does not touch them on logout', async () => {
+    for (const cookie of ['micelio_session=mock-jwt-101', 'bd_session=mock-jwt-101']) {
+      const me = await fetch('/api/auth/me', { headers: { cookie } })
+      expect(await me.json()).toEqual({ user: null })
+      expect(me.headers.getSetCookie()).toEqual([])
+      const out = await fetch('/api/auth/logout', { method: 'POST', headers: { origin, cookie } })
+      expect(out.status).toBe(200)
+      expect(out.headers.getSetCookie().filter(value => /^(micelio|bd)_session=/.test(value))).toEqual([])
     }
-
-    function previousCookie(response: Response): string {
-      return response.headers.getSetCookie().find(cookie => cookie.startsWith('micelio_session=')) ?? ''
-    }
-
-    it('authenticates a request that carries only micelio_session, re-issues it as __Host-micelio_session and clears the old cookie', async () => {
-      const cookie = (await signIn(testUsers.reader.username, testUsers.reader.password)).replace('__Host-micelio_session=', 'micelio_session=')
-      const response = await fetch('/api/auth/me', { headers: { cookie } })
-      expect(response.headers.get('cache-control')).toBe('private, no-store')
-      expect(await response.json()).toMatchObject({ user: { username: 'lectora' } })
-      const issued = sessionCookie(response)
-      expect(issued).toMatch(/^__Host-micelio_session=mock-jwt-\d+;/)
-      for (const attribute of ['Max-Age=604800', 'Path=/', 'HttpOnly', 'Secure', 'SameSite=Lax']) expect(issued).toContain(attribute)
-      expect(issued).not.toMatch(/Domain=/i)
-      expect(previousCookie(response)).toMatch(/^micelio_session=;.*Max-Age=0/)
-    })
-
-    it('does not leave the previous cookie in place when both it and bd_session are sent', async () => {
-      const response = await fetch('/api/auth/me', { headers: { cookie: 'micelio_session=mock-jwt-101; bd_session=mock-jwt-101' } })
-      expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=mock-jwt-101;/)
-      expect(previousCookie(response)).toMatch(/^micelio_session=;.*Max-Age=0/)
-      expect(legacyCookie(response)).toMatch(/^bd_session=;.*Max-Age=0/)
-    })
-
-    it('clears the current cookie and the two it replaced on logout', async () => {
-      const response = await fetch('/api/auth/logout', { method: 'POST', headers: { origin, cookie: '__Host-micelio_session=mock-jwt-101; micelio_session=mock-jwt-101; bd_session=mock-jwt-101' } })
-      expect(response.status).toBe(200)
-      expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=;.*Max-Age=0/)
-      expect(previousCookie(response)).toMatch(/^micelio_session=;.*Max-Age=0/)
-      expect(legacyCookie(response)).toMatch(/^bd_session=;.*Max-Age=0/)
-    })
-
-    it('authenticates a request that carries only bd_session, re-issues it as __Host-micelio_session and clears the old cookie', async () => {
-      const cookie = (await signIn(testUsers.reader.username, testUsers.reader.password)).replace('__Host-micelio_session=', 'bd_session=')
-      const response = await fetch('/api/auth/me', { headers: { cookie } })
-      expect(response.headers.get('cache-control')).toBe('private, no-store')
-      expect(await response.json()).toMatchObject({ user: { username: 'lectora' } })
-      const issued = sessionCookie(response)
-      expect(issued).toMatch(/^__Host-micelio_session=mock-jwt-\d+;/)
-      expect(issued).toContain('Max-Age=604800')
-      expect(issued).toContain('Path=/')
-      expect(issued).toContain('HttpOnly')
-      expect(issued).toContain('Secure')
-      expect(issued).toContain('SameSite=Lax')
-      expect(legacyCookie(response)).toMatch(/^bd_session=;.*Max-Age=0/)
-    })
-
-    it('leaves a request with __Host-micelio_session alone, even when bd_session is also there', async () => {
-      const current = await signIn(testUsers.reader.username, testUsers.reader.password)
-      const response = await fetch('/api/auth/me', { headers: { cookie: `${current}; bd_session=mock-jwt-999` } })
-      expect(await response.json()).toMatchObject({ user: { username: 'lectora' } })
-      expect(sessionCookie(response)).toBe('')
-      expect(legacyCookie(response)).toBe('')
-    })
-
-    it('does not bring the old cookie back when the route clears the session', async () => {
-      const response = await fetch('/api/auth/logout', { method: 'POST', headers: { origin, cookie: 'bd_session=mock-jwt-101' } })
-      expect(response.status).toBe(200)
-      expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=;.*Max-Age=0/)
-      expect(legacyCookie(response)).toMatch(/^bd_session=;.*Max-Age=0/)
-      expect(response.headers.getSetCookie().filter(cookie => cookie.startsWith('__Host-micelio_session='))).toHaveLength(1)
-    })
-
-    it('clears both cookies on logout when both are sent', async () => {
-      const response = await fetch('/api/auth/logout', { method: 'POST', headers: { origin, cookie: '__Host-micelio_session=mock-jwt-101; bd_session=mock-jwt-101' } })
-      expect(response.status).toBe(200)
-      expect(sessionCookie(response)).toMatch(/^__Host-micelio_session=;.*Max-Age=0/)
-      expect(legacyCookie(response)).toMatch(/^bd_session=;.*Max-Age=0/)
-    })
-
-    it('does not re-issue on routes that do not read the session', async () => {
-      const response = await fetch('/api/categories?locale=en', { headers: { cookie: 'bd_session=mock-jwt-101' } })
-      expect(response.headers.getSetCookie()).toEqual([])
-    })
   })
 
   it('refuses a password that holds the username, the email address or the site name, before the CMS', async () => {

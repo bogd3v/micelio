@@ -38,8 +38,8 @@ Pull and start the new frontend image, with the same environment. The frontend h
 
 ## Changes you may notice
 
-- **The session cookie is `__Host-micelio_session`.** It was `micelio_session` before, and `bd_session` before that. Nobody is signed out: for one release line the frontend still reads the older names and moves the session to the new one. If you filter or log cookies by name (a reverse proxy, a WAF rule, an analytics exclusion), use the new name. The `__Host-` prefix needs the site to be served over HTTPS, as the cookie already did.
 - **Old browser preferences are not carried over.** A visitor whose browser still holds `bd-theme`, `devbog-theme` or `devbog-color-mode` (or `bd-read-articles` or `bd-privacy-notice`) and has not visited since 0.1.0 starts with the default mode, an empty read history and the privacy notice shown again. Nothing on the server changes.
+- **The session cookie is `__Host-micelio_session`.** It was `micelio_session` before, and `bd_session` before that. The frontend no longer reads the older names (the fallback lasted one release line), so anyone still holding an old cookie signs in again. If you filter or log cookies by name (a reverse proxy, a WAF rule, an analytics exclusion), use the new name. The `__Host-` prefix needs the site to be served over HTTPS, as the cookie already did.
 
 ## Image tags
 

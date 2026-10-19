@@ -54,8 +54,8 @@ test.describe('menu sheet', () => {
   })
 })
 
-test('the account menu opens and closes without animations', async ({ page, baseURL }) => {
-  await signInAsReader(page, baseURL)
+test('the account menu opens and closes without animations', async ({ page }) => {
+  await signInAsReader(page)
   await open(page, { name: 'blog', path: '/blog' })
   const toggle = accountToggle(page)
   await toggle.click()
