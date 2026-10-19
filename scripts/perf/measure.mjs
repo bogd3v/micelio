@@ -11,6 +11,7 @@ import { chromium } from '@playwright/test'
 import { createJiti } from 'jiti'
 import lighthouse from 'lighthouse'
 import { generateStatic } from '../lib/static-generate.mjs'
+import { SWD_MODEL, swdMilligramsPerView } from './carbon.mjs'
 import { checkFouc } from './fouc.mjs'
 import { collectSamples } from './lighthouse-samples.mjs'
 import { budgetKeysOf, ISLANDS_PREFIX, islandBudgetErrors, islandElement, islandMetrics, islandProblems, isStrayRequest } from './islands.mjs'
@@ -85,6 +86,11 @@ function themeDisplayFamily() {
   if (!existsSync(file)) return undefined
   const stack = JSON.parse(readFileSync(file, 'utf8')).type?.families?.display ?? ''
   return stack.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase()
+}
+
+/** Bytes as kilobytes with one decimal */
+function kb(value) {
+  return Math.round(value / 102.4) / 10
 }
 
 function parseArgs(list) {
@@ -209,15 +215,25 @@ async function measureWeight(url) {
     for (const [, fontPath] of css.texts[i].matchAll(FONT_URL)) fonts.add(new URL(fontPath, cssUrl).href)
   })
   const font = await total(fonts)
-  const kb = value => Math.round(value / 102.4) / 10
   // Inline scripts (the theme init) run before first paint too, so they count towards the initial JS; data (JSON, speculation rules) does not run
   const inline = [...page.text.matchAll(/<script\b(?![^>]*\ssrc=)(?![^>]*type="(?:application\/(?:ld\+)?json|speculationrules)")[^>]*>([\s\S]*?)<\/script>/g)].map(match => gzipSync(match[1]).length)
   return {
     jsKb: kb(js.sent), cssKb: kb(css.sent), htmlKb: kb(page.sent), fontKb: kb(font.sent),
     jsGzipKb: kb(js.gzip), cssGzipKb: kb(css.gzip), htmlGzipKb: kb(page.gzip),
     initialJsGzKb: kb(js.gzip + inline.reduce((sum, size) => sum + size, 0)),
+    // Bytes as sent of what the weight columns count (HTML, declared scripts, stylesheets, fonts), for the carbon estimate
+    sentBytes: page.sent + js.sent + css.sent + font.sent,
     declaredScripts: [...scripts].map(src => new URL(src).pathname),
     html: page.text, stylesheets: new Map([...stylesheets].map((href, i) => [href, css.texts[i]])),
+  }
+}
+
+/** Body bytes the browser received for a finished request; 0 when it cannot tell */
+async function imageBodyBytes(request) {
+  try {
+    return (await request.sizes()).responseBodySize
+  } catch {
+    return 0 // The page closed before the size was read; the image is left out of the estimate
   }
 }
 
@@ -229,6 +245,7 @@ async function observeLoad(browser, url, declaredScripts) {
   const thirdParty = []
   const stray = []
   let loaded = false
+  const images = []
   page.once('load', () => {
     loaded = true
   })
@@ -241,9 +258,14 @@ async function observeLoad(browser, url, declaredScripts) {
     // ADR 0006, section 6: no island byte in the initial load, no Pagefind before the search is used
     if (isStrayRequest({ pathname, beforeLoad: !loaded, isStatic, declaredScripts })) stray.push(pathname)
   })
+  // Images are counted by the body bytes the browser received; without scrolling, that is eager images, lazy ones near the viewport and CSS background images
+  context.on('requestfinished', (request) => {
+    if (request.resourceType() === 'image') images.push(imageBodyBytes(request))
+  })
   await page.goto(url, { waitUntil: 'networkidle' })
+  const imageBytes = (await Promise.all(images)).reduce((sum, size) => sum + Math.max(0, size), 0)
   await context.close()
-  return { thirdPartyRequests: thirdParty.length, thirdPartyUrls: thirdParty, strayRequests: stray.length, strayUrls: stray }
+  return { imageKb: kb(imageBytes), imageBytes, thirdPartyRequests: thirdParty.length, thirdPartyUrls: thirdParty, strayRequests: stray.length, strayUrls: stray }
 }
 
 /** Resolves once no request has been in flight for `quietMs`; a load state that was already reached would resolve at once */
@@ -375,7 +397,7 @@ function compare(page, metrics, limits, level) {
 }
 
 function summaryTable(report) {
-  const columns = ['jsKb', 'jsGzipKb', ...(isStatic ? ['initialJsGzKb'] : []), 'strayRequests', 'cssKb', 'htmlKb', 'fontKb', 'thirdPartyRequests', 'lcpMs', 'tbtMs', 'cls', 'performance', 'accessibility']
+  const columns = ['jsKb', 'jsGzipKb', ...(isStatic ? ['initialJsGzKb'] : []), 'strayRequests', 'cssKb', 'htmlKb', 'fontKb', 'imageKb', 'co2Mg', 'thirdPartyRequests', 'lcpMs', 'tbtMs', 'cls', 'performance', 'accessibility']
   const lines = [`| Page | ${columns.join(' | ')} |`, `| --- | ${columns.map(() => '---:').join(' | ')} |`]
   for (const row of report) lines.push(`| ${row.page} | ${columns.map(c => row.metrics[c]).join(' | ')} |`)
   return lines.join('\n')
@@ -408,9 +430,12 @@ try {
   for (const { name, path } of pages) {
     const url = new URL(path, base).href
     await fetch(url)
-    const { html, stylesheets, declaredScripts, ...weight } = await measureWeight(url)
+    const { html, stylesheets, declaredScripts, sentBytes, ...weight } = await measureWeight(url)
     const lighthouseMetrics = await measureLighthouse(url)
     const metrics = { ...weight, ...(await observeLoad(browser, url, declaredScripts)), ...lighthouseMetrics }
+    // Reported only, never budgeted (docs/performance.md): the weight columns plus the images the browser loads without scrolling (eager images, and lazy ones near the viewport)
+    metrics.co2Mg = swdMilligramsPerView(sentBytes + metrics.imageBytes)
+    delete metrics.imageBytes
     if (!lighthouseMetrics) problems.push({ level: 'error', page: name, noPrefix: true, message: `Lighthouse returned no data for ${url} after ${runs * 2} attempts; this is a measurement failure, not a budget breach` })
     problems.push(...compare(name, metrics, limitsFor(name, 'error'), 'error'), ...compare(name, metrics, limitsFor(name, 'warn'), 'warn'))
     for (const message of checkFouc(html, url, stylesheets)) problems.push({ level: 'error', page: name, message })
@@ -422,6 +447,7 @@ try {
     if (!isStatic) delete metrics.initialJsGzKb
     const { thirdPartyUrls, strayUrls, ...printable } = metrics
     console.log(`${name.padEnd(10)} ${JSON.stringify(printable)}`)
+    console.log(`           ${SWD_MODEL}: ${metrics.co2Mg} mg CO2e per page view, estimate, reported only [${label}]`)
     if (thirdPartyUrls.length) console.log(`           third party: ${thirdPartyUrls.join(', ')}`)
     if (strayUrls?.length) console.log(`           not in the initial load: ${strayUrls.join(', ')}`)
     // The search island, once, on the first page: the same palette is on every page (e2e/static/search.spec.ts checks that)
@@ -454,7 +480,7 @@ try {
   })
   if (lines.length) console.log('\n' + lines.join('\n'))
   if (process.env.GITHUB_STEP_SUMMARY) {
-    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Performance (${label})\n\n${exception ? `Recorded exception: ${exception.reason}\n\n` : ''}${summaryTable(report)}\n\n${Object.entries(islands).map(([id, value]) => `Island ${id}: \`${JSON.stringify(value)}\`\n\n`).join('')}${lines.map(l => `- ${l}`).join('\n')}\n`)
+    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Performance (${label})\n\n${exception ? `Recorded exception: ${exception.reason}\n\n` : ''}${summaryTable(report)}\n\n_co2Mg: milligrams of CO2e per page view, ${SWD_MODEL} estimate from the bytes sent (HTML, scripts the HTML declares, stylesheets, fonts counted as fontKb counts them: every font a stylesheet references, not what is downloaded; images the browser loads without scrolling: eager images, and lazy ones near the viewport). Left out: scripts the HTML does not declare and chunks loaded by dynamic import, _payload.json and fetch/XHR, island files loaded after load, API and media calls made later. For comparing runs and themes, not an absolute figure; not budgeted._\n\n${Object.entries(islands).map(([id, value]) => `Island ${id}: \`${JSON.stringify(value)}\`\n\n`).join('')}${lines.map(l => `- ${l}`).join('\n')}\n`)
   }
   if (args.check && problems.some(p => p.level === 'error')) process.exitCode = 1
 } finally {

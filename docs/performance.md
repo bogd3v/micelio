@@ -12,6 +12,8 @@ Performance is a product guarantee in Micelio: every page has a budget, and CI f
 | `jsGzipKb`, `cssGzipKb`, `htmlGzipKb` | The same files gzipped by the script: what the page would weigh with compression. Reported, not budgeted |
 | `thirdPartyRequests` | Requests a browser makes to origins other than the site and `firstPartyOrigins` until the network is idle |
 | `strayRequests` | Requests, in every mode, that only an island in use may make (ADR 0006, section 6): any file of `/_islands/` the HTML does not declare before the `load` event (a `visible` island may load after it; a heavy island's entry is never declared, see "Islands"), and in static and landing builds any Pagefind file or undeclared script until the network is idle. Limit 0 |
+| `imageKb` | KB of the images the browser loads without scrolling at 412 x 823 (eager images, lazy ones near the viewport, CSS background images), as received. Not part of the weight columns above. Reported, not budgeted |
+| `co2Mg` | Milligrams of CO2e of one page view, estimated from the bytes sent (the weight columns and `imageKb`): see "Carbon estimate". Reported, not budgeted |
 | `lcpMs`, `tbtMs`, `cls`, `performance`, `accessibility` | Lighthouse 13, default mobile config (simulated 4G, 4x CPU slowdown), median of 3 runs |
 
 ```bash
@@ -23,6 +25,47 @@ npm run perf -- --theme <id>      # label the run with the theme the build used 
 ```
 
 `--serve` (included in `npm run perf`) starts the mock and the built server on ports 4310 and 3211 (`PERF_MOCK_PORT`, `PERF_SERVER_PORT` and `PERF_DEBUG_PORT` change them when another run uses them). Pass `--base <url>` without `--serve` to measure a server that is already running. The CI job **Performance Budgets** runs `npm run perf -- --check` on every push and pull request for every installed theme and site mode (next section), and writes the table to the job summary.
+
+For each page the console prints the metrics as one JSON line, then a line `Sustainable Web Design v4: <n> mg CO2e per page view, estimate, reported only`. The job summary has the table with `imageKb` and `co2Mg` and a footnote that defines both.
+
+### Carbon estimate
+
+`co2Mg` is an estimate of the CO2e of one page view. `scripts/perf/carbon.mjs` computes it from the bytes the run already counts, with the Sustainable Web Design model, and it is reported next to the weight. It is **not budgeted**: `--check` ignores it and no limit can fail CI on it. It becomes a budget only after it has a baseline from CI (engineering standard, section 9). Which Web Sustainability Guidelines apply to the engine, and how each one is met or checked, is in [`architecture/sustainability.md`](architecture/sustainability.md).
+
+**Model.** Sustainable Web Design v4, [estimating digital emissions](https://sustainablewebdesign.org/estimating-digital-emissions/) (checked 2026-10-19). The formula per page view, with the green hosting factor at 0, is:
+
+```
+grams of CO2e = GB x 0.300 kWh/GB x 494 g CO2e/kWh x 0.755
+```
+
+| Segment | Operational kWh/GB | Embodied kWh/GB |
+| --- | ---: | ---: |
+| Data centres | 0.055 | 0.012 |
+| Networks | 0.059 | 0.013 |
+| User devices | 0.080 | 0.081 |
+| Total | 0.194 | 0.106 |
+
+- **Grid.** 494 g CO2e/kWh, the world average that the model gives (Ember's data). It is applied to every segment and no green hosting credit is taken, whatever the hosting: the estimate describes the bytes, not a particular data centre.
+- **Visit mix.** The model names three visitor variables (New Visitor Ratio, Return Visitor Ratio, Data Cache Ratio) but the v4 page publishes no values for them. The shares used here are the SWD v3 and CO2.js ones: 0.75 of visits are new and load the page cold; 0.25 are returning visitors who download 2 % of it again (a Data Cache Ratio of 0.98). The mix is 0.75 + 0.25 x 0.02 = 0.755, so the figure of a page view is 0.755 times the figure of a cold load.
+- **Gigabytes** are decimal (1 GB = 1e9 bytes), as CO2.js uses them. The v4 page does not state the convention.
+- **Output** is milligrams of CO2e per page view, rounded to 0.01 mg (`swdMilligramsPerView`). The anchors are in `test/perfCarbon.test.ts`: 148.2 g per GB of a cold load, and 111.891 g per GB of a page view.
+
+**What is counted.** The bytes sent (compressed as sent, as the weight columns count them) of:
+
+- the HTML of the page;
+- the scripts the HTML declares: the entry `<script>` and the `modulepreload` links;
+- the stylesheets;
+- the fonts: every font a stylesheet references, as `fontKb` counts them, not only the preloaded ones;
+- the images the browser loads without scrolling at a 412 x 823 viewport: eager images, lazy images near the viewport and CSS background images.
+
+**What is left out.** Scripts the HTML does not declare and the chunks a dynamic `import()` loads; `_payload.json` and `fetch` or XHR requests; the island files loaded after `load` (the weight of an island is reported separately, see "Islands"); the API and media calls a page makes later; third-party requests (zero by budget, so nothing to count); the hosting, the CDN and the network of the operator; the real grid and device of the visitor.
+
+**How to read it.**
+
+- It is an estimate for comparing runs and themes, not an absolute figure. Compare a theme with another theme, and a run with the same run before a change.
+- The same input gives the same number. The calculation makes no call to an external service and reads no clock.
+- In local runs the image sizes come from the mock Strapi fixtures, so `imageKb` and `co2Mg` describe the mock's pictures, not a real site's.
+- In dynamic mode the perf server sends HTML uncompressed (the assets are precompressed, see History, 2026-10-03), while the proxy of a production site compresses it (see the note after the History table). The HTML part of a dynamic estimate therefore overstates what production sends. The static server compresses like a CDN (`COMPRESS=1`), so compare dynamic with dynamic and static with static.
 
 ### Measuring a real site
 
@@ -238,6 +281,7 @@ Heavy islands (ADR 0006, section 6; Mermaid first) are built by `modules/islands
 | 2026-10-14 | The analytics tracker tag carries `data-exclude-search="true"` (a one-use secret in a page address, security fix). The tag attributes are in the entry bundle. Dynamic article `jsKb` limit 158.9 to 159.0 | The article measures 159.0 KB with the attribute (158.9 without); the home page stays at 146.7 (its limit) and the other pages did not move. Leaving out the hash attribute (`data-exclude-hash`) did not bring it back under 158.9 |
 | 2026-10-14 | Request size limits (security fix, PR from the advisory fork, merge commit `ad9b506`): `isPasswordTooLong` in `app/helpers/auth.ts`, which the entry bundle includes, and the `account.errors.passwordLong` message in both locales. Dynamic home `jsKb` limit 146.7 to 146.8 | CI measured the home page at 146.8 KB on `main` after the merge (bogota, dynamic, default and heaviest font; 146.7 on the commit before). The article is unchanged at 159.0 and the other pages did not move |
 | 2026-10-14 | Dynamic article `jsKb` limit 159 to 159.2 (bogota and starter). PR #526 (it stops returning `content`, so it ships slightly less code) measured 159.1 in CI on two runs of the same commit (bogota, dynamic, default and heaviest font) against 159.0 on `main`; the limit left no margin | The whole `_nuxt` JS of that branch is 18 bytes smaller raw and 3 smaller in gzip than `main`'s, measured locally on the same machine, so the 0.1 KB is the compressed size of a rebuilt chunk, not code. The new limit is the highest measurement (159.1) plus 0.1. Not identified: which chunk moves. Home 146.8 has the same zero margin and is unchanged |
+| 2026-10-19 | Carbon estimate per page view, `co2Mg`, and the `imageKb` it counts (#444): reported only, no limit changed. Local `npm run perf` on production builds against the mock (not CI), mg CO2e per page view, in the order bogota dynamic / starter dynamic / bogota static / starter static. Home: 36.70 / 27.12 / 10.74 / 7.24. Blog: 30.33 / 24.53 / 8.37 / 7.21. Article: 33.22 / 28.05 / 8.74 / 7.62. About: 38.37 / 26.64 / 14.76 / 7.46. Privacy: 28.10 / 23.11 / 8.33 / 7.21. Spanish home, static only: 10.70 (bogota) and 7.23 (starter) | These are local numbers, not CI's, and the estimate is not a budget until CI has a baseline for it (standard, section 9). Dynamic HTML is sent uncompressed by the perf server (see "Carbon estimate"), so its figures are high by the HTML they would not send in production |
 | 2026-10-19 | Categories come from the CMS in the UI (#462, ADR 0016, PR 3): `useCategories()` runs on every page (footer, menu, palette) and the five-category constants leave the lists. Local `npm run perf` on a production build, `main` (cf66316) against the branch | Dynamic `jsKb` home 146.1 → 146.6 (limit 146.8), blog 138.8 → 139.1 (141.3), article 158.4 → 158.8 (159.2), about 141.1 → 141.5 (143), privacy 127.4 → 127.6 (129.6); CSS 20.9 KB unchanged. HTML raw: home 106.3 → 98.2 KB, blog 72.0 → 68.3, article 76.8 → 74.6, about 86.2 → 83.9, privacy 63.4 → 61.2 (fewer topics are rendered; the payload carries the list). No budget raised |
 
 The HTML is rendered per request, so Nitro does not compress it (108.5 KB on the home page here). In production Traefik compresses it, together with Strapi's JSON (bogd3v/bogdev-infra#10): the home page HTML goes from 141.8 KB to 27.7 KB with brotli. This measurement serves the Nitro build directly, so it still reports the uncompressed HTML.
