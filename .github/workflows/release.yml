@@ -86,7 +86,7 @@ jobs:
           UPGRADE_NOTES: ${{ inputs.upgrade_notes }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          contract=$(grep -oP 'CONTRACT_VERSION = \K\d+' modules/theme/contract.ts)
+          contract=$(grep -oP 'CONTRACT_VERSION = \K\d+' modules/theme/constants.ts)
           node_range=$(node -p "require('./package.json').engines.node")
           args=(-f tag_name="$TAG" -f target_commitish="$GITHUB_SHA" -f configuration_file_path=.github/release.yml)
           if [ -n "$PREVIOUS" ]; then args+=(-f previous_tag_name="$PREVIOUS"); fi
