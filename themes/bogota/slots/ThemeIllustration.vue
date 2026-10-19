@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import { Category } from '~/interfaces'
-import { categoryColor } from '~/helpers/categories'
+// BogDev's birds, keyed by the slugs of its categories (ADR 0016, section 8). Any other slug renders nothing: no empty box
+const BIRDS = ['privacidad', 'diy', 'ia', 'software', 'linux']
 
 const props = withDefaults(defineProps<{
-  category: Category
+  category: string
+  /** The category's color role, from the same ranking as its tag; the core always passes it. */
+  color: string
   size?: number
 }>(), {
   size: 200,
 })
 
-const color = computed<string>(() => categoryColor(props.category))
+const hasBird = computed<boolean>(() => BIRDS.includes(props.category))
 const height = computed<number>(() => Math.round(props.size * 0.75))
 </script>
 
 <template>
   <svg
+    v-if="hasBird"
     class="bogota-bird"
     :width="size"
     :height="height"
@@ -26,9 +29,9 @@ const height = computed<number>(() => Math.round(props.size * 0.75))
     stroke-linecap="round"
     aria-hidden="true"
     focusable="false"
-    :style="{ color }"
+    :style="{ color: props.color }"
   >
-    <template v-if="category === Category.Privacy">
+    <template v-if="category === 'privacidad'">
       <path d="M8 100 L152 90 M118 92 L136 78" />
       <path d="M40 70 L58 50 L86 44 L104 48 L112 60 L106 76 L86 88 L60 88 Z" />
       <path d="M86 44 L86 88 M104 48 L86 88" />
@@ -40,7 +43,7 @@ const height = computed<number>(() => Math.round(props.size * 0.75))
       <path d="M44 74 L12 88 L16 97 L60 88" />
       <path d="M80 88 L80 95 M92 86 L94 93" />
     </template>
-    <template v-else-if="category === Category.Diy">
+    <template v-else-if="category === 'diy'">
       <path d="M50 62 L78 54 L104 56 L118 62 L104 68 L78 70 Z M78 54 L78 70 M104 56 L104 68" />
       <path d="M104 56 L114 51 L126 55 L129 62 L118 66 Z" />
       <path d="M129 59 L138 61 L129 63" />
@@ -49,7 +52,7 @@ const height = computed<number>(() => Math.round(props.size * 0.75))
       <path d="M86 69 L68 92 L34 116 L80 80 Z M68 92 L80 80" />
       <path d="M52 60 L12 46 L34 62 L14 80 L52 66" />
     </template>
-    <template v-else-if="category === Category.Ai">
+    <template v-else-if="category === 'ia'">
       <path d="M6 44 L50 47" />
       <path d="M50 47 L54 36 L66 30 L78 34 L80 46 L70 54 L56 54 Z" />
       <path d="M56 54 L66 44 L80 46 M66 44 L70 54 M54 36 L66 44" />
@@ -60,7 +63,7 @@ const height = computed<number>(() => Math.round(props.size * 0.75))
       <path d="M84 50 L96 6 L114 2 L106 24 L100 52 Z M96 6 L100 52 M114 2 L92 38" />
       <path d="M94 58 L136 30 L148 36 L112 66 M136 30 L104 62" />
     </template>
-    <template v-else-if="category === Category.Software">
+    <template v-else-if="category === 'software'">
       <path d="M22 64 L40 48 L70 40 L96 42 L108 32 L122 28 L134 34 L136 44 L124 54 L114 58 L106 80 L86 92 L60 94 L42 86 Z" />
       <path d="M108 32 L114 58 M122 28 L124 54 M96 42 L114 58" />
       <path d="M50 54 L84 50 L102 62 L92 80 L62 84 Z M84 50 L62 84 M102 62 L62 84" />
@@ -70,7 +73,7 @@ const height = computed<number>(() => Math.round(props.size * 0.75))
       <circle cx="124" cy="36" r="1.2" fill="currentColor" stroke="none" />
       <path d="M84 92 L80 114 M96 88 L98 114 M72 114 L88 114 M90 114 L106 114" />
     </template>
-    <template v-else-if="category === Category.Linux">
+    <template v-else-if="category === 'linux'">
       <path d="M40 120 L60 2 M54 40 L32 18 L50 34" />
       <path d="M56 66 L68 52 L90 46 L104 54 L110 66 L100 78 L78 86 L62 82 Z" />
       <path d="M90 46 L96 30 L110 25 L122 31 L125 43 L111 54 L104 54 Z" fill="currentColor" fill-opacity=".9" />

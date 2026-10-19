@@ -4869,7 +4869,7 @@
           {
             "name": "file",
             "in": "path",
-            "description": "The category slug followed by `.xml`, such as `linux.xml`. An unknown category is a 404.",
+            "description": "The category slug followed by `.xml`, such as `garden.xml`. An unknown category is a 404.",
             "required": true,
             "schema": {
               "type": "string",
@@ -5031,7 +5031,7 @@
           {
             "name": "file",
             "in": "path",
-            "description": "The category slug followed by `.xml`, such as `linux.xml`. An unknown category is a 404.",
+            "description": "The category slug followed by `.xml`, such as `garden.xml`. An unknown category is a 404.",
             "required": true,
             "schema": {
               "type": "string",
@@ -8853,13 +8853,7 @@
           },
           "category": {
             "type": "string",
-            "enum": [
-              "privacidad",
-              "diy",
-              "ia",
-              "software",
-              "linux"
-            ]
+            "pattern": "^[a-z0-9-]{1,64}$"
           },
           "title": {
             "type": "string"
@@ -8877,7 +8871,7 @@
           "title"
         ],
         "additionalProperties": false,
-        "description": "A topic card and the category that sets its colour."
+        "description": "A topic card and the slug of the category that sets its colour."
       },
       "SubscribeResponse": {
         "type": "object",

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { layout } from '#micelio/theme'
 import { variants as alternates } from '#micelio/specimen-variants'
-import type { Category, FieldGuideTopic } from '~/interfaces'
-import { CATEGORIES } from '~/constants/categories'
-import { ARTICLE, FEATURED_POST, POSTS } from '../fixtures'
+import type { FieldGuideTopic } from '~/interfaces'
+import { fieldGuideTopics } from '~/helpers/categoryList'
+import { ARTICLE, CATEGORIES_SAMPLE, FEATURED_POST, POSTS } from '../fixtures'
 
 const { t } = useI18n()
 
@@ -50,8 +50,8 @@ function renameIds(frame: HTMLElement, index: number): void {
 
 onMounted(() => copies.value.forEach((frame, index) => renameIds(frame, index)))
 const regions: Array<[string, string]> = Object.entries(layout)
-const counts = Object.fromEntries(CATEGORIES.map((category, index) => [category, index + 1])) as Partial<Record<Category, number>>
-const topics: FieldGuideTopic[] = CATEGORIES.map((category, index) => ({ category, count: index + 1 }))
+const counts: Record<string, number> = Object.fromEntries(CATEGORIES_SAMPLE.map(category => [category.slug, category.count]))
+const topics: FieldGuideTopic[] = fieldGuideTopics(CATEGORIES_SAMPLE, CATEGORIES_SAMPLE.length)
 </script>
 
 <template>

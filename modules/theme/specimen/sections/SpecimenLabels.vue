@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { CATEGORIES } from '~/constants/categories'
-import { AUTHOR, CREDIT } from '../fixtures'
+import { AUTHOR, CATEGORIES_SAMPLE, CREDIT } from '../fixtures'
 
-const { t } = useI18n()
+const { t, tm } = useI18n()
+
+// One picture per slug the active theme ships art for (`theme.illustration.<slug>`), so the slot is covered for any theme; none for a theme with no art
+const illustrated = Object.keys(tm('theme.illustration') as Record<string, unknown>)
 </script>
 
 <template>
@@ -10,10 +12,17 @@ const { t } = useI18n()
     <div>
       <h3 class="myc-specimen-label">{{ t('specimen.labels.categories') }}</h3>
       <div class="myc-specimen-row">
-        <MycCategoryTag v-for="category in CATEGORIES" :key="category" :category="category" />
+        <MycCategoryTag v-for="category in CATEGORIES_SAMPLE" :key="category.slug" :category="category.slug" />
       </div>
       <div class="myc-specimen-row">
-        <MycCategoryTag v-for="category in CATEGORIES" :key="category" :category="category" href="#labels" />
+        <MycCategoryTag v-for="category in CATEGORIES_SAMPLE" :key="category.slug" :category="category.slug" href="#labels" />
+      </div>
+    </div>
+
+    <div v-if="illustrated.length">
+      <h3 class="myc-specimen-label">{{ t('specimen.labels.illustrations') }}</h3>
+      <div class="myc-specimen-row" data-specimen="illustrations">
+        <ThemeIllustration v-for="(slug, index) in illustrated" :key="slug" :category="slug" :color="`var(--category-${(index % 5) + 1})`" :size="120" />
       </div>
     </div>
 

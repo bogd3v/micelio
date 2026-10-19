@@ -120,7 +120,7 @@ describe('checkTheme', () => {
 
   it('stops at the contract when theme.json is invalid', () => {
     const [minimal] = discoverThemes([`${fixtures}/minimal`])
-    const broken = { ...minimal!, manifest: { ...minimal!.manifest, contract: 2 } }
+    const broken = { ...minimal!, manifest: { ...minimal!.manifest, contract: 1 } }
     const report = checkTheme(broken, hooks)
     expect(report.errors.every(issue => issue.kind === 'contract')).toBe(true)
     expect(report.errors).not.toHaveLength(0)

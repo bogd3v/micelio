@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { StrapiTopic, StrapiTopics } from '~/interfaces'
-import { CATEGORIES, CATEGORY_INFO } from '~/constants/categories'
 import { padCount } from '~/helpers/search'
 
 const props = defineProps<{
@@ -10,11 +9,19 @@ const props = defineProps<{
 const { t } = useI18n()
 const alsoWriteId = useId()
 
-const topics = computed<StrapiTopic[]>(() =>
-  [...(props.block.topics ?? [])].sort((a, b) => CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category)),
-)
-const pillars = computed<StrapiTopic[]>(() => topics.value.filter(topic => CATEGORY_INFO[topic.category].pillar))
-const others = computed<StrapiTopic[]>(() => topics.value.filter(topic => !CATEGORY_INFO[topic.category].pillar))
+const { categories } = useCategories()
+
+// The topics follow the order of the CMS list; one whose category the list does not have goes last, in the block's order
+const topics = computed<StrapiTopic[]>(() => {
+  const rank = (slug: string): number => {
+    const index = categories.value.findIndex(category => category.slug === slug)
+    return index === -1 ? categories.value.length : index
+  }
+  return [...(props.block.topics ?? [])].sort((a, b) => rank(a.category) - rank(b.category))
+})
+const isPillar = (topic: StrapiTopic): boolean => Boolean(categories.value.find(category => category.slug === topic.category)?.featured)
+const pillars = computed<StrapiTopic[]>(() => topics.value.filter(isPillar))
+const others = computed<StrapiTopic[]>(() => topics.value.filter(topic => !isPillar(topic)))
 
 // Focusable only where it scrolls (mobile); `display: contents` from 768px leaves nothing to focus
 const othersRef = useTemplateRef<HTMLElement>('othersRef')
@@ -29,10 +36,11 @@ onMounted(measure)
 useResizeObserver(othersRef, measure)
 
 function label(topic: StrapiTopic): string {
-  const pillar = CATEGORY_INFO[topic.category].pillar
-  return pillar
-    ? t('home.guide.pillar', { number: padCount(pillar) })
-    : padCount(CATEGORIES.indexOf(topic.category) + 1)
+  const pillar = pillars.value.indexOf(topic)
+  // The others count on from the pillars, so the numbers run 01, 02, 03 in the order the cards appear
+  return pillar === -1
+    ? padCount(pillars.value.length + others.value.indexOf(topic) + 1)
+    : t('home.guide.pillar', { number: padCount(pillar + 1) })
 }
 </script>
 

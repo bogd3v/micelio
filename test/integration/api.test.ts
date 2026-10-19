@@ -9,7 +9,6 @@ import type { FetchOptions } from 'ofetch'
 import type { RawStrapiArticle } from '~/interfaces/strapi-post'
 import type { Page, PageSection } from '~/interfaces/page'
 import type { StrapiRichText } from '~/interfaces/strapi-blocks'
-import { Category } from '~/interfaces/design'
 import { HASHED_TOKENS, startMockStrapi } from './mock-strapi'
 import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
 import { confirmationToken, resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
@@ -78,11 +77,11 @@ const LOOKUP_PATH = '/api/subscribers/lookup'
 // Nitro caches the category list for ten minutes per locale and a failure is never stored. The server reads the English list while it boots,
 // so these tests use the Spanish one, which nothing has read yet: they must stay before every other test that asks for Spanish categories
 describe('when the CMS cannot list the categories', () => {
-  it('still redirects a legacy filter of a built-in category, falling back to the constant', async () => {
+  it('does not guess a redirect for a legacy filter: without the list a category cannot be told from a tag', async () => {
     mock.failures.categories = true
     const response = await fetch('/es/blog?category=linux', { redirect: 'manual' })
-    expect(response.status).toBe(301)
-    expect(response.headers.get('location')).toBe('/es/blog/category/linux')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('location')).toBeNull()
   })
 
   it('answers 502 for the category list and the category feed, and stores nothing', async () => {
@@ -101,11 +100,11 @@ describe('/api/categories', () => {
   it('returns the categories of the CMS by order, whatever their slugs, and hides those without a slug', async () => {
     const result = await $fetch<Array<{ slug: string | null, name: string, count: number }>>('/api/categories', { query: { locale: 'en' } })
     expect(result.map(category => [category.slug, category.count])).toEqual([
-      [Category.Privacy, 0],
-      [Category.Diy, 0],
-      [Category.Ai, 0],
-      [Category.Software, 1],
-      [Category.Linux, 1],
+      ['privacidad', 0],
+      ['diy', 0],
+      ['ia', 0],
+      ['software', 1],
+      ['linux', 1],
       ['garden', 0],
       ['kitchen', 0],
     ])
@@ -115,8 +114,8 @@ describe('/api/categories', () => {
 
   it('counts articles of the requested locale only', async () => {
     const result = await $fetch<Array<{ slug: string | null, count: number }>>('/api/categories', { query: { locale: 'es' } })
-    expect(result.find(category => category.slug === Category.Software)?.count).toBe(1)
-    expect(result.find(category => category.slug === Category.Linux)?.count).toBe(0)
+    expect(result.find(category => category.slug === 'software')?.count).toBe(1)
+    expect(result.find(category => category.slug === 'linux')?.count).toBe(0)
   })
 
   it('names each category in the requested locale and falls back to the slug when it has no translation', async () => {
@@ -135,10 +134,10 @@ describe('/api/categories', () => {
 
 describe('/api/posts category filter', () => {
   it('filters by category slug', async () => {
-    const result = await $fetch<{ data: Array<{ slug: string }> }>('/api/posts', { query: { locale: 'en', category: Category.Linux } })
+    const result = await $fetch<{ data: Array<{ slug: string }> }>('/api/posts', { query: { locale: 'en', category: 'linux' } })
     expect(result.data.map(post => post.slug)).toEqual(['linux-server-hardening-guide'])
     const strapiRequests = mock.requests.filter(request => request.method === 'GET' && request.path === '/api/articles')
-    expect(getNestedValue(strapiRequests.at(-1)!.query, ['filters', 'category', 'slug', '$eq'])).toBe(Category.Linux)
+    expect(getNestedValue(strapiRequests.at(-1)!.query, ['filters', 'category', 'slug', '$eq'])).toBe('linux')
   })
 })
 
@@ -298,7 +297,7 @@ describe('content search', () => {
 
 describe('/api/posts search', () => {
   it('filters titles from three letters on and combines with the category', async () => {
-    const result = await $fetch<{ data: Array<{ slug: string }> }>('/api/posts', { query: { locale: 'en', search: 'vue', category: Category.Software } })
+    const result = await $fetch<{ data: Array<{ slug: string }> }>('/api/posts', { query: { locale: 'en', search: 'vue', category: 'software' } })
     expect(result.data.map(post => post.slug)).toEqual(['understanding-vue-composables'])
     const strapiRequests = mock.requests.filter(request => request.method === 'GET' && request.path === '/api/articles')
     expect(getNestedValue(strapiRequests.at(-1)!.query, ['filters', 'title', '$containsi'])).toBe('vue')
@@ -535,7 +534,7 @@ describe('/api/search', () => {
         slug: 'guia-vue-composables',
         description: 'Una guía profunda sobre composables de Vue.',
         publishedAt: '2026-02-02T10:00:00.000Z',
-        category: { name: 'Desarrollo de software', slug: Category.Software },
+        category: { name: 'Desarrollo de software', slug: 'software' },
         matchedIn: 'title',
         snippet: 'Guía de Vue Composables',
       },
@@ -545,7 +544,7 @@ describe('/api/search', () => {
         slug: 'understanding-vue-composables',
         description: 'A deep dive into writing reusable Vue composables.',
         publishedAt: '2026-02-01T10:00:00.000Z',
-        category: { name: 'Desarrollo de software', slug: Category.Software },
+        category: { name: 'Desarrollo de software', slug: 'software' },
         matchedIn: 'title',
         snippet: 'Understanding Vue Composables',
       },
@@ -570,7 +569,7 @@ describe('/api/posts/[slug]', () => {
     expect(result.title).toBe('Understanding Vue Composables')
     expect(result.slug).toBe('understanding-vue-composables')
     expect(result.blocks).toHaveLength(1)
-    expect(result.category?.slug).toBe(Category.Software)
+    expect(result.category?.slug).toBe('software')
     expect(result.tags?.map(tag => tag.name)).toEqual(['Vue', 'TypeScript', 'DevOps'])
   })
 

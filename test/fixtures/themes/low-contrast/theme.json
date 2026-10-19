@@ -1,6 +1,6 @@
 {
   "$schema": "../../../../themes/theme.schema.json",
-  "contract": 1,
+  "contract": 2,
   "id": "low-contrast",
   "name": "Low contrast",
   "modes": [

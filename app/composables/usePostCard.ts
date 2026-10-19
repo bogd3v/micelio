@@ -1,7 +1,7 @@
 import type { PostCardProps, PostListItem } from '~/interfaces'
 import { formatDotDate } from '~/helpers/formatDate'
 
-/** The props of a post card; `category` is any slug of the CMS, not only the five of `Category` (ADR 0016). */
+/** The props of a post card; `category` is any slug of the CMS (ADR 0016). */
 export type PostCardData = Omit<PostCardProps, 'category'> & { category?: string, categoryName?: string }
 
 /**

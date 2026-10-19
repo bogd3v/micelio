@@ -161,8 +161,8 @@ describe('hooks.json', () => {
   })
 
   it('rejects a malformed list', () => {
-    expect(() => parseHooks({ contract: 1, attributes: {}, classes: { 'not-bd': 'x' } })).toThrow()
-    expect(() => parseHooks({ contract: 2, attributes: {}, classes: {} })).toThrow()
+    expect(() => parseHooks({ contract: 2, attributes: {}, classes: { 'not-bd': 'x' } })).toThrow()
+    expect(() => parseHooks({ contract: 1, attributes: {}, classes: {} })).toThrow()
   })
 
   it('names only classes the core uses', () => {

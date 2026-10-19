@@ -94,3 +94,12 @@ The frontend reads `order` and `featured ?? pillar` from today's CMS, so it ship
 - The contract of themes is small and made of data: a theme that follows contract 2 does not depend on a count or a name.
 - Work is split into PRs of about 400 lines each: this record; server side (`loadCategories`, reading-path, feeds, sitemap, redirects); routing and static build; components onto the list; and contract 2. Each is `Refs #462`.
 - Open questions that do not change the decision and are settled in the PRs: whether empty categories appear in lists, which categories the home field guide shows, and whether `reading-path` answers 404 instead of 400 for an unknown category.
+
+## Amendment (2026-10-19, #462)
+
+Records are not rewritten; this amends the sections below as implemented in contract 2.
+
+- **Section 1.** The `bogota` theme keeps BogDev's birds and their captions (`theme.illustration.<slug>`, `theme.guide.note.<slug>`) as its own messages and art, keyed by BogDev's slugs.
+- **Section 3.** The color ranks categories by `order`, then by `slug`, never by the localized `name`, so both languages agree on a category's color. This is a promise of the `@public` `categoryColor(categories, slug)`, which `useCategories().colorOf` shares.
+- **Section 8.** The fallback of `bogota` for a slug it does not know is no art: the slot renders nothing and the core hides the empty box. An invented generic bird is design work and is not part of this change.
+- **Section 9.** The removed slot APIs are the `Category` enum, `CATEGORIES`, `CATEGORY_INFO`, `CategoryInfo`, `isCategory` (removed, not re-signed; use `useCategories().has(slug)`), `categoryOrder` and `CategoryCount` (now `CategoryEntry`). `categoryColor` becomes `categoryColor(categories, slug)`, and `ThemeIllustration` takes `category: string` and the required `color`.

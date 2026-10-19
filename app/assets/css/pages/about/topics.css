@@ -32,6 +32,11 @@
     padding: var(--space-1) 0;
 }
 
+/* A theme with no art for the category renders nothing in the slot: no empty band */
+.myc-topic-art:empty {
+    display: none;
+}
+
 .myc-topic-art svg {
     display: block;
     width: 180px;
@@ -166,6 +171,11 @@
         gap: var(--space-4) var(--space-6);
         min-height: 380px;
         padding: 40px;
+    }
+
+    /* No art for the category: the title and text take the whole width */
+    .myc-topic-pillar:has(.myc-topic-art:empty) {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .myc-topic-pillar .myc-topic-head {

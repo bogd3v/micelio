@@ -12,7 +12,7 @@ const SETTINGS = 'app/assets/css/settings/'
 // A theme package is where primitives belong (ADR 0005, section 1)
 const THEMES = 'themes/'
 
-// Contract v1 roles, plus the optional ones (modules/theme/roles.mjs)
+// Contract roles, plus the optional ones (modules/theme/roles.mjs)
 const ROLES = new Set(COLOR_ROLES)
 
 function primitives() {

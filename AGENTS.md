@@ -158,7 +158,7 @@ function handleClick() {
 
 ### CSS/Styling Conventions
 
-- Colors, shadows and glows come from the semantic roles of ADR 0005 (`var(--ink)`, `var(--ink-muted)`, `var(--surface)`, `var(--link)`, `var(--accent)`, `var(--danger)`, `var(--category-3)`…), never from the theme's primitives (`--mirla`, `--chillon`, `--tingua`…). Primitives live only in `assets/css/settings/`; `npm run lint` fails otherwise (`scripts/check-primitives.mjs`). A category's color is `useCategories().colorOf(slug)` (its rank by `order`, then slug, in the CMS list, ADR 0016 section 3); `categoryColor` from `app/helpers/categories.ts` stays only for theme slots until contract 2
+- Colors, shadows and glows come from the semantic roles of ADR 0005 (`var(--ink)`, `var(--ink-muted)`, `var(--surface)`, `var(--link)`, `var(--accent)`, `var(--danger)`, `var(--category-3)`…), never from the theme's primitives (`--mirla`, `--chillon`, `--tingua`…). Primitives live only in `assets/css/settings/`; `npm run lint` fails otherwise (`scripts/check-primitives.mjs`). A category's color is `useCategories().colorOf(slug)` (its rank by `order`, then slug, in the CMS list, ADR 0016 section 3); `categoryColor(categories, slug)` in `app/helpers/categories.ts` is the one implementation behind it and a slot API (contract 2). The core names no category: no `Category` enum and no constant of slugs
 - No utility classes in templates: every class is a `myc-*` class in its layer, or one of the core helpers (`font-display`, `font-mono`, `not-prose`). `npm run lint` fails otherwise (`scripts/check-classes.mjs`; ADR 0005, section 3)
 - Icons are inline SVG components in `app/components/icons/` (`<IconsHome />`), sized by the parent's CSS
 - Cards take their corners from `border-radius: var(--radius-card)`; if they animate, use `var(--duration-*)` and `var(--ease-*)` and transition only the properties that change
@@ -189,7 +189,7 @@ Global styles live in `app/assets/css/`, split by responsibility (ITCSS-style, p
 
 ### Themes
 
-A theme (`themes/<id>/`) is a package of roles per mode, CSS for public hooks and optional slots, validated against contract v1 (ADR 0005). Start with `npm run theme:new -- <id>` (copies `themes/starter/`) and the `create-theme` skill; the guide is `docs/themes/creating-a-theme.md` and the generated reference `docs/themes/reference/`. `NUXT_PUBLIC_THEME=<id>` selects the theme at build or dev time (default `bogota`).
+A theme (`themes/<id>/`) is a package of roles per mode, CSS for public hooks and optional slots, validated against contract v2 (ADR 0005). Start with `npm run theme:new -- <id>` (copies `themes/starter/`) and the `create-theme` skill; the guide is `docs/themes/creating-a-theme.md` and the generated reference `docs/themes/reference/`. `NUXT_PUBLIC_THEME=<id>` selects the theme at build or dev time (default `bogota`).
 
 ### i18n Guidelines
 

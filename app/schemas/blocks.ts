@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Category } from '~/interfaces/design'
+import { SLUG_PATTERN } from '~/constants/slug'
 import type {
   StrapiBlock,
   StrapiContact,
@@ -108,9 +108,8 @@ export const seoSchema = responseSchema<StrapiSEO>()(
   }).meta({ id: 'StrapiSEO', description: 'The SEO component of an entry: titles, share image, robots and optional JSON-LD.' }),
 )
 
-// `z.enum` of a native enum yields a type that is not identical to the enum, which the tie to the interface needs, so the schema is typed as the enum
-/** The slug of a category. */
-export const categorySchema: z.ZodType<Category> = z.enum(Category)
+/** The slug of a category: any slug of the CMS, checked by shape only (ADR 0016, section 7). */
+const categorySlugSchema = z.string().regex(SLUG_PATTERN)
 
 // The About sections: the route rebuilds each one from the allow-list of `aboutBlocks` (server/lib/publicShapes.ts), so every object is strict
 
@@ -131,7 +130,7 @@ const itemSchema = responseSchema<StrapiItem>()(
 
 /** A topic with the category it belongs to. */
 const topicSchema = responseSchema<StrapiTopic>()(
-  z.strictObject({ id: z.int(), category: categorySchema, title: z.string(), description: z.string().nullish() }).meta({ id: 'StrapiTopic', description: 'A topic card and the category that sets its colour.' }),
+  z.strictObject({ id: z.int(), category: categorySlugSchema, title: z.string(), description: z.string().nullish() }).meta({ id: 'StrapiTopic', description: 'A topic card and the slug of the category that sets its colour.' }),
 )
 
 /** A technology in the stack of a project. */

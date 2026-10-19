@@ -1,6 +1,6 @@
 {
   "$schema": "../../../../themes/theme.schema.json",
-  "contract": 1,
+  "contract": 2,
   "id": "minimal",
   "name": "Minimal",
   "modes": [

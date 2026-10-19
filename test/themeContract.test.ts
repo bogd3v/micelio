@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { CONTRACT_VERSION } from '../modules/theme/constants'
 import { MAX_MODES, contractProblems, themeJsonSchema, validateContract } from '../modules/theme/contract'
 import { loadHooks } from '../modules/theme/hooks'
 import { discoverThemes, themeRoots } from '../modules/theme/themes'
@@ -90,18 +91,24 @@ describe('reserved theme ids', () => {
 })
 
 describe('contract validation', () => {
-  it('rejects an unknown contract version', () => {
-    const problems = problemsOf(install('future', m => (m.contract = 2)))
-    expect(problems.join('\n')).toMatch(/contract: declares contract 2, this build implements contract 1/)
+  it('rejects a theme that declares a newer contract', () => {
+    const problems = problemsOf(install('future', m => (m.contract = CONTRACT_VERSION + 1)))
+    expect(problems.join('\n')).toMatch(new RegExp(`contract: declares contract ${CONTRACT_VERSION + 1}, this build implements contract ${CONTRACT_VERSION}`))
+  })
+
+  it('rejects a theme that still declares contract 1 and points to the upgrade notes', () => {
+    const problems = problemsOf(install('old', m => (m.contract = 1)))
+    expect(problems.join('\n')).toMatch(/contract: declares contract 1, this build implements contract 2 \(see "Upgrade notes" in docs\/themes\/creating-a-theme\.md\)/)
+    expect(CONTRACT_VERSION).toBe(2)
   })
 
   it('names the theme and the problem in the error that fails the build', () => {
-    const root = install('broken', m => (m.contract = 2))
-    expect(() => validateThemes(discoverThemes([root]), hooks)).toThrow(/Theme "broken": contract: declares contract 2/)
+    const root = install('broken', m => (m.contract = 1))
+    expect(() => validateThemes(discoverThemes([root]), hooks)).toThrow(/Theme "broken": contract: declares contract 1/)
   })
 
   it('lists every problem of every invalid theme', () => {
-    const root = install('first', m => (m.contract = 2))
+    const root = install('first', m => (m.contract = 1))
     const other = install('second', m => (m.modes = []))
     expect(() => validateThemes(discoverThemes([root, other]), hooks)).toThrow(/Theme "first".*\n.*Theme "second"/)
   })
@@ -378,6 +385,6 @@ describe('theme.schema.json', () => {
     const manifest = minimal()
     manifest.modes = []
     expect(() => validateContract(manifest)).toThrow('Theme "minimal": modes: declares no modes')
-    expect(() => validateContract({ contract: 1 }, 'folder')).toThrow(/Theme "folder"/)
+    expect(() => validateContract({ contract: 0 }, 'folder')).toThrow(/Theme "folder"/)
   })
 })

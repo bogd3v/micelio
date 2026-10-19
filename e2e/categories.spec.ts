@@ -40,6 +40,17 @@ test('shows the field guide with the categories that have articles', async ({ pa
   await expect(guide.getByRole('link').nth(2)).toHaveAttribute('href', '/blog/category/garden')
 })
 
+test('draws a bird for a category the theme knows and leaves no art box for one it does not', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'networkidle' })
+  const cards = page.locator('section[aria-labelledby="guide-title"] .myc-guide-card')
+  const software = cards.filter({ hasText: 'Software development' }).locator('.myc-guide-art')
+  const garden = cards.filter({ hasText: 'Garden' }).locator('.myc-guide-art')
+  await expect(software.locator('svg')).toBeVisible()
+  await expect(garden).toHaveCount(1)
+  await expect(garden).toHaveCSS('display', 'none')
+  await expect(garden.locator('svg')).toHaveCount(0)
+})
+
 test('filters the home latest by a category no constant knows', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' })
   await page.getByRole('group', { name: 'Filter by topic' }).getByRole('button', { name: /Kitchen/ }).click()

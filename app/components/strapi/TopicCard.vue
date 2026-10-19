@@ -8,6 +8,7 @@ defineProps<{
 }>()
 
 const caption = useIllustrationCaption()
+const { colorOf } = useCategories()
 </script>
 
 <template>
@@ -16,7 +17,7 @@ const caption = useIllustrationCaption()
       <MycCategoryTag :category="topic.category" />
       <span class="myc-meta myc-topic-label">{{ label }}</span>
     </div>
-    <div class="myc-topic-art"><ThemeIllustration :category="topic.category" :size="200" /></div>
+    <div class="myc-topic-art"><ThemeIllustration :category="topic.category" :color="colorOf(topic.category)" :size="200" /></div>
     <h3 class="myc-topic-title myc-wide">{{ topic.title }}</h3>
     <p v-if="topic.description" class="myc-topic-text">{{ topic.description }}</p>
     <p v-if="caption(topic.category)" class="myc-topic-bird">

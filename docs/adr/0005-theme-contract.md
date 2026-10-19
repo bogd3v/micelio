@@ -1,8 +1,8 @@
 # ADR-0005: Theme contract v1
 
-**Status:** Accepted
+**Status:** Accepted (amended by [ADR-0016](0016-categories-from-the-cms.md))
 **Date:** 2026-10-03
-**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice), 2026-10-06 (#238, #263, #306, #239), 2026-10-07 (#244, #276, #307), 2026-10-08 (#416), 2026-10-15 (#558)
+**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice), 2026-10-06 (#238, #263, #306, #239), 2026-10-07 (#244, #276, #307), 2026-10-08 (#416), 2026-10-15 (#558), 2026-10-18 (#462)
 **Deciders:** BogDev maintainer
 
 ## Context
@@ -160,6 +160,8 @@ A theme's own classes, inside its slots, use its id as prefix (`bogota-`). The v
 **Amendment (2026-10-06, #324):** removing a requirement that no installed theme can depend on stays in v1. `space-16`, `space-24`, `category-6` and `category-6-soft` are no longer required roles: the core never read them (it has five categories, `Category` in `app/interfaces/design.ts`), and a theme that still declares them keeps validating, because an extra name in a group is a theme primitive. `ThemeDivider`'s `placement` narrows to `'footer'`: the core is the only caller and only ever passed `footer`, so a slot that still accepts `'section'` keeps working. Reintroducing a sixth category or a larger space step is an optional role with a core default, also in v1.
 
 **Amendment (2026-10-18, #462):** [ADR-0016](0016-categories-from-the-cms.md) removes the five hard-coded categories and their helpers from the slot APIs, which is `contract: 2`. The sentence above about the core having five categories no longer holds once it is accepted.
+
+**Amendment (2026-10-18, #462, ADR-0016 accepted):** contract 2 is implemented (`CONTRACT_VERSION = 2`, `"contract": 2` in every installed theme, the schema and the reference). The #324 sentence that the core "has five categories" no longer holds: the core knows no category, and the slot APIs are data (`useCategories()`, `categoryColor(categories, slug)`, `ThemeIllustration` with `category: string` and `color`). The migration note is in `docs/themes/creating-a-theme.md`, Upgrade notes.
 
 **Amendment (2026-10-08, #416): the core prefix is `myc`, and `micelio` where a name is seen outside the code.** `bd` was BogDev's prefix, and the core carries no site. Every `bd` name of the core is renamed before the first theme package is published (#313), one to one and with no other change. The short prefix, from *mycelium*, is for names that repeat in every file and every page. The full name is for the few that a visitor, an operator or the privacy page sees, as the code already does with `#micelio/…`, `MICELIO_*`, `micelio-search` and `X-Micelio-Client-IP`.
 
