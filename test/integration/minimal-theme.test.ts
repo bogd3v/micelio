@@ -7,6 +7,7 @@ import { startMockStrapi } from './mock-strapi'
 const mock = await startMockStrapi()
 process.env.NUXT_PUBLIC_STRAPI_URL = mock.url
 process.env.NUXT_PUBLIC_SITE_URL = 'https://minimal.test'
+process.env.NUXT_STRAPI_API_TOKEN = 'test-api-token'
 process.env.NUXT_SITE_CACHE_SECONDS = '0'
 process.env.MICELIO_THEME_DIRS = 'test/fixtures/themes'
 process.env.NUXT_PUBLIC_THEME = 'minimal'

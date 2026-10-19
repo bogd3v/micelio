@@ -23,11 +23,11 @@ describe('missingRuntimeSettings', () => {
   })
 
   it('names the NUXT_* variable of each empty or missing value', () => {
-    expect(missingRuntimeSettings({ ...complete, strapiApiToken: '', smtpPass: '  ', newsletterFrom: undefined })).toEqual([
-      'NUXT_STRAPI_API_TOKEN',
-      'NUXT_SMTP_PASS',
-      'NUXT_NEWSLETTER_FROM',
-    ])
+    expect(missingRuntimeSettings({ ...complete, strapiApiToken: '  ' })).toEqual(['NUXT_STRAPI_API_TOKEN'])
+  })
+
+  it('does not require SMTP: without it the newsletter is off', () => {
+    expect(missingRuntimeSettings({ ...complete, smtpHost: '', smtpUser: undefined, smtpPass: '  ', newsletterFrom: '' })).toEqual([])
   })
 
   it('also requires the Strapi and site URLs', () => {
@@ -72,11 +72,10 @@ describe('modeMismatch', () => {
 })
 
 describe('static modes', () => {
-  it('do not require SMTP or the fediverse settings', () => {
+  it('do not need the fediverse settings, and every mode needs the token and the URLs', () => {
     const config = { strapiApiToken: 't', public: { strapiUrl: 'u', siteUrl: 's' } }
-    expect(missingRuntimeSettings(config)).toContain('NUXT_SMTP_HOST')
-    expect(missingRuntimeSettings(config, 'static')).toEqual([])
-    expect(missingRuntimeSettings({ public: {} }, 'landing')).toEqual(['NUXT_STRAPI_API_TOKEN', 'NUXT_PUBLIC_STRAPI_URL', 'NUXT_PUBLIC_SITE_URL'])
+    expect(missingRuntimeSettings(config)).toEqual([])
+    expect(missingRuntimeSettings({ public: {} })).toEqual(['NUXT_STRAPI_API_TOKEN', 'NUXT_PUBLIC_STRAPI_URL', 'NUXT_PUBLIC_SITE_URL'])
     expect(missingOptionalRuntimeSettings(config)).toContain('NUXT_PUBLIC_FEDIVERSE_HANDLE')
     expect(missingOptionalRuntimeSettings(config, 'static')).toEqual(['NUXT_MEDIA_URL'])
   })

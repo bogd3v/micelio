@@ -4,10 +4,6 @@ import { isStaticMode, parseSiteMode } from './siteMode'
 
 const REQUIRED_RUNTIME_SETTINGS = {
   strapiApiToken: 'NUXT_STRAPI_API_TOKEN',
-  smtpHost: 'NUXT_SMTP_HOST',
-  smtpUser: 'NUXT_SMTP_USER',
-  smtpPass: 'NUXT_SMTP_PASS',
-  newsletterFrom: 'NUXT_NEWSLETTER_FROM',
 } as const
 
 const REQUIRED_PUBLIC_RUNTIME_SETTINGS = {
@@ -64,11 +60,14 @@ export function modeMismatch(config: CheckedRuntimeConfig, buildMode: SiteMode):
   return `NUXT_PUBLIC_SITE_MODE is "${String(runtime)}" at runtime but the build used "${buildMode}". The mode is chosen at build time: rebuild with the value you want.`
 }
 
-/** The NUXT_* names of required settings that are empty; SMTP is not needed in static modes. */
-export function missingRuntimeSettings(config: CheckedRuntimeConfig, mode: SiteMode = 'dynamic'): string[] {
-  const { strapiApiToken } = REQUIRED_RUNTIME_SETTINGS
-  const names = isStaticMode(mode) ? { strapiApiToken } : REQUIRED_RUNTIME_SETTINGS
-  return [...missing(config, names), ...missing(config.public, REQUIRED_PUBLIC_RUNTIME_SETTINGS)]
+/**
+ * The NUXT_* names of required settings that are empty, so the server can refuse to boot.
+ *
+ * @remarks
+ * The SMTP settings are not here: without them the newsletter is turned off (`moduleRequirements`).
+ */
+export function missingRuntimeSettings(config: CheckedRuntimeConfig): string[] {
+  return [...missing(config, REQUIRED_RUNTIME_SETTINGS), ...missing(config.public, REQUIRED_PUBLIC_RUNTIME_SETTINGS)]
 }
 
 /** The NUXT_* names of optional settings that are empty, so the startup log can say what is off; the fediverse ones are not needed in static modes. */

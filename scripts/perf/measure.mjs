@@ -118,6 +118,7 @@ function startServers() {
     MOCK_PORT: String(MOCK_PORT),
     NUXT_PUBLIC_STRAPI_URL: `http://127.0.0.1:${MOCK_PORT}`,
     NUXT_PUBLIC_SITE_URL: base,
+    NUXT_STRAPI_API_TOKEN: 'perf-api-token',
     ...(displayFont && { MOCK_DISPLAY_FONT: displayFont }),
     NUXT_PUBLIC_UMAMI_WEBSITE_ID: '',
     NUXT_MEDIA_URL: 'https://resources.example.com',
