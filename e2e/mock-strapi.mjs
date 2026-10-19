@@ -673,7 +673,8 @@ const server = createServer(async (req, res) => {
         contactEmail: 'gx_alejandro@hotmail.com',
         privacyContactEmail: 'gx_alejandro@hotmail.com',
         privacyUpdatedAt: '2026-10-01T17:00:00.000Z',
-        privacyJurisdiction: 'colombia',
+        // MOCK_PRIVACY_JURISDICTION=colombia answers the field (e2e/privacy.spec.ts); the contract suite compares the mock with a CMS that may predate it, so it is off by default
+        privacyJurisdiction: process.env.MOCK_PRIVACY_JURISDICTION || null,
         supportHandle: 'ale9420',
         securityContact: 'mailto:security@example.com',
         // MOCK_MODULES_OFF=1 runs e2e/modules-off.spec.ts against a site with every module off
