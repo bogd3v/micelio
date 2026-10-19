@@ -3,7 +3,14 @@
 }
 
 body {
-    padding-bottom: calc(var(--myc-tabbar-h) + var(--myc-notice-h, 0px));
+    padding-bottom: var(--myc-tabbar-h);
+}
+
+/* On a phone the notice spans the width: the page ends above it, so the last links can scroll clear. On desktop it floats in a corner */
+@media (max-width: 767.98px) {
+    body {
+        padding-bottom: calc(var(--myc-tabbar-h) + var(--myc-notice-h, 0px));
+    }
 }
 
 /* A focused element scrolls into the free area, not under the tab bar or the privacy notice (WCAG 2.4.11); the header is reserved by its layout */
