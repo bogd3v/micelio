@@ -13,6 +13,8 @@ const props = withDefaults(defineProps<{
   highlight?: string
   /** Slug of a category of the CMS; colors the card from `useCategories()` */
   category?: string
+  /** The name of the post's category as the CMS sent it; shown when the list does not have it */
+  categoryName?: string
   date?: string
   dateTime?: string
   author?: string
@@ -33,6 +35,7 @@ const props = withDefaults(defineProps<{
   snippet: undefined,
   highlight: undefined,
   category: undefined,
+  categoryName: undefined,
   date: undefined,
   dateTime: undefined,
   author: undefined,
@@ -84,7 +87,7 @@ const imageSize = computed<{ width: number, height: number }>(() =>
     <div class="myc-card-body">
       <span v-if="featured" class="myc-eyebrow myc-card-eyebrow">{{ eyebrowText }}</span>
       <div v-if="category || date || read" class="myc-card-meta">
-        <MycCategoryTag v-if="category" :category="category" />
+        <MycCategoryTag v-if="category" :category="category" :name="categoryName" />
         <span class="myc-card-meta-end">
           <span v-if="read" class="myc-meta myc-read-mark"><span aria-hidden="true">✓</span> {{ t('myc.card.read') }}</span>
           <time v-if="date" class="myc-meta" :datetime="dateTime">{{ date }}</time>

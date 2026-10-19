@@ -2168,7 +2168,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CategoryCount"
+                    "$ref": "#/components/schemas/CategoryEntry"
                   }
                 }
               }
@@ -5666,7 +5666,7 @@
         "additionalProperties": false,
         "description": "The account, or `user: null` when the visitor is signed out."
       },
-      "CategoryCount": {
+      "CategoryEntry": {
         "type": "object",
         "properties": {
           "id": {

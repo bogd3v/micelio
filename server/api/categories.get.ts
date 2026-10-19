@@ -6,5 +6,7 @@ export default defineEventHandler(async (event): Promise<CategoryEntry[]> => {
 
   setHeader(event, 'Cache-Control', 'public, s-maxage=600, stale-while-revalidate=1200')
 
-  return loadCategories(locale)
+  const categories = await loadCategories(locale)
+  // Listed by hand: a field the loader gains later is not public until it is added here and in the schema
+  return categories.map(({ id, slug, name, description, order, featured, count }) => ({ id, slug, name, description, order, featured, count }))
 })

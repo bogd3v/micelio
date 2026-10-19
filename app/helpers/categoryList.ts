@@ -5,13 +5,28 @@ const COLOR_ROLES = 5
 const NEUTRAL_COLOR = 'var(--ink-muted)'
 
 /**
- * The color role of a category: `var(--category-N)`, N being its position in the full ordered list modulo the five roles, plus one.
+ * The categories in the order that ranks their colors: `order` ascending, those without one last, then `slug`.
  *
  * @remarks
- * The position is the one in the whole list, empty categories included, so hiding one from a menu moves no color. An unknown slug gets the neutral `var(--ink-muted)`. The CMS `color` field takes over once it exists (ADR 0016, section 10).
+ * The display order breaks ties by the localized name, which differs between languages; the slug does not, so a category keeps its color when the language changes.
+ */
+function colorRanking(categories: readonly CategoryEntry[]): CategoryEntry[] {
+  return [...categories].sort((a, b) => {
+    const left = a.order ?? Number.POSITIVE_INFINITY
+    const right = b.order ?? Number.POSITIVE_INFINITY
+    if (left !== right) return left < right ? -1 : 1
+    return a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0
+  })
+}
+
+/**
+ * The color role of a category: `var(--category-N)`, N being its rank by (`order`, `slug`) in the whole list, modulo the five roles, plus one.
+ *
+ * @remarks
+ * The rank counts empty categories too, so hiding one from a menu moves no color, and it ignores the localized name, so both languages agree. A category that exists in one language only can still shift the colors after it in that language. An unknown slug gets the neutral `var(--ink-muted)`. The CMS `color` field takes over once it exists (ADR 0016, section 10).
  */
 export function categoryColorIn(categories: readonly CategoryEntry[], slug: string | null | undefined): string {
-  const index = categories.findIndex(category => category.slug === slug)
+  const index = colorRanking(categories).findIndex(category => category.slug === slug)
   return index === -1 ? NEUTRAL_COLOR : `var(--category-${(index % COLOR_ROLES) + 1})`
 }
 

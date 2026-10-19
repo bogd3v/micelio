@@ -10,6 +10,7 @@ interface DraftRow {
   path: string
   author: string
   category: string | undefined
+  categoryName: string | undefined
   language: string
   editedAt: string
   edited: string
@@ -48,6 +49,7 @@ const rows = computed<DraftRow[]>(() =>
     path: draft.slug ? `/${draft.slug}` : '',
     author: draft.author?.name ?? '',
     category: draft.category?.slug ?? undefined,
+    categoryName: draft.category?.name ?? undefined,
     language: draft.locale.toUpperCase(),
     editedAt: draft.updatedAt,
     edited: formatDotDateTime(draft.updatedAt),
@@ -134,7 +136,7 @@ onMounted(() => {
                 <span class="myc-meta myc-drafts-article-meta">{{ [row.path, row.author].filter(Boolean).join(' · ') }}</span>
               </span>
             </td>
-            <td><MycCategoryTag v-if="row.category" :category="row.category" /></td>
+            <td><MycCategoryTag v-if="row.category" :category="row.category" :name="row.categoryName" /></td>
             <td class="myc-meta myc-drafts-muted">{{ row.language }}</td>
             <td class="myc-meta myc-drafts-muted"><time :datetime="row.editedAt">{{ row.edited }}</time></td>
             <td class="myc-drafts-action">
@@ -155,7 +157,7 @@ onMounted(() => {
             </span>
             <span class="myc-drafts-card-title">{{ row.title }}</span>
             <span class="myc-drafts-card-row">
-              <MycCategoryTag v-if="row.category" :category="row.category" />
+              <MycCategoryTag v-if="row.category" :category="row.category" :name="row.categoryName" />
               <time class="myc-meta myc-drafts-muted" :datetime="row.editedAt">{{ row.edited }}</time>
             </span>
             <span class="myc-meta myc-drafts-card-cta" aria-hidden="true">{{ t('drafts.review') }} →</span>

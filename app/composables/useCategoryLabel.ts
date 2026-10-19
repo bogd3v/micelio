@@ -1,4 +1,5 @@
 import type { CategoryLike } from '~/interfaces'
+import { categoryNameIn } from '~/helpers/categoryList'
 
 /**
  * Returns a function that gives the display label of a category.
@@ -11,7 +12,7 @@ export function useCategoryLabel(): (category: CategoryLike | null | undefined) 
 
   return function categoryLabel(category: CategoryLike | null | undefined): string {
     if (!category) return ''
-    const listed = categories.value.find(item => item.slug === category.slug)
-    return listed?.name ?? category.name ?? category.slug ?? ''
+    const listed = categories.value.some(item => item.slug === category.slug)
+    return listed ? categoryNameIn(categories.value, category.slug) : (category.name ?? category.slug ?? '')
   }
 }

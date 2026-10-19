@@ -38,7 +38,7 @@ function postHref(post: PostListItem): string {
         <li v-for="post in month.posts" :key="post.id" class="myc-log-row">
           <time class="myc-meta myc-log-date" :datetime="post.publishedAt ?? undefined">{{ formatDotDate(post.publishedAt) }}</time>
           <span class="myc-log-category">
-            <MycCategoryTag v-if="post.category?.slug" :category="post.category.slug" />
+            <MycCategoryTag v-if="post.category?.slug" :category="post.category.slug" :name="post.category.name ?? undefined" />
           </span>
           <span class="myc-log-text">
             <NuxtLink :to="postHref(post)" class="myc-log-link">{{ post.title }}</NuxtLink>

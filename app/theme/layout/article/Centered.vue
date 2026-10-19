@@ -33,7 +33,7 @@ useMarkAsRead(prose, readDocumentId)
   <div class="myc-article-page" data-layout="centered">
     <header class="myc-article-head">
       <div class="myc-article-kicker">
-        <MycCategoryTag v-if="category" :category="category" />
+        <MycCategoryTag v-if="category" :category="category" :name="post.category?.name ?? undefined" />
         <time v-if="publishedDate" class="myc-meta" :datetime="post.publishedAt ?? undefined">{{ publishedDate }}</time>
         <span v-if="post.readTime" class="myc-meta">{{ t("blog.readTime", { minutes: post.readTime }) }}</span>
       </div>

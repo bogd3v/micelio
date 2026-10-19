@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import type { CategoryEntry } from '~/interfaces'
 import { categoryColorIn, categoryNameIn, fieldGuideTopics } from '~/helpers/categoryList'
 
-function category(slug: string, count: number, featured = false): CategoryEntry {
-  return { id: 1, slug, name: slug.toUpperCase(), description: null, order: null, featured, count }
+function category(slug: string, count: number, featured = false, order: number | null = null, name = slug.toUpperCase()): CategoryEntry {
+  return { id: 1, slug, name, description: null, order, featured, count }
 }
 
 const SEVEN = ['a', 'b', 'c', 'd', 'e', 'f', 'g'].map(slug => category(slug, 1))
@@ -24,6 +24,23 @@ describe('categoryColorIn', () => {
     expect(categoryColorIn(SEVEN, 'zzz')).toBe('var(--ink-muted)')
     expect(categoryColorIn(SEVEN, null)).toBe('var(--ink-muted)')
     expect(categoryColorIn([], 'a')).toBe('var(--ink-muted)')
+  })
+})
+
+describe('color ranking', () => {
+  it('ranks by order, those without one last, then by slug, whatever the list order', () => {
+    const list = [category('z', 1, false, 1), category('m', 1), category('b', 1, false, 2), category('a', 1), category('y', 1, false, 1)]
+    expect(['y', 'z', 'b', 'a', 'm'].map(slug => categoryColorIn(list, slug))).toEqual([
+      'var(--category-1)', 'var(--category-2)', 'var(--category-3)', 'var(--category-4)', 'var(--category-5)',
+    ])
+  })
+
+  it('gives a category the same color in both languages when the names sort differently', () => {
+    // No `order`: the display order follows the localized name (garden, kitchen in English; cocina, jardin in Spanish)
+    const english = [category('garden', 1, false, null, 'Garden'), category('kitchen', 1, false, null, 'Kitchen')]
+    const spanish = [category('kitchen', 1, false, null, 'Cocina'), category('garden', 1, false, null, 'Jardín')]
+    for (const slug of ['garden', 'kitchen']) expect(categoryColorIn(spanish, slug)).toBe(categoryColorIn(english, slug))
+    expect(categoryColorIn(english, 'garden')).toBe('var(--category-1)')
   })
 })
 

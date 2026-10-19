@@ -39,3 +39,8 @@ export async function categoriesSettled(): Promise<void> {
   await vi.waitFor(() => expect(requests).toBeGreaterThan(requestsBefore))
   await flushPromises()
 }
+
+/** How many times the app has asked for `/api/categories` in this file. */
+export function categoryRequestCount(): number {
+  return requests
+}

@@ -176,11 +176,11 @@ describe('OpenAPI document', () => {
       for (const match of JSON.stringify(operation).matchAll(/"\$ref":"#\/components\/schemas\/(\w+)"/g)) refs.add(match[1]!)
     }
     for (const name of refs) expect(schemas, name).toHaveProperty(name)
-    for (const name of ['AuthUserResponse', 'CategoryCount', 'ConfirmResponse', 'FediverseStats', 'OkResponse', 'SubscribeResponse', 'TagCount', 'UnsubscribeResponse']) expect(refs.has(name), name).toBe(true)
+    for (const name of ['AuthUserResponse', 'CategoryEntry', 'ConfirmResponse', 'FediverseStats', 'OkResponse', 'SubscribeResponse', 'TagCount', 'UnsubscribeResponse']) expect(refs.has(name), name).toBe(true)
     expect(JSON.stringify(schemas)).not.toContain('#/$defs/')
     expect(JSON.stringify(built)).not.toContain('The TypeScript type SubscribeResponse')
     const response = (built.paths as Paths)['/api/categories']!.get!.responses['200']!.content!['application/json'] as { schema: unknown }
-    expect(response.schema).toEqual({ type: 'array', items: { $ref: '#/components/schemas/CategoryCount' } })
+    expect(response.schema).toEqual({ type: 'array', items: { $ref: '#/components/schemas/CategoryEntry' } })
   })
 
   it('refuses two different response schemas under one name', () => {

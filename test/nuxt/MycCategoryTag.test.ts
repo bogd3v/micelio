@@ -1,7 +1,7 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import MycCategoryTag from '~/components/myc/MycCategoryTag.vue'
-import { serveCategories } from './categoriesFixture'
+import { categoriesSettled, serveCategories } from './categoriesFixture'
 
 describe('MycCategoryTag', () => {
   beforeEach(() => serveCategories())
@@ -21,6 +21,15 @@ describe('MycCategoryTag', () => {
     const unknown = await mountSuspended(MycCategoryTag, { props: { category: 'attic' } })
     expect(unknown.text()).toBe('attic')
     expect(unknown.attributes('style')).toContain('--tag-color: var(--ink-muted)')
+  })
+
+  it('shows the name the post came with when the list does not have the category or failed', async () => {
+    const outside = await mountSuspended(MycCategoryTag, { props: { category: 'attic', name: 'The attic' } })
+    await categoriesSettled()
+    expect(outside.text()).toBe('The attic')
+    // A name is only a fallback: the list wins when it has the category
+    const listed = await mountSuspended(MycCategoryTag, { props: { category: 'garden', name: 'Jardín' } })
+    await vi.waitFor(() => expect(listed.text()).toBe('Garden'))
   })
 
   it('renders a link and accepts a custom label', async () => {

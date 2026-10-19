@@ -32,7 +32,7 @@ const postStats = usePostStats(toRef(props, 'posts'), toRef(props, 'federated'))
           <p v-else-if="post.description" class="myc-post-row-excerpt">{{ post.description }}</p>
         </div>
         <div class="myc-meta myc-post-row-meta">
-          <MycCategoryTag v-if="post.category?.slug" :category="post.category.slug" />
+          <MycCategoryTag v-if="post.category?.slug" :category="post.category.slug" :name="post.category.name ?? undefined" />
           <span v-if="postStats(post)">
             <span aria-hidden="true">◆</span>
             {{ postStats(post)!.likes }} {{ t('post.fediverse.likes', postStats(post)!.likes) }}
