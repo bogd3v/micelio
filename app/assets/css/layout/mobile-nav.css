@@ -3,7 +3,12 @@
 }
 
 body {
-    padding-bottom: var(--myc-tabbar-h);
+    padding-bottom: calc(var(--myc-tabbar-h) + var(--myc-notice-h, 0px));
+}
+
+/* A focused element scrolls into the free area, not under the tab bar or the privacy notice (WCAG 2.4.11); the header is reserved by its layout */
+html {
+    scroll-padding-bottom: calc(var(--myc-tabbar-h) + var(--myc-notice-h, 0px));
 }
 
 .myc-tabbar {
