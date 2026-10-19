@@ -91,7 +91,7 @@ function category(id: number, slug: string, name: string, featured: boolean): Ca
  * The categories of the specimen: neutral slugs, two featured, six in all so the sixth wraps to the first color role (ADR 0016, section 3).
  *
  * @remarks
- * The specimen page supplies them to `useCategories()`, so it needs no CMS and shows the same on any site.
+ * The specimen page supplies them to `useCategories()`, so its sections need no CMS and show the same on any site (the header, tab bar and footer around them still read the CMS list).
  */
 export const CATEGORIES_SAMPLE: CategoryEntry[] = [
   category(1, 'garden', 'Garden', true),

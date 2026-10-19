@@ -55,10 +55,10 @@ export const SLOT_SPECS: Record<SlotName, SlotSpec> = {
     defaultRenders: 'A `div` around the default slot content.',
   },
   ThemeIllustration: {
-    purpose: 'Illustration of a category on the topic cards of the home guide and of topic blocks. Categories are data, so the slug can be one the theme never saw.',
+    purpose: 'Illustration of a category on the topic cards of the home guide and of topic blocks. Categories are data, so the slug can be one the theme never saw: render nothing (not whitespace, and not several root nodes) for a slug the theme has no art for, and the core hides the empty box.',
     props: [
       { name: 'category', type: 'string', optional: false, description: 'The slug of a category of the CMS. It can be any slug: the core knows none, so render a neutral fallback or nothing for a slug the theme has no art for.' },
-      { name: 'color', type: 'string', optional: true, description: 'The category\'s color role, `var(--category-N)`, from the same ranking as its tag (`categoryColor`); the neutral `var(--ink-muted)` when omitted.' },
+      { name: 'color', type: 'string', optional: false, description: 'The category\'s color role, `var(--category-N)`, from the same ranking as its tag (`categoryColor`); the neutral `var(--ink-muted)` for a slug the list does not have. The core always passes it.' },
       { name: 'size', type: 'number', optional: true, description: 'Width in px; the core passes 200.' },
     ],
     defaultRenders: 'Nothing.',

@@ -31,19 +31,15 @@ describe('ThemeIllustration (Bogotá)', () => {
   it('draws nothing for a slug the theme does not know, not an empty box', async () => {
     const wrapper = await mountSuspended(ThemeIllustration, { props: { category: 'garden', color: 'var(--category-1)' } })
     expect(wrapper.find('svg').exists()).toBe(false)
+    expect(wrapper.element.nodeType).toBe(8)
     expect(wrapper.html()).not.toContain('--category-0')
-  })
-
-  it('uses the neutral role when it gets no color', async () => {
-    const wrapper = await mountSuspended(ThemeIllustration, { props: { category: 'diy' } })
-    expect(wrapper.get('svg').attributes('style')).toContain('color: var(--ink-muted)')
   })
 })
 
 describe('ThemeIllustration (core default)', () => {
   it('draws nothing, for any slug', async () => {
     for (const category of ['diy', 'garden']) {
-      const wrapper = await mountSuspended(DefaultIllustration, { props: { category, size: 160 } })
+      const wrapper = await mountSuspended(DefaultIllustration, { props: { category, color: 'var(--category-1)', size: 160 } })
       expect(wrapper.find('svg').exists()).toBe(false)
       expect(wrapper.text()).toBe('')
     }

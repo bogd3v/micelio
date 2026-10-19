@@ -90,12 +90,27 @@ describe('StrapiTopicsBlock', () => {
     await categoriesSettled()
     const cards = wrapper.findAll('.myc-topic')
     expect(cards.map(card => card.get('.myc-topic-title').text())).toEqual(['The kitchen', 'The garden', 'The shed', 'The attic, not in the list'])
-    expect(cards.map(card => card.get('.myc-topic-label').text())).toEqual(['Pillar 01', '01', '03', '04'])
+    expect(cards.map(card => card.get('.myc-topic-label').text())).toEqual(['Pillar 01', '02', '03', '04'])
     expect(cards.map(card => card.get('.myc-tag').attributes('style'))).toEqual([
       expect.stringContaining('var(--category-2)'), expect.stringContaining('var(--category-1)'), expect.stringContaining('var(--category-3)'), expect.stringContaining('var(--ink-muted)'),
     ])
-    // No bird and no caption for slugs the theme has no message for
+    // No bird and no caption for slugs the theme has no message for, and no art box left behind
     expect(wrapper.find('.myc-topic-bird').exists()).toBe(false)
+    expect(wrapper.findAll('.myc-topic-art svg')).toHaveLength(0)
+    expect(wrapper.findAll('.myc-topic-art').every(box => box.element.matches(':empty'))).toBe(true)
+  })
+
+  it('numbers the topics that are not pillars after the pillars, even when a featured category sorts after a plain one', async () => {
+    serveCategories(listed(['garden', 'kitchen', 'shed', 'cellar'], ['shed']))
+    const custom: StrapiTopics = {
+      ...block<StrapiTopics>('about.topics'),
+      topics: ['garden', 'kitchen', 'shed', 'cellar'].map((category, index) => ({ id: index + 1, category, title: category })),
+    }
+    const wrapper = await mountSuspended(StrapiTopicsBlock, { props: { block: custom } })
+    await vi.waitFor(() => expect(wrapper.findAll('.myc-topic-pillar')).toHaveLength(1))
+    const cards = wrapper.findAll('.myc-topic')
+    expect(cards.map(card => card.get('.myc-topic-title').text())).toEqual(['shed', 'garden', 'kitchen', 'cellar'])
+    expect(cards.map(card => card.get('.myc-topic-label').text())).toEqual(['Pillar 01', '02', '03', '04'])
   })
 })
 

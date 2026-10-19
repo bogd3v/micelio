@@ -333,7 +333,7 @@ What to do:
 
 1. Set `"contract": 2` in `theme.json`.
 2. Stop importing what was removed (the table). Nothing in the core replaces the constants, because the list is the CMS's.
-3. If you ship `slots/ThemeIllustration.vue`, type `category` as `string`, take the color from the new `color` prop, and render nothing (or a neutral picture) for a slug you have no art for.
+3. If you ship `slots/ThemeIllustration.vue`, type `category` as `string`, take the color from the new required `color` prop, and render nothing for a slug you have no art for (one root node or a bare comment, not whitespace or several nodes: the core hides the empty box). The bogota theme draws no invented bird for an unknown slug.
 4. Keep theme messages keyed by slug (`theme.illustration.<slug>`, `theme.guide.note.<slug>`) if you want them; the core reads them with `te()` and skips a slug that has none.
 5. Re-run `npm run theme:check` and look at `/_theme`: it now shows six neutral categories (two featured), so the sixth wraps to `--category-1`.
 
@@ -345,7 +345,7 @@ What to do:
 | `isCategory(value)` | `useCategories().has(slug)` |
 | `categoryColor(category)` | `categoryColor(categories, slug)`, or `useCategories().colorOf(slug)`: the rank by `order` then `slug`, modulo five; `var(--ink-muted)` for an unknown slug |
 | `CategoryCount` | `CategoryEntry` (adds `description`, `order`, `featured`) |
-| `ThemeIllustration` prop `category: Category` | `category: string` and the new optional `color: string` (the same color as the category's tag) |
+| `ThemeIllustration` prop `category: Category` | `category: string` and the new required `color: string` (the same color as the category's tag; the core always passes it) |
 | `PostCardProps.category`, `FieldGuideTopic.category`, `StrapiTopic.category` | `string` |
 
 Before and after, a bird per slug (the bogota slot):
@@ -367,7 +367,7 @@ const color = computed(() => categoryColor(props.category))
 <!-- contract 2 -->
 <script setup lang="ts">
 const BIRDS = ['privacidad', 'diy']
-const props = withDefaults(defineProps<{ category: string, color?: string, size?: number }>(), { color: 'var(--ink-muted)', size: 200 })
+const props = withDefaults(defineProps<{ category: string, color: string, size?: number }>(), { size: 200 })
 const hasBird = computed(() => BIRDS.includes(props.category))
 </script>
 <template>

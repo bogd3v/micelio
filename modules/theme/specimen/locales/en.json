@@ -49,6 +49,7 @@
     },
     "labels": {
       "categories": "Category tags (static and links)",
+      "illustrations": "Category illustrations of the theme",
       "chips": "Chips, keys and badges",
       "chip": "Chip",
       "pressed": "Pressed",

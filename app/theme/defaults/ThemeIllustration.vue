@@ -2,7 +2,7 @@
 // Core default: no illustration
 defineProps<{
   category: string
-  color?: string
+  color: string
   size?: number
 }>()
 </script>

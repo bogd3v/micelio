@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { CATEGORIES_SOURCE, useCategories } from '~/composables/useCategories'
+import { CATEGORIES_SOURCE_KEY } from '~/constants/categories'
+import { useCategories } from '~/composables/useCategories'
 import { categoryRequestCount, serveCategories } from './categoriesFixture'
 
 const Probe = defineComponent({
@@ -17,7 +18,7 @@ describe('useCategories with a fixed list', () => {
     const fixed = [{ id: 1, slug: 'one', name: 'One', description: null, order: 1, featured: false, count: 2 }]
     serveCategories([])
     const before = categoryRequestCount()
-    const wrapper = await mountSuspended(Probe, { global: { provide: { [CATEGORIES_SOURCE as symbol]: fixed } } })
+    const wrapper = await mountSuspended(Probe, { global: { provide: { [CATEGORIES_SOURCE_KEY]: fixed } } })
     await flushPromises()
     expect(categoryRequestCount()).toBe(before)
     expect(wrapper.text()).toBe('1')

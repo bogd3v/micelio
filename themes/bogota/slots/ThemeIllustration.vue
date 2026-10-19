@@ -4,11 +4,10 @@ const BIRDS = ['privacidad', 'diy', 'ia', 'software', 'linux']
 
 const props = withDefaults(defineProps<{
   category: string
-  /** The category's color role, from the same ranking as its tag; the core passes it. */
-  color?: string
+  /** The category's color role, from the same ranking as its tag; the core always passes it. */
+  color: string
   size?: number
 }>(), {
-  color: 'var(--ink-muted)',
   size: 200,
 })
 

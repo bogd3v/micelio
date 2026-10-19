@@ -1248,7 +1248,7 @@ A topic of the topics section, with the category it belongs to, `about.topic`.
 ```ts
 export interface StrapiTopic {
   id: number
-  /** The slug of a category of the CMS: it sets the colour of the topic and whether it is a pillar (a featured category). */
+  /** The slug of a category of the CMS: it sets the colour of the topic and whether it is a pillar (a featured category). On a site without a blog, or when the categories request fails, the topics show no pillars, neutral colours and the block's own order. */
   category: string
   title: string
   description?: string | null

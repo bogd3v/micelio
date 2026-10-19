@@ -49,6 +49,7 @@
     },
     "labels": {
       "categories": "Etiquetas de categoría (estáticas y enlaces)",
+      "illustrations": "Ilustraciones de categoría del tema",
       "chips": "Chips, teclas e insignias",
       "chip": "Chip",
       "pressed": "Presionado",

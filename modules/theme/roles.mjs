@@ -1,4 +1,4 @@
-// Contract v1 roles (ADR 0005, section 1), as plain ESM so the contract, the token builder and scripts/check-primitives.mjs share one list.
+// Contract roles (ADR 0005, section 1), as plain ESM so the contract, the token builder and scripts/check-primitives.mjs share one list.
 
 const states = ['success', 'warning', 'danger', 'info']
 

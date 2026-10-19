@@ -43,3 +43,11 @@ test('shows six neutral categories whose colors use every role and wrap to the f
   const colors = await tags.evaluateAll(elements => elements.map(element => (element as HTMLElement).style.getPropertyValue('--tag-color')))
   expect(colors).toEqual(['var(--category-1)', 'var(--category-2)', 'var(--category-3)', 'var(--category-4)', 'var(--category-5)', 'var(--category-1)'])
 })
+
+test('draws the illustrations of the theme, one per slug it ships art for', async ({ page }) => {
+  await page.goto('/_theme', { waitUntil: 'networkidle' })
+  const row = page.locator('[data-specimen="illustrations"]')
+  const count = await row.count()
+  // A theme with no art (the starter) has no row; one with art (bogota) shows each picture
+  if (count) await expect(row.locator('svg')).not.toHaveCount(0)
+})

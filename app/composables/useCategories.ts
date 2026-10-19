@@ -1,15 +1,9 @@
 import { hasInjectionContext, inject } from 'vue'
-import type { ComputedRef, InjectionKey } from 'vue'
+import type { ComputedRef } from 'vue'
 import type { CategoryEntry, Locale } from '~/interfaces'
-import { categoryColor } from '~/helpers/categories'
+import { CATEGORIES_SOURCE_KEY, NEUTRAL_CATEGORY_COLOR } from '~/constants/categories'
+import { categoryColorRoles } from '~/helpers/categories'
 import { categoryNameIn } from '~/helpers/categoryList'
-
-/**
- * The injection key of a fixed category list, which `useCategories()` reads instead of calling the CMS; the `/_theme` specimen provides it.
- *
- * @internal
- */
-export const CATEGORIES_SOURCE: InjectionKey<readonly CategoryEntry[]> = Symbol('micelio-categories-source')
 
 /**
  * The categories of the CMS in the current locale and the ways to ask about them.
@@ -46,7 +40,7 @@ export function useCategories(): UseCategories {
   const { fetchCategories } = useStrapi()
   const { blogEnabled } = useStaticSite()
 
-  const fixed = hasInjectionContext() ? inject(CATEGORIES_SOURCE, null) : null
+  const fixed = hasInjectionContext() ? inject<readonly CategoryEntry[] | null>(CATEGORIES_SOURCE_KEY, null) : null
   // The key follows the locale: the blog page is reused when the language changes, so setup does not run again
   const request = blogEnabled && !fixed ? fetchCategories(computed(() => locale.value as Locale)) : null
   const categories = computed<CategoryEntry[]>(() => fixed ? [...fixed] : request?.data.value ?? [])
@@ -57,8 +51,11 @@ export function useCategories(): UseCategories {
     return categories.value.some(category => category.slug === slug)
   }
 
+  // Ranked once per list, not once per tag
+  const colorRoles = computed<Map<string, string>>(() => categoryColorRoles(categories.value))
+
   function colorOf(slug: string | null | undefined): string {
-    return categoryColor(categories.value, slug)
+    return (slug ? colorRoles.value.get(slug) : undefined) ?? NEUTRAL_CATEGORY_COLOR
   }
 
   function labelOf(slug: string | null | undefined): string {

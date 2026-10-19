@@ -5,7 +5,7 @@ const FEED_CACHE = 'public, s-maxage=1800, stale-while-revalidate=3600'
 const CATEGORY_FEED_PARAMETER = {
   name: 'file',
   in: 'path',
-  description: 'The category slug followed by `.xml`, such as `linux.xml`. An unknown category is a 404.',
+  description: 'The category slug followed by `.xml`, such as `garden.xml`. An unknown category is a 404.',
   schema: { type: 'string', pattern: '^[a-z-]+\\.xml$' },
 } as const
 

@@ -80,7 +80,7 @@ describe('when the CMS cannot list the categories', () => {
   it('does not guess a redirect for a legacy filter: without the list a category cannot be told from a tag', async () => {
     mock.failures.categories = true
     const response = await fetch('/es/blog?category=linux', { redirect: 'manual' })
-    expect(response.status).not.toBe(301)
+    expect(response.status).toBe(200)
     expect(response.headers.get('location')).toBeNull()
   })
 

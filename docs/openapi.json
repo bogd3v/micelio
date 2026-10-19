@@ -4869,7 +4869,7 @@
           {
             "name": "file",
             "in": "path",
-            "description": "The category slug followed by `.xml`, such as `linux.xml`. An unknown category is a 404.",
+            "description": "The category slug followed by `.xml`, such as `garden.xml`. An unknown category is a 404.",
             "required": true,
             "schema": {
               "type": "string",
@@ -5031,7 +5031,7 @@
           {
             "name": "file",
             "in": "path",
-            "description": "The category slug followed by `.xml`, such as `linux.xml`. An unknown category is a 404.",
+            "description": "The category slug followed by `.xml`, such as `garden.xml`. An unknown category is a 404.",
             "required": true,
             "schema": {
               "type": "string",

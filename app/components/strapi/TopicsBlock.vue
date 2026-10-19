@@ -37,8 +37,9 @@ useResizeObserver(othersRef, measure)
 
 function label(topic: StrapiTopic): string {
   const pillar = pillars.value.indexOf(topic)
+  // The others count on from the pillars, so the numbers run 01, 02, 03 in the order the cards appear
   return pillar === -1
-    ? padCount(topics.value.indexOf(topic) + 1)
+    ? padCount(pillars.value.length + others.value.indexOf(topic) + 1)
     : t('home.guide.pillar', { number: padCount(pillar + 1) })
 }
 </script>

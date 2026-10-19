@@ -173,6 +173,11 @@
         padding: 40px;
     }
 
+    /* No art for the category: the title and text take the whole width */
+    .myc-topic-pillar:has(.myc-topic-art:empty) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
     .myc-topic-pillar .myc-topic-head {
         grid-area: head;
     }
