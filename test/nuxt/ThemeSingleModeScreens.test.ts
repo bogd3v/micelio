@@ -19,7 +19,7 @@ describe('a single-mode theme', () => {
     expect(labels.some(label => label.includes('theme'))).toBe(false)
   })
 
-  it('drops the bd-theme item from the privacy page', async () => {
+  it('drops the theme key from the privacy page', async () => {
     const wrapper = await mountSuspended(PrivacyPage)
     const keys = wrapper.findAll('.myc-privacy-keys .myc-privacy-key').map(node => node.text())
     expect(keys).toEqual(['micelio-privacy-notice', 'micelio-read-articles'])

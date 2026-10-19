@@ -24,7 +24,7 @@ describe('theme validation at discovery', () => {
     expect(() => discoverThemes([root])).toThrow(/"id" must match/)
   })
 
-  it.each(['myc', 'micelio', 'bd'])('rejects the reserved id "%s"', (id) => {
+  it.each(['myc', 'micelio'])('rejects the reserved id "%s"', (id) => {
     const root = tmp()
     theme(root, id)
     expect(() => discoverThemes([root])).toThrow(/is reserved/)

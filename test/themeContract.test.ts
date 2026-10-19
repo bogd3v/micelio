@@ -3,7 +3,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSyn
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CONTRACT_VERSION } from '../modules/theme/constants'
-import { MAX_MODES, contractProblems, themeJsonSchema, validateContract } from '../modules/theme/contract'
+import { MAX_MODES, contractProblems, themeIdProblem, themeJsonSchema, validateContract } from '../modules/theme/contract'
 import { loadHooks } from '../modules/theme/hooks'
 import { discoverThemes, themeRoots } from '../modules/theme/themes'
 import { themeProblems, validateThemes } from '../modules/theme/validate'
@@ -71,13 +71,13 @@ describe('the fixture themes', () => {
 })
 
 describe('reserved theme ids', () => {
-  it.each(['myc', 'micelio', 'bd'])('rejects the id "%s" with its reason', (id) => {
+  it.each(['myc', 'micelio'])('rejects the id "%s" with its reason', (id) => {
     const manifest = { ...minimal(), id }
     expect(contractProblems(manifest).join('\n')).toMatch(new RegExp(`"id" "${id}" is reserved`))
   })
 
-  it('names the transition as the reason for "bd"', () => {
-    expect(contractProblems({ ...minimal(), id: 'bd' }).join('\n')).toContain('transition messages')
+  it('no longer reserves "bd"', () => {
+    expect(themeIdProblem('bd')).toBeNull()
   })
 
   it('reports a malformed id once', () => {

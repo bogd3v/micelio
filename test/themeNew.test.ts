@@ -68,7 +68,7 @@ describe('scaffoldTheme', () => {
     expect(() => scaffoldTheme(STARTER, join(tmp, 'x'), 'Bad_Id', [])).toThrow(/Invalid theme id/)
   })
 
-  it.each(['myc', 'micelio', 'bd'])('rejects the reserved id "%s"', (id) => {
+  it.each(['myc', 'micelio'])('rejects the reserved id "%s"', (id) => {
     expect(() => scaffoldTheme(STARTER, join(tmp, 'x'), id, [])).toThrow(/Invalid theme id.*reserved/)
   })
 

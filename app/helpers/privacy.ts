@@ -9,8 +9,6 @@ import { THEME_STORAGE_KEY } from './theme'
  * @internal Exported for tests.
  */
 export const PRIVACY_NOTICE_STORAGE_KEY = 'micelio-privacy-notice'
-// TODO(#422): remove the bd-privacy-notice fallback
-const LEGACY_PRIVACY_NOTICE_STORAGE_KEY = 'bd-privacy-notice'
 
 interface SiteCookie {
   name: string
@@ -44,27 +42,20 @@ function browserStorage(): NoticeStorage | null {
  * Whether the reader has dismissed the privacy notice.
  *
  * @remarks
- * A value under the legacy key is moved to the current key when found. Answers false without storage, and when storage throws.
+ * Answers false without storage, and when storage throws.
  * `storage` defaults to `localStorage` when the page has one.
  */
 export function isPrivacyNoticeDismissed(storage: NoticeStorage | null = browserStorage()): boolean {
   try {
     if (!storage) return false
-    if (storage.getItem(PRIVACY_NOTICE_STORAGE_KEY) === '1') {
-      storage.removeItem(LEGACY_PRIVACY_NOTICE_STORAGE_KEY)
-      return true
-    }
-    // TODO(#422): remove the bd-privacy-notice fallback
-    if (storage.getItem(LEGACY_PRIVACY_NOTICE_STORAGE_KEY) !== '1') return false
-    dismissPrivacyNotice(storage)
-    return true
+    return storage.getItem(PRIVACY_NOTICE_STORAGE_KEY) === '1'
   } catch {
     return false
   }
 }
 
 /**
- * Stores that the privacy notice was dismissed, and removes the legacy key.
+ * Stores that the privacy notice was dismissed.
  *
  * @remarks
  * Answers whether the value was stored: false without storage, and when storage throws.
@@ -73,7 +64,6 @@ export function dismissPrivacyNotice(storage: NoticeStorage | null = browserStor
   if (!storage) return false
   try {
     storage.setItem(PRIVACY_NOTICE_STORAGE_KEY, '1')
-    storage.removeItem(LEGACY_PRIVACY_NOTICE_STORAGE_KEY)
     return true
   } catch {
     return false

@@ -27,7 +27,7 @@ cp -r test/fixtures/themes/minimal themes/my-theme
 
 Then edit `themes/my-theme/theme.json`:
 
-- `id` must equal the folder name and match `^[a-z0-9-]+$` (the build fails otherwise). `myc` and `micelio` are reserved for the core, and `bd` too until the transition messages are removed (ADR 0005, amendment of 2026-10-08): a theme's own `<id>-*` classes must not be confusable with the core's.
+- `id` must equal the folder name and match `^[a-z0-9-]+$` (the build fails otherwise). `myc` and `micelio` are reserved for the core (ADR 0005, amendment of 2026-10-08): a theme's own `<id>-*` classes must not be confusable with the core's.
 - `$schema` points to `../../../../themes/theme.schema.json` in the fixture; inside `themes/` change it to `../theme.schema.json`. The schema gives autocomplete and is generated from `modules/theme/contract.ts` (`npm run theme:schema`).
 - `"contract": 2` is required; any other value fails, and a theme that declares 1 gets a message that points to the [upgrade notes](#upgrade-notes).
 - `name` is optional.
@@ -197,16 +197,6 @@ Plain CSS, imported into the layer `myc.theme`: after the core's components, lay
 - The generated role CSS goes through the same checks.
 
 Hooks are validated by the build and by `theme:check`. `npm run lint` does not check them.
-
-### A theme written for the `bd-` prefix
-
-Until the rename of #420 the core's classes, ids and `data-*` attributes started with `bd-`. A theme kept outside the repository (`MICELIO_THEME_DIRS`) that selects them fails `theme:check` with `".bd-card" was renamed ".myc-card"`. The fix is one command, run in the theme's folder; it changes nothing but the prefix, though it rewrites any `bd-` word, so review the diff before committing:
-
-```bash
-find . -type f \( -name '*.css' -o -name '*.vue' -o -name '*.ts' -o -name '*.json' \) -not -path '*/node_modules/*' -not -path '*/.git/*' -exec perl -pi -e 's/\bbd-/myc-/g' {} +
-```
-
-The old names are explained by the validator for one release line only. The roles, token names, mode ids and the `data-theme`, `data-scheme`, `data-layout`, `data-variant`, `data-section`, `data-level` and `data-mode` attributes did not change.
 
 ### `sections.css`
 

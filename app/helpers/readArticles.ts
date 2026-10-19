@@ -1,7 +1,5 @@
 /** Where the ids of the articles a visitor already read are stored. */
 export const READ_STORAGE_KEY = 'micelio-read-articles'
-// TODO(#422): remove the bd-read-articles fallback
-const LEGACY_READ_STORAGE_KEY = 'bd-read-articles'
 /** The share of an article that a reader must pass before it counts as read, from 0 to 1. */
 export const READ_THRESHOLD = 0.6
 /** The most article ids kept in storage. The oldest ids are dropped first. */
@@ -39,26 +37,21 @@ export function parseReadIds(raw: string | null): string[] {
  * The ids of the articles already read, from storage.
  *
  * @remarks
- * An empty list is returned when there is no storage or it cannot be read. When only the legacy key holds ids, they are saved under the current key, and the legacy key is removed.
+ * An empty list is returned when there is no storage or it cannot be read.
  *
  * @param storage - The storage to read from. Defaults to `localStorage`, and null when the browser has none.
  */
 export function loadReadIds(storage: ReadStorage | null = browserStorage()): string[] {
   try {
     if (!storage) return []
-    const current = storage.getItem(READ_STORAGE_KEY)
-    if (current !== null) return parseReadIds(current)
-    // TODO(#422): remove the bd-read-articles fallback
-    const ids = parseReadIds(storage.getItem(LEGACY_READ_STORAGE_KEY))
-    if (ids.length > 0) saveReadIds(ids, storage)
-    return ids
+    return parseReadIds(storage.getItem(READ_STORAGE_KEY))
   } catch {
     return []
   }
 }
 
 /**
- * Stores the article ids, keeping the most recent `READ_MAX_ENTRIES`, and removes the legacy key. Returns false when there is no storage or a storage call throws.
+ * Stores the article ids, keeping the most recent `READ_MAX_ENTRIES`. Returns false when there is no storage or a storage call throws.
  *
  * @remarks
  * An empty list removes the stored key.
@@ -70,7 +63,6 @@ export function saveReadIds(ids: string[], storage: ReadStorage | null = browser
   try {
     if (ids.length === 0) storage.removeItem(READ_STORAGE_KEY)
     else storage.setItem(READ_STORAGE_KEY, JSON.stringify(ids.slice(-READ_MAX_ENTRIES)))
-    storage.removeItem(LEGACY_READ_STORAGE_KEY)
     return true
   } catch {
     return false

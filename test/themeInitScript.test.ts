@@ -48,27 +48,13 @@ describe('buildInitScript with the Bogota modes', () => {
     expect(run(BOGOTA, { stored: { 'micelio-theme': 'noche' }, prefersLight: true })).toEqual({ 'data-theme': 'noche', 'data-scheme': 'dark' })
   })
 
-  it('reads bd-theme behind micelio-theme and ahead of the devbog keys', () => {
-    expect(run(BOGOTA, { stored: { 'bd-theme': 'dia' } })).toEqual({ 'data-theme': 'dia', 'data-scheme': 'light' })
-    expect(run(BOGOTA, { stored: { 'micelio-theme': 'noche', 'bd-theme': 'dia' } })['data-theme']).toBe('noche')
-    expect(run(BOGOTA, { stored: { 'bd-theme': 'dia', 'devbog-theme': 'noche' } })['data-theme']).toBe('dia')
-    expect(run(BOGOTA, { stored: { 'bd-theme': 'sepia', 'devbog-theme': 'dia' } })['data-theme']).toBe('dia')
-  })
-
-  it('reads the previous theme key', () => {
-    expect(run(BOGOTA, { stored: { 'devbog-theme': 'dia' } })['data-theme']).toBe('dia')
-    expect(run(BOGOTA, { stored: { 'micelio-theme': 'noche', 'devbog-theme': 'dia' } })['data-theme']).toBe('noche')
-  })
-
-  it('maps the legacy color mode through the scheme', () => {
-    expect(run(BOGOTA, { stored: { 'devbog-color-mode': 'light' } })['data-theme']).toBe('dia')
-    expect(run(BOGOTA, { stored: { 'devbog-color-mode': 'dark' }, prefersLight: true })['data-theme']).toBe('noche')
+  it('ignores the keys of earlier versions', () => {
+    expect(run(BOGOTA, { stored: { 'bd-theme': 'noche', 'devbog-theme': 'noche', 'devbog-color-mode': 'dark' }, prefersLight: true })['data-theme']).toBe('dia')
   })
 
   it('follows the system preference without a stored mode', () => {
     expect(run(BOGOTA, { prefersLight: true })).toEqual({ 'data-theme': 'dia', 'data-scheme': 'light' })
     expect(run(BOGOTA, { prefersLight: false })).toEqual({ 'data-theme': 'noche', 'data-scheme': 'dark' })
-    expect(run(BOGOTA, { stored: { 'devbog-color-mode': 'system' }, prefersLight: true })['data-theme']).toBe('dia')
   })
 
   it('keeps an invalid stored value and falls through, never writing storage', () => {
@@ -96,14 +82,12 @@ describe('buildInitScript with other modes', () => {
     const one: ThemeModeDefinition[] = [{ id: 'paper', scheme: 'light' }]
     expect(run(one, { prefersLight: false })).toEqual({ 'data-theme': 'paper', 'data-scheme': 'light' })
     expect(run(one, { stored: { 'micelio-theme': 'noche' } })['data-theme']).toBe('paper')
-    expect(run(one, { stored: { 'devbog-color-mode': 'dark' } })['data-theme']).toBe('paper')
   })
 
   it('works with three modes, matching the first mode of the scheme', () => {
     expect(run(THREE, { prefersLight: true })['data-theme']).toBe('sand')
     expect(run(THREE, { prefersLight: false })['data-theme']).toBe('dusk')
     expect(run(THREE, { stored: { 'micelio-theme': 'dawn' } })).toEqual({ 'data-theme': 'dawn', 'data-scheme': 'light' })
-    expect(run(THREE, { stored: { 'devbog-color-mode': 'light' } })['data-theme']).toBe('sand')
   })
 
   it('works light-first: the first mode is the fallback, the system preference still wins', () => {
@@ -115,7 +99,6 @@ describe('buildInitScript with other modes', () => {
   it('uses the first mode when the theme has no mode of the preferred scheme', () => {
     const dark: ThemeModeDefinition[] = [{ id: 'a', scheme: 'dark' }, { id: 'b', scheme: 'dark' }]
     expect(run(dark, { prefersLight: true })['data-theme']).toBe('a')
-    expect(run(dark, { stored: { 'devbog-color-mode': 'light' }, prefersLight: true })['data-theme']).toBe('a')
   })
 
   it('is byte-identical for the same modes and small for six', () => {

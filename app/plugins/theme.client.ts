@@ -1,11 +1,10 @@
 import { modes } from '#micelio/theme'
-import { isThemeMode, migrateStoredMode, readStoredMode, systemMode } from '~/helpers/theme'
+import { isThemeMode, readStoredMode, systemMode } from '~/helpers/theme'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const { sync } = useTheme()
 
   nuxtApp.hooks.hookOnce('app:suspense:resolve', () => {
-    migrateStoredMode(modes)
     const current = document.documentElement.getAttribute('data-theme')
     sync(isThemeMode(modes, current) ? current : systemMode(modes))
 

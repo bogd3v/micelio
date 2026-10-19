@@ -1,14 +1,14 @@
 import type { ThemeMode, ThemeModeDefinition } from '../interfaces/theme'
-import { BD_THEME_STORAGE_KEY, LEGACY_THEME_STORAGE_KEY, PREVIOUS_THEME_STORAGE_KEY, THEME_STORAGE_KEY } from '../../modules/theme/init-script.mjs'
+import { THEME_STORAGE_KEY } from '../../modules/theme/init-script.mjs'
 
-export { LEGACY_THEME_STORAGE_KEY, PREVIOUS_THEME_STORAGE_KEY, THEME_STORAGE_KEY }
+export { THEME_STORAGE_KEY }
 
 /** Whether a value is the id of one of the theme `modes`. */
 export function isThemeMode(modes: ThemeModeDefinition[], value: unknown): value is ThemeMode {
   return modes.some(mode => mode.id === value)
 }
 
-/** The first mode with the scheme (the legacy `dark` | `light` color modes map through it). */
+/** The first mode with the scheme, or null when no mode has it. */
 export function modeForScheme(modes: ThemeModeDefinition[], scheme: string | null): ThemeMode | null {
   return modes.find(mode => mode.scheme === scheme)?.id ?? null
 }
@@ -44,42 +44,13 @@ export function readStoredMode(modes: ThemeModeDefinition[]): ThemeMode | null {
   }
 }
 
-function removeLegacyKeys(): void {
-  localStorage.removeItem(BD_THEME_STORAGE_KEY)
-  localStorage.removeItem(PREVIOUS_THEME_STORAGE_KEY)
-  localStorage.removeItem(LEGACY_THEME_STORAGE_KEY)
-}
-
-/** Saves a mode in the browser and removes the keys of earlier versions. Returns false when storage is unavailable. */
+/** Saves a mode in the browser. Returns false when storage is unavailable. */
 export function storeMode(mode: ThemeMode): boolean {
   try {
     localStorage.setItem(THEME_STORAGE_KEY, mode)
-    removeLegacyKeys()
     return true
   } catch {
     return false
-  }
-}
-
-/**
- * Moves the previous keys (`bd-theme`, `devbog-theme`, `devbog-color-mode`, in that order) into `micelio-theme`, only while it is absent:
- * a stored value that is not a mode is the user's, not ours to overwrite.
- */
-export function migrateStoredMode(modes: ThemeModeDefinition[]): void {
-  try {
-    const stored = localStorage.getItem(THEME_STORAGE_KEY)
-    if (stored !== null) {
-      if (isThemeMode(modes, stored)) removeLegacyKeys()
-      return
-    }
-    // TODO(#422): remove the bd-theme fallback
-    const bd = localStorage.getItem(BD_THEME_STORAGE_KEY)
-    const previous = localStorage.getItem(PREVIOUS_THEME_STORAGE_KEY)
-    const mode = isThemeMode(modes, bd) ? bd : isThemeMode(modes, previous) ? previous : modeForScheme(modes, localStorage.getItem(LEGACY_THEME_STORAGE_KEY))
-    if (mode) storeMode(mode)
-    else removeLegacyKeys()
-  } catch {
-    return
   }
 }
 
