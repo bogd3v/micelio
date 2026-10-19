@@ -36,7 +36,7 @@ export interface BlogFilters {
  * @public
  */
 export interface PostMonth {
-  /** The month as `YYYY-MM`, in `America/Bogota` time (`TIME_ZONE` in `helpers/blog.ts`). */
+  /** The month as `YYYY-MM`, in the site's time zone (`timezone` of the site settings). */
   key: string
   /** The month's name in the page's locale. */
   label: string

@@ -7697,6 +7697,9 @@
               ""
             ]
           },
+          "timezone": {
+            "type": "string"
+          },
           "supportHandle": {
             "type": "string"
           },
@@ -7724,6 +7727,7 @@
           "privacyContactEmail",
           "privacyUpdatedAt",
           "privacyJurisdiction",
+          "timezone",
           "supportHandle",
           "modules"
         ],

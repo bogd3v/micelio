@@ -4,6 +4,7 @@ import { formatDotDate } from '~/helpers/formatDate'
 definePageMeta({ middleware: 'auth' })
 
 const { t } = useI18n()
+const site = useSite()
 const { localizePath } = useLocaleUtils()
 const { user, isEditor, logout } = useAuth()
 useAccountPage(() => t('account.meta.profile'))
@@ -37,7 +38,7 @@ async function signOut(): Promise<void> {
         <dd><span :class="['myc-badge', `myc-badge-${user.role}`]">{{ roleLabel }}</span></dd>
         <template v-if="user.createdAt">
           <dt class="myc-eyebrow">{{ t('account.profile.memberSince') }}</dt>
-          <dd><span class="myc-account-mono">{{ formatDotDate(user.createdAt) }}</span></dd>
+          <dd><span class="myc-account-mono">{{ formatDotDate(user.createdAt, site.timezone) }}</span></dd>
         </template>
       </dl>
       <NuxtLink v-if="isEditor" :to="localizePath('/drafts')" class="myc-account-drafts">

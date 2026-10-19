@@ -15,10 +15,11 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useI18n()
+const site = useSite()
 const { localizePath } = useLocaleUtils()
 
 const edited = computed<string>(() => {
-  const date = formatDotDateTime(props.updatedAt)
+  const date = formatDotDateTime(props.updatedAt, site.value.timezone)
   if (!date) return ''
   return [t('drafts.strip.edited', { date }), props.author].filter(Boolean).join(' · ')
 })

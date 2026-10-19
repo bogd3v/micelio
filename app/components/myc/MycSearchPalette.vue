@@ -42,7 +42,7 @@ const groups = computed<PaletteGroup[]>(() => {
         kind: 'article',
         label: post.title,
         snippet: post.matchedIn === 'title' ? undefined : post.snippet || undefined,
-        hint: formatDotDate(post.publishedAt) || undefined,
+        hint: formatDotDate(post.publishedAt, site.value.timezone) || undefined,
         color: post.category?.slug ? colorOf(post.category.slug) : 'var(--link)',
         to: `${localizePath('/blog')}/${post.slug}`,
       }))

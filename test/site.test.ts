@@ -8,6 +8,7 @@ const appSite: AppSiteConfig = {
   name: 'Example',
   description: 'A blog',
   url: 'https://example.org',
+  timezone: 'UTC',
   author: { name: 'Ada', url: 'https://example.org/about' },
   socialLinks: [
     { network: 'linkedin', url: 'https://linkedin.com/in/ada' },
@@ -38,6 +39,7 @@ describe('siteFromAppConfig', () => {
       privacyContactEmail: 'ada@example.org',
       privacyUpdatedAt: '2026-10-01T12:00:00-05:00',
       privacyJurisdiction: '',
+      timezone: 'UTC',
       supportHandle: 'ada',
       modules: ALL_MODULES_ON,
     })
@@ -310,6 +312,7 @@ describe('empty app.config defaults', () => {
     name: 'Micelio',
     description: '',
     url: '',
+    timezone: 'UTC',
     author: { name: '', url: '' },
     socialLinks: [],
     support: { buyMeACoffee: '' },
@@ -330,6 +333,16 @@ describe('empty app.config defaults', () => {
       privacyJurisdiction: '',
       supportHandle: '',
     })
+  })
+
+  it('takes the time zone Strapi sets and keeps UTC for an unknown, empty or missing one', () => {
+    expect(neutral.timezone).toBe('UTC')
+    expect(mergeSite(neutral, parseSiteSettings({ timezone: 'America/Bogota' })).timezone).toBe('America/Bogota')
+    expect(mergeSite(neutral, parseSiteSettings({ timezone: 'Mars/Olympus' })).timezone).toBe('UTC')
+    expect(mergeSite(neutral, parseSiteSettings({ timezone: '+05:00' })).timezone).toBe('UTC')
+    expect(mergeSite(neutral, parseSiteSettings({ timezone: '' })).timezone).toBe('UTC')
+    expect(mergeSite(neutral, parseSiteSettings({ timezone: null })).timezone).toBe('UTC')
+    expect(mergeSite(neutral, parseSiteSettings({ name: 'Blog' })).timezone).toBe('UTC')
   })
 
   it('takes the jurisdiction Strapi sets and drops one it does not know', () => {

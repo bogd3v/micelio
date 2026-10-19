@@ -14,6 +14,21 @@ function lenient<T extends z.ZodType>(schema: T) {
 
 const text = z.string().trim().min(1)
 const httpUrl = text.regex(/^https?:\/\/\S+$/)
+
+/** The shape of an IANA name (`Area/City`); the runtime alone would also accept offsets such as `+05:00`, which older browsers reject. */
+const TIME_ZONE_NAME = /^[A-Za-z][A-Za-z0-9]*(?:[/_+-][A-Za-z0-9]+)*$/
+
+/** Whether `value` is an IANA time zone name the runtime knows. */
+function isTimeZone(value: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: value })
+    return true
+  } catch {
+    // Not a time zone the runtime knows: the value is dropped and the default stays
+    return false
+  }
+}
+
 const email = text.refine(isValidEmail)
 
 const image = z.object({
@@ -78,6 +93,7 @@ export const siteSettingsSchema = z.object({
   privacyContactEmail: lenient(email),
   privacyUpdatedAt: lenient(z.iso.datetime({ offset: true })),
   privacyJurisdiction: lenient(z.enum(PRIVACY_JURISDICTIONS)),
+  timezone: lenient(text.regex(TIME_ZONE_NAME).refine(isTimeZone)),
   supportHandle: lenient(text.regex(/^[A-Za-z0-9_-]+$/)),
   securityContact: lenient(z.string().transform(value => validSecurityContact(value)).pipe(z.string())),
   modules: lenient(modules),

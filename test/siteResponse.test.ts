@@ -8,6 +8,7 @@ const config: AppSiteConfig = {
   name: 'Micelio',
   description: '',
   url: '',
+  timezone: 'UTC',
   author: { name: '', url: '' },
   socialLinks: [],
   support: { buyMeACoffee: '' },

@@ -11,12 +11,13 @@ const props = defineProps<{
 }>()
 
 const { t, locale } = useI18n()
+const site = useSite()
 const { localizePath } = useLocaleUtils()
 const { isRead } = useReadArticles()
 
 const postStats = usePostStats(toRef(props, 'posts'), toRef(props, 'federated'))
 
-const months = computed<PostMonth[]>(() => groupPostsByMonth(props.posts, locale.value))
+const months = computed<PostMonth[]>(() => groupPostsByMonth(props.posts, locale.value, site.value.timezone))
 
 function countLabel(month: PostMonth): string {
   return t('blog.log.count', { count: padCount(month.posts.length) }, month.posts.length)
@@ -36,7 +37,7 @@ function postHref(post: PostListItem): string {
       </header>
       <ul class="myc-log-list">
         <li v-for="post in month.posts" :key="post.id" class="myc-log-row">
-          <time class="myc-meta myc-log-date" :datetime="post.publishedAt ?? undefined">{{ formatDotDate(post.publishedAt) }}</time>
+          <time class="myc-meta myc-log-date" :datetime="post.publishedAt ?? undefined">{{ formatDotDate(post.publishedAt, site.timezone) }}</time>
           <span class="myc-log-category">
             <MycCategoryTag v-if="post.category?.slug" :category="post.category.slug" :name="post.category.name ?? undefined" />
           </span>

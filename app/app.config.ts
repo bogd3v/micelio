@@ -4,6 +4,8 @@ export default defineAppConfig({
     name: 'Micelio',
     description: '',
     url: '',
+    // IANA name; the CMS site setting `timezone` replaces it
+    timezone: 'UTC',
     author: {
       name: '',
       url: '',

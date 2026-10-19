@@ -22,7 +22,7 @@ const defaultOgImage = useDefaultOgImage()
 
 const contactEmail = computed<string>(() => site.value.privacyContactEmail)
 const rightsLead = computed<string>(() => t(privacyRightsLeadKey(site.value.privacyJurisdiction)))
-const updatedAt = computed<string>(() => formatDotDate(site.value.privacyUpdatedAt))
+const updatedAt = computed<string>(() => formatDotDate(site.value.privacyUpdatedAt, site.value.timezone))
 
 const modeNames = computed<string>(() => formatModeList(
   modes.map(mode => modeLabel(mode.id)),
