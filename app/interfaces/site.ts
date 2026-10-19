@@ -29,6 +29,20 @@ export type SiteModules = Record<SiteModule, boolean>
 export const SOCIAL_NETWORKS = ['github', 'gitlab', 'codeberg', 'linkedin', 'mastodon', 'bluesky', 'x', 'website'] as const
 
 /**
+ * The jurisdictions whose privacy law the privacy page can cite. A site with none set names no law.
+ *
+ * @public
+ */
+export const PRIVACY_JURISDICTIONS = ['colombia'] as const
+
+/**
+ * One of the jurisdictions listed in `PRIVACY_JURISDICTIONS`.
+ *
+ * @public
+ */
+export type PrivacyJurisdiction = typeof PRIVACY_JURISDICTIONS[number]
+
+/**
  * One of the networks listed in `SOCIAL_NETWORKS`.
  *
  * @public
@@ -139,6 +153,8 @@ export interface Site {
   privacyContactEmail: string
   /** ISO 8601 date of the last change to the privacy page; empty when unset. */
   privacyUpdatedAt: string
+  /** The law the rights text of the privacy page cites; empty names none. */
+  privacyJurisdiction: PrivacyJurisdiction | ''
   /** Handle of the support account; the support link is shown only when it is set. */
   supportHandle: string
   /** Which optional modules are on. */

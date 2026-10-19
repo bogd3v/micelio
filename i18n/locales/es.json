@@ -800,8 +800,12 @@
     "rights": {
       "label": "Tus derechos",
       "title": "Conocer, corregir o borrar",
-      "body": "Según la Ley 1581 de 2012 de Colombia, puedes conocer, actualizar, rectificar y pedir que se supriman tus datos personales. Escribe a {email} y te respondemos.",
-      "bodyNoContact": "Según la Ley 1581 de 2012 de Colombia, puedes conocer, actualizar, rectificar y pedir que se supriman tus datos personales."
+      "body": "Puedes conocer, actualizar, rectificar y pedir que se supriman tus datos personales. Escribe a {email} y te respondemos.",
+      "bodyNoContact": "Puedes conocer, actualizar, rectificar y pedir que se supriman tus datos personales.",
+      "colombia": {
+        "body": "Según la Ley 1581 de 2012 de Colombia, puedes conocer, actualizar, rectificar y pedir que se supriman tus datos personales. Escribe a {email} y te respondemos.",
+        "bodyNoContact": "Según la Ley 1581 de 2012 de Colombia, puedes conocer, actualizar, rectificar y pedir que se supriman tus datos personales."
+      }
     }
   },
   "newsletter": {

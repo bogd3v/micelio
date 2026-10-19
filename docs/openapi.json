@@ -7690,6 +7690,13 @@
           "privacyUpdatedAt": {
             "type": "string"
           },
+          "privacyJurisdiction": {
+            "type": "string",
+            "enum": [
+              "colombia",
+              ""
+            ]
+          },
           "supportHandle": {
             "type": "string"
           },
@@ -7716,6 +7723,7 @@
           "contactEmail",
           "privacyContactEmail",
           "privacyUpdatedAt",
+          "privacyJurisdiction",
           "supportHandle",
           "modules"
         ],

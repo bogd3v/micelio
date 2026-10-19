@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 // Run by playwright.empty-site.config.ts: the mock's site-setting has no value, so every page shows the app.config.ts defaults
 
 const BOGDEV_STRINGS = ['bogdev', 'Alejandro', 'hotmail', 'ale9420', 'devbog', 'buymeacoffee']
-// The head and the feed carry only site content; the body of the default theme (themes/bogota/) and the Law 1581 text name Bogotá and Colombia
+// The head and the feed carry only site content; the body of the default theme (themes/bogota/) names Bogotá and Colombia
 const PLACE_STRINGS = ['bogot', 'colombia', 'software developer']
 
 // Out of scope: the devbog-* storage keys of the init script (P3, #418) and the Bogotá theme's images (themes/bogota/)
@@ -34,6 +34,7 @@ test('the privacy page has no contact link and no date', async ({ page }) => {
   await page.goto('/privacy', { waitUntil: 'networkidle' })
   await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0)
   await expect(page.locator('.myc-privacy-updated')).toHaveText('Legal')
+  await expect(page.locator('#rights p:not(.myc-eyebrow)')).not.toContainText('1581')
 })
 
 test('an article has no support section', async ({ page }) => {

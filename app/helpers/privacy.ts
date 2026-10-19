@@ -1,3 +1,4 @@
+import type { PrivacyJurisdiction } from '../interfaces/site'
 import { SESSION_COOKIE, SESSION_MAX_AGE } from '../constants/auth'
 import { READ_STORAGE_KEY } from './readArticles'
 import { THEME_STORAGE_KEY } from './theme'
@@ -17,6 +18,12 @@ interface SiteCookie {
 }
 
 type NoticeStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
+
+/** The i18n key of the rights text for a jurisdiction, and the neutral one when the site names none. */
+export function privacyRightsKey(jurisdiction: PrivacyJurisdiction | '', withContact: boolean): string {
+  const body = withContact ? 'body' : 'bodyNoContact'
+  return jurisdiction ? `privacy.rights.${jurisdiction}.${body}` : `privacy.rights.${body}`
+}
 
 /** The cookies the site sets, with their lifetime in days, as the privacy page lists them. */
 export const SITE_COOKIES: SiteCookie[] = [

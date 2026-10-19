@@ -641,6 +641,7 @@ const server = createServer(async (req, res) => {
           contactEmail: null,
           privacyContactEmail: null,
           privacyUpdatedAt: null,
+          privacyJurisdiction: null,
           supportHandle: null,
           securityContact: null,
           homePage: null,
@@ -672,6 +673,7 @@ const server = createServer(async (req, res) => {
         contactEmail: 'gx_alejandro@hotmail.com',
         privacyContactEmail: 'gx_alejandro@hotmail.com',
         privacyUpdatedAt: '2026-10-01T17:00:00.000Z',
+        privacyJurisdiction: 'colombia',
         supportHandle: 'ale9420',
         securityContact: 'mailto:security@example.com',
         // MOCK_MODULES_OFF=1 runs e2e/modules-off.spec.ts against a site with every module off

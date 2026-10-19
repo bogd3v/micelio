@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BROWSER_STORAGE_KEYS, SITE_COOKIES } from '~/helpers/privacy'
+import { BROWSER_STORAGE_KEYS, SITE_COOKIES, privacyRightsKey } from '~/helpers/privacy'
 import { modes } from '#micelio/theme'
 import { formatDotDate } from '~/helpers/formatDate'
 import { THEME_STORAGE_KEY, formatModeList } from '~/helpers/theme'
@@ -21,6 +21,7 @@ const { canonicalUrl } = useCanonicalUrl('/privacy')
 const defaultOgImage = useDefaultOgImage()
 
 const contactEmail = computed<string>(() => site.value.privacyContactEmail)
+const rightsKey = computed<string>(() => privacyRightsKey(site.value.privacyJurisdiction, Boolean(contactEmail.value)))
 const updatedAt = computed<string>(() => formatDotDate(site.value.privacyUpdatedAt))
 
 const modeNames = computed<string>(() => formatModeList(
@@ -146,10 +147,10 @@ useHead({
       <section id="rights" class="myc-privacy-section" aria-labelledby="rights-title">
         <p class="myc-eyebrow myc-privacy-label">{{ t('privacy.rights.label') }}</p>
         <h2 id="rights-title">{{ t('privacy.rights.title') }}</h2>
-        <i18n-t v-if="contactEmail" keypath="privacy.rights.body" tag="p" scope="global">
+        <i18n-t v-if="contactEmail" :keypath="rightsKey" tag="p" scope="global">
           <template #email><a :href="`mailto:${contactEmail}`"><strong>{{ contactEmail }}</strong></a></template>
         </i18n-t>
-        <p v-else>{{ t('privacy.rights.bodyNoContact') }}</p>
+        <p v-else>{{ t(rightsKey) }}</p>
       </section>
     </div>
   </div>

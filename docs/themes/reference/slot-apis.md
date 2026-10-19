@@ -936,6 +936,8 @@ export interface Page {
 | `SiteModule` | type | One of the optional modules listed in `SITE_MODULES`. |
 | `SiteModules` | type | Whether each optional module is on for the site. |
 | `SOCIAL_NETWORKS` | const | The networks a social link can point to, as the CMS enumerates them. |
+| `PRIVACY_JURISDICTIONS` | const | The jurisdictions whose privacy law the privacy page can cite. A site with none set names no law. |
+| `PrivacyJurisdiction` | type | One of the jurisdictions listed in `PRIVACY_JURISDICTIONS`. |
 | `SocialNetwork` | type | One of the networks listed in `SOCIAL_NETWORKS`. |
 | `DISPLAY_FONTS` | const | The display fonts Strapi can choose from (ADR 0005, section 8). |
 | `DisplayFont` | type | One of the display fonts listed in `DISPLAY_FONTS`. |
@@ -1023,6 +1025,8 @@ export interface Site {
   privacyContactEmail: string
   /** ISO 8601 date of the last change to the privacy page; empty when unset. */
   privacyUpdatedAt: string
+  /** The law the rights text of the privacy page cites; empty names none. */
+  privacyJurisdiction: PrivacyJurisdiction | ''
   /** Handle of the support account; the support link is shown only when it is set. */
   supportHandle: string
   /** Which optional modules are on. */

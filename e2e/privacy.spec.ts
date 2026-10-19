@@ -92,3 +92,10 @@ test('links the privacy page from the footer and the sign-up form', async ({ pag
   await page.goto('/account/sign-up', { waitUntil: 'networkidle' })
   await expect(page.locator('.myc-check a')).toHaveAttribute('href', '/privacy')
 })
+
+test('cites the law of the jurisdiction the site settings name', async ({ page }) => {
+  await page.goto('/privacy')
+  await expect(page.locator('#rights p:not(.myc-eyebrow)')).toContainText('Law 1581 of 2012')
+  await page.goto('/es/privacy')
+  await expect(page.locator('#rights p:not(.myc-eyebrow)')).toContainText('Ley 1581 de 2012')
+})

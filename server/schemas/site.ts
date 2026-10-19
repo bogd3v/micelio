@@ -3,7 +3,7 @@ import { isValidEmail } from '~/helpers/auth'
 import { validSecurityContact } from '~/helpers/securityTxt'
 import { Locale } from '~/interfaces/locale'
 import { PAGE_SLUG_PATTERN } from '~/constants/pages'
-import { DISPLAY_FONTS, SITE_MODULES, SOCIAL_NETWORKS } from '~/interfaces/site'
+import { DISPLAY_FONTS, PRIVACY_JURISDICTIONS, SITE_MODULES, SOCIAL_NETWORKS } from '~/interfaces/site'
 import type { SiteModules } from '~/interfaces/site'
 import type { ParsedSiteSettings } from '../lib/types'
 
@@ -77,6 +77,7 @@ export const siteSettingsSchema = z.object({
   contactEmail: lenient(email),
   privacyContactEmail: lenient(email),
   privacyUpdatedAt: lenient(z.iso.datetime({ offset: true })),
+  privacyJurisdiction: lenient(z.enum(PRIVACY_JURISDICTIONS)),
   supportHandle: lenient(text.regex(/^[A-Za-z0-9_-]+$/)),
   securityContact: lenient(z.string().transform(value => validSecurityContact(value)).pipe(z.string())),
   modules: lenient(modules),

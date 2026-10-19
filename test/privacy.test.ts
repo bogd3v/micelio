@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest'
-import { BROWSER_STORAGE_KEYS, PRIVACY_NOTICE_STORAGE_KEY, SITE_COOKIES, dismissPrivacyNotice, isPrivacyNoticeDismissed } from '../app/helpers/privacy'
+import { BROWSER_STORAGE_KEYS, PRIVACY_NOTICE_STORAGE_KEY, SITE_COOKIES, dismissPrivacyNotice, isPrivacyNoticeDismissed, privacyRightsKey } from '../app/helpers/privacy'
 import { migrateStoredMode } from '../app/helpers/theme'
 
 const MODES = [{ id: 'noche', scheme: 'dark' as const }, { id: 'dia', scheme: 'light' as const }]
@@ -127,5 +127,17 @@ describe('migrateStoredMode', () => {
   it('survives blocked storage', () => {
     vi.stubGlobal('localStorage', brokenStorage)
     expect(() => migrateStoredMode(MODES)).not.toThrow()
+  })
+})
+
+describe('privacyRightsKey', () => {
+  it('names no law when the site has no jurisdiction', () => {
+    expect(privacyRightsKey('', true)).toBe('privacy.rights.body')
+    expect(privacyRightsKey('', false)).toBe('privacy.rights.bodyNoContact')
+  })
+
+  it('picks the text of the jurisdiction, with or without a contact email', () => {
+    expect(privacyRightsKey('colombia', true)).toBe('privacy.rights.colombia.body')
+    expect(privacyRightsKey('colombia', false)).toBe('privacy.rights.colombia.bodyNoContact')
   })
 })
