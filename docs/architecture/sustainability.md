@@ -58,7 +58,7 @@ The guidelines are grouped in five sections: 2 User Experience Design, 3 Web Dev
 | 3.10 Ensure layouts work for different devices and requirements | Partly | Mobile layout measured at 412 x 823. The standard requires a manual check of 320 px reflow for a theme (section 9). No carbon-aware design: the engine does not adapt to the grid |
 | 3.11 Use sustainable JavaScript and APIs | Partly | Islands only when used; static pages have no Vue runtime (ADR 0006). Dynamic pages still hydrate the whole app |
 | 3.12 Use dependencies sparingly and maintain them | Met | Tailwind, `@nuxt/ui` and `qs` were removed for weight (`docs/performance.md`, History). Licences are checked (`npm run lint:licenses`) and Dependabot is configured (`.github/dependabot.yml`) |
-| 3.13 Include expected and beneficial files | Partly | `robots.txt`, `sitemap.xml` and `feed.xml` are served (`server/routes`). `security.txt` is not served by the engine, as no route or setting provides it (the standard asks for it only when the owner sets a contact) |
+| 3.13 Include expected and beneficial files | Met | `robots.txt`, `sitemap.xml` and `feed.xml` are served (`server/routes`). `/.well-known/security.txt` is served when the owner sets a security contact in the site settings, and is a 404 otherwise (`server/routes/.well-known/security.txt.ts`) |
 | 3.14 Use the most efficient solution for your service | Met | Static output whenever the content allows it, the site mode is the choice (ADR 0006); dynamic pages are cached by ISR (ADR 0001) |
 | 3.15 Use the latest stable language version | Partly | Node major from `.nvmrc`; Nuxt 4 and Vue 3. No check that the versions are the latest |
 | 3.16 Reduce the number and complexity of database queries | Not applicable | The engine has no database of its own; the content comes from Strapi, whose queries are the CMS's (`micelio-cms`) |
@@ -103,7 +103,7 @@ The other guidelines of section 5 (5.3, 5.4, 5.6 to 5.9, 5.14, 5.15, 5.17, 5.20,
 
 ## What is not met or not checked
 
-- **Not met:** offline access (4.2); `security.txt` (3.13), which the owner's contact would enable; a written list of the supported devices and browsers (2.17).
+- **Not met:** offline access (4.2); a written list of the supported devices and browsers (2.17).
 - **Left to the operator:** compression of the rendered HTML in production (4.3). The budgets of dynamic mode measure it uncompressed.
 - **Not checked by any command:** duplication in code (3.4), the structured data (3.8), the necessity of automated jobs (4.6), broken links (4.4), the latest versions (3.15).
 - **An estimate, not a measurement:** `co2Mg` (2.1, 5.5, 5.24). It is reported per page, with the model and its assumptions in [`performance.md`](../performance.md#carbon-estimate). It becomes a budget after a CI baseline, as the standard asks.

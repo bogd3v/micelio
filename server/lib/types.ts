@@ -1,3 +1,5 @@
+import type { SiteSettings } from '../../app/interfaces/site'
+
 /** What a call to Strapi needs: the pure part of `strapiFetch`, usable outside Nitro (build modules). */
 export interface StrapiRequestConfig {
   strapiUrl: string
@@ -18,4 +20,10 @@ export interface LoadedCategory {
   color: number | null
   /** Published articles of the requested locale. */
   count: number
+}
+
+/** The site settings of the CMS plus what only the server reads and the theme contract does not carry. */
+export interface ParsedSiteSettings extends SiteSettings {
+  /** The public security contact, a `mailto:` or `https:` URI that `validSecurityContact` accepted. */
+  securityContact?: string
 }

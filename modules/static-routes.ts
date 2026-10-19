@@ -5,9 +5,10 @@ import { join } from 'node:path'
 import { fetchMedia } from './lib/static-media'
 import qs from 'qs'
 import { defineNuxtModule, useLogger } from 'nuxt/kit'
-import { Locale } from '../app/interfaces/locale'
+import { defaultLocale, Locale } from '../app/interfaces/locale'
 import { formActionOrigin } from '../app/helpers/newsletterForm'
 import { contentSecurityPolicy, inlineScripts, islandPolicyOptions, workerPolicy } from '../app/helpers/securityHeaders'
+import { validSecurityContact } from '../app/helpers/securityTxt'
 import { isStaticMode } from '../app/helpers/siteMode'
 import { speculationRules } from '../app/helpers/speculation'
 import type { SiteMode } from '../app/interfaces/site'
@@ -46,6 +47,17 @@ async function hasHomePage(config: StrapiRequestConfig, locale: Locale): Promise
   const query = qs.stringify({ locale, populate: { homePage: { fields: ['slug'] } } })
   const response = await strapiRequest<{ data?: { homePage?: { slug?: string } | null } }>(config, `/api/site-setting?${query}`, { timeout: 30_000 })
   return Boolean(response.data?.homePage?.slug)
+}
+
+// Whether the site settings have a security contact: only then is /.well-known/security.txt a route (it answers 404 otherwise, which fails the build)
+async function hasSecurityContact(config: StrapiRequestConfig, logger: ReturnType<typeof useLogger>): Promise<boolean> {
+  try {
+    const response = await strapiRequest<{ data?: { securityContact?: unknown } }>(config, `/api/site-setting?${qs.stringify({ locale: defaultLocale })}`, { timeout: 30_000 })
+    return validSecurityContact(response.data?.securityContact) !== undefined
+  } catch (error) {
+    logger.warn(`Could not read the security contact from Strapi (${error instanceof Error ? error.message : String(error)}); security.txt is not generated`)
+    return false
+  }
 }
 
 // One page, in the order the server reads it (no sort): above the limit the build and the site would list different categories
@@ -171,11 +183,12 @@ export default defineNuxtModule({
           throw new Error(`Site mode "${mode}": could not read the content from Strapi at ${config.strapiUrl} (${reason}). Check that it is reachable and that the token can read articles, pages and categories.`, { cause: error })
         }
         const categories = categorySlugsByLocale(ownCategories)
+        const securityTxt = await hasSecurityContact(config, logger)
         for (const locale of Object.values(Locale)) for (const slug of categories[locale]) listed.add(categoryRoute(slug, locale))
-        for (const route of staticFileRoutes(blogEnabled, categories)) listed.add(route)
+        for (const route of staticFileRoutes(blogEnabled, categories, securityTxt)) listed.add(route)
         if (!blogEnabled) for (const route of routes) if (BLOG_ROUTES.test(route) || ABOUT_ROUTES.test(route)) routes.delete(route)
         for (const route of listed) routes.add(route)
-        logger.info(`Static routes: ${articles} articles, ${pages} pages and ${Object.values(categories).reduce((total, list) => total + list.length, 0)} category pages from Strapi, plus ${blogEnabled ? 'feeds, ' : ''}sitemap and robots.txt`)
+        logger.info(`Static routes: ${articles} articles, ${pages} pages and ${Object.values(categories).reduce((total, list) => total + list.length, 0)} category pages from Strapi, plus ${blogEnabled ? 'feeds, ' : ''}sitemap and robots.txt${securityTxt ? ' and security.txt' : ''}`)
       })
 
       // Static pages load no Nuxt client and copy their images and media into the site: no image origin is needed

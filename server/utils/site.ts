@@ -19,6 +19,8 @@ interface LoadedSite {
   site: Site
   /** false when Strapi failed and every value comes from app.config.ts */
   fromStrapi: boolean
+  /** The `securityContact` of the site settings, validated; never in `site` because only `security.txt` reads it. */
+  securityContact?: string
 }
 
 /** The site identity: Strapi's site-setting over app.config.ts, field by field, with the modules that actually work. `quiet` skips the error log (the startup check). */
@@ -30,9 +32,10 @@ export async function loadSite(locale: Locale, options: { quiet?: boolean } = {}
     // Nested populate does not survive fetch's query option, so the string is built here
     const query = qs.stringify({ populate: SITE_POPULATE, locale })
     const response = await strapiFetch<{ data?: unknown }>(`/api/site-setting?${query}`, { timeout: SITE_TIMEOUT_MS })
-    const settings = resolveSiteMedia(parseSiteSettings(response.data), useRuntimeConfig().public.strapiUrl)
+    const parsed = parseSiteSettings(response.data)
+    const settings = resolveSiteMedia(parsed, useRuntimeConfig().public.strapiUrl)
     const theme = resolveTheme(settings?.theme, { modes: paletteModes, rules: paletteRules }, buildTheme)
-    loaded = { site: { ...mergeSite(defaults, settings), ...(theme && { theme }) }, fromStrapi: true }
+    loaded = { site: { ...mergeSite(defaults, settings), ...(theme && { theme }) }, fromStrapi: true, securityContact: parsed?.securityContact }
   } catch (error: unknown) {
     if (!options.quiet) logError('cms.site-setting', 'Fetching the site settings failed', { error })
     loaded = { site: defaults, fromStrapi: false }

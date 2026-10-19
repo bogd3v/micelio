@@ -70,7 +70,7 @@ test('the API is not part of the site', async ({ request }) => {
   }
 })
 
-test('feeds, sitemap and robots.txt are files', async ({ request }) => {
+test('feeds, sitemap, robots.txt and security.txt are files', async ({ request }) => {
   for (const path of ['/feed.xml', '/es/feed.xml', '/feed/linux.xml', '/es/feed/linux.xml', '/feed/garden.xml', '/es/feed/garden.xml']) {
     const response = await request.get(path)
     expect(response.status(), path).toBe(200)
@@ -83,6 +83,13 @@ test('feeds, sitemap and robots.txt are files', async ({ request }) => {
   const robots = await request.get('/robots.txt')
   expect(robots.status()).toBe(200)
   expect(await robots.text()).toMatch(/^Sitemap: .+\/sitemap\.xml$/m)
+  const securityTxt = await request.get('/.well-known/security.txt')
+  expect(securityTxt.status()).toBe(200)
+  const text = await securityTxt.text()
+  expect(text).toContain('Contact: mailto:security@example.com')
+  expect(text).toMatch(/^Expires: \d{4}-/m)
+  expect(text).toMatch(/^Preferred-Languages: en, es$/m)
+  expect(text).toMatch(/^Canonical: .+\/\.well-known\/security\.txt$/m)
 })
 
 test('the pages of the categories of the CMS are files, and an unknown category is the 404 page', async ({ request }) => {

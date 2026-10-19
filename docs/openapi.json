@@ -3,7 +3,7 @@
   "info": {
     "title": "Micelio site API",
     "version": "0.4.0",
-    "description": "The HTTP routes every Micelio site serves: 33 paths and 35 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
+    "description": "The HTTP routes every Micelio site serves: 34 paths and 36 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
     "license": {
       "name": "AGPL-3.0-only",
       "identifier": "AGPL-3.0-only"
@@ -46,6 +46,52 @@
     }
   ],
   "paths": {
+    "/.well-known/security.txt": {
+      "get": {
+        "operationId": "getWellKnownSecurityTxt",
+        "summary": "Security contact",
+        "description": "The security contact of the site (RFC 9116): `Contact` from the site settings, `Expires` 180 days after the render, `Preferred-Languages` and `Canonical`. Answers `notFound` with an empty body when the settings have no valid contact, and never invents one.",
+        "tags": [
+          "Site files"
+        ],
+        "responses": {
+          "200": {
+            "description": "Plain text in the `security.txt` format. Cache-Control: `public, max-age=3600`.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The body is empty, not a problem document: a client of `security.txt` expects a plain 404.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/about": {
       "get": {
         "operationId": "getApiAbout",
