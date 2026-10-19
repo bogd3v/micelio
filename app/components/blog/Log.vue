@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type { Category, PostListItem, PostMonth } from '~/interfaces'
+import type { PostListItem, PostMonth } from '~/interfaces'
 import { groupPostsByMonth } from '~/helpers/blog'
-import { isCategory } from '~/helpers/categories'
 import { formatDotDate } from '~/helpers/formatDate'
 import { padCount } from '~/helpers/search'
 
@@ -26,11 +25,6 @@ function countLabel(month: PostMonth): string {
 function postHref(post: PostListItem): string {
   return `${localizePath('/blog')}/${post.slug}`
 }
-
-function postCategory(post: PostListItem): Category | undefined {
-  const slug = post.category?.slug
-  return isCategory(slug) ? slug : undefined
-}
 </script>
 
 <template>
@@ -44,7 +38,7 @@ function postCategory(post: PostListItem): Category | undefined {
         <li v-for="post in month.posts" :key="post.id" class="myc-log-row">
           <time class="myc-meta myc-log-date" :datetime="post.publishedAt ?? undefined">{{ formatDotDate(post.publishedAt) }}</time>
           <span class="myc-log-category">
-            <MycCategoryTag v-if="postCategory(post)" :category="postCategory(post)!" />
+            <MycCategoryTag v-if="post.category?.slug" :category="post.category.slug" />
           </span>
           <span class="myc-log-text">
             <NuxtLink :to="postHref(post)" class="myc-log-link">{{ post.title }}</NuxtLink>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type { Category, DraftFilter, DraftListResponse, DraftState } from '~/interfaces'
+import type { DraftFilter, DraftListResponse, DraftState } from '~/interfaces'
 import { DRAFT_FILTERS, countDrafts, draftStateKey, filterDrafts } from '~/helpers/drafts'
-import { isCategory } from '~/helpers/categories'
 import { formatDotDateTime } from '~/helpers/formatDate'
 import { pageTitle } from '~/helpers/site'
 
@@ -10,7 +9,7 @@ interface DraftRow {
   title: string
   path: string
   author: string
-  category: Category | undefined
+  category: string | undefined
   language: string
   editedAt: string
   edited: string
@@ -48,7 +47,7 @@ const rows = computed<DraftRow[]>(() =>
     title: draft.title,
     path: draft.slug ? `/${draft.slug}` : '',
     author: draft.author?.name ?? '',
-    category: categoryOf(draft.category?.slug),
+    category: draft.category?.slug ?? undefined,
     language: draft.locale.toUpperCase(),
     editedAt: draft.updatedAt,
     edited: formatDotDateTime(draft.updatedAt),
@@ -56,10 +55,6 @@ const rows = computed<DraftRow[]>(() =>
     to: { path: localizePath(`/drafts/${encodeURIComponent(draft.documentId)}`), query: { locale: draft.locale } },
   })),
 )
-
-function categoryOf(slug: string | null | undefined): Category | undefined {
-  return isCategory(slug) ? slug : undefined
-}
 
 function stateLabel(state: DraftState): string {
   return t(`drafts.state.${draftStateKey(state)}`)

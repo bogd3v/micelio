@@ -45,4 +45,4 @@ Article statistics and newsletter subscribers are written by the software, not b
 
 ## Not covered yet
 
-This first version covers pages, articles, publishing and the theme overrides. The identity fields and the modules of Site settings, the About page, and categories and tags are not described here yet.
+This first version covers pages, articles, publishing and the theme overrides. The identity fields and the modules of Site settings, the About page, and tags are not described here yet. Categories are described in [Publish articles and pages](publishing.md).

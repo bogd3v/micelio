@@ -66,6 +66,22 @@ export interface CategoryCount {
 }
 
 /**
+ * A category of the CMS as `GET /api/categories` and `useCategories()` serve it (ADR 0016).
+ *
+ * @remarks
+ * Not part of the theme contract yet: contract 2 replaces `CategoryCount` with it.
+ */
+export interface CategoryEntry extends CategoryCount {
+  slug: string
+  /** The localized description; null when the editor wrote none. */
+  description: string | null
+  /** The editor's position, non-localized; null when none was set. */
+  order: number | null
+  /** Whether the home page highlights it. */
+  featured: boolean
+}
+
+/**
  * The name and slug of a category as the CMS returns it; either may be missing.
  *
  * @public

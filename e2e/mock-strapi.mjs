@@ -361,9 +361,36 @@ const publishedArticles = [
   },
 ]
 
+// MOCK_CATEGORY_ARTICLES=1 publishes articles in categories no site constant knows: garden (both languages), kitchen (English only)
+// and invierno (Spanish only), so the lists show them (e2e/categories.spec.ts)
+function categoryArticle(id, documentId, slug, locale, category) {
+  return {
+    ...publishedArticles[1],
+    id,
+    documentId,
+    title: `${category.name} article`,
+    slug,
+    description: `An article about ${category.name}.`,
+    publishedAt: `2026-01-0${id - 3}T10:00:00.000Z`,
+    locale,
+    tags: [],
+    category,
+    seo: null,
+    localizations: undefined,
+  }
+}
+const gardenArticles = process.env.MOCK_CATEGORY_ARTICLES === '1'
+  ? [
+      categoryArticle(4, 'doc-garden', 'composting-in-a-small-yard', 'en', emptyCategories[4]),
+      categoryArticle(5, 'doc-garden-es', 'compost-en-un-patio-pequeno', 'es', emptyCategories[4]),
+      categoryArticle(6, 'doc-kitchen', 'slow-cooking-basics', 'en', emptyCategories[5]),
+      categoryArticle(7, 'doc-invierno', 'una-noche-de-invierno', 'es', emptyCategories[6]),
+    ]
+  : []
+
 // MOCK_NO_ARTICLES=1 publishes no article, tag or category (the landing e2e: a site with no blog)
 const noArticles = process.env.MOCK_NO_ARTICLES === '1'
-const articles = noArticles ? [] : publishedArticles
+const articles = noArticles ? [] : [...publishedArticles, ...gardenArticles]
 
 /** The CMS stores the SHA-256 of a newsletter token, as the frontend sends it. */
 function sha256(value) {

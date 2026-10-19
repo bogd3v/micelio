@@ -1,30 +1,32 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import { Category } from '~/interfaces'
 import BlogFilters from '~/components/blog/Filters.vue'
+import { categoriesSettled, serveCategories } from './categoriesFixture'
 
 const baseProps = {
   total: 3,
-  counts: { [Category.Software]: 2, [Category.Linux]: 1 },
   tags: [{ slug: 'vue', name: 'Vue' }, { slug: 'linux', name: 'Linux' }],
   search: '',
 }
 
 describe('BlogFilters', () => {
+  beforeEach(() => serveCategories())
+
   it('renders category and tag chips as links with aria-current', async () => {
     const wrapper = await mountSuspended(BlogFilters, {
-      props: { ...baseProps, filters: { category: Category.Software, page: 2, search: 'vue' } },
+      props: { ...baseProps, filters: { category: 'cellar', page: 2, search: 'vue' } },
     })
+    await vi.waitFor(() => expect(wrapper.findAll('.myc-blog-chips')[0]!.findAll('a')).toHaveLength(6))
     const categories = wrapper.get('[role="group"][aria-label="Filter by category"]').findAll('a')
-    expect(categories.map(chip => chip.text())).toEqual(['All03', 'Privacy00', 'DIY00', 'AI00', 'Software02', 'Linux01'])
+    expect(categories.map(chip => chip.text())).toEqual(['All03', 'Garden03', 'Kitchen02', 'Workshop01', 'Cellar04', 'Loft05'])
     expect(categories.map(chip => chip.attributes('aria-current'))).toEqual([undefined, undefined, undefined, undefined, 'page', undefined])
     expect(categories.map(chip => chip.attributes('href'))).toEqual([
       '/blog?search=vue',
-      '/blog/category/privacidad?search=vue',
-      '/blog/category/diy?search=vue',
-      '/blog/category/ia?search=vue',
-      '/blog/category/software?search=vue',
-      '/blog/category/linux?search=vue',
+      '/blog/category/garden?search=vue',
+      '/blog/category/kitchen?search=vue',
+      '/blog/category/workshop?search=vue',
+      '/blog/category/cellar?search=vue',
+      '/blog/category/loft?search=vue',
     ])
     const tags = wrapper.get('[role="group"][aria-label="Filter by tag"]').findAll('a')
     expect(tags.map(chip => chip.text())).toEqual(['#Vue', '#Linux'])
@@ -36,8 +38,25 @@ describe('BlogFilters', () => {
     const tags = wrapper.get('[role="group"][aria-label="Filter by tag"]').findAll('a')
     expect(tags.map(chip => chip.attributes('aria-current'))).toEqual(['page', undefined])
     expect(tags[0]!.attributes('href')).toBe('/blog')
+    await vi.waitFor(() => expect(wrapper.get('[role="group"][aria-label="Filter by category"]').findAll('a')).toHaveLength(6))
     const categories = wrapper.get('[role="group"][aria-label="Filter by category"]').findAll('a')
-    expect(categories[5]!.attributes('href')).toBe('/blog/category/linux')
+    expect(categories[5]!.attributes('href')).toBe('/blog/category/loft')
+  })
+
+  it('keeps the category being viewed as a chip when it has no articles', async () => {
+    const wrapper = await mountSuspended(BlogFilters, { props: { ...baseProps, filters: { category: 'shed', page: 1 } } })
+    await vi.waitFor(() => expect(wrapper.findAll('[aria-label="Filter by category"] a')).toHaveLength(7))
+    const current = wrapper.get('[aria-label="Filter by category"] a[aria-current="page"]')
+    expect(current.text()).toBe('Shed00')
+    expect(wrapper.get('.myc-blog-active-chip').attributes('aria-label')).toBe('Remove filter Shed')
+  })
+
+  it('renders no category chips for a site without categories', async () => {
+    serveCategories([])
+    const wrapper = await mountSuspended(BlogFilters, { props: { ...baseProps, filters: { page: 1 } } })
+    await categoriesSettled()
+    expect(wrapper.find('[aria-label="Filter by category"]').exists()).toBe(false)
+    expect(wrapper.find('[aria-label="Filter by tag"]').exists()).toBe(true)
   })
 
   it('shows removable active filters and the search count', async () => {

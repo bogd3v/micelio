@@ -1,0 +1,18 @@
+import { defineConfig } from '@playwright/test'
+import { webServers } from './e2e/servers'
+
+// E2E_MOCK_PORT and E2E_APP_PORT move the servers when another run is using these ports
+const mockPort = Number(process.env.E2E_MOCK_PORT ?? 4333)
+const appPort = Number(process.env.E2E_APP_PORT ?? 3233)
+
+// e2e/categories.spec.ts against a mock Strapi with articles in categories no site constant knows (garden, kitchen, invierno)
+export default defineConfig({
+  testDir: 'e2e',
+  testMatch: 'categories.spec.ts',
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
+  retries: process.env.CI ? 2 : 0,
+  reporter: process.env.CI ? 'github' : 'list',
+  use: { baseURL: `http://127.0.0.1:${appPort}`, colorScheme: 'light' },
+  webServer: webServers({ mockPort, appPort, categoryArticles: true }),
+})

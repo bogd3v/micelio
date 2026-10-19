@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { blogPath } from '~/helpers/blog'
-import type { CategoryCount, Locale, PaletteGroup, PaletteOption, SearchPostResult } from '~/interfaces'
-import { isCategory, categoryColor } from '~/helpers/categories'
-import { CATEGORIES } from '~/constants/categories'
+import type { Locale, PaletteGroup, PaletteOption, SearchPostResult } from '~/interfaces'
 import { formatDotDate } from '~/helpers/formatDate'
 import { cycleIndex, matchesQuery, padCount } from '~/helpers/search'
 import { MIN_SEARCH_LENGTH } from '~/constants/search'
@@ -22,13 +20,13 @@ const site = useSite()
 const fediverseUser = useFediverseUser()
 const fediverseOn = useModule('fediverse')
 const { modes, nextTheme, toggle, modeLabel } = useTheme()
+const { listed, colorOf } = useCategories()
 
 const dialogRef = ref<HTMLElement>()
 const inputRef = ref<HTMLInputElement>()
 const query = ref('')
 const inContent = ref(false)
 const articles = ref<SearchPostResult[]>([])
-const counts = ref<Record<string, number>>({})
 const loading = ref(false)
 const activeIndex = ref(-1)
 const isOpen = computed<boolean>(() => props.open)
@@ -45,18 +43,18 @@ const groups = computed<PaletteGroup[]>(() => {
         label: post.title,
         snippet: post.matchedIn === 'title' ? undefined : post.snippet || undefined,
         hint: formatDotDate(post.publishedAt) || undefined,
-        color: isCategory(post.category?.slug) ? categoryColor(post.category.slug) : 'var(--link)',
+        color: post.category?.slug ? colorOf(post.category.slug) : 'var(--link)',
         to: `${localizePath('/blog')}/${post.slug}`,
       }))
     : []
-  const topicOptions: PaletteOption[] = CATEGORIES
-    .map(slug => ({
-      id: `topic-${slug}`,
+  const topicOptions: PaletteOption[] = listed.value
+    .map(category => ({
+      id: `topic-${category.slug}`,
       kind: 'topic' as const,
-      label: t(`myc.categories.${slug}`),
-      hint: slug in counts.value ? padCount(counts.value[slug]!) : undefined,
-      color: categoryColor(slug),
-      to: blogPath({ category: slug, page: 1 }, localizePath('/blog')),
+      label: category.name,
+      hint: padCount(category.count),
+      color: colorOf(category.slug),
+      to: blogPath({ category: category.slug, page: 1 }, localizePath('/blog')),
     }))
     .filter(option => matchesQuery(option.label, trimmed.value))
   const actionOptions: PaletteOption[] = [
@@ -132,17 +130,6 @@ async function search(term: string): Promise<void> {
   }
 }
 
-async function loadCounts(): Promise<void> {
-  try {
-    const categories = await $fetch<CategoryCount[]>('/api/categories', { query: { locale: locale.value } })
-    counts.value = Object.fromEntries(
-      categories.filter(category => category.slug).map(category => [category.slug as string, category.count]),
-    )
-  } catch {
-    counts.value = {}
-  }
-}
-
 function cancelSearch(): void {
   clearTimeout(debounceTimer)
   requestId++
@@ -185,7 +172,6 @@ watch(isOpen, (open) => {
     reset()
     dialog.showModal()
     inputRef.value?.focus()
-    loadCounts()
   }
   if (!open) {
     if (dialog.open) dialog.close()

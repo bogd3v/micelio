@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { blogPath } from '~/helpers/blog'
-import { categoryColor } from '~/helpers/categories'
-import { CATEGORIES } from '~/constants/categories'
 import { FOOTER_SOCIALS } from '~/constants/site'
 import { resolveSourceUrl } from '~/helpers/source'
 
@@ -41,6 +39,7 @@ const fediverseOn = useModule('fediverse')
 const newsletterOn = useModule('newsletter')
 const supportOn = useModule('support')
 const { isStatic, blogEnabled, menuId } = useStaticSite()
+const { listed, colorOf } = useCategories()
 
 const year = new Date().getFullYear()
 const sourceUrl = resolveSourceUrl(useRuntimeConfig().public.sourceUrl)
@@ -52,14 +51,14 @@ const socials = computed<SocialLink[]>(() =>
   }),
 )
 const sections = useNavLinks()
-// No blog, no categories to list
+// No blog or no category with articles, nothing to list
 const topics = computed<FooterLink[]>(() =>
   blogEnabled
-    ? CATEGORIES.map(slug => ({
-        id: slug,
-        label: t(`myc.categories.${slug}`),
-        to: blogPath({ category: slug, page: 1 }, localizePath('/blog')),
-        color: categoryColor(slug),
+    ? listed.value.map(category => ({
+        id: category.slug,
+        label: category.name,
+        to: blogPath({ category: category.slug, page: 1 }, localizePath('/blog')),
+        color: colorOf(category.slug),
       }))
     : [],
 )

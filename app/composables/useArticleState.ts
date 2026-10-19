@@ -1,7 +1,6 @@
 import type { ComputedRef } from 'vue'
-import type { Category, NumberedReference, StrapiPost, TocHeading } from '~/interfaces'
+import type { NumberedReference, StrapiPost, TocHeading } from '~/interfaces'
 import { numberReferences } from '~/helpers/citations'
-import { isCategory } from '~/helpers/categories'
 import { formatDotDate } from '~/helpers/formatDate'
 import { mastodonShareUrl } from '~/helpers/share'
 import { extractHeadings } from '~/helpers/toc'
@@ -14,7 +13,7 @@ interface ArticleProps {
 
 interface ArticleState {
   coverUrl: ComputedRef<string>
-  category: ComputedRef<Category | undefined>
+  category: ComputedRef<string | undefined>
   references: ComputedRef<NumberedReference[]>
   headings: ComputedRef<TocHeading[]>
   mastodonUrl: ComputedRef<string>
@@ -31,10 +30,7 @@ export function useArticleState(props: ArticleProps): ArticleState {
   const fediverseOn = useModule('fediverse')
 
   const coverUrl = computed<string>(() => props.post.cover ? getMediaUrl(props.post.cover) : '')
-  const category = computed<Category | undefined>(() => {
-    const slug = props.post.category?.slug
-    return isCategory(slug) ? slug : undefined
-  })
+  const category = computed<string | undefined>(() => props.post.category?.slug ?? undefined)
   const references = computed<NumberedReference[]>(() => numberReferences(props.post.blocks, props.post.references))
   const headings = computed<TocHeading[]>(() => {
     const blockHeadings = extractHeadings(props.post.blocks)

@@ -1,18 +1,17 @@
 import type { CategoryLike } from '~/interfaces'
-import { isCategory } from '~/helpers/categories'
 
 /**
  * Returns a function that gives the display label of a category.
  *
  * @remarks
- * A known category slug gives its translated name from `myc.categories`. Any other category gives its name, or its slug when it has no name. A missing category gives an empty string. Call it in setup, because it reads `useI18n`.
+ * The label is the localized `name` of the category in the CMS list; a category the list does not have gives the name it came with, then its slug. A missing category gives an empty string. Call it in setup, because it reads `useCategories`.
  */
 export function useCategoryLabel(): (category: CategoryLike | null | undefined) => string {
-  const { t } = useI18n()
+  const { categories } = useCategories()
 
   return function categoryLabel(category: CategoryLike | null | undefined): string {
     if (!category) return ''
-    if (isCategory(category.slug)) return t(`myc.categories.${category.slug}`)
-    return category.name ?? category.slug ?? ''
+    const listed = categories.value.find(item => item.slug === category.slug)
+    return listed?.name ?? category.name ?? category.slug ?? ''
   }
 }

@@ -55,7 +55,7 @@ const { data: postsResult, status } = fetchPosts({
   content: computed(() => filters.value.content),
 })
 const { data: recentResult } = fetchPosts({ pageSize: RECENT_SIZE, locale: currentLocale })
-const { categories, failed: categoriesFailed, has: hasCategory, loaded: categoriesLoaded } = useCategories()
+const { failed: categoriesFailed, has: hasCategory, labelOf, loaded: categoriesLoaded } = useCategories()
 const { data: tags } = fetchTags(locale.value as Locale)
 
 const results = useSettledData(postsResult, status)
@@ -65,9 +65,6 @@ const posts = computed<PostListItem[]>(() => results.value?.data ?? [])
 const totalPages = computed<number>(() => results.value?.pagination.pageCount ?? 1)
 const recentPosts = computed<PostListItem[]>(() => recentResult.value?.data ?? [])
 const total = computed<number>(() => recentResult.value?.pagination.total ?? 0)
-const counts = computed<Record<string, number>>(() =>
-  Object.fromEntries(categories.value.map(category => [category.slug, category.count])),
-)
 const popularTags = computed<TagCount[]>(() => pickPopularTags(tags.value ?? [], POPULAR_TAGS, filters.value.tag))
 const resultCount = computed<number | undefined>(() =>
   filters.value.search ? (results.value?.pagination.total ?? 0) : undefined,
@@ -161,7 +158,7 @@ useHead(() => ({
       ? [{
           rel: 'alternate' as const,
           type: 'application/rss+xml',
-          title: t('blog.feeds.title', { site: site.value.name, category: t(`myc.categories.${filters.value.category}`) }),
+          title: t('blog.feeds.title', { site: site.value.name, category: labelOf(filters.value.category) }),
           href: `${siteUrl.value}${feedPath(locale.value, filters.value.category)}`,
         }]
       : []),
@@ -218,7 +215,6 @@ useSeoMeta({
       v-model:search="searchInput"
       :filters="filters"
       :total="total"
-      :counts="counts"
       :tags="popularTags"
       :result-count="resultCount"
       @content="toggleContent"

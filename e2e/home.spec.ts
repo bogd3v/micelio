@@ -27,20 +27,25 @@ test('resolves relative site media against the Strapi origin', async ({ page }) 
   expect(graph.find((node: { '@type': string }) => node['@type'] === 'Organization').logo.url).toBe(`${origin}logo.svg`)
 })
 
-test('filters the latest articles by topic and shows the empty nest', async ({ page }) => {
+test('filters the latest articles by the topics that have articles', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' })
   const filters = page.getByRole('group', { name: 'Filter by topic' })
-  await filters.getByRole('button', { name: /Privacy/ }).click()
-  await expect(filters.getByRole('button', { name: /Privacy/ })).toHaveAttribute('aria-pressed', 'true')
-  await expect(page.getByRole('heading', { name: 'No articles on privacy yet', level: 3 })).toBeVisible()
-  await page.getByRole('button', { name: 'Show all' }).click()
-  await expect(page.getByRole('link', { name: 'Linux Server Hardening Guide' })).toBeVisible()
+  // Categories without articles (privacy, DIY, AI) have no chip
+  await expect(filters.getByRole('button')).toHaveText([/All/, /Software development/, /Linux and open source/])
+  await filters.getByRole('button', { name: /Linux/ }).click()
+  await expect(filters.getByRole('button', { name: /Linux/ })).toHaveAttribute('aria-pressed', 'true')
+  // The featured card above repeats the newest article, so look in the list only
+  const latest = page.locator('.myc-latest-grid')
+  await expect(latest.getByRole('link', { name: 'Linux Server Hardening Guide' })).toBeVisible()
+  await expect(latest.getByRole('link', { name: 'Understanding Vue Composables' })).toHaveCount(0)
+  await filters.getByRole('button', { name: /All/ }).click()
+  await expect(latest.getByRole('link', { name: 'Understanding Vue Composables' })).toBeVisible()
 })
 
-test('links every field guide topic to its blog filter', async ({ page }) => {
+test('links every field guide topic that has articles to its blog filter', async ({ page }) => {
   await page.goto('/')
   const hrefs = await page.locator('.myc-guide-card').evaluateAll(cards => cards.map(card => card.getAttribute('href')))
-  expect(hrefs).toEqual(['privacidad', 'diy', 'ia', 'software', 'linux'].map(slug => `/blog/category/${slug}`))
+  expect(hrefs).toEqual(['software', 'linux'].map(slug => `/blog/category/${slug}`))
 })
 
 test.describe('with reduced motion', () => {

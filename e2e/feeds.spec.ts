@@ -33,13 +33,15 @@ test('serves well-formed feeds per category and language', async ({ page }) => {
 })
 
 test('links the category feeds from the blog and the filtered page head', async ({ page }) => {
-  await page.goto('/es/blog/category/linux', { waitUntil: 'networkidle' })
+  // Only the categories with articles in the language have a link: linux has none in Spanish
+  await page.goto('/es/blog/category/software', { waitUntil: 'networkidle' })
   const feeds = page.locator('.myc-blog-feeds')
-  await expect(feeds.getByRole('link', { name: 'Feed RSS de Linux' })).toHaveAttribute('href', '/es/feed/linux.xml')
+  await expect(feeds.getByRole('link', { name: 'Feed RSS de Desarrollo de software' })).toHaveAttribute('href', '/es/feed/software.xml')
+  await expect(feeds.getByRole('link', { name: /Linux/ })).toHaveCount(0)
   await expect(page.locator('.myc-blog-aside').getByRole('link', { name: /RSS · feed completo/ })).toHaveAttribute('href', '/es/feed.xml')
-  const alternate = page.locator('head link[rel="alternate"][type="application/rss+xml"][href$="/es/feed/linux.xml"]')
+  const alternate = page.locator('head link[rel="alternate"][type="application/rss+xml"][href$="/es/feed/software.xml"]')
   await expect(alternate).toHaveCount(1)
-  await expect(alternate).toHaveAttribute('title', 'BogDev RSS · Linux y código abierto')
+  await expect(alternate).toHaveAttribute('title', 'BogDev RSS · Desarrollo de software')
 
   await page.goto('/es/blog', { waitUntil: 'networkidle' })
   await expect(page.locator('head link[rel="alternate"][href*="/feed/"]')).toHaveCount(0)

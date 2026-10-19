@@ -1,10 +1,11 @@
-import { afterEach, describe, it, expect, vi } from 'vitest'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import type { Component } from 'vue'
 import type { Site, SocialLink, AppSiteConfig } from '~/interfaces'
 import { siteFromAppConfig } from '~/helpers/site'
 import RegionFooter from '~/theme/layout/footer/Columns.vue'
 import RegionFooterMinimal from '~/theme/layout/footer/Minimal.vue'
+import { GARDEN_CATEGORIES, categoriesSettled, serveCategories } from './categoriesFixture'
 
 const socialLinks: SocialLink[] = [
   { network: 'linkedin', url: 'https://www.linkedin.com/in/ada' },
@@ -16,6 +17,8 @@ const socialLinks: SocialLink[] = [
 
 describe('RegionFooter', () => {
   let unregister: (() => void) | undefined
+
+  beforeEach(() => serveCategories())
 
   afterEach(() => {
     unregister?.()
@@ -50,10 +53,22 @@ describe('RegionFooter', () => {
     const socials = wrapper.findAll('a.myc-foot-soc')
     expect(socials.map(a => a.text())).toEqual(['inLinkedIn↗', 'ghGitHub↗', 'cbCodeberg↗', 'mdMastodon↗'])
     expect(socials.every(a => a.attributes('rel') === 'noopener noreferrer me')).toBe(true)
+    await vi.waitFor(() => expect(wrapper.findAll('nav.myc-foot-nav')).toHaveLength(3))
     const navs = wrapper.findAll('nav.myc-foot-nav')
     expect(navs.map(nav => nav.get('h2').text())).toEqual(['Navigate', 'Topics', 'Subscribe'])
     expect(navs[0]!.findAll('a').map(a => a.attributes('href'))).toEqual(['/', '/blog', '/about'])
-    expect(navs[1]!.findAll('a')[0]!.attributes('href')).toBe('/blog/category/privacidad')
+    // Only the categories with articles, named by the CMS and in its order; the empty `shed` is left out
+    expect(navs[1]!.findAll('a').map(a => [a.text(), a.attributes('href')])).toEqual([
+      ['Garden', '/blog/category/garden'],
+      ['Kitchen', '/blog/category/kitchen'],
+      ['Workshop', '/blog/category/workshop'],
+      ['Cellar', '/blog/category/cellar'],
+      ['Loft', '/blog/category/loft'],
+    ])
+    expect(navs[1]!.findAll('.myc-foot-dot').map(dot => dot.attributes('style'))).toEqual([
+      expect.stringContaining('var(--category-1)'), expect.stringContaining('var(--category-2)'),
+      expect.stringContaining('var(--category-4)'), expect.stringContaining('var(--category-5)'), expect.stringContaining('var(--category-1)'),
+    ])
     expect(navs[2]!.findAll('a').map(a => a.attributes('href'))).toEqual([
       '/feed.xml',
       '/#fediverso',
@@ -94,6 +109,19 @@ describe('RegionFooter', () => {
     expect(groups[0]!.get('.myc-acc-summary').text()).toBe('05')
     expect(groups[0]!.findAll('a.myc-foot-row')).toHaveLength(5)
     expect(groups[2]!.findAll('a.myc-foot-row').at(-1)!.attributes('href')).toBe('https://www.buymeacoffee.com/ada')
+  })
+
+  it('leaves the topics group out when the site has no categories or none has articles', async () => {
+    serveCategories([])
+    const empty = await mountSuspended(RegionFooter)
+    await categoriesSettled()
+    expect(empty.findAll('nav.myc-foot-nav').map(nav => nav.get('h2').text())).toEqual(['Navigate', 'Subscribe'])
+    expect(empty.findAll('details.myc-acc').map(group => group.get('.myc-acc-label').text())).toEqual(['Navigate', 'Subscribe'])
+
+    serveCategories(GARDEN_CATEGORIES.filter(category => category.count === 0))
+    const unused = await mountSuspended(RegionFooter)
+    await categoriesSettled()
+    expect(unused.findAll('nav.myc-foot-nav').map(nav => nav.get('h2').text())).toEqual(['Navigate', 'Subscribe'])
   })
 
   it('keeps the panorama decorative', async () => {

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { CategoryCount } from '~/interfaces/design'
+import type { CategoryEntry } from '~/interfaces/design'
 import type { ReadingPath, ReadingPathStep } from '~/interfaces/blog'
 import type { PaginationMeta, StrapiPaginatedResponse } from '~/interfaces/strapi-response'
 import type { DraftArticleResponse, PublishedVersion } from '~/interfaces/draft'
@@ -9,8 +9,16 @@ import { imageCreditSchema, mediaRefSchema, seoSchema, strapiBlockSchema } from 
 import { responseSchema } from './response'
 
 /** A category with the number of posts in it (`GET /api/categories`). */
-export const categoryCountSchema = responseSchema<CategoryCount>()(
-  z.strictObject({ id: z.int(), slug: z.string().nullable(), name: z.string(), count: z.int().min(0) }).meta({ id: 'CategoryCount', description: 'A category with the number of posts in it.' }),
+export const categoryCountSchema = responseSchema<CategoryEntry>()(
+  z.strictObject({
+    id: z.int(),
+    slug: z.string(),
+    name: z.string(),
+    description: z.string().nullable(),
+    order: z.number().nullable(),
+    featured: z.boolean(),
+    count: z.int().min(0),
+  }).meta({ id: 'CategoryCount', description: 'A category of the CMS in the requested locale, with its name, description, position, whether the home page highlights it and the number of its published posts.' }),
 )
 
 /** A tag with the number of its articles in one locale (`GET /api/tags`). */

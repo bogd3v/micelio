@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import { getQuery } from 'h3'
 import BlogLog from '~/components/blog/Log.vue'
 import type { PostListItem } from '~/interfaces'
+import { serveCategories } from './categoriesFixture'
 
 const requested: string[] = []
 
@@ -13,12 +14,14 @@ registerEndpoint('/api/fediverse/stats', (event) => {
 })
 
 const posts: PostListItem[] = [
-  { id: 1, documentId: 'doc-rag', title: 'RAG explained', slug: 'rag', description: 'How retrieval helps.', publishedAt: '2026-09-12T10:00:00.000Z', category: { id: 1, documentId: 'cat-ia', name: 'IA', slug: 'ia' } },
+  { id: 1, documentId: 'doc-rag', title: 'RAG explained', slug: 'rag', description: 'How retrieval helps.', publishedAt: '2026-09-12T10:00:00.000Z', category: { id: 1, documentId: 'cat-garden', name: 'Garden', slug: 'garden' } },
   { id: 2, documentId: 'doc-vue', title: 'Vue composables', slug: 'vue', description: null, publishedAt: '2026-09-02T10:00:00.000Z', category: null },
-  { id: 3, documentId: 'doc-linux', title: 'Linux hardening', slug: 'linux', description: 'SSH first.', publishedAt: '2026-08-20T10:00:00.000Z', category: { id: 2, documentId: 'cat-linux', name: 'Linux', slug: 'linux' } },
+  { id: 3, documentId: 'doc-linux', title: 'Linux hardening', slug: 'linux', description: 'SSH first.', publishedAt: '2026-08-20T10:00:00.000Z', category: { id: 4, documentId: 'cat-workshop', name: 'Workshop', slug: 'workshop' } },
 ]
 
 describe('BlogLog', () => {
+  beforeEach(() => serveCategories())
+
   it('groups the posts by month with a heading and a count', async () => {
     const wrapper = await mountSuspended(BlogLog, { props: { posts } })
     const months = wrapper.findAll('.myc-log-month')
@@ -35,7 +38,7 @@ describe('BlogLog', () => {
     const row = wrapper.findAll('.myc-log-row')[0]!
     expect(row.get('time').text()).toBe('12.09.2026')
     expect(row.get('time').attributes('datetime')).toBe('2026-09-12T10:00:00.000Z')
-    expect(row.find('.myc-tag-ia').exists()).toBe(true)
+    await vi.waitFor(() => expect(row.get('.myc-tag').text()).toBe('Garden'))
     expect(row.get('.myc-log-link').attributes('href')).toBe('/blog/rag')
     expect(row.get('.myc-log-link').text()).toBe('RAG explained')
     expect(row.get('.myc-log-excerpt').text()).toBe('How retrieval helps.')

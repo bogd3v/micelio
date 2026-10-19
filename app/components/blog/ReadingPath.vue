@@ -12,6 +12,7 @@ const props = defineProps<{
 const { t, locale } = useI18n()
 const { localizePath } = useLocaleUtils()
 const { isRead } = useReadArticles()
+const { labelOf } = useCategories()
 
 const { data: path } = useFetch<ReadingPath>('/api/reading-path', {
   key: `reading-path-${props.category}-${locale.value}`,
@@ -27,7 +28,7 @@ const next = computed<ReadingPathStep | undefined>(() =>
   currentIndex.value === -1 ? undefined : steps.value[currentIndex.value + 1],
 )
 const readCount = computed<number>(() => steps.value.filter(step => isRead(step.documentId)).length)
-const title = computed<string>(() => t('blog.path.title', { category: t(`myc.categoryShort.${props.category}`) }))
+const title = computed<string>(() => t('blog.path.title', { category: labelOf(props.category) }))
 const progress = computed<string>(() =>
   t('blog.path.progress', { read: padCount(readCount.value), total: padCount(steps.value.length) }),
 )

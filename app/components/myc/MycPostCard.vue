@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { Category, PostTransitionNames } from '~/interfaces'
-import { categoryColor } from '~/helpers/categories'
+import type { PostTransitionNames } from '~/interfaces'
 import { postTransitionNames } from '~/helpers/postTransition'
 
 const props = withDefaults(defineProps<{
@@ -12,7 +11,8 @@ const props = withDefaults(defineProps<{
   excerpt?: string
   snippet?: string
   highlight?: string
-  category?: Category
+  /** Slug of a category of the CMS; colors the card from `useCategories()` */
+  category?: string
   date?: string
   dateTime?: string
   author?: string
@@ -48,12 +48,13 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useI18n()
+const { colorOf } = useCategories()
 
 const eyebrowText = computed<string>(() => props.eyebrow ?? t('myc.card.featured'))
 const moreText = computed<string>(() => props.moreLabel ?? t('myc.card.more'))
 const byline = computed<string>(() => [props.author, props.readTime].filter(Boolean).join(' · '))
 const categoryStyle = computed<Record<string, string> | undefined>(() =>
-  props.category ? { '--cat': categoryColor(props.category) } : undefined,
+  props.category ? { '--cat': colorOf(props.category) } : undefined,
 )
 const names = computed<PostTransitionNames | undefined>(() =>
   props.transition && props.slug ? postTransitionNames(props.slug) : undefined,

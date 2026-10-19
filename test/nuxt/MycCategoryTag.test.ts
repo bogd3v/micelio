@@ -1,24 +1,35 @@
-import { describe, it, expect } from 'vitest'
+import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import MycCategoryTag from '~/components/myc/MycCategoryTag.vue'
-import { Category } from '~/interfaces/design'
+import { serveCategories } from './categoriesFixture'
 
 describe('MycCategoryTag', () => {
-  it('shows the translated category name with its color class', async () => {
-    const wrapper = await mountSuspended(MycCategoryTag, { props: { category: Category.Privacy } })
+  beforeEach(() => serveCategories())
+
+  it('shows the CMS name with the color of its position', async () => {
+    const wrapper = await mountSuspended(MycCategoryTag, { props: { category: 'kitchen' } })
     expect(wrapper.element.tagName).toBe('SPAN')
-    expect(wrapper.classes()).toContain('myc-tag-privacidad')
-    expect(wrapper.text()).toBe('Privacy')
+    await vi.waitFor(() => expect(wrapper.text()).toBe('Kitchen'))
+    expect(wrapper.attributes('style')).toContain('--tag-color: var(--category-2)')
     expect(wrapper.get('.myc-tag-dot').attributes('aria-hidden')).toBe('true')
+  })
+
+  it('wraps the color after the fifth category and shows the slug and a neutral color for an unknown one', async () => {
+    const sixth = await mountSuspended(MycCategoryTag, { props: { category: 'loft' } })
+    await vi.waitFor(() => expect(sixth.text()).toBe('Loft'))
+    expect(sixth.attributes('style')).toContain('--tag-color: var(--category-1)')
+    const unknown = await mountSuspended(MycCategoryTag, { props: { category: 'attic' } })
+    expect(unknown.text()).toBe('attic')
+    expect(unknown.attributes('style')).toContain('--tag-color: var(--ink-muted)')
   })
 
   it('renders a link and accepts a custom label', async () => {
     const wrapper = await mountSuspended(MycCategoryTag, {
-      props: { category: Category.Diy, href: `/blog/category/${Category.Diy}` },
-      slots: { default: () => 'DIY' },
+      props: { category: 'garden', href: '/blog/category/garden' },
+      slots: { default: () => 'Plants' },
     })
     expect(wrapper.element.tagName).toBe('A')
-    expect(wrapper.attributes('href')).toBe('/blog/category/diy')
-    expect(wrapper.text()).toBe('DIY')
+    expect(wrapper.attributes('href')).toBe('/blog/category/garden')
+    expect(wrapper.text()).toBe('Plants')
   })
 })

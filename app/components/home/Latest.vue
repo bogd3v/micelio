@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import type { Category, Locale } from '~/interfaces'
-import { categoryColor } from '~/helpers/categories'
-import { CATEGORIES } from '~/constants/categories'
+import type { Locale } from '~/interfaces'
 import { padCount } from '~/helpers/search'
 import { blogPath } from '~/helpers/blog'
 
 interface TopicFilter {
-  id: Category | 'all'
+  id: string
   label: string
   color: string
   count: string
@@ -18,7 +16,8 @@ const props = defineProps<{
   /** Slug of the post shown above as the featured card: it keeps its transition names there */
   featuredSlug?: string
   total: number
-  counts: Partial<Record<Category, number>>
+  /** Articles per category slug; a slug missing here uses the count of the CMS list */
+  counts: Record<string, number>
 }>()
 
 const { locale, t } = useI18n()
@@ -26,9 +25,10 @@ const themeMessage = useThemeMessage()
 const { fetchPosts } = useStrapi()
 const { localizePath } = useLocaleUtils()
 const toPostCard = usePostCard()
+const { listed, colorOf, labelOf } = useCategories()
 const { isStatic } = useStaticSite()
 
-const selected = ref<Category | undefined>()
+const selected = ref<string | undefined>()
 
 const { data: postsResult, status } = fetchPosts({ pageSize: LATEST_SIZE, locale: locale.value as Locale, category: selected })
 
@@ -38,17 +38,19 @@ const posts = computed(() => results.value?.data ?? [])
 const shownTotal = computed<number>(() => results.value?.pagination.total ?? posts.value.length)
 const filters = computed<TopicFilter[]>(() => [
   { id: 'all', label: t('home.latest.all'), color: 'var(--ink-muted)', count: padCount(props.total) },
-  ...CATEGORIES.map(category => ({
-    id: category,
-    label: t(`myc.categoryShort.${category}`),
-    color: categoryColor(category),
-    count: padCount(props.counts[category] ?? 0),
+  ...listed.value.map(category => ({
+    id: category.slug,
+    label: category.name,
+    color: colorOf(category.slug),
+    count: padCount(props.counts[category.slug] ?? category.count),
   })),
 ])
 const eyebrow = computed<string>(() => t('home.latest.eyebrow', { count: padCount(shownTotal.value) }, shownTotal.value))
-const emptyTitle = computed<string>(() => t(`home.latest.empty.${selected.value ?? 'all'}`))
+const emptyTitle = computed<string>(() =>
+  selected.value ? t('home.latest.empty.category', { category: labelOf(selected.value) }) : t('home.latest.empty.all'),
+)
 const emptyColor = computed<string>(() =>
-  selected.value ? categoryColor(selected.value) : 'var(--ink-muted)',
+  selected.value ? colorOf(selected.value) : 'var(--ink-muted)',
 )
 
 function select(id: TopicFilter['id']): void {
@@ -63,7 +65,7 @@ function select(id: TopicFilter['id']): void {
         <p class="myc-eyebrow myc-home-eyebrow" aria-live="polite">{{ eyebrow }}</p>
         <h2 id="latest-title" class="myc-home-title myc-stretch">{{ t('home.latest.title') }}</h2>
       </div>
-      <div class="myc-latest-filters" role="group" :aria-label="t('home.latest.filters')">
+      <div v-if="listed.length" class="myc-latest-filters" role="group" :aria-label="t('home.latest.filters')">
         <template v-for="filter in filters" :key="filter.id">
           <NuxtLink
             v-if="isStatic"

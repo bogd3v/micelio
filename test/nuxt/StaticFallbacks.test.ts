@@ -1,7 +1,6 @@
-import { afterEach, describe, it, expect } from 'vitest'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
-import { Category } from '~/interfaces'
 import MycTabBar from '~/components/myc/MycTabBar.vue'
 import MycThemeSwitch from '~/components/myc/MycThemeSwitch.vue'
 import MycLangSwitch from '~/components/myc/MycLangSwitch.vue'
@@ -17,10 +16,9 @@ import FooterMinimal from '~/theme/layout/footer/Minimal.vue'
 import type { StrapiMediaFile, StrapiOpenSource, StrapiSlider } from '~/interfaces'
 import Header from '~/theme/layout/header/Bar.vue'
 import Footer from '~/theme/layout/footer/Columns.vue'
+import { serveCategories } from './categoriesFixture'
 
 registerEndpoint('/api/posts', () => ({ data: [], meta: { pagination: { page: 1, pageSize: 6, pageCount: 1, total: 0 } } }))
-// The blog page answers 404 for a category the list does not have (ADR 0016, section 7)
-registerEndpoint('/api/categories', () => [{ id: 1, slug: 'garden', name: 'Garden', count: 0 }])
 registerEndpoint('/api/tags', () => [])
 
 // Static pages run no Vue (ADR 0006, section 3): shared controls fall back to plain HTML
@@ -29,6 +27,8 @@ function setMode(mode: 'dynamic' | 'static'): void {
 }
 
 describe('static fallbacks', () => {
+  // The blog page answers 404 for a category the list does not have (ADR 0016, section 7)
+  beforeEach(() => serveCategories())
   afterEach(() => setMode('dynamic'))
 
   describe('tab bar', () => {
@@ -78,6 +78,7 @@ describe('static fallbacks', () => {
       setMode('static')
       const wrapper = await mountSuspended(Footer)
       const nav = wrapper.get('#myc-site-nav')
+      await vi.waitFor(() => expect(nav.findAll('details')).toHaveLength(3))
       expect(nav.findAll('details').map(details => details.attributes('open') !== undefined)).toEqual([true, true, false])
       expect(nav.findAll('a.myc-seg').map(link => link.attributes('hreflang'))).toEqual(['es', 'en'])
       expect(wrapper.find('button').exists()).toBe(false)
@@ -120,10 +121,9 @@ describe('static fallbacks', () => {
   describe('blog filters and copy link', () => {
     const props = {
       total: 3,
-      counts: { [Category.Software]: 2 },
       tags: [{ slug: 'vue', name: 'Vue' }],
       search: '',
-      filters: { category: Category.Software, page: 1 },
+      filters: { category: 'garden', page: 1 },
     }
 
     it('keeps the search input and the removable chips as buttons in dynamic', async () => {
@@ -135,11 +135,12 @@ describe('static fallbacks', () => {
     it('has no search input and links the active chip back to the blog in static', async () => {
       setMode('static')
       const wrapper = await mountSuspended(BlogFilters, { props })
+      await vi.waitFor(() => expect(wrapper.find('a.myc-blog-active-chip').attributes('aria-label')).toBe('Remove filter Garden'))
       expect(wrapper.find('input').exists()).toBe(false)
       expect(wrapper.find('button').exists()).toBe(false)
       const chip = wrapper.get('a.myc-blog-active-chip')
       expect(chip.attributes('href')).toBe('/blog')
-      expect(chip.attributes('aria-label')).toBe('Remove filter Software')
+      expect(chip.attributes('aria-label')).toBe('Remove filter Garden')
     })
 
     it('hides the copy link button in static', async () => {
@@ -170,11 +171,11 @@ describe('static fallbacks', () => {
     it('links the home topic chips to the blog and its categories in static', async () => {
       setMode('static')
       const wrapper = await mountSuspended(HomeLatest, { props: { total: 1, counts: {} } })
-      await flushPromises()
+      await vi.waitFor(() => expect(wrapper.findAll('.myc-latest-filters a.myc-chip').length).toBeGreaterThan(1))
       expect(wrapper.find('.myc-latest-filters button').exists()).toBe(false)
       const hrefs = wrapper.findAll('.myc-latest-filters a.myc-chip').map(chip => chip.attributes('href'))
       expect(hrefs[0]).toBe('/blog')
-      expect(hrefs[1]).toBe('/blog/category/privacidad')
+      expect(hrefs[1]).toBe('/blog/category/garden')
     })
 
     it('links "clear filters" and has no view, sort or search controls on the blog in static', async () => {

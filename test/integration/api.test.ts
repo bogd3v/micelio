@@ -109,7 +109,7 @@ describe('/api/categories', () => {
       ['garden', 0],
       ['kitchen', 0],
     ])
-    expect(Object.keys(result[0]!).sort()).toEqual(['count', 'id', 'name', 'slug'])
+    expect(Object.keys(result[0]!).sort()).toEqual(['count', 'description', 'featured', 'id', 'name', 'order', 'slug'])
   })
 
   it('counts articles of the requested locale only', async () => {

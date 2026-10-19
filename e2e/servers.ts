@@ -9,6 +9,8 @@ interface Servers {
   themeOverrides?: boolean
   /** Answer site-setting with the showcase page as homePage in each locale (e2e/home-page.spec.ts) */
   homePage?: boolean
+  /** Publish articles in garden, kitchen (English only) and invierno (Spanish only), categories no site constant knows (e2e/categories.spec.ts) */
+  categoryArticles?: boolean
   /** Answer site-setting with no value at all, and use neutral env values (e2e/empty-site.spec.ts) */
   emptySite?: boolean
   /** The site's origin when it is not the BogDev one: a Worker's CSP names it (e2e/playground) */
@@ -16,10 +18,10 @@ interface Servers {
 }
 
 /** The mock Strapi and the Nuxt server (dev, or the build with E2E_BUILD=1) pointed at it, with BogDev's site values (neutral ones with `emptySite`). */
-export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false, emptySite = false, siteUrl = emptySite ? 'https://example.com' : 'https://bogdev.com.co' }: Servers): PlaywrightTestConfig['webServer'] {
+export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false, categoryArticles = false, emptySite = false, siteUrl = emptySite ? 'https://example.com' : 'https://bogdev.com.co' }: Servers): PlaywrightTestConfig['webServer'] {
   return [
     {
-      command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=http://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''}${homePage ? ' MOCK_HOME_PAGE=1' : ''}${emptySite ? ' MOCK_EMPTY_SITE=1' : ''} node e2e/mock-strapi.mjs`,
+      command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=http://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''}${homePage ? ' MOCK_HOME_PAGE=1' : ''}${categoryArticles ? ' MOCK_CATEGORY_ARTICLES=1' : ''}${emptySite ? ' MOCK_EMPTY_SITE=1' : ''} node e2e/mock-strapi.mjs`,
       port: mockPort,
       reuseExistingServer: !process.env.CI,
       timeout: 15_000,

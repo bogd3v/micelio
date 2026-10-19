@@ -16,28 +16,9 @@
     width: 8px;
     height: 8px;
     border-radius: var(--radius-xs);
-    background: currentColor;
+    /* --tag-color is the category's role, set inline from the CMS list */
+    background: var(--tag-color, currentColor);
     flex: none;
-}
-
-.myc-tag-privacidad .myc-tag-dot {
-    background: var(--category-1);
-}
-
-.myc-tag-diy .myc-tag-dot {
-    background: var(--category-2);
-}
-
-.myc-tag-ia .myc-tag-dot {
-    background: var(--category-3);
-}
-
-.myc-tag-software .myc-tag-dot {
-    background: var(--category-4);
-}
-
-.myc-tag-linux .myc-tag-dot {
-    background: var(--category-5);
 }
 
 a.myc-tag:hover {

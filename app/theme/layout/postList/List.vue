@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { Category, PostListItem } from '~/interfaces'
-import { isCategory } from '~/helpers/categories'
+import type { PostListItem } from '~/interfaces'
 import { formatDotDate } from '~/helpers/formatDate'
 
 defineOptions({ name: 'RegionPostListList' })
@@ -17,11 +16,6 @@ const { t } = useI18n()
 const { localizePath } = useLocaleUtils()
 const { isRead } = useReadArticles()
 const postStats = usePostStats(toRef(props, 'posts'), toRef(props, 'federated'))
-
-function postCategory(post: PostListItem): Category | undefined {
-  const slug = post.category?.slug
-  return isCategory(slug) ? slug : undefined
-}
 </script>
 
 <template>
@@ -38,7 +32,7 @@ function postCategory(post: PostListItem): Category | undefined {
           <p v-else-if="post.description" class="myc-post-row-excerpt">{{ post.description }}</p>
         </div>
         <div class="myc-meta myc-post-row-meta">
-          <MycCategoryTag v-if="postCategory(post)" :category="postCategory(post)!" />
+          <MycCategoryTag v-if="post.category?.slug" :category="post.category.slug" />
           <span v-if="postStats(post)">
             <span aria-hidden="true">◆</span>
             {{ postStats(post)!.likes }} {{ t('post.fediverse.likes', postStats(post)!.likes) }}

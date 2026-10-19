@@ -1,8 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import MycMenuSheet from '~/components/myc/MycMenuSheet.vue'
+import { categoriesSettled, serveCategories } from './categoriesFixture'
 
 describe('MycMenuSheet', () => {
+  beforeEach(() => serveCategories())
+
   it('lists sections, topics, theme and language', async () => {
     const wrapper = await mountSuspended(MycMenuSheet, { props: { open: false, active: 'about' } })
     const dialog = wrapper.get('dialog')
@@ -11,12 +14,22 @@ describe('MycMenuSheet', () => {
     expect(sections.attributes('aria-label')).toBe('Sections')
     expect(sections.findAll('a').map(a => a.attributes('href'))).toEqual(['/', '/blog', '/about'])
     expect(sections.get('[aria-current="page"]').text()).toContain('About')
+    await vi.waitFor(() => expect(wrapper.findAll('.myc-sheet-cat')).toHaveLength(6))
     const topics = wrapper.findAll('.myc-sheet-cat')
-    expect(topics.map(a => a.text())).toEqual(['Privacy', 'DIY', 'AI', 'Software', 'Linux', '◆@bogdev'])
-    expect(topics[0]!.attributes('href')).toBe('/blog/category/privacidad')
+    // The CMS names in its order, only the categories with articles
+    expect(topics.map(a => a.text())).toEqual(['Garden', 'Kitchen', 'Workshop', 'Cellar', 'Loft', '◆@bogdev'])
+    expect(topics[0]!.attributes('href')).toBe('/blog/category/garden')
     expect(topics[5]!.attributes('href')).toBe('/#fediverso')
     expect(wrapper.find('[role="group"][aria-label="Color theme"]').exists()).toBe(true)
     expect(wrapper.find('[role="group"][aria-label="Language"]').exists()).toBe(true)
+  })
+
+  it('lists no topics for a site without categories', async () => {
+    serveCategories([])
+    const wrapper = await mountSuspended(MycMenuSheet, { props: { open: false } })
+    await categoriesSettled()
+    expect(wrapper.find('#myc-sheet-topics').exists()).toBe(false)
+    expect(wrapper.findAll('.myc-sheet-cat').map(a => a.text())).toEqual(['◆@bogdev'])
   })
 
   it('opens as a modal and closes from the close button, Esc and the backdrop', async () => {

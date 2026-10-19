@@ -5,7 +5,7 @@ import type {
   PostListItem,
   StrapiPost,
   SearchPostResult, StrapiPaginatedResponse, PaginationMeta,
-  Locale, CategoryCount, BlogSort, TagCount } from '~/interfaces'
+  Locale, CategoryEntry, BlogSort, TagCount } from '~/interfaces'
 import { defaultLocale } from '~/interfaces'
 import { toStrapiPost } from '~/helpers/post'
 import { toQueryString } from '~/helpers/query'
@@ -104,7 +104,7 @@ export function useStrapi() {
         locale: toValue(locale) || undefined,
       })
 
-      return requestFetch<CategoryCount[]>(
+      return requestFetch<CategoryEntry[]>(
         `/api/categories?${query}`,
       )
     }, {
