@@ -62,6 +62,14 @@
     display: flex;
     align-items: center;
     gap: var(--space-3);
+    max-width: 100%;
+}
+
+/* The label and the select can be wider than a 320 px column: the select gives way (WCAG 1.4.10) */
+.myc-blog-sort .myc-select {
+    min-width: 0;
+    flex: 0 1 auto;
+    text-overflow: ellipsis;
 }
 
 .myc-blog-feeds {

@@ -20,6 +20,17 @@
     height: 28px;
 }
 
+/* At 320 px the header row (mark, gap and three 48 px buttons) is wider than the page: a smaller mark keeps it inside (WCAG 1.4.10) */
+@media (max-width: 359.98px) {
+    .bogota-mark-header .bogota-mark-svg {
+        height: 22px;
+    }
+
+    .myc-header .myc-header-inner {
+        gap: var(--space-3);
+    }
+}
+
 .bogota-mark-footer .bogota-mark-svg {
     width: auto;
     height: 1em;
