@@ -9,6 +9,9 @@ test('lists the categories of the CMS with articles in the blog filters and the 
   await expect(chips).toHaveText([/All/, /Software development/, /Linux and open source/, /Garden/, /Kitchen/])
   await expect(chips.nth(3).locator('.myc-latest-dot')).toHaveAttribute('style', /var\(--category-1\)/)
   await expect(chips.nth(4).locator('.myc-latest-dot')).toHaveAttribute('style', /var\(--category-2\)/)
+  // Software ranks fourth, but the CMS pins its color to 2; linux keeps its rank color
+  await expect(chips.nth(1).locator('.myc-latest-dot')).toHaveAttribute('style', /var\(--category-2\)/)
+  await expect(chips.nth(2).locator('.myc-latest-dot')).toHaveAttribute('style', /var\(--category-5\)/)
 
   const feeds = page.getByRole('complementary').getByRole('list', { name: 'One feed per category:' }).getByRole('link')
   await expect(feeds).toHaveText([/Software development/, /Linux and open source/, /Garden/, /Kitchen/])

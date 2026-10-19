@@ -12,8 +12,10 @@ export interface LoadedCategory {
   description: string | null
   /** The editor's position (non-localized in the CMS); null when none was set. */
   order: number | null
-  /** Whether the home page highlights it: the CMS `featured`, else `pillar`. */
+  /** Whether the home page highlights it: the CMS `featured`. */
   featured: boolean
+  /** The color role number (1 to 5) the editor pinned in the CMS (non-localized); null when none or not valid. */
+  color: number | null
   /** Published articles of the requested locale. */
   count: number
 }

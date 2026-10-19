@@ -19,7 +19,7 @@ export interface UseCategories {
   failed: ComputedRef<boolean>
   /** Whether the CMS has a category with this slug. */
   has: (slug: string) => boolean
-  /** The color role of a category by its rank in the full list (`categoryColor`); neutral for an unknown slug. */
+  /** The color role of a category by its pinned `color` or its rank in the full list (`categoryColor`); neutral for an unknown slug. */
   colorOf: (slug: string | null | undefined) => string
   /** The localized name of a category; its slug when the list does not have it. */
   labelOf: (slug: string | null | undefined) => string

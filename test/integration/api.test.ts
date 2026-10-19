@@ -98,7 +98,7 @@ describe('when the CMS cannot list the categories', () => {
 
 describe('/api/categories', () => {
   it('returns the categories of the CMS by order, whatever their slugs, and hides those without a slug', async () => {
-    const result = await $fetch<Array<{ slug: string | null, name: string, count: number }>>('/api/categories', { query: { locale: 'en' } })
+    const result = await $fetch<Array<{ slug: string | null, name: string, count: number, featured: boolean, color: number | null }>>('/api/categories', { query: { locale: 'en' } })
     expect(result.map(category => [category.slug, category.count])).toEqual([
       ['privacidad', 0],
       ['diy', 0],
@@ -108,7 +108,10 @@ describe('/api/categories', () => {
       ['garden', 0],
       ['kitchen', 0],
     ])
-    expect(Object.keys(result[0]!).sort()).toEqual(['count', 'description', 'featured', 'id', 'name', 'order', 'slug'])
+    expect(Object.keys(result[0]!).sort()).toEqual(['color', 'count', 'description', 'featured', 'id', 'name', 'order', 'slug'])
+    expect(result.map(category => [category.slug, category.featured, category.color])).toEqual([
+      ['privacidad', true, null], ['diy', true, null], ['ia', false, null], ['software', false, 2], ['linux', false, null], ['garden', false, null], ['kitchen', false, null],
+    ])
     expect(z.array(categoryCountSchema).safeParse(result).error?.issues ?? []).toEqual([])
   })
 

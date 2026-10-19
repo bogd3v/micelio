@@ -34,7 +34,7 @@ export interface UseCategories {
   failed: ComputedRef<boolean>
   /** Whether the CMS has a category with this slug. */
   has: (slug: string) => boolean
-  /** The color role of a category by its rank in the full list (`categoryColor`); neutral for an unknown slug. */
+  /** The color role of a category by its pinned `color` or its rank in the full list (`categoryColor`); neutral for an unknown slug. */
   colorOf: (slug: string | null | undefined) => string
   /** The localized name of a category; its slug when the list does not have it. */
   labelOf: (slug: string | null | undefined) => string
@@ -53,7 +53,7 @@ export function useCategories(): UseCategories
 
 ### `categoryColor`
 
-The color role of a category: `var(--category-N)`, N being its rank by (`order`, `slug`) in the whole list, modulo the five roles, plus one.
+The color role of a category: `var(--category-N)`, N being its pinned `color` when valid, else its rank by (`order`, `slug`) in the whole list, modulo the five roles, plus one.
 
 ```ts
 export function categoryColor(categories: readonly CategoryEntry[], slug: string | null | undefined): string
@@ -417,6 +417,8 @@ export interface CategoryEntry {
   order: number | null
   /** Whether the home page highlights it. */
   featured: boolean
+  /** The color role number (1 to 5) the editor pinned, non-localized; null or absent when none, and the rank gives the color. */
+  color?: number | null
 }
 ```
 

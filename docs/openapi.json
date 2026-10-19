@@ -5695,6 +5695,18 @@
           "featured": {
             "type": "boolean"
           },
+          "color": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "count": {
             "type": "integer",
             "minimum": 0,
@@ -5711,7 +5723,7 @@
           "count"
         ],
         "additionalProperties": false,
-        "description": "A category of the CMS in the requested locale, with its name, description, position, whether the home page highlights it and the number of its published posts."
+        "description": "A category of the CMS in the requested locale, with its name, description, position, whether the home page highlights it, its pinned color role and the number of its published posts."
       },
       "Comment": {
         "type": "object",
