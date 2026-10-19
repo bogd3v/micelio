@@ -77,6 +77,8 @@ Micelio is free software under the [GNU AGPL-3.0-only](LICENSE). If you run a mo
 - **Contributing**: under the same license, with a DCO sign-off on every commit; see [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Future versions**: Micelio is AGPL version 3 only. A proxy named in [LICENSE](LICENSE) (section 14) can accept a later version of the AGPL for it; a change to any other license is not possible this way.
 - **Integrations over the network**: Micelio's maintainer does not consider an app that only talks to Micelio over its HTTP API, without including Micelio's code (a hosting control panel, a bot, an assistant), to be combined with Micelio or covered by its license.
+- **Name and logo**: the AGPL grants no right to the name Micelio or its logo; [TRADEMARKS.md](TRADEMARKS.md) says what you may do and what needs permission.
+- **Community**: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for how we treat each other and [GOVERNANCE.md](GOVERNANCE.md) for who decides what.
 - **Per file**: every file's license and copyright are recorded in [REUSE.toml](REUSE.toml), following the [REUSE specification](https://reuse.software/); the license texts are in [LICENSES/](LICENSES/).
 
 The reasons are in [ADR 0007](docs/adr/0007-license.md).
