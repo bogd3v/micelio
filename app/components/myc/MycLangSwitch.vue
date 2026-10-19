@@ -39,7 +39,7 @@ async function select(next: Locale): Promise<void> {
         class="myc-seg"
         :lang="option"
         :hreflang="option"
-        :aria-label="t(`myc.header.languages.${option}`)"
+        :aria-label="`${option.toUpperCase()}: ${t(`myc.header.languages.${option}`)}`"
         :aria-current="locale === option ? 'true' : undefined"
       >
         {{ option.toUpperCase() }}
@@ -49,7 +49,7 @@ async function select(next: Locale): Promise<void> {
         type="button"
         class="myc-seg"
         :lang="option"
-        :aria-label="t(`myc.header.languages.${option}`)"
+        :aria-label="`${option.toUpperCase()}: ${t(`myc.header.languages.${option}`)}`"
         :aria-pressed="locale === option ? 'true' : 'false'"
         @click="select(option)"
       >
