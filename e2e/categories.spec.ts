@@ -59,3 +59,16 @@ test('filters the home latest by a category no constant knows', async ({ page })
   await page.getByRole('group', { name: 'Filter by topic' }).getByRole('button', { name: /Kitchen/ }).click()
   await expect(page.getByRole('heading', { name: 'Kitchen article' })).toBeVisible()
 })
+
+test('the language switch of a category that exists in one language only goes to the blog list', async ({ page }) => {
+  await page.goto('/es/blog/category/invierno', { waitUntil: 'networkidle' })
+  await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveCount(0)
+  await expect(page.locator('link[rel="alternate"][hreflang="es"]')).toHaveCount(1)
+  await page.getByRole('group', { name: 'Idioma' }).getByRole('button', { name: 'English' }).click()
+  await expect(page).toHaveURL(/\/blog$/)
+
+  // A category both languages have keeps its own page
+  await page.goto('/es/blog/category/garden', { waitUntil: 'networkidle' })
+  await page.getByRole('group', { name: 'Idioma' }).getByRole('button', { name: 'English' }).click()
+  await expect(page).toHaveURL(/\/blog\/category\/garden$/)
+})

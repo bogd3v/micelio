@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { layout } from '#micelio/theme'
 import { Locale } from '~/interfaces'
-import type { BlogFilters, BlogSort, BlogView, PostListItem, TagCount } from '~/interfaces'
-import { BLOG_SORTS, blogLocation, blogPageSize, blogPath, hasActiveFilters, isBlogRouteValid, parseBlogRoute, parseSort, searchTerm } from '~/helpers/blog'
+import type { BlogFilters, BlogSort, BlogView, CategoryEntry, PostListItem, TagCount } from '~/interfaces'
+import { BLOG_SORTS, blogLocation, blogPageSize, blogPath, hasActiveFilters, isBlogRouteValid, localesWithCategory, parseBlogRoute, parseSort, searchTerm } from '~/helpers/blog'
 import { feedPath } from '~/helpers/feed'
 import { padCount } from '~/helpers/search'
 import { popularTags as pickPopularTags } from '~/helpers/tags'
@@ -23,7 +23,7 @@ const route = useRoute()
 const router = useRouter()
 const { localizePath } = useLocaleUtils()
 const { setAlternates } = useLocaleAlternates()
-const { fetchPosts, fetchTags } = useStrapi()
+const { fetchCategories, fetchPosts, fetchTags } = useStrapi()
 const { siteUrl } = useSiteUrl()
 const defaultOgImage = useDefaultOgImage()
 const site = useSite()
@@ -57,6 +57,9 @@ const { data: postsResult, status } = fetchPosts({
 const { data: recentResult } = fetchPosts({ pageSize: RECENT_SIZE, locale: currentLocale })
 const { failed: categoriesFailed, has: hasCategory, labelOf, loaded: categoriesLoaded } = useCategories()
 const { data: tags } = fetchTags(locale.value as Locale)
+// One list per language, under the keys `useCategories` already uses, so the current one is not fetched twice
+const categoryLists = Object.fromEntries(Object.values(Locale).map(code => [code, fetchCategories(code).data])) as Record<Locale, Ref<CategoryEntry[]>>
+const hasPage = computed<Locale[]>(() => localesWithCategory(filters.value.category, Object.fromEntries(Object.entries(categoryLists).map(([code, list]) => [code, list.value]))))
 
 const results = useSettledData(postsResult, status)
 const searchInput = ref<string>(filters.value.search ?? '')
@@ -139,8 +142,9 @@ watch(() => filters.value.search, (search) => {
 })
 
 // Page n of one language is not page n of the other: the switcher goes to the first page and pages above it have no hreflang
-watch(() => route.path, () => {
-  setAlternates(Object.fromEntries(Object.values(Locale).map(code => [
+// A category that exists in one language only has no page in the other, so the switch goes to that blog's list instead and no hreflang points there
+watch([() => route.path, hasPage], () => {
+  setAlternates(Object.fromEntries(hasPage.value.map(code => [
     code,
     blogPath({ ...filters.value, page: 1 }, localizePath('/blog', code)),
   ])), { hreflang: filters.value.page === 1 })

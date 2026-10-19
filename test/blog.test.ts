@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { BLOG_PAGE_SIZE, LOG_PAGE_SIZE, blogPageSize, blogLocation, blogPath, blogQuery, groupPostsByMonth, hasActiveFilters, isBlogRouteValid, legacyBlogRedirect, paginationItems, parseBlogRoute, parseSort, searchTerm } from '../app/helpers/blog'
+import { BLOG_PAGE_SIZE, LOG_PAGE_SIZE, blogPageSize, blogLocation, blogPath, blogQuery, groupPostsByMonth, hasActiveFilters, isBlogRouteValid, legacyBlogRedirect, localesWithCategory, paginationItems, parseBlogRoute, parseSort, searchTerm } from '../app/helpers/blog'
 import type { PostListItem } from '../app/interfaces/strapi-post'
 
 describe('parseBlogRoute', () => {
@@ -259,5 +259,23 @@ describe('paginationItems', () => {
     expect(paginationItems(1, 10)).toEqual([1, 2, 'gap', 10])
     expect(paginationItems(5, 10)).toEqual([1, 'gap', 4, 5, 6, 'gap', 10])
     expect(paginationItems(10, 10)).toEqual([1, 'gap', 9, 10])
+  })
+})
+
+describe('localesWithCategory', () => {
+  const lists = { en: [{ slug: 'garden' }], es: [{ slug: 'garden' }, { slug: 'invierno' }] }
+
+  it('keeps every locale for a page with no category', () => {
+    expect(localesWithCategory(undefined, lists)).toEqual(['en', 'es'])
+  })
+
+  it('drops the locale whose list does not have the category', () => {
+    expect(localesWithCategory('invierno', lists)).toEqual(['es'])
+    expect(localesWithCategory('garden', lists)).toEqual(['en', 'es'])
+  })
+
+  it('keeps a locale whose list is empty or not loaded', () => {
+    expect(localesWithCategory('invierno', { en: [], es: lists.es })).toEqual(['en', 'es'])
+    expect(localesWithCategory('invierno', { es: lists.es })).toEqual(['en', 'es'])
   })
 })

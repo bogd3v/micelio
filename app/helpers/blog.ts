@@ -225,3 +225,19 @@ export function paginationItems(current: number, total: number): PaginationItem[
   items.push(total)
   return items
 }
+
+/**
+ * The locales that have a page for a category: those whose category list has its slug.
+ *
+ * @remarks
+ * A category with a version in one locale only (ADR 0016, section 2) is a 404 in the others, so the language switch and the hreflang links leave them out. No category means every locale. A locale whose list is empty is kept, because an empty list is a failed or unfinished load, not proof that the category is missing.
+ *
+ * @param category - The category slug of the page, or `undefined` for a page with no category.
+ * @param lists - The category list of each locale.
+ */
+export function localesWithCategory(category: string | undefined, lists: Partial<Record<Locale, readonly { slug: string }[]>>): Locale[] {
+  return Object.values(Locale).filter((code) => {
+    const list = lists[code]
+    return !category || !list?.length || list.some(entry => entry.slug === category)
+  })
+}
