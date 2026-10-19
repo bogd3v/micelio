@@ -160,7 +160,7 @@
       "label": "Paginación",
       "previous": "Anterior",
       "next": "Siguiente",
-      "page": "Página {page}",
+      "pageLabel": "Página",
       "status": "Página {page} de {total}",
       "perPage": "{count} por página"
     },
