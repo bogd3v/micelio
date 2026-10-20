@@ -20,6 +20,7 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0014](0014-cms-hardening-second-batch.md) | Record the second batch of operator-facing CMS changes | Accepted | 2026-10-14 |
 | [0015](0015-problem-details.md) | Errors as RFC 9457 problem details | Accepted | 2026-10-15 |
 | [0016](0016-categories-from-the-cms.md) | Categories come from the CMS: data instead of constants, a stable optional color, `featured`, and theme contract 2 | Accepted | 2026-10-18 |
+| [0017](0017-distribution-plugins-multisite-editorial.md) | Micelio as Strapi plugins with `micelio-cms` as the reference distribution, several sites per CMS, and an editorial workflow of its own | Proposed | 2026-10-20 |
 
 ## Writing a new record
 
