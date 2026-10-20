@@ -3,7 +3,7 @@
 **Status:** Proposed
 **Date:** 2026-10-19
 **Deciders:** Micelio maintainer
-**Amends:** [ADR-0008](0008-theme-registry.md) (decisions 1, 3, 6 and 10, option G, Trade-offs, Out of scope), [ADR-0005](0005-theme-contract.md) (sections 2, 3, 4 and 8) and [ADR-0004](0004-hash-based-csp.md) (theme assets)
+**Amends:** [ADR-0008](0008-theme-registry.md) (decisions 1, 3, 6, 7 and 10, option G, Trade-offs, Out of scope), [ADR-0005](0005-theme-contract.md) (sections 2, 3, 4 and 8) and [ADR-0004](0004-hash-based-csp.md) (theme assets)
 
 ## Context
 
@@ -22,73 +22,101 @@ Bogotá (7 slots) and the starter (1 slot) ship code. Micelio is pre-1.0 ([ADR-0
 
 ## Decision
 
-Decisions marked **(epic)** were taken on 2026-10-08 in #316 and are recorded here, not reopened. The rest is proposed by this record; what it leaves open is under "Open questions".
+Decisions marked **(epic)** were taken on 2026-10-08 in #316 and are recorded here, not reopened. The two digests and the unset deployment store (section 1) were decided by the maintainer on 2026-10-19, in the review of this record. The rest is proposed by this record; what it leaves open is under "Open questions".
 
 ### 1. Three places
 
 1. **Source**: the theme's repository (`bogd3v/micelio-themes` for official themes).
 2. **Registry**: `ghcr.io/bogd3v/micelio-themes/<id>:<version>` and its `index` (ADR-0008). It distributes; the browser never reaches it.
-3. **Theme store** of the deployment **(epic)**: a directory that holds each installed theme keyed by its digest, validated and compiled. The site serves it on its own origin under `/_t/<digest>/` (not `/_theme`, which is the specimen page), so a page makes no third-party request and the CSP needs no new origin.
+3. **Theme store** of the deployment **(epic)**: a directory that holds each installed theme keyed by digest, validated and compiled. The site serves it on its own origin under `/_t/<digest>/` (not `/_theme`, which is the specimen page), so a page makes no third-party request and the CSP needs no new origin.
 
-An image carries a read-only **built-in store** with the themes of its `themes.lock.json`, filled by `theme:pull -- --frozen` before `nuxt build`. A deployment may add a writable **deployment store** (proposed `MICELIO_THEME_STORE`). A theme is looked up by digest in the built-in store, then in the deployment store; the same package compiled by the same core gives the same bytes, so the order cannot change a page.
+**Two digests.** The package digest (`sha256:` of the `.tgz`) identifies what was published and pinned. The `<digest>` of `/_t/<digest>/` is the digest of the **compiled output**: a hash of the package digest and the **compile key**, which covers the core build id, the Lightning CSS version and targets, and the version of the theme compiler (and its message compiler). A core upgrade therefore gives new URLs, and an `immutable` file never changes under one URL. Each compiled entry records both digests.
+
+**Integrity manifest.** Each compiled entry carries a manifest with the sha256 and size of every file it holds. It is verified when the entry is loaded or activated; an entry that fails is never used in part (section 6).
+
+An image carries a read-only **built-in store** with the themes of its `themes.lock.json`, filled by `theme:pull -- --frozen` before `nuxt build`. A deployment may add a writable **deployment store** (`MICELIO_THEME_STORE`). Unset, there is no deployment store: only built-in themes activate, the server installs nothing and logs one warning at boot. The Compose files gain an optional volume for it. A theme is looked up by compiled digest in the built-in store, then in the deployment store; equal digests mean equal bytes, so the order cannot change a page.
 
 ### 2. Install
 
-One function, `installTheme(source)` (#400, proposed in `modules/theme/install/`): **pull** (the client of #310) → **verify** (the digest; the provenance attestation for official themes) → **safe unpack** (`modules/theme/registry/unpack.ts`, #309) → **validate** (the contract validator, split from `nuxt/kit` so it runs in Nitro and in plain Node) → **compile** → **atomic write** (a temporary folder renamed into place). Nothing from a package executes. Its callers are `theme:pull`, the static builder (#315) and the Nitro server (#403).
+One function, `installTheme(source)` (#400, proposed in `modules/theme/install/`): **check the pin** → **pull** (the client of #310) → **verify** (section 3) → **safe unpack** (`modules/theme/registry/unpack.ts`, #309) → **validate** (the contract validator, split from `nuxt/kit` so it runs in Nitro and in plain Node) → **compile** → **atomic write**. Nothing from a package is executed, imported, required or evaluated, at install or later. Its callers are `theme:pull`, the static builder (#315) and the Nitro server (#403).
 
-**Compiling at install (epic)** produces, per package and core build:
+**The pin is checked first.** Before any request or file system call, `themeId` matches `^[a-z0-9-]{1,64}$`, `themeVersion` is strict semver without build metadata, and `themeDigest` matches `^sha256:[0-9a-f]{64}$`. The OCI reference is built only from these validated parts. A store path comes only from a validated digest and is checked, after resolution, to sit inside the store root. An invalid pin is logged and ignored, and the current theme stays.
 
-- `theme.css`: `fonts.css`, `font-fallbacks.css`, the role tokens (`tokens.mjs`), the mode-switch rules (`buildSegmentedCss`), the theme's `theme.css` and, for a code theme, its slot CSS, each in its named layer and lowered by Lightning CSS with the core's targets;
+**Safe unpack** (#309) accepts only:
+
+- a compressed size under a cap checked before decompression, and a decompression ratio limit; trailing data or extra gzip members fail;
+- regular files and directories (no symlinks, hard links, devices, FIFOs or sparse files), with names checked after pax and GNU long-name headers;
+- no duplicate names, also after case folding and Unicode normalisation; path segments in a restricted charset (open question 6) with limits on depth and length; directories count toward the 200 entries of ADR-0008;
+- byte and JSON-depth caps on `theme.json` and the manifest, and a magic-byte check for woff2, png, jpg, webp, avif and gif.
+
+**Verified bytes are the bytes used.** The digest is computed over the exact bytes unpacked: the same buffer, or a file created exclusively in a private `0700` temporary directory on the store's file system. Nothing is re-read by path after verification. One install per digest runs at a time, behind a lock file that the replicas of a shared store share. The final directory is written by renaming the temporary one; an existing final directory counts as installed only if its integrity manifest verifies.
+
+**Isolation.** A server install runs in a `worker_thread` with `resourceLimits` and a wall-clock timeout, and at most one install runs at a time.
+
+**`code` is decided from the unpacked files**, never from the manifest: an entry under `slots/` or `templates/`, or any `.vue`, `.ts`, `.js` or `.mjs` file, makes the package a code theme.
+
+**Compiling at install (epic)** produces, per package and compile key:
+
+- `theme.css`: `fonts.css`, `font-fallbacks.css`, the role tokens (`tokens.mjs`), the mode-switch rules (`buildSegmentedCss`), the theme's `theme.css` and, for a code theme built into an image, its slot CSS, each in its named layer and lowered by Lightning CSS with the core's targets;
 - `sections.css`, separate as today (only pages that render sections load it);
-- `runtime.json`: id, version, digest, contract, `code`, modes, fonts and preloads, images, layout, the display-family data, the palette and contrast rules (`palette.ts`), and the `theme.*` messages compiled to the AST the client formats without a compiler;
-- `fonts/` and `images/` with the current allowlists, and gzip and brotli next to each text file.
+- `runtime.json`: id, version, both digests, contract, `code`, modes, fonts and preloads, images, layout, the display-family data, the palette and contrast rules (`palette.ts`), and the `theme.*` messages;
+- `fonts/` and `images/` with the current allowlists, gzip and brotli next to each text file, and the integrity manifest.
 
-A theme's source keeps writing `/fonts/…` and `/theme/images/…` (`css-rules.ts` does not change); the compiler rewrites them to `/_t/<digest>/…`. Compiled output is tied to the core build, so a core upgrade recompiles what the stores hold.
+**URLs.** A theme's source may use `url()` only towards `/fonts/…` and `/theme/images/…` (`css-rules.ts`, unchanged). The compiler rewrites them to `/_t/<digest>/…` on the parsed CSS tree, not on text, and a URL left unrewritten fails the install. The page CSP keeps allowing only `'self'` and the Strapi and media hosts.
+
+**Messages.** Install rejects message keys outside `theme.`. The compiler emits an AST only, never JavaScript; the AST is validated on load (known node types, no `__proto__`, `constructor` or `prototype` keys, size caps). Theme messages never render through `v-html`.
+
+Compiled output is tied to the compile key: a new image builds its built-in store, and the entries of a deployment store are compiled again for the new key from their verified packages.
 
 ### 3. Who may install, and the trust model
 
 **(epic)** The Nitro server may install themes itself, behind a switch (proposed `MICELIO_THEME_INSTALL`) that is **on by default**. A hosted platform turns it off and installs centrally into a shared, read-only store. With the switch off, only themes already in a store activate; a missing one is reported, never downloaded.
 
-What a server install enforces (#403, reviewed by the `security` agent):
+What a server install enforces (#403, reviewed by the `security` agent). A failed check is a refused install, never a warning:
 
-- **One registry**: only `MICELIO_THEME_REGISTRY` (ADR-0008 decision 3). More than one registry per instance is out of scope.
-- **The pinned digest** (section 5) must equal the digest pulled, and the attestation is verified where the caller can (official themes, #310).
-- **Size caps** of ADR-0008 decision 1 (4 MiB unpacked, 1 MiB per file, 200 files), enforced while unpacking.
-- **No code**: the server never installs a package with `code: true` (section 4).
+- **One registry**: only `MICELIO_THEME_REGISTRY` (ADR-0008 decision 3), which falls under `insecureUpstream` ([ADR-0011](0011-refuse-plain-http-upstreams.md)). More than one registry per instance is out of scope.
+- **Verification of every package**, not only official ones: (a) the registry index lists `<id>@<version>` with the same digest and status `published` (`yanked` only when that digest is already in a store); (b) the provenance attestation of the publish workflow verifies, offline, against the signer identity of the configured registry, with a trust root shipped in the image; (c) the index's own signature verifies. With a `MICELIO_THEME_REGISTRY` other than the default, the operator also sets the expected signer identity (section 9), or the server refuses to install.
+- **The pinned digest** (section 5) must equal the digest pulled; a blob is accepted only after its digest verifies.
+- **Transport**: redirects only for blob `GET`s, only to `https`, with a hop limit, and `Authorization` is never forwarded across hosts. The token realm must be `https` and on the registry host or an allowlisted host. Every download has a total timeout.
+- **Size caps** of ADR-0008 decision 1 (4 MiB unpacked, 1 MiB per file, 200 entries) and the unpack rules of section 2.
+- **No code**: a server install refuses any entry under `slots/` or `templates/` and any `.vue`, `.ts`, `.js` or `.mjs` file, whatever the manifest says (section 4).
 - **Contract validation**, as at build; a theme that fails never reaches the store.
+- **Limits**: the store has a cap on entries and on total bytes; at the cap an install is refused and logged, and a request never evicts anything. A failed pin is not retried before an exponential backoff, and installs are rate limited per hour.
 - **Off the request path**: install runs in the background, pages keep the current theme until the new one is in the store, and a registry outage changes nothing already installed.
+- **Licensed versions**: a server install of licensed versions (ADR-0008 decision 9) is out of scope for this record.
+- **What is logged and shown**: logs never contain registry tokens, licence keys or URL queries, and the rejection reason shown in the CMS carries no file system path.
 
 ### 4. Data-only and code themes
 
-**(epic)** A package has `code: true` when it ships `slots/` or `templates/` (ADR-0008 decision 1).
+**(epic)** A package is a code theme when it ships `slots/` or `templates/` (ADR-0008 decision 1); the installer decides it from the unpacked files (section 2).
 
 - A **data-only** theme activates at runtime on any image whose core implements its contract (#308).
-- A **code** theme activates only on an image built with it: pinned in that image's `themes.lock.json`, its slots compiled in by the Nuxt build (#402). "Built with it" means the same id and digest; another version of the theme is another theme.
+- A **code** theme activates only on an image built with it: pinned in that image's `themes.lock.json`, its slots compiled in by the Nuxt build (#402). "Built with it" means the same id and package digest as the lock; another version of the theme is another theme.
 - Activating a code theme the image was not built with is **rejected with a reason**. It never falls back to the core's default slots, so a theme looks the same on every image. A dynamic site keeps its current theme (#403); a static generation fails and the last good site stays published (#315).
 
 Slots stay at build time until declarative slots exist (out of scope in #316).
 
 ### 5. The pin
 
-**(epic)** The pin of a runtime theme is an **exact version plus its digest**, stored in Strapi: `themeId`, `themeVersion` and `themeDigest` of `site.theme` (bogd3v/micelio-cms#97). No ranges and no "latest": publishing an article must never change how a site looks. An empty `themeId` means the instance's default theme. `themes.lock.json` stays the pin of what an image is built with (ADR-0008 decision 6).
+**(epic)** The pin of a runtime theme is an **exact version plus its digest**, stored in Strapi: `themeId`, `themeVersion` and `themeDigest` of `site.theme` (bogd3v/micelio-cms#97). No ranges and no "latest": publishing an article must never change how a site looks. An empty `themeId` means the instance's default theme. The frontend checks the grammar of the three fields before using them (section 2), whatever Strapi validated. `themes.lock.json` stays the pin of what an image is built with (ADR-0008 decision 6).
 
 ### 6. How the core reads the active theme
 
 - **`NUXT_PUBLIC_THEME`** becomes the instance's **default theme**: a bare id among the themes of the built-in store, used when the site settings name none. It is read at runtime; `themeMismatch` and its boot check go away (#401). A value that names no installed theme stops the boot with a message that names it (standard, section 5).
 - **Active theme**: the server resolves `site.theme` into one server state that every reader uses (`/api/site` and the render hook), and keeps the last good theme on failure (#403). The site-settings cache (`siteCacheSeconds`) plus the install time bound how fast a switch is seen.
-- **Data**: `runtime.json` replaces the `#micelio/theme*` virtual modules and the theme part of `#micelio/display-fonts`. The server reads it and the client gets it in the payload. Theme messages are merged per request, never sharing message objects between requests (#401).
+- **Data**: `runtime.json` replaces the `#micelio/theme*` virtual modules and the theme part of `#micelio/display-fonts`. It is parsed with a zod schema that uses the validator's grammars (ids in `[a-z0-9-]`, font file names, image paths, the message AST of section 2), after the integrity manifest verifies (section 1). Every value that reaches HTML is re-derived from that schema and escaped; today `server/plugins/themeMode.ts:31` and `server/utils/displayFonts.ts:111` interpolate build-time constants as they are, which is no longer safe once the values come from a store. An entry that fails either check is never used in part: it is logged, the last good theme or the default stays, and nothing of it is served under `/_t/`. The client gets the parsed data in the payload. Theme messages are merged per request, never sharing message objects between requests (#401).
 - **CSS**: the compiled theme CSS leaves the entry bundle and is linked from `render:html`. Lightning CSS drops the `@layer` order statement when it bundles every layer (ADR-0005 section 3), so the statement goes **inline, first in `<head>`**, as a `<style>` before any stylesheet.
 - **Layout variants**: all ten variants (`app/theme/layout/<region>/`) are in the build, and the component and the CSS of each load only when the active theme uses it (#402). The `:root` and `html` rules of the header variants (`--myc-header-h`, `scroll-padding-top`) move under an attribute on `<html>`.
-- **Slots**: the slots of every code theme in the lock are compiled in and chosen by the active theme's id and digest; any other theme renders `app/theme/defaults/` (#402).
+- **Slots**: the slots of every code theme in the lock are compiled in and chosen by the id and package digest pinned in the image's `themes.lock.json`, never by the `/_t/` digest or by anything in a store. Any other theme renders `app/theme/defaults/` (#402).
 - **Init script (epic)**: theme-independent. It reads the modes from an attribute on `<html>` that `themeMode.ts` writes, and stays in the build-time head, because the render hook runs after the CSP has hashed the scripts.
 
 ### 7. Static and landing modes
 
-The builder reads `site.theme` with the read-only `build` token before `nuxt generate`, installs the pinned theme with `installTheme()` and copies `/_t/<digest>/` into the output (#315). An empty `themeId` uses the builder's default. An unknown id or version, a digest mismatch, or a code theme the builder image lacks fails the generation with a message that the rebuild webhook surfaces, and the last good site stays. The resolved id, version and digest are written into the output for audit, and `/_t/*` joins the immutable paths of `_headers` (`app/helpers/staticBuild.ts`). A landing is a static build with a content profile ([ADR-0006](0006-site-modes.md)) and resolves the theme the same way.
+The builder reads `site.theme` with the read-only `build` token before `nuxt generate`, checks the pin (section 2), installs the pinned theme with `installTheme()` and copies `/_t/<digest>/` into the output (#315). An empty `themeId` uses the builder's default. An unknown id or version, a digest mismatch, a failed verification, or a code theme the builder image lacks fails the generation with a message that the rebuild webhook surfaces, and the last good site stays. The resolved id, version and digests are written into the output for audit. `/_t/*` joins the immutable paths of `_headers` (`app/helpers/staticBuild.ts`) and gets a sandbox rule like `/_media/*`. A landing is a static build with a content profile ([ADR-0006](0006-site-modes.md)) and resolves the theme the same way.
 
 ### 8. Cache and CSP
 
-- **`/_t/<digest>/**`** is served by a Nitro handler from the stores (#401): `Cache-Control: public, max-age=31536000, immutable`, the precompressed files, and the `STATIC_CSP` that `/fonts/**` and `/theme/images/**` have today.
+- **`/_t/<digest>/**`** is served by a Nitro handler from the stores (#401). It validates the digest grammar and serves only the digests the site has active, last good or locked. It serves only files listed in that entry's integrity manifest, through a map lookup, never by joining the request path. The content type comes from a fixed table of extensions (CSS with `charset=utf-8`). Every response has `nosniff` (`SECURITY_HEADERS`) and the `STATIC_CSP` that `/fonts/**` and `/theme/images/**` have today, and `Cache-Control: public, max-age=31536000, immutable`. A precompressed file is sent only when negotiated, with `Vary: Accept-Encoding`. An unknown digest and an unknown file get the same 404.
 - **Pages** ([ADR-0001](0001-isr-without-cdn.md)): ISR stores HTML that names the theme's stylesheet, preloads and attributes, so a switch purges the page cache and the cache key includes the theme digest, and a render in flight cannot store the old theme again (#403).
 - **CSP** ([ADR-0004](0004-hash-based-csp.md)): no new origin, since `/_t/` is `'self'`. `script-src` keeps its shape: the theme-independent init script has one hash per core build instead of one per theme build. The inline `@layer` statement and `#theme-overrides` are styles, allowed by `style-src 'unsafe-inline'`; if `style-src` is tightened they get hashes in the same `render:html` hook. Static builds keep one policy for every page.
 - **#313 (epic)**: the byte-identical init script and CSP hash of ADR-0008 decision 10 are no longer required. Zero visual diff and the same budgets prove BogDev unchanged; the init script and its hash change once, in #401.
@@ -97,12 +125,13 @@ The builder reads `site.theme` with the read-only `build` token before `nuxt gen
 
 | Variable | Meaning | Change |
 | --- | --- | --- |
-| `MICELIO_THEME_STORE` (proposed) | Directory of the deployment store | New, optional |
+| `MICELIO_THEME_STORE` (proposed) | Directory of the deployment store; unset, only built-in themes activate (section 1) | New, optional |
 | `MICELIO_THEME_INSTALL` (proposed) | Whether the server may install themes; on by default | New, optional |
 | `MICELIO_THEME_REGISTRY` | The one registry the server and the clients pull from (ADR-0008) | Also read at runtime |
+| `MICELIO_THEME_REGISTRY_IDENTITY` (proposed) | The signer identity expected for the attestations and the index of a non-default registry; without it the server installs nothing from that registry | New, required with a non-default registry |
 | `NUXT_PUBLIC_THEME` | The instance's default theme, read at runtime | Changed meaning: `!` and upgrade notes |
 
-Each goes in `.env.example` and `docs/operate/configure.md` in the pull request that introduces it.
+The Compose files gain an optional volume for the deployment store. Each goes in `.env.example` and `docs/operate/configure.md` in the pull request that introduces it.
 
 ### 10. What this record amends
 
@@ -112,6 +141,7 @@ The amended records are not rewritten; each gets a pointer amendment.
 - **ADR-0008 decision 3**: "the same storage is what serving themes at runtime would use later" no longer holds: the browser reaches only the site's own store (section 1).
 - **ADR-0008 decision 6**: "a different theme always means a different build" and "the pin is not stored in Strapi for dynamic images (the theme must be known before Nuxt builds)" hold only for code themes. A data-only theme's pin is in Strapi, exact (section 5), and the builder takes it as stored instead of resolving it.
 - **ADR-0008 decision 10**: the byte-identical init script and CSP hash are dropped; `NUXT_PUBLIC_THEME` changes meaning (section 9); "only the active theme reaching the bundle" becomes "no theme CSS or data in the bundle, only the slots of the locked code themes".
+- **ADR-0008 decision 7**: a server install adds the checks of sections 2 and 3 (pin grammar, index, attestation and index signature for every tier, unpack rules, no code).
 - **ADR-0008 option G**: its cons no longer hold for data-only themes: the CMS stores the digest and no build needs the theme.
 - **ADR-0008 Trade-offs and Out of scope**: a dynamic site changes a data-only theme without a rebuild; loading themes at runtime is in scope for data-only themes, and declarative slots stay out.
 - **ADR-0005 section 2** (#237 amendment): the init script is no longer generated from the active theme's modes.
@@ -157,10 +187,10 @@ The amended records are not rewritten; each gets a pointer amendment.
 
 ## Trade-offs
 
-- The runtime image grows: `lightningcss` (its Linux x64 binary is 9.6 MB in `node_modules`, MPL-2.0) and `@intlify/message-compiler` (540 KB, MIT), devDependencies today, become production dependencies, with the justification of the standard, section 10, in #400.
+- The runtime image grows. New production dependencies, each justified in #400 or #403 as the standard, section 10, asks: `lightningcss` (its Linux x64 binary is 9.6 MB in `node_modules`, MPL-2.0) and `@intlify/message-compiler` (540 KB, MIT), devDependencies today; an OCI client, unless the `fetch` client of #310 suffices; and a sigstore verifier for the offline attestation check. A WASM or native verifier is pinned exactly.
 - A writable store is state: a volume to keep or rebuild, shared or per replica, and a cache to clean.
 - The theme CSS becomes a second stylesheet request. With 0.1 KB of CSS margin on Bogotá's dynamic pages, any byte the split adds has to fit, or the baseline moves with numbers in `docs/performance.md`.
-- The server downloads what a CMS field names. The trust model of section 3 is what keeps that safe, and it needs its own tests.
+- The server downloads what a CMS field names. The checks of sections 2 and 3 are what keep that safe, and each needs its own tests.
 
 ## Consequences
 
@@ -171,14 +201,15 @@ The amended records are not rewritten; each gets a pointer amendment.
 - **#401** (`server/plugins/themeMode.ts`, `server/plugins/runtimeConfigCheck.ts`, `app/helpers/runtimeConfig.ts`, `modules/theme/init-script.mjs`, `css.ts`, `data.ts`, `assets.ts`, `display-fonts.ts`, `app/assets/css/main.css`, `app/components/section/SectionRenderer.vue`, `server/utils/theme.ts`, `displayFonts.ts`, `site.ts`, every consumer of `#micelio/theme`, a route for `/_t/` under `server/routes/` with its entry in `server/openapi/`, `scripts/perf/`): the core reads the theme from the store.
 - **#402** (`modules/theme/layout/variants.ts`, `modules/theme/slots.ts`, `app/theme/layout/`, `app/theme/defaults/`, `app/pages/blog/index.vue`, the header variants' CSS): variants and slots chosen at runtime.
 - **#403**, **#315**, **#313** and bogd3v/micelio-cms#97 follow sections 4 to 8.
+- **`docs/security.md`**, updated by #400, #401 and #403 as each lands: the theme entries at lines 184 (init script), 191 (Strapi theme overrides), 193 (theme messages), 195 (startup check) and 198 (trust model), and the ASVS rows whose judgement changes: V1.3.5, V1.3.6, V1.3.7, V5.1.1, V5.2.1 to V5.2.3, V5.3.1, V5.3.2, V8.4.1, V12.3.1, V13.1.1, V13.2.4, V15.1.2, V15.2.2, V15.3.2 and V16.5.3.
 
 ## Open questions
 
 Each has a recommendation; the pull request that implements it records the answer as an amendment here.
 
-1. **The digest in the URL.** The store is keyed by the package digest, but compiled output changes with the core build, and an `immutable` asset must never change under one URL. *Recommendation:* the `<digest>` of `/_t/<digest>/` is the digest of the compiled output (package digest plus the core's compile key), and `runtime.json` records both (#400).
-2. **The default of `MICELIO_THEME_STORE`.** The runtime image is distroless, runs as uid 65532 and holds only `/app/.output`. *Recommendation:* unset means no deployment store, so the server has nowhere to install and only built-in themes activate, with one warning at boot; the Compose files gain an optional volume (a new volume name is part of the operator interface).
-3. **Checks at install.** Admission already ran `theme:check` on a published theme, but the registry of a fork may not. *Recommendation:* install also runs the error-level checks of `theme:check` (contrast matrix, static budgets), which are pure and fast.
-4. **Where variant CSS lands.** *Recommendation:* the core's CSS for the variants the theme chose is compiled into the theme's stylesheet at install, in `myc.layout` and `myc.pages` after the core rules of each layer as today, so a page still makes one theme request and loads only its variants (#402).
-5. **Theme images through IPX.** `image.dirs` is fixed at build. *Recommendation:* the built-in store joins `image.dirs` for code themes (Bogotá's `ThemeHero`); the images of a data-only theme are served as files from `/_t/`.
-6. **Store cleanup.** *Recommendation:* the active, last good and locked themes are never removed; anything else is removed by a command, never by a request.
+1. **Checks at install.** Admission already ran `theme:check` on a published theme, but the registry of a fork may not. *Recommendation:* install also runs the error-level checks of `theme:check` (contrast matrix, static budgets), which are pure and fast.
+2. **Where variant CSS lands.** *Recommendation:* the core's CSS for the variants the theme chose is compiled into the theme's stylesheet at install, in `myc.layout` and `myc.pages` after the core rules of each layer as today, so a page still makes one theme request and loads only its variants (#402).
+3. **Theme images through IPX.** `image.dirs` is fixed at build. *Recommendation:* the built-in store joins `image.dirs` for code themes (Bogotá's `ThemeHero`); the images of a data-only theme are served as files from `/_t/`.
+4. **Store cleanup and the values of the limits.** Section 3 fixes that the store has caps, a backoff and an hourly rate, and that a request never evicts. *Recommendation:* the active, last good and locked themes are never removed, anything else only by a command; the numbers (entries, total bytes, installs per hour, the backoff ceiling, the download timeout) are set in #403 from Bogotá's measured size, with headroom, like the caps of ADR-0008.
+5. **Which tiers a server installs, and who may change the theme.** A server install puts a third party's data-only theme on the site, and whoever can edit `site-setting.theme` decides which. Both are policy, not a text fix. *Recommendation:* a `MICELIO_THEME_TIERS` variable, default `official,verified` (the tiers of ADR-0008 decision 7, matching what hosted builds accept), refusing other tiers at install; and the site-settings update permission is treated as privileged, documented in `docs/security.md` and in `micelio-cms`.
+6. **The charset of path segments.** The review proposed `[a-z0-9._-]`, but Bogotá and the starter ship `LICENSE`, `fonts/OFL-*.txt` and `slots/Theme*.vue`, and ADR-0008 allows `README.md`, so that set rejects both packages (#309 requires that they pack as they are). *Recommendation:* `[A-Za-z0-9._-]`, no segment starting with a dot, and duplicates refused after case folding (section 2), which removes the collisions a lowercase-only set was meant to prevent.
