@@ -28,6 +28,8 @@ export class PackError extends Error {
 /** A pin, a lock or a pull failed; the message names the theme, the version, the digest and what failed. */
 export class RegistryError extends Error {
   readonly failure: RegistryFailure
+  /** What failed, without the failure kind and the theme in front of it. */
+  readonly detail: string
   /** The theme the failure is about, when known. */
   readonly pin: Partial<ThemePin>
 
@@ -36,6 +38,12 @@ export class RegistryError extends Error {
     super(`${failure}: ${subject === '' ? '' : `${subject}: `}${detail}`, options)
     this.name = 'RegistryError'
     this.failure = failure
+    this.detail = detail
     this.pin = pin
   }
+}
+
+/** The same error with the theme it was about named; any other error is returned as it is. */
+export function withPin(error: unknown, pin: ThemePin): unknown {
+  return error instanceof RegistryError ? new RegistryError(error.failure, error.detail, pin, { cause: error }) : error
 }

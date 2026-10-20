@@ -24,3 +24,21 @@ export const LOCK_FILE = 'themes.lock.json'
 
 /** Where `theme:pull` installs the locked themes, relative to the repository root; gitignored. */
 export const PULLED_THEMES_DIR = '.micelio/themes'
+
+/** The registry used when `MICELIO_THEME_REGISTRY` is not set (ADR 0008, decision 4). */
+export const DEFAULT_REGISTRY = 'ghcr.io/bogd3v/micelio-themes'
+
+/** The repository, under the registry, that holds the index; a theme cannot take this id. */
+export const INDEX_REPOSITORY = 'index'
+
+/** The tag of the index artifact: the version of its format, so a new format never replaces the one an old core reads. */
+export const INDEX_TAG = 'v1'
+
+/** Media type of the single layer of a theme package artifact (the `.tgz` itself). */
+export const PACKAGE_MEDIA_TYPE = 'application/vnd.micelio.theme.package.v1.tar+gzip'
+
+/** Media type of the single layer of the index artifact. */
+export const INDEX_MEDIA_TYPE = 'application/vnd.micelio.theme.index.v1+json'
+
+/** Largest index read, in bytes, while streaming. */
+export const MAX_INDEX_BYTES = 1024 * 1024
