@@ -145,31 +145,6 @@ describe('resolving a theme', () => {
   })
 })
 
-describe('where a registry may send the client', () => {
-  const pin = { id: 'sample', version: '1.0.0', digest: BODY_DIGEST }
-
-  function answering(respond: (url: string) => Response): typeof fetch {
-    return input => Promise.resolve(respond(String(input)))
-  }
-
-  it('asks for a token only from the registry itself', async () => {
-    const stub = answering(() => new Response(null, { status: 401, headers: { 'www-authenticate': 'Bearer realm="https://auth.example.test/token",service="x"' } }))
-    const error = await failure(() => createRegistry({ registry: 'registry.example.test/themes', identity: TEST_IDENTITY, verifier: stubVerifier, fetch: stub }).resolve('sample'))
-    expect(error.failure).toBe('registry')
-    expect(error.message).toContain('token realm')
-  })
-
-  it('does not follow a redirect for anything but a blob', async () => {
-    const stub = answering(() => new Response(null, { status: 302, headers: { location: 'https://elsewhere.example.test/x' } }))
-    expect((await failure(() => createRegistry({ registry: 'registry.example.test/themes', identity: TEST_IDENTITY, verifier: stubVerifier, fetch: stub }).fetch(pin))).message).toContain('only a blob may be redirected')
-  })
-
-  it('does not find a theme by a name of the object prototype', async () => {
-    const fake = await withSample()
-    expect((await failure(() => create(fake).resolve('constructor'))).failure).toBe('not-found')
-  })
-})
-
 /** Lists `sample@1.0.0` with this digest in a signed index. */
 function list(fake: FakeRegistry, digest: string, fields: Record<string, unknown> = {}): void {
   fake.publishIndex({ version: 1, themes: { sample: { versions: { '1.0.0': entry(digest, fields) } } } })
@@ -297,6 +272,41 @@ describe('pulling a package', () => {
       expect((await failure(() => registry.fetch(bad))).failure).toBe('pin')
     }
     expect(fake.seen).toEqual([])
+  })
+})
+
+describe('where a registry may send the client', () => {
+  const pin = { id: 'sample', version: '1.0.0', digest: BODY_DIGEST }
+
+  function answering(respond: (url: string) => Response): typeof fetch {
+    return input => Promise.resolve(respond(String(input)))
+  }
+
+  it('asks for a token only from the registry itself', async () => {
+    const stub = answering(() => new Response(null, { status: 401, headers: { 'www-authenticate': 'Bearer realm="https://auth.example.test/token",service="x"' } }))
+    const registry = createRegistry({ registry: 'registry.example.test/themes', identity: TEST_IDENTITY, verifier: stubVerifier, fetch: stub })
+    const error = await failure(() => registry.resolve('sample'))
+    expect(error.failure).toBe('registry')
+    expect(error.message).toContain('token realm')
+  })
+
+  it('does not follow a redirect for anything but a blob', async () => {
+    const stub = answering(() => new Response(null, { status: 302, headers: { location: 'https://elsewhere.example.test/x' } }))
+    const registry = createRegistry({ registry: 'registry.example.test/themes', identity: TEST_IDENTITY, verifier: stubVerifier, fetch: stub })
+    expect((await failure(() => registry.fetch(pin))).message).toContain('only a blob may be redirected')
+  })
+
+  it('does not find a theme by a name of the object prototype', async () => {
+    const fake = await withSample()
+    const registry = create(fake)
+    expect((await failure(() => registry.resolve('constructor'))).failure).toBe('not-found')
+    expect((await failure(() => registry.fetch({ ...pin, id: 'constructor' }))).failure).toBe('listing')
+    expect((await failure(() => registry.fetch({ ...pin, version: '1.0.0-toString' }))).failure).toBe('listing')
+  })
+
+  it('refuses an index with a version that would take the tag of an attestation', () => {
+    const text = JSON.stringify({ version: 1, themes: { sample: { versions: { '1.0.0-x.att': entry(BODY_DIGEST) } } } })
+    expect(() => parseIndex(text)).toThrow(RegistryError)
   })
 })
 

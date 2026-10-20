@@ -19,7 +19,7 @@ Apache-2.0, from the Sigstore project. Both files are data, used unmodified.
 
 | File | What it is | Source |
 | --- | --- | --- |
-| `modules/theme/registry/trusted_root.json` | The trusted root of the Sigstore public-good instance (Fulcio certificate authority, Rekor and certificate transparency log keys, timestamp authority), against which theme attestations are verified offline (ADR 0009, section 3). | The TUF seeds of `@sigstore/tuf` 5.0.0 (the `trusted_root.json` target of `https://tuf-repo-cdn.sigstore.dev`). Refreshed in every Micelio release with `node scripts/refresh-trusted-root.mjs`. |
+| `modules/theme/registry/trusted_root.json` | The trusted root of the Sigstore public-good instance (Fulcio certificate authority, Rekor and certificate transparency log keys, timestamp authority), against which theme attestations are verified offline (ADR 0009, section 3). | The TUF seeds of `@sigstore/tuf` 5.0.0 (the `trusted_root.json` target of `https://tuf-repo-cdn.sigstore.dev`). Refreshed in every Micelio release with `node scripts/refresh-trusted-root.mjs <version>` with the newest `@sigstore/tuf`. |
 | `test/fixtures/sigstore/provenance.sigstore.json` | A real Sigstore bundle (the SLSA provenance of `@sigstore/verify` 4.1.2, signed by a GitHub Actions workflow of `sigstore/sigstore-js`), the test fixture for the offline verification. Test only; never shipped. | `https://registry.npmjs.org/-/npm/v1/attestations/@sigstore%2fverify@4.1.2` |
 
 ## Fonts

@@ -138,6 +138,14 @@ describe('themes.lock.json', () => {
     expect(failure(() => parseLock(text)).failure).toBe('lock')
   })
 
+  it('rejects adversarial text of the largest size it reads in bounded time', () => {
+    const started = performance.now()
+    for (const text of ['['.repeat(256 * 1024), `{"a":"${'x'.repeat(256 * 1024)}"}`, `{${Array.from({ length: 6000 }, (_, i) => `"t${i}":{}`).join(',')}}`]) {
+      expect(() => parseLock(text)).toThrow(RegistryError)
+    }
+    expect(performance.now() - started).toBeLessThan(2000)
+  })
+
   it('refuses a file over its size cap without parsing it', () => {
     const root = temp()
     writeFileSync(join(root, 'themes.lock.json'), ' '.repeat(256 * 1024 + 1))

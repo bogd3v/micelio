@@ -60,6 +60,11 @@ function themeOf(index: RegistryIndex, id: string): RegistryIndex['themes'][stri
   return Object.hasOwn(index.themes, id) ? index.themes[id] : undefined
 }
 
+function versionOf(index: RegistryIndex, pin: ThemePin): RegistryIndex['themes'][string]['versions'][string] | undefined {
+  const versions = themeOf(index, pin.id)?.versions
+  return versions && Object.hasOwn(versions, pin.version) ? versions[pin.version] : undefined
+}
+
 function singleLayer(manifest: { layers: OciDescriptor[] }, mediaType: string, what: string, pin: Partial<ThemePin>): OciDescriptor {
   const layer = manifest.layers[0]
   if (manifest.layers.length !== 1 || !layer || layer.mediaType !== mediaType) throw new RegistryError('registry', `${what} must hold one layer of ${mediaType}`, pin)
@@ -160,7 +165,7 @@ export function createRegistry(options: RegistryOptions): ThemeRegistry {
       assertPin(pin)
       try {
         const identity = signer()
-        const listed = (await index()).themes[pin.id]?.versions[pin.version]
+        const listed = versionOf(await index(), pin)
         if (listed?.digest !== pin.digest) throw new RegistryError('listing', `the index does not list ${pin.id}@${pin.version} with this digest`)
         const allowed = listed.status === 'published' || (fetchOptions.locked === true && (listed.status === 'yanked' || listed.status === 'incompatible'))
         if (!allowed) throw new RegistryError('listing', `the index marks this version ${listed.status}`)

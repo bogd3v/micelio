@@ -2,7 +2,7 @@ import { bundleFromJSON } from '@sigstore/bundle'
 import { TrustedRoot } from '@sigstore/protobuf-specs'
 import { PolicyError, toSignedEntity, toTrustMaterial, VerificationError, Verifier } from '@sigstore/verify'
 import { MAX_BUNDLE_BYTES } from './constants'
-import { RegistryError } from './error'
+import { RegistryError, safeText } from './error'
 import trustedRootJson from './trusted_root.json'
 import type { SignerIdentity } from './types'
 
@@ -94,8 +94,8 @@ export function verifyBundle(bundle: Uint8Array, options: VerifyBundleOptions): 
     if (error instanceof VerificationError && ROOT_CODES.has(error.code)) throw fail('trust-root', `the bundle does not verify (${error.code}): ${UPGRADE}`, error)
     throw fail('attestation', `the bundle does not verify${error instanceof VerificationError ? ` (${error.code})` : ''}`, error)
   }
-  if (signer.identity?.subjectAlternativeName !== options.san) throw fail('attestation', `signed by ${String(signer.identity?.subjectAlternativeName)}, not by the expected workflow ${options.san}`)
-  if (signer.identity.extensions?.issuer !== options.issuer) throw fail('attestation', `the certificate issuer is ${String(signer.identity.extensions?.issuer)}, not ${options.issuer}`)
+  if (signer.identity?.subjectAlternativeName !== options.san) throw fail('attestation', `signed by ${safeText(signer.identity?.subjectAlternativeName)}, not by the expected workflow ${options.san}`)
+  if (signer.identity.extensions?.issuer !== options.issuer) throw fail('attestation', `the certificate issuer is ${safeText(signer.identity.extensions?.issuer)}, not ${options.issuer}`)
   if (envelope.payloadType !== IN_TOTO_PAYLOAD) throw fail('attestation', 'the signed payload is not an in-toto statement')
   let statement: { _type?: unknown, predicateType?: unknown, subject?: unknown }
   try {
