@@ -86,7 +86,7 @@ describe('a theme that fails contrast', () => {
 describe('checkTheme', () => {
   it('passes the minimal fixture and warns about nothing', () => {
     const [minimal] = discoverThemes([`${fixtures}/minimal`])
-    expect(checkTheme(minimal!, hooks)).toEqual({ theme: 'minimal', errors: [], warnings: [] })
+    expect(checkTheme(minimal!, hooks)).toEqual({ theme: 'minimal', contract: { declared: '2.0', used: '2.0', core: '2.0' }, errors: [], warnings: [] })
   })
 
   it('has no font warning for Bogotá (fonts under the 100 KB target, #350)', () => {
@@ -124,5 +124,6 @@ describe('checkTheme', () => {
     const report = checkTheme(broken, hooks)
     expect(report.errors.every(issue => issue.kind === 'contract')).toBe(true)
     expect(report.errors).not.toHaveLength(0)
+    expect(report.contract).toBeUndefined()
   })
 })

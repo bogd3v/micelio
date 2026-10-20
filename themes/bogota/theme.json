@@ -1,6 +1,6 @@
 {
  "$schema": "../theme.schema.json",
- "contract": 2,
+ "contract": "2.0",
  "id": "bogota",
  "name": "BogDev",
  "modes": [

@@ -3,10 +3,11 @@ import { join } from 'node:path'
 import { contractProblems } from './contract'
 import { checkCss, checkThemeCss } from './css-rules'
 import { buildTokensCss } from './tokens.mjs'
-import { CONTRACT_VERSION, SLOT_NAMES } from './constants'
+import { CONTRACT_ADDITIONS, CONTRACT_VERSION, SLOT_NAMES } from './constants'
+import { contractUsageProblems, formatContractVersion } from './version'
 import { readThemeFile } from './files'
 import { slotProblems } from './island'
-import type { Hooks, InstalledTheme } from './types'
+import type { ContractAddition, Hooks, InstalledTheme } from './types'
 
 // ADR 0005, section 6: every installed theme is validated before the build, and a failure names the theme and the problem
 
@@ -47,14 +48,23 @@ function packageProblems(theme: InstalledTheme, hooks: Hooks): string[] {
   return problems
 }
 
-/** Every problem of a theme, without its name; the package is checked only when theme.json is valid. */
-export function themeProblems(theme: InstalledTheme, hooks: Hooks): string[] {
+/**
+ * Every problem of a theme, without its name; the usage of the contract and the package are checked only when theme.json is valid.
+ *
+ * @param additions - What the contract minors added; the core's own list by default, a parameter for tests.
+ */
+export function themeProblems(theme: InstalledTheme, hooks: Hooks, additions: readonly ContractAddition[] = CONTRACT_ADDITIONS): string[] {
   const problems = contractProblems(theme.manifest)
-  return problems.length ? problems : packageProblems(theme, hooks)
+  if (problems.length) return problems
+  return [...contractUsageProblems(theme, hooks, additions), ...packageProblems(theme, hooks)]
 }
 
-/** Throws one Error that lists, for each invalid theme, its name and every problem. */
-export function validateThemes(themes: InstalledTheme[], hooks: Hooks): void {
-  const lines = themes.flatMap(theme => themeProblems(theme, hooks).map(problem => `Theme "${theme.id}": ${problem}`))
-  if (lines.length) throw new Error(`Invalid theme${lines.length > 1 ? 's' : ''} (contract v${CONTRACT_VERSION}, ADR 0005):\n${lines.join('\n')}`)
+/**
+ * Throws one Error that lists, for each invalid theme, its name and every problem.
+ *
+ * @param additions - What the contract minors added; the core's own list by default, a parameter for tests.
+ */
+export function validateThemes(themes: InstalledTheme[], hooks: Hooks, additions: readonly ContractAddition[] = CONTRACT_ADDITIONS): void {
+  const lines = themes.flatMap(theme => themeProblems(theme, hooks, additions).map(problem => `Theme "${theme.id}": ${problem}`))
+  if (lines.length) throw new Error(`Invalid theme${lines.length > 1 ? 's' : ''} (contract v${formatContractVersion(CONTRACT_VERSION)}, ADR 0005):\n${lines.join('\n')}`)
 }

@@ -7,6 +7,8 @@ import { MAX_MODES, contractProblems, themeIdProblem, themeJsonSchema, validateC
 import { loadHooks } from '../modules/theme/hooks'
 import { discoverThemes, themeRoots } from '../modules/theme/themes'
 import { themeProblems, validateThemes } from '../modules/theme/validate'
+import { contractUsage, contractUsageProblems, formatContractVersion, parseContractVersion } from '../modules/theme/version'
+import type { ContractAddition } from '../modules/theme/types'
 import { CONTRAST_RULES } from '../modules/theme/contrast'
 
 const FIXTURES = join(process.cwd(), 'test/fixtures/themes')
@@ -19,7 +21,7 @@ interface Group {
 interface Manifest {
   [key: string]: unknown
   id: string
-  contract: number
+  contract: number | string
   modes: unknown
   color: Group
   type: { families: Record<string, string>, groups: Array<{ styles: Array<{ name: string }> }> }
@@ -90,16 +92,104 @@ describe('reserved theme ids', () => {
   })
 })
 
+describe('contract minor versions (ADR 0008, decision 2)', () => {
+  const ADDITIONS: ContractAddition[] = [
+    { minor: 1, kind: 'slot', name: 'ThemeHero' },
+    { minor: 2, kind: 'layout variant', name: 'header:centered' },
+    { minor: 3, kind: 'role', name: 'link-soft' },
+    { minor: 4, kind: 'hook', name: 'myc-card' },
+    { minor: 5, kind: 'hook', name: 'data-layout' },
+  ]
+
+  function installed(change: (manifest: Manifest) => void, files: Record<string, string> = {}) {
+    return discoverThemes([install('minor', change, files)])[0]!
+  }
+
+  it.each([2, '2.0'])('accepts %j and reads it as 2.0', (declared) => {
+    expect(problemsOf(install('equal', m => (m.contract = declared)))).toEqual([])
+    expect(parseContractVersion(declared)).toEqual({ major: 2, minor: 0 })
+  })
+
+  it.each(['2.1', '2.7'])('rejects a theme that needs contract %s, which this core does not implement', (declared) => {
+    const problems = problemsOf(install('newer', m => (m.contract = declared)))
+    expect(problems).toEqual([`contract: needs contract ${declared}; this core implements ${formatContractVersion(CONTRACT_VERSION)} (what each minor added: docs/themes/contract-changelog.md)`])
+  })
+
+  it('names the theme in the error that fails the build', () => {
+    expect(() => validateThemes(discoverThemes([install('newer', m => (m.contract = '2.3'))]), hooks)).toThrow(/Theme "newer": contract: needs contract 2\.3; this core implements 2\.0/)
+  })
+
+  it.each([1, '1.0', '1.4', 3, '3.0'])('rejects the other major %j with the migration note', (declared) => {
+    const problems = problemsOf(install('major', m => (m.contract = declared)))
+    expect(problems.join('\n')).toMatch(/contract: declares contract .*, this build implements contract 2 \(see "Upgrade notes" in docs\/themes\/creating-a-theme\.md\)/)
+  })
+
+  it.each(['2', '2.x', '2.0.1', '2.01', '2.00', '', 2.5, null])('rejects the malformed declaration %j', (declared) => {
+    expect(problemsOf(install('malformed', m => (m.contract = declared as string)))).not.toEqual([])
+  })
+
+  it('rejects a theme that declares less than it uses', () => {
+    const theme = installed(m => (m.contract = '2.0'), {})
+    theme.manifest.slots = { ThemeHero: {} }
+    const [problem] = contractUsageProblems(theme, hooks, ADDITIONS)
+    expect(problem).toBe('declares contract 2.0 but uses 2.1 (added after 2.0: slot ThemeHero in 2.1)')
+  })
+
+  it('computes the highest minor over slots, layout variants, roles and hooks', () => {
+    const theme = installed(m => (m.contract = '2.0'))
+    theme.manifest.layout = { header: 'centered' }
+    expect(contractUsage(theme, hooks, ADDITIONS)).toEqual({ declared: '2.0', used: '2.2', core: '2.0' })
+    expect(contractUsageProblems({ ...theme, manifest: { ...theme.manifest, contract: '2.1' } }, hooks, ADDITIONS)[0]).toContain('layout variant header:centered in 2.2')
+    expect(contractUsageProblems({ ...theme, manifest: { ...theme.manifest, contract: '2.2' } }, hooks, ADDITIONS)).toEqual([])
+  })
+
+  it('counts a role of theme.json and a public hook its CSS selects', () => {
+    const withRole = installed(m => (m.contract = '2.0'))
+    withRole.manifest.color.tokens.push({ name: 'link-soft', value: '#eeeeee' })
+    expect(contractUsage(withRole, hooks, ADDITIONS).used).toBe('2.3')
+    const withHook = installed(m => (m.contract = '2.0'), { 'theme.css': '.myc-card { color: red }' })
+    expect(contractUsage(withHook, hooks, ADDITIONS).used).toBe('2.4')
+  })
+
+  it('counts a data attribute hook its CSS selects', () => {
+    const theme = installed(m => (m.contract = '2.0'), { 'theme.css': '[data-layout="bar"] { color: red }' })
+    expect(contractUsage(theme, hooks, ADDITIONS).used).toBe('2.5')
+  })
+
+  it('wires the under-declared check into validateThemes, next to the package problems', () => {
+    const theme = installed(m => (m.contract = '2.0'), { 'theme.css': '.not-a-hook::before { content: "" } .myc-nope { color: red }' })
+    theme.manifest.slots = { ThemeHero: {} }
+    expect(() => validateThemes([theme], hooks, ADDITIONS)).toThrow(/Theme "minor": declares contract 2\.0 but uses 2\.1[\s\S]*Theme "minor": .*not a public hook/)
+    expect(() => validateThemes([theme], hooks)).toThrow(/not a public hook/)
+  })
+
+  it('reports a newer minor in the same pass as other schema errors', () => {
+    const problems = contractProblems({ ...minimal(), contract: '2.5', name: 7 })
+    expect(problems).toHaveLength(2)
+    expect(problems.join('\n')).toMatch(/needs contract 2\.5; this core implements 2\.0 \(.*contract-changelog\.md\)/)
+  })
+
+  it('uses 2.0 for a theme that uses nothing a minor added', () => {
+    expect(contractUsage(installed(() => {}), hooks)).toEqual({ declared: '2.0', used: '2.0', core: '2.0' })
+  })
+
+  it('accepts the contract as the JSON schema describes it', () => {
+    const schema = JSON.stringify(themeJsonSchema().properties)
+    expect(schema).toContain('"const":2')
+    expect(schema).toContain('^2\\\\.(0|[1-9]\\\\d*)$')
+  })
+})
+
 describe('contract validation', () => {
   it('rejects a theme that declares a newer contract', () => {
-    const problems = problemsOf(install('future', m => (m.contract = CONTRACT_VERSION + 1)))
-    expect(problems.join('\n')).toMatch(new RegExp(`contract: declares contract ${CONTRACT_VERSION + 1}, this build implements contract ${CONTRACT_VERSION}`))
+    const problems = problemsOf(install('future', m => (m.contract = CONTRACT_VERSION.major + 1)))
+    expect(problems.join('\n')).toMatch(new RegExp(`contract: declares contract ${CONTRACT_VERSION.major + 1}, this build implements contract ${CONTRACT_VERSION.major}`))
   })
 
   it('rejects a theme that still declares contract 1 and points to the upgrade notes', () => {
     const problems = problemsOf(install('old', m => (m.contract = 1)))
     expect(problems.join('\n')).toMatch(/contract: declares contract 1, this build implements contract 2 \(see "Upgrade notes" in docs\/themes\/creating-a-theme\.md\)/)
-    expect(CONTRACT_VERSION).toBe(2)
+    expect(CONTRACT_VERSION).toEqual({ major: 2, minor: 0 })
   })
 
   it('names the theme and the problem in the error that fails the build', () => {

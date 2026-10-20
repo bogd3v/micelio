@@ -1,6 +1,6 @@
 {
   "$schema": "../theme.schema.json",
-  "contract": 2,
+  "contract": "2.0",
   "id": "starter",
   "name": "Starter",
   "modes": [

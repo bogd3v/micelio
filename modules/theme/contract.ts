@@ -3,6 +3,7 @@ import { QUOTED_VALUE, REQUIRED_ROLES, TYPE_FAMILIES, TYPE_STEPS, UNSAFE_VALUE }
 import type { RoleGroup } from './roles.mjs'
 import { CONTRACT_VERSION, LAYOUT_REGIONS, SLOT_NAMES } from './constants'
 import { REGION_VARIANTS } from './layout/variants'
+import { formatContractVersion, parseContractVersion } from './version'
 
 // Contract v2 (ADR 0005, section 6), defined once: the build validates every installed theme with it
 // and `npm run theme:schema` generates themes/theme.schema.json from it.
@@ -126,10 +127,21 @@ const Layout = z.strictObject(
   { error: iss => iss.code === 'unrecognized_keys' ? `names the region "${iss.keys.join('", "')}", which is not one of ${LAYOUT_REGIONS.join(', ')}` : undefined },
 )
 
+/** Why a declared contract is another major (or malformed), with the way out. */
+const contractError = (iss: { input?: unknown }): string => `declares contract ${JSON.stringify(iss.input)}, this build implements contract ${CONTRACT_VERSION.major} (see "Upgrade notes" in docs/themes/creating-a-theme.md)`
+
+/** `N` (meaning `N.0`) or `"N.M"`, for the major this build implements; another major fails with the migration note. */
+const Contract = z.union([
+  z.literal(CONTRACT_VERSION.major, { error: contractError }),
+  z.string({ error: contractError }).regex(new RegExp(`^${CONTRACT_VERSION.major}\\.(0|[1-9]\\d*)$`), { error: contractError }),
+], { error: contractError }).refine(value => (parseContractVersion(value)?.minor ?? 0) <= CONTRACT_VERSION.minor, {
+  error: iss => `needs contract ${String(iss.input)}; this core implements ${formatContractVersion(CONTRACT_VERSION)} (what each minor added: docs/themes/contract-changelog.md)`,
+}).describe(`The contract version the theme needs: ${CONTRACT_VERSION.major} (meaning ${CONTRACT_VERSION.major}.0) or "${CONTRACT_VERSION.major}.M". A minor above the core's fails, and so does one below what the theme uses (docs/themes/contract-changelog.md).`)
+
 /** The current contract as zod. Cross-field rules (roles per mode) are in the refinement at the end. */
 export const ThemeSchema = z.strictObject({
   $schema: z.string().optional(),
-  contract: z.literal(CONTRACT_VERSION, { error: iss => `declares contract ${JSON.stringify(iss.input)}, this build implements contract ${CONTRACT_VERSION} (see "Upgrade notes" in docs/themes/creating-a-theme.md)` }),
+  contract: Contract,
   id: z.string().regex(THEME_ID, { error: `"id" must match ${THEME_ID}` }).refine(id => !RESERVED_THEME_IDS.includes(id), { error: iss => themeIdProblem(String(iss.input)) ?? 'reserved id' }).describe('The folder name.'),
   name: z.string().optional(),
   modes: Modes,
@@ -220,6 +232,6 @@ export function themeJsonSchema(): Record<string, unknown> {
   return {
     ...schema,
     $id: 'https://github.com/bogd3v/micelio/blob/main/themes/theme.schema.json',
-    title: `Micelio theme.json (contract v${CONTRACT_VERSION})`,
+    title: `Micelio theme.json (contract v${formatContractVersion(CONTRACT_VERSION)})`,
   }
 }

@@ -2,7 +2,7 @@
 
 # Roles
 
-Roles of contract v2, by `theme.json` group. Contrast (the last two columns: the role as foreground on those surfaces, and the foregrounds checked on the role) is checked per mode by `npm run theme:check` (WCAG 2 AA; text 4.5:1, controls and focus 3:1); an optional role a theme omits is checked with its core default. Guide: [../creating-a-theme.md](../creating-a-theme.md).
+Roles of contract v2.0, by `theme.json` group. Contrast (the last two columns: the role as foreground on those surfaces, and the foregrounds checked on the role) is checked per mode by `npm run theme:check` (WCAG 2 AA; text 4.5:1, controls and focus 3:1); an optional role a theme omits is checked with its core default. Guide: [../creating-a-theme.md](../creating-a-theme.md).
 
 ## `color`
 

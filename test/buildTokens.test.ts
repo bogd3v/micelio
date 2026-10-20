@@ -219,7 +219,7 @@ describe('Bogotá\'s theme.json', () => {
   })
 
   it('declares its modes, contract, and an empty layout and slots', () => {
-    expect(data).toMatchObject({ contract: 2, id: 'bogota', layout: {}, slots: {} })
+    expect(data).toMatchObject({ contract: '2.0', id: 'bogota', layout: {}, slots: {} })
     expect(data.modes.map(mode => [mode.id, mode.scheme])).toEqual([['noche', 'dark'], ['dia', 'light']])
   })
 })

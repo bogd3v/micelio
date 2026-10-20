@@ -14,6 +14,8 @@ interface CssRuleContext {
   themeId: string
   themeDir: string
   hooks: Hooks
+  /** Filled with every public hook (class or `data-*` attribute name) the stylesheets select, when given. */
+  usedHooks?: Set<string>
 }
 
 /** Selector components hold nested selectors under different keys (:is, :not, :has, :host(), ::slotted(), nth-child of …): walk them all. */
@@ -24,6 +26,10 @@ function selectorProblems(node: unknown, ctx: CssRuleContext, found: Set<string>
   }
   if (!node || typeof node !== 'object') return
   const component = node as Record<string, unknown>
+  if (ctx.usedHooks && typeof component.name === 'string') {
+    if (component.type === 'class' && ctx.hooks.classes.has(component.name)) ctx.usedHooks.add(component.name)
+    else if (component.type === 'attribute' && ctx.hooks.attributes.has(component.name.toLowerCase())) ctx.usedHooks.add(component.name.toLowerCase())
+  }
   if (component.type === 'class' && typeof component.name === 'string' && component.name.startsWith(MYC_PREFIX) && !ctx.hooks.classes.has(component.name)) {
     found.add(`".${component.name}" is not a public hook (internal myc-* classes can change in any release)`)
   } else if (component.type === 'attribute' && typeof component.name === 'string') {

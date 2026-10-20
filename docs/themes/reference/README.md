@@ -2,7 +2,7 @@
 
 # Theme reference
 
-Reference of theme contract v2, generated from the code. To change it, change the contract and run `npm run theme:reference`; `npm run lint` fails when these files are out of date. How to build a theme: [../creating-a-theme.md](../creating-a-theme.md); the decision: [ADR 0005](../../adr/0005-theme-contract.md).
+Reference of theme contract v2.0, generated from the code; what each minor added is in [the contract changelog](../contract-changelog.md). To change it, change the contract and run `npm run theme:reference`; `npm run lint` fails when these files are out of date. How to build a theme: [../creating-a-theme.md](../creating-a-theme.md); the decision: [ADR 0005](../../adr/0005-theme-contract.md).
 
 - [Roles](roles.md): every role of `theme.json`, its purpose, default and contrast rules, and the type scale.
 - [Layout](layout.md): regions and their variants.
