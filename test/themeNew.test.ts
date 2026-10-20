@@ -64,6 +64,10 @@ describe('scaffoldTheme', () => {
     expect(JSON.parse(readFileSync(join(tmp, 'plain', 'theme.json'), 'utf8')).name).toBe('plain')
   })
 
+  it.each(['x-', '--x', '-x', 'a'.repeat(65)])('rejects the id "%s" with the id grammar', (id) => {
+    expect(() => scaffoldTheme(STARTER, join(tmp, 'x'), id, [])).toThrow(/Invalid theme id.*must match/)
+  })
+
   it('rejects an invalid id', () => {
     expect(() => scaffoldTheme(STARTER, join(tmp, 'x'), 'Bad_Id', [])).toThrow(/Invalid theme id/)
   })

@@ -3,6 +3,8 @@
   "contract": "2.0",
   "id": "starter",
   "name": "Starter",
+  "version": "0.1.0",
+  "license": "MIT-0",
   "modes": [
     {
       "id": "light",

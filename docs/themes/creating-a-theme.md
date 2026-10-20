@@ -27,10 +27,11 @@ cp -r test/fixtures/themes/minimal themes/my-theme
 
 Then edit `themes/my-theme/theme.json`:
 
-- `id` must equal the folder name and match `^[a-z0-9-]+$` (the build fails otherwise). `myc` and `micelio` are reserved for the core (ADR 0005, amendment of 2026-10-08): a theme's own `<id>-*` classes must not be confusable with the core's.
+- `id` must equal the folder name and be 1 to 64 characters: lowercase letters and digits in groups separated by single hyphens, `^[a-z0-9]+(-[a-z0-9]+)*$` (`my-theme`, not `--x`, `x-` or `Mine`; the build fails otherwise). `myc` and `micelio` are reserved for the core (ADR 0005, amendment of 2026-10-08): a theme's own `<id>-*` classes must not be confusable with the core's.
 - `$schema` points to `../../../../themes/theme.schema.json` in the fixture; inside `themes/` change it to `../theme.schema.json`. The schema gives autocomplete and is generated from `modules/theme/contract.ts` (`npm run theme:schema`).
 - `"contract": "2.0"` is required: `N` (meaning `N.0`) or `"N.M"` of the major the core implements. Declare the lowest minor that covers what the theme uses: a newer minor than the core's fails the build, and so does a lower one than the theme uses. Another major fails too, and a theme that declares 1 gets a message that points to the [upgrade notes](#upgrade-notes). What each minor added is in the [contract changelog](contract-changelog.md).
 - `name` is optional.
+- `version` and `license` are optional for a theme that stays on your site and required to pack it; see [Versions and licenses](#versions-and-licenses).
 
 To start from Bogotá instead (`cp -r themes/bogota themes/my-theme`), which is the opposite of the starter (square, neon, bar and grid layouts, two web fonts: Archivo for display and sans, JetBrains Mono), rename its own classes and attributes: slots and CSS use the `bogota-*` classes and `data-bogota-*` attributes, and a theme may only use `data-<its id>-*` for attributes of its own (see "theme.css").
 
@@ -47,7 +48,7 @@ NUXT_PUBLIC_THEME=my-theme npm run build
 
 ```
 themes/my-theme/
-  theme.json          contract, id, modes, roles, type, layout, fonts, images, slots
+  theme.json          contract, id, version, license, modes, roles, type, layout, fonts, images, slots
   theme.css           hand-written CSS for the public hooks (optional)
   sections.css       CSS for the page sections (optional, loaded only by pages that have sections)
   fonts.css           the @font-face rules (optional)
@@ -126,6 +127,17 @@ Primitives may be used in the theme's own CSS and slots, never in the core.
 ```
 
 `families` needs `display`, `sans` and `mono`. The scale needs every step, and each generates `--text-<step>` (a `font` shorthand) and `--tracking-<step>`; the steps are in [reference/roles.md](reference/roles.md). A group's `family` must be one of `families`.
+
+### Versions and licenses
+
+```json
+"version": "1.2.0",
+"license": "MIT"
+```
+
+- `version` is the theme's own semantic version (not the contract's): `MAJOR.MINOR.PATCH` with an optional pre-release (`1.0.0-rc.1`), no leading zeros, no build metadata (`+…`), at most 128 characters. Raise it when you publish a change.
+- `license` is one [SPDX license id](https://spdx.org/licenses/) such as `MIT`, `MIT-0`, `Apache-2.0`, `CC-BY-SA-4.0` or `AGPL-3.0-only` (the list the validator knows is `SPDX_LICENSE_IDS` in `modules/theme/constants.ts`), not an expression like `MIT OR Apache-2.0`. A proprietary or custom license is `LicenseRef-<name>` with letters, digits, `.` and `-` (`LicenseRef-Acme-1.0`); the [theme exception](../../LICENSE-EXCEPTION.md) allows it for a theme that keeps to the contract. Say the same in the theme's `LICENSE` file.
+- Both are optional while the theme is only installed in your site, but a malformed value fails the build. Packing a theme (`npm run theme:pack`, arriving with #309) needs both, and says which one is missing. `npm run theme:new` copies the starter's `0.1.0` and `MIT-0`: change them to your own.
 
 ### Layout
 

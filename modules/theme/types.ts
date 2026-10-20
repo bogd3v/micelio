@@ -26,6 +26,10 @@ export interface ThemeManifest extends ThemeData {
   id: string
   /** The contract the theme needs: `N` (meaning `N.0`) or `"N.M"`. */
   contract: number | string
+  /** The theme's semantic version; required to pack it. */
+  version?: string
+  /** An SPDX license id or `LicenseRef-*`; required to pack it. */
+  license?: string
   fonts?: ThemeFont[]
   images?: Partial<Record<'favicon' | 'ogImage' | 'profile', string>>
   layout?: Partial<Record<LayoutRegion, string>>

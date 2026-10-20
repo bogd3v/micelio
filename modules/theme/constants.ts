@@ -51,3 +51,16 @@ export const SLOT_API_GROUPS: readonly SlotApiGroup[] = [
   { title: 'Categories', intro: 'The categories are data from the CMS (ADR 0016): `useCategories()` (Nuxt auto-imports it) gives the list, and `categoryColor` from `~/helpers/categories` ranks a slug in it. The core names no category.', files: ['app/composables/useCategories.ts', 'app/helpers/categories.ts'] },
   { title: 'Types', intro: 'Import from `~/interfaces`. Constants that a type is derived from are listed with it.', dir: 'app/interfaces' },
 ]
+
+/**
+ * Common SPDX license ids a theme's `license` may name besides `LicenseRef-*`; a theme is not bound by the AGPL (ADR 0007).
+ *
+ * @remarks
+ * One id, not an expression. Another license, including a proprietary one, is `LicenseRef-<name>`.
+ */
+export const SPDX_LICENSE_IDS = [
+  'MIT', 'MIT-0', 'ISC', 'BSD-2-Clause', 'BSD-3-Clause', '0BSD', 'Apache-2.0', 'MPL-2.0', 'CC0-1.0', 'Unlicense', 'BlueOak-1.0.0', 'Zlib', 'WTFPL',
+  'CC-BY-3.0', 'CC-BY-4.0', 'CC-BY-SA-4.0', 'CC-BY-NC-4.0', 'CC-BY-NC-SA-4.0', 'CC-BY-ND-4.0', 'OFL-1.1',
+  'AGPL-3.0-only', 'AGPL-3.0-or-later', 'GPL-2.0-only', 'GPL-2.0-or-later', 'GPL-3.0-only', 'GPL-3.0-or-later',
+  'LGPL-2.1-only', 'LGPL-2.1-or-later', 'LGPL-3.0-only', 'LGPL-3.0-or-later', 'EUPL-1.2',
+] as const
