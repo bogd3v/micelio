@@ -86,7 +86,7 @@ export const SLOT_SPECS: Record<SlotName, SlotSpec> = {
 export function setupData(ctx: ThemeContext): void {
   const { nuxt } = ctx
   const logger = useLogger('micelio-theme')
-  const paletteSource = join(nuxt.options.rootDir, 'modules/theme/palette')
+  const typesSource = join(nuxt.options.rootDir, 'modules/theme/types')
   nuxt.options.runtimeConfig.public.theme = ctx.id
 
   function themeData(): object {
@@ -159,10 +159,10 @@ export function setupData(ctx: ThemeContext): void {
 }
 
 declare module '${PALETTE_MODULE}' {
-  export type { ContrastRule } from '${paletteSource}'
-  export type { ModePalette } from '${paletteSource}'
-  export const modes: Record<string, import('${paletteSource}').ModePalette>
-  export const rules: import('${paletteSource}').ContrastRule[]
+  export type { ContrastRule } from '${typesSource}'
+  export type { ModePalette } from '${typesSource}'
+  export const modes: Record<string, import('${typesSource}').ModePalette>
+  export const rules: import('${typesSource}').ContrastRule[]
 }
 
 declare module '${BUILD_THEME_MODULE}' {

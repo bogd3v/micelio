@@ -6,3 +6,6 @@ export const SECURITY_TXT_PATH = '/.well-known/security.txt'
 
 /** Days between the render of `security.txt` and its `Expires` field. */
 export const SECURITY_TXT_VALID_DAYS = 180
+
+/** The policy of a theme's static files (fonts, images, stylesheets): they get no capabilities, so an SVG opened directly cannot run scripts or load anything. */
+export const STATIC_CSP = `default-src 'none'; style-src 'unsafe-inline'; ${FRAME_ANCESTORS_NONE}; sandbox`

@@ -3,6 +3,8 @@ import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve, sep } from 'node:path'
 import { checkTheme } from '../check'
+import { themeProblems } from '../validate'
+import { formatContractVersion, parseContractVersion } from '../version'
 import { isCodePath } from '../registry/paths'
 import { checkIdentity } from '../registry/materialize'
 import { pinProblem } from '../registry/pin'
@@ -106,8 +108,10 @@ export async function installTheme(source: InstallSource, options: InstallOption
     const theme: InstalledTheme = { id: String(manifest.id), dir, manifest }
     const subject = { id: theme.id, version: manifest.version, digest: packageDigest }
     if (code && !options.allowCode) throw new InstallError('code', subject, 'the theme ships code (slots/ or templates/), which only an image built with it can run')
-    const report = checkTheme(theme, options.hooks)
-    if (report.errors.length) throw new InstallError('validation', subject, report.errors.map(issue => issue.message).join('; ').replaceAll(dir, '.'))
+    // The build checks (contract, hooks, package) always; contrast and budgets are admission checks, which the image's own build does not make
+    const report = options.buildChecksOnly ? undefined : checkTheme(theme, options.hooks)
+    const problems = report ? report.errors.map(issue => issue.message) : themeProblems(theme, options.hooks)
+    if (problems.length) throw new InstallError('validation', subject, problems.join('; ').replaceAll(dir, '.'))
     const compiled = await compileTheme({ theme, packageDigest, code, coreBuild: options.coreBuild })
     const total = [...compiled.files].reduce((sum, [path, data]) => sum + (/\.(gz|br)$/.test(path) ? 0 : data.length), 0)
     if (total > MAX_ENTRY_BYTES) throw new InstallError('compile', subject, `the compiled theme is ${total} bytes before compression; the limit is ${MAX_ENTRY_BYTES}`)
@@ -117,7 +121,7 @@ export async function installTheme(source: InstallSource, options: InstallOption
       digest: compiled.digest,
       packageDigest,
       compileKey: compiled.compileKey,
-      contract: String(report.contract?.declared ?? manifest.contract),
+      contract: report?.contract?.declared ?? formatContractVersion(parseContractVersion(manifest.contract)!),
       code,
       origin: source.kind,
     }, compiled.files)

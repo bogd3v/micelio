@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { constants } from 'node:fs'
+import { constants, existsSync, readdirSync, readFileSync } from 'node:fs'
 import { chmod, lstat, mkdir, mkdtemp, open, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve, sep } from 'node:path'
 import { COMPILED_DIGEST, ENTRY_MANIFEST, INSTALL_LEASE_MS, MAX_ENTRY_MANIFEST_BYTES, MAX_LOADED_BYTES, STORE_DIR, STORE_VERSION } from './constants'
@@ -73,43 +73,89 @@ async function listFiles(dir: string, prefix = ''): Promise<string[]> {
   return found.sort()
 }
 
+function integrityFail(digest: string, detail: string): never {
+  throw new InstallError('integrity', { digest }, detail)
+}
+
+/** Parses `manifest.json` and checks it is for this digest and layout, or throws `integrity`. */
+function parseEntryManifest(raw: Buffer, digest: string): EntryManifest {
+  if (raw.length > MAX_ENTRY_MANIFEST_BYTES) return integrityFail(digest, 'the manifest is too large')
+  let manifest: EntryManifest
+  try {
+    manifest = JSON.parse(raw.toString('utf8')) as EntryManifest
+  } catch {
+    return integrityFail(digest, 'the manifest is not valid JSON')
+  }
+  if (manifest.storeVersion !== STORE_VERSION || manifest.digest !== digest || typeof manifest.files !== 'object' || manifest.files === null) return integrityFail(digest, 'the manifest is for another entry or layout')
+  return manifest
+}
+
+/** Throws `integrity` unless the files on disk are exactly the manifest's. */
+function checkEntryPaths(manifest: EntryManifest, actual: string[]): string[] {
+  const expected = Object.keys(manifest.files).sort()
+  if (expected.join('\n') !== actual.filter(path => path !== ENTRY_MANIFEST).join('\n')) return integrityFail(manifest.digest, 'the files of the entry differ from its manifest')
+  return expected
+}
+
+/** Throws `integrity` unless `data` is the file the manifest lists under `path`, and the entry stays within the memory cap. */
+function checkEntryFile(manifest: EntryManifest, path: string, data: Buffer, total: number): void {
+  if (total > MAX_LOADED_BYTES) integrityFail(manifest.digest, 'the entry is larger than the limit')
+  const listed = manifest.files[path]!
+  if (data.length !== listed.size || sha256(data) !== listed.sha256) integrityFail(manifest.digest, `${path} does not match its manifest`)
+}
+
+function listFilesSync(dir: string, prefix = ''): string[] {
+  const found: string[] = []
+  for (const entry of readdirSync(join(dir, prefix), { withFileTypes: true })) {
+    const path = `${prefix}${entry.name}`
+    if (entry.isDirectory()) found.push(...listFilesSync(dir, `${path}/`))
+    else if (entry.isFile()) found.push(path)
+    else integrityFail('', `${path} is not a regular file`)
+  }
+  return found.sort()
+}
+
 /**
  * Reads a compiled entry and verifies every file against its manifest, or answers `null` when there is no such entry.
  *
  * @remarks
  * Refuses (never serves in part) an entry whose manifest is for another digest or layout, that holds a file the manifest does not
- * list, or whose files differ in size or sha256. The bytes returned are the bytes verified: serve them, do not read by path again.
+ * list, or whose files differ in size or sha256. The bytes returned are the bytes verified: serve those, do not read the path again.
  *
  * @throws `InstallError` (`integrity`) naming the file that failed, with no path.
  */
 export async function loadEntry(storeDir: string, digest: string): Promise<LoadedEntry | null> {
   const dir = entryDir(storeDir, digest)
   if (!await exists(dir)) return null
-  const fail = (detail: string): never => {
-    throw new InstallError('integrity', { digest }, detail)
-  }
-  const manifestFile = join(dir, ENTRY_MANIFEST)
-  if (!await exists(manifestFile)) return fail('the entry has no manifest')
-  const raw = await readFile(manifestFile)
-  if (raw.length > MAX_ENTRY_MANIFEST_BYTES) return fail('the manifest is too large')
-  let manifest: EntryManifest
-  try {
-    manifest = JSON.parse(raw.toString('utf8')) as EntryManifest
-  } catch {
-    return fail('the manifest is not valid JSON')
-  }
-  if (manifest.storeVersion !== STORE_VERSION || manifest.digest !== digest || typeof manifest.files !== 'object' || manifest.files === null) return fail('the manifest is for another entry or layout')
-  const expected = Object.keys(manifest.files).sort()
-  const actual = (await listFiles(dir)).filter(path => path !== ENTRY_MANIFEST)
-  if (expected.join('\n') !== actual.join('\n')) return fail('the files of the entry differ from its manifest')
+  if (!await exists(join(dir, ENTRY_MANIFEST))) return integrityFail(digest, 'the entry has no manifest')
+  const manifest = parseEntryManifest(await readFile(join(dir, ENTRY_MANIFEST)), digest)
   const files = new Map<string, Buffer>()
   let total = 0
-  for (const path of expected) {
+  for (const path of checkEntryPaths(manifest, await listFiles(dir))) {
     const data = await readFile(join(dir, path))
-    const listed = manifest.files[path]!
     total += data.length
-    if (total > MAX_LOADED_BYTES) return fail('the entry is larger than the limit')
-    if (data.length !== listed.size || sha256(data) !== listed.sha256) return fail(`${path} does not match its manifest`)
+    checkEntryFile(manifest, path, data, total)
+    files.set(path, data)
+  }
+  return { manifest, files }
+}
+
+/**
+ * Same as `loadEntry`, synchronously: for a server plugin, which Nitro does not wait for, to load the built-in themes at boot.
+ *
+ * @throws `InstallError` (`integrity`) as `loadEntry` does.
+ */
+export function loadEntrySync(storeDir: string, digest: string): LoadedEntry | null {
+  const dir = entryDir(storeDir, digest)
+  if (!existsSync(dir)) return null
+  if (!existsSync(join(dir, ENTRY_MANIFEST))) return integrityFail(digest, 'the entry has no manifest')
+  const manifest = parseEntryManifest(readFileSync(join(dir, ENTRY_MANIFEST)), digest)
+  const files = new Map<string, Buffer>()
+  let total = 0
+  for (const path of checkEntryPaths(manifest, listFilesSync(dir))) {
+    const data = readFileSync(join(dir, path))
+    total += data.length
+    checkEntryFile(manifest, path, data, total)
     files.set(path, data)
   }
   return { manifest, files }

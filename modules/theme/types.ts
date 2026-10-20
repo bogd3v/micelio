@@ -119,3 +119,29 @@ export interface ContractUsage {
   used: string
   core: string
 }
+
+/**
+ * One mode, every color as opaque `#rrggbb`. `accent-soft`, `accent-hover` and `on-accent` are the theme's own
+ * values, for reference only: an accent override derives new ones.
+ */
+export interface ModePalette {
+  'scheme': 'dark' | 'light'
+  'surface': string
+  'surface-raised': string
+  'surface-sunken': string
+  'ink': string
+  'on-ink': string
+  'accent': string
+  'accent-soft': string
+  'accent-hover': string
+  'on-accent': string
+  'link-soft': string
+  /** The theme defines `link` as the accent, so an accent override moves it. */
+  'linkIsAccent': boolean
+  /** Same for `focus`. */
+  'focusIsAccent': boolean
+  /** The theme defines `link-soft` as `{accent-soft}`, so an accent override moves it. */
+  'linkSoftIsAccentSoft': boolean
+  /** The theme omits `link-soft`, so the core default (a mix of `link` into `surface`) applies and follows `link`. */
+  'linkSoftIsDefault': boolean
+}
