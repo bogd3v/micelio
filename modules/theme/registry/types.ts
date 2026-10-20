@@ -81,4 +81,16 @@ export interface LockEntry extends Omit<ThemePin, 'id'> {
 export type ThemeLock = Record<string, LockEntry>
 
 /** What a failed pull, lock or pin check was about, for a caller to branch on. */
-export type RegistryFailure = 'pin' | 'lock' | 'network' | 'registry' | 'size' | 'digest' | 'identity' | 'contract' | 'not-found' | 'unsupported'
+export type RegistryFailure
+  = | 'pin' | 'lock' | 'network' | 'registry' | 'size' | 'digest' | 'identity' | 'contract' | 'not-found' | 'unsupported'
+    | 'attestation' | 'signature' | 'trust-root' | 'listing' | 'signer'
+
+/** The signer identities a registry's attestations must come from, each matched whole (ADR 0009, section 3). */
+export interface SignerIdentity {
+  /** The OIDC issuer of the signing certificate. */
+  issuer: string
+  /** The subject alternative name of the workflow that signs packages. */
+  packages: string
+  /** The subject alternative name of the workflow that signs the index. */
+  index: string
+}

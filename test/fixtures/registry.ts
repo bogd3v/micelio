@@ -2,10 +2,32 @@ import { createHash } from 'node:crypto'
 import { createServer } from 'node:http'
 import type { IncomingMessage, Server, ServerResponse } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import { INDEX_MEDIA_TYPE, PACKAGE_MEDIA_TYPE } from '../../modules/theme/registry/constants'
+import type { BundleVerifier } from '../../modules/theme/registry/attestation'
+import { ATTESTATION_TAG_SUFFIX, BUNDLE_MEDIA_TYPE, INDEX_MEDIA_TYPE, PACKAGE_MEDIA_TYPE } from '../../modules/theme/registry/constants'
+import { RegistryError } from '../../modules/theme/registry/error'
+import type { SignerIdentity } from '../../modules/theme/registry/types'
 
 // A registry on a loopback port, speaking just enough of the OCI distribution protocol for the client: manifests, blobs, an
 // optional bearer-token challenge and a redirect of blobs to a second origin. It records every request it receives.
+
+/** The signer the fake registry's stand-in bundles name. */
+export const TEST_IDENTITY: SignerIdentity = { issuer: 'https://issuer.example.test', packages: 'https://example.test/publish.yml@refs/heads/main', index: 'https://example.test/sign-index.yml@refs/heads/main' }
+
+/** A stand-in for a Sigstore bundle: it says who signed which sha256. Real bundles are verified in `themeAttestation.test.ts`. */
+export function stubBundle(signer: string, hex: string): Buffer {
+  return Buffer.from(JSON.stringify({ stub: true, signer, hex }))
+}
+
+/** A verifier that accepts exactly the stand-in bundles that name the expected signer and digest, and refuses anything else as `attestation`. */
+export const stubVerifier: BundleVerifier = (bundle, options) => {
+  let value: { stub?: boolean, signer?: string, hex?: string } = {}
+  try {
+    value = JSON.parse(Buffer.from(bundle).toString('utf8')) as typeof value
+  } catch {
+    // not a stand-in bundle: refused below
+  }
+  if (value.stub !== true || value.signer !== options.san || value.hex !== options.subject.hex) throw new RegistryError('attestation', 'the stand-in bundle does not match')
+}
 
 /** One request the fake registry received. */
 export interface Seen {
@@ -27,10 +49,13 @@ export interface FakeRegistry {
   /** The value for `MICELIO_THEME_REGISTRY`. */
   registry: string
   seen: Seen[]
-  /** Publishes `data` as `<name>:<tag>`, one layer of `mediaType`; returns the layer digest. */
-  publish: (name: string, tag: string, data: Uint8Array, mediaType?: string) => string
-  /** Publishes the index document. */
-  publishIndex: (index: unknown) => string
+  /**
+   * Publishes `data` as `<name>:<tag>`, one layer of `mediaType`, and its stand-in attestation at `<tag>.att` signed by `signer`
+   * (`false`: no attestation); returns the layer digest.
+   */
+  publish: (name: string, tag: string, data: Uint8Array, mediaType?: string, signer?: string | false) => string
+  /** Publishes the index document, signed by `signer` (`false`: unsigned). */
+  publishIndex: (index: unknown, signer?: string | false) => string
   /** Replaces what a blob answers with, without changing its digest or its manifest. */
   tamper: (digest: string, data: Uint8Array) => void
   /** Makes a blob answer with `bytes` bytes in chunks and no length, and counts how many it managed to send. */
@@ -143,7 +168,7 @@ export async function startRegistry(behaviour: RegistryBehaviour = {}, prefix = 
 
   const [port] = await Promise.all([listen(server), listen(storage)])
 
-  function publish(name: string, tag: string, data: Uint8Array, mediaType = PACKAGE_MEDIA_TYPE): string {
+  function publish(name: string, tag: string, data: Uint8Array, mediaType = PACKAGE_MEDIA_TYPE, signer: string | false = TEST_IDENTITY.packages): string {
     const digest = digestOf(data)
     blobs.set(digest, data)
     manifests.set(`${prefix}/${name}:${tag}`, JSON.stringify({
@@ -152,6 +177,7 @@ export async function startRegistry(behaviour: RegistryBehaviour = {}, prefix = 
       config: { mediaType: 'application/vnd.oci.empty.v1+json', digest: digestOf(Buffer.from('{}')), size: 2 },
       layers: [{ mediaType, digest, size: data.length }],
     }))
+    if (signer !== false && mediaType !== BUNDLE_MEDIA_TYPE) publish(name, `${tag}${ATTESTATION_TAG_SUFFIX}`, stubBundle(signer, digest.slice(7)), BUNDLE_MEDIA_TYPE, false)
     return digest
   }
 
@@ -159,7 +185,7 @@ export async function startRegistry(behaviour: RegistryBehaviour = {}, prefix = 
     registry: `127.0.0.1:${port}/${prefix}`,
     seen,
     publish,
-    publishIndex: index => publish('index', 'v1', Buffer.from(JSON.stringify(index)), INDEX_MEDIA_TYPE),
+    publishIndex: (index, signer = TEST_IDENTITY.index) => publish('index', 'v1', Buffer.from(JSON.stringify(index)), INDEX_MEDIA_TYPE, signer),
     tamper: (digest, data) => blobs.set(digest, data),
     endless: (digest, bytes) => {
       const state = { bytes, sent: 0 }

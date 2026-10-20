@@ -1,11 +1,12 @@
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { cacheDir, cacheGet, cachePut } from './cache'
+import { cacheDir, cacheGet, cacheGetBundle, cachePut, cachePutBundle } from './cache'
 import { createRegistry } from './client'
 import type { ThemeRegistry } from './client'
 import { DEFAULT_REGISTRY, LOCK_FILE, MAX_COMPRESSED_BYTES, PULLED_THEMES_DIR } from './constants'
 import { RegistryError } from './error'
+import { identityFor } from './identity'
 import { formatLock, readLock, writeLock } from './lock'
 import { checkIdentity, pruneThemes, writeTheme } from './materialize'
 import { assertPin } from './pin'
@@ -41,11 +42,39 @@ export function createContext(root: string, env: NodeJS.ProcessEnv = process.env
   const clients = new Map<string, ThemeRegistry>()
   // one client per registry, so the index is read once for the whole lock
   const registryFor = (registry: string): ThemeRegistry => {
-    const known = clients.get(registry) ?? createRegistry({ registry })
+    const known = clients.get(registry) ?? createRegistry({ registry, identity: identityFor(registry, env) })
     clients.set(registry, known)
     return known
   }
   return { root, registry: env.MICELIO_THEME_REGISTRY || DEFAULT_REGISTRY, registryFor, cacheDir: cacheDir(env), log }
+}
+
+/**
+ * The package a pin names: from the cache when its kept attestation still verifies offline, else from the registry (which checks
+ * the index and the attestation), and then kept in the cache with its bundle.
+ */
+async function obtain(context: RegistryContext, registry: ThemeRegistry, pin: ThemePin, locked: boolean): Promise<{ data: Buffer, cached: boolean }> {
+  const kept = cacheGet(pin.digest, context.cacheDir)
+  const bundle = cacheGetBundle(pin.digest, context.cacheDir)
+  if (kept && bundle) {
+    try {
+      registry.verify(pin, bundle)
+      return { data: kept, cached: true }
+    } catch {
+      // the kept attestation does not verify (or no signer is known): the registry is asked, and it either proves the package or refuses
+    }
+  }
+  const fetched = await registry.fetch(pin, { locked })
+  cachePut(pin.digest, fetched.data, context.cacheDir)
+  cachePutBundle(pin.digest, fetched.bundle, context.cacheDir)
+  return { data: fetched.data, cached: false }
+}
+
+/** The package of a theme added from a file: it lives only in the cache, and there is no registry to ask. */
+function keptFile(context: RegistryContext, pin: ThemePin): { data: Buffer, cached: boolean } {
+  const data = cacheGet(pin.digest, context.cacheDir)
+  if (!data) throw new RegistryError('not-found', `was added from a file and the package is not in the cache (${context.cacheDir}); run npm run theme:add with the file again`, pin)
+  return { data, cached: true }
 }
 
 function sha256(data: Uint8Array): string {
@@ -99,9 +128,8 @@ export async function addTheme(context: RegistryContext, spec: string): Promise<
     if (extra !== undefined) throw new RegistryError('pin', 'a theme is <id> or <id>@<range>, with one @')
     const registry = context.registryFor(context.registry)
     const resolved = await registry.resolve(name, range)
-    const data = cacheGet(resolved.digest, context.cacheDir) ?? await registry.fetch(resolved)
+    const { data } = await obtain(context, registry, resolved, false)
     const { unpacked, contract } = inspect(resolved, data)
-    cachePut(resolved.digest, data, context.cacheDir)
     if (unpacked.code !== resolved.code) throw new RegistryError('lock', `the index says code is ${resolved.code} but the package makes it ${unpacked.code}`, resolved)
     id = resolved.id
     entry = { version: resolved.version, digest: resolved.digest, contract, tier: resolved.tier, distribution: 'public', registry: resolved.registry, code: unpacked.code }
@@ -115,7 +143,7 @@ export async function addTheme(context: RegistryContext, spec: string): Promise<
  * Installs every theme of the lock into `.micelio/themes/<id>/`, from the cache when the package is there, else from its registry.
  *
  * @remarks
- * Each package is verified against the digest of the lock before anything is written. With `frozen` the lock must exist, be in
+ * Each package is verified against the digest of the lock, and a registry package against its attestation (offline from the cache, with the index online), before anything is written. With `frozen` the lock must exist, be in
  * the form `theme:add` writes, and agree with every package it names; without it, a lock entry whose `contract` or `code` differs from
  * the verified package is corrected (the digest is the trust anchor, the rest is a record). Nothing from a package is executed.
  *
@@ -134,15 +162,9 @@ export async function pullThemes(context: RegistryContext, options: { frozen?: b
   for (const [id, entry] of Object.entries(lock)) {
     const pin = assertPin({ id, version: entry.version, digest: entry.digest })
     if (entry.distribution === 'licensed') throw new RegistryError('unsupported', 'is a licensed theme; licensed distribution is not supported yet', pin)
-    let data = cacheGet(entry.digest, context.cacheDir)
-    const cached = data !== null
-    if (!data) {
-      if (entry.distribution === 'file' || entry.registry === null) {
-        throw new RegistryError('not-found', `was added from a file and the package is not in the cache (${context.cacheDir}); run npm run theme:add with the file again`, pin)
-      }
-      data = await context.registryFor(entry.registry).fetch(pin)
-      cachePut(entry.digest, data, context.cacheDir)
-    }
+    const { data, cached } = entry.distribution === 'file' || entry.registry === null
+      ? keptFile(context, pin)
+      : await obtain(context, context.registryFor(entry.registry), pin, true)
     const { unpacked, contract } = inspect(pin, data)
     if (contract !== entry.contract || unpacked.code !== entry.code) {
       if (options.frozen) throw new RegistryError('lock', `${LOCK_FILE} says contract ${entry.contract} and code ${entry.code}; the package says ${contract} and ${unpacked.code}`, pin)

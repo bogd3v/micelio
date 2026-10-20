@@ -9,7 +9,7 @@ import type { RegistryContext } from '../modules/theme/registry/commands'
 import { RegistryError } from '../modules/theme/registry/error'
 import { formatLock, readLock, writeLock } from '../modules/theme/registry/lock'
 import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
-import { digestOf, startRegistry } from './fixtures/registry'
+import { digestOf, startRegistry, stubVerifier, TEST_IDENTITY } from './fixtures/registry'
 import type { FakeRegistry } from './fixtures/registry'
 import { packageOf } from './fixtures/tar'
 
@@ -65,7 +65,7 @@ async function setup(versions: Record<string, Buffer> = { '1.0.0': theme('sample
   const root = temp()
   const cache = temp()
   const lines: string[] = []
-  const context: RegistryContext = { root, registry: fake.registry, registryFor: registry => createRegistry({ registry }), cacheDir: cache, log: line => lines.push(line) }
+  const context: RegistryContext = { root, registry: fake.registry, registryFor: registry => createRegistry({ registry, identity: TEST_IDENTITY, verifier: stubVerifier }), cacheDir: cache, log: line => lines.push(line) }
   return { fake, context, lines, root, cache }
 }
 
@@ -76,7 +76,7 @@ describe('theme:add', () => {
     expect(id).toBe('sample')
     expect(written).toEqual({ version: '1.1.0', digest: digestOf(theme('sample', '1.1.0')), contract: '2.0', tier: 'official', distribution: 'public', registry: fake.registry, code: false })
     expect(readLock(root).sample).toEqual(written)
-    expect(readdirSync(cache)).toHaveLength(1)
+    expect(readdirSync(cache).map(name => name.slice(64)).sort()).toEqual(['.sigstore.json', '.tgz'])
     expect(existsSync(join(root, '.micelio'))).toBe(false)
   })
 
@@ -155,6 +155,21 @@ describe('theme:pull', () => {
     await fake.close()
     expect((await pullThemes(context))[0]?.cached).toBe(true)
     expect(lines.at(-1)).toContain('(cache)')
+  })
+
+  it('verifies the kept attestation on a cache hit, and asks the registry when it does not verify', async () => {
+    const { context, fake } = await setup()
+    const { entry: written } = await addTheme(context, 'sample@1.0.0')
+    const bundle = join(context.cacheDir, `${written.digest.slice(7)}.sigstore.json`)
+    writeFileSync(bundle, '{"stub":true,"signer":"someone else","hex":"0"}')
+    expect((await pullThemes(context))[0]?.cached).toBe(false)
+    expect(readFileSync(bundle, 'utf8')).toContain(TEST_IDENTITY.packages)
+
+    rmSync(bundle)
+    expect((await pullThemes(context))[0]?.cached).toBe(false)
+    await fake.close()
+    writeFileSync(bundle, '{"stub":true,"signer":"someone else","hex":"0"}')
+    expect((await failure(() => pullThemes(context))).failure).toBe('network')
   })
 
   it('pulls a yanked version from an existing lock', async () => {
@@ -247,7 +262,7 @@ describe('theme:pull --frozen', () => {
     const { context } = await setup()
     await addTheme(context, 'sample@1.0.0')
     rmSync(context.cacheDir, { recursive: true, force: true })
-    const gone = { ...context, registryFor: () => createRegistry({ registry: context.registry.replace(/\/[^/]+$/, '/nowhere') }) }
+    const gone = { ...context, registryFor: () => createRegistry({ registry: context.registry.replace(/\/[^/]+$/, '/nowhere'), identity: TEST_IDENTITY, verifier: stubVerifier }) }
     expect((await failure(() => pullThemes(gone, { frozen: true }))).failure).toBe('not-found')
   })
 })

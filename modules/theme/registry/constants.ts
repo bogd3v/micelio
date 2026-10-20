@@ -42,3 +42,22 @@ export const INDEX_MEDIA_TYPE = 'application/vnd.micelio.theme.index.v1+json'
 
 /** Largest index read, in bytes, while streaming. */
 export const MAX_INDEX_BYTES = 1024 * 1024
+
+/**
+ * Who signs what in the default registry (ADR 0009, section 3): the issuer of the identity tokens and the exact subject
+ * alternative name of the publish workflow (for packages) and of the workflow that signs the index (for the index), matched whole.
+ */
+export const DEFAULT_SIGNER = {
+  issuer: 'https://token.actions.githubusercontent.com',
+  packages: 'https://github.com/bogd3v/micelio-themes/.github/workflows/publish.yml@refs/heads/main',
+  index: 'https://github.com/bogd3v/micelio-themes/.github/workflows/sign-index.yml@refs/heads/main',
+} as const
+
+/** Media type of the layer of a Sigstore bundle artifact (the attestation of a package, or the signature of the index). */
+export const BUNDLE_MEDIA_TYPE = 'application/vnd.dev.sigstore.bundle.v0.3+json'
+
+/** Suffix of the tag that holds the attestation of a package (`<version>.att`) or of the index (`v1.att`), in the same repository. */
+export const ATTESTATION_TAG_SUFFIX = '.att'
+
+/** Largest Sigstore bundle read, in bytes. */
+export const MAX_BUNDLE_BYTES = 256 * 1024

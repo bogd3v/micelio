@@ -103,3 +103,9 @@ SPDX-License-Identifier = "LicenseRef-Micelio-Trademark"
 path = "app/components/myc/MycMastodonLogo.vue"
 SPDX-FileCopyrightText = ["2026 Alejandro Ramirez Garcia and the Micelio contributors", "Mastodon gGmbH"]
 SPDX-License-Identifier = "AGPL-3.0-only WITH LicenseRef-Micelio-Theme-exception AND LicenseRef-Mastodon-Trademark"
+
+# The Sigstore trusted root (public keys of the Sigstore public-good instance, from the TUF seeds of @sigstore/tuf) and a real Sigstore bundle used as a test fixture (THIRD-PARTY.md)
+[[annotations]]
+path = ["modules/theme/registry/trusted_root.json", "test/fixtures/sigstore/provenance.sigstore.json"]
+SPDX-FileCopyrightText = "The Sigstore Authors"
+SPDX-License-Identifier = "Apache-2.0"
