@@ -1,4 +1,13 @@
-import { babelParse, parse } from '@vue/compiler-sfc'
+import { createRequire } from 'node:module'
+import type * as CompilerSfc from '@vue/compiler-sfc'
+
+let compilerSfc: typeof CompilerSfc | undefined
+
+/** `@vue/compiler-sfc`, loaded on the first slot checked: a data-only theme has no slots, so the installer never loads it. */
+function sfc(): typeof CompilerSfc {
+  compilerSfc ??= createRequire(import.meta.url)('@vue/compiler-sfc') as typeof CompilerSfc
+  return compilerSfc
+}
 
 // ADR 0005, section 12: a slot that is not declared an island ships no interactivity, and no slot ships <style>.
 // A contract lint over the slot's own file (slots are operator-trusted code; the CSP is the boundary).
@@ -78,7 +87,7 @@ function walk(node: unknown, found: Set<string>): void {
 
 /** Problems of a slot component; `file` is its name in messages (e.g. slots/ThemeMark.vue). A declared island may be interactive, but no slot ships <style>. */
 export function slotProblems(source: string, file: string, island: boolean): string[] {
-  const { descriptor, errors } = parse(source, { filename: file })
+  const { descriptor, errors } = sfc().parse(source, { filename: file })
   if (errors.length) return [`${file}: cannot parse the component: ${errors[0]!.message}`]
   const problems: string[] = []
   if (descriptor.styles.length) problems.push(`${file}: has a <style> block; a slot's CSS goes in slots/*.css, which is imported into the myc.theme layer and checked against the hooks (a <style> block is bundled outside the layer)`)
@@ -88,7 +97,7 @@ export function slotProblems(source: string, file: string, island: boolean): str
   for (const block of [descriptor.script, descriptor.scriptSetup]) {
     if (!block) continue
     try {
-      walk(babelParse(block.content, { sourceType: 'module', plugins: ['typescript'], allowAwaitOutsideFunction: true }).program, found)
+      walk(sfc().babelParse(block.content, { sourceType: 'module', plugins: ['typescript'], allowAwaitOutsideFunction: true }).program, found)
     } catch (error) {
       return [...problems, `${file}: cannot parse the script: ${(error as Error).message}`]
     }
