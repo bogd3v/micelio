@@ -22,7 +22,7 @@ Bogotá (7 slots) and the starter (1 slot) ship code. Micelio is pre-1.0 ([ADR-0
 
 ## Decision
 
-Decisions marked **(epic)** were taken on 2026-10-08 in #316 and are recorded here, not reopened. The two digests and the unset deployment store (section 1) were decided by the maintainer on 2026-10-19, in the review of this record. The rest is proposed by this record; what it leaves open is under "Open questions".
+Decisions marked **(epic)** were taken on 2026-10-08 in #316 and are recorded here, not reopened. Decisions marked **(2026-10-19)** were taken by the maintainer in the review of this record: the two digests and the unset deployment store (section 1), the checks and the path charset at install (section 2), and who may change the theme (section 3). The rest is proposed by this record; what it leaves open is under "Open questions".
 
 ### 1. Three places
 
@@ -38,7 +38,7 @@ An image carries a read-only **built-in store** with the themes of its `themes.l
 
 ### 2. Install
 
-One function, `installTheme(source)` (#400, proposed in `modules/theme/install/`): **check the pin** → **pull** (the client of #310) → **verify** (section 3) → **safe unpack** (`modules/theme/registry/unpack.ts`, #309) → **validate** (the contract validator, split from `nuxt/kit` so it runs in Nitro and in plain Node) → **compile** → **atomic write**. Nothing from a package is executed, imported, required or evaluated, at install or later. Its callers are `theme:pull`, the static builder (#315) and the Nitro server (#403).
+One function, `installTheme(source)` (#400, proposed in `modules/theme/install/`): **check the pin** → **pull** (the client of #310) → **verify** (section 3) → **safe unpack** (`modules/theme/registry/unpack.ts`, #309) → **validate** (the contract validator, split from `nuxt/kit` so it runs in Nitro and in plain Node, and the error-level checks of `theme:check`, the contrast matrix and the static budgets **(2026-10-19)**, because the registry of a fork may not run admission) → **compile** → **atomic write**. Nothing from a package is executed, imported, required or evaluated, at install or later. Its callers are `theme:pull`, the static builder (#315) and the Nitro server (#403).
 
 **The pin is checked first.** Before any request or file system call, `themeId` matches `^[a-z0-9-]{1,64}$`, `themeVersion` is strict semver without build metadata, and `themeDigest` matches `^sha256:[0-9a-f]{64}$`. The OCI reference is built only from these validated parts. A store path comes only from a validated digest and is checked, after resolution, to sit inside the store root. An invalid pin is logged and ignored, and the current theme stays.
 
@@ -46,7 +46,7 @@ One function, `installTheme(source)` (#400, proposed in `modules/theme/install/`
 
 - a compressed size under a cap checked before decompression, and a decompression ratio limit; trailing data or extra gzip members fail;
 - regular files and directories (no symlinks, hard links, devices, FIFOs or sparse files), with names checked after pax and GNU long-name headers;
-- no duplicate names, also after case folding and Unicode normalisation; path segments in a restricted charset (open question 6) with limits on depth and length; directories count toward the 200 entries of ADR-0008;
+- no duplicate names, also after case folding and Unicode normalisation; path segments in `[A-Za-z0-9._-]`, none starting with a dot, with limits on depth and length **(2026-10-19)**; directories count toward the 200 entries of ADR-0008;
 - byte and JSON-depth caps on `theme.json` and the manifest, and a magic-byte check for woff2, png, jpg, webp, avif and gif.
 
 **Verified bytes are the bytes used.** The digest is computed over the exact bytes unpacked: the same buffer, or a file created exclusively in a private `0700` temporary directory on the store's file system. Nothing is re-read by path after verification. One install per digest runs at a time, behind a lock file that the replicas of a shared store share. The final directory is written by renaming the temporary one; an existing final directory counts as installed only if its integrity manifest verifies.
@@ -80,11 +80,15 @@ What a server install enforces (#403, reviewed by the `security` agent). A faile
 - **Transport**: redirects only for blob `GET`s, only to `https`, with a hop limit, and `Authorization` is never forwarded across hosts. The token realm must be `https` and on the registry host or an allowlisted host. Every download has a total timeout.
 - **Size caps** of ADR-0008 decision 1 (4 MiB unpacked, 1 MiB per file, 200 entries) and the unpack rules of section 2.
 - **No code**: a server install refuses any entry under `slots/` or `templates/` and any `.vue`, `.ts`, `.js` or `.mjs` file, whatever the manifest says (section 4).
-- **Contract validation**, as at build; a theme that fails never reaches the store.
+- **Contract validation and the error-level checks of `theme:check`** (section 2); a theme that fails never reaches the store.
 - **Limits**: the store has a cap on entries and on total bytes; at the cap an install is refused and logged, and a request never evicts anything. A failed pin is not retried before an exponential backoff, and installs are rate limited per hour.
 - **Off the request path**: install runs in the background, pages keep the current theme until the new one is in the store, and a registry outage changes nothing already installed.
 - **Licensed versions**: a server install of licensed versions (ADR-0008 decision 9) is out of scope for this record.
 - **What is logged and shown**: logs never contain registry tokens, licence keys or URL queries, and the rejection reason shown in the CMS carries no file system path.
+
+**Who may change the theme (2026-10-19).** Whoever administers the CMS, from the site settings in Strapi. Updating `site-setting` is therefore a privileged permission: it decides what the server downloads and installs, and it is documented as such in `docs/security.md` and in `micelio-cms`.
+
+**Tiers (proposed, not yet confirmed by the user).** Which tiers of ADR-0008 decision 7 a server installs is open question 4.
 
 ### 4. Data-only and code themes
 
@@ -201,15 +205,14 @@ The amended records are not rewritten; each gets a pointer amendment.
 - **#401** (`server/plugins/themeMode.ts`, `server/plugins/runtimeConfigCheck.ts`, `app/helpers/runtimeConfig.ts`, `modules/theme/init-script.mjs`, `css.ts`, `data.ts`, `assets.ts`, `display-fonts.ts`, `app/assets/css/main.css`, `app/components/section/SectionRenderer.vue`, `server/utils/theme.ts`, `displayFonts.ts`, `site.ts`, every consumer of `#micelio/theme`, a route for `/_t/` under `server/routes/` with its entry in `server/openapi/`, `scripts/perf/`): the core reads the theme from the store.
 - **#402** (`modules/theme/layout/variants.ts`, `modules/theme/slots.ts`, `app/theme/layout/`, `app/theme/defaults/`, `app/pages/blog/index.vue`, the header variants' CSS): variants and slots chosen at runtime.
 - **#403**, **#315**, **#313** and bogd3v/micelio-cms#97 follow sections 4 to 8.
+- **#403** (`docs/security.md`) and **bogd3v/micelio-cms#97** (its `SECURITY.md` and the token and role documentation) record the update of `site-setting` as a privileged permission (section 3).
 - **`docs/security.md`**, updated by #400, #401 and #403 as each lands: the theme entries at lines 184 (init script), 191 (Strapi theme overrides), 193 (theme messages), 195 (startup check) and 198 (trust model), and the ASVS rows whose judgement changes: V1.3.5, V1.3.6, V1.3.7, V5.1.1, V5.2.1 to V5.2.3, V5.3.1, V5.3.2, V8.4.1, V12.3.1, V13.1.1, V13.2.4, V15.1.2, V15.2.2, V15.3.2 and V16.5.3.
 
 ## Open questions
 
 Each has a recommendation; the pull request that implements it records the answer as an amendment here.
 
-1. **Checks at install.** Admission already ran `theme:check` on a published theme, but the registry of a fork may not. *Recommendation:* install also runs the error-level checks of `theme:check` (contrast matrix, static budgets), which are pure and fast.
-2. **Where variant CSS lands.** *Recommendation:* the core's CSS for the variants the theme chose is compiled into the theme's stylesheet at install, in `myc.layout` and `myc.pages` after the core rules of each layer as today, so a page still makes one theme request and loads only its variants (#402).
-3. **Theme images through IPX.** `image.dirs` is fixed at build. *Recommendation:* the built-in store joins `image.dirs` for code themes (Bogotá's `ThemeHero`); the images of a data-only theme are served as files from `/_t/`.
-4. **Store cleanup and the values of the limits.** Section 3 fixes that the store has caps, a backoff and an hourly rate, and that a request never evicts. *Recommendation:* the active, last good and locked themes are never removed, anything else only by a command; the numbers (entries, total bytes, installs per hour, the backoff ceiling, the download timeout) are set in #403 from Bogotá's measured size, with headroom, like the caps of ADR-0008.
-5. **Which tiers a server installs, and who may change the theme.** A server install puts a third party's data-only theme on the site, and whoever can edit `site-setting.theme` decides which. Both are policy, not a text fix. *Recommendation:* a `MICELIO_THEME_TIERS` variable, default `official,verified` (the tiers of ADR-0008 decision 7, matching what hosted builds accept), refusing other tiers at install; and the site-settings update permission is treated as privileged, documented in `docs/security.md` and in `micelio-cms`.
-6. **The charset of path segments.** The review proposed `[a-z0-9._-]`, but Bogotá and the starter ship `LICENSE`, `fonts/OFL-*.txt` and `slots/Theme*.vue`, and ADR-0008 allows `README.md`, so that set rejects both packages (#309 requires that they pack as they are). *Recommendation:* `[A-Za-z0-9._-]`, no segment starting with a dot, and duplicates refused after case folding (section 2), which removes the collisions a lowercase-only set was meant to prevent.
+1. **Where variant CSS lands.** *Recommendation:* the core's CSS for the variants the theme chose is compiled into the theme's stylesheet at install, in `myc.layout` and `myc.pages` after the core rules of each layer as today, so a page still makes one theme request and loads only its variants (#402).
+2. **Theme images through IPX.** `image.dirs` is fixed at build. *Recommendation:* the built-in store joins `image.dirs` for code themes (Bogotá's `ThemeHero`); the images of a data-only theme are served as files from `/_t/`.
+3. **Store cleanup and the values of the limits.** Section 3 fixes that the store has caps, a backoff and an hourly rate, and that a request never evicts. *Recommendation:* the active, last good and locked themes are never removed, anything else only by a command; the numbers (entries, total bytes, installs per hour, the backoff ceiling, the download timeout) are set in #403 from Bogotá's measured size, with headroom, like the caps of ADR-0008.
+4. **Which tiers a server installs** (proposed, not yet confirmed by the user). A server install puts a third party's data-only theme on a site. *Recommendation:* a `MICELIO_THEME_TIERS` variable, default `official,verified` (the tiers of ADR-0008 decision 7, matching what hosted builds accept), and a package of any other tier is refused at install.
