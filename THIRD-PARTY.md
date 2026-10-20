@@ -13,6 +13,15 @@ npm packages (`package.json`, `package-lock.json`) are distributed under their o
 - `pyodide` (MPL-2.0), CPython compiled to WebAssembly with its standard library, used unmodified and only when a reader presses Run on a Python block, where its files (`pyodide.mjs`, `pyodide.asm.mjs`, `pyodide.asm.wasm`, `python_stdlib.zip`, and a lock file that lists no packages) are sent to the browser from `/_islands/runtimes/`. They stay under the MPL-2.0 (and the licenses of Python and of the libraries Pyodide bundles); the source is https://github.com/pyodide/pyodide, tag 314.0.7 (the npm package `pyodide@314.0.7`).
 - `three` (MIT, https://github.com/mrdoob/three.js), used unmodified by the `scene` section: only `WebGLRenderer`, `GLTFLoader`, the lights and the objects of a turntable are bundled, as a separate file under `/_islands/chunks/` that a browser downloads when a scene near the viewport starts (not under reduced motion, Save-Data or without WebGL2). The license text ships with the package (`node_modules/three/LICENSE`); the version is in `package-lock.json`.
 
+## Sigstore data
+
+Apache-2.0, from the Sigstore project. Both files are data, used unmodified.
+
+| File | What it is | Source |
+| --- | --- | --- |
+| `modules/theme/registry/trusted_root.json` | The trusted root of the Sigstore public-good instance (Fulcio certificate authority, Rekor and certificate transparency log keys, timestamp authority), against which theme attestations are verified offline (ADR 0009, section 3). | The TUF seeds of `@sigstore/tuf` 5.0.0 (the `trusted_root.json` target of `https://tuf-repo-cdn.sigstore.dev`). Refreshed in every Micelio release with `node scripts/refresh-trusted-root.mjs <version>` with the newest `@sigstore/tuf`. |
+| `test/fixtures/sigstore/provenance.sigstore.json` | A real Sigstore bundle (the SLSA provenance of `@sigstore/verify` 4.1.2, signed by a GitHub Actions workflow of `sigstore/sigstore-js`), the test fixture for the offline verification. Test only; never shipped. | `https://registry.npmjs.org/-/npm/v1/attestations/@sigstore%2fverify@4.1.2` |
+
 ## Fonts
 
 Under the SIL Open Font License 1.1; the license text ships next to each file. The Bogotá files are subsets of the previous full files (fewer glyphs and a narrower axis range, `scripts/perf/subset-theme-fonts.py`, sources pinned in `scripts/perf/bogota-font-sources.json`); the licenses declare no Reserved Font Name.

@@ -2,7 +2,7 @@
 
 **Kind:** how-to. Goal: pin a theme from the registry, or from a file, install it with `npm run theme:pull` and build with it.
 
-Micelio is pre-1.0 and not stable. The registry client described here is the first part of the registry work of [ADR 0008](../adr/0008-theme-registry.md) and [ADR 0009](../adr/0009-theme-delivery-at-runtime.md): it checks the digest of every package and the status of a version in the index. It does **not** check signatures or provenance attestations yet, so a package is only as trustworthy as the registry and the digest you pinned. Do not point `MICELIO_THEME_REGISTRY` at a registry you do not control or trust until that check lands.
+Micelio is pre-1.0 and not stable. The registry and its publish workflows (#311 and #312) are not live yet: the client below is ready, and it refuses a registry whose index, packages and attestations it cannot verify.
 
 ## The lock
 
@@ -41,14 +41,19 @@ Micelio is pre-1.0 and not stable. The registry client described here is the fir
 | Variable | Default | What it does |
 | --- | --- | --- |
 | `MICELIO_THEME_REGISTRY` | `ghcr.io/bogd3v/micelio-themes` | `host[:port]/path` of the OCI registry. The scheme is always `https`; `http` is accepted only for a loopback host (a local registry). Public packages need no credentials. |
+| `MICELIO_THEME_REGISTRY_IDENTITY` | none | Required for a registry other than the default, ignored for the default: `issuer=<URL>,package=<URL>[,index=<URL>]`. `issuer` is the OIDC issuer of the signing certificates (for GitHub Actions, `https://token.actions.githubusercontent.com`); `package` and `index` are the exact subject alternative names, the full workflow identity such as `https://github.com/<owner>/<repo>/.github/workflows/publish.yml@refs/heads/main`, of the workflows that sign packages and the index (`index` defaults to `package`). They are compared whole, never as patterns. Without it the client installs nothing from that registry. |
 | `MICELIO_CACHE_DIR` | `$XDG_CACHE_HOME/micelio` or `~/.cache/micelio` | Where pulled packages are cached by digest, in `themes/`. A pulled version installs offline. The cache is not trusted: every read checks the digest again. |
 
 ## What is checked
 
 - The pin: the id, the exact version and the digest are checked against their grammar before any request or path is built from them.
-- The download stops at 2 MiB while streaming, whatever the registry sends, and each request has a 30 second limit. A redirect must be `https`, never carries credentials and may not go to an IP address.
+- The download stops at 2 MiB while streaming, whatever the registry sends, and each request has a 30 second limit. Only a blob may be redirected (at most three times); a redirect must be `https` on port 443, never carries credentials, and may not go to an IP address or to a name that is not public (no dot, `.local`, `.internal`…). The token service must be the registry's own host. Names are not resolved or checked against private address ranges, so use a registry you trust.
+- **The index.** It is signed: its Sigstore bundle (tag `v1.att` next to the index) must verify against the index signer identity before any of it is used. A package fetched from the registry is installed only if the index lists `<id>@<version>` with the digest in the lock and status `published`; a `yanked` or `incompatible` version installs only when the digest is the one in your lock.
+- **The attestation.** Each package has a Sigstore bundle (tag `<version>.att` next to the package): a SLSA provenance, signed with a certificate of the registry's publish workflow, whose subject is the package digest. It is verified offline against the trusted root that ships with Micelio (certificate chain, transparency log entry with its inclusion proof and signed time, signature), and the signer must be exactly the expected workflow. Bundles are kept in the cache and verified again on every install: a package already in the cache installs offline, relying on the lock and its bundle rather than on a new look at the index. The index carries no freshness yet, so a validly signed older index could be replayed to `theme:add` (it lists as `published` a version yanked since); check `theme:outdated` against a registry you trust. `theme:pull` also removes folders of `.micelio/themes/` that are not in the lock. If the shipped trusted root no longer verifies a bundle, the install fails and says to upgrade Micelio: the root is refreshed in every release.
 - The bytes must hash to the digest in the lock; then the package goes through the safe unpack (size, ratio, paths, content: [docs/security.md](../security.md#themes)) and must be the id and version it was pinned as, with a contract this core implements.
 - Nothing from a package is executed at pull time.
+
+A theme added from a file (`distribution: file`) has no attestation: you are its signer. The registry's server-side install, tiers and revocation come with #400 and #403.
 
 ## In the Docker image
 

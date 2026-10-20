@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { THEME_ID, THEME_VERSION, VERSION_MAX_LENGTH } from '../constants'
 import { parseContractVersion } from '../version'
-import { THEME_DIGEST } from './constants'
+import { ATTESTATION_TAG_SUFFIX, THEME_DIGEST } from './constants'
 import { RegistryError } from './error'
 
 // The index of the registry (ADR 0008, section 4): every theme and version with its digest, contract, tier, distribution and status.
@@ -66,7 +66,7 @@ export function parseIndex(text: string): RegistryIndex {
     if (!THEME_ID.test(id)) throw new RegistryError('registry', 'the index has a theme whose id is not valid')
     const versions = Object.keys(theme.versions)
     if (versions.length > MAX_VERSIONS) throw new RegistryError('registry', `the index lists more than ${MAX_VERSIONS} versions of ${id}`)
-    if (versions.some(version => version.length > VERSION_MAX_LENGTH || !THEME_VERSION.test(version))) throw new RegistryError('registry', `the index has a version of ${id} that is not valid`)
+    if (versions.some(version => version.length > VERSION_MAX_LENGTH || !THEME_VERSION.test(version) || version.endsWith(ATTESTATION_TAG_SUFFIX))) throw new RegistryError('registry', `the index has a version of ${id} that is not valid`)
   }
   return parsed.data
 }
