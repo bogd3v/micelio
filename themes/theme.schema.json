@@ -20,10 +20,20 @@
     },
     "id": {
       "type": "string",
-      "pattern": "^[a-z0-9-]+$",
+      "pattern": "^(?=.{1,64}$)[a-z0-9]+(-[a-z0-9]+)*$",
       "description": "The folder name."
     },
     "name": {
+      "type": "string"
+    },
+    "version": {
+      "description": "The theme's own semantic version, without build metadata. Optional for a local theme, required to pack it.",
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?$"
+    },
+    "license": {
+      "description": "An SPDX license id (one id, not an expression) or LicenseRef-<name> for a proprietary theme. Optional for a local theme, required to pack it.",
       "type": "string"
     },
     "modes": {

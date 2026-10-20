@@ -10,6 +10,13 @@ What each version of the theme contract added or broke. This is a reference for 
 - The build fails when a theme declares another major, when it needs a minor the core does not implement (`needs contract 2.5; this core implements 2.4`), and when it declares less than it uses (`declares contract 2.0 but uses 2.1`). `npm run theme:check -- --json` reports `contract.declared`, `contract.used` and `contract.core` for each theme.
 - **Adding to the contract bumps the minor.** In the same change: raise `CONTRACT_VERSION.minor` and add the new rows to `CONTRACT_ADDITIONS` in `modules/theme/constants.ts` (kind and name of each addition, so the validator knows what needs the minor), add a section to this file, and run `npm run theme:schema` and `npm run theme:reference`.
 
+## Manifest changes inside 2.0
+
+These did not move the version, because they add no role, slot, variant or hook (#309):
+
+- Added: the optional `version` (semver without build metadata) and `license` (an SPDX id or `LicenseRef-<name>`) of `theme.json`; both are required to pack a theme.
+- Tightened: `id` is 1 to 64 characters of lowercase letters and digits in groups separated by single hyphens (ADR 0009, section 2). `--x`, `x-`, `-x` and ids over 64 characters no longer validate; `bogota`, `starter` and every id with single hyphens do.
+
 ## 2.0
 
 Breaking, from [ADR 0016](../adr/0016-categories-from-the-cms.md): the core knows no category, so the slot APIs are data. A theme migrates with the [upgrade notes](creating-a-theme.md#contract-1-to-2-the-core-knows-no-category-adr-0016).
