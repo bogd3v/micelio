@@ -12,6 +12,7 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0006](0006-site-modes.md) | Site modes (dynamic, static, landing), pages without the Vue runtime and heavy islands | Accepted | 2026-10-04 |
 | [0007](0007-license.md) | License under AGPL-3.0-only, with a theme exception, third-party material outside it, and DCO | Accepted | 2026-10-06 |
 | [0008](0008-theme-registry.md) | Theme registry: versioned theme packages outside the core, pinned by a lockfile, admitted by the theme checks | Accepted | 2026-10-07 |
+| [0009](0009-theme-delivery-at-runtime.md) | Theme delivery at runtime: a theme store keyed by digest, served under `/_t/<digest>/`, data-only themes activated from Strapi without a rebuild, code themes only on an image built with them | Proposed | 2026-10-19 |
 | [0010](0010-semantic-versioning.md) | Semantic versioning and one release line for `micelio` and `micelio-cms`, with `latest` as the newest stable release and `edge` as `main` | Accepted | 2026-10-09 |
 | [0011](0011-refuse-plain-http-upstreams.md) | Refuse plain http towards the CMS and Umami outside a private network | Accepted | 2026-10-14 |
 | [0012](0012-static-cms-credentials.md) | Accept static credentials towards the CMS, with a rotation policy | Accepted | 2026-10-14 |
