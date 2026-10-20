@@ -122,6 +122,8 @@ themes/bogota/
 
   **Amendment (2026-10-07, #307):** themes can also come from a registry of versioned, immutable packages ([ADR-0008](0008-theme-registry.md)). The folder above stays the package layout; `theme:pack` packs it, `themes.lock.json` pins each theme by version and digest, and `theme:pull` installs it into `.micelio/themes/<id>/`, which the module scans after `themes/` and before `MICELIO_THEME_DIRS`. `NUXT_PUBLIC_THEME` keeps taking a bare id. The deferral of publishing above is resolved there: OCI artifacts in GHCR for public themes, private object storage for licensed ones, not npm.
 
+  **Amendment (2026-10-19, #399):** [ADR-0009](0009-theme-delivery-at-runtime.md) delivers themes that ship no code at runtime, from a theme store served under `/_t/<digest>/`. It amends this section (the active theme is chosen at runtime, role CSS is generated at install, fonts and images are served under `/_t/<digest>/`, and the boot check against the build goes away), the #237 amendments of sections 2 (the init script no longer depends on the theme's modes) and 3 (theme CSS is a separate stylesheet and the layer order statement is inline in `<head>`), and the #239 amendment of section 8 ("the build bundles one theme").
+
 ### 5. Customization levels: roles, layout variants, hooks and slots
 
 The goal is that two themes on the same content look like two different sites, not one site in two palettes. A theme changes the site through four levels, in this order of preference:
