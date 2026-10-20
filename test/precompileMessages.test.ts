@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { compile, createCoreContext, translate } from '@intlify/core-base'
-import { compileMessages, isMessageFile } from '../modules/precompile-messages'
+import { isMessageFile } from '../modules/precompile-messages'
+import { compileMessages, messageProblem } from '../modules/theme/install/messages'
 
 type Messages = { [key: string]: string | Messages }
 
@@ -55,5 +56,20 @@ describe('isMessageFile', () => {
 
   it('rejects files that are not JSON', () => {
     expect(isMessageFile('/app/themes/bogota/theme.css', dirs)).toBe(false)
+  })
+})
+
+describe('messageProblem', () => {
+  it('accepts nested messages under the theme namespace', () => {
+    expect(messageProblem({ theme: { hero: { title: 'Hello {name}' } } })).toBeNull()
+    expect(messageProblem({})).toBeNull()
+  })
+
+  it('refuses a key outside the namespace, a prototype key and a value that is not an object', () => {
+    expect(messageProblem({ nav: { home: 'Home' } })).toContain('"nav"')
+    expect(messageProblem(JSON.parse('{"theme":{"__proto__":{"x":"y"}}}'))).toContain('__proto__')
+    expect(messageProblem(JSON.parse('{"theme":{"a":{"constructor":"x"}}}'))).toContain('theme.a.constructor')
+    expect(messageProblem(['theme'])).toContain('not an object')
+    expect(messageProblem({ theme: { n: 3 } })).not.toBeNull()
   })
 })

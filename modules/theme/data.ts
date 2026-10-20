@@ -1,11 +1,8 @@
 import { join } from 'node:path'
 import { addComponent, addTemplate, addTypeTemplate, useLogger } from 'nuxt/kit'
-import type { LayoutRegion, SlotName, ThemeContext } from './types'
-import { LAYOUT_REGIONS, SLOT_NAMES } from './constants'
+import type { ModeDefinition, SlotName, ThemeContext } from './types'
+import { DEFAULT_LAYOUT, IMAGES_URL, LAYOUT_REGIONS, SLOT_NAMES } from './constants'
 import { buildPalette } from './palette'
-
-/** Where the theme's images are served: /theme/images/<file> (docs/adr/0005-theme-contract.md). */
-export const IMAGES_URL = 'theme/images'
 
 // Active theme's id at build time; the server plugin compares it with the runtime value
 const BUILD_THEME_MODULE = '#micelio/build-theme'
@@ -73,22 +70,6 @@ export const SLOT_SPECS: Record<SlotName, SlotSpec> = {
     props: [],
     defaultRenders: 'Nothing; the cup stays as it is.',
   },
-}
-
-/** A mode as the theme declares it (the module's own type; the app's `ThemeMode` is a mode id). */
-export interface ModeDefinition {
-  id: string
-  scheme: 'dark' | 'light'
-  name?: string
-}
-
-/** Variant each region renders when the theme does not name one. */
-export const DEFAULT_LAYOUT: Record<LayoutRegion, string> = {
-  header: 'bar',
-  home: 'showcase',
-  postList: 'grid',
-  article: 'aside',
-  footer: 'columns',
 }
 
 /**

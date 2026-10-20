@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { checkCss, checkThemeCss } from '../modules/theme/css-rules'
+import { checkCss, checkThemeCss, cssUrls } from '../modules/theme/css-rules'
 import { transform } from 'lightningcss'
 import { loadHooks, parseHooks } from '../modules/theme/hooks'
 import { REGION_VARIANTS } from '../modules/theme/layout/variants'
@@ -119,6 +119,21 @@ describe('theme CSS rules', () => {
 
   it('reports CSS that does not parse', () => {
     expect(problems('.x { color: red; } }')[0]).toMatch(/^theme\.css: cannot parse the CSS/)
+  })
+})
+
+describe('cssUrls', () => {
+  it('lists url() tokens and the strings of image-set(), also in custom properties', () => {
+    const css = '.a{background:url(/fonts/a.woff2)}.b{background-image:image-set("/theme/images/b.png" 1x)}.c{--x:image-set("/theme/images/c.png" 1x);--y:url(#frag)}'
+    expect(cssUrls(css, 'a.css').sort()).toEqual(['#frag', '/fonts/a.woff2', '/theme/images/b.png', '/theme/images/c.png'])
+  })
+
+  it('does not list a url that is only text', () => {
+    expect(cssUrls('.a{content:"url(/fonts/x)"}', 'a.css')).toEqual([])
+  })
+
+  it('throws on CSS that does not parse', () => {
+    expect(() => cssUrls('a{b:c} } }', 'a.css')).toThrow()
   })
 })
 

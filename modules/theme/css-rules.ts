@@ -1,6 +1,7 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { transform } from 'lightningcss'
+import { URL_FUNCTIONS } from './constants'
 import { readThemeFile } from './files'
 import type { Hooks } from './types'
 
@@ -44,9 +45,6 @@ function selectorProblems(node: unknown, ctx: CssRuleContext, found: Set<string>
   for (const value of Object.values(component)) selectorProblems(value, ctx, found)
 }
 
-/** Functions whose string arguments are URLs. */
-const URL_FUNCTIONS = new Set(['image-set', '-webkit-image-set', 'src', 'image', 'cross-fade', '-webkit-cross-fade'])
-
 function collectStrings(value: unknown, urls: Set<string>): void {
   if (Array.isArray(value)) {
     for (const item of value) collectStrings(item, urls)
@@ -81,6 +79,38 @@ export function urlAllowed(url: string): boolean {
   if (/%2e|%2f|%5c/i.test(url) || /%2e|%2f|%5c|\\/i.test(decoded)) return false
   if (decoded.split('/').some(segment => segment === '..' || segment === '.')) return false
   return /^\/(fonts|theme\/images)\//.test(decoded)
+}
+
+/**
+ * Every URL a stylesheet loads: `url()` tokens and the strings of `image-set()` and similar, also in custom properties.
+ *
+ * @param code - A stylesheet with no `@import` left.
+ * @throws `Error` when the CSS does not parse.
+ */
+export function cssUrls(code: string, filename: string): string[] {
+  const urls = new Set<string>()
+  transform({
+    filename,
+    code: Buffer.from(code),
+    errorRecovery: false,
+    visitor: {
+      Rule: {
+        property(rule) {
+          collectUrls(rule.value, urls)
+          return undefined
+        },
+      },
+      Declaration(declaration) {
+        collectUrls(declaration, urls)
+        return undefined
+      },
+      Url(url) {
+        urls.add(url.url)
+        return undefined
+      },
+    },
+  })
+  return [...urls]
 }
 
 /** Problems of one stylesheet, and the local files it imports (checked in turn by checkThemeCss). */
