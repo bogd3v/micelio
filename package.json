@@ -50,7 +50,7 @@
     "perf": "node scripts/perf/measure.mjs --serve"
   },
   "dependencies": {
-    "@intlify/message-compiler": "^11.4.14",
+    "@intlify/message-compiler": "^11.4.15",
     "@jitl/quickjs-wasmfile-release-sync": "0.32.0",
     "@nuxt/image": "^2.0.0",
     "@nuxtjs/i18n": "^10.6.0",
@@ -60,22 +60,22 @@
     "@sqlite.org/sqlite-wasm": "3.53.4-build2",
     "@vueuse/nuxt": "^14.2.1",
     "lightningcss": "^1.33.0",
-    "marked": "^18.1.0",
+    "marked": "^18.1.1",
     "mermaid": "^12.2.0",
-    "nodemailer": "^10.1.0",
+    "nodemailer": "^10.1.2",
     "nuxt": "^4.5.2",
     "ofetch": "^1.5.1",
     "pyodide": "314.0.7",
-    "qs": "^6.15.1",
+    "qs": "^6.16.1",
     "quickjs-emscripten-core": "0.32.0",
-    "sanitize-html": "^2.17.5",
+    "sanitize-html": "^2.18.1",
     "three": "0.186.1",
     "vue": "^3.5.43",
     "vue-router": "^5.0.4",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.13.0",
+    "@axe-core/playwright": "^4.14.0",
     "@nuxt/eslint": "^1.17.0",
     "@nuxt/test-utils": "^4.3.3",
     "@playwright/test": "^1.63.0",
