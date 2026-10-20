@@ -11,7 +11,8 @@ COPY package*.json ./
 RUN npm ci --ignore-scripts
 
 COPY . .
-RUN npm rebuild && npm run build
+# The themes the site pins (themes.lock.json) are installed before the build; Nuxt compiles their slots. docs/operate/themes.md
+RUN npm rebuild && npm run theme:pull -- --frozen && npm run build
 
 # Builder image (ghcr.io/bogd3v/micelio-builder): generates a static site at run time and serves it.
 # Declared before the production stage, which must stay last (the default target). docs/operate/static-site.md
@@ -35,7 +36,7 @@ COPY --chown=node:node package*.json ./
 RUN npm ci --ignore-scripts
 
 COPY --chown=node:node . .
-RUN npm rebuild
+RUN npm rebuild && npm run theme:pull -- --frozen
 
 COPY --chown=node:node --chmod=755 scripts/docker/builder-entrypoint.sh /usr/local/bin/micelio-builder
 ENV NUXT_TELEMETRY_DISABLED=1 \

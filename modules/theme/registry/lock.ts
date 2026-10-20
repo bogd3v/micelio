@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { THEME_ID } from '../constants'
 import { parseContractVersion } from '../version'
 import { LOCK_FILE, THEME_DIGEST } from './constants'
-import { RegistryError } from './error'
+import { RegistryError, safeText } from './error'
 import { pinProblem } from './pin'
 import type { ThemeLock } from './types'
 
@@ -21,6 +21,8 @@ const Entry = z.strictObject({
   distribution: z.enum(['public', 'licensed', 'file']),
   registry: z.string().min(1).max(256).nullable(),
   code: z.boolean(),
+}).refine(entry => (entry.distribution === 'file') === (entry.registry === null) && (entry.distribution === 'file') === (entry.tier === 'local'), {
+  error: 'a file entry has registry null and tier local, and only a file entry does',
 })
 
 const Lock = z.record(z.string().regex(THEME_ID), Entry).refine(lock => Object.keys(lock).length <= 64, { error: 'lists more than 64 themes' })
@@ -35,7 +37,7 @@ export function parseLock(text: string): ThemeLock {
   try {
     value = JSON.parse(text)
   } catch (error) {
-    throw new RegistryError('lock', `${LOCK_FILE} is not valid JSON: ${(error as Error).message}`, {}, { cause: error })
+    throw new RegistryError('lock', `${LOCK_FILE} is not valid JSON: ${safeText((error as Error).message)}`, {}, { cause: error })
   }
   // zod's record skips a `__proto__` key; a lock with one is refused, not read as if the entry were absent
   for (const key of typeof value === 'object' && value !== null ? Object.keys(value) : []) {

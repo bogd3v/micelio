@@ -1,10 +1,10 @@
-import { mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve, sep } from 'node:path'
 import { randomBytes } from 'node:crypto'
 import { parseContractVersion } from '../version'
 import { CONTRACT_VERSION } from '../constants'
 import { THEME_JSON } from './constants'
-import { RegistryError } from './error'
+import { RegistryError, safeText } from './error'
 import type { ThemePin, UnpackedTheme } from './types'
 
 /**
@@ -23,7 +23,7 @@ export function checkIdentity(pin: ThemePin, unpacked: UnpackedTheme): { contrac
     throw new RegistryError('identity', 'theme.json is not valid JSON', pin, { cause: error })
   }
   if (manifest.id !== pin.id || manifest.version !== pin.version) {
-    throw new RegistryError('identity', `the package says it is ${String(manifest.id)}@${String(manifest.version)}`, pin)
+    throw new RegistryError('identity', `the package says it is ${safeText(manifest.id)}@${safeText(manifest.version)}`, pin)
   }
   const contract = parseContractVersion(manifest.contract)
   if (!contract) throw new RegistryError('contract', 'theme.json declares no contract version', pin)
@@ -60,4 +60,21 @@ export function writeTheme(root: string, id: string, unpacked: UnpackedTheme): s
     throw error
   }
   return join(root, id)
+}
+
+/**
+ * Removes from `root` every folder that is not a locked theme, including staging folders an interrupted write left behind.
+ *
+ * @remarks
+ * `root` (`.micelio/themes`) belongs to `theme:pull`, so a theme dropped from the lock stops being buildable instead of lingering.
+ */
+export function pruneThemes(root: string, keep: ReadonlySet<string>): string[] {
+  if (!existsSync(root)) return []
+  const removed: string[] = []
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    if (keep.has(entry.name)) continue
+    rmSync(join(root, entry.name), { recursive: true, force: true })
+    removed.push(entry.name)
+  }
+  return removed
 }

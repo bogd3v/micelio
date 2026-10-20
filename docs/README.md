@@ -5,7 +5,7 @@ The documentation is organised by who reads it. Find your reader in the table; e
 | Reader | Needs | Go to |
 | --- | --- | --- |
 | Someone deciding whether to use Micelio | What it is and the shortest path to a running site | [`../README.md`](../README.md) |
-| Site operator | Run a demo, configure, upgrade, back up, every variable | [`operate/`](operate/install.md): [install](operate/install.md), [configure](operate/configure.md), [upgrade](operate/upgrade.md), [backup](operate/backup.md), [verify the images](operate/verify-image.md), [logs](operate/logging.md), [static sites](operate/static-site.md) |
+| Site operator | Run a demo, configure, upgrade, back up, every variable | [`operate/`](operate/install.md): [install](operate/install.md), [configure](operate/configure.md), [upgrade](operate/upgrade.md), [backup](operate/backup.md), [verify the images](operate/verify-image.md), [logs](operate/logging.md), [static sites](operate/static-site.md), [themes from the registry](operate/themes.md) |
 | Site editor | Build pages and publish content in the CMS | [`guide/`](guide/README.md) |
 | Theme creator | The guide, the contract reference and the theme tests | [`themes/`](themes/creating-a-theme.md): [creating a theme](themes/creating-a-theme.md), [reference](themes/reference/README.md), [theme testing](theme-testing.md) |
 | Integrator | Routes, inputs, outputs and errors; caching and behaviour | [`openapi.json`](openapi.json) (the reference), [`api.md`](api.md) |

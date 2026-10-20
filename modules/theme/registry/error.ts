@@ -25,6 +25,12 @@ export class PackError extends Error {
   }
 }
 
+/** Text from a package, a certificate or a file, made safe to print: control characters become spaces and it is cut at 200 characters. */
+export function safeText(value: unknown): string {
+  const isControl = (char: string): boolean => char.charCodeAt(0) < 32 || (char.charCodeAt(0) >= 127 && char.charCodeAt(0) <= 159)
+  return [...String(value).slice(0, 200)].map(char => (isControl(char) ? ' ' : char)).join('')
+}
+
 /** A pin, a lock or a pull failed; the message names the theme, the version, the digest and what failed. */
 export class RegistryError extends Error {
   readonly failure: RegistryFailure

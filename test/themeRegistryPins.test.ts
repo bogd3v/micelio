@@ -4,9 +4,9 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { cacheDir, cacheGet, cachePut } from '../modules/theme/registry/cache'
-import { RegistryError } from '../modules/theme/registry/error'
+import { RegistryError, safeText } from '../modules/theme/registry/error'
 import { formatLock, parseLock, readLock, writeLock } from '../modules/theme/registry/lock'
-import { checkIdentity, writeTheme } from '../modules/theme/registry/materialize'
+import { checkIdentity, pruneThemes, writeTheme } from '../modules/theme/registry/materialize'
 import { assertPin, pinProblem } from '../modules/theme/registry/pin'
 import { compareVersions, highestSatisfying, satisfies } from '../modules/theme/registry/semver'
 import { unpackTheme } from '../modules/theme/registry/unpack'
@@ -130,6 +130,9 @@ describe('themes.lock.json', () => {
     ['a bad id', JSON.stringify({ '../a': ENTRY })],
     ['a prototype key', '{"__proto__":{"version":"1.0.0"}}'],
     ['a contract that is not major.minor', JSON.stringify({ a: { ...ENTRY, contract: 'two' } })],
+    ['a file entry that names a registry', JSON.stringify({ a: { ...ENTRY, tier: 'local', distribution: 'file' } })],
+    ['a registry entry without a registry', JSON.stringify({ a: { ...ENTRY, registry: null } })],
+    ['an official file entry', JSON.stringify({ a: { ...ENTRY, distribution: 'file', registry: null } })],
     ['an unknown tier', JSON.stringify({ a: { ...ENTRY, tier: 'gold' } })],
   ])('refuses %s', (_name, text) => {
     expect(failure(() => parseLock(text)).failure).toBe('lock')
@@ -182,6 +185,13 @@ describe('the cache', () => {
   })
 })
 
+describe('text from a package', () => {
+  it('is printed without control characters and cut short', () => {
+    expect(safeText('a\u001B[31mb\nc')).toBe('a [31mb c')
+    expect(safeText('x'.repeat(500))).toHaveLength(200)
+  })
+})
+
 describe('installing an unpacked theme', () => {
   const manifest = (fields: Record<string, unknown> = {}): string => JSON.stringify({ id: 'sample', name: 'Sample', version: '1.0.0', contract: 2, ...fields })
 
@@ -226,6 +236,14 @@ describe('installing an unpacked theme', () => {
     result.files.set('theme.json/inner', new Uint8Array())
     expect(() => writeTheme(root, 'sample', result)).toThrow()
     expect(readdirSync(root)).toEqual([])
+  })
+
+  it('prunes what is not locked, staging folders included', () => {
+    const root = temp()
+    for (const name of ['keep', 'gone', '.keep.abc123.tmp']) mkdirSync(join(root, name))
+    expect(pruneThemes(root, new Set(['keep'])).sort()).toEqual(['.keep.abc123.tmp', 'gone'])
+    expect(readdirSync(root)).toEqual(['keep'])
+    expect(pruneThemes(join(root, 'missing'), new Set())).toEqual([])
   })
 
   it('refuses a path that would leave the folder, even if the unpack let it through', () => {
