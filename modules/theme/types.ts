@@ -24,7 +24,8 @@ export interface ThemeFont {
 /** A `theme.json` as read from disk, before or after validation against the contract. */
 export interface ThemeManifest extends ThemeData {
   id: string
-  contract: number
+  /** The contract the theme needs: `N` (meaning `N.0`) or `"N.M"`. */
+  contract: number | string
   fonts?: ThemeFont[]
   images?: Partial<Record<'favicon' | 'ogImage' | 'profile', string>>
   layout?: Partial<Record<LayoutRegion, string>>
@@ -84,4 +85,26 @@ export interface ThemeContext {
   layoutCss: Record<LayoutRegion, CssSource[]>
   /** Components to register (slots and layout variants); data.ts adds them with addComponent. */
   components: ThemeComponent[]
+}
+
+/** A theme contract version: the major breaks a theme, the minor only adds to it (ADR 0008, decision 2). */
+export interface ContractVersion {
+  major: number
+  minor: number
+}
+
+/** Something a contract minor added, which a theme that uses it must declare. */
+export interface ContractAddition {
+  /** The minor of the current major that added it. */
+  minor: number
+  kind: 'slot' | 'layout variant' | 'role' | 'hook'
+  /** A slot name, `region:variant`, a role name, or a hook class or attribute. */
+  name: string
+}
+
+/** The contract a theme declares, the lowest it can declare for what it uses, and what the core implements, as `major.minor`. */
+export interface ContractUsage {
+  declared: string
+  used: string
+  core: string
 }

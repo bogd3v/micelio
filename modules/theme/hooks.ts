@@ -20,12 +20,12 @@ const Hook = z.union([
  * The shape of `app/theme/hooks.json`: the public `data-*` attributes and `myc-*` classes, each with what it describes.
  *
  * @remarks
- * `contract` must be `CONTRACT_VERSION`. A hook is a string, or an object with its `describes` text and the layouts, states and values it covers. `parseHooks` reads
+ * `contract` must be the major of `CONTRACT_VERSION`. A hook is a string, or an object with its `describes` text and the layouts, states and values it covers. `parseHooks` reads
  * the parsed file against it.
  */
 export const HooksSchema = z.strictObject({
   $comment: z.string().optional(),
-  contract: z.literal(CONTRACT_VERSION),
+  contract: z.literal(CONTRACT_VERSION.major),
   attributes: z.record(z.string().regex(/^data-[a-z-]+$/), Hook),
   classes: z.record(z.string().regex(/^myc-[a-z0-9-]+$/), Hook),
 })

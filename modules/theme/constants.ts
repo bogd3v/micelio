@@ -1,12 +1,25 @@
+import type { ContractAddition, ContractVersion } from './types'
+
 /**
- * The theme contract version this build implements: a `theme.json` must declare the same `contract` number to pass validation.
+ * The theme contract version this build implements: a `theme.json` declares the same `major` and a `minor` no higher than this one.
  *
  * @remarks
- * Adding an optional role, layout variant, hook or slot with a core default keeps the number (ADR 0005, section 6). A breaking
- * change to roles, modes, variants, hooks, slots or the package layout is the next number, with a migration note. The number is
- * also printed in the generated theme reference. Contract 2 removed the five built-in categories from the slot APIs (ADR 0016).
+ * Adding an optional role, layout variant, hook or slot with a core default keeps the major and raises the minor, with a row in
+ * `CONTRACT_ADDITIONS` and a section in `docs/themes/contract-changelog.md` (ADR 0005, section 6; ADR 0008, decision 2). A breaking
+ * change to roles, modes, variants, hooks, slots or the package layout is the next major, with a migration note. The version is also
+ * printed in the generated theme reference. Contract 2 removed the five built-in categories from the slot APIs (ADR 0016).
  */
-export const CONTRACT_VERSION = 2
+export const CONTRACT_VERSION: ContractVersion = { major: 2, minor: 0 }
+
+/**
+ * What each minor above `.0` of the current major added, so the validator can compute the minimum minor a theme uses.
+ *
+ * @remarks
+ * Empty while the core implements 2.0. Adding to the contract appends a row here with the new minor, raises `CONTRACT_VERSION.minor`
+ * and adds the section to `docs/themes/contract-changelog.md`. Names: a slot as in `SLOT_NAMES`, a layout variant as `region:variant`,
+ * a role as in the contract, a hook as its class (`myc-…`) or attribute (`data-…`).
+ */
+export const CONTRACT_ADDITIONS: readonly ContractAddition[] = []
 
 /** The regions of the page whose layout variant a theme can choose (ADR 0005). */
 export const LAYOUT_REGIONS = ['header', 'home', 'postList', 'article', 'footer'] as const

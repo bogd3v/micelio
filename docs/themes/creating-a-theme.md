@@ -9,7 +9,7 @@ What a theme can change, in order of preference (ADR 0005, section 5):
 3. **Public hooks**: `myc-*` classes and `data-*` attributes listed in `app/theme/hooks.json`, styled from `theme.css`.
 4. **Slots**: Vue components for what CSS cannot express (logo, hero, divider and so on). They are optional; the core has defaults.
 
-The reference of roles, layout variants, hooks, slots and slot APIs is generated from the contract and the TSDoc of the core: [reference/](reference/README.md).
+The reference of roles, layout variants, hooks, slots and slot APIs is generated from the contract and the TSDoc of the core: [reference/](reference/README.md). What each contract version added or broke: [contract-changelog.md](contract-changelog.md).
 
 Components read roles only. Primitive colors (`--mirla`, `--chillon`) belong to a theme package and to `app/assets/css/settings/`; `npm run lint` fails on them anywhere else.
 
@@ -29,7 +29,7 @@ Then edit `themes/my-theme/theme.json`:
 
 - `id` must equal the folder name and match `^[a-z0-9-]+$` (the build fails otherwise). `myc` and `micelio` are reserved for the core (ADR 0005, amendment of 2026-10-08): a theme's own `<id>-*` classes must not be confusable with the core's.
 - `$schema` points to `../../../../themes/theme.schema.json` in the fixture; inside `themes/` change it to `../theme.schema.json`. The schema gives autocomplete and is generated from `modules/theme/contract.ts` (`npm run theme:schema`).
-- `"contract": 2` is required; any other value fails, and a theme that declares 1 gets a message that points to the [upgrade notes](#upgrade-notes).
+- `"contract": "2.0"` is required: `N` (meaning `N.0`) or `"N.M"` of the major the core implements. Declare the lowest minor that covers what the theme uses: a newer minor than the core's fails the build, and so does a lower one than the theme uses. Another major fails too, and a theme that declares 1 gets a message that points to the [upgrade notes](#upgrade-notes). What each minor added is in the [contract changelog](contract-changelog.md).
 - `name` is optional.
 
 To start from Bogotá instead (`cp -r themes/bogota themes/my-theme`), which is the opposite of the starter (square, neon, bar and grid layouts, two web fonts: Archivo for display and sans, JetBrains Mono), rename its own classes and attributes: slots and CSS use the `bogota-*` classes and `data-bogota-*` attributes, and a theme may only use `data-<its id>-*` for attributes of its own (see "theme.css").
@@ -302,7 +302,7 @@ The 25 KB gzip CSS limit and the two font families are `theme:check` static budg
 
 ## 10. Checklist
 
-- [ ] `id` equals the folder name, `"contract": 2`, `$schema` is `../theme.schema.json`
+- [ ] `id` equals the folder name, `"contract": "2.0"` (the lowest minor that covers what the theme uses), `$schema` is `../theme.schema.json`
 - [ ] Classes and attributes of the theme carry its id; nothing left from `bogota-*` if you copied Bogotá
 - [ ] `NUXT_PUBLIC_THEME=<id> npm run dev` starts, and `/_theme` looks right in every mode
 - [ ] `npm run theme:check -- <id>` shows `ok` (a font warning is acceptable when the PR explains it)
@@ -321,7 +321,7 @@ Contract 2 ships in `feat(theme)!` (0.y, so it raises `y`). The core no longer c
 
 What to do:
 
-1. Set `"contract": 2` in `theme.json`.
+1. Set `"contract": "2.0"` in `theme.json`.
 2. Stop importing what was removed (the table). Nothing in the core replaces the constants, because the list is the CMS's.
 3. If you ship `slots/ThemeIllustration.vue`, type `category` as `string`, take the color from the new required `color` prop, and render nothing for a slug you have no art for (one root node or a bare comment, not whitespace or several nodes: the core hides the empty box). The bogota theme draws no invented bird for an unknown slug.
 4. Keep theme messages keyed by slug (`theme.illustration.<slug>`, `theme.guide.note.<slug>`) if you want them; the core reads them with `te()` and skips a slug that has none.

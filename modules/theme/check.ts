@@ -5,7 +5,8 @@ import { transform } from 'lightningcss'
 import { contrastProblems } from './contrast'
 import { contractProblems } from './contract'
 import { themeProblems } from './validate'
-import type { Hooks, InstalledTheme } from './types'
+import { contractUsage } from './version'
+import type { ContractUsage, Hooks, InstalledTheme } from './types'
 
 // `npm run theme:check`: what the build validates, plus contrast and static budgets (ADR 0005, sections 7 and 9).
 // Contrast is not part of the build, so a theme in progress does not stop `nuxt dev`.
@@ -36,6 +37,8 @@ interface ThemeIssue {
 
 interface ThemeReport {
   theme: string
+  /** The contract the theme declares, the lowest it can declare for what it uses, and what the core implements; absent when `theme.json` is invalid. */
+  contract?: ContractUsage
   errors: ThemeIssue[]
   warnings: ThemeIssue[]
 }
@@ -86,6 +89,7 @@ export function checkTheme(theme: InstalledTheme, hooks: Hooks): ThemeReport {
     report.errors.push(...contract.map(message => ({ kind: 'contract' as const, message })))
     return report
   }
+  report.contract = contractUsage(theme, hooks)
   report.errors.push(...themeProblems(theme, hooks).map(message => ({ kind: 'contract' as const, message })))
   for (const { theme: _theme, ...issue } of contrastProblems(theme.manifest)) report.errors.push({ kind: 'contrast', ...issue })
   const budgets = budgetIssues(theme)

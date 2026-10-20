@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { CONTRAST_RULES } from '../modules/theme/contrast'
 import type { ContrastRule, LayoutRegion } from '../modules/theme/types'
 import { DEFAULT_LAYOUT, SLOT_SPECS } from '../modules/theme/data'
+import { formatContractVersion } from '../modules/theme/version'
 import { CONTRACT_VERSION, LAYOUT_REGIONS, SLOT_NAMES } from '../modules/theme/constants'
 import { REGION_VARIANTS, VARIANT_DESCRIPTIONS } from '../modules/theme/layout/variants'
 import { OPTIONAL_ROLES, REQUIRED_ROLES, ROLE_PURPOSES, TYPE_FAMILIES, TYPE_STEPS } from '../modules/theme/roles.mjs'
@@ -102,7 +103,7 @@ function roles(): string {
   ].join('\n\n')}`)
   return page(
     'Roles',
-    `Roles of contract v${CONTRACT_VERSION}, by \`theme.json\` group. Contrast (the last two columns: the role as foreground on those surfaces, and the foregrounds checked on the role) is checked per mode by \`npm run theme:check\` (WCAG 2 AA; text 4.5:1, controls and focus 3:1); an optional role a theme omits is checked with its core default. Guide: [../creating-a-theme.md](../creating-a-theme.md).`,
+    `Roles of contract v${formatContractVersion(CONTRACT_VERSION)}, by \`theme.json\` group. Contrast (the last two columns: the role as foreground on those surfaces, and the foregrounds checked on the role) is checked per mode by \`npm run theme:check\` (WCAG 2 AA; text 4.5:1, controls and focus 3:1); an optional role a theme omits is checked with its core default. Guide: [../creating-a-theme.md](../creating-a-theme.md).`,
     body,
   )
 }
@@ -161,7 +162,7 @@ function hooksPage(): string {
   body.push(`## General classes\n\nThese appear in every layout variant.\n\n${table(['Class', 'Describes', 'States'], classRows(general))}`)
   return page(
     'Hooks',
-    `Public styling hooks of contract v${CONTRACT_VERSION}, from \`app/theme/hooks.json\`. A theme's \`theme.css\` and slot CSS may select only these \`myc-*\` classes and core \`data-*\` attributes; every other one is internal and can change in any release. Adding a hook stays in contract v${CONTRACT_VERSION}; removing or renaming one is a contract change. A state is a class or attribute the hook takes.`,
+    `Public styling hooks of contract v${formatContractVersion(CONTRACT_VERSION)}, from \`app/theme/hooks.json\`. A theme's \`theme.css\` and slot CSS may select only these \`myc-*\` classes and core \`data-*\` attributes; every other one is internal and can change in any release. Adding a hook raises the minor of contract v${CONTRACT_VERSION.major} (a row in [the contract changelog](../contract-changelog.md)); removing or renaming one is a new major. A state is a class or attribute the hook takes.`,
     body,
   )
 }
@@ -192,7 +193,7 @@ function slotApis(): string {
 function index(): string {
   return page(
     'Theme reference',
-    `Reference of theme contract v${CONTRACT_VERSION}, generated from the code. To change it, change the contract and run ${COMMAND}; \`npm run lint\` fails when these files are out of date. How to build a theme: [../creating-a-theme.md](../creating-a-theme.md); the decision: [ADR 0005](../../adr/0005-theme-contract.md).`,
+    `Reference of theme contract v${formatContractVersion(CONTRACT_VERSION)}, generated from the code; what each minor added is in [the contract changelog](../contract-changelog.md). To change it, change the contract and run ${COMMAND}; \`npm run lint\` fails when these files are out of date. How to build a theme: [../creating-a-theme.md](../creating-a-theme.md); the decision: [ADR 0005](../../adr/0005-theme-contract.md).`,
     [[
       '- [Roles](roles.md): every role of `theme.json`, its purpose, default and contrast rules, and the type scale.',
       '- [Layout](layout.md): regions and their variants.',

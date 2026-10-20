@@ -30,4 +30,5 @@ npm run check
 - [ ] The documents this change made false are updated (`docs/`, README, `AGENTS.md`, skills)
 - [ ] No site-specific value in code, defaults or fixtures
 - [ ] A contract change follows sections 6 and 7 of the standard (`!` in the title, a `BREAKING CHANGE:` paragraph above), and an expensive decision has an ADR
+- [ ] A change that adds to the theme contract bumps its minor and adds a section to `docs/themes/contract-changelog.md`
 - [ ] The issue's Progress section is updated

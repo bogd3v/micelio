@@ -6,8 +6,17 @@
       "type": "string"
     },
     "contract": {
-      "type": "number",
-      "const": 2
+      "anyOf": [
+        {
+          "type": "number",
+          "const": 2
+        },
+        {
+          "type": "string",
+          "pattern": "^2\\.\\d+$"
+        }
+      ],
+      "description": "The contract version the theme needs: 2 (meaning 2.0) or \"2.M\". A minor above the core's fails, and so does one below what the theme uses (docs/themes/contract-changelog.md)."
     },
     "id": {
       "type": "string",
@@ -827,5 +836,5 @@
   ],
   "additionalProperties": false,
   "$id": "https://github.com/bogd3v/micelio/blob/main/themes/theme.schema.json",
-  "title": "Micelio theme.json (contract v2)"
+  "title": "Micelio theme.json (contract v2.0)"
 }

@@ -4,6 +4,7 @@ import { contractProblems } from './contract'
 import { checkCss, checkThemeCss } from './css-rules'
 import { buildTokensCss } from './tokens.mjs'
 import { CONTRACT_VERSION, SLOT_NAMES } from './constants'
+import { contractUsageProblems, formatContractVersion } from './version'
 import { readThemeFile } from './files'
 import { slotProblems } from './island'
 import type { Hooks, InstalledTheme } from './types'
@@ -50,11 +51,13 @@ function packageProblems(theme: InstalledTheme, hooks: Hooks): string[] {
 /** Every problem of a theme, without its name; the package is checked only when theme.json is valid. */
 export function themeProblems(theme: InstalledTheme, hooks: Hooks): string[] {
   const problems = contractProblems(theme.manifest)
-  return problems.length ? problems : packageProblems(theme, hooks)
+  if (problems.length) return problems
+  const underDeclared = contractUsageProblems(theme, hooks)
+  return underDeclared.length ? underDeclared : packageProblems(theme, hooks)
 }
 
 /** Throws one Error that lists, for each invalid theme, its name and every problem. */
 export function validateThemes(themes: InstalledTheme[], hooks: Hooks): void {
   const lines = themes.flatMap(theme => themeProblems(theme, hooks).map(problem => `Theme "${theme.id}": ${problem}`))
-  if (lines.length) throw new Error(`Invalid theme${lines.length > 1 ? 's' : ''} (contract v${CONTRACT_VERSION}, ADR 0005):\n${lines.join('\n')}`)
+  if (lines.length) throw new Error(`Invalid theme${lines.length > 1 ? 's' : ''} (contract v${formatContractVersion(CONTRACT_VERSION)}, ADR 0005):\n${lines.join('\n')}`)
 }
