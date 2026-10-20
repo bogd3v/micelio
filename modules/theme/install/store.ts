@@ -254,3 +254,41 @@ export async function cleanTemporary(storeDir: string): Promise<void> {
     await rm(path, { recursive: true, force: true })
   }
 }
+
+/**
+ * Removes the entries compiled for other core builds, and the kept packages no remaining entry uses, except those of `keep`.
+ *
+ * @remarks
+ * The cleanup command of ADR 0009 (open question 3). Entries of the current compile key are never removed, and neither is the
+ * package of a pin in `keep` (the active, last good and locked themes). An entry whose manifest cannot be read is removed. Each entry
+ * is removed under its own lock.
+ *
+ * @param currentKey - The compile key of this core build (`compileKey()`).
+ * @returns The digests of the entries removed and of the packages removed.
+ */
+export async function pruneStore(storeDir: string, currentKey: string, keep: ReadonlySet<string>): Promise<{ entries: string[], packages: string[] }> {
+  const { entries, packages } = layout(storeDir)
+  const removed = { entries: [] as string[], packages: [] as string[] }
+  const used = new Set(keep)
+  for (const name of await exists(entries) ? await readdir(entries) : []) {
+    if (!COMPILED_DIGEST.test(name)) continue
+    let manifest: EntryManifest | null = null
+    try {
+      manifest = JSON.parse(await readFile(join(entries, name, ENTRY_MANIFEST), 'utf8')) as EntryManifest
+    } catch {
+      // An unreadable manifest means a broken entry: it is removed below
+    }
+    if (manifest !== null && manifest.compileKey === currentKey) {
+      used.add(manifest.packageDigest)
+      continue
+    }
+    await withLock(storeDir, name, () => rm(join(entries, name), { recursive: true, force: true }))
+    removed.entries.push(name)
+  }
+  for (const name of await exists(packages) ? await readdir(packages) : []) {
+    if (used.has(`sha256:${name}`)) continue
+    await rm(join(packages, name), { recursive: true, force: true })
+    removed.packages.push(`sha256:${name}`)
+  }
+  return removed
+}

@@ -42,6 +42,8 @@ Micelio is pre-1.0 and not stable. The registry and its publish workflows (#311 
 | --- | --- | --- |
 | `MICELIO_THEME_REGISTRY` | `ghcr.io/bogd3v/micelio-themes` | `host[:port]/path` of the OCI registry. The scheme is always `https`; `http` is accepted only for a loopback host (a local registry). Public packages need no credentials. |
 | `MICELIO_THEME_REGISTRY_IDENTITY` | none | Required for a registry other than the default, ignored for the default: `issuer=<URL>,package=<URL>[,index=<URL>]`. `issuer` is the OIDC issuer of the signing certificates (for GitHub Actions, `https://token.actions.githubusercontent.com`); `package` and `index` are the exact subject alternative names, the full workflow identity such as `https://github.com/<owner>/<repo>/.github/workflows/publish.yml@refs/heads/main`, of the workflows that sign packages and the index (`index` defaults to `package`). They are compared whole, never as patterns. Without it the client installs nothing from that registry. |
+| `MICELIO_THEME_STORE` | none | Absolute path of the deployment theme store (runtime). Unset, only the themes built into the image activate and the server installs nothing. |
+| `MICELIO_THEME_INSTALL` | `true` | `true`, `false`, `1` or `0` (runtime): whether the server may install themes into the store. No effect without a store. |
 | `MICELIO_CACHE_DIR` | `$XDG_CACHE_HOME/micelio` or `~/.cache/micelio` | Where pulled packages are cached by digest, in `themes/`. A pulled version installs offline. The cache is not trusted: every read checks the digest again. |
 
 ## What is checked
@@ -58,3 +60,12 @@ A theme added from a file (`distribution: file`) has no attestation: you are its
 ## In the Docker image
 
 The `Dockerfile` runs `npm run theme:pull -- --frozen` before `npm run build`. A site that pins themes commits `themes.lock.json` and builds its image from the repository; the image needs network access to the registry during the build, or a warm cache.
+
+## The deployment store
+
+`MICELIO_THEME_STORE` is a directory the server keeps compiled themes in, so a theme can be added without a new image ([how it works](../themes/theme-store.md), [ADR 0009](../adr/0009-theme-delivery-at-runtime.md)). Give it a volume that survives restarts, owned by and writable only by the user the server runs as: whoever can write the store can change what the site serves, so treat it like the image.
+
+- A shared store (several replicas) needs a file system where creating a file exclusively works. That is not verified for network file systems yet; use one store per replica until it is.
+- After a core upgrade, the themes the store holds are compiled again at boot from the packages it kept, with no request to the registry.
+- Entries compiled for earlier core builds stay until they are removed; `pruneStore` in `modules/theme/install/store.ts` removes them and the packages nothing uses, and there is no command for it yet.
+- The Compose files live in `micelio-cms` ([install](install.md)) and do not mount a store volume yet; add one to yours, owned by the server's user.
