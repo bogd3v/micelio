@@ -1,38 +1,12 @@
 import { toHex } from './color'
 import { CONTRAST_RULES, lookupFor, resolveOver } from './contrast'
 import type { Lookup } from './contrast'
-import type { ContrastRule, ThemeManifest } from './types'
+import type { ContrastRule, ModePalette, ThemeManifest } from './types'
 
 // The slice of the active theme the server needs to compute accent contrast at runtime (#micelio/theme-palette, Nitro only).
 
 /** Roles whose contrast the accent override can change. */
 const PALETTE_RULE_ROLES: string[] = ['accent', 'on-accent', 'link', 'focus']
-
-/**
- * One mode, every color as opaque `#rrggbb`. `accent-soft`, `accent-hover` and `on-accent` are the theme's own
- * values, for reference only: an accent override derives new ones.
- */
-export interface ModePalette {
-  'scheme': 'dark' | 'light'
-  'surface': string
-  'surface-raised': string
-  'surface-sunken': string
-  'ink': string
-  'on-ink': string
-  'accent': string
-  'accent-soft': string
-  'accent-hover': string
-  'on-accent': string
-  'link-soft': string
-  /** The theme defines `link` as the accent, so an accent override moves it. */
-  'linkIsAccent': boolean
-  /** Same for `focus`. */
-  'focusIsAccent': boolean
-  /** The theme defines `link-soft` as `{accent-soft}`, so an accent override moves it. */
-  'linkSoftIsAccentSoft': boolean
-  /** The theme omits `link-soft`, so the core default (a mix of `link` into `surface`) applies and follows `link`. */
-  'linkSoftIsDefault': boolean
-}
 
 interface SkippedMode {
   mode: string

@@ -159,6 +159,25 @@ describe('what never reaches the store', () => {
   })
 })
 
+describe('admission checks', () => {
+  it('runs contrast and budgets on every install, and skips them only for the image build', async () => {
+    const dir = join(scratch(), 'low-contrast')
+    cpSync(join(ROOT, 'test/fixtures/themes/low-contrast'), dir, { recursive: true })
+    const error = await failure(installTheme({ kind: 'folder', dir }, options(scratch())))
+    expect(error.rule).toBe('validation')
+    expect(error.message).toContain('needs 4.5:1')
+    const result = await installTheme({ kind: 'folder', dir }, options(scratch(), { buildChecksOnly: true }))
+    expect(result.created).toBe(true)
+    expect(result.manifest.contract).toMatch(/^\d+\.\d+$/)
+  })
+
+  it('still refuses a contract or a hook problem when the image build skips admission', async () => {
+    const dir = dataOnly()
+    writeFileSync(join(dir, 'theme.css'), '.myc-not-a-hook { color: red }')
+    expect((await failure(installTheme({ kind: 'folder', dir }, options(scratch(), { buildChecksOnly: true })))).rule).toBe('validation')
+  })
+})
+
 describe('installing a package', () => {
   function packageOf(dir: string): { data: Buffer, pin: { id: string, version: string, digest: string } } {
     const built = buildPackage(discoverThemes([dir])[0]!, HOOKS)

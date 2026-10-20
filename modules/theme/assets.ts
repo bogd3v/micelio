@@ -4,10 +4,7 @@ import { useLogger } from 'nuxt/kit'
 import { isThemePath } from './context'
 import type { ThemeContext } from './types'
 import { FONT_ASSET_FILE, IMAGES_URL, IMAGE_FILE } from './constants'
-import { FRAME_ANCESTORS_NONE } from '../../app/constants/security'
-
-/** The static files of a theme get no capabilities: an SVG opened directly cannot run scripts or load anything. */
-export const STATIC_CSP = `default-src 'none'; style-src 'unsafe-inline'; ${FRAME_ANCESTORS_NONE}; sandbox`
+import { STATIC_CSP } from '../../app/constants/security'
 
 const logger = useLogger('micelio-theme')
 

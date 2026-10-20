@@ -1,4 +1,5 @@
-import type { Hooks } from '../types'
+import type { ContrastRule, Hooks, LayoutRegion, ModeDefinition, ModePalette, SlotName, SlotOptions, ThemeManifest } from '../types'
+import type { ThemeDisplay } from '../display-family'
 import type { ThemePin } from '../registry/types'
 
 /** What went wrong, for a caller to branch on. */
@@ -25,6 +26,13 @@ export interface InstallOptions {
    * @defaultValue false
    */
   allowCode?: boolean
+  /**
+   * Run the checks the Nuxt build makes (contract, public hooks, the package) and skip the admission checks of `theme:check` (contrast, static budgets).
+   * Only the image's own build sets it, for themes the operator installed by hand: a server install always runs them.
+   *
+   * @defaultValue false
+   */
+  buildChecksOnly?: boolean
 }
 
 /** One file of a compiled entry, as its manifest lists it. */
@@ -68,4 +76,42 @@ export interface InstallResult {
   manifest: EntryManifest
   /** Files skipped for not being a font or an image, one line each. */
   warnings: string[]
+}
+
+/** A font of `runtime.json`: the manifest's font with the URL it is served at. */
+export interface RuntimeFont {
+  family: string
+  file: string
+  preload?: boolean
+  /** `/_t/<digest>/fonts/<file>`. */
+  url: string
+}
+
+/**
+ * `runtime.json` of a compiled entry: what the server reads about the theme, in place of the build-time `#micelio/theme*` modules (ADR 0009, section 6).
+ *
+ * @remarks
+ * Written by `compileTheme` and read back by `parseRuntime`, which checks every field before any value reaches HTML.
+ */
+export interface RuntimeData {
+  id: string
+  name?: string
+  version?: string
+  /** The digest of the entry (`/_t/<digest>/`). */
+  digest: string
+  packageDigest: string
+  /** `major.minor`. */
+  contract: string
+  code: boolean
+  modes: ModeDefinition[]
+  fonts: RuntimeFont[]
+  /** Role to `/_t/<digest>/images/<file>`. */
+  images: Partial<Record<'favicon' | 'ogImage' | 'profile', string>>
+  layout: Record<LayoutRegion, string>
+  slots: Partial<Record<SlotName, SlotOptions>>
+  mermaid: NonNullable<ThemeManifest['mermaid']>
+  display: ThemeDisplay
+  palette: { modes: Record<string, ModePalette>, rules: ContrastRule[] }
+  /** Messages by locale, each compiled to the AST the client formats without a compiler. */
+  messages: Record<string, Record<string, unknown>>
 }

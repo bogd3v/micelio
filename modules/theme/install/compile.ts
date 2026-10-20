@@ -17,6 +17,7 @@ import { formatContractVersion, parseContractVersion } from '../version'
 import { COMPILED_DIGEST, COMPILER_VERSION, CSS_TARGETS, ENTRY_FILES, MAX_COMPILED_CSS_BYTES, MAX_MESSAGES_BYTES, PRECOMPRESSED, SERVE_PREFIX, STORE_VERSION } from './constants'
 import { InstallError } from './error'
 import { compileMessages, messageProblem } from './messages'
+import type { RuntimeData } from './types'
 
 /** A theme compiled in memory: the files of its store entry, before the integrity manifest. */
 export interface CompiledTheme {
@@ -176,10 +177,10 @@ async function bundleCss(theme: InstalledTheme, virtual: Map<string, string>, ba
 }
 
 /** Reads `i18n/<locale>.json`, checks the namespace and compiles the messages; returns them by locale. */
-function themeMessages(theme: InstalledTheme): Record<string, unknown> {
+function themeMessages(theme: InstalledTheme): RuntimeData['messages'] {
   const dir = join(theme.dir, 'i18n')
   if (!existsSync(dir)) return {}
-  const messages: Record<string, unknown> = {}
+  const messages: RuntimeData['messages'] = {}
   for (const file of readdirSync(dir).sort()) {
     const locale = LOCALE_FILE.exec(file)?.[1]
     if (locale === undefined) throw new Error(`i18n/${file} is not a locale file (en.json, es.json, pt-BR.json…)`)
@@ -245,7 +246,7 @@ export async function compileTheme({ theme, packageDigest, code, coreBuild }: Co
   }
   files.set(ENTRY_FILES.theme, await stylesheet(themeEntry(theme, code), ENTRY_FILES.theme))
   if (existsSync(join(dir, 'sections.css'))) files.set(ENTRY_FILES.sections, await stylesheet('@import "./sections.css" layer(myc.theme);', ENTRY_FILES.sections))
-  let messages: Record<string, unknown>
+  let messages: RuntimeData['messages']
   try {
     messages = themeMessages(theme)
   } catch (error) {
@@ -258,7 +259,7 @@ export async function compileTheme({ theme, packageDigest, code, coreBuild }: Co
   }
   const { manifest } = theme
   const palette = buildPalette(manifest)
-  const runtime = {
+  const runtime: RuntimeData = {
     id: manifest.id,
     name: manifest.name,
     version: manifest.version,

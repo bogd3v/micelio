@@ -15,6 +15,12 @@ How a theme becomes something a site can serve without a build. Explanation and 
 
 Nothing from a theme is executed, imported or evaluated at any step. A source is a package (with its pin) or a theme folder (the dev loop, the image build); both go through the same steps.
 
+## Reading an entry back
+
+`loadEntry()` and, for a server plugin that Nitro does not wait for, `loadEntrySync()` verify an entry against its manifest and return its bytes. `parseRuntime()` (`install/runtime.ts`) then reads `runtime.json` with a schema that re-derives every value that can reach HTML, a header or a path: ids and modes in the grammar of the contract, font and image URLs under the entry's own `/_t/<digest>/` folders, short text with no control characters or tags, palette colors as `#rrggbb`, and message trees of the message compiler's node types with no prototype keys and a size cap. It never echoes the offending value.
+
+`InstallOptions.buildChecksOnly` is for the image's own build: it runs the contract, hook and package checks of the Nuxt build and skips the admission checks of `theme:check` (contrast and static budgets), which a build never made for a theme the operator installed by hand. A server install never sets it.
+
 ## Isolation
 
 `installIsolated(source, options, limits)` (`modules/theme/install/isolated.ts`) runs `installTheme` in a child process: an empty environment, `--max-old-space-size=256` and a `SIGKILL` at 60 s by default, and one install at a time (a second caller waits). Lightning CSS is native code, so a `worker_thread` limit could not stop it. A failure comes back as the same `InstallError`; running out of memory, exiting early and the timeout are rule `compile`. The child's peak memory is returned as `maxRssKb`.
