@@ -1,6 +1,6 @@
 # The theme store and the install step
 
-How a theme becomes something a site can serve without a build. Explanation and reference for contributors and theme creators; the decision is [ADR 0009](../adr/0009-theme-delivery-at-runtime.md) (still `Proposed`). This page covers what `installTheme()` does today (#400, part 1). Child-process isolation, boot recompilation and the server and CLI callers come with the next parts.
+How a theme becomes something a site can serve without a build. Explanation and reference for contributors and theme creators; the decision is [ADR 0009](../adr/0009-theme-delivery-at-runtime.md) (still `Proposed`). This page covers what `installTheme()` and `installIsolated()` do today (#400). Boot recompilation and the server and CLI callers come with the next parts.
 
 ## What `installTheme()` does
 
@@ -14,6 +14,12 @@ How a theme becomes something a site can serve without a build. Explanation and 
 6. **Write**: the entry is built in a staging folder and renamed into place under a lock, so an interrupted install leaves nothing a reader can see.
 
 Nothing from a theme is executed, imported or evaluated at any step. A source is a package (with its pin) or a theme folder (the dev loop, the image build); both go through the same steps.
+
+## Isolation
+
+`installIsolated(source, options, limits)` (`modules/theme/install/isolated.ts`) runs `installTheme` in a child process: an empty environment, `--max-old-space-size=256` and a `SIGKILL` at 60 s by default, and one install at a time (a second caller waits). Lightning CSS is native code, so a `worker_thread` limit could not stop it. A failure comes back as the same `InstallError`; running out of memory, exiting early and the timeout are rule `compile`. The child's peak memory is returned as `maxRssKb`.
+
+The worker is `worker.ts` next to it, loaded through jiti in tests and dev. A built server ships its own `worker.mjs` (decided with the callers, #403). A compiled entry holds at most 4 MiB of files, not counting the gzip and brotli copies.
 
 ## What a store entry holds
 

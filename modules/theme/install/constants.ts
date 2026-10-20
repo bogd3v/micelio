@@ -42,14 +42,20 @@ export const MAX_MESSAGES_BYTES = 512 * 1024
 /** The only top-level key a theme's messages may use (ADR 0009, section 2). */
 export const MESSAGE_NAMESPACE = 'theme'
 
-/** Milliseconds an install lock lives without being renewed: the install timeout (ADR 0009, section 2). */
+/** Milliseconds an install may run before its process is killed, and the lease of its lock (ADR 0009, section 2). */
 export const INSTALL_LEASE_MS = 60_000
+
+/** Heap, in MiB, an install process may use before it is stopped. */
+export const INSTALL_HEAP_MB = 256
 
 /** Extensions of the files that get a gzip and a brotli copy next to them. */
 export const PRECOMPRESSED = /\.(css|json|svg|txt)$/i
 
-/** Most bytes a compiled entry may hold in all, precompressed copies included: a loader keeps the whole entry in memory. */
-export const MAX_ENTRY_BYTES = 8 * 1024 * 1024
+/** Most bytes the files of a compiled entry may hold, not counting their gzip and brotli copies (ADR 0009, section 2). */
+export const MAX_ENTRY_BYTES = 4 * 1024 * 1024
+
+/** Most bytes a loader keeps in memory for one entry: the files and their precompressed copies, at most twice the cap above. */
+export const MAX_LOADED_BYTES = 2 * MAX_ENTRY_BYTES
 
 /** Largest `manifest.json` a loader reads. */
 export const MAX_ENTRY_MANIFEST_BYTES = 1024 * 1024

@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { constants } from 'node:fs'
 import { chmod, lstat, mkdir, mkdtemp, open, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve, sep } from 'node:path'
-import { COMPILED_DIGEST, ENTRY_MANIFEST, INSTALL_LEASE_MS, MAX_ENTRY_BYTES, MAX_ENTRY_MANIFEST_BYTES, STORE_DIR, STORE_VERSION } from './constants'
+import { COMPILED_DIGEST, ENTRY_MANIFEST, INSTALL_LEASE_MS, MAX_ENTRY_MANIFEST_BYTES, MAX_LOADED_BYTES, STORE_DIR, STORE_VERSION } from './constants'
 import { InstallError } from './error'
 import type { EntryFile, EntryManifest, LoadedEntry } from './types'
 
@@ -108,7 +108,7 @@ export async function loadEntry(storeDir: string, digest: string): Promise<Loade
     const data = await readFile(join(dir, path))
     const listed = manifest.files[path]!
     total += data.length
-    if (total > MAX_ENTRY_BYTES) return fail('the entry is larger than the limit')
+    if (total > MAX_LOADED_BYTES) return fail('the entry is larger than the limit')
     if (data.length !== listed.size || sha256(data) !== listed.sha256) return fail(`${path} does not match its manifest`)
     files.set(path, data)
   }
