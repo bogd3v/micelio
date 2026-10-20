@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { checkContent, parseBoundedJson } from './content'
-import { MAX_ENTRIES, MAX_UNPACKED_BYTES, THEME_JSON } from './constants'
+import { MAX_COMPRESSED_BYTES, MAX_ENTRIES, MAX_UNPACKED_BYTES, THEME_DIGEST, THEME_JSON } from './constants'
 import { UnpackError } from './error'
 import { gunzipBounded } from './gzip'
 import { isAllowedPath, isCodePath } from './paths'
@@ -9,12 +9,8 @@ import type { UnpackedTheme, UnpackOptions } from './types'
 
 // The safe unpack of a theme package (ADR 0009, section 2). It works on one buffer, writes nothing and runs in plain Node and in Nitro.
 
-/** Largest `.tgz` read at all, checked before anything is decompressed. */
-const MAX_COMPRESSED_BYTES = 2 * 1024 * 1024
 /** The largest tar a valid package can make: the files, a header and padding per entry, and the end marker. */
 const MAX_TAR_BYTES = MAX_UNPACKED_BYTES + (MAX_ENTRIES + 2) * 1024
-/** The format of a package digest: `sha256:` and 64 lowercase hex digits. */
-const DIGEST = /^sha256:[0-9a-f]{64}$/
 
 function sha256(data: Uint8Array): string {
   return createHash('sha256').update(data).digest('hex')
@@ -65,7 +61,7 @@ function verifyManifest(raw: string | Uint8Array, files: Map<string, Uint8Array>
 export function unpackOwnTheme(data: Uint8Array, options: Partial<UnpackOptions> = {}): UnpackedTheme {
   if (data.length > MAX_COMPRESSED_BYTES) throw new UnpackError('compressed-size', `is ${data.length} bytes; the limit is ${MAX_COMPRESSED_BYTES}`)
   const digest = `sha256:${sha256(data)}`
-  if (options.digest !== undefined && (!DIGEST.test(options.digest) || options.digest !== digest)) {
+  if (options.digest !== undefined && (!THEME_DIGEST.test(options.digest) || options.digest !== digest)) {
     throw new UnpackError('digest', `the package is ${digest}, not the expected digest`)
   }
   const files = new Map<string, Uint8Array>()

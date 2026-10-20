@@ -67,3 +67,17 @@ export const SPDX_LICENSE_IDS = [
 
 /** Files copied from a theme's `images/`, and the image types a package may hold; anything else is skipped with a warning. */
 export const IMAGE_FILE = /\.(png|jpe?g|webp|avif|gif|svg)$/i
+
+/**
+ * Pattern of a theme id: 1 to 64 characters, lowercase letters and digits in groups separated by single hyphens (`my-theme`, never `--x`, `x-` or `-`).
+ * The id is also the name of the theme's folder, which the loader checks, and the `themeId` of a runtime pin (ADR 0009, section 2).
+ *
+ * @remarks
+ * This pattern does not refuse reserved ids: `themeIdProblem` does, and says why. Contract tightening of #309: before it, ids such as `--x` or `x-` validated.
+ */
+export const THEME_ID = /^(?=.{1,64}$)[a-z0-9]+(-[a-z0-9]+)*$/
+
+/** Longest `version` of a theme: the pin of a runtime install is capped the same way (ADR 0009, section 2). */
+export const VERSION_MAX_LENGTH = 128
+/** Strict semver 2.0.0 without build metadata (`+...`): `1.2.3` or `1.2.3-rc.1`. */
+export const THEME_VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?$/

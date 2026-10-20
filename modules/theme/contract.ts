@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { QUOTED_VALUE, REQUIRED_ROLES, TYPE_FAMILIES, TYPE_STEPS, UNSAFE_VALUE } from './roles.mjs'
 import type { RoleGroup } from './roles.mjs'
-import { CONTRACT_VERSION, LAYOUT_REGIONS, SLOT_NAMES, SPDX_LICENSE_IDS } from './constants'
+import { CONTRACT_VERSION, LAYOUT_REGIONS, SLOT_NAMES, SPDX_LICENSE_IDS, THEME_ID, THEME_VERSION, VERSION_MAX_LENGTH } from './constants'
 import { REGION_VARIANTS } from './layout/variants'
 import { formatContractVersion, parseContractVersion } from './version'
 
@@ -10,14 +10,6 @@ import { formatContractVersion, parseContractVersion } from './version'
 
 /** The init script stays under 2 KB (ADR 0004: it is inline on every page). */
 export const MAX_MODES = 6
-/**
- * Pattern of a theme id: 1 to 64 characters, lowercase letters and digits in groups separated by single hyphens (`my-theme`, never `--x`, `x-` or `-`).
- * The id is also the name of the theme's folder, which the loader checks, and the `themeId` of a runtime pin (ADR 0009, section 2).
- *
- * @remarks
- * This pattern does not refuse reserved ids: `themeIdProblem` does, and says why. Contract tightening of #309: before it, ids such as `--x` or `x-` validated.
- */
-export const THEME_ID = /^(?=.{1,64}$)[a-z0-9]+(-[a-z0-9]+)*$/
 const THEME_ID_HINT = 'lowercase letters and digits in groups separated by single hyphens, 1 to 64 characters'
 /** Ids no theme may take: its own `<id>-*` classes could not be told apart from the core's (ADR 0005, amendment of 2026-10-08). */
 const RESERVED_THEME_IDS: readonly string[] = ['myc', 'micelio']
@@ -36,10 +28,6 @@ export function themeIdProblem(id: string): string | null {
  * only `.woff2` fonts in `theme.json`.
  */
 export const FONT_FILE = /^[\w.-]+\.woff2$/
-/** Longest `version` of a theme: the pin of a runtime install is capped the same way (ADR 0009, section 2). */
-const VERSION_MAX_LENGTH = 128
-/** Strict semver 2.0.0 without build metadata (`+...`): `1.2.3` or `1.2.3-rc.1`. */
-const THEME_VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?$/
 const LICENSE_REF = /^LicenseRef-[A-Za-z0-9.-]+$/
 const MODE_ID = /^[\w-]+$/
 const NAME = /^[\w-]+$/
