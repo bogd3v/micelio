@@ -17,6 +17,7 @@
     "theme:reference": "jiti scripts/theme-reference.ts",
     "theme:check": "jiti scripts/theme-check.ts",
     "theme:new": "jiti scripts/theme-new.ts",
+    "theme:pack": "jiti scripts/theme-pack.ts",
     "tokens": "node scripts/build-tokens.mjs",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxi typecheck && vue-tsc -p test --noEmit",
