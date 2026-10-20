@@ -1,6 +1,6 @@
 # The theme store and the install step
 
-How a theme becomes something a site can serve without a build. Explanation and reference for contributors and theme creators; the decision is [ADR 0009](../adr/0009-theme-delivery-at-runtime.md) (still `Proposed`). This page covers what `installTheme()` and `installIsolated()` do today (#400). Boot recompilation and the server and CLI callers come with the next parts.
+How a theme becomes something a site can serve without a build. Explanation and reference for contributors and theme creators; the decision is [ADR 0009](../adr/0009-theme-delivery-at-runtime.md) (still `Proposed`). This page covers what `installTheme()` and `installIsolated()` do today (#400). The server and CLI callers come with the next parts.
 
 ## What `installTheme()` does
 
@@ -57,3 +57,9 @@ The `url()` of the theme's CSS is rewritten on the parsed tree to `/_t/<digest>/
 - The store is writable only by the installer's uid. A shared store on a network file system needs `O_EXCL` to work there; that is not verified yet.
 
 Errors are `InstallError` with a `rule` (`pin`, `package`, `identity`, `code`, `validation`, `messages`, `css`, `url`, `assets`, `compile`, `store`, `busy`, `integrity`); the message names the theme, the version and the digest and carries no file system path.
+
+## Configuration, boot and cleanup
+
+- `readInstallConfig(env)` reads `MICELIO_THEME_STORE` (an absolute path) and `MICELIO_THEME_INSTALL` (on by default). Unset store: no deployment store, nothing is installed, and the result carries the one warning to log. An invalid value throws a message that names the variable, so the boot stops.
+- `recompileStored(pins, options, limits, verify)` compiles the given pins again for this core build from their kept packages, one after another, in the isolated process. It makes no network request, re-verifies the kept attestation when `verify` is given, and reports `current`, `recompiled`, `missing` or `failed` per pin without throwing.
+- `pruneStore(storeDir, compileKey, keep)` removes entries compiled for other core builds and the packages no remaining entry uses, except those of the pins in `keep`.
