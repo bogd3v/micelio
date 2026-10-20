@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { contractProblems, themeIdProblem, themeJsonSchema } from '../modules/theme/contract'
-import { packProblems } from '../modules/theme/pack'
+import { packProblems } from '../modules/theme/registry/pack'
 
 const FIXTURES = join(process.cwd(), 'test/fixtures/themes')
 

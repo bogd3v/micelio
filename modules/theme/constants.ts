@@ -53,8 +53,7 @@ export const SLOT_API_GROUPS: readonly SlotApiGroup[] = [
 ]
 
 /**
- * The SPDX license ids a theme's `license` may name besides `LicenseRef-*`: those the licence check of production dependencies allows
- * (`scripts/check-licenses.mjs`) plus other common ones a theme author can need, since a theme is not bound by the AGPL (ADR 0007).
+ * Common SPDX license ids a theme's `license` may name besides `LicenseRef-*`; a theme is not bound by the AGPL (ADR 0007).
  *
  * @remarks
  * One id, not an expression. Another license, including a proprietary one, is `LicenseRef-<name>`.

@@ -1,10 +1,9 @@
+import type { ThemeManifest } from '../types'
+
 // What a theme must declare to be packed (#309); the packer and the unpacker of the registry reuse it.
 
 /** The fields of `theme.json` that packing needs, all optional for a theme that stays local. */
-export interface PackMetadata {
-  version?: string
-  license?: string
-}
+export type PackMetadata = Pick<ThemeManifest, 'version' | 'license'>
 
 /**
  * Why a theme cannot be packed yet, one line each: a missing `version` or `license`.

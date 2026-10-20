@@ -41,7 +41,6 @@ const VERSION_MAX_LENGTH = 128
 /** Strict semver 2.0.0 without build metadata (`+...`): `1.2.3` or `1.2.3-rc.1`. */
 const THEME_VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?$/
 const LICENSE_REF = /^LicenseRef-[A-Za-z0-9.-]+$/
-const SPDX_IDS: readonly string[] = SPDX_LICENSE_IDS
 const MODE_ID = /^[\w-]+$/
 const NAME = /^[\w-]+$/
 
@@ -157,10 +156,11 @@ export const ThemeSchema = z.strictObject({
     .regex(THEME_VERSION, { error: iss => `${JSON.stringify(iss.input)} is not a semantic version without build metadata (1.2.3 or 1.2.3-rc.1)` })
     .optional()
     .describe('The theme\'s own semantic version, without build metadata. Optional for a local theme, required to pack it.'),
-  license: z.string({ error: 'must be a string such as "MIT" or "LicenseRef-Acme-1.0"' })
-    .refine(value => LICENSE_REF.test(value) || SPDX_IDS.includes(value), {
-      error: iss => `${JSON.stringify(iss.input)} is not a known SPDX license id or a LicenseRef-<name> (letters, digits, "." and "-"); a proprietary theme uses LicenseRef-<name>`,
-    })
+  license: z.union([z.enum(SPDX_LICENSE_IDS), z.string().regex(LICENSE_REF)], {
+    error: iss => typeof iss.input === 'string'
+      ? `${JSON.stringify(iss.input)} is not a known SPDX license id or a LicenseRef-<name> (letters, digits, "." and "-"); a proprietary theme uses LicenseRef-<name>`
+      : 'must be a string such as "MIT" or "LicenseRef-Acme-1.0"',
+  })
     .optional()
     .describe('An SPDX license id (one id, not an expression) or LicenseRef-<name> for a proprietary theme. Optional for a local theme, required to pack it.'),
   modes: Modes,
