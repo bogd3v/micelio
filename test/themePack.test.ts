@@ -190,8 +190,9 @@ describe('reading a file of a theme', () => {
     const dir = folder()
     writeFileSync(join(dir, 'a.css'), 'one')
     const { dev, ino } = lstatSync(join(dir, 'a.css'), { bigint: true })
-    rmSync(join(dir, 'a.css'))
+    // The new file exists while the listed one does, so their inodes differ: after a remove, a file system may hand the freed inode out again.
     writeFileSync(join(dir, 'other'), 'two')
+    expect(lstatSync(join(dir, 'other'), { bigint: true }).ino).not.toBe(ino)
     renameSync(join(dir, 'other'), join(dir, 'a.css'))
     expect(readPackageFile(dir, 'a.css', { dev, ino })).toEqual({ problem: expect.stringMatching(/a\.css: is not the file that was listed/) })
   })
