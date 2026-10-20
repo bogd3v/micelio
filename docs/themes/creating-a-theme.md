@@ -56,7 +56,9 @@ themes/my-theme/
   fonts/              woff2 files and license texts
   images/             images the CSS and slots use
   i18n/               <locale>.json, messages under the theme.* namespace
-  slots/              <SlotName>.vue and any number of *.css
+  slots/              <SlotName>.vue and any number of *.css and *.ts
+  templates/          optional, makes the package a code package
+  README.md, LICENSE  optional
 ```
 
 ## 3. `theme.json`
@@ -137,7 +139,7 @@ Primitives may be used in the theme's own CSS and slots, never in the core.
 
 - `version` is the theme's own semantic version (not the contract's): `MAJOR.MINOR.PATCH` with an optional pre-release (`1.0.0-rc.1`), no leading zeros, no build metadata (`+…`), at most 128 characters. Raise it when you publish a change.
 - `license` is one [SPDX license id](https://spdx.org/licenses/) such as `MIT`, `MIT-0`, `Apache-2.0`, `CC-BY-SA-4.0` or `AGPL-3.0-only` (the list the validator knows is `SPDX_LICENSE_IDS` in `modules/theme/constants.ts`), not an expression like `MIT OR Apache-2.0`. A proprietary or custom license is `LicenseRef-<name>` with letters, digits, `.` and `-` (`LicenseRef-Acme-1.0`); the [theme exception](../../LICENSE-EXCEPTION.md) allows it for a theme that keeps to the contract. Say the same in the theme's `LICENSE` file.
-- Both are optional while the theme is only installed in your site, but a malformed value fails the build. Packing a theme (`npm run theme:pack`, arriving with #309) needs both, and says which one is missing. `npm run theme:new` copies the starter's `0.1.0` and `MIT-0`: change them to your own.
+- Both are optional while the theme is only installed in your site, but a malformed value fails the build. Packing a theme (`npm run theme:pack`, below) needs both, and says which one is missing. `npm run theme:new` copies the starter's `0.1.0` and `MIT-0`: change them to your own.
 
 ### Layout
 
@@ -286,6 +288,22 @@ low-contrast: 4 error(s)
 ```
 
 Each contrast error names the mode, role, surface, measured ratio, required ratio and the nearest value of the role that passes.
+
+### Pack it
+
+```bash
+npm run theme:pack -- my-theme
+```
+
+
+writes `.micelio/packages/my-theme-<version>.tgz` and `my-theme-<version>.manifest.json`, after the checks above and the build's validator pass and `version` and `license` are set; a theme that fails does not pack, and every reason is listed. The `.tgz` is the package: its sha256 (printed by the command) is what a registry pins and what an install verifies. The manifest (id, name, version, contract declared and used, license, `code`, every file with its size and sha256, the `theme:check` summary) is informative and never replaces the digest.
+
+- **What goes in.** Only `theme.json`, `theme.css`, `sections.css`, `fonts.css`, `font-fallbacks.css`, `fonts/*.woff2` and `fonts/*.txt`, `images/**` (png, jpg, webp, avif, gif, svg), `i18n/*.json`, `slots/*.vue`, `*.css` and `*.ts`, `templates/*`, `README.md` and `LICENSE`. Any other file fails the pack and is named. No symlinks, hard links or hidden files (`.DS_Store`, `.git`); file modes on disk are ignored. Image extensions match in any letter case, as in the build; every other extension and every folder name must be exact lowercase (`fonts/`, `Fonts/a.woff2` fails).
+- **Names.** Path segments use `A-Z a-z 0-9 . _ -`, do not start or end with a dot and are not Windows device names (`con`, `nul`, `com1`...), at most 8 levels and 200 bytes.
+- **Limits.** At most 200 files, 1 MiB per file, 4 MiB unpacked, 2 MiB packed, `theme.json` under 256 KiB. Fonts must be woff2 and images real png, jpg, webp, avif or gif files; an SVG must be plain UTF-8 text made only of shapes, groups, gradients, clips, masks and text, with no script, style element, animation or embedded content, and every reference (`href`, `xlink:href`, `url()`) a `#fragment` of the same file; export from your editor as a plain SVG if the pack names an element or attribute.
+- **`code`.** `true` when the package has any file in `slots/` or `templates/`, or a `.vue`, `.ts`, `.js`, `.mjs`, `.cjs`, `.wasm`... file anywhere, in any letter case. It is decided from the files, never from the manifest: only a package with `code: false` can be activated at runtime (ADR 0009). Bogotá and the starter have slots, so they are code packages.
+- **Licenses.** `license` covers the package. A file under another license (a font, a photo) must say so inside the package: keep the font's license text in `fonts/` and list the others in `README.md` (see `themes/bogota/README.md`).
+- **Same bytes.** Entries are sorted and the owner, time and mode are fixed, the gzip has no timestamp: packing twice on the same Node gives the same digest. A different Node or zlib may compress to other bytes; the digest of record is that of the `.tgz` you publish.
 
 ## 8. Design against the specimen
 

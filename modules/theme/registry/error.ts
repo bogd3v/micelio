@@ -13,3 +13,14 @@ export class UnpackError extends Error {
     this.path = path
   }
 }
+
+/** A theme cannot be packed; `problems` lists every reason, one line each. */
+export class PackError extends Error {
+  readonly problems: string[]
+
+  constructor(id: string, problems: string[]) {
+    super(`Theme "${id}" cannot be packed:\n${problems.map(problem => `  ${problem}`).join('\n')}`)
+    this.name = 'PackError'
+    this.problems = problems
+  }
+}

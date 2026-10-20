@@ -1,6 +1,7 @@
 .git
 .nuxt
 .output
+.micelio
 .data
 dist
 node_modules
