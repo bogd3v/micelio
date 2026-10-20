@@ -23,6 +23,8 @@ Start from `.env.example` in the repository. Nuxt reads only the `NUXT_*` names 
 | `NUXT_PUBLIC_SITE_MODE` | No | `dynamic` | Build time | `dynamic`, `static` or `landing` ([ADR 0006](../adr/0006-site-modes.md)). The static and landing modes are prerendered and turn off comments, accounts, drafts and the fediverse. A runtime value that differs from the build value stops the server. |
 | `NUXT_PUBLIC_THEME` | No | `bogota` | Build time | The id of the installed theme in `themes/<id>/` to use. An id that is not installed stops the build. See [How to create a theme](../themes/creating-a-theme.md). |
 | `MICELIO_THEME_DIRS` | No | empty | Build time | Extra directories where themes are looked up. Not an `NUXT_` name: the build reads it directly. |
+| `MICELIO_THEME_REGISTRY` | No | `ghcr.io/bogd3v/micelio-themes` | Build time | `host[:port]/path` of the registry `npm run theme:add` and `theme:pull` read. Not an `NUXT_` name: the commands read it directly. See [Install themes from the registry](themes.md). |
+| `MICELIO_CACHE_DIR` | No | `~/.cache/micelio` | Build time | Directory of the cache of pulled theme packages. |
 | `NUXT_PUBLIC_SOURCE_URL` | No | the upstream repository | Runtime | Link to the source code in the footer, required by the AGPL when you run a modified copy ([ADR 0007](../adr/0007-license.md)). A value that is not an `http(s)` URL falls back to the upstream repository. |
 | `NUXT_MEDIA_URL` | No | empty | Runtime | Host of the Strapi uploads when they are served from another host, added to the images Content Security Policy. Empty: only the site and Strapi load. |
 

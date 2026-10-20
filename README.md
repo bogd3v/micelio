@@ -43,6 +43,7 @@ You need Node.js 22.12 or later and a running [micelio-cms](https://github.com/b
 git clone https://github.com/bogd3v/micelio.git
 cd micelio
 npm install
+npm run theme:pull     # installs the themes pinned in themes.lock.json (none by default)
 cp .env.example .env   # set NUXT_PUBLIC_STRAPI_URL, NUXT_STRAPI_API_TOKEN and NUXT_PUBLIC_SITE_URL
 npm run dev            # http://localhost:3000
 ```
