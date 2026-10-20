@@ -1,6 +1,6 @@
 # ADR-0009: Theme delivery at runtime, the theme store
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-19
 **Deciders:** Micelio maintainer
 **Amends:** [ADR-0008](0008-theme-registry.md) (decisions 1, 3, 6, 7 and 10, option G, Trade-offs, Out of scope), [ADR-0005](0005-theme-contract.md) (sections 2, 3, 4 and 8) and [ADR-0004](0004-hash-based-csp.md) (theme assets)
@@ -218,13 +218,43 @@ The amended records are not rewritten; each gets a pointer amendment.
 
 **Amendment (2026-10-20, #310): the layout of the registry as the client reads it.** Open question 5 is answered as recommended: the index is signed by its own workflow identity. The artifacts of `ghcr.io/bogd3v/micelio-themes` are plain OCI image manifests with one layer: a package is `<id>:<version>` (layer `application/vnd.micelio.theme.package.v1.tar+gzip`, the `.tgz`, so the layer digest is the package digest of the pin); the index is `index:v1` (layer `application/vnd.micelio.theme.index.v1+json`; `v1` is the format version); the attestation of each is a manifest at the same name with the tag suffixed `.att` (`<version>.att`, `v1.att`) whose one layer is a Sigstore bundle (`application/vnd.dev.sigstore.bundle.v0.3+json`). A bundle is self-authenticating, so its tag being mutable can only deny service, never forge trust, and the registry needs no Referrers API (GHCR does not offer it everywhere). The signed statement is a SLSA provenance (`https://slsa.dev/provenance/…`, as `actions/attest-build-provenance` writes) whose subject digest is the sha256 of the `.tgz` or of the index document. The index document is `{ "version": 1, "themes": { "<id>": { "versions": { "<version>": { "digest", "contract", "license", "tier", "distribution", "status", "code", "report"? } } } } }` (`modules/theme/registry/registry-index.ts`; #312 writes it). `index` is therefore not a usable theme id. The signer identities are constants of the core (`DEFAULT_SIGNER` in `modules/theme/registry/constants.ts`): issuer `https://token.actions.githubusercontent.com`, packages `https://github.com/bogd3v/micelio-themes/.github/workflows/publish.yml@refs/heads/main`, index `https://github.com/bogd3v/micelio-themes/.github/workflows/sign-index.yml@refs/heads/main`. `MICELIO_THEME_REGISTRY_IDENTITY` is `issuer=<URL>,package=<URL>[,index=<URL>]`. Verification uses `@sigstore/verify`, `@sigstore/bundle` and `@sigstore/protobuf-specs` (Apache-2.0, exact versions) with a trusted root committed in the repository. #312 must publish to this layout, and #313 and #400 build on it.
 
+**Amendment (2026-10-20, #399, accepted): names and limits as implemented by #400.** The record is accepted as written, with these corrections to its proposals; the code is in `modules/theme/install/` and `docs/themes/theme-store.md` describes it.
+
+- `MICELIO_THEME_STORE` and `MICELIO_THEME_INSTALL` are no longer proposed: `readInstallConfig()` reads them. The store is an absolute path (a relative one stops the boot) and the switch takes `true`, `false`, `1` or `0` (any other value stops the boot). With no store, nothing is installed whatever the switch says, and one warning is logged at boot.
+- The digest of a compiled entry is 64 lowercase hex digits without the `sha256:` prefix, so it is a clean URL segment and folder name. The store is `<root>/v1/entries/<digest>/`, with the kept packages in `<root>/v1/packages/<package hex>/` and staging in `<root>/v1/.tmp/`.
+- A compiled entry holds at most 4 MiB of files, not counting the gzip and brotli copies; a loader keeps at most twice that in memory. The compile key covers the core build the caller names, the compiler version, the versions and targets of Lightning CSS and the message compiler, and the contract.
+- The install process has an empty environment, a 256 MiB heap and a 60 s `SIGKILL`, one install at a time. `lightningcss` and `@intlify/message-compiler` are production dependencies; `@vue/compiler-sfc` is loaded only to check a slot.
+- Boot recompilation is `recompileStored()`: it uses only the kept, re-verified package and never reaches a registry. `pruneStore()` removes entries of other core builds and unused packages (open question 3 stays open for the command and the numbers).
+- Left to later issues: the callers at boot and the built worker (#403), the `/_t/` route, the runtime data, the CSS split and dev hot reload (#401).
+
+**Amendment (2026-10-20, #399, accepted): answers to the open questions.** The maintainer answered the five questions that were open, all as recommended; the implementing issues build on these answers.
+
+1. **Variant CSS** (#402): the core's CSS for the layout variants the theme chose is compiled into the theme's stylesheet at install, in `myc.layout` and `myc.pages` after the core rules of each layer as today. A page makes one theme request and loads only its variants.
+2. **Images through IPX** (#402): the built-in store joins `image.dirs` for code themes (Bogotá's `ThemeHero`). The images of a data-only theme are plain files served from `/_t/<digest>/images/`; they do not go through IPX.
+3. **Store cleanup and limits** (#403): the active, last good and locked themes are never removed, and anything else (compile keys no image uses included) only by a command; a request never evicts. Measured on the compiled entries of `bogota` (863,236 bytes in 30 files, 904,522 with the gzip and brotli copies) and `starter` (53,348 bytes in 13 files), the numbers are:
+
+   | Limit | Value |
+   | --- | --- |
+   | Entries in the deployment store | 50 |
+   | Total bytes of entries and kept packages | 256 MiB |
+   | Installs per hour (per instance) | 6 |
+   | Backoff after a failed pin | 1 minute, doubling to a ceiling of 1 hour |
+   | Download timeout (total, one package) | 60 seconds |
+
+   Headroom is large on purpose (a theme is under 1 MiB in practice, the cap per entry is 4 MiB), and a limit is raised by a change to the constants with its reason, like the caps of ADR-0008.
+4. **Tiers a server installs** (#403): a variable `MICELIO_THEME_TIERS`, a comma-separated list of tiers of ADR-0008 decision 7, default `official,verified`. A package of any other tier is refused at install, with a reason that names the tier. An unknown tier name in the variable stops the boot. A hosted platform that installs centrally decides its own tiers.
+5. Already answered by the amendment of #310.
+6. **Digests from before a switch** (#403, #401): `/_t/` also serves the site's previous two digests for 3,660 seconds (the longest ISR window plus the site-settings cache) after a switch, then drops them from the served set.
+
+`MICELIO_THEME_TIERS` joins the operator interface of section 9 (optional, with that default).
+
 ## Open questions
 
 Each has a recommendation; the pull request that implements it records the answer as an amendment here.
 
-1. **Where variant CSS lands.** *Recommendation:* the core's CSS for the variants the theme chose is compiled into the theme's stylesheet at install, in `myc.layout` and `myc.pages` after the core rules of each layer as today, so a page still makes one theme request and loads only its variants (#402).
-2. **Theme images through IPX.** `image.dirs` is fixed at build. *Recommendation:* the built-in store joins `image.dirs` for code themes (Bogotá's `ThemeHero`); the images of a data-only theme are served as files from `/_t/`.
-3. **Store cleanup and the values of the limits.** Section 3 fixes that the store has caps, a backoff and an hourly rate, and that a request never evicts. *Recommendation:* the active, last good and locked themes are never removed, and anything else (compile keys no image uses included) only by a command; the numbers (entries, total bytes, installs per hour, the backoff ceiling, the download timeout) are set in #403 from Bogotá's measured size, with headroom, like the caps of ADR-0008.
-4. **Which tiers a server installs** (proposed, not yet confirmed by the user). A server install puts a third party's data-only theme on a site. *Recommendation:* a `MICELIO_THEME_TIERS` variable, default `official,verified` (the tiers of ADR-0008 decision 7, matching what hosted builds accept), and a package of any other tier is refused at install.
+1. **Where variant CSS lands.** *Recommendation:* the core's CSS for the variants the theme chose is compiled into the theme's stylesheet at install, in `myc.layout` and `myc.pages` after the core rules of each layer as today, so a page still makes one theme request and loads only its variants (#402). **Answered (2026-10-20, #399): as recommended; see the amendment.**
+2. **Theme images through IPX.** `image.dirs` is fixed at build. *Recommendation:* the built-in store joins `image.dirs` for code themes (Bogotá's `ThemeHero`); the images of a data-only theme are served as files from `/_t/`. **Answered (2026-10-20, #399): as recommended; see the amendment.**
+3. **Store cleanup and the values of the limits.** Section 3 fixes that the store has caps, a backoff and an hourly rate, and that a request never evicts. *Recommendation:* the active, last good and locked themes are never removed, and anything else (compile keys no image uses included) only by a command; the numbers (entries, total bytes, installs per hour, the backoff ceiling, the download timeout) are set in #403 from Bogotá's measured size, with headroom, like the caps of ADR-0008. **Answered (2026-10-20, #399): as recommended, with the numbers of the amendment.**
+4. **Which tiers a server installs** (proposed, not yet confirmed by the user). A server install puts a third party's data-only theme on a site. *Recommendation:* a `MICELIO_THEME_TIERS` variable, default `official,verified` (the tiers of ADR-0008 decision 7, matching what hosted builds accept), and a package of any other tier is refused at install. **Answered (2026-10-20, #399): as recommended; see the amendment.**
 5. **A separate identity for the index.** As written, the publish workflow would sign both the packages and the index. *Recommendation:* sign the index with an identity of its own (a separate workflow in a protected environment), so a compromised publish workflow cannot also vouch for the index. **Answered (2026-10-20, #310): as recommended; see the amendment.**
-6. **Digests from before a switch.** HTML cached before a switch (ISR, an open tab) asks for a digest that is no longer active, and section 8 answers 404. *Recommendation:* also serve the site's previous two digests for the longest ISR window plus the site-settings cache (3600 s + 60 s), then drop them from the served set.
+6. **Digests from before a switch.** HTML cached before a switch (ISR, an open tab) asks for a digest that is no longer active, and section 8 answers 404. *Recommendation:* also serve the site's previous two digests for the longest ISR window plus the site-settings cache (3600 s + 60 s), then drop them from the served set. **Answered (2026-10-20, #399): as recommended; see the amendment.**
