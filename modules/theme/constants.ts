@@ -64,3 +64,6 @@ export const SPDX_LICENSE_IDS = [
   'AGPL-3.0-only', 'AGPL-3.0-or-later', 'GPL-2.0-only', 'GPL-2.0-or-later', 'GPL-3.0-only', 'GPL-3.0-or-later',
   'LGPL-2.1-only', 'LGPL-2.1-or-later', 'LGPL-3.0-only', 'LGPL-3.0-or-later', 'EUPL-1.2',
 ] as const
+
+/** Files copied from a theme's `images/`, and the image types a package may hold; anything else is skipped with a warning. */
+export const IMAGE_FILE = /\.(png|jpe?g|webp|avif|gif|svg)$/i
