@@ -133,8 +133,10 @@ const contractError = (iss: { input?: unknown }): string => `declares contract $
 /** `N` (meaning `N.0`) or `"N.M"`, for the major this build implements; another major fails with the migration note. */
 const Contract = z.union([
   z.literal(CONTRACT_VERSION.major, { error: contractError }),
-  z.string({ error: contractError }).regex(new RegExp(`^${CONTRACT_VERSION.major}\\.\\d+$`), { error: contractError }),
-], { error: contractError }).describe(`The contract version the theme needs: ${CONTRACT_VERSION.major} (meaning ${CONTRACT_VERSION.major}.0) or "${CONTRACT_VERSION.major}.M". A minor above the core's fails, and so does one below what the theme uses (docs/themes/contract-changelog.md).`)
+  z.string({ error: contractError }).regex(new RegExp(`^${CONTRACT_VERSION.major}\\.(0|[1-9]\\d*)$`), { error: contractError }),
+], { error: contractError }).refine(value => (parseContractVersion(value)?.minor ?? 0) <= CONTRACT_VERSION.minor, {
+  error: iss => `needs contract ${String(iss.input)}; this core implements ${formatContractVersion(CONTRACT_VERSION)} (what each minor added: docs/themes/contract-changelog.md)`,
+}).describe(`The contract version the theme needs: ${CONTRACT_VERSION.major} (meaning ${CONTRACT_VERSION.major}.0) or "${CONTRACT_VERSION.major}.M". A minor above the core's fails, and so does one below what the theme uses (docs/themes/contract-changelog.md).`)
 
 /** The current contract as zod. Cross-field rules (roles per mode) are in the refinement at the end. */
 export const ThemeSchema = z.strictObject({
@@ -159,9 +161,6 @@ export const ThemeSchema = z.strictObject({
 }).superRefine((theme, ctx) => {
   const problem = (message: string): void => ctx.addIssue({ code: 'custom', message })
   const modeIds = theme.modes.map(mode => mode.id)
-
-  const declared = parseContractVersion(theme.contract)
-  if (declared?.major === CONTRACT_VERSION.major && declared.minor > CONTRACT_VERSION.minor) problem(`needs contract ${formatContractVersion(declared)}; this core implements ${formatContractVersion(CONTRACT_VERSION)}`)
 
   for (const group of [...THEMED_GROUPS, ...FLAT_GROUPS]) {
     const tokens = theme[group].tokens

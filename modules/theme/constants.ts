@@ -17,7 +17,8 @@ export const CONTRACT_VERSION: ContractVersion = { major: 2, minor: 0 }
  * @remarks
  * Empty while the core implements 2.0. Adding to the contract appends a row here with the new minor, raises `CONTRACT_VERSION.minor`
  * and adds the section to `docs/themes/contract-changelog.md`. Names: a slot as in `SLOT_NAMES`, a layout variant as `region:variant`,
- * a role as in the contract, a hook as its class (`myc-…`) or attribute (`data-…`).
+ * a role as in the contract, a hook as its class (`myc-…`) or attribute (`data-…`). Limits: a hook counts only when a selector of the
+ * theme's CSS uses it (not slot-template markup), and a type-scale role cannot be an addition yet.
  */
 export const CONTRACT_ADDITIONS: readonly ContractAddition[] = []
 

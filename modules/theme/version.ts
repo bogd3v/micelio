@@ -6,8 +6,8 @@ import type { ContractAddition, ContractUsage, ContractVersion, Hooks, Installed
 
 // ADR 0008, decision 2: a theme declares the contract minor it needs, and the validator computes the lowest minor its content allows
 
-const VERSION = /^(\d+)\.(\d+)$/
-const COLOR_GROUPS = ['color', 'shadow', 'spacing', 'radius', 'size', 'motion'] as const
+const VERSION = /^(\d+)\.(0|[1-9]\d*)$/
+const ROLE_GROUPS = ['color', 'shadow', 'spacing', 'radius', 'size', 'motion'] as const
 
 /** Reads `N` (meaning `N.0`) or `"N.M"`; `null` for anything else. */
 export function parseContractVersion(value: unknown): ContractVersion | null {
@@ -35,7 +35,7 @@ function usedNames(theme: InstalledTheme, hooks: ReadonlySet<string>): Record<Co
     if (variant) variants.add(`${region}:${variant}`)
   }
   const roles = new Set<string>()
-  for (const group of COLOR_GROUPS) for (const token of manifest[group]?.tokens ?? []) roles.add(token.name)
+  for (const group of ROLE_GROUPS) for (const token of manifest[group]?.tokens ?? []) roles.add(token.name)
   return { 'slot': slots, 'layout variant': variants, 'role': roles, 'hook': new Set(hooks) }
 }
 
@@ -57,7 +57,7 @@ function usedAdditions(theme: InstalledTheme, hooks: Hooks, additions: readonly 
  * The contract a valid theme declares, the lowest it can declare for what it uses, and what the core implements.
  *
  * @remarks
- * `npm run theme:check --json` reports it as `contract.declared`, `contract.used` and `contract.core`.
+ * `npm run theme:check -- --json` reports it as `contract.declared`, `contract.used` and `contract.core`.
  *
  * @param theme - A theme that passed `contractProblems`.
  * @param additions - What the minors added; the core's own list by default.

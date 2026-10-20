@@ -13,7 +13,7 @@
         },
         {
           "type": "string",
-          "pattern": "^2\\.\\d+$"
+          "pattern": "^2\\.(0|[1-9]\\d*)$"
         }
       ],
       "description": "The contract version the theme needs: 2 (meaning 2.0) or \"2.M\". A minor above the core's fails, and so does one below what the theme uses (docs/themes/contract-changelog.md)."

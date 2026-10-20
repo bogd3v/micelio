@@ -5,7 +5,7 @@ description: Create, adapt or restyle a Micelio theme (themes/<id>/ - roles, mod
 
 # Create a theme
 
-You do not need to read `app/`. A theme is `themes/<id>/`: `theme.json` (roles per mode, type, layout variants), optional `theme.css`, `fonts.css`, `slots/`, `i18n/`, `images/`, validated against contract v2 (ADR 0005). Declare `"contract": "2.0"`, the lowest minor that covers what the theme uses (`docs/themes/contract-changelog.md`); `theme:check --json` reports `contract.declared`, `used` and `core`. Guide: `docs/themes/creating-a-theme.md`. Reference generated from the contract: `docs/themes/reference/`.
+You do not need to read `app/`. A theme is `themes/<id>/`: `theme.json` (roles per mode, type, layout variants), optional `theme.css`, `fonts.css`, `slots/`, `i18n/`, `images/`, validated against contract v2 (ADR 0005). Declare `"contract": "2.0"`, the lowest minor that covers what the theme uses (`docs/themes/contract-changelog.md`); `npm run theme:check -- <id> --json` reports `contract.declared`, `used` and `core`. Guide: `docs/themes/creating-a-theme.md`. Reference generated from the contract: `docs/themes/reference/`.
 
 Use it to make a theme or change how one looks. Not for core components, pages or global CSS (that is `ui-component`), nor for the contract itself (`architect`, ADR 0005).
 
