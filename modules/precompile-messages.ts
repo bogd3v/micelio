@@ -1,12 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { resolve, sep } from 'node:path'
-import { baseCompile } from '@intlify/message-compiler'
 import { defineNuxtModule } from 'nuxt/kit'
+import { compileMessages } from './theme/install/messages'
 import { themeRoots } from './theme/themes'
-
-interface Messages {
-  [key: string]: string | Messages
-}
 
 interface ResolveContext {
   resolve: (source: string, importer?: string, options?: { skipSelf: boolean }) => Promise<{ id: string } | null>
@@ -25,39 +21,6 @@ const VIRTUAL_PREFIX = '\0micelio-messages:'
 /** True for a .json file inside one of the directories (not inside a sibling like `themes-foo/`). */
 export function isMessageFile(path: string, dirs: string[]): boolean {
   return path.endsWith('.json') && dirs.some(dir => path.startsWith(dir + sep))
-}
-
-/**
- * Compiles every message of a locale to the AST format vue-i18n reads without its runtime compiler.
- *
- * @remarks
- * Keeps the nesting of `messages`. Called at build time by the module's `load` hook, for each locale file imported. A message with a
- * syntax error throws, and the error names its dotted key.
- *
- * @param messages - The messages of one locale file, as parsed from its JSON.
- * @param path - Dotted prefix of the keys of `messages`, empty at the top of a file; it only names the key in an error.
- * @throws `Error` for the first message that does not compile.
- */
-export function compileMessages(messages: Messages, path = ''): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(messages).map(([key, value]) => [
-      key,
-      typeof value === 'string'
-        ? compileMessage(value, `${path}${key}`)
-        : compileMessages(value, `${path}${key}.`),
-    ]),
-  )
-}
-
-function compileMessage(message: string, key: string): unknown {
-  return baseCompile(message, {
-    jit: true,
-    minify: true,
-    location: false,
-    onError(error: Error): never {
-      throw new Error(`i18n message "${key}": ${error.message}`)
-    },
-  }).ast
 }
 
 /**

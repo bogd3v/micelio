@@ -3,6 +3,7 @@ import { Locale } from './app/interfaces/locale'
 import { SECURITY_HEADERS } from './app/helpers/securityHeaders'
 import { isStaticMode, parseSiteMode } from './app/helpers/siteMode'
 import { UPSTREAM_SOURCE_URL } from './app/helpers/source'
+import { CSS_TARGETS } from './modules/theme/install/constants'
 
 const privatePageHeaders = {
   'cache-control': 'private, no-store',
@@ -12,14 +13,7 @@ const privatePageHeaders = {
 // The pages that open from an emailed link with a one-use secret in the query (a reset code, a newsletter token): no Referer leaves them
 const tokenPageHeaders = { ...privatePageHeaders, 'referrer-policy': 'no-referrer' }
 
-// CSS browser targets, shared by the Lightning CSS transformer and the minifier (build.cssTarget)
-const CSS_TARGETS: Record<string, [major: number, minor?: number]> = {
-  chrome: [111],
-  edge: [111],
-  firefox: [114],
-  safari: [16, 4],
-  ios_saf: [16, 4],
-}
+// CSS browser targets, shared by the Lightning CSS transformer, the minifier (build.cssTarget) and the theme compiler (modules/theme/install/)
 // Lightning CSS encodes a version as (major << 16) | (minor << 8)
 const LIGHTNINGCSS_TARGETS = Object.fromEntries(
   Object.entries(CSS_TARGETS).map(([browser, [major, minor = 0]]) => [browser, (major << 16) | (minor << 8)]),

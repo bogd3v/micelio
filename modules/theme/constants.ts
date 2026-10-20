@@ -1,4 +1,4 @@
-import type { ContractAddition, ContractVersion } from './types'
+import type { ContractAddition, ContractVersion, LayoutRegion } from './types'
 
 /**
  * The theme contract version this build implements: a `theme.json` declares the same `major` and a `minor` no higher than this one.
@@ -81,3 +81,21 @@ export const THEME_ID = /^(?=.{1,64}$)[a-z0-9]+(-[a-z0-9]+)*$/
 export const VERSION_MAX_LENGTH = 128
 /** Strict semver 2.0.0 without build metadata (`+...`): `1.2.3` or `1.2.3-rc.1`. */
 export const THEME_VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?$/
+
+/** Where the theme's images are served: `/theme/images/<file>` (docs/adr/0005-theme-contract.md). */
+export const IMAGES_URL = 'theme/images'
+
+/** Variant each region renders when the theme does not name one. */
+export const DEFAULT_LAYOUT: Record<LayoutRegion, string> = {
+  header: 'bar',
+  home: 'showcase',
+  postList: 'grid',
+  article: 'aside',
+  footer: 'columns',
+}
+
+/** CSS functions whose string arguments are URLs, so a theme's stylesheet is checked and rewritten for them like for `url()`. */
+export const URL_FUNCTIONS: ReadonlySet<string> = new Set(['image-set', '-webkit-image-set', 'src', 'image', 'cross-fade', '-webkit-cross-fade'])
+
+/** Files served from a theme's `fonts/`: fonts and their license texts; anything else is skipped with a warning. Not `FONT_FILE` of the contract, which names the font files a `theme.json` may declare. */
+export const FONT_ASSET_FILE = /\.(woff2?|txt)$/i

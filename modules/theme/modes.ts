@@ -1,6 +1,5 @@
 import { buildInitScript } from './init-script.mjs'
-import type { ThemeContext } from './types'
-import type { ModeDefinition } from './data'
+import type { ModeDefinition, ThemeContext } from './types'
 
 /**
  * Pressed and idle look of the mode switch for each mode, before hydration sets aria-pressed.

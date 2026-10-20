@@ -4,7 +4,8 @@ import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
 import { DISPLAY_FONT_RULE, displayFontId, displayFontOverride, insertAfterStylesheet, themePreloadLinks } from '../server/utils/displayFonts'
-import { DISPLAY_FONTS_DIR, readDisplayFontAssets, stackFamily, systemStack } from '../modules/theme/display-fonts'
+import { DISPLAY_FONTS_DIR, readDisplayFontAssets } from '../modules/theme/display-fonts'
+import { stackFamily, systemStack, themeDisplay } from '../modules/theme/display-family'
 import { DISPLAY_FONTS } from '../app/interfaces/site'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -94,6 +95,18 @@ describe('stack helpers', () => {
     expect(STARTER.display).toBe('"Iowan Old Style", "Palatino Linotype", Georgia, serif')
     expect(STARTER.sans).toBe('system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif')
     expect(stackFamily('"Fraunces", serif')).toBe('Fraunces')
+  })
+})
+
+describe('themeDisplay', () => {
+  it('reads the display family, its file and the system stacks from a manifest alone', () => {
+    const fonts = [{ family: 'Fraunces', file: 'fraunces.woff2', preload: true }]
+    const type = { families: { display: '"Fraunces", Georgia, serif', sans: '"Fraunces", system-ui, sans-serif' } }
+    expect(themeDisplay({ fonts, type })).toEqual({ family: 'Fraunces', file: 'fraunces.woff2', sharedWithSans: true, display: 'Georgia, serif', sans: 'system-ui, sans-serif' })
+  })
+
+  it('answers empty values for a theme with no fonts and no families', () => {
+    expect(themeDisplay({})).toEqual({ family: '', file: undefined, sharedWithSans: true, display: '', sans: '' })
   })
 })
 

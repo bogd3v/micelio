@@ -14,6 +14,13 @@ export interface SlotOptions {
   island?: boolean
 }
 
+/** A mode as the theme declares it (the module's own type; the app's `ThemeMode` is a mode id). */
+export interface ModeDefinition {
+  id: string
+  scheme: 'dark' | 'light'
+  name?: string
+}
+
 /** A font file a theme ships and the family it provides. */
 export interface ThemeFont {
   family: string
