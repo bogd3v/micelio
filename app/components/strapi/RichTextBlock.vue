@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import mermaidOverrides from '#micelio/theme-mermaid'
 import type { StrapiRichText } from '~/interfaces'
 import { MERMAID_ELEMENT } from '~/islands/constants'
 import type { MermaidConfig } from '~/helpers/mermaid'
@@ -9,6 +8,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const { mermaid: mermaidOverrides } = useThemeData()
 
 const root = ref<HTMLElement | null>(null)
 

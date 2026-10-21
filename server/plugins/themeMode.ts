@@ -1,7 +1,7 @@
-import { assets, themeDisplay } from '#micelio/display-fonts'
-import { fonts, modes } from '#micelio/theme'
+import { assets } from '#micelio/display-fonts'
 import { Locale, defaultLocale } from '~/interfaces/locale'
 import { displayFontOverride, insertAfterStylesheet, themePreloadLinks } from '../utils/displayFonts'
+import { activeTheme } from '../utils/activeTheme'
 import { themeOverridesCss } from '../utils/theme'
 
 /** The locale of the page from its path prefix (`/es/...`); the default one otherwise. */
@@ -12,11 +12,12 @@ function pathLocale(path: string): Locale {
 
 // Not useHead: unhead would own data-theme and reset the init script's choice on hydration
 export default defineNitroPlugin((nitroApp) => {
-  const first = modes[0]
-  if (!first) return
   // contentSecurityPolicy.ts runs first (alphabetical) and hashes scripts only: anything pushed here must be a
   // style, which style-src 'unsafe-inline' allows. A script would be blocked.
   nitroApp.hooks.hook('render:html', async (html, { event }) => {
+    const { modes, fonts, display: themeDisplay } = activeTheme().runtime
+    const first = modes[0]
+    if (!first) return
     // Strapi down or slow: the theme's own first mode and colors, as before
     let site: Awaited<ReturnType<typeof loadSiteCached>>['site'] | undefined
     try {

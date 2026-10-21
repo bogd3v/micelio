@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { images } from '#micelio/theme'
 import type { StrapiProfile } from '~/interfaces'
 
 const props = defineProps<{
@@ -7,6 +6,7 @@ const props = defineProps<{
 }>()
 
 const themeMessage = useThemeMessage()
+const { images } = useThemeData()
 const { getMediaUrl } = useStrapi()
 const { localizePath } = useLocaleUtils()
 const config = useRuntimeConfig()

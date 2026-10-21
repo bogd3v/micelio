@@ -1,13 +1,8 @@
-import { join } from 'node:path'
-import { addComponent, addTemplate, addTypeTemplate, useLogger } from 'nuxt/kit'
-import type { ModeDefinition, SlotName, ThemeContext } from './types'
-import { DEFAULT_LAYOUT, IMAGES_URL, LAYOUT_REGIONS, SLOT_NAMES } from './constants'
-import { buildPalette } from './palette'
+import { addComponent, addTypeTemplate } from 'nuxt/kit'
+import type { SlotName, ThemeContext } from './types'
 
 // Active theme's id at build time; the server plugin compares it with the runtime value
 const BUILD_THEME_MODULE = '#micelio/build-theme'
-// Nitro only: the active theme's resolved palette, for the server's contrast math
-const PALETTE_MODULE = '#micelio/theme-palette'
 
 /** One prop of a slot component, as the theme reference documents it. */
 export interface SlotProp {
@@ -73,111 +68,25 @@ export const SLOT_SPECS: Record<SlotName, SlotSpec> = {
 }
 
 /**
- * Exposes the active theme to the app and to Nitro, and declares the types that describe it.
+ * Records the active theme's id for the build, and declares the virtual module that carries it into Nitro.
  *
  * @remarks
- * Runs at build time. Writes `micelio/theme.mjs` (`#micelio/theme`: id, modes, fonts, images, layout and slots) and
- * `micelio/theme-mermaid.mjs` (`#micelio/theme-mermaid`: the Mermaid overrides), with their type declarations under the build's
- * `types/` folder. Image file names become URLs under `/theme/images/`, and an omitted layout region takes `DEFAULT_LAYOUT`.
- * In the Nitro build it adds the virtual modules `#micelio/build-theme` (the active theme id) and `#micelio/theme-palette`
- * (the contrast palette of each mode, from `buildPalette`); a mode whose palette does not resolve is left out with a warning.
- * Sets `runtimeConfig.public.theme` to the active id.
+ * Runs at build time. Sets `runtimeConfig.public.theme` to the active id and adds the Nitro virtual module `#micelio/build-theme`,
+ * which `server/plugins/runtimeConfigCheck.ts` compares with the runtime value until #401 removes that check. The theme's modes,
+ * images, layout, fonts, palette and messages no longer come from here: they are compiled into the built-in store
+ * (`built-in-store.ts`) and read from it at runtime (ADR 0009, section 6).
  */
 export function setupData(ctx: ThemeContext): void {
   const { nuxt } = ctx
-  const logger = useLogger('micelio-theme')
-  const typesSource = join(nuxt.options.rootDir, 'modules/theme/types')
   nuxt.options.runtimeConfig.public.theme = ctx.id
-
-  function themeData(): object {
-    const { id, modes, fonts, images, layout, slots } = ctx.load().manifest
-    return {
-      id,
-      modes: modes.map(({ id, scheme, name }: ModeDefinition) => ({ id, scheme, name })),
-      fonts: fonts ?? [],
-      images: Object.fromEntries(Object.entries(images ?? {}).map(([role, file]) => [role, `/${IMAGES_URL}/${file}`])),
-      layout: { ...DEFAULT_LAYOUT, ...layout },
-      slots: slots ?? {},
-    }
-  }
-  nuxt.options.alias['#micelio/theme'] = join(nuxt.options.buildDir, 'micelio/theme.mjs')
-  addTemplate({
-    filename: 'micelio/theme.mjs',
-    write: true,
-    getContents: () => `const theme = ${JSON.stringify(themeData(), null, 2)}\nexport const { id, modes, fonts, images, layout, slots } = theme\nexport default theme\n`,
-  })
-  // Apart from the theme data: only the article's rich text reads it, and the data is in every page's entry
-  nuxt.options.alias['#micelio/theme-mermaid'] = join(nuxt.options.buildDir, 'micelio/theme-mermaid.mjs')
-  addTemplate({
-    filename: 'micelio/theme-mermaid.mjs',
-    write: true,
-    getContents: () => `export default ${JSON.stringify(ctx.load().manifest.mermaid ?? {})}\n`,
-  })
-  addTypeTemplate({
-    filename: 'types/micelio-theme-mermaid.d.ts',
-    getContents: () => `declare module '#micelio/theme-mermaid' {\n  const overrides: Record<string, string>\n  export default overrides\n}\n`,
-  })
   addTypeTemplate({
     filename: 'types/micelio-theme.d.ts',
-    getContents: () => `declare module '#micelio/theme' {
-  export interface ModeDefinition {
-    id: string
-    scheme: 'dark' | 'light'
-    name?: string
-  }
-  export interface ThemeFont {
-    family: string
-    file: string
-    preload?: boolean
-  }
-  export interface ThemeImages {
-    favicon?: string
-    ogImage?: string
-    profile?: string
-  }
-  export type LayoutRegion = ${LAYOUT_REGIONS.map(region => `'${region}'`).join(' | ')}
-  export type SlotName = ${SLOT_NAMES.map(name => `'${name}'`).join(' | ')}
-  export interface SlotOptions {
-    island?: boolean
-  }
-  export interface ActiveTheme {
-    id: string
-    modes: ModeDefinition[]
-    fonts: ThemeFont[]
-    images: ThemeImages
-    layout: Record<LayoutRegion, string>
-    slots: Partial<Record<SlotName, SlotOptions>>
-  }
-  export const id: string
-  export const modes: ModeDefinition[]
-  export const fonts: ThemeFont[]
-  export const images: ThemeImages
-  export const layout: Record<LayoutRegion, string>
-  export const slots: Partial<Record<SlotName, SlotOptions>>
-  const theme: ActiveTheme
-  export default theme
-}
-
-declare module '${PALETTE_MODULE}' {
-  export type { ContrastRule } from '${typesSource}'
-  export type { ModePalette } from '${typesSource}'
-  export const modes: Record<string, import('${typesSource}').ModePalette>
-  export const rules: import('${typesSource}').ContrastRule[]
-}
-
-declare module '${BUILD_THEME_MODULE}' {
-  export const buildTheme: string
-}
-`,
+    getContents: () => `declare module '${BUILD_THEME_MODULE}' {\n  export const buildTheme: string\n}\n`,
   }, { nitro: true, nuxt: true })
 
   nuxt.hook('nitro:config', (config) => {
     config.virtual ||= {}
     config.virtual[BUILD_THEME_MODULE] = `export const buildTheme = ${JSON.stringify(ctx.id)}`
-    // Built once, here: theme.json edits in dev need a restart. A mode that does not resolve is left out (contrast stays out of the build).
-    const { modes, rules, skipped } = buildPalette(ctx.load().manifest)
-    for (const { mode, reason } of skipped) logger.warn(`Theme "${ctx.id}", mode "${mode}": left out of the palette (${reason})`)
-    config.virtual[PALETTE_MODULE] = `export const modes = ${JSON.stringify(modes)}\nexport const rules = ${JSON.stringify(rules)}\n`
   })
 }
 

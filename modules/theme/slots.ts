@@ -25,7 +25,7 @@ export function slotStyles(themeDir: string): string {
     .join('\n')
 }
 
-// Slots are plain components for now: `island` is recorded in #micelio/theme (data.ts) and enforced by the theme validator (#237, PR 7)
+// Slots are plain components for now: `island` is recorded in the theme's `runtime.json` and enforced by the theme validator (#237, PR 7)
 /**
  * Registers the component of each slot, and the styles of the theme's slot files, at build time.
  *

@@ -6,8 +6,15 @@ const BOGDEV_STRINGS = ['bogdev', 'Alejandro', 'hotmail', 'ale9420', 'devbog', '
 // The head and the feed carry only site content; the body of the default theme (themes/bogota/) names Bogotá and Colombia
 const PLACE_STRINGS = ['bogot', 'colombia', 'software developer']
 
-// Out of scope: the Bogotá theme's images (themes/bogota/)
-const THEME_LEGACY = [/\/theme\/images\/bogdev\.svg/g, /\\u002Ftheme\\u002Fimages\\u002Fbogdev\.svg/g, /bogota/gi]
+// Out of scope: the Bogotá theme's images (themes/bogota/), at the URL the build serves them from
+const THEME_LEGACY = [
+  /\/theme\/images\/bogdev\.svg/g,
+  /\\u002Ftheme\\u002Fimages\\u002Fbogdev\.svg/g,
+  // The same image under the theme's own folder in the store (the default favicon the pages receive)
+  /\/_t\/[0-9a-f]{64}\/images\/bogdev\.svg/g,
+  /\\u002F_t\\u002F[0-9a-f]{64}\\u002Fimages\\u002Fbogdev\.svg/g,
+  /bogota/gi,
+]
 
 const PAGES = ['/', '/about', '/privacy', '/feed.xml']
 

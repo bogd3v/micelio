@@ -1,8 +1,6 @@
 import qs from 'qs'
 import { buildSiteMode } from '#micelio/build-site-mode'
-import { buildTheme } from '#micelio/build-theme'
-import { modes as paletteModes, rules as paletteRules } from '#micelio/theme-palette'
-import { images } from '#micelio/theme'
+import { activeTheme } from './activeTheme'
 import type { Locale, Site, AppSiteConfig } from '~/interfaces'
 import { effectiveModules } from '~/helpers/modules'
 import { moduleRequirements } from '~/helpers/runtimeConfig'
@@ -25,7 +23,8 @@ interface LoadedSite {
 
 /** The site identity: Strapi's site-setting over app.config.ts, field by field, with the modules that actually work. `quiet` skips the error log (the startup check). */
 export async function loadSite(locale: Locale, options: { quiet?: boolean } = {}): Promise<LoadedSite> {
-  const defaults = siteFromAppConfig(useAppConfig().site as AppSiteConfig, images.favicon)
+  const { runtime } = activeTheme()
+  const defaults = siteFromAppConfig(useAppConfig().site as AppSiteConfig, runtime.images.favicon)
   const requirements = moduleRequirements(useRuntimeConfig())
   let loaded: LoadedSite
   try {
@@ -34,7 +33,7 @@ export async function loadSite(locale: Locale, options: { quiet?: boolean } = {}
     const response = await strapiFetch<{ data?: unknown }>(`/api/site-setting?${query}`, { timeout: SITE_TIMEOUT_MS })
     const parsed = parseSiteSettings(response.data)
     const settings = resolveSiteMedia(parsed, useRuntimeConfig().public.strapiUrl)
-    const theme = resolveTheme(settings?.theme, { modes: paletteModes, rules: paletteRules }, buildTheme)
+    const theme = resolveTheme(settings?.theme, runtime.palette, runtime.id)
     loaded = { site: { ...mergeSite(defaults, settings), ...(theme && { theme }) }, fromStrapi: true, securityContact: parsed?.securityContact }
   } catch (error: unknown) {
     if (!options.quiet) logError('cms.site-setting', 'Fetching the site settings failed', { error })

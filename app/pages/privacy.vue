@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { BROWSER_STORAGE_KEYS, SITE_COOKIES, privacyRightsLeadKey } from '~/helpers/privacy'
-import { modes } from '#micelio/theme'
 import { formatDotDate } from '~/helpers/formatDate'
 import { THEME_STORAGE_KEY, formatModeList } from '~/helpers/theme'
 
@@ -11,6 +10,7 @@ interface PrivacySection {
 
 const { t, locale } = useI18n()
 const { modeLabel } = useTheme()
+const { modes } = useThemeData()
 const site = useSite()
 const accountsOn = useModule('accounts')
 const newsletterOn = useModule('newsletter')

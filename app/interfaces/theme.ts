@@ -17,3 +17,22 @@ export interface ThemeModeDefinition {
   /** The label when the messages have no `theme.modes.<id>` entry; `useTheme` falls back to the id. */
   name?: string
 }
+
+/**
+ * What a page needs of the active theme, sent to the client in the payload (ADR 0009, section 6).
+ *
+ * @remarks
+ * Read from the theme store on the server and shared by every request, so it is frozen: never change it.
+ */
+export interface ThemeData {
+  id: string
+  /** The digest of the theme's entry in the store, `/_t/<digest>/`. */
+  digest: string
+  modes: ThemeModeDefinition[]
+  /** Role to the URL the file is served at. */
+  images: Partial<Record<'favicon' | 'ogImage' | 'profile', string>>
+  /** The layout variant of each region. */
+  layout: Record<'header' | 'home' | 'postList' | 'article' | 'footer', string>
+  /** Mermaid theme variable overrides. */
+  mermaid: Record<string, string>
+}
