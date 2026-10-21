@@ -36,3 +36,6 @@ export interface ThemeData {
   /** Mermaid theme variable overrides. */
   mermaid: Record<string, string>
 }
+
+/** The `theme.*` messages of one locale, compiled to the AST vue-i18n formats without a compiler. */
+export type ThemeMessages = Record<string, unknown>

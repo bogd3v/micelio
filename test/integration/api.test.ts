@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { request as httpRequest } from 'node:http'
 import { join } from 'node:path'
+import sanitizeHtml from 'sanitize-html'
 import { z } from 'zod'
 import { $fetch as typedFetch, fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
 import type { FetchOptions } from 'ofetch'
@@ -3014,6 +3015,36 @@ describe('the built-in theme store under /_t/', () => {
     expect(payload).toContain(digest)
     expect(payload).toContain('myc-theme-data')
     expect(payload).not.toContain('surface-sunken')
+  })
+
+  // The messages are also in the payload: the text the page renders is what a parser keeps once it drops every tag and script
+  const withoutPayload = (html: string): string => sanitizeHtml(html, { allowedTags: [], allowedAttributes: {} })
+
+  it('renders the theme text in the language of the page, and no request sees another request\'s language', async () => {
+    const english = 'Made in Bogotá, Colombia'
+    const spanish = 'Hecho en Bogotá, Colombia'
+    const pages = await Promise.all(Array.from({ length: 12 }, async (_, index) => {
+      const path = index % 2 === 0 ? '/' : '/es'
+      return { path, html: withoutPayload(await (await fetch(path)).text()) }
+    }))
+    for (const { path, html } of pages) {
+      expect(html, path).toContain(path === '/' ? english : spanish)
+      expect(html, path).not.toContain(path === '/' ? spanish : english)
+    }
+    // After Spanish pages, an English one still gets English: the shared messages were not written to
+    const after = withoutPayload(await (await fetch('/')).text())
+    expect(after).toContain(english)
+    expect(after).not.toContain(spanish)
+  })
+
+  it('sends the messages of the page\'s locale in the payload and the rest from the immutable file', async () => {
+    const { digest } = digests()
+    const html = await (await fetch('/es')).text()
+    const payload = /<script[^>]*id="__NUXT_DATA__"[^>]*>([\s\S]*?)<\/script>/.exec(html)?.[1] ?? ''
+    expect(payload).toContain('myc-theme-messages')
+    expect(payload).not.toContain('Made in Bogotá')
+    const file = (await (await fetch(`/_t/${digest}/runtime.json`)).json()) as { messages: Record<string, unknown> }
+    expect(Object.keys(file.messages).sort()).toEqual(['en', 'es'])
   })
 
   it('answers the same empty 404 for an unknown digest, a theme this site does not serve and an unknown file', async () => {

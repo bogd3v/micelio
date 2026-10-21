@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { themeDataOf } from '../server/lib/themeData'
+import { themeDataOf, themeMessagesOf } from '../server/lib/themeData'
 import type { RuntimeData } from '../modules/theme/install/types'
 
 const RUNTIME = {
@@ -35,5 +35,16 @@ describe('themeDataOf', () => {
   it('is a copy: freezing it does not freeze the parsed runtime', () => {
     themeDataOf(RUNTIME)
     expect(Object.isFrozen(RUNTIME.modes)).toBe(false)
+  })
+})
+
+describe('themeMessagesOf', () => {
+  it('gives the messages of every locale, frozen all the way down, as a copy', () => {
+    const messages = themeMessagesOf(RUNTIME)
+    expect(Object.keys(messages)).toEqual(['en'])
+    expect(Object.isFrozen(messages)).toBe(true)
+    expect(Object.isFrozen(messages.en)).toBe(true)
+    expect(Object.isFrozen((messages.en as { hero: object }).hero)).toBe(true)
+    expect(Object.isFrozen(RUNTIME.messages.en)).toBe(false)
   })
 })
