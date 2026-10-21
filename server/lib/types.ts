@@ -1,4 +1,5 @@
 import type { SiteSettings } from '../../app/interfaces/site'
+import type { LoadedEntry, RuntimeData } from '../../modules/theme/install/types'
 import type { ThemeData, ThemeMessages } from '../../app/interfaces/theme'
 
 /** What a call to Strapi needs: the pure part of `strapiFetch`, usable outside Nitro (build modules). */
@@ -36,4 +37,10 @@ declare module 'h3' {
     /** The active theme's messages by locale, frozen and shared by every request; a page takes the one of its locale. */
     themeMessages?: Record<string, ThemeMessages>
   }
+}
+
+/** The theme the server renders: its verified entry and the data parsed from it. */
+export interface BuiltInTheme {
+  entry: LoadedEntry
+  runtime: RuntimeData
 }

@@ -232,6 +232,7 @@ describe('static headers', () => {
     expect(rules.slice(1)).toEqual([
       '/_nuxt/*\n  Cache-Control: public, max-age=31536000, immutable',
       '/_media/*\n  Cache-Control: public, max-age=31536000, immutable\n  Content-Security-Policy: default-src \'none\'; style-src \'unsafe-inline\'; img-src \'self\' data:; sandbox',
+      '/_t/*\n  Cache-Control: public, max-age=31536000, immutable\n  Content-Security-Policy: default-src \'none\'; style-src \'unsafe-inline\'; frame-ancestors \'none\'; sandbox',
       '/_islands/*\n  Cache-Control: public, max-age=31536000, immutable',
       '/_ipx/*\n  Cache-Control: public, max-age=0, must-revalidate',
       '/pagefind/*\n  Cache-Control: public, max-age=0, must-revalidate',

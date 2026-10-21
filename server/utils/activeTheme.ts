@@ -1,4 +1,4 @@
-import type { BuiltInTheme } from '../lib/builtInStore'
+import type { BuiltInTheme } from '../lib/types'
 
 // The theme this process renders and serves. Set once at boot by server/plugins/builtInTheme.ts.
 

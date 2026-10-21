@@ -1,20 +1,15 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { z } from 'zod'
 import { BUILT_IN_INDEX, BUILT_IN_STORE_PATH, COMPILED_DIGEST } from '../../modules/theme/install/constants'
 import { parseRuntime } from '../../modules/theme/install/runtime'
 import { loadEntrySync } from '../../modules/theme/install/store'
-import type { BuiltInIndex, LoadedEntry, RuntimeData } from '../../modules/theme/install/types'
+import type { BuiltInIndex } from '../../modules/theme/install/types'
+import type { BuiltInTheme } from './types'
 import { THEME_DIGEST } from '../../modules/theme/registry/constants'
 import { THEME_ID } from '../../modules/theme/constants'
 
 // The built-in store of the image (ADR 0009, section 1): the themes compiled at build, loaded and verified once at boot.
-
-/** The theme the server renders: its verified entry and the data parsed from it. */
-export interface BuiltInTheme {
-  entry: LoadedEntry
-  runtime: RuntimeData
-}
 
 const Index: z.ZodType<BuiltInIndex> = z.strictObject({
   coreBuild: z.string().min(1).max(200),
@@ -66,4 +61,29 @@ export function loadBuiltInTheme(storeDir: string, id?: string): BuiltInTheme {
   const file = entry.files.get('runtime.json')
   if (file === undefined) throw new Error(`The built-in entry of theme "${wanted}" has no runtime.json`)
   return { entry, runtime: parseRuntime(file, listed.digest) }
+}
+
+/**
+ * Development: a function to call before each request that loads the theme again when the build rewrote the store's index.
+ *
+ * @remarks
+ * The build installs a theme again when its folder changes and rewrites `index.json` (`modules/theme/built-in-store.ts`). An entry that
+ * fails to load (the author is mid-edit) is reported and the theme the server had stays.
+ *
+ * @param onChange - Receives the theme loaded after a change.
+ * @param onError - Receives the error of an entry that could not be loaded; the caller logs it.
+ */
+export function watchBuiltInIndex(storeDir: string, onChange: (theme: BuiltInTheme) => void, onError: (error: unknown) => void): () => void {
+  const stamp = (): number => statSync(join(storeDir, BUILT_IN_INDEX)).mtimeMs
+  let seen = stamp()
+  return () => {
+    const now = stamp()
+    if (now === seen) return
+    seen = now
+    try {
+      onChange(loadBuiltInTheme(storeDir))
+    } catch (error) {
+      onError(error)
+    }
+  }
 }

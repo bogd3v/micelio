@@ -27,6 +27,12 @@ The image build installs every theme of the build (`themes/`, the lock's, `MICEL
 
 At boot `server/plugins/builtInTheme.ts` loads the build's theme from it, verifies the entry against its manifest and parses `runtime.json` (`install/runtime.ts`); a defect stops the boot. `GET /_t/<digest>/<file>` serves that entry's files from memory ([API](../api.md)). The pages read the theme's modes, images, layout variants and Mermaid overrides from it (`useThemeData()`, below); the following PRs of #401 move the stylesheet and `NUXT_PUBLIC_THEME`.
 
+### Static builds and development
+
+A static site has no server to answer `/_t/<digest>/…`, so a static build (`NUXT_PUBLIC_SITE_MODE=static` or `landing`) publishes the build theme's `theme.css`, `sections.css`, fonts and images as plain assets at that URL (not `runtime.json`, the manifest or the precompressed copies: a static page has no script to read the first two, and the host compresses). `_headers` gives `/_t/*` the immutable cache and the same sandbox policy the server sends, and the speculation rules and the script-reachability check skip the folder.
+
+In development the server reads the cache folder directly. When a file of a theme's folder is saved, the build installs that theme again, rewrites `index.json`, reloads the page, and the server loads the new entry on its next request (the digest changes with the content). A theme that does not validate yet is reported and the last good entry stays.
+
 ### What a page reads
 
 `server/plugins/builtInTheme.ts` puts a frozen slice of `runtime.json` (`id`, `digest`, `modes`, `images`, `layout`, `mermaid`) in `event.context.theme` on every request. `useThemeData()` (`app/composables/useThemeData.ts`) reads it into the shared state `myc-theme-data` on the server and from the payload on the client, and throws, not a blank page, if the server did not provide it. The `#micelio/theme`, `#micelio/theme-mermaid` and `#micelio/theme-palette` virtual modules are gone; the server reads the palette, the fonts and the display-family data from the active theme (`activeTheme()`). A theme's default favicon and share image are now `/_t/<digest>/images/<file>`, so they change URL whenever the build does. `#micelio/build-theme` stays until `NUXT_PUBLIC_THEME` is read at runtime.

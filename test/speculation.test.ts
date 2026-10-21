@@ -37,7 +37,7 @@ describe('speculationRules', () => {
       expect(excluded, route).toContain(route)
       expect(excluded, `/es${route}`).toContain(`/es${route}`)
     }
-    for (const file of ['/pagefind/*', '/_islands/*', '/_media/*', '/*.xml', '/robots.txt']) expect(excluded, file).toContain(file)
+    for (const file of ['/pagefind/*', '/_islands/*', '/_media/*', '/_t/*', '/*.xml', '/robots.txt']) expect(excluded, file).toContain(file)
   })
 
   it('excludes links marked as downloads, nofollow or data-no-speculate', () => {

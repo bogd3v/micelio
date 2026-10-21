@@ -1,4 +1,4 @@
-import { SECURITY_TXT_PATH } from '../constants/security'
+import { SECURITY_TXT_PATH, STATIC_CSP } from '../constants/security'
 import { SLUG_PATTERN } from '../constants/slug'
 import { feedPath } from './feed'
 import { localePrefixSource } from './localePrefix'
@@ -216,9 +216,9 @@ export function scriptHashDisagreements(pages: ReadonlyMap<string, readonly stri
 
 const IMMUTABLE = 'public, max-age=31536000, immutable'
 const REVALIDATE = 'public, max-age=0, must-revalidate'
-/** Strapi keeps a file's URL when it is replaced, so `_ipx` (named after the source URL) revalidates; `_nuxt` (Vite hash) and `_media` (byte hash) never change under a name. */
+/** Strapi keeps a file's URL when it is replaced, so `_ipx` (named after the source URL) revalidates; `_nuxt` (Vite hash), `_media` (byte hash) and `_t` (the digest of the compiled theme) never change under a name. */
 /** `_islands` files carry a content hash in the name. */
-const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_media/*', '/_islands/*']
+const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_media/*', '/_t/*', '/_islands/*']
 /** `/pagefind/*` is rebuilt with every generate (`pagefind.js` keeps its name), so it is never immutable. */
 const REVALIDATED_PATHS: readonly string[] = ['/_ipx/*', '/pagefind/*']
 /** Files copied from Strapi are data, never documents: an SVG opened directly runs nothing and loads nothing. Sent on top of the site policy (repeated policies only tighten). */
@@ -242,6 +242,8 @@ export function headersFile(policy: string, workerPolicy?: string): string {
     ...IMMUTABLE_PATHS.map(path => [path, `  Cache-Control: ${IMMUTABLE}`]),
     ...REVALIDATED_PATHS.map(path => [path, `  Cache-Control: ${REVALIDATE}`]),
     ['/_media/*', `  Content-Security-Policy: ${MEDIA_POLICY}`],
+    // The theme's files (`/_t/<digest>/…`) are data too: the same sandbox the dynamic server gives them
+    ['/_t/*', `  Content-Security-Policy: ${STATIC_CSP}`],
     // A Worker takes its policy from its own response; repeated policies only tighten, so this narrows the site's (ADR 0004)
     ...(workerPolicy ? [[WORKERS_PATH, `  Content-Security-Policy: ${workerPolicy}`]] : []),
   ]
