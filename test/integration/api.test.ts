@@ -2964,3 +2964,47 @@ describe('problem details', () => {
     expect(response.headers.get('content-type')).toMatch(/^text\/html/)
   })
 })
+
+describe('the built-in theme store under /_t/', () => {
+  // The production build copies the store next to the server entry; the digests are what the server loaded at boot
+  function digests(): { digest: string, other: string } {
+    const output = useTestContext().nuxt!.options.nitro.output!.dir!
+    const index = JSON.parse(readFileSync(join(output, 'server/micelio/store/index.json'), 'utf8')) as { buildTheme: string, themes: Record<string, { digest: string }> }
+    return { digest: index.themes[index.buildTheme]!.digest, other: Object.entries(index.themes).find(([id]) => id !== index.buildTheme)![1].digest }
+  }
+
+  it('serves the stylesheet of the active theme, immutable and sandboxed, with its URLs under its own digest', async () => {
+    const { digest } = digests()
+    const response = await fetch(`/_t/${digest}/theme.css`, { headers: { 'accept-encoding': 'identity' } })
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('text/css; charset=utf-8')
+    expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, immutable')
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff')
+    expect(response.headers.get('content-security-policy')).toContain('sandbox')
+    const css = await response.text()
+    expect(css).toContain(`/_t/${digest}/fonts/`)
+    expect(css).not.toMatch(/url\(["']?\/fonts\//)
+  })
+
+  it('negotiates brotli and serves the data file and the fonts', async () => {
+    const { digest } = digests()
+    const compressed = await fetch(`/_t/${digest}/theme.css`, { headers: { 'accept-encoding': 'br' } })
+    expect(compressed.headers.get('content-encoding')).toBe('br')
+    expect(compressed.headers.get('vary')).toBe('Accept-Encoding')
+    const runtime = (await (await fetch(`/_t/${digest}/runtime.json`)).json()) as { id: string, fonts: Array<{ url: string }> }
+    expect(runtime.id).toBeTruthy()
+    const font = await fetch(runtime.fonts[0]!.url)
+    expect(font.status).toBe(200)
+    expect(font.headers.get('content-type')).toBe('font/woff2')
+  })
+
+  it('answers the same empty 404 for an unknown digest, a theme this site does not serve and an unknown file', async () => {
+    const { digest, other } = digests()
+    const missing = [`/_t/${'0'.repeat(64)}/theme.css`, `/_t/${other}/theme.css`, `/_t/${digest}/nope.css`, `/_t/${digest}/manifest.json`, `/_t/${digest}/theme.css.br`, `/_t/${digest}/fonts/..%2ftheme.css`, '/_t/not-a-digest/theme.css', `/_t/${digest}/`, `/_t/${digest}`]
+    for (const path of missing) {
+      const response = await fetch(path)
+      expect(response.status, path).toBe(404)
+      expect(await response.text(), path).toBe('')
+    }
+  })
+})

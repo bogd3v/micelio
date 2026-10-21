@@ -59,3 +59,9 @@ export const MAX_LOADED_BYTES = 2 * MAX_ENTRY_BYTES
 
 /** Largest `manifest.json` a loader reads. */
 export const MAX_ENTRY_MANIFEST_BYTES = 1024 * 1024
+
+/** The index of the built-in store, inside its folder. */
+export const BUILT_IN_INDEX = 'index.json'
+
+/** Where the built-in store sits next to the server entry of a production build (`.output/server/micelio/store`). */
+export const BUILT_IN_STORE_PATH = 'micelio/store'

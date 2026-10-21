@@ -62,6 +62,20 @@ export const SITE_FILE_ROUTES: RouteEntry[] = [
     errors: ['internalError'],
   },
   {
+    file: 'server/routes/_t/[...rest].get.ts',
+    method: 'get',
+    path: '/_t/{digest}/{path}',
+    summary: 'A file of the active theme',
+    description: 'A stylesheet, font, image or `runtime.json` of a compiled theme, from the bytes verified when it was loaded. `digest` is the 64 hex digits of the entry the site serves; any other digest, and any file the entry does not list, answers the same empty `notFound`. Brotli or gzip is sent when the request accepts it, with `Vary: Accept-Encoding`. The file is immutable (the digest changes with the content), `nosniff` and sandboxed by the static CSP.',
+    tag: FEED_TAG,
+    parameters: [
+      { name: 'digest', in: 'path', description: 'The digest of a theme entry the site serves.', schema: { type: 'string', pattern: '^[0-9a-f]{64}$' } },
+      { name: 'path', in: 'path', description: 'A file of the entry, such as `theme.css` or `fonts/archivo.woff2`.', schema: { type: 'string' } },
+    ],
+    response: { status: 200, contentType: 'application/octet-stream', description: 'The file, with its own content type (`text/css`, `application/json`, `font/woff2`, an image type).', cache: 'public, max-age=31536000, immutable' },
+    errors: ['notFound'],
+  },
+  {
     file: 'server/routes/robots.txt.ts',
     method: 'get',
     path: '/robots.txt',

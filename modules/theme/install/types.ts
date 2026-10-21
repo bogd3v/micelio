@@ -115,3 +115,17 @@ export interface RuntimeData {
   /** Messages by locale, each compiled to the AST the client formats without a compiler. */
   messages: Record<string, Record<string, unknown>>
 }
+
+/**
+ * `index.json` of the built-in store: which themes the image holds, written at build and read at boot.
+ *
+ * @remarks
+ * Every theme of the image is installed with `allowCode`, so a code theme is in the store only because the build compiled its slots (ADR 0009, section 4).
+ */
+export interface BuiltInIndex {
+  /** The core build the entries were compiled for (the compile key's input). */
+  coreBuild: string
+  /** The theme the build was made for: the default when nothing else is configured. */
+  buildTheme: string
+  themes: Record<string, { digest: string, version: string, code: boolean }>
+}
