@@ -34,7 +34,7 @@ Micelio is pre-1.0 and not stable. The registry and its publish workflows (#311 
 | `npm run theme:pull -- --frozen` | Fails if the lock is missing, is not in the form `theme:add` writes, names a package that cannot be pulled, or disagrees with a package. CI and the Dockerfile use it. |
 | `npm run theme:outdated` | Lists newer versions of the locked registry themes that this core can install. |
 
-`theme:pull` does not rebuild anything. `NUXT_PUBLIC_THEME=<id>` still takes a bare id; Nuxt compiles the slots of `.micelio/themes/<id>/` when it builds. A theme that is both in `themes/` (or in `MICELIO_THEME_DIRS`) and in the lock is read from `themes/`, with a notice, so you can work on a checkout. With `CI=true` that is an error, so a build never uses an unpinned theme by accident.
+`theme:pull` does not rebuild anything. `NUXT_PUBLIC_THEME=<id>` still takes a bare id (at build the theme of the image, at runtime its default theme: [Configure](configure.md)); Nuxt compiles the slots of `.micelio/themes/<id>/` when it builds. A theme that is both in `themes/` (or in `MICELIO_THEME_DIRS`) and in the lock is read from `themes/`, with a notice, so you can work on a checkout. With `CI=true` that is an error, so a build never uses an unpinned theme by accident.
 
 ## Settings
 

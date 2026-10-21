@@ -18,6 +18,7 @@ const THREE: ThemeModeDefinition[] = [{ id: 'dusk', scheme: 'dark' }, { id: 'san
 
 function run(modes: ThemeModeDefinition[], { stored = {}, prefersLight = false, storageThrows = false, modeDefault, serverTheme }: Env = {}): Record<string, string> {
   const attrs: Record<string, string> = {}
+  if (modes.length) attrs['data-modes'] = modes.map(mode => `${mode.id}:${mode.scheme}`).join(',')
   if (serverTheme) attrs['data-theme'] = serverTheme
   const writes: string[] = []
   const localStorage = {
@@ -28,7 +29,7 @@ function run(modes: ThemeModeDefinition[], { stored = {}, prefersLight = false, 
     setItem(key: string) { writes.push(key) },
     removeItem(key: string) { writes.push(key) },
   }
-  runInNewContext(buildInitScript(modes), {
+  runInNewContext(buildInitScript(), {
     localStorage,
     matchMedia: (query: string) => ({ matches: query.includes('light') && prefersLight }),
     document: {
@@ -39,6 +40,7 @@ function run(modes: ThemeModeDefinition[], { stored = {}, prefersLight = false, 
     },
   })
   expect(writes).toEqual([])
+  delete attrs['data-modes']
   return attrs
 }
 
@@ -101,11 +103,10 @@ describe('buildInitScript with other modes', () => {
     expect(run(dark, { prefersLight: true })['data-theme']).toBe('a')
   })
 
-  it('is byte-identical for the same modes and small for six', () => {
-    expect(buildInitScript(BOGOTA)).toBe(buildInitScript(BOGOTA.map(mode => ({ ...mode }))))
-    expect(buildInitScript(BOGOTA)).not.toBe(buildInitScript(LIGHT_FIRST))
-    const six = Array.from({ length: 6 }, (_, i): ThemeModeDefinition => ({ id: `long-mode-name-${i}`, scheme: i % 2 ? 'light' : 'dark' }))
-    expect(Buffer.byteLength(buildInitScript(six))).toBeLessThan(2048)
+  it('is one script for every theme, small, and does nothing without data-modes', () => {
+    expect(buildInitScript()).toBe(buildInitScript())
+    expect(Buffer.byteLength(buildInitScript())).toBeLessThan(1024)
+    expect(run([], { prefersLight: true })).toEqual({})
   })
 })
 

@@ -35,19 +35,6 @@ function missing(values: Record<string, unknown> | undefined, names: Record<stri
   return Object.entries(names).filter(([key]) => empty(values?.[key])).map(([, name]) => name)
 }
 
-/** A runtime string with blanks as unset. */
-function trimmed(value: unknown): unknown {
-  if (typeof value !== 'string') return value
-  return value.trim() || undefined
-}
-
-/** The error message when the runtime theme is not the one the build used, or null when they agree. */
-export function themeMismatch(config: CheckedRuntimeConfig, buildTheme: string): string | null {
-  const runtime = trimmed(config.public?.theme)
-  if (runtime === buildTheme) return null
-  return `NUXT_PUBLIC_THEME is "${String(runtime)}" at runtime but the build used "${buildTheme}". The theme is chosen at build time: rebuild with the value you want.`
-}
-
 /** The error message when the runtime site mode is not the one the build used, or null when they agree. */
 export function modeMismatch(config: CheckedRuntimeConfig, buildMode: SiteMode): string | null {
   const runtime = config.public?.siteMode

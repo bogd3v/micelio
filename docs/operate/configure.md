@@ -21,7 +21,7 @@ Start from `.env.example` in the repository. Nuxt reads only the `NUXT_*` names 
 | `NUXT_SITE_CACHE_SECONDS` | No | `60` | Runtime | Seconds the site settings are cached in memory; `0` turns the cache off ([docs/api.md](../api.md)). |
 | `NUXT_PUBLIC_SITE_URL` | Yes | empty | Runtime | Public URL of the deployed site, for example `https://example.com`. Feeds, the sitemap and emails need it. Without it, pages fall back to the `url` of the CMS's site settings. |
 | `NUXT_PUBLIC_SITE_MODE` | No | `dynamic` | Build time | `dynamic`, `static` or `landing` ([ADR 0006](../adr/0006-site-modes.md)). The static and landing modes are prerendered and turn off comments, accounts, drafts and the fediverse. A runtime value that differs from the build value stops the server. |
-| `NUXT_PUBLIC_THEME` | No | `bogota` | Build time | The id of the installed theme in `themes/<id>/` to use. An id that is not installed stops the build. See [How to create a theme](../themes/creating-a-theme.md). |
+| `NUXT_PUBLIC_THEME` | No | `bogota` | Build time (the build's theme) and runtime (the default theme) | The instance's default theme, a bare id among the installed themes. At build it picks the theme the slots and layout variants are compiled for; at runtime it picks the theme the server loads at boot. A theme with code (slots) needs its own build, and a data-only theme can replace the build's only when the build's theme has no code and both use the same layout variants. An id that is not installed stops the build or the boot, naming the variable. See [How to create a theme](../themes/creating-a-theme.md). |
 | `MICELIO_THEME_DIRS` | No | empty | Build time | Extra directories where themes are looked up. Not an `NUXT_` name: the build reads it directly. |
 | `MICELIO_THEME_REGISTRY` | No | `ghcr.io/bogd3v/micelio-themes` | Build time | `host[:port]/path` of the registry `npm run theme:add` and `theme:pull` read. Not an `NUXT_` name: the commands read it directly. See [Install themes from the registry](themes.md). |
 | `MICELIO_THEME_REGISTRY_IDENTITY` | With a non-default registry | empty | Build time | `issuer=<URL>,package=<URL>[,index=<URL>]`: the OIDC issuer and the exact workflow identities (certificate subject alternative names) that must have signed the packages and the index of `MICELIO_THEME_REGISTRY`. Without it nothing is installed from a non-default registry. The default registry has its identity built into the core. |
@@ -108,7 +108,8 @@ At startup the server checks the values above. These only log a warning:
 These stop the boot instead:
 
 - A required value that is missing, outside development: `NUXT_PUBLIC_STRAPI_URL`, `NUXT_STRAPI_API_TOKEN` or `NUXT_PUBLIC_SITE_URL`, in every site mode. The error names each one. The SMTP settings are not required: without them the newsletter is off (a warning).
-- A mismatch between `NUXT_PUBLIC_SITE_MODE` at build and at runtime, or between `NUXT_PUBLIC_THEME` at build and at runtime.
+- A mismatch between `NUXT_PUBLIC_SITE_MODE` at build and at runtime.
+- A `NUXT_PUBLIC_THEME` that is not in the image's theme store, or that cannot replace the build's theme (above).
 - An invalid `NUXT_TRUST_PROXY`.
 - `NUXT_STRAPI_FORWARDER_SECRET` set with a `NUXT_PUBLIC_STRAPI_URL` that is neither `https` nor a private address.
 - In production, a `NUXT_PUBLIC_STRAPI_URL` or `NUXT_UMAMI_URL` that is plain `http://` to a host outside a private network ([ADR 0011](../adr/0011-refuse-plain-http-upstreams.md)). `https`, a loopback or private address, `localhost`, a service name without dots (`http://strapi:1337`), `.internal` and `.local` are accepted. The message names the variable.
