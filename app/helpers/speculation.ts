@@ -21,7 +21,7 @@ type SpeculationCondition
 /** Routes with side effects or that are not pages, also under each locale prefix (ADR 0006, section 3). */
 const EXCLUDED_ROUTES: readonly string[] = ['/api/*', '/account*', '/drafts*', '/newsletter/*', '/confirm*', '/_theme']
 /** Files and folders of the build that are not pages: no locale prefix. */
-const EXCLUDED_FILES: readonly string[] = ['/pagefind/*', '/_islands/*', '/_media/*', '/*.xml', '/robots.txt']
+const EXCLUDED_FILES: readonly string[] = ['/pagefind/*', '/_islands/*', '/_media/*', '/_t/*', '/*.xml', '/robots.txt']
 const EXCLUDED_LINKS = '[download], [rel~=nofollow], [data-no-speculate]'
 
 /**

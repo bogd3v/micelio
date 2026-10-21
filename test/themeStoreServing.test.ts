@@ -3,7 +3,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { gunzipSync } from 'node:zlib'
-import { loadBuiltInTheme, locateBuiltInStore } from '../server/lib/builtInStore'
+import { loadBuiltInTheme, locateBuiltInStore, watchBuiltInIndex } from '../server/lib/builtInStore'
 import { isEntryDigest, themeAsset } from '../server/lib/themeAssets'
 import { loadHooks } from '../modules/theme/hooks'
 import { installTheme } from '../modules/theme/install/install'
@@ -129,5 +129,36 @@ describe('the built-in store of an image', () => {
     const other = await builtInStore()
     writeFileSync(join(other.store, 'index.json'), '{"coreBuild":"x"}')
     expect(() => loadBuiltInTheme(other.store)).toThrow()
+  })
+})
+
+describe('watchBuiltInIndex', () => {
+  it('loads the theme again only when the index changed, and keeps the old one when the new entry is broken', async () => {
+    const { store, digest } = await builtInStore()
+    const seen: string[] = []
+    const failures: unknown[] = []
+    const check = watchBuiltInIndex(store, theme => seen.push(theme.runtime.digest), error => failures.push(error))
+    check()
+    expect(seen).toEqual([])
+    // The build installed an edited theme: another entry and an index that names it
+    const edited = join(scratch(), 'starter')
+    cpSync(join(ROOT, 'themes/starter'), edited, { recursive: true })
+    writeFileSync(join(edited, 'theme.css'), `${readFileSync(join(edited, 'theme.css'), 'utf8')}\n.edited{color:red}\n`)
+    const result = await installTheme({ kind: 'folder', dir: edited }, { storeDir: store, hooks: HOOKS, coreBuild: 'serving', allowCode: true })
+    const index: BuiltInIndex = { coreBuild: 'serving', buildTheme: 'starter', themes: { starter: { digest: result.digest, version: '0.1.0', code: true } } }
+    await new Promise(settle => setTimeout(settle, 20))
+    writeFileSync(join(store, 'index.json'), JSON.stringify(index))
+    check()
+    check()
+    expect(seen).toEqual([result.digest])
+    expect(result.digest).not.toBe(digest)
+    // A broken entry is reported and nothing is replaced
+    writeFileSync(join(store, 'v1/entries', result.digest, 'theme.css'), 'tampered')
+    await new Promise(settle => setTimeout(settle, 20))
+    writeFileSync(join(store, 'index.json'), JSON.stringify(index))
+    check()
+    expect(seen).toEqual([result.digest])
+    expect(failures).toHaveLength(1)
+    expect((failures[0] as Error).message).toContain('does not match its manifest')
   })
 })

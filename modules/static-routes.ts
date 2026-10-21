@@ -20,7 +20,7 @@ import type { StrapiRequestConfig } from '../server/lib/types'
 
 const PAGE_SIZE = 100
 // Where a page, a stylesheet or an island may name a script; media and the image cache never do
-const SKIPPED_FOLDERS = new Set(['_ipx', '_media', 'fonts'])
+const SKIPPED_FOLDERS = new Set(['_ipx', '_media', '_t', 'fonts'])
 
 async function filesUnder(dir: string): Promise<string[]> {
   const found: string[] = []
