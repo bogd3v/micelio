@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { request as httpRequest } from 'node:http'
 import { join } from 'node:path'
+import sanitizeHtml from 'sanitize-html'
 import { z } from 'zod'
 import { $fetch as typedFetch, fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
 import type { FetchOptions } from 'ofetch'
@@ -3016,8 +3017,8 @@ describe('the built-in theme store under /_t/', () => {
     expect(payload).not.toContain('surface-sunken')
   })
 
-  // The messages are also in the payload: what the page renders is what is left without it
-  const withoutPayload = (html: string): string => html.replace(/<script[^>]*>[\s\S]*?<\/script>/g, '')
+  // The messages are also in the payload: the text the page renders is what a parser keeps once it drops every tag and script
+  const withoutPayload = (html: string): string => sanitizeHtml(html, { allowedTags: [], allowedAttributes: {} })
 
   it('renders the theme text in the language of the page, and no request sees another request\'s language', async () => {
     const english = 'Made in Bogotá, Colombia'

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import sanitizeHtml from 'sanitize-html'
 
 // The theme's messages come from the store per request (ADR 0009, section 6): the page's own locale in the payload, the other one
 // fetched when the visitor switches language. Bogota's footer says where the site is made.
@@ -34,7 +35,8 @@ test('the theme text follows the language switch without a page load', async ({ 
 })
 
 test('a page opened in the other language has its theme text in the first response', async ({ request }) => {
-  const html = (await (await request.get('/es')).text()).replace(/<script[^>]*>[\s\S]*?<\/script>/g, '')
+  // The text the page renders: a parser drops every tag and script, the payload with them
+  const html = sanitizeHtml(await (await request.get('/es')).text(), { allowedTags: [], allowedAttributes: {} })
   expect(html).toContain('Hecho en Bogotá, Colombia')
   expect(html).not.toContain('Made in Bogotá')
 })
