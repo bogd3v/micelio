@@ -21,6 +21,7 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0015](0015-problem-details.md) | Errors as RFC 9457 problem details | Accepted | 2026-10-15 |
 | [0016](0016-categories-from-the-cms.md) | Categories come from the CMS: data instead of constants, a stable optional color, `featured`, and theme contract 2 | Accepted | 2026-10-18 |
 | [0017](0017-distribution-plugins-multisite-editorial.md) | Micelio as Strapi plugins with `micelio-cms` as the reference distribution, several sites per CMS, and an editorial workflow of its own | Accepted | 2026-10-20 |
+| [0018](0018-blocks-as-a-contract.md) | Blocks as a contract: `{ id, schema, options, cost, static }`, options from the theme contract, a generated catalogue checked for drift, and no free positioning, per-element CSS, inline styles or raw HTML | Proposed | 2026-10-21 |
 
 ## Writing a new record
 
