@@ -1,6 +1,6 @@
 import { assets } from '#micelio/display-fonts'
 import { Locale, defaultLocale } from '~/interfaces/locale'
-import { displayFontOverride, insertAfterStylesheet, themePreloadLinks } from '../utils/displayFonts'
+import { displayFontOverride, insertThemeLinks, themePreloadLinks } from '../utils/displayFonts'
 import { activeTheme } from '../utils/activeTheme'
 import { themeOverridesCss } from '../utils/theme'
 
@@ -15,7 +15,7 @@ export default defineNitroPlugin((nitroApp) => {
   // contentSecurityPolicy.ts runs first (alphabetical) and hashes scripts only: anything pushed here must be a
   // style, which style-src 'unsafe-inline' allows. A script would be blocked.
   nitroApp.hooks.hook('render:html', async (html, { event }) => {
-    const { modes, fonts, display: themeDisplay } = activeTheme().runtime
+    const { digest, modes, fonts, display: themeDisplay } = activeTheme().runtime
     const first = modes[0]
     if (!first) return
     // Strapi down or slow: the theme's own first mode and colors, as before
@@ -32,7 +32,7 @@ export default defineNitroPlugin((nitroApp) => {
     html.htmlAttrs.push(`data-theme="${initial.id}" data-scheme="${initial.scheme}"${chosen ? ` data-mode-default="${chosen.id}"` : ''}`)
     const font = displayFontOverride(theme?.displayFont, themeDisplay, assets)
     const css = [themeOverridesCss(theme, modes.map(mode => mode.id)), font?.css].filter(Boolean).join('')
-    html.head = insertAfterStylesheet(html.head, themePreloadLinks(fonts, themeDisplay, Boolean(font)))
+    html.head = insertThemeLinks(html.head, digest, themePreloadLinks(fonts, themeDisplay, Boolean(font)))
     if (font) html.head.push(`<link rel="preload" as="font" type="font/woff2" href="${font.href}" crossorigin>`)
     if (css) html.head.push(`<style id="theme-overrides">${css}</style>`)
   })

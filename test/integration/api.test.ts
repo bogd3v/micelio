@@ -2378,7 +2378,9 @@ describe('security headers', () => {
   const scriptSources = (policy: string) => policy.split('; ').find(directive => directive.startsWith('script-src '))?.split(' ').slice(1) ?? []
 
   it('tells every response it cannot be framed, with a CSP, not only the pages', async () => {
-    for (const path of ['/api/tags', '/api/posts', '/feed.xml', '/robots.txt', '/sitemap.xml', '/theme/images/bogdev.svg', '/fonts/archivo-latin-var.woff2']) {
+    const digest = (await $fetch<string>('/')).match(/href="\/_t\/([0-9a-f]{64})\/theme\.css"/)?.[1]
+    expect(digest, 'the page links the theme stylesheet').toBeTruthy()
+    for (const path of ['/api/tags', '/api/posts', '/feed.xml', '/robots.txt', '/sitemap.xml', '/theme/images/bogdev.svg', `/_t/${digest}/fonts/archivo-latin-var.woff2`, `/_t/${digest}/theme.css`]) {
       const response = await fetch(path)
       expect(response.status, path).toBe(200)
       expect(response.headers.get('content-security-policy') ?? '', path).toContain('frame-ancestors \'none\'')
@@ -2523,32 +2525,45 @@ describe('Strapi API token', () => {
 })
 
 describe('theme fonts', () => {
-  it('preloads the preloaded font of the theme exactly once, and not the others', async () => {
+  /** The `/_t/<digest>/fonts/` base of the active theme, read from its preload links. */
+  async function fontsBase(): Promise<string> {
     const html = await $fetch<string>('/')
-    expect(html.split('<link rel="preload" href="/fonts/archivo-latin-var.woff2"')).toHaveLength(2)
-    expect(html).not.toContain('<link rel="preload" href="/fonts/jetbrains-mono-latin-var.woff2"')
+    const base = html.match(/<link rel="preload" href="(\/_t\/[0-9a-f]{64}\/fonts\/)archivo-latin-var\.woff2"/)?.[1]
+    expect(base, 'the page preloads the theme font from its store entry').toBeTruthy()
+    return base!
+  }
+
+  it('preloads the preloaded font of the theme exactly once, and not the others', async () => {
+    const base = await fontsBase()
+    const html = await $fetch<string>('/')
+    expect(html.split(`<link rel="preload" href="${base}archivo-latin-var.woff2"`)).toHaveLength(2)
+    expect(html).not.toContain(`<link rel="preload" href="${base}jetbrains-mono-latin-var.woff2"`)
+    expect(html).not.toContain('href="/fonts/archivo')
   })
 
-  it('serves /fonts/ like other static assets', async () => {
-    const font = await fetch('/fonts/archivo-latin-var.woff2')
+  it('serves the fonts from the store entry like other static assets, and no longer at /fonts/', async () => {
+    const base = await fontsBase()
+    const font = await fetch(`${base}archivo-latin-var.woff2`)
     const asset = await fetch('/theme/images/bogdev.svg')
     expect(font.status).toBe(200)
     expect(font.headers.get('content-type')).toBe('font/woff2')
     for (const header of ['strict-transport-security', 'x-content-type-options', 'x-frame-options', 'referrer-policy', 'permissions-policy', 'cross-origin-opener-policy']) {
       expect(font.headers.get(header)).toBe(asset.headers.get(header))
     }
+    expect((await fetch('/fonts/archivo-latin-var.woff2')).status).toBe(404)
   })
 
-  it('serves fonts and their licenses from fonts/, with the sandbox CSP of the theme\'s static assets', async () => {
+  it('serves fonts and their licenses from the entry, with the sandbox CSP of the theme\'s static assets', async () => {
+    const base = await fontsBase()
     const csp = 'default-src \'none\'; style-src \'unsafe-inline\'; frame-ancestors \'none\'; sandbox'
-    expect((await fetch('/fonts/archivo-latin-var.woff2')).headers.get('content-security-policy')).toBe(csp)
+    expect((await fetch(`${base}archivo-latin-var.woff2`)).headers.get('content-security-policy')).toBe(csp)
     for (const license of ['OFL-Archivo.txt', 'OFL-JetBrainsMono.txt']) {
-      const response = await fetch(`/fonts/${license}`)
+      const response = await fetch(`${base}${license}`)
       expect(response.status).toBe(200)
       expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8')
       expect(response.headers.get('content-security-policy')).toBe(csp)
     }
-    expect((await fetch('/fonts/archivo-latin-var.woff2.map')).status).toBe(404)
+    expect((await fetch(`${base}archivo-latin-var.woff2.map`)).status).toBe(404)
   })
 })
 

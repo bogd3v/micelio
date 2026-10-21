@@ -3,7 +3,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
-import { DISPLAY_FONT_RULE, displayFontId, displayFontOverride, insertAfterStylesheet, themePreloadLinks } from '../server/utils/displayFonts'
+import { LAYER_ORDER } from '../server/lib/constants'
+import { DISPLAY_FONT_RULE, displayFontId, displayFontOverride, insertThemeLinks, themePreloadLinks } from '../server/utils/displayFonts'
 import { DISPLAY_FONTS_DIR, readDisplayFontAssets } from '../modules/theme/display-fonts'
 import { stackFamily, systemStack, themeDisplay } from '../modules/theme/display-family'
 import { DISPLAY_FONTS } from '../app/interfaces/site'
@@ -11,6 +12,7 @@ import { DISPLAY_FONTS } from '../app/interfaces/site'
 const root = fileURLToPath(new URL('..', import.meta.url))
 const dir = join(root, DISPLAY_FONTS_DIR)
 const assets = readDisplayFontAssets(dir)
+const DIGEST = 'a'.repeat(64)
 const BOGOTA_WEB = ['Archivo', 'JetBrains Mono']
 const BOGOTA = {
   family: 'Archivo',
@@ -70,22 +72,25 @@ describe('provenance', () => {
 })
 
 describe('theme preloads', () => {
-  const fonts = [{ file: 'fraunces-latin-var.woff2', preload: true }, { file: 'mono.woff2', preload: true }, { file: 'lazy.woff2' }]
-  const both = '<link rel="preload" href="/fonts/fraunces-latin-var.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/fonts/mono.woff2" as="font" type="font/woff2" crossorigin>'
+  const url = (file: string): string => `/_t/${DIGEST}/fonts/${file}`
+  const fonts = [{ file: 'fraunces-latin-var.woff2', preload: true, url: url('fraunces-latin-var.woff2') }, { file: 'mono.woff2', preload: true, url: url('mono.woff2') }, { file: 'lazy.woff2', url: url('lazy.woff2') }]
+  const link = (file: string): string => `<link rel="preload" href="${url(file)}" as="font" type="font/woff2" crossorigin>`
+  const both = link('fraunces-latin-var.woff2') + link('mono.woff2')
   it('renders every preloaded font, in order, when nothing overrides the display font', () => {
     expect(themePreloadLinks(fonts, { ...STARTER, file: 'fraunces-latin-var.woff2' }, false)).toBe(both)
   })
   it('leaves out the theme\'s display file when an override is emitted, and only that one', () => {
-    expect(themePreloadLinks(fonts, { ...STARTER, file: 'fraunces-latin-var.woff2' }, true)).toBe('<link rel="preload" href="/fonts/mono.woff2" as="font" type="font/woff2" crossorigin>')
+    expect(themePreloadLinks(fonts, { ...STARTER, file: 'fraunces-latin-var.woff2' }, true)).toBe(link('mono.woff2'))
   })
   it('keeps it when the body text uses the family, or the theme has no such file', () => {
     expect(themePreloadLinks(fonts, { ...STARTER, file: 'fraunces-latin-var.woff2', sharedWithSans: true }, true)).toBe(both)
     expect(themePreloadLinks(fonts, STARTER, true)).toBe(both)
   })
-  it('goes right after the first stylesheet link, or at the end without one', () => {
-    expect(insertAfterStylesheet(['<meta><link rel="stylesheet" href="/a.css" crossorigin><link rel="modulepreload">'], '<L>')).toEqual(['<meta><link rel="stylesheet" href="/a.css" crossorigin><L><link rel="modulepreload">'])
-    expect(insertAfterStylesheet(['<meta>'], '<L>')).toEqual(['<meta>', '<L>'])
-    expect(insertAfterStylesheet(['<meta>'], '')).toEqual(['<meta>'])
+  it('puts the theme\'s stylesheet and the layer order before the first stylesheet link and the preloads after it, or at the end without one', () => {
+    const before = `<style>${LAYER_ORDER}</style><link rel="stylesheet" href="/_t/${DIGEST}/theme.css">`
+    expect(insertThemeLinks(['<meta><link rel="stylesheet" href="/a.css" crossorigin><link rel="modulepreload">'], DIGEST, '<L>')).toEqual([`<meta>${before}<link rel="stylesheet" href="/a.css" crossorigin><L><link rel="modulepreload">`])
+    expect(insertThemeLinks(['<meta>'], DIGEST, '<L>')).toEqual(['<meta>', `${before}<L>`])
+    expect(insertThemeLinks(['<meta>'], DIGEST, '')).toEqual(['<meta>', before])
   })
 })
 
@@ -170,5 +175,12 @@ describe('displayFontId', () => {
     expect(displayFontId('fraunces')).toBe('fraunces')
     expect(displayFontId('toString')).toBeUndefined()
     expect(displayFontId(3)).toBeUndefined()
+  })
+})
+
+describe('LAYER_ORDER', () => {
+  it('is the layer order statement of main.css, which the bundler drops', () => {
+    const first = readFileSync(join(__dirname, '../app/assets/css/main.css'), 'utf8').split('\n')[0]!
+    expect(first.replace(/,\s*/g, ',').replace(/^@layer /, '@layer ')).toBe(LAYER_ORDER)
   })
 })

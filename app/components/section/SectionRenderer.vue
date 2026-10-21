@@ -49,6 +49,9 @@ const newsletterOn = __STATIC_BUILD__ && isLanding ? useModule('newsletter') : u
 
 const titleLeads = computed<boolean>(() => props.pageTitle !== undefined && !heroLeadsPage(props.sections))
 const heroLeads = computed<boolean>(() => props.pageTitle !== undefined ? heroLeadsPage(props.sections) : Boolean(props.leadHeading))
+// The theme's own section styles are a file of its store entry, linked only on pages that have sections (ADR 0009, section 6)
+const theme = useThemeData()
+if (theme.sections) useHead({ link: [{ rel: 'stylesheet', href: `/_t/${theme.digest}/sections.css` }] })
 const knownSections = computed<PageSection[]>(() => filterKnown(props.sections))
 // A landing's navigation links to its home page's sections by these ids (docs/operate/static-site.md, "Landing")
 const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLanding
@@ -80,5 +83,4 @@ const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLand
 @import "~/assets/css/components/section-pricing.css" layer(myc.components);
 @import "~/assets/css/components/section-faq.css" layer(myc.components);
 @import "~/assets/css/animations/section-marquee.css" layer(myc.animations);
-@import "#build/micelio/sections.css" layer(myc.theme);
 </style>

@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import { ENTRY_FILES } from '../../modules/theme/install/constants'
 import { dir } from '#micelio/built-in-store'
 import { loadBuiltInTheme, locateBuiltInStore, watchBuiltInIndex } from '../lib/builtInStore'
 import type { BuiltInTheme } from '../lib/types'
@@ -13,7 +14,7 @@ export default defineNitroPlugin((nitroApp) => {
   let messages: ReturnType<typeof themeMessagesOf>
   function use(theme: BuiltInTheme): void {
     setActiveTheme(theme)
-    data = themeDataOf(theme.runtime)
+    data = themeDataOf(theme.runtime, theme.entry.files.has(ENTRY_FILES.sections))
     messages = themeMessagesOf(theme.runtime)
   }
   use(loadBuiltInTheme(storeDir))

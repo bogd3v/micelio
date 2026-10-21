@@ -128,3 +128,6 @@ export const ARTICLE_POPULATE = {
 
 /** Strapi filter that leaves out an article without a slug: the CMS `uid` is optional, and every route and link keys on the slug. */
 export const ARTICLE_HAS_SLUG = { slug: { $notNull: true } }
+
+/** The `@layer` order of `app/assets/css/main.css`; Lightning CSS drops the statement when it bundles, so the head carries it inline before any stylesheet (ADR 0009, section 6). */
+export const LAYER_ORDER = '@layer myc.reset,myc.settings,myc.base,myc.components,myc.layout,myc.pages,myc.theme,myc.animations,myc.utilities;'

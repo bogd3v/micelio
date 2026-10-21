@@ -5,7 +5,8 @@ import AxeBuilder from '@axe-core/playwright'
 // How many stylesheets (linked or inline) of a page hold the section rules
 async function sectionStylesheets(request: APIRequestContext, path: string): Promise<number> {
   const html = await (await request.get(path)).text()
-  const hrefs = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(match => match[1]!)
+  // The core's section rules are one stylesheet of the bundle; the theme's own `sections.css` is a file of its store entry (`/_t/<digest>/`)
+  const hrefs = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)].map(match => match[1]!).filter(href => !href.startsWith('/_t/'))
   let count = [...html.matchAll(/<style[^>]*>([^]*?)<\/style>/g)].filter(match => match[1]!.includes('myc-section-logo-track')).length
   for (const href of hrefs) {
     if ((await (await request.get(href)).text()).includes('myc-section-logo-track')) count++
@@ -17,6 +18,13 @@ test('section CSS is one stylesheet on a section page and absent from the home a
   expect(await sectionStylesheets(request, '/showcase')).toBe(1)
   expect(await sectionStylesheets(request, '/')).toBe(0)
   expect(await sectionStylesheets(request, '/blog')).toBe(0)
+})
+
+test('the theme\'s section styles are linked from its store entry, only on a section page', async ({ request }) => {
+  const link = /<link rel="stylesheet" href="\/_t\/[0-9a-f]{64}\/sections\.css"/
+  expect(await (await request.get('/showcase')).text()).toMatch(link)
+  expect(await (await request.get('/')).text()).not.toMatch(link)
+  expect(await (await request.get('/blog')).text()).not.toMatch(link)
 })
 
 const PAGES = [

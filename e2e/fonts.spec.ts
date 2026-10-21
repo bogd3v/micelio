@@ -7,15 +7,14 @@ test('serves self-hosted fonts without calling Google Fonts', async ({ page }) =
   })
   const fontResponses: string[] = []
   page.on('response', (response) => {
-    if (response.url().includes('/fonts/') && response.ok()) fontResponses.push(new URL(response.url()).pathname)
+    if (/\/_t\/[0-9a-f]{64}\/fonts\//.test(response.url()) && response.ok()) fontResponses.push(new URL(response.url()).pathname)
   })
 
   await page.goto('/', { waitUntil: 'networkidle' })
   await page.evaluate(() => document.fonts.ready)
 
   expect(external).toEqual([])
-  expect(fontResponses).toContain('/fonts/archivo-latin-var.woff2')
-  expect(fontResponses).toContain('/fonts/jetbrains-mono-latin-var.woff2')
+  expect(fontResponses.map(path => path.replace(/^\/_t\/[0-9a-f]{64}/, ''))).toEqual(expect.arrayContaining(['/fonts/archivo-latin-var.woff2', '/fonts/jetbrains-mono-latin-var.woff2']))
   const loaded = await page.evaluate(async () => ({
     archivo: (await document.fonts.load('16px Archivo', 'Bogotá')).length,
     mono: (await document.fonts.load('16px "JetBrains Mono"', 'ollama')).length,
@@ -49,6 +48,6 @@ test('renders the Archivo width axis', async ({ page }) => {
 // Only the text font is on the LCP path; the mono font loads when code or meta text needs it (#350)
 test('preloads the text font only', async ({ request }) => {
   const html = await (await request.get('/')).text()
-  expect(html).toMatch(/<link[^>]+rel="preload"[^>]+href="\/fonts\/archivo-latin-var\.woff2"/)
-  expect(html).not.toMatch(/<link[^>]+rel="preload"[^>]+href="\/fonts\/jetbrains-mono-latin-var\.woff2"/)
+  expect(html).toMatch(/<link[^>]+rel="preload"[^>]+href="\/_t\/[0-9a-f]{64}\/fonts\/archivo-latin-var\.woff2"/)
+  expect(html).not.toMatch(/<link[^>]+rel="preload"[^>]+href="[^"]*jetbrains-mono-latin-var\.woff2"/)
 })

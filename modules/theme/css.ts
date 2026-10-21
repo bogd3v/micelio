@@ -1,7 +1,4 @@
-import { existsSync } from 'node:fs'
-import { join } from 'node:path'
 import { addTemplate } from 'nuxt/kit'
-import { buildTokensCss } from './tokens.mjs'
 import type { CssSource, ThemeContext, LayoutRegion } from './types'
 
 /** Template of each region's CSS; main.css imports it where the core file it replaces sits. */
@@ -19,44 +16,15 @@ function joinCss(sources: CssSource[]): string {
 
 // main.css imports these at fixed positions (ADR 0005, section 3); never nuxt.options.css
 /**
- * Adds the templates that carry the active theme's CSS into the build, under `micelio/`.
+ * Adds the templates that carry the active theme's region CSS into the build, under `micelio/`.
  *
  * @remarks
- * Runs at build time. `settings.css` holds the role CSS generated from `theme.json`, preceded by the theme's `fonts.css` and
- * `font-fallbacks.css` when present. `theme.css` imports the theme's `theme.css` and its slot styles, `sections.css` its
- * `sections.css`, `components.css` holds the CSS that other setups add (the mode switch), and the five region templates hold the variant CSS of each region. Each template is generated again on every
- * regeneration, so an edit to `theme.json` in dev reaches the role CSS without a restart.
+ * Runs at build time. The five region templates hold the variant CSS of each region, until #402 moves it to the store. The theme's
+ * own stylesheet (roles, fonts, `theme.css`, slot styles and the mode switch's rules) and `sections.css` are no longer in the
+ * bundle: the store compiles them (`install/compile.ts`) and `server/plugins/themeMode.ts` links them (ADR 0009, section 6).
+ * Each template is generated again on every regeneration.
  */
 export function setupCss(ctx: ThemeContext): void {
-  const { dir, load } = ctx
-
-  addTemplate({
-    filename: 'micelio/settings.css',
-    write: true,
-    getContents: () => [
-      ...['fonts.css', 'font-fallbacks.css'].filter(file => existsSync(join(dir, file))).map(file => `@import "${join(dir, file)}";`),
-      buildTokensCss(load().manifest),
-    ].join('\n'),
-  })
-  addTemplate({
-    filename: 'micelio/components.css',
-    write: true,
-    getContents: () => joinCss(ctx.componentsCss),
-  })
-  addTemplate({
-    filename: 'micelio/theme.css',
-    write: true,
-    getContents: () => {
-      const lines = [existsSync(join(dir, 'theme.css')) ? `@import "${join(dir, 'theme.css')}";` : '', joinCss(ctx.slotCss)].filter(Boolean)
-      return lines.length ? `${lines.join('\n')}\n` : ''
-    },
-  })
-  // Optional: the page sections' styling, imported by SectionRenderer so only pages with sections load it (ADR 0005, sections 4 and 11)
-  addTemplate({
-    filename: 'micelio/sections.css',
-    write: true,
-    getContents: () => (existsSync(join(dir, 'sections.css')) ? `@import "${join(dir, 'sections.css')}";\n` : ''),
-  })
   for (const [region, filename] of Object.entries(REGION_TEMPLATES) as Array<[LayoutRegion, string]>) {
     addTemplate({
       filename,

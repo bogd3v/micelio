@@ -1,3 +1,5 @@
+import { SERVE_PREFIX } from '../../modules/theme/install/constants'
+import { LAYER_ORDER } from '../lib/constants'
 import { logError } from './log'
 import { DISPLAY_FONTS } from '~/interfaces/site'
 import type { DisplayFont } from '~/interfaces/site'
@@ -96,6 +98,8 @@ export function displayFontOverride(font: string | undefined, theme: ThemeDispla
 interface ThemeFontFile {
   file: string
   preload?: boolean
+  /** Where the entry serves it, `/_t/<digest>/fonts/<file>`. */
+  url: string
 }
 
 const STYLESHEET_LINK = /<link rel="stylesheet"[^>]*>/
@@ -108,14 +112,17 @@ const STYLESHEET_LINK = /<link rel="stylesheet"[^>]*>/
 export function themePreloadLinks(fonts: ThemeFontFile[], theme: ThemeDisplay, overridden: boolean): string {
   return fonts
     .filter(font => font.preload && !(overridden && !theme.sharedWithSans && font.file === theme.file))
-    .map(font => `<link rel="preload" href="/fonts/${font.file}" as="font" type="font/woff2" crossorigin>`)
+    .map(font => `<link rel="preload" href="${font.url}" as="font" type="font/woff2" crossorigin>`)
     .join('')
 }
 
-/** `links` right after the first stylesheet link of the head chunks (where the build-time head put them), else at the end. */
-export function insertAfterStylesheet(head: string[], links: string): string[] {
-  if (!links) return head
+/**
+ * The theme's stylesheet and the `@layer` order, ahead of the build's stylesheet (so the theme's roles come first in `myc.settings`, as when they
+ * were bundled), and `after` (the font preloads) behind it. Where the head has no stylesheet link, as in development, both go at the end.
+ */
+export function insertThemeLinks(head: string[], digest: string, after: string): string[] {
+  const before = `<style>${LAYER_ORDER}</style><link rel="stylesheet" href="${SERVE_PREFIX}/${digest}/theme.css">`
   const index = head.findIndex(chunk => STYLESHEET_LINK.test(chunk))
-  if (index === -1) return [...head, links]
-  return head.map((chunk, i) => (i === index ? chunk.replace(STYLESHEET_LINK, tag => tag + links) : chunk))
+  if (index === -1) return [...head, before + after]
+  return head.map((chunk, i) => (i === index ? chunk.replace(STYLESHEET_LINK, tag => before + tag + after) : chunk))
 }

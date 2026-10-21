@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import type { ThemeContext, ThemeComponent } from './types'
 import { SLOT_NAMES } from './constants'
@@ -14,28 +14,16 @@ export function resolveSlots(themeDir: string, defaultsDir: string): ThemeCompon
   })
 }
 
-/** The theme's slots/*.css in a fixed order, as the `@import` lines of the `micelio/theme.css` template. */
-export function slotStyles(themeDir: string): string {
-  const dir = join(themeDir, 'slots')
-  if (!existsSync(dir)) return ''
-  return readdirSync(dir)
-    .filter(file => file.endsWith('.css'))
-    .sort()
-    .map(file => `@import "${join(dir, file)}";`)
-    .join('\n')
-}
-
 // Slots are plain components for now: `island` is recorded in the theme's `runtime.json` and enforced by the theme validator (#237, PR 7)
 /**
- * Registers the component of each slot, and the styles of the theme's slot files, at build time.
+ * Registers the component of each slot at build time.
  *
  * @remarks
  * A slot renders the theme's `slots/<Name>.vue` when it ships one, else the core default in `app/theme/defaults/`. The components
- * are added to the context and registered by `setupComponents`. The theme's `slots/*.css` files join `micelio/theme.css` in
- * file-name order.
+ * are added to the context and registered by `setupComponents`. The theme's `slots/*.css` files are compiled into the
+ * theme's stylesheet in the store (`install/compile.ts`).
  */
 export function setupSlots(ctx: ThemeContext): void {
   const defaultsDir = resolve(ctx.nuxt.options.srcDir, DEFAULTS_DIR)
   ctx.components.push(...resolveSlots(ctx.dir, defaultsDir))
-  ctx.slotCss.push(() => slotStyles(ctx.dir))
 }
