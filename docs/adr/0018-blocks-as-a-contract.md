@@ -1,6 +1,6 @@
 # ADR-0018: Blocks as a contract
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-21
 **Deciders:** Micelio maintainer
 
