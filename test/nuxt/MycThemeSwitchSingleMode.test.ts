@@ -1,11 +1,12 @@
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import MycThemeSwitch from '~/components/myc/MycThemeSwitch.vue'
 import MycMenuSheet from '~/components/myc/MycMenuSheet.vue'
 
-vi.mock('#micelio/theme', () => {
-  const modes = [{ id: 'paper', scheme: 'light', name: 'Paper' }]
-  return { modes, images: {}, default: { id: 'minimal', modes, images: {} } }
+import { setThemeData } from './themeData'
+
+beforeEach(() => {
+  setThemeData({ id: 'minimal', modes: [{ id: 'paper', scheme: 'light', name: 'Paper' }], images: {} })
 })
 
 describe('MycThemeSwitch with a single-mode theme', () => {

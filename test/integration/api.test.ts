@@ -2998,6 +2998,24 @@ describe('the built-in theme store under /_t/', () => {
     expect(font.headers.get('content-type')).toBe('font/woff2')
   })
 
+  it('names the theme\'s own images by digest in the page, and they are served', async () => {
+    const { digest } = digests()
+    const html = await (await fetch('/')).text()
+    const urls = [...new Set(html.match(new RegExp(`/_t/${digest}/images/[\\w./-]+`, 'g')))]
+    expect(urls.length).toBeGreaterThan(0)
+    expect(html).not.toMatch(/\/theme\/images\/(favicon|og)/)
+    for (const url of urls) expect((await fetch(url)).status, url).toBe(200)
+  })
+
+  it('puts the theme data in the payload for the client, without the palette or the messages', async () => {
+    const { digest } = digests()
+    const html = await (await fetch('/')).text()
+    const payload = /<script[^>]*id="__NUXT_DATA__"[^>]*>([\s\S]*?)<\/script>/.exec(html)?.[1] ?? ''
+    expect(payload).toContain(digest)
+    expect(payload).toContain('myc-theme-data')
+    expect(payload).not.toContain('surface-sunken')
+  })
+
   it('answers the same empty 404 for an unknown digest, a theme this site does not serve and an unknown file', async () => {
     const { digest, other } = digests()
     const missing = [`/_t/${'0'.repeat(64)}/theme.css`, `/_t/${other}/theme.css`, `/_t/${digest}/nope.css`, `/_t/${digest}/manifest.json`, `/_t/${digest}/theme.css.br`, `/_t/${digest}/fonts/..%2ftheme.css`, '/_t/not-a-digest/theme.css', `/_t/${digest}/`, `/_t/${digest}`]

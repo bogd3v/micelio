@@ -40,6 +40,7 @@ export default defineConfig({
           name: 'nuxt',
           include: ['test/nuxt/**/*.test.ts'],
           environment: 'nuxt',
+          setupFiles: ['test/nuxt/setup.ts'],
           environmentOptions: {
             nuxt: {
               domEnvironment: 'happy-dom',

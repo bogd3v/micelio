@@ -1,5 +1,4 @@
 import type { ComputedRef } from 'vue'
-import { modes } from '#micelio/theme'
 import type { ThemeMode, ThemeModeDefinition } from '~/interfaces'
 import { nextMode, schemeOf, storeMode } from '~/helpers/theme'
 
@@ -23,6 +22,7 @@ interface UseTheme {
  */
 export function useTheme(): UseTheme {
   const { t, te } = useNuxtApp().$i18n
+  const { modes } = useThemeData()
   const state = useState<ThemeMode>('myc-theme', () => modes[0]?.id ?? '')
 
   const theme = computed<ThemeMode>(() => state.value)

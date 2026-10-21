@@ -25,7 +25,13 @@ Nothing from a theme is executed, imported or evaluated at any step. A source is
 
 The image build installs every theme of the build (`themes/`, the lock's, `MICELIO_THEME_DIRS`) into a built-in store with `modules/theme/built-in-store.ts`, at the build's own core build id, and copies it to `.output/server/micelio/store`. It runs the checks of the Nuxt build (contract, public hooks, package) and `allowCode`; contrast and budgets are admission checks, which the build does not make for a theme the operator installed by hand. In development the store is `node_modules/.cache/micelio/built-in-store/<build id>/`.
 
-At boot `server/plugins/builtInTheme.ts` loads the build's theme from it, verifies the entry against its manifest and parses `runtime.json` (`install/runtime.ts`); a defect stops the boot. `GET /_t/<digest>/<file>` serves that entry's files from memory ([API](../api.md)). The pages do not use it yet: the following PRs of #401 move the theme data, the messages and the stylesheet to it.
+At boot `server/plugins/builtInTheme.ts` loads the build's theme from it, verifies the entry against its manifest and parses `runtime.json` (`install/runtime.ts`); a defect stops the boot. `GET /_t/<digest>/<file>` serves that entry's files from memory ([API](../api.md)). The pages read the theme's modes, images, layout variants and Mermaid overrides from it (`useThemeData()`, below); the following PRs of #401 move the messages and the stylesheet.
+
+### What a page reads
+
+`server/plugins/builtInTheme.ts` puts a frozen slice of `runtime.json` (`id`, `digest`, `modes`, `images`, `layout`, `mermaid`) in `event.context.theme` on every request. `useThemeData()` (`app/composables/useThemeData.ts`) reads it into the shared state `myc-theme-data` on the server and from the payload on the client, and throws, not a blank page, if the server did not provide it. The `#micelio/theme`, `#micelio/theme-mermaid` and `#micelio/theme-palette` virtual modules are gone; the server reads the palette, the fonts and the display-family data from the active theme (`activeTheme()`). A theme's default favicon and share image are now `/_t/<digest>/images/<file>`, so they change URL whenever the build does. `#micelio/build-theme` stays until `NUXT_PUBLIC_THEME` is read at runtime.
+
+In a component test, `test/nuxt/setup.ts` gives every test Bogotá's data; `setThemeData({ … })` changes it.
 
 ## Isolation
 

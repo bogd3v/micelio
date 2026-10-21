@@ -1,11 +1,12 @@
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import BlogPage from '~/pages/blog/index.vue'
 
-vi.mock('#micelio/theme', async (importOriginal) => {
-  const original = await importOriginal<Record<string, unknown>>()
-  return { ...original, layout: { ...(original.layout as object), postList: 'list' } }
+import { BOGOTA_THEME_DATA, setThemeData } from './themeData'
+
+beforeEach(() => {
+  setThemeData({ layout: { ...BOGOTA_THEME_DATA.layout, postList: 'list' } })
 })
 
 registerEndpoint('/api/posts', () => ({

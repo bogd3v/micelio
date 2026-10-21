@@ -5,7 +5,6 @@ import { addTypeTemplate } from 'nuxt/kit'
 import { STATIC_CSP } from '../../app/constants/security'
 import { copyServed } from './assets'
 import { FONT_ASSET_FILE } from './constants'
-import { themeDisplay } from './display-family'
 import type { ThemeContext } from './types'
 
 // The curated display fonts of the core (ADR 0005, section 8): served at /fonts/display/, emitted by server/utils/displayFonts.ts.
@@ -60,13 +59,12 @@ export function setupDisplayFonts(ctx: ThemeContext): void {
   })
   nuxt.hook('nitro:config', (config) => {
     config.virtual ||= {}
-    config.virtual[MODULE] = `export const assets = ${JSON.stringify(readDisplayFontAssets(source))}\nexport const themeDisplay = ${JSON.stringify(themeDisplay(ctx.load().manifest))}\n`
+    config.virtual[MODULE] = `export const assets = ${JSON.stringify(readDisplayFontAssets(source))}\n`
   })
   addTypeTemplate({
     filename: 'types/micelio-display-fonts.d.ts',
     getContents: () => `declare module '${MODULE}' {
   export const assets: { versions: Record<string, string>, fallbacks: Record<string, string> }
-  export const themeDisplay: { family: string, file?: string, sharedWithSans: boolean, display: string, sans: string }
 }
 `,
   }, { nitro: true, nuxt: true })

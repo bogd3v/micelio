@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { blogPath } from '~/helpers/blog'
 import type { HeaderSection } from '~/interfaces'
-import { modes } from '#micelio/theme'
 
 const SWIPE_CLOSE_DISTANCE = 80
 
@@ -17,6 +16,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { modes } = useThemeData()
 const route = useRoute()
 const { localizePath } = useLocaleUtils()
 const fediverseUser = useFediverseUser()

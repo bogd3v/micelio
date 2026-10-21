@@ -1,4 +1,5 @@
 import type { SiteSettings } from '../../app/interfaces/site'
+import type { ThemeData } from '../../app/interfaces/theme'
 
 /** What a call to Strapi needs: the pure part of `strapiFetch`, usable outside Nitro (build modules). */
 export interface StrapiRequestConfig {
@@ -26,4 +27,11 @@ export interface LoadedCategory {
 export interface ParsedSiteSettings extends SiteSettings {
   /** The public security contact, a `mailto:` or `https:` URI that `validSecurityContact` accepted. */
   securityContact?: string
+}
+
+declare module 'h3' {
+  interface H3EventContext {
+    /** The active theme's data for the page, set on every request by `server/plugins/builtInTheme.ts`. */
+    theme?: ThemeData
+  }
 }

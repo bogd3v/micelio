@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { layout } from '#micelio/theme'
 import { Locale } from '~/interfaces'
 import type { BlogFilters, BlogSort, BlogView, CategoryEntry, PostListItem, TagCount } from '~/interfaces'
 import { BLOG_SORTS, blogLocation, blogPageSize, blogPath, hasActiveFilters, isBlogRouteValid, localesWithCategory, parseBlogRoute, parseSort, searchTerm } from '~/helpers/blog'
@@ -16,9 +15,9 @@ const SEARCH_DEBOUNCE_MS = 300
 const POPULAR_TAGS = 8
 const VIEWS: BlogView[] = ['grid', 'log']
 // The list variant always renders rows: it ignores the view and hides its switch (ADR 0005, section 5)
-const viewSwitch = layout.postList !== 'list'
 
 const { locale, t } = useI18n()
+const viewSwitch = useThemeData().layout.postList !== 'list'
 const route = useRoute()
 const router = useRouter()
 const { localizePath } = useLocaleUtils()

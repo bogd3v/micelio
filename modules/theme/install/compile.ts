@@ -259,6 +259,7 @@ export async function compileTheme({ theme, packageDigest, code, coreBuild }: Co
   }
   const { manifest } = theme
   const palette = buildPalette(manifest)
+  for (const { mode, reason } of palette.skipped) warnings.push(`mode "${mode}" is left out of the palette (${reason})`)
   const runtime: RuntimeData = {
     id: manifest.id,
     name: manifest.name,

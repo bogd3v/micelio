@@ -1,5 +1,4 @@
 import type { ComputedRef } from 'vue'
-import { images } from '#micelio/theme'
 import type { Site, AppSiteConfig } from '~/interfaces'
 import { fallbackModules } from '~/helpers/modules'
 import { parseSiteMode } from '~/helpers/siteMode'
@@ -8,6 +7,7 @@ import { siteFromAppConfig } from '~/helpers/site'
 function fetchSite(): { defaults: Site, request: ReturnType<typeof useAsyncData<Site>> } {
   const { locale } = useI18n()
   const appConfig = useAppConfig()
+  const { images } = useThemeData()
   const { siteMode, newsletterProvider } = useRuntimeConfig().public
   const base = siteFromAppConfig(appConfig.site as AppSiteConfig, images.favicon)
   const defaults: Site = { ...base, modules: fallbackModules(base.modules, parseSiteMode(siteMode), newsletterProvider.action) }

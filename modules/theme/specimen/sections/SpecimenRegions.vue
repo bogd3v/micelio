@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { layout } from '#micelio/theme'
 import { variants as alternates } from '#micelio/specimen-variants'
 import type { FieldGuideTopic } from '~/interfaces'
 import { fieldGuideTopics } from '~/helpers/categoryList'
 import { ARTICLE, CATEGORIES_SAMPLE, FEATURED_POST, POSTS } from '../fixtures'
 
 const { t } = useI18n()
+const { layout } = useThemeData()
 
 // Headers and footers the theme does not use; the specimen registers them under their own names
 const chrome = alternates
