@@ -2,7 +2,6 @@ import { readFileSync } from 'node:fs'
 import { resolve, sep } from 'node:path'
 import { defineNuxtModule } from 'nuxt/kit'
 import { compileMessages } from './theme/install/messages'
-import { themeRoots } from './theme/themes'
 
 interface ResolveContext {
   resolve: (source: string, importer?: string, options?: { skipSelf: boolean }) => Promise<{ id: string } | null>
@@ -30,11 +29,10 @@ export function isMessageFile(path: string, dirs: string[]): boolean {
 export default defineNuxtModule({
   meta: { name: 'precompile-messages' },
   setup(_options, nuxt): void {
-    // The core locales, the /_theme messages (modules/theme/specimen/setup.ts) and the themes' (modules/theme/assets.ts)
+    // The core locales and the /_theme messages (modules/theme/specimen/setup.ts); a theme's messages are compiled when it is installed
     const messageDirs = [
       resolve(nuxt.options.rootDir, 'i18n/locales'),
       resolve(nuxt.options.rootDir, 'modules/theme/specimen/locales'),
-      ...themeRoots(nuxt.options.rootDir),
     ]
     const plugin: MessagesPlugin = {
       name: 'micelio:precompile-messages',

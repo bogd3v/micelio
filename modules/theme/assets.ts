@@ -1,5 +1,5 @@
-import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, rmSync } from 'node:fs'
-import { basename, join, relative } from 'node:path'
+import { cpSync, existsSync, lstatSync, mkdirSync, rmSync } from 'node:fs'
+import { join, relative } from 'node:path'
 import { useLogger } from 'nuxt/kit'
 import { isThemePath } from './context'
 import type { ThemeContext } from './types'
@@ -84,23 +84,12 @@ function setupImages(ctx: ThemeContext): void {
   })
 }
 
-/** Registers the theme's i18n/<locale>.json files with `@nuxtjs/i18n`; they go through the same precompiler as the core ones. */
-function setupMessages(ctx: ThemeContext): void {
-  const langDir = join(ctx.dir, 'i18n')
-  if (!existsSync(langDir)) return
-  const files = readdirSync(langDir).filter(file => file.endsWith('.json'))
-  const locales = files.map(file => ({ code: basename(file, '.json') as 'en' | 'es', file }))
-  ctx.nuxt.hook('i18n:registerModule', (register) => {
-    register({ langDir, locales })
-  })
-}
-
 /**
- * Serves the active theme's fonts, images and messages, at build time.
+ * Serves the active theme's fonts and images, at build time.
  *
  * @remarks
  * `fonts/` is served at `/fonts/` and `images/` at `/theme/images/`, both copied under `micelio/` in the build folder with the
- * `STATIC_CSP` header. The theme's `i18n/<locale>.json` files are registered with `@nuxtjs/i18n`. A missing folder is skipped.
+ * `STATIC_CSP` header. A missing folder is skipped. The theme's messages are compiled when it is installed and reach the pages from the store.
  * Images are copied again when they change in dev; the fonts are copied once, so a change to `fonts/` needs a dev restart.
  *
  * @throws `Error` when a file in `fonts/` or `images/` is a symlink, or when `@nuxt/image` was set up before this module
@@ -109,5 +98,4 @@ function setupMessages(ctx: ThemeContext): void {
 export function setupAssets(ctx: ThemeContext): void {
   setupFonts(ctx)
   setupImages(ctx)
-  setupMessages(ctx)
 }

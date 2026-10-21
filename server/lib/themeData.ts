@@ -1,5 +1,5 @@
 import type { RuntimeData } from '../../modules/theme/install/types'
-import type { ThemeData } from '~/interfaces/theme'
+import type { ThemeData, ThemeMessages } from '~/interfaces/theme'
 
 function freeze<T>(value: T): T {
   if (typeof value === 'object' && value !== null) for (const child of Object.values(value)) freeze(child)
@@ -14,4 +14,13 @@ function freeze<T>(value: T): T {
 export function themeDataOf(runtime: RuntimeData): ThemeData {
   const { id, digest, modes, images, layout, mermaid } = runtime
   return freeze(structuredClone({ id, digest, modes, images, layout, mermaid }))
+}
+
+/**
+ * The theme's compiled messages by locale, frozen so a request can add them to its own locale messages without ever changing what the next request sees.
+ *
+ * @param runtime - The parsed `runtime.json` of the active entry.
+ */
+export function themeMessagesOf(runtime: RuntimeData): Record<string, ThemeMessages> {
+  return freeze(structuredClone(runtime.messages))
 }

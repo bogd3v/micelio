@@ -3016,6 +3016,36 @@ describe('the built-in theme store under /_t/', () => {
     expect(payload).not.toContain('surface-sunken')
   })
 
+  // The messages are also in the payload: what the page renders is what is left without it
+  const withoutPayload = (html: string): string => html.replace(/<script[^>]*>[\s\S]*?<\/script>/g, '')
+
+  it('renders the theme text in the language of the page, and no request sees another request\'s language', async () => {
+    const english = 'Made in Bogotá, Colombia'
+    const spanish = 'Hecho en Bogotá, Colombia'
+    const pages = await Promise.all(Array.from({ length: 12 }, async (_, index) => {
+      const path = index % 2 === 0 ? '/' : '/es'
+      return { path, html: withoutPayload(await (await fetch(path)).text()) }
+    }))
+    for (const { path, html } of pages) {
+      expect(html, path).toContain(path === '/' ? english : spanish)
+      expect(html, path).not.toContain(path === '/' ? spanish : english)
+    }
+    // After Spanish pages, an English one still gets English: the shared messages were not written to
+    const after = withoutPayload(await (await fetch('/')).text())
+    expect(after).toContain(english)
+    expect(after).not.toContain(spanish)
+  })
+
+  it('sends the messages of the page\'s locale in the payload and the rest from the immutable file', async () => {
+    const { digest } = digests()
+    const html = await (await fetch('/es')).text()
+    const payload = /<script[^>]*id="__NUXT_DATA__"[^>]*>([\s\S]*?)<\/script>/.exec(html)?.[1] ?? ''
+    expect(payload).toContain('myc-theme-messages')
+    expect(payload).not.toContain('Made in Bogotá')
+    const file = (await (await fetch(`/_t/${digest}/runtime.json`)).json()) as { messages: Record<string, unknown> }
+    expect(Object.keys(file.messages).sort()).toEqual(['en', 'es'])
+  })
+
   it('answers the same empty 404 for an unknown digest, a theme this site does not serve and an unknown file', async () => {
     const { digest, other } = digests()
     const missing = [`/_t/${'0'.repeat(64)}/theme.css`, `/_t/${other}/theme.css`, `/_t/${digest}/nope.css`, `/_t/${digest}/manifest.json`, `/_t/${digest}/theme.css.br`, `/_t/${digest}/fonts/..%2ftheme.css`, '/_t/not-a-digest/theme.css', `/_t/${digest}/`, `/_t/${digest}`]

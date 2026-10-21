@@ -218,7 +218,7 @@ Optional. The style of the page sections (the `myc-section-*` hooks and `data-se
 
 ## 5. Messages
 
-`i18n/<locale>.json` files (the file name is the locale code, and must be one of the site's locales, `en` or `es`: another name adds a new locale to the site, with no core messages) are merged into the site's messages under the `theme.*` namespace. User-facing text of a theme lives here, never in the core's locale files. The core reads these keys when present (ADR 0005, section 4): `theme.hud.{city,coords,altitude,madeIn}`, `theme.guide.*`, `theme.latest.emptyNote`, `theme.hero.subtitle` (the home subtitle), `theme.author.bio` (the line in the author card), `theme.palette.names` and `theme.profile.alt`. Without them the place line renders nothing and the others fall back to a neutral text or nothing. Your slots may add their own keys under `theme.*`.
+`i18n/<locale>.json` files (the file name is the locale code, and must be one of the site's locales, `en` or `es`; a file for another code is compiled and never used, because a theme no longer adds locales to the site) are compiled when the theme is installed and added to the site's messages for each request under the `theme.*` namespace; the file may hold nothing else. User-facing text of a theme lives here, never in the core's locale files. The core reads these keys when present (ADR 0005, section 4): `theme.hud.{city,coords,altitude,madeIn}`, `theme.guide.*`, `theme.latest.emptyNote`, `theme.hero.subtitle` (the home subtitle), `theme.author.bio` (the line in the author card), `theme.palette.names` and `theme.profile.alt`. Without them the place line renders nothing and the others fall back to a neutral text or nothing. Your slots may add their own keys under `theme.*`.
 
 ### The source link
 
