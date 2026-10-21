@@ -3,7 +3,7 @@
   "info": {
     "title": "Micelio site API",
     "version": "0.4.0",
-    "description": "The HTTP routes every Micelio site serves: 34 paths and 36 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
+    "description": "The HTTP routes every Micelio site serves: 35 paths and 37 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
     "license": {
       "name": "AGPL-3.0-only",
       "identifier": "AGPL-3.0-only"
@@ -67,6 +67,73 @@
           },
           "404": {
             "description": "Not Found. The `code` is one of:\n- `notFound`: The body is empty, not a problem document: a client of `security.txt` expects a plain 404.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_t/{digest}/{path}": {
+      "get": {
+        "operationId": "getTByDigestByPath",
+        "summary": "A file of the active theme",
+        "description": "A stylesheet, font, image or `runtime.json` of a compiled theme, from the bytes verified when it was loaded. `digest` is the 64 hex digits of the entry the site serves; any other digest, and any file the entry does not list, answers the same empty `notFound`. Brotli or gzip is sent when the request accepts it, with `Vary: Accept-Encoding`. The file is immutable (the digest changes with the content), `nosniff` and sandboxed by the static CSP.",
+        "tags": [
+          "Site files"
+        ],
+        "parameters": [
+          {
+            "name": "digest",
+            "in": "path",
+            "description": "The digest of a theme entry the site serves.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          {
+            "name": "path",
+            "in": "path",
+            "description": "A file of the entry, such as `theme.css` or `fonts/archivo.woff2`.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The file, with its own content type (`text/css`, `application/json`, `font/woff2`, an image type). Cache-Control: `public, max-age=31536000, immutable`.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
             "content": {
               "application/problem+json": {
                 "schema": {

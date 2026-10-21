@@ -1,5 +1,6 @@
 import { defineNuxtModule } from 'nuxt/kit'
 import { setupAssets } from './assets'
+import { setupBuiltInStore } from './built-in-store'
 import { createContext, setupWatch } from './context'
 import { setupCss } from './css'
 import { setupComponents, setupData } from './data'
@@ -13,7 +14,7 @@ import { setupSpecimen } from './specimen/setup'
 // No logic here: each concern has its own file.
 export default defineNuxtModule({
   meta: { name: 'micelio-theme', configKey: 'micelioTheme' },
-  setup(_options, nuxt) {
+  async setup(_options, nuxt) {
     const ctx = createContext(nuxt)
     setupData(ctx)
     setupAssets(ctx)
@@ -25,5 +26,6 @@ export default defineNuxtModule({
     setupCss(ctx)
     setupSpecimen(ctx)
     setupWatch(ctx)
+    await setupBuiltInStore(ctx)
   },
 })

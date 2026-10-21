@@ -21,6 +21,12 @@ Nothing from a theme is executed, imported or evaluated at any step. A source is
 
 `InstallOptions.buildChecksOnly` is for the image's own build: it runs the contract, hook and package checks of the Nuxt build and skips the admission checks of `theme:check` (contrast and static budgets), which a build never made for a theme the operator installed by hand. A server install never sets it.
 
+## The built-in store and `/_t/`
+
+The image build installs every theme of the build (`themes/`, the lock's, `MICELIO_THEME_DIRS`) into a built-in store with `modules/theme/built-in-store.ts`, at the build's own core build id, and copies it to `.output/server/micelio/store`. It runs the checks of the Nuxt build (contract, public hooks, package) and `allowCode`; contrast and budgets are admission checks, which the build does not make for a theme the operator installed by hand. In development the store is `node_modules/.cache/micelio/built-in-store/<build id>/`.
+
+At boot `server/plugins/builtInTheme.ts` loads the build's theme from it, verifies the entry against its manifest and parses `runtime.json` (`install/runtime.ts`); a defect stops the boot. `GET /_t/<digest>/<file>` serves that entry's files from memory ([API](../api.md)). The pages do not use it yet: the following PRs of #401 move the theme data, the messages and the stylesheet to it.
+
 ## Isolation
 
 `installIsolated(source, options, limits)` (`modules/theme/install/isolated.ts`) runs `installTheme` in a child process: an empty environment, `--max-old-space-size=256` and a `SIGKILL` at 60 s by default, and one install at a time (a second caller waits). Lightning CSS is native code, so a `worker_thread` limit could not stop it. A failure comes back as the same `InstallError`; running out of memory, exiting early and the timeout are rule `compile`. The child's peak memory is returned as `maxRssKb`.
