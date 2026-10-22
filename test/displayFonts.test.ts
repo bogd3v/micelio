@@ -181,6 +181,6 @@ describe('displayFontId', () => {
 describe('LAYER_ORDER', () => {
   it('is the layer order statement of main.css, which the bundler drops', () => {
     const first = readFileSync(join(__dirname, '../app/assets/css/main.css'), 'utf8').split('\n')[0]!
-    expect(first.replace(/,\s*/g, ',').replace(/^@layer /, '@layer ')).toBe(LAYER_ORDER)
+    expect(first.replace(/,\s*/g, ',')).toBe(LAYER_ORDER)
   })
 })
