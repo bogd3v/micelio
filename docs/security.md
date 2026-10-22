@@ -21,7 +21,7 @@ Create a **Custom** token, never Full Access or Read Only, with exactly these pe
 | Content type / plugin | Actions | Why |
 | --- | --- | --- |
 | Article | `find` | Blog list, article page (looked up by slug), reading path, RSS feeds. The search route (`/api/articles/search`) is public in the backend and needs no permission |
-| Category, Tag | `find` | Filters and counts |
+| Category, Tag (`micelio` plugin) | `find` | Filters and counts. They belong to the CMS plugin `micelio`, so their actions are `plugin::micelio.category.find` and `plugin::micelio.tag.find` (before micelio-cms 0.5: `api::category.category.find` and `api::tag.tag.find`) |
 | Author | `find` | Author of an article (`populate` of the article routes) |
 | About | `find` | About page |
 | Page | `find` | Section pages (`/api/pages/:slug`, looked up by slug through the filtered `find`; `findOne` is not granted and not needed) |
@@ -35,7 +35,7 @@ In production the server refuses to boot when `NUXT_PUBLIC_STRAPI_URL` or `NUXT_
 
 Who may hold each secret, how long it lives and the algorithms in use are in [Keys, secrets and algorithms](security/keys.md).
 
-The token is a server-side secret. It must only be set as `NUXT_STRAPI_API_TOKEN`: plain `STRAPI_API_TOKEN` is ignored at runtime, and the server refuses to start with `Missing runtime settings` when it is empty. Rotate it in Strapi (Settings → API Tokens) if it is ever printed or shared, and delete tokens nobody uses. A static build (`npm run generate`, ADR 0006) reads content at build time, only from `NUXT_STRAPI_API_TOKEN` in the build environment, and **must be given the CMS `build` token** (`BUILD_API_TOKEN` in micelio-cms, created by `src/migrations/api-tokens.ts`), never the frontend token, which can read and delete subscribers. The `build` token is Custom and find-only: Article, Category, Tag, About, Site-setting, Page and Author `find`, and nothing else (no comments, no subscribers, no writes). The route list (`modules/static-routes.ts`) and the prerendered pages call the same read routes as the dynamic site (articles, pages, site settings, categories, tags, authors, about). The generated site holds no token and calls no API.
+The token is a server-side secret. It must only be set as `NUXT_STRAPI_API_TOKEN`: plain `STRAPI_API_TOKEN` is ignored at runtime, and the server refuses to start with `Missing runtime settings` when it is empty. Rotate it in Strapi (Settings → API Tokens) if it is ever printed or shared, and delete tokens nobody uses. A static build (`npm run generate`, ADR 0006) reads content at build time, only from `NUXT_STRAPI_API_TOKEN` in the build environment, and **must be given the CMS `build` token** (`BUILD_API_TOKEN` in micelio-cms, created by `src/migrations/api-tokens.ts`), never the frontend token, which can read and delete subscribers. The `build` token is Custom and find-only: Article, Category, Tag (both from the `micelio` plugin), About, Site-setting, Page and Author `find`, and nothing else (no comments, no subscribers, no writes). The route list (`modules/static-routes.ts`) and the prerendered pages call the same read routes as the dynamic site (articles, pages, site settings, categories, tags, authors, about). The generated site holds no token and calls no API.
 
 ### Lifetime and rotation of the CMS credentials
 
