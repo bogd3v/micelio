@@ -1,14 +1,13 @@
 import { buildSiteMode } from '#micelio/build-site-mode'
-import { buildTheme } from '#micelio/build-theme'
 import { isStaticMode } from '~/helpers/siteMode'
 import { Locale } from '~/interfaces/locale'
 import { forwardHeaders, isSafeForwardTarget, parseTrustProxy } from '../lib/clientIp'
 import { insecureUpstream } from '../lib/upstreams'
-import { missingOptionalRuntimeSettings, missingRuntimeSettings, moduleRequirements, modeMismatch, privacyContactWarning, themeMismatch } from '~/helpers/runtimeConfig'
+import { missingOptionalRuntimeSettings, missingRuntimeSettings, moduleRequirements, modeMismatch, privacyContactWarning } from '~/helpers/runtimeConfig'
 
 export default defineNitroPlugin(() => {
   const config = useRuntimeConfig()
-  const mismatch = themeMismatch(config, buildTheme) ?? modeMismatch(config, buildSiteMode)
+  const mismatch = modeMismatch(config, buildSiteMode)
   if (mismatch) throw new Error(mismatch)
   // Invalid proxy settings stop the boot instead of failing on the first visitor
   parseTrustProxy(config.trustProxy)

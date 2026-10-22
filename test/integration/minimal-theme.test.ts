@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { fetch, setup } from '@nuxt/test-utils/e2e'
+import { spawn } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+import { createServer } from 'node:net'
+import type { AddressInfo } from 'node:net'
+import { join } from 'node:path'
+import { fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
 import { startMockStrapi } from './mock-strapi'
 
 // A build with its own theme: one light mode, no slots, no layout (#237, acceptance criteria).
-// MICELIO_THEME_DIRS points at the fixtures; the build and the server both read NUXT_PUBLIC_THEME.
+// MICELIO_THEME_DIRS points at the fixtures; the build reads NUXT_PUBLIC_THEME for its own theme and the server for its default.
 const mock = await startMockStrapi()
 process.env.NUXT_PUBLIC_STRAPI_URL = mock.url
 process.env.NUXT_PUBLIC_SITE_URL = 'https://minimal.test'
@@ -73,5 +78,80 @@ describe('a build with the minimal fixture theme', () => {
   it('keeps the first variant of every region', async () => {
     const html = await (await fetch('/')).text()
     for (const variant of ['bar', 'showcase', 'columns']) expect(html).toContain(`data-layout="${variant}"`)
+  })
+})
+
+/** Starts the build's own server entry on a free port with `env` added, and returns its address and a stop function. */
+async function startServer(env: Record<string, string>): Promise<{ origin: string, stop: () => Promise<void> }> {
+  const output = useTestContext().nuxt!.options.nitro.output!.dir!
+  const probe = createServer()
+  await new Promise<void>(listening => probe.listen(0, '127.0.0.1', listening))
+  const { port } = probe.address() as AddressInfo
+  await new Promise(closed => probe.close(closed))
+  const child = spawn(process.execPath, [join(output, 'server/index.mjs')], {
+    env: { ...process.env, ...env, PORT: String(port), NITRO_HOST: '127.0.0.1', NITRO_PORT: String(port) },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  let log = ''
+  child.stdout.on('data', chunk => (log += chunk))
+  child.stderr.on('data', chunk => (log += chunk))
+  const origin = `http://127.0.0.1:${port}`
+  for (let attempt = 0; attempt < 100; attempt++) {
+    if (child.exitCode !== null) throw new Error(`The server exited:\n${log}`)
+    try {
+      if ((await globalThis.fetch(`${origin}/privacy`)).ok) break
+    } catch {
+      // Not listening yet
+    }
+    await new Promise(wait => setTimeout(wait, 200))
+  }
+  return {
+    origin,
+    stop: async () => {
+      child.kill()
+      await new Promise(exited => child.once('exit', exited))
+    },
+  }
+}
+
+describe('NUXT_PUBLIC_THEME at runtime, on the one build', () => {
+  const output = (): string => useTestContext().nuxt!.options.nitro.output!.dir!
+  function digestOf(id: string): string {
+    const index = JSON.parse(readFileSync(join(output(), 'server/micelio/store/index.json'), 'utf8')) as { themes: Record<string, { digest: string }> }
+    return index.themes[id]!.digest
+  }
+
+  /** Starts the server with `env`, and returns the digests of the page's payload and of the files `/_t/` serves for each theme. */
+  async function boot(env: Record<string, string>): Promise<{ page: string, served: Record<string, number> }> {
+    const server = await startServer(env)
+    try {
+      const page = await (await globalThis.fetch(`${server.origin}/`)).text()
+      const served: Record<string, number> = {}
+      for (const id of ['minimal', 'data-only']) served[id] = (await globalThis.fetch(`${server.origin}/_t/${digestOf(id)}/theme.css`)).status
+      return { page, served }
+    } finally {
+      await server.stop()
+    }
+  }
+
+  it('starts with either of two data-only themes, with no rebuild, and serves only the one it started with', async () => {
+    const minimal = await boot({ NUXT_PUBLIC_THEME: 'minimal' })
+    expect(minimal.page).toContain(digestOf('minimal'))
+    expect(minimal.page).not.toContain(digestOf('data-only'))
+    expect(minimal.page).toContain(`href="/_t/${digestOf('minimal')}/theme.css"`)
+    expect(minimal.served).toEqual({ 'minimal': 200, 'data-only': 404 })
+    const dataOnly = await boot({ NUXT_PUBLIC_THEME: 'data-only' })
+    expect(dataOnly.page).toContain(digestOf('data-only'))
+    expect(dataOnly.page).not.toContain(digestOf('minimal'))
+    expect(dataOnly.page).toContain(`href="/_t/${digestOf('data-only')}/theme.css"`)
+    expect(dataOnly.served).toEqual({ 'minimal': 404, 'data-only': 200 })
+  })
+
+  it('uses the build\'s theme when the variable is blank', async () => {
+    expect((await boot({ NUXT_PUBLIC_THEME: '' })).served).toEqual({ 'minimal': 200, 'data-only': 404 })
+  })
+
+  it('refuses to boot, naming the variable, when the theme is not in the build', async () => {
+    await expect(startServer({ NUXT_PUBLIC_THEME: 'nope' })).rejects.toThrow(/NUXT_PUBLIC_THEME is "nope"/)
   })
 })

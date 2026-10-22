@@ -137,7 +137,7 @@ describe('watchBuiltInIndex', () => {
     const { store, digest } = await builtInStore()
     const seen: string[] = []
     const failures: unknown[] = []
-    const check = watchBuiltInIndex(store, theme => seen.push(theme.runtime.digest), error => failures.push(error))
+    const check = watchBuiltInIndex(store, () => loadBuiltInTheme(store), theme => seen.push(theme.runtime.digest), error => failures.push(error))
     check()
     expect(seen).toEqual([])
     // The build installed an edited theme: another entry and an index that names it

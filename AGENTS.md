@@ -191,7 +191,7 @@ Global styles live in `app/assets/css/`, split by responsibility (ITCSS-style, p
 
 ### Themes
 
-A theme (`themes/<id>/`) is a package of roles per mode, CSS for public hooks and optional slots, validated against contract v2 (ADR 0005). Start with `npm run theme:new -- <id>` (copies `themes/starter/`) and the `create-theme` skill; the guide is `docs/themes/creating-a-theme.md` and the generated reference `docs/themes/reference/`. `NUXT_PUBLIC_THEME=<id>` selects the theme at build or dev time (default `bogota`). Adding to the contract (an optional role, slot, layout variant or hook) bumps the minor: raise `CONTRACT_VERSION.minor`, add the rows to `CONTRACT_ADDITIONS` and a section to `docs/themes/contract-changelog.md`.
+A theme (`themes/<id>/`) is a package of roles per mode, CSS for public hooks and optional slots, validated against contract v2 (ADR 0005). Start with `npm run theme:new -- <id>` (copies `themes/starter/`) and the `create-theme` skill; the guide is `docs/themes/creating-a-theme.md` and the generated reference `docs/themes/reference/`. `NUXT_PUBLIC_THEME=<id>` is the build's theme and, read at runtime, the default theme the server loads from the built-in store (default `bogota`; `docs/themes/theme-store.md`). Adding to the contract (an optional role, slot, layout variant or hook) bumps the minor: raise `CONTRACT_VERSION.minor`, add the rows to `CONTRACT_ADDITIONS` and a section to `docs/themes/contract-changelog.md`.
 
 ### i18n Guidelines
 

@@ -6,7 +6,6 @@ import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes
 import { REGION_VARIANTS, alternateVariants, registerAlternates, registerVariants } from '../modules/theme/layout/variants'
 import { LAYOUT_REGIONS } from '../modules/theme/constants'
 import type { LayoutRegion, ThemeContext } from '../modules/theme/types'
-import { themeMismatch } from '../app/helpers/runtimeConfig'
 
 function theme(root: string, folder: string, manifest: object = { id: folder }): void {
   mkdirSync(join(root, folder), { recursive: true })
@@ -82,19 +81,6 @@ describe('theme discovery', () => {
   it('fails naming the missing theme and the installed ones', () => {
     const installed = discoverThemes(themeRoots(process.cwd(), ''))
     expect(() => selectTheme(installed, 'nope')).toThrow(/"nope".*not installed.*bogota/)
-  })
-})
-
-describe('themeMismatch', () => {
-  it('is null when the runtime theme is the one of the build', () => {
-    expect(themeMismatch({ public: { theme: 'bogota' } }, 'bogota')).toBeNull()
-  })
-
-  it('names both themes when they differ or the runtime has none', () => {
-    expect(themeMismatch({ public: { theme: 'other' } }, 'bogota')).toMatch(/"other".*"bogota"/)
-    expect(themeMismatch({}, 'bogota')).toMatch(/"undefined"/)
-    expect(themeMismatch({ public: { theme: '  ' } }, 'bogota')).toMatch(/"undefined"/)
-    expect(themeMismatch({ public: { theme: ' bogota ' } }, 'bogota')).toBeNull()
   })
 })
 

@@ -1,4 +1,5 @@
 import { assets } from '#micelio/display-fonts'
+import { MODES_ATTRIBUTE } from '../../modules/theme/init-script.mjs'
 import { Locale, defaultLocale } from '~/interfaces/locale'
 import { displayFontOverride, insertThemeLinks, themePreloadLinks } from '../utils/displayFonts'
 import { activeTheme } from '../utils/activeTheme'
@@ -29,7 +30,8 @@ export default defineNitroPlugin((nitroApp) => {
     const chosen = modes.find(mode => mode.id === theme?.defaultMode)
     const initial = chosen ?? first
     // data-mode-default is read by the init script (modules/theme/init-script.mjs); the visitor's stored choice still wins
-    html.htmlAttrs.push(`data-theme="${initial.id}" data-scheme="${initial.scheme}"${chosen ? ` data-mode-default="${chosen.id}"` : ''}`)
+    const list = modes.map(mode => `${mode.id}:${mode.scheme}`).join(',')
+    html.htmlAttrs.push(`data-theme="${initial.id}" data-scheme="${initial.scheme}"${chosen ? ` data-mode-default="${chosen.id}"` : ''} ${MODES_ATTRIBUTE}="${list}"`)
     const font = displayFontOverride(theme?.displayFont, themeDisplay, assets)
     const css = [themeOverridesCss(theme, modes.map(mode => mode.id)), font?.css].filter(Boolean).join('')
     html.head = insertThemeLinks(html.head, digest, themePreloadLinks(fonts, themeDisplay, Boolean(font)))

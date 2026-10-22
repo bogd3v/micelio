@@ -1,8 +1,5 @@
-import { addComponent, addTypeTemplate } from 'nuxt/kit'
+import { addComponent } from 'nuxt/kit'
 import type { SlotName, ThemeContext } from './types'
-
-// Active theme's id at build time; the server plugin compares it with the runtime value
-const BUILD_THEME_MODULE = '#micelio/build-theme'
 
 /** One prop of a slot component, as the theme reference documents it. */
 export interface SlotProp {
@@ -68,26 +65,14 @@ export const SLOT_SPECS: Record<SlotName, SlotSpec> = {
 }
 
 /**
- * Records the active theme's id for the build, and declares the virtual module that carries it into Nitro.
+ * Records the build's theme as the default of `runtimeConfig.public.theme`, which `NUXT_PUBLIC_THEME` overrides at runtime.
  *
  * @remarks
- * Runs at build time. Sets `runtimeConfig.public.theme` to the active id and adds the Nitro virtual module `#micelio/build-theme`,
- * which `server/plugins/runtimeConfigCheck.ts` compares with the runtime value until #401 removes that check. The theme's modes,
- * images, layout, fonts, palette and messages no longer come from here: they are compiled into the built-in store
+ * Runs at build time. The theme's modes, images, layout, fonts, palette and messages are compiled into the built-in store
  * (`built-in-store.ts`) and read from it at runtime (ADR 0009, section 6).
  */
 export function setupData(ctx: ThemeContext): void {
-  const { nuxt } = ctx
-  nuxt.options.runtimeConfig.public.theme = ctx.id
-  addTypeTemplate({
-    filename: 'types/micelio-theme.d.ts',
-    getContents: () => `declare module '${BUILD_THEME_MODULE}' {\n  export const buildTheme: string\n}\n`,
-  }, { nitro: true, nuxt: true })
-
-  nuxt.hook('nitro:config', (config) => {
-    config.virtual ||= {}
-    config.virtual[BUILD_THEME_MODULE] = `export const buildTheme = ${JSON.stringify(ctx.id)}`
-  })
+  ctx.nuxt.options.runtimeConfig.public.theme = ctx.id
 }
 
 /** Registers what modes.ts, slots.ts and layout/* pushed to ctx.components (call it after them). */
