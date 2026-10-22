@@ -2,6 +2,21 @@
 
 What the frontend trusts, which credentials it uses to reach Strapi, and how each endpoint is protected. The input, output and status codes of each endpoint are in [openapi.json](openapi.json), and its caching and behaviour in [api.md](api.md). Keep it in sync when a route or a Strapi call changes. How it measures up against OWASP ASVS 5.0.0, requirement by requirement, is in [security/asvs.md](security/asvs.md).
 
+## Reporting a vulnerability and scope
+
+Report privately through [Report a vulnerability](https://github.com/bogd3v/micelio/security/advisories/new), as the [organisation's security policy](https://github.com/bogd3v/.github/blob/main/SECURITY.md) says: it holds the supported versions, the response targets and the testing rules. Please name the affected route or file and whether it needs a session (visitor, account, editor). The policy covers the code and configuration published here, not any particular site. In scope:
+
+- The server routes in `server/api` and `server/routes`, and the validation of their input
+- The session cookie and the backend-for-frontend that holds it ([ADR 0003](adr/0003-session-in-httponly-cookie.md))
+- The Content Security Policy ([ADR 0004](adr/0004-hash-based-csp.md))
+- Markdown rendering and sanitising of CMS content (`app/helpers/markdown.ts`)
+- The theme validator and checks (`modules/theme`), and the theme installer ([ADR 0008](adr/0008-theme-registry.md))
+- The `Dockerfile` and the GitHub workflows (`.github/workflows`)
+
+Report upstream instead: Nuxt, Vue, Nitro and other dependencies in their own repositories; the CMS in [`micelio-cms`](https://github.com/bogd3v/micelio-cms/security/policy) for Micelio's own code and in the [Strapi security policy](https://github.com/strapi/strapi/security/policy) for Strapi itself. When unsure, report here and it is forwarded.
+
+Out of scope, besides what the organisation's policy lists: anything that requires an admin or editor account in the CMS, unless it escalates privileges. Test against your own instance (`npm run dev`, see the [README](../README.md)). Vulnerable dependencies follow the [remediation time frames](#remediation-time-frames) and section 10 of the [engineering standard](engineering-standard.md).
+
 ## Credentials towards Strapi
 
 The data the frontend handles and the protection of each level are in [Data classification and protection](security/data.md). The browser never talks to Strapi: every call goes through the Nitro server, built with `strapiUrl()` and, when it needs the API token, `strapiFetch()` (`server/utils/strapi.ts`).
@@ -222,10 +237,10 @@ How long a vulnerable dependency may stay (ASVS V15.1.1 and V15.2.1). The clock 
 
 | Where the component runs | Critical and high | Medium and low |
 | --- | --- | --- |
-| In the production image or in the visitor's browser | 14 days (the same as a vulnerability in our own code, `SECURITY.md`) | The next planned release |
+| In the production image or in the visitor's browser | 14 days (the same as a vulnerability in our own code, [security policy](https://github.com/bogd3v/.github/blob/main/SECURITY.md)) | The next planned release |
 | Build and development tooling only | The next planned release | The next planned release |
 
-A finding with no fixed release, or whose only fix is a breaking change (a major version, or a downgrade), is not left silent: it is written in the list below with the reason, and the list is reviewed at every release. A vulnerability in our own code is handled as `SECURITY.md` says.
+A finding with no fixed release, or whose only fix is a breaking change (a major version, or a downgrade), is not left silent: it is written in the list below with the reason, and the list is reviewed at every release. A vulnerability in our own code is handled as the [organisation's security policy](https://github.com/bogd3v/.github/blob/main/SECURITY.md) says.
 
 ### Accepted risks
 

@@ -16,7 +16,7 @@ Read `docs/security.md`, `docs/security/asvs.md` (the ASVS 5.0.0 mapping, the re
 
 Each finding: ASVS id (`V7.4.1`), severity (Critical/High/Medium/Low), `path:line`, short exploitation scenario (only in the handback to the session, never in an issue, PR or the mapping), recommended fix. No working exploit code. Also say which rows of `docs/security/asvs.md` the change makes stale (a Met that no longer holds, an Open now fixed). Judge each finding at the target level of its chapter (level 2 for V1, V2, V6, V7 and V8, level 1 for the rest): a gap above the target is reported as "Open (above target)", unless an attacker can exploit it.
 
-An exploitable gap is never written in the mapping, an issue, a PR or a report file: tell the human running the session, who reports it through a private security advisory (`SECURITY.md`); the row says only "Private advisory". A gap that is not exploitable gets an issue with the `security` label and the id in its title.
+An exploitable gap is never written in the mapping, an issue, a PR or a report file: tell the human running the session, who reports it through a private security advisory (the organisation's `SECURITY.md`, https://github.com/bogd3v/.github/blob/main/SECURITY.md); the row says only "Private advisory". A gap that is not exploitable gets an issue with the `security` label and the id in its title.
 
 Example of a review:
 
