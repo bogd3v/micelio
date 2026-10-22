@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { SLOT_NAMES } from '../modules/theme/constants'
-import { resolveSlots, slotStyles } from '../modules/theme/slots'
+import { resolveSlots } from '../modules/theme/slots'
 
 function tmp(): string {
   return mkdtempSync(join(tmpdir(), 'myc-slots-'))
@@ -29,12 +29,5 @@ describe('slot resolution', () => {
     expect(byName.ThemeMark).toBe(join(dir, 'slots', 'ThemeMark.vue'))
     expect(byName.ThemeHero).toBe(join(dir, 'slots', 'ThemeHero.vue'))
     expect(byName.ThemeDivider).toBe(join('/core/defaults', 'ThemeDivider.vue'))
-  })
-
-  it('imports the theme slot stylesheets in a fixed order', () => {
-    const dir = tmp()
-    expect(slotStyles(dir)).toBe('')
-    slotsDir(dir, ['mark.css', 'divider.css', 'ThemeMark.vue', 'logo.ts'])
-    expect(slotStyles(dir)).toBe(`@import "${join(dir, 'slots', 'divider.css')}";\n@import "${join(dir, 'slots', 'mark.css')}";`)
   })
 })

@@ -40,7 +40,7 @@ a.myc-seg {
     color: var(--on-ink);
 }
 
-/* Per-mode switch rules before hydration: generated from the theme's modes (micelio/components.css) */
+/* Per-mode switch rules before hydration: generated from the theme's modes and linked with the theme's stylesheet (`/_t/<digest>/theme.css`) */
 
 @media (prefers-reduced-motion: reduce) {
     .myc-seg {

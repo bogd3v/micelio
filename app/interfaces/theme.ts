@@ -35,6 +35,8 @@ export interface ThemeData {
   layout: Record<'header' | 'home' | 'postList' | 'article' | 'footer', string>
   /** Mermaid theme variable overrides. */
   mermaid: Record<string, string>
+  /** Whether the entry ships `sections.css`, which the page sections link (`/_t/<digest>/sections.css`). */
+  sections: boolean
 }
 
 /** The `theme.*` messages of one locale, compiled to the AST vue-i18n formats without a compiler. */

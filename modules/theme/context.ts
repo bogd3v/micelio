@@ -41,8 +41,6 @@ export function createContext(nuxt: Nuxt): ThemeContext {
     roots,
     dir: active.dir,
     load,
-    componentsCss: [],
-    slotCss: [],
     layoutCss: Object.fromEntries(LAYOUT_REGIONS.map(region => [region, []])) as unknown as Record<LayoutRegion, CssSource[]>,
     components: [],
   }

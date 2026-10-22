@@ -1,6 +1,5 @@
 @layer myc.reset, myc.settings, myc.base, myc.components, myc.layout, myc.pages, myc.theme, myc.animations, myc.utilities;
 
-@import "#build/micelio/settings.css" layer(myc.settings);
 @import "./settings/typography.css" layer(myc.settings);
 
 @import "./base/reset.css" layer(myc.reset);
@@ -13,7 +12,6 @@
 @import "./components/tag.css" layer(myc.components);
 @import "./components/icon-button.css" layer(myc.components);
 @import "./components/segmented.css" layer(myc.components);
-@import "#build/micelio/components.css" layer(myc.components);
 @import "./components/chip.css" layer(myc.components);
 @import "./components/kbd.css" layer(myc.components);
 @import "./components/input.css" layer(myc.components);
@@ -77,8 +75,6 @@
 @import "./pages/error/error.css" layer(myc.pages);
 @import "./pages/confirm/confirm.css" layer(myc.pages);
 @import "#build/micelio/specimen.css" layer(myc.pages);
-
-@import "#build/micelio/theme.css" layer(myc.theme);
 
 @import "./animations/keyframes.css" layer(myc.animations);
 

@@ -3,7 +3,7 @@ import { join, relative } from 'node:path'
 import { useLogger } from 'nuxt/kit'
 import { isThemePath } from './context'
 import type { ThemeContext } from './types'
-import { FONT_ASSET_FILE, IMAGES_URL, IMAGE_FILE } from './constants'
+import { IMAGES_URL, IMAGE_FILE } from './constants'
 import { STATIC_CSP } from '../../app/constants/security'
 
 const logger = useLogger('micelio-theme')
@@ -25,26 +25,6 @@ export function copyServed(ctx: ThemeContext, source: string, target: string, fo
   if (!existsSync(source)) return
   mkdirSync(join(target, '..'), { recursive: true })
   cpSync(source, target, { recursive: true, filter: allowed })
-}
-
-/**
- * The theme's woff, woff2 and txt (license) files of fonts/ are served at /fonts/ (copied under the build, like the images); the
- * preloaded ones get a <link rel="preload"> in server/plugins/themeMode.ts. A change to fonts/ needs a dev restart.
- */
-function setupFonts(ctx: ThemeContext): void {
-  const { nuxt, dir } = ctx
-  const source = join(dir, 'fonts')
-  if (existsSync(source)) {
-    const target = join(nuxt.options.buildDir, 'micelio/fonts')
-    copyServed(ctx, source, target, 'fonts', FONT_ASSET_FILE, 'a font or a license (woff, woff2, txt)')
-    ;(nuxt.options.nitro.publicAssets ||= []).push({ dir: target, baseURL: '/fonts' })
-    ;(nuxt.options.routeRules ||= {})['/fonts/**'] = { headers: { 'Content-Security-Policy': STATIC_CSP } }
-    // The build empties buildDir after the modules are set up, so the copy is made again once the templates are written
-    nuxt.hook('app:templatesGenerated', () => {
-      if (!existsSync(target)) copyServed(ctx, source, target, 'fonts', FONT_ASSET_FILE, 'a font or a license (woff, woff2, txt)')
-    })
-  }
-  // The preload links are rendered per request by server/plugins/themeMode.ts (an emitted display font can drop one)
 }
 
 /**
@@ -85,17 +65,16 @@ function setupImages(ctx: ThemeContext): void {
 }
 
 /**
- * Serves the active theme's fonts and images, at build time.
+ * Serves the active theme's images, at build time.
  *
  * @remarks
- * `fonts/` is served at `/fonts/` and `images/` at `/theme/images/`, both copied under `micelio/` in the build folder with the
- * `STATIC_CSP` header. A missing folder is skipped. The theme's messages are compiled when it is installed and reach the pages from the store.
- * Images are copied again when they change in dev; the fonts are copied once, so a change to `fonts/` needs a dev restart.
+ * `images/` is served at `/theme/images/`, copied under `micelio/` in the build folder with the `STATIC_CSP` header, because IPX reads
+ * public directories. A missing folder is skipped. The fonts are files of the theme's store entry, served at `/_t/<digest>/fonts/`. The theme's messages are compiled when it is installed and reach the pages from the store.
+ * Images are copied again when they change in dev.
  *
- * @throws `Error` when a file in `fonts/` or `images/` is a symlink, or when `@nuxt/image` was set up before this module
+ * @throws `Error` when a file in `images/` is a symlink, or when `@nuxt/image` was set up before this module
  * and the theme has an `images/` folder.
  */
 export function setupAssets(ctx: ThemeContext): void {
-  setupFonts(ctx)
   setupImages(ctx)
 }

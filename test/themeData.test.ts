@@ -17,8 +17,13 @@ const RUNTIME = {
 describe('themeDataOf', () => {
   it('keeps what a page needs and leaves the palette, the messages and the fonts on the server', () => {
     const data = themeDataOf(RUNTIME)
-    expect(Object.keys(data).sort()).toEqual(['digest', 'id', 'images', 'layout', 'mermaid', 'modes'])
+    expect(Object.keys(data).sort()).toEqual(['digest', 'id', 'images', 'layout', 'mermaid', 'modes', 'sections'])
     expect(data.modes).toEqual(RUNTIME.modes)
+  })
+
+  it('says whether the entry has section styles', () => {
+    expect(themeDataOf(RUNTIME).sections).toBe(false)
+    expect(themeDataOf(RUNTIME, true).sections).toBe(true)
   })
 
   it('is frozen all the way down, so one request cannot change what the next sees', () => {

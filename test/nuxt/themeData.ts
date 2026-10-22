@@ -22,6 +22,7 @@ export const BOGOTA_THEME_DATA: ThemeData = {
   images: Object.fromEntries(Object.entries(manifest.images ?? {}).map(([role, file]) => [role, `/_t/${DIGEST}/images/${file}`])),
   layout: { ...DEFAULT_LAYOUT, ...manifest.layout },
   mermaid: manifest.mermaid ?? {},
+  sections: false,
 }
 
 /** Replaces the theme data of the running test app; `changes` are merged over Bogota's. */

@@ -23,16 +23,15 @@ export function buildSegmentedCss(modes: ModeDefinition[]): string {
 
 // The init script, and the segmented-control rules come from the theme's modes
 /**
- * Adds the inline init script and the mode switch's CSS, built from the active theme's modes.
+ * Adds the inline init script, built from the active theme's modes.
  *
  * @remarks
  * Runs at build time. The init script goes into the `<head>` as a critical inline script on every page; its CSP hash is
- * fixed per build (ADR 0004), so a change to the modes needs a dev restart. The switch's rules join `micelio/components.css`.
+ * fixed per build (ADR 0004), so a change to the modes needs a dev restart.
  */
 export function setupModes(ctx: ThemeContext): void {
   // Built once at setup (one hash per build): a change to the modes needs a dev restart
   const modes = ctx.load().manifest.modes
   const scripts = (ctx.nuxt.options.app.head.script ||= [])
   scripts.push({ innerHTML: buildInitScript(modes), tagPosition: 'head', tagPriority: 'critical' })
-  ctx.componentsCss.push(() => buildSegmentedCss(ctx.load().manifest.modes))
 }
