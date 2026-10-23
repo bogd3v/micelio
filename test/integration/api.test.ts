@@ -10,7 +10,7 @@ import type { FetchOptions } from 'ofetch'
 import type { RawStrapiArticle } from '~/interfaces/strapi-post'
 import type { Page, PageSection } from '~/interfaces/page'
 import type { StrapiRichText } from '~/interfaces/strapi-blocks'
-import { HASHED_TOKENS, startMockStrapi } from './mock-strapi'
+import { HASHED_TOKENS, startMockStrapi, WEBFINGER_JRD } from './mock-strapi'
 import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
 import { confirmationToken, resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
@@ -66,6 +66,8 @@ beforeEach(() => {
   mock.failures.site = false
   mock.failures.categories = false
   mock.failures.broken = ''
+  mock.failures.webfinger = ''
+  mock.webfingerHeaders.value = null
   mock.theme.value = null
   mock.homePage.value = null
   mock.securityContact.value = null
@@ -743,6 +745,108 @@ describe('/.well-known/security.txt', () => {
   it('answers 404 when the CMS fails, never a default contact', async () => {
     mock.failures.site = true
     expect((await fetch('/.well-known/security.txt')).status).toBe(404)
+  })
+})
+
+describe('/.well-known/webfinger', () => {
+  const HANDLE = 'acct:blog@bogdev.test'
+
+  function webfinger(query: string, init?: RequestInit): Promise<Response> {
+    return fetch(`/.well-known/webfinger${query}`, init)
+  }
+
+  it('answers the CMS JRD for the handle on the site host, with its status and Content-Type', async () => {
+    const response = await webfinger(`?resource=${encodeURIComponent(HANDLE)}`)
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('application/jrd+json')
+    expect(response.headers.get('cache-control')).toBe('public, max-age=300')
+    expect(response.headers.get('access-control-allow-origin')).toBe('*')
+    expect(await response.json()).toEqual(WEBFINGER_JRD)
+  })
+
+  it('answers what the CMS answers for another host and for a missing resource, never a 500', async () => {
+    const other = await webfinger(`?resource=${encodeURIComponent('acct:blog@elsewhere.test')}`)
+    expect(other.status).toBe(404)
+    expect(await other.text()).toBe('Not Found')
+    expect(other.headers.get('cache-control')).toBe('no-cache')
+    const missing = await webfinger('')
+    expect(missing.status).toBe(400)
+    expect(await missing.text()).toBe('Missing resource parameter.')
+    expect(mock.requests.filter(request => request.path === '/.well-known/webfinger').map(request => request.query)).toEqual([{ resource: 'acct:blog@elsewhere.test' }, {}])
+  })
+
+  it('sends only the first resource on, with no visitor header, cookie or credential', async () => {
+    const response = await webfinger(`?resource=${encodeURIComponent(HANDLE)}&resource=acct:other@bogdev.test&rel=self&url=https://elsewhere.test`, {
+      headers: { 'Cookie': 'micelio_session=secret', 'Authorization': 'Bearer visitor', 'X-Forwarded-For': '203.0.113.7', 'User-Agent': 'probe/1.0' },
+    })
+    expect(response.status).toBe(200)
+    const [request] = mock.requests.filter(recorded => recorded.path === '/.well-known/webfinger')
+    expect(request?.query).toEqual({ resource: HANDLE })
+    expect(request?.authorization).toBeUndefined()
+    expect(request?.forwarder).toBeUndefined()
+    const headers = mock.webfingerHeaders.value ?? {}
+    expect(headers.cookie).toBeUndefined()
+    expect(headers['x-forwarded-for']).toBeUndefined()
+    expect(headers['user-agent']).not.toBe('probe/1.0')
+  })
+
+  it('answers 404 without calling the CMS when the fediverse module is off', async () => {
+    mock.modules.fediverse = false
+    const response = await webfinger(`?resource=${encodeURIComponent(HANDLE)}`)
+    expect(response.status).toBe(404)
+    expect(await response.text()).toBe('')
+    expect(mock.requests).toEqual([])
+  })
+
+  it('refuses an overlong resource without calling the CMS', async () => {
+    expect((await webfinger(`?resource=acct:${'a'.repeat(1100)}@bogdev.test`)).status).toBe(400)
+    expect(mock.requests).toEqual([])
+  })
+
+  it('passes a CMS error on as it is, and stores none of it', async () => {
+    mock.failures.webfinger = 'error'
+    const response = await webfinger(`?resource=${encodeURIComponent(HANDLE)}`)
+    expect(response.status).toBe(500)
+    expect(await response.text()).toBe('Internal Server Error')
+    expect(response.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('answers 502 with an empty body when the CMS redirects or sends more than the cap', async () => {
+    for (const failure of ['redirect', 'huge'] as const) {
+      mock.failures.webfinger = failure
+      const response = await webfinger(`?resource=${encodeURIComponent(HANDLE)}`, { redirect: 'manual' })
+      expect(response.status).toBe(502)
+      expect(response.headers.get('location')).toBeNull()
+      expect(await response.text()).toBe('')
+    }
+  })
+
+  it('sends a body of another type as opaque bytes, sandboxed', async () => {
+    mock.failures.webfinger = 'html'
+    const response = await webfinger(`?resource=${encodeURIComponent(HANDLE)}`)
+    expect(response.headers.get('content-type')).toBe('application/octet-stream')
+    expect(response.headers.get('content-security-policy')).toContain('sandbox')
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff')
+  })
+
+  it('passes a CMS 429 on with its Retry-After', async () => {
+    mock.failures.webfinger = 'limited'
+    const response = await webfinger(`?resource=${encodeURIComponent(HANDLE)}`)
+    expect(response.status).toBe(429)
+    expect(response.headers.get('retry-after')).toBe('17')
+  })
+
+  // Last of the block: the visitor's bucket stays full for a minute
+  it('answers 429 with Retry-After once a visitor passes its own limit, without calling the CMS', async () => {
+    const statuses: number[] = []
+    for (let index = 0; index < 31; index++) statuses.push((await webfinger(`?resource=${encodeURIComponent(HANDLE)}`)).status)
+    expect(statuses.filter(status => status === 429).length).toBeGreaterThan(0)
+    mock.requests.length = 0
+    const limited = await webfinger(`?resource=${encodeURIComponent(HANDLE)}`)
+    expect(limited.status).toBe(429)
+    expect(Number(limited.headers.get('retry-after'))).toBeGreaterThan(0)
+    expect(await limited.text()).toBe('')
+    expect(mock.requests).toEqual([])
   })
 })
 

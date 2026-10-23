@@ -3,7 +3,7 @@
   "info": {
     "title": "Micelio site API",
     "version": "0.4.0",
-    "description": "The HTTP routes every Micelio site serves: 35 paths and 37 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
+    "description": "The HTTP routes every Micelio site serves: 36 paths and 38 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
     "license": {
       "name": "AGPL-3.0-only",
       "identifier": "AGPL-3.0-only"
@@ -80,6 +80,146 @@
                         "code": {
                           "enum": [
                             "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/webfinger": {
+      "get": {
+        "operationId": "getWellKnownWebfinger",
+        "summary": "WebFinger lookup of the site account",
+        "description": "WebFinger (RFC 7033) on the site domain, so the handle `@<user>@<site host>` resolves without a proxy rule: the CMS answer for `resource`, with its status, body and `Content-Type`. Only `resource` is sent to the CMS (the first one, when repeated), with no visitor header, cookie or credential. A `Content-Type` other than JRD, JSON or plain text goes out as `application/octet-stream`. Answers `notFound` with an empty body when the fediverse module is off. A CMS that takes more than 5 seconds answers an empty `504`.",
+        "tags": [
+          "Site files"
+        ],
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "query",
+            "description": "The account to look up, such as `acct:blog@example.com`; at most 1024 characters.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The JSON Resource Descriptor of the account, with `Access-Control-Allow-Origin: *`. Cache-Control: `public, max-age=300`.",
+            "content": {
+              "application/jrd+json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The CMS answer for a missing `resource`, or an empty body for one longer than 1024 characters.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The fediverse module is off (empty body), or the CMS knows no such account (its body). Not a problem document: a WebFinger client expects the CMS answer.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: An empty body with `Retry-After`: 30 lookups a minute per visitor, 300 for the site; or the CMS's own 429, passed on with its `Retry-After`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: An empty body: the CMS could not be reached, redirected, or sent more than 64 KiB. Any other CMS error passes through with its status and body.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
                           ]
                         }
                       }

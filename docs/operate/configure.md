@@ -76,6 +76,12 @@ Set all three to turn the fediverse features on. The CMS side is in [micelio-cms
 | `NUXT_PUBLIC_FEDIVERSE_ACTOR_URL` | Fediverse only | empty | Runtime | The ActivityPub actor, for example `https://cms.example.org/fediverse/user/blog`. |
 | `NUXT_PUBLIC_FEDIVERSE_ARTICLES_URL` | Fediverse only | empty | Runtime | Base URL of the federated articles, for example `https://cms.example.org/fediverse/articles`. |
 
+### Handle on the site domain
+
+When the CMS gives the account a handle on the site's own host (`FEDIVERSE_HANDLE_HOST`, for example `@blog@example.com` while the CMS is `cms.example.com`), remote servers look the handle up at `https://example.com/.well-known/webfinger`. In `dynamic` mode the frontend answers that route itself, by asking the CMS, whenever the fediverse module is on: no variable and no proxy rule is needed. With the module off it answers 404. Check it with `npx @fedify/cli lookup @blog@example.com`.
+
+A `static` or `landing` site has no server to answer it, so the host or the proxy in front of it must forward `/.well-known/webfinger` (with its query) to the CMS, as before.
+
 ## Analytics (Umami)
 
 The tracker is served from the site itself and forwarded to Umami, so blockers that filter third-party analytics domains do not drop visits. The tracker reports only visits whose host matches `NUXT_PUBLIC_SITE_URL`. See [Analytics](https://github.com/bogd3v/micelio-cms/blob/main/docs/ANALYTICS.md) for the CMS side.

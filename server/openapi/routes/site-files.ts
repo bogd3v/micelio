@@ -9,7 +9,7 @@ const CATEGORY_FEED_PARAMETER = {
   schema: { type: 'string', pattern: '^[a-z-]+\\.xml$' },
 } as const
 
-/** Operations outside `/api`: the RSS feeds, the sitemap, `robots.txt` and `security.txt`. They answer text, not JSON. */
+/** Operations outside `/api`: the RSS feeds, the sitemap, `robots.txt`, `security.txt` and WebFinger. They answer text or a JRD, not problem details. */
 export const SITE_FILE_ROUTES: RouteEntry[] = [
   {
     file: 'server/routes/feed.xml.ts',
@@ -95,5 +95,22 @@ export const SITE_FILE_ROUTES: RouteEntry[] = [
     response: { status: 200, contentType: 'text/plain', description: 'Plain text in the `security.txt` format.', cache: 'public, max-age=3600' },
     errors: ['notFound'],
     errorDetails: { notFound: 'The body is empty, not a problem document: a client of `security.txt` expects a plain 404.' },
+  },
+  {
+    file: 'server/routes/.well-known/webfinger.get.ts',
+    method: 'get',
+    path: '/.well-known/webfinger',
+    summary: 'WebFinger lookup of the site account',
+    description: 'WebFinger (RFC 7033) on the site domain, so the handle `@<user>@<site host>` resolves without a proxy rule: the CMS answer for `resource`, with its status, body and `Content-Type`. Only `resource` is sent to the CMS (the first one, when repeated), with no visitor header, cookie or credential. A `Content-Type` other than JRD, JSON or plain text goes out as `application/octet-stream`. Answers `notFound` with an empty body when the fediverse module is off. A CMS that takes more than 5 seconds answers an empty `504`.',
+    tag: FEED_TAG,
+    parameters: [{ name: 'resource', in: 'query', description: 'The account to look up, such as `acct:blog@example.com`; at most 1024 characters.', schema: { type: 'string', maxLength: 1024 } }],
+    response: { status: 200, contentType: 'application/jrd+json', description: 'The JSON Resource Descriptor of the account, with `Access-Control-Allow-Origin: *`.', cache: 'public, max-age=300' },
+    errors: ['notFound', 'invalidRequest', 'tooManyRequests', 'upstreamUnavailable'],
+    errorDetails: {
+      tooManyRequests: 'An empty body with `Retry-After`: 30 lookups a minute per visitor, 300 for the site; or the CMS\'s own 429, passed on with its `Retry-After`.',
+      notFound: 'The fediverse module is off (empty body), or the CMS knows no such account (its body). Not a problem document: a WebFinger client expects the CMS answer.',
+      invalidRequest: 'The CMS answer for a missing `resource`, or an empty body for one longer than 1024 characters.',
+      upstreamUnavailable: 'An empty body: the CMS could not be reached, redirected, or sent more than 64 KiB. Any other CMS error passes through with its status and body.',
+    },
   },
 ]

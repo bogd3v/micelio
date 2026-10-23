@@ -46,6 +46,8 @@ interface MockFailures {
   rateLimitedReads: string[]
   /** Every content and comment route fails: `json` answers 400 with a recognisable CMS message, `plain` a 502 with a plain body */
   broken: '' | 'json' | 'plain'
+  /** `/.well-known/webfinger` answers a 500 (`error`), a redirect (`redirect`), a body over the frontend's cap (`huge`), an HTML page (`html`) or a 429 with Retry-After (`limited`) */
+  webfinger: '' | 'error' | 'redirect' | 'huge' | 'html' | 'limited'
 }
 
 type MockModules = Record<'newsletter' | 'comments' | 'accounts' | 'drafts' | 'fediverse' | 'search' | 'support', boolean>
@@ -65,6 +67,8 @@ interface MockStrapiResult {
   homePage: { value: { en?: string, es?: string } | null }
   /** The `securityContact` site-setting answers with (null when never set) */
   securityContact: { value: string | null }
+  /** The raw request headers of the last `/.well-known/webfinger` call, to prove nothing of the visitor's reaches the CMS */
+  webfingerHeaders: { value: IncomingMessage['headers'] | null }
   users: Array<{ id: number, username: string, email: string, password: string, confirmed: boolean, role: string }>
   /** Extra keys the CMS answers carry, to prove they do not reach the client; a test that sets one clears it */
   leaks: { commentsEnvelope: Record<string, unknown>, draftRow: Record<string, unknown> }
@@ -525,15 +529,23 @@ function recordRequest(
   requests.push(recorded)
 }
 
+/** The JRD the mock CMS answers for `acct:blog@bogdev.test`, the handle on the site's host. */
+export const WEBFINGER_JRD = {
+  subject: 'acct:blog@bogdev.test',
+  aliases: ['https://cms.bogdev.test/fediverse/user/blog'],
+  links: [{ rel: 'self', type: 'application/activity+json', href: 'https://cms.bogdev.test/fediverse/user/blog' }],
+}
+
 export async function startMockStrapi(): Promise<MockStrapiResult> {
   const requests: RecordedRequest[] = []
   const siteRequests: RecordedRequest[] = []
-  const failures: MockFailures = { pathOrder: false, about: false, site: false, categories: false, rateLimited: false, retryAfter: '42', rateLimitedReads: [], broken: '' }
+  const failures: MockFailures = { pathOrder: false, about: false, site: false, categories: false, rateLimited: false, retryAfter: '42', rateLimitedReads: [], broken: '', webfinger: '' }
   const modules: MockModules = { newsletter: true, comments: true, accounts: true, drafts: true, fediverse: true, search: true, support: true }
   const theme = { value: null as unknown }
   const leaks: MockStrapiResult['leaks'] = { commentsEnvelope: {}, draftRow: {} }
   const homePage: MockStrapiResult['homePage'] = { value: null }
   const securityContact: MockStrapiResult['securityContact'] = { value: null }
+  const webfingerHeaders: MockStrapiResult['webfingerHeaders'] = { value: null }
   const authMock = createAuthMock({ frontendUrl: 'https://bogdev.test' })
   const draftsMock = createDraftsMock({ userFromAuth: authMock.userFromAuth, publishedArticles: articles })
 
@@ -948,6 +960,50 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
       return
     }
 
+    // Fedify's answers: a JRD for the handle on the handle host, a plain 404 for any other, a plain 400 without `resource`
+    if (method === 'GET' && url.pathname === '/.well-known/webfinger') {
+      webfingerHeaders.value = req.headers
+      if (failures.webfinger === 'error') {
+        res.writeHead(500, { 'Content-Type': 'text/plain;charset=UTF-8' })
+        res.end('Internal Server Error')
+        return
+      }
+      if (failures.webfinger === 'redirect') {
+        res.writeHead(302, { Location: 'https://elsewhere.test/.well-known/webfinger' })
+        res.end()
+        return
+      }
+      if (failures.webfinger === 'html') {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+        res.end('<script>alert(1)</script>')
+        return
+      }
+      if (failures.webfinger === 'limited') {
+        res.writeHead(429, { 'Content-Type': 'text/plain', 'Retry-After': '17' })
+        res.end('Too Many Requests')
+        return
+      }
+      if (failures.webfinger === 'huge') {
+        res.writeHead(200, { 'Content-Type': 'application/jrd+json' })
+        res.end(JSON.stringify({ subject: 'acct:blog@bogdev.test', padding: 'x'.repeat(100_000) }))
+        return
+      }
+      const resource = url.searchParams.get('resource')
+      if (resource === null) {
+        res.writeHead(400, { 'Content-Type': 'text/plain;charset=UTF-8' })
+        res.end('Missing resource parameter.')
+        return
+      }
+      if (resource !== 'acct:blog@bogdev.test') {
+        res.writeHead(404, { 'Content-Type': 'text/plain;charset=UTF-8' })
+        res.end('Not Found')
+        return
+      }
+      res.writeHead(200, { 'Content-Type': 'application/jrd+json', 'Access-Control-Allow-Origin': '*' })
+      res.end(JSON.stringify(WEBFINGER_JRD))
+      return
+    }
+
     if (method === 'GET' && url.pathname.startsWith('/uploads/')) {
       if (url.pathname.endsWith('.glb')) {
         res.writeHead(200, { 'Content-Type': 'model/gltf-binary', 'Access-Control-Allow-Origin': '*' })
@@ -965,7 +1021,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address()
       const port = typeof address === 'object' && address !== null ? address.port : 0
-      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, securityContact, users: authMock.users, leaks, articles })
+      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, securityContact, webfingerHeaders, users: authMock.users, leaks, articles })
     })
   })
 }

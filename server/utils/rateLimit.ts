@@ -14,6 +14,9 @@ const RATE_LIMITS = {
   newsletterPerEmail: { limit: 3, windowMs: 60 * 60 * 1000 },
   // Every confirmation email the site sends, whoever asks: the limits above count per address, and a client that rotates both must still not be able to mail the world
   newsletterGlobal: { limit: 100, windowMs: 60 * 60 * 1000 },
+  webfingerPerIp: { limit: 30, windowMs: 60 * 1000 },
+  // The CMS counts every forwarded lookup against the frontend's own address, with the site settings and feeds: half of its default `api` rule (600 a minute) stays for them
+  webfingerGlobal: { limit: 300, windowMs: 60 * 1000 },
 } satisfies Record<string, RateLimitRule>
 
 let parsedTrust: { raw: string, value: TrustProxy } | undefined
