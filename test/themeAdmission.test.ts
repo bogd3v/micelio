@@ -1,9 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it } from 'vitest'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { assembleReport, reportSummary } from '../modules/theme/admission/collect'
 import type { ReportInput } from '../modules/theme/admission/collect'
 import { ownBuildReason } from '../modules/theme/admission/plan'
-import { AdmissionReportSchema, admissionReportJsonSchema } from '../modules/theme/admission/report'
+import { readAccessibilityRecord } from '../modules/theme/admission/record'
+import { ACCESSIBILITY_LINES, AdmissionReportSchema, admissionReportJsonSchema } from '../modules/theme/admission/report'
 import { discoverThemes } from '../modules/theme/themes'
 
 const ROOT = resolve(__dirname, '..')
@@ -131,6 +134,111 @@ describe('assembleReport', () => {
     const report = assembleReport(input({ qualityExpected: false, quality: undefined }))
     expect(report.ok).toBe(true)
     expect(report.checks.quality.status).toBe('skipped')
+  })
+})
+
+describe('the manual accessibility record', () => {
+  const lines = Object.fromEntries(ACCESSIBILITY_LINES.map(line => [line, { result: 'pass' }]))
+  const RECORD = { version: '1.0.0', date: '2026-10-20', by: 'A maintainer', method: 'Orca with Firefox', lines }
+  const withRecord = (record: unknown, extra: Record<string, unknown> = {}): ReportInput => input({ staticResult: { ...STATIC_OK, accessibilityFile: 'accessibility/calm.json', accessibility: record, ...extra } })
+
+  it('puts a complete record of the version in the report and keeps it a pass', () => {
+    const report = assembleReport(withRecord(RECORD))
+    expect(report.ok).toBe(true)
+    expect(report.accessibility).toEqual({ status: 'passed', current: true, record: RECORD })
+    expect(report.warnings.filter(issue => issue.check === 'accessibility')).toEqual([])
+    expect(reportSummary(report)).toContain('Manual accessibility check passed, 2026-10-20 by A maintainer')
+  })
+
+  it('warns when the theme has no record, without blocking', () => {
+    const report = assembleReport(input({ staticResult: { ...STATIC_OK, accessibilityFile: 'accessibility/calm.json' } }))
+    expect(report.ok).toBe(true)
+    expect(report.accessibility).toBeUndefined()
+    expect(report.warnings).toEqual([expect.objectContaining({ check: 'accessibility', kind: 'missing', message: expect.stringMatching(/^accessibility\/calm\.json does not exist/) })])
+  })
+
+  it('warns on a record of another version and on each failed line, with its issue', () => {
+    const issue = 'https://github.com/example/calm/issues/7'
+    const report = assembleReport(withRecord({ ...RECORD, version: '0.9.0', lines: { ...lines, 'keyboard.focus-visible': { result: 'fail', issue, note: 'card links' }, 'zoom.text-spacing': { result: 'not-verified', note: 'no tool yet' } } }))
+    expect(report.ok).toBe(true)
+    expect(report.accessibility).toMatchObject({ status: 'failed', current: false })
+    expect(report.warnings.map(item => [item.kind, item.message])).toEqual([
+      ['stale', expect.stringMatching(/records version 0\.9\.0, not 1\.0\.0/)],
+      ['manual', `keyboard.focus-visible failed (${issue}): card links`],
+    ])
+  })
+
+  it('counts lines that were not verified as partial', () => {
+    expect(assembleReport(withRecord({ ...RECORD, lines: { ...lines, 'screen-reader.names': { result: 'not-verified', note: 'no screen reader' } } })).accessibility?.status).toBe('partial')
+  })
+
+  it('rejects a record that skips a line, fails without an https issue, leaves a line unexplained or names its author on two lines', () => {
+    const { 'pointer.dragging': _, ...missing } = lines
+    for (const bad of [
+      { ...RECORD, lines: missing },
+      { ...RECORD, lines: { ...lines, 'keyboard.order': { result: 'fail' } } },
+      { ...RECORD, lines: { ...lines, 'zoom.200': { result: 'not-verified' } } },
+      { ...RECORD, lines: { ...lines, 'keyboard.typo': { result: 'pass' } } },
+      { ...RECORD, lines: { ...lines, 'keyboard.order': { result: 'fail', issue: 'javascript:alert(1)' } } },
+      { ...RECORD, by: 'A maintainer\n## Injected heading' },
+    ]) {
+      const report = assembleReport(withRecord(bad))
+      expect(report.ok).toBe(false)
+      expect(report.accessibility).toBeUndefined()
+      expect(report.errors[0]).toMatchObject({ check: 'accessibility', kind: 'record', message: expect.stringMatching(/^accessibility\/calm\.json: (lines|by)/) })
+    }
+  })
+
+  it('reports a file it could not read as an error', () => {
+    const report = assembleReport(withRecord(undefined, { accessibilityError: 'is not valid JSON' }))
+    expect(report.errors).toEqual([{ check: 'accessibility', kind: 'record', message: 'accessibility/calm.json: is not valid JSON' }])
+  })
+
+  it('has one line id for each line of the checklist, in its order', () => {
+    const checklist = readFileSync(join(ROOT, 'docs/themes/accessibility-checklist.md'), 'utf8')
+    const ids = [...checklist.matchAll(/^- \[ \] `([a-z0-9.-]+)`/gm)].map(match => match[1])
+    expect(ids).toEqual([...ACCESSIBILITY_LINES])
+  })
+})
+
+describe('readAccessibilityRecord', () => {
+  const root = mkdtempSync(join(tmpdir(), 'admission-record-'))
+  const outside = mkdtempSync(join(tmpdir(), 'admission-outside-'))
+  afterAll(() => {
+    rmSync(root, { recursive: true, force: true })
+    rmSync(outside, { recursive: true, force: true })
+  })
+  writeFileSync(join(outside, 'calm.json'), '{"secret": true}')
+  mkdirSync(join(root, 'accessibility'))
+  writeFileSync(join(root, 'accessibility/calm.json'), '{"version": "1.0.0"}')
+  writeFileSync(join(root, 'accessibility/cut.json'), '{"version": "1.0')
+  writeFileSync(join(root, 'accessibility/big.json'), `"${'x'.repeat(64 * 1024)}"`)
+  mkdirSync(join(root, 'accessibility/folder.json'))
+  symlinkSync(join(outside, 'calm.json'), join(root, 'accessibility/link.json'))
+  symlinkSync(outside, join(root, 'linked'))
+  writeFileSync(join(root, 'plain'), '')
+  const read = (file: string): ReturnType<typeof readAccessibilityRecord> => readAccessibilityRecord(join(root, file), root)
+
+  it('parses a record and leaves its validation to the report', () => {
+    expect(read('accessibility/calm.json')).toEqual({ accessibilityFile: join(root, 'accessibility/calm.json'), accessibility: { version: '1.0.0' } })
+  })
+
+  it('says nothing more than the path for a record that does not exist', () => {
+    expect(read('accessibility/none.json')).toEqual({ accessibilityFile: join(root, 'accessibility/none.json') })
+  })
+
+  it('never reads outside the checkout: no symlinked file, no symlinked folder, no path that leaves it', () => {
+    expect(read('accessibility/link.json').accessibilityError).toBe('is not a regular file (a symlink is not followed)')
+    expect(read('linked/calm.json').accessibilityError).toBe('is behind a symlink, which is not followed')
+    expect(readAccessibilityRecord(join(outside, 'calm.json'), root).accessibilityError).toBe('is outside the repository')
+    for (const file of ['accessibility/link.json', 'linked/calm.json']) expect(read(file).accessibility).toBeUndefined()
+  })
+
+  it('reports a folder, a file too large, a cut file and an unreadable path without quoting them or throwing', () => {
+    expect(read('accessibility/folder.json').accessibilityError).toBe('is not a regular file (a symlink is not followed)')
+    expect(read('accessibility/big.json').accessibilityError).toBe('is larger than 64 KB')
+    expect(read('accessibility/cut.json').accessibilityError).toBe('is not valid JSON')
+    expect(read('plain/calm.json').accessibilityError).toBe('cannot be read')
   })
 })
 

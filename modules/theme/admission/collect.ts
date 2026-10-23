@@ -1,5 +1,5 @@
-import { ADMISSION_REPORT_VERSION, AdmissionReportSchema } from './report'
-import type { AdmissionIssue, AdmissionPerformanceRun, AdmissionQuality, AdmissionReport } from './report'
+import { ACCESSIBILITY_LINES, ADMISSION_REPORT_VERSION, AccessibilityRecordSchema, AdmissionReportSchema } from './report'
+import type { AdmissionAccessibility, AdmissionIssue, AdmissionPerformanceRun, AdmissionQuality, AdmissionReport } from './report'
 
 // Turns what each admission job wrote (`theme:admit static`, `perf --out`, Playwright's JSON report, the build records) into one report.
 // Every input is `unknown`: a job that crashed leaves a file missing or cut, and the report says so instead of throwing.
@@ -25,7 +25,7 @@ export interface PerformanceInput {
 /** What `assembleReport` needs: the files of one theme's admission, already parsed. */
 export interface ReportInput {
   themeId: string
-  /** The output of `theme:admit static`, or undefined when it is missing. */
+  /** The output of `theme:admit static` (with the accessibility record it read), or undefined when it is missing. */
   staticResult?: unknown
   performance: PerformanceInput[]
   /** Playwright's JSON report of `e2e/theme/`, or undefined when quality did not run or wrote nothing. */
@@ -130,6 +130,44 @@ function qualityResult(input: ReportInput, errors: AdmissionIssue[]): AdmissionQ
   return { status: failed ? 'failed' : 'passed', visual: input.visual, specs }
 }
 
+/**
+ * The manual accessibility record that `theme:admit static` read, checked against its schema and the theme version.
+ *
+ * @remarks
+ * No record, a record of another version and a failed line are warnings: whether they block publishing is the registry's rule (#312).
+ * A record that does not match the schema is an error, so a typo never reads as a check that was made.
+ */
+function accessibilityResult(input: ReportInput, version: string | null, errors: AdmissionIssue[], warnings: AdmissionIssue[]): AdmissionAccessibility | undefined {
+  const result = input.staticResult
+  if (!isRecord(result)) return undefined // The static result is missing, which is already an error
+  // No file named: the static step was run without `--accessibility` (by hand), so nothing was looked for
+  if (typeof result.accessibilityFile !== 'string') return undefined
+  const file = result.accessibilityFile
+  if (typeof result.accessibilityError === 'string') {
+    errors.push({ check: 'accessibility', kind: 'record', message: clip(`${file}: ${result.accessibilityError}`) })
+    return undefined
+  }
+  // A file that could not be read has no `accessibility`, and returned above; a file holding `null` fails the schema below
+  if (result.accessibility === undefined) {
+    warnings.push({ check: 'accessibility', kind: 'missing', message: `${file} does not exist: the manual check of docs/themes/accessibility-checklist.md is not recorded` })
+    return undefined
+  }
+  const parsed = AccessibilityRecordSchema.safeParse(result.accessibility)
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues.slice(0, 20)) errors.push({ check: 'accessibility', kind: 'record', message: clip(`${file}: ${issue.path.join('.') || '(root)'}: ${issue.message}`) })
+    return undefined
+  }
+  const record = parsed.data
+  const current = record.version === version
+  if (!current) warnings.push({ check: 'accessibility', kind: 'stale', message: `${file} records version ${record.version ?? '(none)'}, not ${version ?? '(none)'}: run the checklist again if the version changes CSS, markup or slots` })
+  const results = ACCESSIBILITY_LINES.map(line => [line, record.lines[line]] as const)
+  for (const [line, entry] of results) {
+    if (entry.result === 'fail') warnings.push({ check: 'accessibility', kind: 'manual', message: clip(`${line} failed (${entry.issue})${entry.note ? `: ${entry.note}` : ''}`) })
+  }
+  const status = results.some(([, entry]) => entry.result === 'fail') ? 'failed' : results.some(([, entry]) => entry.result === 'not-verified') ? 'partial' : 'passed'
+  return { status, current, record }
+}
+
 /** The theme part and the package, from `theme:admit static`. */
 function staticResult(input: ReportInput, errors: AdmissionIssue[], warnings: AdmissionIssue[]): Pick<AdmissionReport, 'theme' | 'package'> & { status: AdmissionReport['checks']['static']['status'] } {
   const result = input.staticResult
@@ -161,6 +199,7 @@ export function assembleReport(input: ReportInput): AdmissionReport {
   const { status: staticStatus, ...identity } = staticResult(input, errors, warnings)
   const performance = input.performance.map(run => performanceRun(run, errors, warnings))
   const quality = qualityResult(input, errors)
+  const accessibility = accessibilityResult(input, identity.theme.version, errors, warnings)
   const builds = input.builds.filter(isRecord).map(({ error, ...build }) => {
     if (typeof error === 'string') errors.push({ check: 'admission', kind: 'install', message: clip(error) })
     return build
@@ -179,6 +218,7 @@ export function assembleReport(input: ReportInput): AdmissionReport {
     run: input.run,
     builds,
     checks: { static: { status: staticStatus }, performance, quality },
+    ...(accessibility && { accessibility }),
     errors: capped(errors),
     warnings: capped(warnings),
   })
@@ -197,6 +237,7 @@ export function reportSummary(report: AdmissionReport): string {
     '',
     `Core ${report.core.repository}@${report.core.ref} (${report.core.sha.slice(0, 12)}, ${report.core.version}, contract ${report.core.contract})${report.builds.map(build => `; ${build.purpose} build ${build.kind} \`${build.coreBuild}\``).join('')}`,
     '',
+    ...(report.accessibility ? [`Manual accessibility check ${report.accessibility.status}${report.accessibility.current ? '' : ' (another version)'}, ${report.accessibility.record.date} by ${report.accessibility.record.by}`, ''] : []),
     ...report.errors.map(issue => `- **error** (${issue.check}, ${issue.kind}) ${issue.message.split('\n')[0]}`),
     ...report.warnings.map(issue => `- warning (${issue.check}, ${issue.kind}) ${issue.message.split('\n')[0]}`),
   ]

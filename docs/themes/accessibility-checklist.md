@@ -10,7 +10,28 @@ The axe run of `npm run test:theme` (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa` 
 
 ## Where the result is recorded
 
-The admission report of the theme (`admission-report.json`, #311) records who ran the checklist, when, the theme version and the result of each line. Until that report exists, record it in the Progress section of the issue that admits the theme. A failing line gets its own issue, linked from the record.
+Each run is recorded as a JSON file in the theme's repository, `<accessibility-root>/<theme id>.json` (`accessibility/` by default, an input of the admission workflow), outside the theme folder because the package must not include it. Theme admission reads it and copies it into the `accessibility` field of the admission report (`admission-report.json`, [publishing-a-theme.md](publishing-a-theme.md#5-the-report)), validated against `AccessibilityRecordSchema` in `modules/theme/admission/report.ts`:
+
+```json
+{
+  "version": "1.2.0",
+  "core": "v0.6.0",
+  "date": "2026-10-20",
+  "by": "Ana, maintainer of the theme",
+  "method": "Orca 46 with Firefox, Chromium at 200 % zoom, Windows contrast themes",
+  "lines": {
+    "keyboard.operable": { "result": "pass" },
+    "keyboard.focus-visible": { "result": "fail", "issue": "https://github.com/example/theme/issues/12", "note": "Card links at 390 px" },
+    "zoom.text-spacing": { "result": "not-verified", "note": "No text spacing bookmarklet yet" }
+  }
+}
+```
+
+- `lines` has every id of this checklist (the code before each line below), each `pass`, `fail` with the `issue` that tracks it, or `not-verified` with a `note` that says why. A record that misses a line, fails one without an issue or is not valid JSON is an error of the report.
+- `version` is the theme version that was checked. A record of another version, a missing record and a failed line are warnings: they are published with the version, and the registry decides what it requires (#312).
+- `by` names whoever ran the checklist, as they want to be named. Record nothing else about them.
+
+A failing line gets its own issue, linked from the record. Until a theme's repository runs admission, record the run in the Progress section of the issue that admits it, as the results below were. The core's own themes have no record yet, so `deploy.yml` reports a `missing` warning for each; a record for them comes when a person repeats lines 1 and 2, as the last results say.
 
 ## How to run it
 
@@ -20,38 +41,38 @@ Use the pages that `/_theme` and the test suite use: home, blog, an article, abo
 
 Put the mouse away.
 
-- [ ] Every control can be reached with Tab and operated with Enter, Space or the arrow keys.
-- [ ] The order of focus follows the reading order.
-- [ ] The focus is visible on every stop (an outline or equivalent of at least 3:1 against its surroundings), including card links and form fields.
-- [ ] A focused element is never fully hidden behind the header, the mobile tab bar or the privacy notice (WCAG 2.4.11).
-- [ ] The skip link is the first stop and moves the focus to the content.
-- [ ] Menus, the search palette and the sheet open and close with the keyboard, trap nothing and return the focus to their trigger.
+- [ ] `keyboard.operable` Every control can be reached with Tab and operated with Enter, Space or the arrow keys.
+- [ ] `keyboard.order` The order of focus follows the reading order.
+- [ ] `keyboard.focus-visible` The focus is visible on every stop (an outline or equivalent of at least 3:1 against its surroundings), including card links and form fields.
+- [ ] `keyboard.focus-not-hidden` A focused element is never fully hidden behind the header, the mobile tab bar or the privacy notice (WCAG 2.4.11).
+- [ ] `keyboard.skip-link` The skip link is the first stop and moves the focus to the content.
+- [ ] `keyboard.overlays` Menus, the search palette and the sheet open and close with the keyboard, trap nothing and return the focus to their trigger.
 
 ### 2. Screen reader
 
 Orca on Linux with Firefox (`sudo dnf install orca`, toggle with Super+Alt+S), NVDA on Windows or VoiceOver on macOS.
 
-- [ ] Landmarks: one `main`, a `header`, a `footer`, and every `nav` with its own name.
-- [ ] Headings: one `h1` and no skipped levels; the heading list reads as an outline of the page.
-- [ ] Every control has a name that says what it does, out of context.
-- [ ] After an action (theme switch, subscribe, comment, copy), the result is announced.
-- [ ] The language of the page is right, and a change of language is marked.
+- [ ] `screen-reader.landmarks` Landmarks: one `main`, a `header`, a `footer`, and every `nav` with its own name.
+- [ ] `screen-reader.headings` Headings: one `h1` and no skipped levels; the heading list reads as an outline of the page.
+- [ ] `screen-reader.names` Every control has a name that says what it does, out of context.
+- [ ] `screen-reader.announcements` After an action (theme switch, subscribe, comment, copy), the result is announced.
+- [ ] `screen-reader.language` The language of the page is right, and a change of language is marked.
 
 ### 3. Zoom and reflow
 
-- [ ] At 200 % zoom (a 640 px viewport at 1280) nothing is cut off and nothing needs horizontal scrolling.
-- [ ] At 320 px wide there is no horizontal scrolling for the page (code blocks and tables may scroll on their own).
-- [ ] With text spacing raised (line height 1.5, letter spacing 0.12 em, word spacing 0.16 em) no content is lost.
+- [ ] `zoom.200` At 200 % zoom (a 640 px viewport at 1280) nothing is cut off and nothing needs horizontal scrolling.
+- [ ] `zoom.reflow-320` At 320 px wide there is no horizontal scrolling for the page (code blocks and tables may scroll on their own).
+- [ ] `zoom.text-spacing` With text spacing raised (line height 1.5, letter spacing 0.12 em, word spacing 0.16 em) no content is lost.
 
 ### 4. Motion and forced colors
 
-- [ ] With `prefers-reduced-motion: reduce`, nothing moves after load or while scrolling (the `<mode>-reduced` projects of `npm run test:theme` check it; see `docs/theme-testing.md`).
-- [ ] With forced colors on (Windows high contrast, or `forcedColors: 'active'`), text, borders, icons and the focus indicator are visible and no information depends on a colour alone.
+- [ ] `motion.reduced` With `prefers-reduced-motion: reduce`, nothing moves after load or while scrolling (the `<mode>-reduced` projects of `npm run test:theme` check it; see `docs/theme-testing.md`).
+- [ ] `motion.forced-colors` With forced colors on (Windows high contrast, or `forcedColors: 'active'`), text, borders, icons and the focus indicator are visible and no information depends on a colour alone.
 
 ### 5. Target size and alternatives to dragging
 
-- [ ] Every target is at least 24 by 24 CSS px, or has enough space around it so that a 24 px circle centred on it touches no other target (WCAG 2.5.8). Axe checks it on the pages it opens; check by hand the components it does not reach (the slider, the dots, the table of contents).
-- [ ] Everything that can be dragged or swiped (the slider) has a single-pointer alternative: buttons, and the arrow keys (WCAG 2.5.7).
+- [ ] `pointer.target-size` Every target is at least 24 by 24 CSS px, or has enough space around it so that a 24 px circle centred on it touches no other target (WCAG 2.5.8). Axe checks it on the pages it opens; check by hand the components it does not reach (the slider, the dots, the table of contents).
+- [ ] `pointer.dragging` Everything that can be dragged or swiped (the slider) has a single-pointer alternative: buttons, and the arrow keys (WCAG 2.5.7).
 
 ## Results
 

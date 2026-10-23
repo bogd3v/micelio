@@ -1,0 +1,79 @@
+{
+  "version": "1.0.0",
+  "date": "2026-10-23",
+  "by": "The theme admission fixture",
+  "lines": {
+    "keyboard.operable": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "keyboard.order": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "keyboard.focus-visible": {
+      "result": "fail",
+      "note": "A failed line without its issue, which the record schema refuses"
+    },
+    "keyboard.focus-not-hidden": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "keyboard.skip-link": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "keyboard.overlays": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "screen-reader.landmarks": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "screen-reader.headings": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "screen-reader.names": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "screen-reader.announcements": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "screen-reader.language": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "zoom.200": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "zoom.reflow-320": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "zoom.text-spacing": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "motion.reduced": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "motion.forced-colors": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "pointer.target-size": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    },
+    "pointer.dragging": {
+      "result": "not-verified",
+      "note": "Fixture record: no person ran the checklist on this theme"
+    }
+  }
+}

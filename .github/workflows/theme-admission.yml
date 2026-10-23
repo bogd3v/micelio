@@ -41,6 +41,10 @@ on:
         description: Folder of the visual baselines in the caller's repository, one subfolder per theme id (outside the theme folder, which the package must not include); the core passes e2e/theme/__screenshots__
         type: string
         default: __screenshots__
+      accessibility-root:
+        description: Folder of the manual accessibility records in the caller's repository, <accessibility-root>/<theme id>.json (docs/themes/accessibility-checklist.md), outside the theme folder like the baselines
+        type: string
+        default: accessibility
       display-font:
         description: Also measure dynamic mode with the heaviest curated display font (ADR 0005, section 9)
         type: boolean
@@ -127,6 +131,7 @@ jobs:
         env:
           THEME_DIRS: ${{ inputs.theme-dirs }}
           SNAPSHOT_ROOT: ${{ inputs.snapshot-root }}
+          ACCESSIBILITY_ROOT: ${{ inputs.accessibility-root }}
           EXTERNAL: ${{ steps.ref.outputs.external }}
         run: |
           prefix=''
@@ -140,9 +145,14 @@ jobs:
           done <<< "${THEME_DIRS}"
           if [ "${EXTERNAL}" = true ] && [ "${#dirs[@]}" -eq 0 ]; then echo "::error::theme-dirs is empty: name the theme folders of your repository"; exit 1; fi
           joined="$(IFS=:; echo "${dirs[*]}")"
-          if [[ "${SNAPSHOT_ROOT}" == /* || "/${SNAPSHOT_ROOT}/" == */../* ]]; then echo "::error::snapshot-root must be a path inside the repository"; exit 1; fi
-          echo "theme-dirs=${joined}" >> "$GITHUB_OUTPUT"
-          echo "snapshot-root=${prefix}${SNAPSHOT_ROOT%/}" >> "$GITHUB_OUTPUT"
+          for root in snapshot-root:"${SNAPSHOT_ROOT}" accessibility-root:"${ACCESSIBILITY_ROOT}"; do
+            if [[ -z "${root#*:}" || "${root#*:}" == /* || "/${root#*:}/" == */../* ]]; then echo "::error::${root%%:*} must be a path inside the repository"; exit 1; fi
+          done
+          {
+            echo "theme-dirs=${joined}"
+            echo "snapshot-root=${prefix}${SNAPSHOT_ROOT%/}"
+            echo "accessibility-root=${prefix}${ACCESSIBILITY_ROOT%/}"
+          } >> "$GITHUB_OUTPUT"
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -172,10 +182,11 @@ jobs:
         if: ${{ !inputs.update-snapshots }}
         env:
           MICELIO_THEME_DIRS: ${{ steps.dirs.outputs.theme-dirs }}
+          ACCESSIBILITY_ROOT: ${{ steps.dirs.outputs.accessibility-root }}
         run: |
           for id in $(jq -r '.themes[].id' admission/plan.json); do
             echo "::group::${id}"
-            npm run --silent theme:admit -- static --theme "${id}" --out "admission/${id}/static.json"
+            npm run --silent theme:admit -- static --theme "${id}" --accessibility "${ACCESSIBILITY_ROOT}/${id}.json" --out "admission/${id}/static.json"
             cp .micelio/packages/"${id}"-*.tgz "admission/${id}/" 2>/dev/null || true
             echo "::endgroup::"
           done

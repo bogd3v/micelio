@@ -1,12 +1,14 @@
 // `npm run theme:admit -- <step>`: the steps of theme admission that `.github/workflows/theme-admission.yml` runs (#311, ADR 0008 decision 5).
-// plan: which themes, builds and site modes; static: `theme:check` and `theme:pack` as JSON; install: put a data-only theme into an existing
-// core build; build-info: record a build made with the theme; report: assemble admission-report.json. docs/themes/publishing-a-theme.md explains them.
+// plan: which themes, builds and site modes; static: `theme:check`, `theme:pack` and the manual accessibility record as JSON; install: put a
+// data-only theme into an existing core build; build-info: record a build made with the theme; report: assemble admission-report.json.
+// docs/themes/publishing-a-theme.md explains them.
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { assembleReport, reportSummary } from '../modules/theme/admission/collect'
 import type { PerformanceInput } from '../modules/theme/admission/collect'
 import { hasCode, ownBuildReason } from '../modules/theme/admission/plan'
+import { readAccessibilityRecord } from '../modules/theme/admission/record'
 import { checkTheme, formatIssue } from '../modules/theme/check'
 import { CONTRACT_VERSION, THEME_ID } from '../modules/theme/constants'
 import { loadHooks } from '../modules/theme/hooks'
@@ -132,7 +134,7 @@ function packTheme(theme: InstalledTheme, hooks: ReturnType<typeof loadHooks>): 
   }
 }
 
-/** Static: the `theme:check` issues with the messages it prints, and the package `theme:pack` makes. */
+/** Static: the `theme:check` issues with the messages it prints, the package `theme:pack` makes, and the manual accessibility record. */
 function staticStep(): void {
   const id = required('theme')
   const theme = discoverThemes(themeRoots(ROOT)).find(candidate => candidate.id === id)
@@ -149,6 +151,7 @@ function staticStep(): void {
     warnings: report.warnings.map(issue),
     ...(pack && { package: pack }),
     ...(packError && { packError }),
+    ...(args.accessibility && args.accessibility !== 'true' ? readAccessibilityRecord(args.accessibility, ROOT) : {}),
   }
   writeJson(required('out'), result)
   for (const item of result.errors) process.stdout.write(`  error: ${item.message}\n`)
