@@ -4,7 +4,7 @@ This file contains instructions and guidelines for agentic coding agents working
 
 ## Engineering standard
 
-The rules shared by every Micelio repository live in [`docs/engineering-standard.md`](docs/engineering-standard.md). This repository follows standard version 1.5 (`standard: 1.5`; the line `lint:standard` checks once the sync bot exists, bogd3v/micelio-engineering#5). This file adds what is specific to this repository (stack, commands, folders, naming) and may tighten the standard, never relax it. When the two disagree, the standard wins.
+The rules shared by every Micelio repository live in [`docs/engineering-standard.md`](docs/engineering-standard.md). This repository follows standard version 1.5 (`standard: 1.5`, the line `npm run lint:standard` checks; the Micelio bot opens the pull request that syncs a new version). This file adds what is specific to this repository (stack, commands, folders, naming) and may tighten the standard, never relax it. When the two disagree, the standard wins.
 
 ## Pre-1.0
 
@@ -31,9 +31,9 @@ npm run build        # Production build
 npm run preview      # Preview production build locally
 
 # Type checking and linting
-npm run check        # The fast part of CI before a PR: typecheck, lint and test:coverage (standard, section 15)
+npm run check        # The fast part of CI before a PR: typecheck, lint, test:coverage, lint:licenses and lint:standard (standard, section 15); CI runs the same through micelio-engineering's check.yml
 npm run typecheck    # Nuxt type checking, then `vue-tsc -p test` for test/ and e2e/ (test/tsconfig.json)
-npm run lint         # Run ESLint (flat config, @nuxt/eslint), the primitives, class and placement checks, and the OpenAPI document and the theme schema and reference drift checks
+npm run lint         # Run ESLint (@micelio/eslint-config under @nuxt/eslint, whose stylistic rules are the formatter), the primitives, class and placement checks, the OpenAPI document and the theme schema and reference drift checks, and theme:check
 npm run openapi      # Regenerate docs/openapi.json (OpenAPI 3.1) from server/openapi/ and the zod schemas; run it after adding or changing a route or a schema (`lint:openapi` fails on drift or on a route file without a manifest entry)
 npm run theme:schema # Regenerate themes/theme.schema.json from modules/theme/contract.ts (run it after changing the contract)
 npm run theme:reference # Regenerate docs/themes/reference/ from the contract (run it after changing roles, layout variants, hooks, slots or the TSDoc of a `@public` slot API)

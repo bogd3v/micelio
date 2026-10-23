@@ -1,3 +1,5 @@
+import type { ComputedRef } from 'vue'
+
 /**
  * Builds a canonical URL for the given route path.
  * Combines `useSiteUrl()` base with the locale-prefixed path from `useLocaleUtils()`.
@@ -9,7 +11,7 @@
  * // canonicalUrl = "https://example.org/blog"
  * ```
  */
-export function useCanonicalUrl(path: string) {
+export function useCanonicalUrl(path: string): { canonicalUrl: ComputedRef<string> } {
   const { siteUrl } = useSiteUrl()
   const { localizePath } = useLocaleUtils()
 

@@ -1,5 +1,17 @@
+import type { ComputedRef } from 'vue'
 import { defaultLocale, Locale, type LocalePaths, type LocaleSwitchTarget } from '~/interfaces'
 import { localeSwitchQuery, localizedPath } from '~/helpers/locale'
+
+/** The locale helpers `useLocaleUtils` returns. */
+export interface LocaleUtils {
+  getLocalePrefix: (localeCode?: string | Locale) => string
+  localizePath: (path: string, localeCode?: string | Locale) => string
+  getLocalizedPaths: (basePath: string) => Record<string, string>
+  localePaths: ComputedRef<LocalePaths>
+  switchLocale: (newLocale: Locale) => LocaleSwitchTarget
+  isDefaultLocale: ComputedRef<boolean>
+  currentLocalePath: ComputedRef<string>
+}
 
 /**
  * Returns the helpers that build paths in the current or another locale.
@@ -7,7 +19,7 @@ import { localeSwitchQuery, localizedPath } from '~/helpers/locale'
  * @remarks
  * The default locale has no URL prefix; every other locale is prefixed with its code. `localePaths` is the current page in each locale: the alternates of `useLocaleAlternates` when the page has set them for this route, otherwise the path computed from the route. `switchLocale` gives the target of the language switch, keeping the query and the hash, and falls back to the blog list when a locale has no path. Call it in setup, because it reads `useI18n`, `useRoute` and `useLocaleAlternates`.
  */
-export function useLocaleUtils() {
+export function useLocaleUtils(): LocaleUtils {
   const { locale, locales } = useI18n()
   const route = useRoute()
   const { alternates } = useLocaleAlternates()

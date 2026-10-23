@@ -163,6 +163,7 @@ export default defineNuxtConfig({
   },
   nitro: {
     static: staticSite,
+    typescript: { tsConfig: { extends: '@micelio/tsconfig' } },
     // Nuxt's page error handler without Nitro's free-text report (server/errorHandler.ts, ASVS V16.2.4)
     errorHandler: fileURLToPath(new URL('./server/errorHandler.ts', import.meta.url)),
     alias: { '#nuxt-error-handler': fileURLToPath(new URL('./runtime/handlers/error.mjs', import.meta.resolve('@nuxt/nitro-server'))) },
@@ -204,7 +205,9 @@ export default defineNuxtConfig({
   },
   // The theme packages' slots are checked with the app (ADR 0005, section 4)
   typescript: {
-    tsConfig: { include: ['../themes/**/*'] },
+    tsConfig: { extends: '@micelio/tsconfig', include: ['../themes/**/*'] },
+    nodeTsConfig: { extends: '@micelio/tsconfig' },
+    sharedTsConfig: { extends: '@micelio/tsconfig' },
   },
   hooks: {
     'pages:extend'(pages) {

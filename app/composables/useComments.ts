@@ -1,3 +1,4 @@
+import type { ComputedRef, Ref } from 'vue'
 import type { Comment, CommentFormData, CommentsResponse, GuestCommentInput } from '~/interfaces/comment'
 import { isFediverseComment } from '~/helpers/comments'
 import { problemCodeOf, statusOf } from '~/helpers/apiError'
@@ -7,13 +8,32 @@ function getErrorMessage(err: unknown, fallback: string): string {
   return fallback
 }
 
+/** The state and actions `useComments` returns. */
+export interface CommentsState {
+  /** The top-level comments; replies are read with `repliesOf`. */
+  comments: ComputedRef<Comment[]>
+  pending: Ref<boolean>
+  error: Ref<string | null>
+  /** Comments and replies together. */
+  totalComments: ComputedRef<number>
+  fediverseReplies: ComputedRef<number>
+  loaded: Ref<boolean>
+  repliesOf: (commentId: number) => Comment[]
+  submitting: Ref<boolean>
+  submitError: Ref<string | null>
+  submitSuccess: Ref<boolean>
+  fetchComments: () => Promise<void>
+  /** Resolves to the CMS answer for the new comment; rejects after setting `submitError`. */
+  postComment: (data: CommentFormData) => Promise<unknown>
+}
+
 /**
  * Loads, posts and groups the comments of one article in the current locale.
  *
  * @remarks
  * The comments are shared state keyed by locale and article. The article is identified by `articleDocumentId` when it is given, and by `articleSlug` otherwise. `fetchComments` reads `/api/comments/flat` and keeps a failure in `error` without throwing. `postComment` sends a guest comment with trimmed fields, refetches the list and sets `submitSuccess` until 3 seconds after the list is refetched. A failed post sets `submitError` (a rate-limit message on `tooManyRequests`, or HTTP 429 when the error has no code) and rethrows the error, so the caller must catch it. Call it in setup, because it reads `useI18n` and `useState`.
  */
-export function useComments(articleSlug: string, articleDocumentId?: string) {
+export function useComments(articleSlug: string, articleDocumentId?: string): CommentsState {
   const { t, locale } = useI18n()
 
   const relation = computed(() => {

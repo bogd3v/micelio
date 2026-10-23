@@ -8,7 +8,7 @@ import { isLocale } from '~/helpers/locale'
  * @remarks
  * A missing session gets the same answer, so drafts do not show that they exist.
  */
-export function draftNotFound() {
+export function draftNotFound(): ReturnType<typeof problem> {
   return problem('notFound')
 }
 

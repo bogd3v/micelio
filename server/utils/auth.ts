@@ -15,7 +15,7 @@ export function authFailure(code: AuthErrorCode): ReturnType<typeof problem> {
  * @remarks
  * The code comes from the CMS status and message through `strapiAuthErrorCode`. `overrides` renames a code for one route, for example `invalidInput` to `invalidCredentials` on login. A 429 copies the CMS `Retry-After` onto the response. Every code but `unknown` is logged as `auth.failure` with the code as `cause` (docs/security.md, "Security events"). An unrecognised failure is logged (`cms.auth`) with the CMS status and message.
  */
-export function strapiAuthFailure(event: H3Event, err: unknown, overrides: Partial<Record<AuthErrorCode, AuthErrorCode>> = {}) {
+export function strapiAuthFailure(event: H3Event, err: unknown, overrides: Partial<Record<AuthErrorCode, AuthErrorCode>> = {}): ReturnType<typeof problem> {
   const e = asUpstreamError(err)
   const status = e.response?.status
   const code = strapiAuthErrorCode(status, e.data?.error?.message)

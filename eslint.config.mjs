@@ -1,16 +1,14 @@
+import micelio, { promiseChainRestriction } from '@micelio/eslint-config'
 import withNuxt from './.nuxt/eslint.config.mjs'
-import jsdoc from 'eslint-plugin-jsdoc'
-import tsdoc from 'eslint-plugin-tsdoc'
 
+// The shared config goes first: its eslint-config-prettier entry would otherwise switch off the
+// stylistic rules of @nuxt/eslint, which are this repository's formatter (nuxt.config.ts, `eslint`).
 export default withNuxt(
   {
     files: ['**/*.ts', '**/*.vue', '**/*.js', '**/*.mjs'],
     rules: {
       'no-console': ['error', { allow: ['warn', 'error'] }],
-      'no-restricted-syntax': ['error', {
-        selector: 'CallExpression[callee.type=\'MemberExpression\'][callee.property.name=/^(then|catch|finally)$/]',
-        message: 'No promise chains: use await with try/catch (AGENTS.md, Async code).',
-      }],
+      'no-restricted-syntax': ['error', promiseChainRestriction],
       'vue/max-attributes-per-line': 'off',
       'vue/singleline-html-element-content-newline': 'off',
       'vue/multiline-html-element-content-newline': 'off',
@@ -39,10 +37,7 @@ export default withNuxt(
     files: ['server/**/*.ts'],
     ignores: ['server/utils/problem.ts', 'server/schemas/**'],
     rules: {
-      'no-restricted-syntax': ['error', {
-        selector: 'CallExpression[callee.type=\'MemberExpression\'][callee.property.name=/^(then|catch|finally)$/]',
-        message: 'No promise chains: use await with try/catch (AGENTS.md, Async code).',
-      }, {
+      'no-restricted-syntax': ['error', promiseChainRestriction, {
         selector: 'CallExpression[callee.name=\'createError\']',
         message: 'Throw problem(code, options) from server/utils/problem.ts instead of createError (ADR 0015).',
       }],
@@ -56,25 +51,6 @@ export default withNuxt(
     },
   },
   {
-    // TSDoc syntax and a doc comment on every export (standard, section 4). Scoped to .ts: tsdoc cannot parse .vue.
-    files: ['**/*.ts'],
-    ignores: ['**/*.d.ts', '.nuxt/**', '.output/**', 'test/**', 'e2e/**'],
-    plugins: { tsdoc, jsdoc },
-    rules: {
-      'tsdoc/syntax': 'error',
-      'jsdoc/require-jsdoc': ['error', {
-        publicOnly: true,
-        require: { FunctionDeclaration: true, ClassDeclaration: true },
-        contexts: [
-          'ExportNamedDeclaration > TSInterfaceDeclaration',
-          'ExportNamedDeclaration > TSTypeAliasDeclaration',
-          'ExportNamedDeclaration > TSEnumDeclaration',
-          'ExportNamedDeclaration > VariableDeclaration',
-        ],
-      }],
-    },
-  },
-  {
     ignores: ['docs/**', '.claude/worktrees/**'],
   },
-)
+).prepend(...micelio)
