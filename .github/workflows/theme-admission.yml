@@ -235,6 +235,10 @@ jobs:
       image: ${{ needs.plan.outputs.image }}
       options: --ipc=host
     timeout-minutes: 30
+    # The image's default shell is sh; bash as on a runner, for the arrays and `pipefail`
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -313,6 +317,10 @@ jobs:
     container:
       image: ${{ needs.plan.outputs.image }}
       options: --ipc=host
+    # The image's default shell is sh; bash as on a runner, for the arrays and `pipefail`
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
