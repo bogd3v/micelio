@@ -48,6 +48,16 @@ The `<mode>-reduced` motion projects keep a Playwright trace (`trace.zip`, witho
 
 To reproduce a flake like this, run the Playwright image of the CI with `--cpus=4` and slow the page down with `Emulation.setCPUThrottlingRate` (CDP) at 8 to 16 times: the unfixed capture failed in 12 of 12 repetitions at 12 times.
 
+## In theme admission
+
+The reusable workflow `.github/workflows/theme-admission.yml` runs the same specs for a theme from its own repository ([`docs/themes/publishing-a-theme.md`](themes/publishing-a-theme.md)). Three variables of `playwright.theme.config.ts` serve it, and work locally too:
+
+- `THEME_SNAPSHOT_DIR`: the folder of the theme's baselines (`<mode>/<viewport>/<name>.png` inside it); default `e2e/theme/__screenshots__/<theme>`.
+- `THEME_SKIP_VISUAL=1`: every project except `visual.spec.ts`, for a run without baselines.
+- `THEME_REPORT_JSON`: also write Playwright's JSON report to this file; the admission report reads it. A `--reporter` on the command line replaces the configured reporters, this one included.
+
+A data-only theme runs on a build it was not made with: the core is built with `MICELIO_SPECIMEN=1` and `test/fixtures/themes/minimal`, the theme is installed into its store (`npm run theme:admit -- install`), and the server picks it with `NUXT_PUBLIC_THEME` at runtime.
+
 ## Locally
 
 ```bash

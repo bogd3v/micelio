@@ -11,6 +11,10 @@ const appPort = Number(process.env.THEME_APP_PORT ?? 3211)
 const baseURL = `http://127.0.0.1:${appPort}`
 const theme = process.env.NUXT_PUBLIC_THEME || DEFAULT_THEME
 const { manifest } = selectTheme(discoverThemes(themeRoots(process.cwd())), theme)
+// Theme admission (docs/themes/publishing-a-theme.md): THEME_SNAPSHOT_DIR reads the baselines from the theme's own repository,
+// THEME_SKIP_VISUAL=1 runs everything but visual regression, THEME_REPORT_JSON also writes Playwright's JSON report there
+const snapshotDir = process.env.THEME_SNAPSHOT_DIR || `e2e/theme/__screenshots__/${theme}`
+const reportJson = process.env.THEME_REPORT_JSON
 
 const VIEWPORTS = [
   { name: 'desktop', width: 1280, height: 800 },
@@ -22,7 +26,7 @@ const MOTION = '**/motion/**'
 
 const projects: Project[] = manifest.modes.flatMap(mode => VIEWPORTS.map(viewport => ({
   name: `${mode.id}-${viewport.name}`,
-  testIgnore: MOTION,
+  testIgnore: process.env.THEME_SKIP_VISUAL === '1' ? [MOTION, '**/visual.spec.ts'] : MOTION,
   metadata: { theme, mode: mode.id, viewport: viewport.name },
   // First visit lands in the mode: the init script reads it before the first paint
   use: {
@@ -32,7 +36,7 @@ const projects: Project[] = manifest.modes.flatMap(mode => VIEWPORTS.map(viewpor
     storageState: { cookies: [], origins: [{ origin: baseURL, localStorage: [{ name: THEME_STORAGE_KEY, value: mode.id }] }] },
   },
   // Committed baselines: e2e/theme/__screenshots__/<theme>/<mode>/<viewport>/<name>.png
-  snapshotPathTemplate: `e2e/theme/__screenshots__/${theme}/${mode.id}/${viewport.name}/{arg}{ext}`,
+  snapshotPathTemplate: `${snapshotDir}/${mode.id}/${viewport.name}/{arg}{ext}`,
 })))
 
 // Firefox has no scroll timelines; the preference removes view transitions. Anchor positioning and popovers cannot be switched off:
@@ -68,7 +72,7 @@ export default defineConfig({
   workers: process.env.E2E_BUILD ? '100%' : undefined,
   // A retry would hide a nondeterministic page: a screenshot that needs one is a bug
   retries: 0,
-  reporter: [...(process.env.CI ? [['github'] as const] : []), ['html', { outputFolder: 'playwright-report-theme', open: 'never' }]],
+  reporter: [...(process.env.CI ? [['github'] as const] : []), ['html', { outputFolder: 'playwright-report-theme', open: 'never' }], ...(reportJson ? [['json', { outputFile: reportJson }] as const] : [])],
   // Chromium defers the decode of large images while it rasterizes ("checker imaging"): a capture of the 18,000 px specimen can catch
   // the frame before the hero photo is back (docs/theme-testing.md). The Firefox project sets its own launchOptions
   use: { baseURL, reducedMotion: 'reduce', launchOptions: { args: ['--disable-checker-imaging'] } },

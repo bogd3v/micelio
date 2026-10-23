@@ -1,0 +1,79 @@
+name: Theme Admission Fixtures
+
+# Proves the reusable admission (theme-admission.yml, #311) end to end: a data-only theme passes and a broken one fails with the messages
+# of theme:check, npm run perf and axe, both on one shared core build. Runs when the admission or what it calls changes.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/theme-admission*.yml
+      - scripts/theme-admit.ts
+      - scripts/perf/**
+      - modules/theme/**
+      - e2e/theme/**
+      - playwright.theme.config.ts
+      - server/lib/builtInStore.ts
+      - .github/actions/playwright/**
+      - package.json
+      - package-lock.json
+      - test/fixtures/admission/**
+      - test/fixtures/themes/data-only/**
+      - test/fixtures/themes/minimal/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  admission:
+    name: Admission
+    uses: ./.github/workflows/theme-admission.yml
+    with:
+      theme-dirs: |
+        test/fixtures/themes/data-only
+        test/fixtures/admission/admission-broken
+      core-repository: ${{ github.repository }}
+      core-ref: ${{ github.sha }}
+      modes: '["dynamic", "static"]'
+      # Baselines of a fixture would be megabytes of PNGs; the core's own themes cover visual regression
+      visual: false
+      display-font: false
+      fail-on-errors: false
+      artifact-prefix: fixtures
+
+  expect:
+    name: Expected results
+    needs: admission
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the reports
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.admission.outputs.reports }}
+          path: reports
+      # The messages are the ones theme:check, npm run perf and a11y.spec.ts print today
+      - name: Check the reports
+        env:
+          OK: ${{ needs.admission.outputs.ok }}
+        run: |
+          test "${OK}" = false
+          pass=reports/data-only/admission-report.json
+          broken=reports/admission-broken/admission-report.json
+          jq -e '.ok == true and (.errors | length) == 0' "${pass}"
+          jq -e '[.builds[] | select(.kind == "shared" and .baseTheme == "minimal")] | length == 2' "${pass}"
+          jq -e '.package.digest | startswith("sha256:")' "${pass}"
+          jq -e '[.checks.quality.specs[].passed] | add > 0' "${pass}"
+          jq -e '[.checks.performance[].status] | length == 2 and all(. == "passed")' "${pass}"
+          jq -e '.ok == false and .package == null' "${broken}"
+          jq -e '[.builds[] | select(.kind == "shared")] | length == 2' "${broken}"
+          # Each pattern is a regular expression over the error messages of one check
+          expect() { jq -e --arg check "$1" --arg re "$2" '[.errors[] | select(.check == $check and (.message | test($re)))] | length > 0' "${broken}" > /dev/null || { echo "::error::No $1 error matching: $2"; exit 1; }; }
+          expect static '^theme "admission-broken", mode "day": "ink-muted" on "surface" has 1\.90:1, needs 4\.5:1'
+          expect performance '^ERROR \[theme admission-broken, dynamic mode\] home: cssKb [0-9.]+ exceeds the budget of [0-9.]+$'
+          expect quality 'a11y\.spec\.ts › home has no axe violations: [\s\S]*color-contrast'
+          echo "data-only passed; admission-broken failed with the contrast, budget and axe messages"

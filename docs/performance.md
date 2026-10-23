@@ -20,7 +20,7 @@ Performance is a product guarantee in Micelio: every page has a budget, and CI f
 npm run build
 npm run perf                      # measure and print
 npm run perf -- --check           # also exit 1 when an error budget is exceeded
-npm run perf -- --out report.json # save the full report
+npm run perf -- --out report.json # save the full report, with every error and warning line under `problems`
 npm run perf -- --theme <id>      # label the run with the theme the build used (--mode likewise)
 ```
 
