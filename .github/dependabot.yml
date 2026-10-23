@@ -12,7 +12,7 @@ updates:
       prefix: chore(deps)
       prefix-development: chore(deps-dev)
     ignore:
-      - dependency-name: "@types/node"
+      - dependency-name: "*"
         update-types:
           - version-update:semver-major
     groups:
@@ -77,6 +77,10 @@ updates:
       timezone: America/Bogota
     commit-message:
       prefix: ci
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
     groups:
       actions:
         patterns:
@@ -95,6 +99,6 @@ updates:
     commit-message:
       prefix: chore(docker)
     ignore:
-      - dependency-name: node
+      - dependency-name: "*"
         update-types:
           - version-update:semver-major
