@@ -18,6 +18,7 @@
     "theme:check": "jiti scripts/theme-check.ts",
     "theme:new": "jiti scripts/theme-new.ts",
     "theme:pack": "jiti scripts/theme-pack.ts",
+    "theme:admit": "jiti scripts/theme-admit.ts",
     "theme:add": "jiti scripts/theme-add.ts",
     "theme:pull": "jiti scripts/theme-pull.ts",
     "theme:outdated": "jiti scripts/theme-outdated.ts",

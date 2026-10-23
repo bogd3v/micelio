@@ -326,6 +326,8 @@ The workflow `.github/workflows/deploy.yml` runs on pushes to `main`, on pull re
 
 `Performance Budgets` and `Theme Quality` both gate `deploy`.
 
+A theme kept in its own repository runs the same checks through the reusable admission workflow, which also writes its admission report: [`publishing-a-theme.md`](publishing-a-theme.md).
+
 The 25 KB gzip CSS limit and the two font families are `theme:check` static budgets, not performance metrics. The 150.8 KB font ceiling appears in both places: as the `fontKb` page limit and as the `theme:check` error threshold.
 
 **Baselines.** A theme has no screenshots on its first run, and **a missing baseline fails the run**. Do not commit PNGs rendered locally: text rendering differs from the CI image. Push the branch, download the `theme-snapshots-<theme>` artifact of the failed run (or start the **Theme Snapshots** workflow by hand with the branch as `ref`), review the images, unzip them into `e2e/theme/__screenshots__/<theme>/` and commit. CI never commits baselines.

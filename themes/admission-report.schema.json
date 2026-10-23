@@ -1,0 +1,458 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "ok": {
+      "type": "boolean",
+      "description": "True when there is no error: the version may be published."
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+    },
+    "theme": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contract": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 16
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The contract `theme.json` declares, as `major.minor`."
+        },
+        "code": {
+          "type": "boolean",
+          "description": "Whether the theme ships `slots/` or `templates/`."
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "contract",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "core": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "The `version` of the core's `package.json`."
+        },
+        "contract": {
+          "type": "string",
+          "maxLength": 16,
+          "description": "The theme contract the core implements, as `major.minor`."
+        }
+      },
+      "required": [
+        "repository",
+        "ref",
+        "sha",
+        "version",
+        "contract"
+      ],
+      "additionalProperties": false
+    },
+    "run": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 400,
+          "format": "uri"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The workflow run that made the report, when it ran on GitHub Actions."
+    },
+    "builds": {
+      "maxItems": 20,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "performance",
+              "quality"
+            ],
+            "description": "`quality` builds carry the specimen page (`MICELIO_SPECIMEN=1`)."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "shared",
+              "own"
+            ],
+            "description": "`shared`: one core build made without the theme and shared by every theme under admission; the theme was installed into its store. `own`: a build made with the theme, which a theme with code needs."
+          },
+          "coreBuild": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "The Nuxt build id, which is the core build of the theme store's compile key (ADR 0009, section 1)."
+          },
+          "baseTheme": {
+            "description": "The theme the shared build was made with; absent for `own`.",
+            "type": "string",
+            "maxLength": 64
+          },
+          "reason": {
+            "description": "Why the theme could not use the shared build; absent for `shared`.",
+            "type": "string",
+            "maxLength": 400
+          }
+        },
+        "required": [
+          "purpose",
+          "kind",
+          "coreBuild"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "package": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "file",
+            "digest",
+            "bytes"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The package `theme:pack` made, or null when the theme cannot be packed (the reason is an error)."
+    },
+    "checks": {
+      "type": "object",
+      "properties": {
+        "static": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "passed",
+                "failed",
+                "skipped",
+                "missing"
+              ],
+              "description": "`missing`: the job that should have produced the result did not (it crashed, was cancelled or was skipped by a failure before it)."
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "performance": {
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "displayFont": {
+                "description": "The curated display font set by the site for this run, when it is not the theme's own (ADR 0005, section 9).",
+                "type": "string",
+                "maxLength": 64
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "passed",
+                  "failed",
+                  "skipped",
+                  "missing"
+                ],
+                "description": "`missing`: the job that should have produced the result did not (it crashed, was cancelled or was skipped by a failure before it)."
+              },
+              "pages": {
+                "maxItems": 50,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "page": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "path": {
+                      "type": "string",
+                      "maxLength": 400
+                    },
+                    "metrics": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "page",
+                    "path",
+                    "metrics"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "Measurements per page, as `npm run perf -- --out` writes them; limits are in `scripts/perf/budgets.json` of the core ref."
+              },
+              "islands": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "mode",
+              "status",
+              "pages"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "quality": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "passed",
+                "failed",
+                "skipped",
+                "missing"
+              ],
+              "description": "`missing`: the job that should have produced the result did not (it crashed, was cancelled or was skipped by a failure before it)."
+            },
+            "visual": {
+              "type": "boolean",
+              "description": "Whether visual regression ran; the baselines are read from the theme's source repository."
+            },
+            "specs": {
+              "maxItems": 100,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "The spec file under `e2e/theme/`, such as `a11y.spec.ts` or `motion/reduced.spec.ts`."
+                  },
+                  "passed": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "failed": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "skipped": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "file",
+                  "passed",
+                  "failed",
+                  "skipped"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "status",
+            "visual",
+            "specs"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "static",
+        "performance",
+        "quality"
+      ],
+      "additionalProperties": false
+    },
+    "errors": {
+      "maxItems": 1000,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "check": {
+            "type": "string",
+            "enum": [
+              "static",
+              "performance",
+              "quality",
+              "admission"
+            ],
+            "description": "Which check found the issue: `static` is `theme:check`, `performance` the budgets per site mode, `quality` visual regression and axe, `admission` the run itself (an install into the shared build that failed, a report trimmed to its cap)."
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "What kind of problem: `contract`, `contrast`, `budget`, `third-party`, `axe`, `visual`, `motion`, `layout`, `missing` (a check that produced no result) and the like."
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "mode": {
+            "description": "The site mode of a performance issue, or the Playwright project (theme mode and viewport, such as `day-desktop`) of a quality issue.",
+            "type": "string",
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "check",
+          "kind",
+          "message"
+        ],
+        "additionalProperties": false,
+        "description": "One problem, with the message the check printed, unchanged. An error blocks publishing; a warning is published with the version."
+      }
+    },
+    "warnings": {
+      "maxItems": 1000,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "check": {
+            "type": "string",
+            "enum": [
+              "static",
+              "performance",
+              "quality",
+              "admission"
+            ],
+            "description": "Which check found the issue: `static` is `theme:check`, `performance` the budgets per site mode, `quality` visual regression and axe, `admission` the run itself (an install into the shared build that failed, a report trimmed to its cap)."
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "What kind of problem: `contract`, `contrast`, `budget`, `third-party`, `axe`, `visual`, `motion`, `layout`, `missing` (a check that produced no result) and the like."
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "mode": {
+            "description": "The site mode of a performance issue, or the Playwright project (theme mode and viewport, such as `day-desktop`) of a quality issue.",
+            "type": "string",
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "check",
+          "kind",
+          "message"
+        ],
+        "additionalProperties": false,
+        "description": "One problem, with the message the check printed, unchanged. An error blocks publishing; a warning is published with the version."
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "ok",
+    "generatedAt",
+    "theme",
+    "core",
+    "run",
+    "builds",
+    "package",
+    "checks",
+    "errors",
+    "warnings"
+  ],
+  "additionalProperties": false,
+  "description": "The admission report of one theme version: `admission-report.json`, written by `npm run theme:admit -- report`.",
+  "$id": "https://github.com/bogd3v/micelio/blob/main/themes/admission-report.schema.json",
+  "title": "Micelio theme admission report (version 1)"
+}

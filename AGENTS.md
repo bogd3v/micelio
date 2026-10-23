@@ -35,9 +35,10 @@ npm run check        # The fast part of CI before a PR: typecheck, lint and test
 npm run typecheck    # Nuxt type checking, then `vue-tsc -p test` for test/ and e2e/ (test/tsconfig.json)
 npm run lint         # Run ESLint (flat config, @nuxt/eslint), the primitives, class and placement checks, and the OpenAPI document and the theme schema and reference drift checks
 npm run openapi      # Regenerate docs/openapi.json (OpenAPI 3.1) from server/openapi/ and the zod schemas; run it after adding or changing a route or a schema (`lint:openapi` fails on drift or on a route file without a manifest entry)
-npm run theme:schema # Regenerate themes/theme.schema.json from modules/theme/contract.ts (run it after changing the contract)
+npm run theme:schema # Regenerate themes/theme.schema.json from modules/theme/contract.ts and themes/admission-report.schema.json from modules/theme/admission/report.ts (run it after changing either)
 npm run theme:reference # Regenerate docs/themes/reference/ from the contract (run it after changing roles, layout variants, hooks, slots or the TSDoc of a `@public` slot API)
 npm run theme:pack -- <id> # Pack a theme into .micelio/packages/<id>-<version>.tgz and its manifest (needs `version` and `license`; the safe unpack is modules/theme/registry/unpack.ts)
+npm run theme:admit -- <step> # The steps of theme admission (plan, static, install, build-info, report) that .github/workflows/theme-admission.yml runs (docs/themes/publishing-a-theme.md)
 npm run theme:add -- <id>[@range]|./x.tgz # Pin a registry or local theme in themes.lock.json; `theme:pull [-- --frozen]` installs the locked themes into .micelio/themes/, `theme:outdated` lists newer ones (docs/operate/themes.md)
 npm run theme:new -- <id> # New theme: copies themes/starter/ to themes/<id>/ and renames it ([--name "Name"])
 npm run theme:check  # Contract, hooks, contrast matrix and static budgets of the installed themes ([id] and --json; errors exit 1)

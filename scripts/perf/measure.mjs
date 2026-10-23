@@ -471,13 +471,14 @@ try {
     problems.push(...islandProblems(key, measured, { ...budget.error, strayRequests: 0 }))
   }
 
-  if (args.out) writeFileSync(args.out, JSON.stringify({ theme, mode, ...(displayFont && { displayFont }), pages: report, ...(Object.keys(islands).length && { islands }) }, null, 2) + '\n')
   const lines = problems.map((p) => {
     const prefix = `${p.level === 'error' ? 'ERROR' : 'warn '} [${label}] ${p.page}:`
     if (p.message) return `${prefix} ${p.page.startsWith('island ') || p.noPrefix ? '' : 'FOUC: '}${p.message}`
     const verb = HIGHER_IS_BETTER.has(p.metric) ? 'is below' : 'exceeds'
     return `${prefix} ${p.metric} ${p.value} ${verb} the budget of ${p.limit}`
   })
+  // `problems` carries the printed lines, so the admission report (modules/theme/admission/) quotes what the log says
+  if (args.out) writeFileSync(args.out, JSON.stringify({ theme, mode, ...(displayFont && { displayFont }), pages: report, ...(Object.keys(islands).length && { islands }), problems: problems.map((p, i) => ({ level: p.level, metric: p.metric, message: lines[i] })) }, null, 2) + '\n')
   if (lines.length) console.log('\n' + lines.join('\n'))
   if (process.env.GITHUB_STEP_SUMMARY) {
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Performance (${label})\n\n${exception ? `Recorded exception: ${exception.reason}\n\n` : ''}${summaryTable(report)}\n\n_co2Mg: milligrams of CO2e per page view, ${SWD_MODEL} estimate from the bytes sent (HTML, scripts the HTML declares, stylesheets, fonts counted as fontKb counts them: every font a stylesheet references, not what is downloaded; images the browser loads without scrolling: eager images, and lazy ones near the viewport). Left out: scripts the HTML does not declare and chunks loaded by dynamic import, _payload.json and fetch/XHR, island files loaded after load, API and media calls made later. For comparing runs and themes, not an absolute figure; not budgeted._\n\n${Object.entries(islands).map(([id, value]) => `Island ${id}: \`${JSON.stringify(value)}\`\n\n`).join('')}${lines.map(l => `- ${l}`).join('\n')}\n`)
