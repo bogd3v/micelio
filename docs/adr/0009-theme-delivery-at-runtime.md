@@ -248,6 +248,12 @@ The amended records are not rewritten; each gets a pointer amendment.
 
 `MICELIO_THEME_TIERS` joins the operator interface of section 9 (optional, with that default).
 
+**Amendment (2026-10-22, #401, #402): where the theme's CSS lands, and the variant CSS.** Open question 1 is implemented as recommended, with these details.
+
+- **Link order.** The theme's stylesheet link goes before the build's own stylesheet (`insertThemeLinks`), so the theme's roles exist when the core's rules read them. Variant CSS inside `theme.css` therefore comes first in `myc.layout` and `myc.pages`, and the core's own rules of those layers follow it. Where both set the same property at equal specificity, the core's rule wins. The variants' selectors are scoped by `data-layout` and by the new `data-layout-header` attribute inside `:where()`, which adds no specificity, so a variant rule that must override a core rule (`.myc-share` in `aside`, `.myc-coffee` in `centered`) is written without `:where()` on its leading part. `compare-styles` found those two; it has to be run on every theme when a variant rule is added.
+- **Variant CSS** (#402). `compileTheme` imports the CSS of the variant each region uses from `theme.json`'s `layout` (the first variant when it names none): header and footer in `myc.layout`, home, postList and article in `myc.pages`, after the segmented mode CSS and before the theme's own. `main.css` no longer imports it, except for the specimen's alternates. The core build id of the built-in store carries a hash of the variant CSS, so editing it gives new digests.
+- **`<html>` attributes.** A theme's stylesheet holds one header variant, so the header's `:root` and `html` rules (`--myc-header-h`, `scroll-padding-top`) need no scope there. Only the specimen also bundles the other header's CSS, so only a build with the specimen (`#micelio/specimen`) makes `server/plugins/themeMode.ts` write `data-layout-header="bar|centered"` next to `data-modes`. The rules match `html:not([data-layout-header]:not([data-layout-header="<variant>"]))`: every page when the attribute is absent, only the active variant when it is present. Writing it on every page cost 26 bytes of HTML on each, which the dynamic article's `htmlKb` limit (no margin on `main`) did not allow. The attribute is internal, not a public hook. A server that installs a data-only theme must pass the same variant CSS to `installTheme` (#403).
+
 ## Open questions
 
 Each has a recommendation; the pull request that implements it records the answer as an amendment here.

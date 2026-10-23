@@ -12,12 +12,12 @@ import { buildSegmentedCss } from '../modes'
 import { buildPalette } from '../palette'
 import { gzipDeterministic } from '../registry/gzip'
 import { buildTokensCss } from '../tokens.mjs'
-import type { InstalledTheme } from '../types'
+import type { InstalledTheme, LayoutRegion } from '../types'
 import { formatContractVersion, parseContractVersion } from '../version'
 import { COMPILED_DIGEST, COMPILER_VERSION, CSS_TARGETS, ENTRY_FILES, MAX_COMPILED_CSS_BYTES, MAX_MESSAGES_BYTES, PRECOMPRESSED, SERVE_PREFIX, STORE_VERSION } from './constants'
 import { InstallError } from './error'
 import { compileMessages, messageProblem } from './messages'
-import type { RuntimeData } from './types'
+import type { LayoutCss, RuntimeData } from './types'
 
 /** A theme compiled in memory: the files of its store entry, before the integrity manifest. */
 export interface CompiledTheme {
@@ -38,7 +38,18 @@ export interface CompileInput {
   /** Whether the theme ships code; a code theme's `slots/*.css` join the theme stylesheet. */
   code: boolean
   coreBuild: string
+  /** The core's CSS of each layout variant; the stylesheet gets the ones the theme's `layout` chooses. */
+  layoutCss?: LayoutCss
 }
+
+/** The layer each region's variant CSS goes in, in the order `main.css` imported them before the store carried them. */
+const REGION_LAYERS: ReadonlyArray<readonly [LayoutRegion, string]> = [
+  ['header', 'myc.layout'],
+  ['footer', 'myc.layout'],
+  ['home', 'myc.pages'],
+  ['postList', 'myc.pages'],
+  ['article', 'myc.pages'],
+]
 
 const LIGHTNINGCSS_TARGETS = Object.fromEntries(
   Object.entries(CSS_TARGETS).map(([browser, [major, minor = 0]]) => [browser, (major << 16) | (minor << 8)]),
@@ -112,7 +123,7 @@ function assetFiles(theme: InstalledTheme, folder: 'fonts' | 'images', pattern: 
 }
 
 /** The entry stylesheet: each part in its named layer, in the order the Nuxt build imports them (ADR 0005, section 3). */
-function themeEntry(theme: InstalledTheme, code: boolean): string {
+function themeEntry(theme: InstalledTheme, code: boolean, variants: string[]): string {
   const has = (file: string): boolean => existsSync(join(theme.dir, file))
   const slotsDir = join(theme.dir, 'slots')
   const slotFiles = code && existsSync(slotsDir) ? readdirSync(slotsDir).filter(file => file.endsWith('.css')).sort().map(file => `slots/${file}`) : []
@@ -121,6 +132,7 @@ function themeEntry(theme: InstalledTheme, code: boolean): string {
     ...['fonts.css', 'font-fallbacks.css'].filter(has).map(file => layer(file, 'myc.settings')),
     layer(VIRTUAL.tokens, 'myc.settings'),
     layer(VIRTUAL.segmented, 'myc.components'),
+    ...variants,
     ...['theme.css', ...slotFiles].filter(has).map(file => layer(file, 'myc.theme')),
   ].join('\n')
 }
@@ -222,7 +234,7 @@ function precompressed(files: Map<string, Buffer>): Map<string, Buffer> {
  *
  * @throws `InstallError` with the rule `css`, `url`, `messages` or `assets` naming what failed.
  */
-export async function compileTheme({ theme, packageDigest, code, coreBuild }: CompileInput): Promise<CompiledTheme> {
+export async function compileTheme({ theme, packageDigest, code, coreBuild, layoutCss = {} }: CompileInput): Promise<CompiledTheme> {
   const subject = { id: theme.id, version: theme.manifest.version, digest: packageDigest }
   const key = compileKey(coreBuild)
   const digest = compiledDigest(packageDigest, key)
@@ -233,6 +245,15 @@ export async function compileTheme({ theme, packageDigest, code, coreBuild }: Co
     [join(dir, VIRTUAL.tokens), buildTokensCss(theme.manifest)],
     [join(dir, VIRTUAL.segmented), buildSegmentedCss(theme.manifest.modes)],
   ])
+  // The variant each region uses, from the theme's `layout` (the first variant of a region when it names none)
+  const variants = REGION_LAYERS.flatMap(([region, layerName]) => {
+    const name = theme.manifest.layout?.[region] ?? DEFAULT_LAYOUT[region]
+    const css = layoutCss[region]?.[name]
+    if (css === undefined) return []
+    const file = `.micelio-layout-${region}-${name}.css`
+    virtual.set(join(dir, file), css)
+    return [`@import ${JSON.stringify(`./${file}`)} layer(${layerName});`]
+  })
   const files = new Map<string, Buffer>()
   const warnings: string[] = []
   const stylesheet = async (entry: string, name: string): Promise<Buffer> => {
@@ -244,7 +265,7 @@ export async function compileTheme({ theme, packageDigest, code, coreBuild }: Co
       throw new InstallError(message.startsWith('url(') ? 'url' : 'css', subject, `${name}: ${message.replaceAll(dir, '.')}`, { cause: error })
     }
   }
-  files.set(ENTRY_FILES.theme, await stylesheet(themeEntry(theme, code), ENTRY_FILES.theme))
+  files.set(ENTRY_FILES.theme, await stylesheet(themeEntry(theme, code, variants), ENTRY_FILES.theme))
   if (existsSync(join(dir, 'sections.css'))) files.set(ENTRY_FILES.sections, await stylesheet('@import "./sections.css" layer(myc.theme);', ENTRY_FILES.sections))
   let messages: RuntimeData['messages']
   try {

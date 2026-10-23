@@ -30,6 +30,14 @@ test('is not indexable', async ({ page, request }) => {
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow')
 })
 
+test('keeps the active header\'s height although the alternate header\'s CSS is bundled', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await page.goto('/_theme')
+  // The e2e build uses Bogotá: the bar (136px on desktop), not the centered header's 152px
+  await expect(page.locator('html')).toHaveAttribute('data-layout-header', 'bar')
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--myc-header-h').trim())).toBe('136px')
+})
+
 test('follows the color mode toggle', async ({ page }) => {
   await page.goto('/_theme', { waitUntil: 'networkidle' })
   await page.locator('[data-section="controls"]').getByRole('group', { name: 'Color theme' }).getByRole('button', { name: 'Night' }).click()

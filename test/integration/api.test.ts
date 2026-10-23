@@ -1276,6 +1276,8 @@ describe('theme from Strapi', () => {
   it('without a theme renders the first mode and no overrides', async () => {
     const { html } = await page(PAGE)
     expect(html).toMatch(/<html[^>]* data-theme="noche" data-scheme="dark"/)
+    // Only the specimen build names the header variant (ADR 0009, 2026-10-22 amendment)
+    expect(html).not.toMatch(/<html[^>]*data-layout-header/)
     expect(html).not.toMatch(/<html[^>]*data-mode-default/)
     expect(html).not.toContain('theme-overrides')
     const site = await $fetch<{ theme?: unknown }>('/api/site')

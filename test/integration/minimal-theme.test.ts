@@ -31,6 +31,11 @@ describe('a build with the minimal fixture theme', () => {
     expect(html).toMatch(/<html[^>]* data-theme="day" data-scheme="light"/)
   })
 
+  it('leaves the header variant off <html> outside the specimen build', async () => {
+    const html = await (await fetch('/')).text()
+    expect(html).not.toMatch(/<html[^>]*data-layout-header/)
+  })
+
   it('renders without the mode switch', async () => {
     for (const path of ['/', '/blog', '/privacy']) {
       const html = await (await fetch(path)).text()

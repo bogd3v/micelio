@@ -82,6 +82,33 @@ describe('compileTheme', () => {
     expect(plain).toContain('--ink')
   })
 
+  it('compiles in only the variant CSS the theme chose, in the layout and pages layers before the theme', async () => {
+    const theme = discoverThemes([join(ROOT, 'themes/starter')])[0]!
+    const variants = { header: ['bar', 'centered'], footer: ['columns', 'minimal'], home: ['showcase', 'index'], postList: ['grid', 'list'], article: ['aside', 'centered'] }
+    const layoutCss = Object.fromEntries(Object.entries(variants).map(([region, names]) => [region, Object.fromEntries(names.map(name => [name, `.x-${region}-${name}{order:1}`]))]))
+    const compile = (): ReturnType<typeof compileTheme> => compileTheme({ theme, packageDigest: PACKAGE, code: false, coreBuild: 'x', layoutCss })
+    const css = (await compile()).files.get('theme.css')!.toString()
+    // The starter uses the second variant of every region (themes/starter/theme.json)
+    for (const [region, [first, second]] of Object.entries(variants)) {
+      expect(css).toContain(`.x-${region}-${second}`)
+      expect(css).not.toContain(`.x-${region}-${first}`)
+    }
+    const at = (name: string): number => css.indexOf(name)
+    expect(at('@layer myc.components')).toBeLessThan(at('.x-header-centered'))
+    expect(at('.x-header-centered')).toBeLessThan(at('.x-footer-minimal'))
+    expect(at('.x-footer-minimal')).toBeLessThan(at('.x-home-index'))
+    expect(at('.x-home-index')).toBeLessThan(at('.x-postList-list'))
+    expect(at('.x-postList-list')).toBeLessThan(at('.x-article-centered'))
+    const again = (await compile()).files.get('theme.css')!.toString()
+    expect(again).toBe(css)
+  })
+
+  it('compiles no variant CSS when none is given', async () => {
+    const theme = discoverThemes([join(ROOT, 'themes/starter')])[0]!
+    const css = (await compileTheme({ theme, packageDigest: PACKAGE, code: false, coreBuild: 'x' })).files.get('theme.css')!.toString()
+    expect(css).not.toContain('.x-')
+  })
+
   it('compiles the messages to an AST and refuses a namespace it should not', async () => {
     const compiled = await compiling('.a{color:red}')
     const runtime = JSON.parse(compiled.files.get('runtime.json')!.toString()) as { messages: { en: { theme: Record<string, unknown> } } }

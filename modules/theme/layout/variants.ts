@@ -1,6 +1,8 @@
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { ThemeContext, LayoutRegion } from '../types'
 import { LAYOUT_REGIONS } from '../constants'
+import type { LayoutCss } from '../install/types'
 
 interface RegionVariants {
   /** Name the component is registered under. */
@@ -53,7 +55,27 @@ function pascal(variant: string): string {
   return variant[0]!.toUpperCase() + variant.slice(1)
 }
 
-/** Registers the component and CSS of the variant the theme uses in each region; the others are never bundled. */
+/**
+ * Reads the core's CSS of every layout variant from `app/theme/layout/<region>/<variant>.css`.
+ *
+ * @remarks
+ * The theme store compiles the CSS of the variants a theme chose into that theme's stylesheet (ADR 0009, section 6), so a page
+ * loads only its own variants. `layoutRoot` is the folder `app/theme/layout`.
+ */
+export function readLayoutCss(layoutRoot: string): LayoutCss {
+  const css: LayoutCss = {}
+  for (const region of LAYOUT_REGIONS) {
+    const found: Record<string, string> = {}
+    for (const variant of REGION_VARIANTS[region].variants) {
+      const file = join(layoutRoot, region, `${variant}.css`)
+      if (existsSync(file)) found[variant] = readFileSync(file, 'utf8')
+    }
+    css[region] = found
+  }
+  return css
+}
+
+/** Registers the component of the variant the theme uses in each region; its CSS travels in the theme's stylesheet (`readLayoutCss`). */
 export function registerVariants(ctx: ThemeContext, regions: readonly LayoutRegion[] = LAYOUT_REGIONS): void {
   const base = join(ctx.nuxt.options.srcDir, 'theme/layout')
   const { layout } = ctx.load().manifest
@@ -62,14 +84,13 @@ export function registerVariants(ctx: ThemeContext, regions: readonly LayoutRegi
     const variant = layout?.[region] ?? variants[0]!
     const name = pascal(variant)
     ctx.components.push({ name: component, filePath: join(base, region, `${name}.vue`) })
-    ctx.layoutCss[region].push(() => `@import "${join(base, region, `${variant}.css`)}";`)
   }
 }
 
 /**
  * Specimen only (MICELIO_SPECIMEN=1, dev): every variant the theme does not use is registered under its own name
- * (`RegionHeaderCentered`) with its CSS, which is scoped by data-layout. The CSS goes first so the active variant's
- * `:root` and `html` rules still win.
+ * (`RegionHeaderCentered`) with its CSS, which is scoped by `data-layout` and, for the header's `html` rules, by
+ * `data-layout-header`. The CSS goes in the bundle; the active variant's own CSS is in the theme's stylesheet.
  */
 export function registerAlternates(ctx: ThemeContext, regions: readonly LayoutRegion[] = LAYOUT_REGIONS): void {
   const base = join(ctx.nuxt.options.srcDir, 'theme/layout')
