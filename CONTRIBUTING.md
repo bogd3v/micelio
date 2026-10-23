@@ -16,4 +16,4 @@ work are the [engineering standard](docs/engineering-standard.md).
   checks it in CI.
 - Decisions that are expensive to undo are ADRs in [docs/adr/](docs/adr/README.md), written from the
   [template](https://github.com/bogd3v/micelio-engineering/blob/main/docs/adr-template.md).
-- Report a vulnerability privately, as [SECURITY.md](SECURITY.md) explains.
+- Report a vulnerability privately, as the [organisation's security policy](https://github.com/bogd3v/.github/blob/main/SECURITY.md) explains; the scope is in [docs/security.md](docs/security.md#reporting-a-vulnerability-and-scope).

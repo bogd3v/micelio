@@ -17,4 +17,4 @@ The documentation is organised by who reads it. Find your reader in the table; e
 Documents that do not belong to one reader:
 
 - [`engineering-standard.md`](engineering-standard.md): the rules every Micelio repository shares.
-- [`../CONTRIBUTING.md`](../CONTRIBUTING.md) and [`../SECURITY.md`](../SECURITY.md): the terms of a contribution and how to report a vulnerability.
+- [`../CONTRIBUTING.md`](../CONTRIBUTING.md): the terms of a contribution. How to report a vulnerability is the [organisation's security policy](https://github.com/bogd3v/.github/blob/main/SECURITY.md), with this repository's scope in [`security.md`](security.md#reporting-a-vulnerability-and-scope).
