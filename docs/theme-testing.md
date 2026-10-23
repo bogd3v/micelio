@@ -26,7 +26,7 @@ THEME_APP_PORT=5851 THEME_MOCK_PORT=4851 E2E_BUILD=1 npx playwright test -c play
 
 The console check ignores failed image loads and the CSP report of the `onerror="this.setAttribute('data-error', 1)"` handler of images (the CSP forbids inline handlers, so the fallback attribute is never set when an image fails). That is not a motion matter; it is a finding for the images component.
 
-Baselines are committed in `e2e/theme/__screenshots__/<theme>/<mode>/<viewport>/`. They are rendered in the Playwright image of the CI (`mcr.microsoft.com/playwright:v<version>-noble`, the version of `@playwright/test` in `package-lock.json`); images made on another OS differ in text rendering, so **do not commit locally rendered PNGs**. A missing baseline fails the run (also in CI).
+Baselines are committed in `e2e/theme/__screenshots__/<theme>/<mode>/<viewport>/`. They are rendered in the Playwright image of the CI (`mcr.microsoft.com/playwright:v<version>-noble`, the version of `@playwright/test` in `package-lock.json`, pinned by digest once per run by `scripts/ci/playwright-image.sh`); images made on another OS differ in text rendering, so **do not commit locally rendered PNGs**. A missing baseline fails the run (also in CI).
 
 ## Create or update the baselines
 
