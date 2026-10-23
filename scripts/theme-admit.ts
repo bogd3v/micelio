@@ -71,10 +71,11 @@ function listInput(name: string): string[] | undefined {
   return parsed
 }
 
-/** The themes to admit: the ids given, or every theme under `MICELIO_THEME_DIRS`. */
+/** The themes to admit: the ids given, every installed theme with `--installed` (the core's own), or every theme under `MICELIO_THEME_DIRS`. */
 function themesToAdmit(): InstalledTheme[] {
   const installed = discoverThemes(themeRoots(ROOT))
   const ids = listInput('themes')
+  if (!ids && args.installed === 'true') return installed
   if (ids) {
     return ids.map((id) => {
       const theme = installed.find(candidate => candidate.id === id)
@@ -99,13 +100,15 @@ function plan(): void {
   const unknown = modes.filter(mode => !known.includes(mode))
   if (unknown.length) throw new Error(`Unknown site modes ${unknown.join(', ')}; the core measures ${known.join(', ')}`)
   const heaviest = args['display-font'] !== 'false'
+  // `--performance false` plans quality alone: the run that renders baselines (theme-snapshots.yml)
+  const measured = args.performance === 'false' ? [] : modes
   // Baselines live outside the theme folder, which the package must not include: <snapshot-root>/<id>/<mode>/<viewport>/
   const snapshotRoot = args['snapshot-root'] && args['snapshot-root'] !== 'true' ? args['snapshot-root'] : 'e2e/theme/__screenshots__'
   const planned = themes.map((theme) => {
     const reason = ownBuildReason(theme, base!)
     return { id: theme.id, build: reason ? 'own' : 'shared', ...(reason && { reason }) }
   })
-  const performance = planned.flatMap(theme => modes.flatMap(mode => ['default', ...(heaviest && mode === 'dynamic' ? ['heaviest'] : [])].map(font => ({ theme: theme.id, mode, font, build: theme.build, ...(theme.reason && { reason: theme.reason }) }))))
+  const performance = planned.flatMap(theme => measured.flatMap(mode => ['default', ...(heaviest && mode === 'dynamic' ? ['heaviest'] : [])].map(font => ({ theme: theme.id, mode, font, build: theme.build, ...(theme.reason && { reason: theme.reason }) }))))
   const quality = args.quality === 'false' ? [] : planned.map(theme => ({ theme: theme.id, build: theme.build, snapshots: `${snapshotRoot}/${theme.id}`, ...(theme.reason && { reason: theme.reason }) }))
   const anyShared = planned.some(theme => theme.build === 'shared')
   const sharedBuilds = [
