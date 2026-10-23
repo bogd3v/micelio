@@ -252,6 +252,12 @@ describe('regionVariantsModule', () => {
     expect(source).toMatch(/"bar": \{ load: \(\) => import\("\/app\/theme\/layout\/header\/Bar\.vue"\) \},\n {2}"centered": \{ component: Chosen \},/)
   })
 
+  it('bundles the region\'s first variant for a name the core does not have, and never writes that name', () => {
+    const source = regionVariantsModule('header', '/app/theme/layout', '"); alert(1); ("')
+    expect(source).toContain('import Chosen from "/app/theme/layout/header/Bar.vue"')
+    expect(source).not.toContain('alert')
+  })
+
   it('bundles the region\'s first variant when the theme names none', () => {
     const source = regionVariantsModule('footer', '/app/theme/layout')
     expect(source).toContain('import Chosen from "/app/theme/layout/footer/Columns.vue"')
