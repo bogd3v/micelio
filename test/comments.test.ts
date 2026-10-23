@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Comment } from '../app/interfaces/comment'
-import { isCommentRelation, isFediverseComment, matchesCommentFilter, toPublicComment, toPublicComments } from '../app/helpers/comments'
+import { commentAnchorId, isCommentAnchor, isCommentRelation, isFediverseComment, matchesCommentFilter, toPublicComment, toPublicComments } from '../app/helpers/comments'
 
 function comment(overrides: Partial<Comment> = {}): Comment {
   return {
@@ -121,5 +121,25 @@ describe('isCommentRelation', () => {
     for (const value of ['../users', 'api::article.article:../../users', 'api::article.article:a/b', 'api::article.article:a?x=1', 'api::user.user:1', 'api::article.article:', '', undefined, ['api::article.article:a']]) {
       expect(isCommentRelation(value)).toBe(false)
     }
+  })
+})
+
+describe('commentAnchorId', () => {
+  it('names the element by the documentId, as the CMS links a federated reply', () => {
+    expect(commentAnchorId({ documentId: 'abc123' })).toBe('comment-abc123')
+  })
+
+  it('gives no id to a comment without a documentId', () => {
+    expect(commentAnchorId({})).toBeUndefined()
+    expect(commentAnchorId({ documentId: '' })).toBeUndefined()
+  })
+})
+
+describe('isCommentAnchor', () => {
+  it('accepts only a fragment that names a comment', () => {
+    expect(isCommentAnchor('comment-abc123')).toBe(true)
+    expect(isCommentAnchor('comment-')).toBe(false)
+    expect(isCommentAnchor('comments')).toBe(false)
+    expect(isCommentAnchor('naming')).toBe(false)
   })
 })

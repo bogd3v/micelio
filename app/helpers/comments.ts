@@ -2,6 +2,7 @@ import type { Comment, CommentAuthor, CommentFilter } from '../interfaces/commen
 
 const HIDDEN_STATUSES = new Set(['PENDING', 'REJECTED'])
 const WEB_PROTOCOLS = new Set(['https:', 'http:'])
+const COMMENT_ANCHOR_PREFIX = 'comment-'
 const RELATION_PATTERN = /^api::article\.article:[\w-]{1,128}$/
 
 function textOrNull(value: unknown): string | null {
@@ -70,6 +71,21 @@ export function toPublicComments(comments: Comment[]): Comment[] {
 /** Whether a comment came from the fediverse, which means it has an actor handle or a link. */
 export function isFediverseComment(comment: Comment): boolean {
   return Boolean(comment.fediverseActorHandle || comment.fediverseUri)
+}
+
+/**
+ * The id of a comment's element on the article page, `comment-<documentId>`, or undefined when the comment has no `documentId`.
+ *
+ * @remarks
+ * A moderator's reply that federates links to the article with this fragment (micelio-cms `docs/FEDIVERSE.md`, "Moderator replies (#301)"), so the format must not change.
+ */
+export function commentAnchorId(comment: Pick<Comment, 'documentId'>): string | undefined {
+  return comment.documentId ? `${COMMENT_ANCHOR_PREFIX}${comment.documentId}` : undefined
+}
+
+/** Whether a fragment, without its `#`, names a comment's element. */
+export function isCommentAnchor(fragment: string): boolean {
+  return fragment.startsWith(COMMENT_ANCHOR_PREFIX) && fragment.length > COMMENT_ANCHOR_PREFIX.length
 }
 
 /** Whether a comment belongs to a filter: `all` matches every comment, `fediverse` only the fediverse comments and `blog` only the others. */

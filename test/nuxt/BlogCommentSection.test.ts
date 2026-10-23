@@ -7,9 +7,9 @@ import BlogFediverseBar from '~/components/blog/FediverseBar.vue'
 
 const threads: Record<string, unknown[]> = {
   'api::article.article:doc-thread': [
-    { id: 1, content: 'Left from the blog form.', blockedThread: false, removed: false, author: { name: 'Nora' }, createdAt: '2026-02-03T10:00:00.000Z', threadOf: null, isAdminComment: false, fediverseActorHandle: null, fediverseUri: null },
-    { id: 2, content: '<b>Sent</b> from Mastodon.', blockedThread: false, removed: false, author: { name: 'Bea' }, createdAt: '2026-02-04T10:00:00.000Z', threadOf: null, isAdminComment: false, fediverseActorHandle: '@bea@mastodon.social', fediverseUri: 'https://mastodon.social/users/bea/statuses/1' },
-    { id: 3, content: 'Thanks, Bea!', blockedThread: false, removed: false, author: { name: 'Alejandro Ramirez' }, createdAt: '2026-02-05T10:00:00.000Z', threadOf: { id: 2 }, isAdminComment: true, fediverseActorHandle: null, fediverseUri: null },
+    { id: 1, documentId: 'cmt-nora', content: 'Left from the blog form.', blockedThread: false, removed: false, author: { name: 'Nora' }, createdAt: '2026-02-03T10:00:00.000Z', threadOf: null, isAdminComment: false, fediverseActorHandle: null, fediverseUri: null },
+    { id: 2, documentId: 'cmt-bea', content: '<b>Sent</b> from Mastodon.', blockedThread: false, removed: false, author: { name: 'Bea' }, createdAt: '2026-02-04T10:00:00.000Z', threadOf: null, isAdminComment: false, fediverseActorHandle: '@bea@mastodon.social', fediverseUri: 'https://mastodon.social/users/bea/statuses/1' },
+    { id: 3, documentId: 'cmt-reply', content: 'Thanks, Bea!', blockedThread: false, removed: false, author: { name: 'Alejandro Ramirez' }, createdAt: '2026-02-05T10:00:00.000Z', threadOf: { id: 2 }, isAdminComment: true, fediverseActorHandle: null, fediverseUri: null },
   ],
   'api::article.article:doc-blog-only': [
     { id: 4, content: 'Only blog here.', blockedThread: false, removed: false, author: { name: 'Nora' }, createdAt: '2026-02-03T10:00:00.000Z', threadOf: null, isAdminComment: false, fediverseActorHandle: null, fediverseUri: null },
@@ -53,6 +53,15 @@ describe('BlogCommentSection', () => {
 
     expect(author!.get('.myc-comment-badge-author').text()).toBe('Author')
     expect(author!.find('.myc-comment-badge-fediverse').exists()).toBe(false)
+  })
+
+  it('anchors each comment and reply by its documentId, and leaves a comment without one unanchored', async () => {
+    const wrapper = await mountSection('doc-thread')
+    expect(wrapper.findAll('.myc-comment').map(item => item.attributes('id'))).toEqual(['comment-cmt-nora', 'comment-cmt-bea', 'comment-cmt-reply'])
+    expect(wrapper.get('.myc-comment-thread .myc-comment').attributes('id')).toBe('comment-cmt-reply')
+
+    const unanchored = await mountSection('doc-blog-only')
+    expect(unanchored.get('.myc-comment').attributes('id')).toBeUndefined()
   })
 
   it('shows the content as plain text', async () => {

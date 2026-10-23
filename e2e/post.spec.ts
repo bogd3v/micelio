@@ -65,6 +65,19 @@ test('threads replies under their comment and hydrates cleanly', async ({ page }
   expect(errors).toEqual([])
 })
 
+test('scrolls to a comment linked by its anchor once the comments load, below the sticky header', async ({ page }) => {
+  await page.goto('/blog/understanding-vue-composables#comment-cmt-reply')
+  const reply = page.locator('#comment-cmt-reply')
+  await expect(reply).toContainText('Thanks, glad it helped!')
+  await expect(reply).toBeInViewport()
+  await expect.poll(async () => {
+    const header = await page.locator('.myc-header').boundingBox()
+    const box = await reply.boundingBox()
+    return Boolean(header && box && box.y >= header.y + header.height)
+  }).toBe(true)
+  await expect(page).toHaveURL(/#comment-cmt-reply$/)
+})
+
 test('shows only the comments written in the language being read', async ({ page }) => {
   await page.goto('/blog/understanding-vue-composables', { waitUntil: 'networkidle' })
   const comments = page.locator('#comments')
