@@ -24,7 +24,7 @@ npm run perf -- --out report.json # save the full report
 npm run perf -- --theme <id>      # label the run with the theme the build used (--mode likewise)
 ```
 
-`--serve` (included in `npm run perf`) starts the mock and the built server on ports 4310 and 3211 (`PERF_MOCK_PORT`, `PERF_SERVER_PORT` and `PERF_DEBUG_PORT` change them when another run uses them). Pass `--base <url>` without `--serve` to measure a server that is already running. The CI job **Performance Budgets** runs `npm run perf -- --check` on every push and pull request for every installed theme and site mode (next section), and writes the table to the job summary.
+`--serve` (included in `npm run perf`) starts the mock and the built server on ports 4310 and 3211 (`PERF_MOCK_PORT`, `PERF_SERVER_PORT` and `PERF_DEBUG_PORT` change them when another run uses them). Pass `--base <url>` without `--serve` to measure a server that is already running. The CI job **Performance Budgets** runs `npm run perf -- --check` inside the Playwright image (the one the e2e jobs use, `scripts/ci/playwright-image.sh`) on every push and pull request for every installed theme and site mode (next section), and writes the table to the job summary.
 
 For each page the console prints the metrics as one JSON line, then a line `Sustainable Web Design v4: <n> mg CO2e per page view, estimate, reported only`. The job summary has the table with `imageKb` and `co2Mg` and a footnote that defines both.
 

@@ -85,24 +85,52 @@ jobs:
       - name: Run integration tests
         run: npm run test:integration
 
+  # The image every browser job runs in: browsers and their system libraries come preinstalled, so no job downloads them (#463).
+  # The tag follows the lockfile and is pinned by digest once per run, so a Dependabot bump of @playwright/test moves it
+  playwright-image:
+    name: Playwright Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            package-lock.json
+            scripts/ci
+          sparse-checkout-cone-mode: false
+      - name: Resolve the image digest
+        id: image
+        run: |
+          scripts/ci/playwright-image.sh | tee -a "$GITHUB_OUTPUT"
+
   # The Playwright configs run in parallel jobs, one per group of `npm run test:e2e:<group>`; `npm run test:e2e` runs them all in sequence.
   # The playground suite (183 tests, WebKit the slowest) has one job per engine: each runs its 2 workers on its own runner, and an engine
   # no longer competes with the others for CPU (the comment in playwright.playground.config.ts). Measured at 2 workers: 148 s Chromium,
   # 156 s Firefox and 206 s WebKit of test time, 264 s of wall clock for the three together, on a 32-core machine.
   e2e-tests-group:
     name: E2E ${{ matrix.name }} (Playwright)
+    needs: playwright-image
     runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.playwright-image.outputs.image }}
+      options: --ipc=host
     timeout-minutes: 30
+    # Firefox refuses to run as root under the runner's HOME, owned by another user
+    env:
+      HOME: /root
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { name: main, group: main, browsers: chromium firefox webkit, project: '' }
-          - { name: site, group: site, browsers: chromium firefox webkit, project: '' }
-          - { name: playground-chromium, group: playground, browsers: chromium, project: chromium }
-          - { name: playground-firefox, group: playground, browsers: firefox, project: firefox }
-          - { name: playground-webkit, group: playground, browsers: webkit, project: webkit }
-          - { name: scene-ui, group: scene-ui, browsers: chromium firefox webkit, project: '' }
+          - { name: main, group: main, project: '' }
+          - { name: site, group: site, project: '' }
+          - { name: playground-chromium, group: playground, project: chromium }
+          - { name: playground-firefox, group: playground, project: firefox }
+          - { name: playground-webkit, group: playground, project: webkit }
+          - { name: scene-ui, group: scene-ui, project: '' }
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -113,11 +141,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright browsers
-        uses: ./.github/actions/playwright
-        with:
-          # The playground's Worker runs under its own CSP; each engine must enforce it (ADR 0004)
-          browsers: ${{ matrix.browsers }}
       # The built server answers at once; nuxt dev compiled each route on demand and timed out
       - name: Build
         run: npm run build
@@ -155,8 +178,15 @@ jobs:
   # A static site (ADR 0006) generated against the mock Strapi: no Nuxt client, no runtime API
   e2e-static:
     name: E2E Static Site (Playwright)
+    needs: playwright-image
     runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.playwright-image.outputs.image }}
+      options: --ipc=host
     timeout-minutes: 30
+    # Firefox refuses to run as root under the runner's HOME, owned by another user
+    env:
+      HOME: /root
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -167,10 +197,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright browsers
-        uses: ./.github/actions/playwright
-        with:
-          browsers: chromium firefox webkit
       - name: Generate the static site and run the tests
         run: npm run test:static
       # The same site on every engine: the playground's Worker policy, and the view-transition fallback
@@ -191,8 +217,15 @@ jobs:
   # It builds twice (default theme, then starter) to check that the page does not depend on the theme
   e2e-landing:
     name: E2E Landing (Playwright)
+    needs: playwright-image
     runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.playwright-image.outputs.image }}
+      options: --ipc=host
     timeout-minutes: 30
+    # Firefox refuses to run as root under the runner's HOME, owned by another user
+    env:
+      HOME: /root
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -203,8 +236,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright browsers
-        uses: ./.github/actions/playwright
       - name: Generate the landing and run the tests
         run: npm run test:landing
       - name: Upload Playwright report
@@ -216,14 +247,13 @@ jobs:
           retention-days: 7
 
   # Installed themes and the site modes with budgets, as the matrix of the performance job;
-  # the theme list and the Playwright version also feed theme-quality
+  # the theme list also feeds theme-quality
   matrix:
     name: Matrix
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       themes: ${{ steps.matrix.outputs.themes }}
-      playwright: ${{ steps.playwright.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -242,18 +272,14 @@ jobs:
           # The heaviest-display-font run (docs/performance.md) is its own entry in dynamic mode only: a static entry has no font run
           echo "matrix=$(node -p "JSON.stringify({ theme: ${themes}, mode: ${modes}, font: ['default', 'heaviest'], exclude: ${modes}.filter((mode) => mode !== 'dynamic').map((mode) => ({ mode, font: 'heaviest' })) })")" >> "$GITHUB_OUTPUT"
           echo "themes=${themes}" >> "$GITHUB_OUTPUT"
-      # The lockfile decides the browser build, so the Docker image follows a Dependabot bump of @playwright/test
-      - name: Read the Playwright version
-        id: playwright
-        run: |
-          version="$(node -p "require('./package-lock.json').packages['node_modules/playwright-core'].version")"
-          echo "${version}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
 
   performance:
     name: Performance Budgets (${{ matrix.theme }}, ${{ matrix.mode }}, ${{ matrix.font }} font)
-    needs: matrix
+    needs: [matrix, playwright-image]
     runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.playwright-image.outputs.image }}
+      options: --ipc=host
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -262,6 +288,8 @@ jobs:
       NUXT_PUBLIC_THEME: ${{ matrix.theme }}
       # Site mode of ADR 0006, read at build time
       NUXT_PUBLIC_SITE_MODE: ${{ matrix.mode }}
+      # Chromium only, but the same HOME as every job in the image
+      HOME: /root
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -272,8 +300,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright browsers
-        uses: ./.github/actions/playwright
       # A static entry generates its own site inside the perf script (against the mock Strapi), so only dynamic needs a build
       - name: Build
         if: ${{ matrix.mode == 'dynamic' }}
@@ -320,10 +346,10 @@ jobs:
   # Baselines are rendered in the Playwright image: a human commits them from the theme-snapshots-<theme> artifact (docs/theme-testing.md)
   theme-quality:
     name: Theme Quality (${{ matrix.theme }})
-    needs: matrix
+    needs: [matrix, playwright-image]
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v${{ needs.matrix.outputs.playwright }}-noble
+      image: ${{ needs.playwright-image.outputs.image }}
       options: --ipc=host
     strategy:
       fail-fast: false
