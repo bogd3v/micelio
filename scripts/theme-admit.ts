@@ -175,8 +175,9 @@ async function install(): Promise<void> {
   const theme = discoverThemes(themeRoots(ROOT)).find(candidate => candidate.id === id)
   if (!theme) throw new Error(`Theme "${id}" is not installed`)
   const record = { purpose: required('purpose'), kind: 'shared', coreBuild: index.coreBuild, baseTheme: index.buildTheme }
+  let result: Awaited<ReturnType<typeof installTheme>>
   try {
-    const result = await installTheme({ kind: 'folder', dir: theme.dir }, { storeDir: store, hooks: loadHooks(join(ROOT, 'app')), coreBuild: index.coreBuild, buildChecksOnly: true })
+    result = await installTheme({ kind: 'folder', dir: theme.dir }, { storeDir: store, hooks: loadHooks(join(ROOT, 'app')), coreBuild: index.coreBuild, buildChecksOnly: true })
     for (const warning of result.warnings) process.stdout.write(`warning: ${warning}\n`)
     index.themes[id] = { digest: result.digest, version: result.manifest.version, code: result.manifest.code }
     writeFileSync(join(store, BUILT_IN_INDEX), JSON.stringify(index))

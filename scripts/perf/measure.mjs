@@ -478,6 +478,8 @@ try {
     return `${prefix} ${p.metric} ${p.value} ${verb} the budget of ${p.limit}`
   })
   // `problems` carries the printed lines, so the admission report (modules/theme/admission/) quotes what the log says
+  // A static or landing run is the first step of its job to write into the folder, so it creates it
+  if (args.out) mkdirSync(dirname(args.out), { recursive: true })
   if (args.out) writeFileSync(args.out, JSON.stringify({ theme, mode, ...(displayFont && { displayFont }), pages: report, ...(Object.keys(islands).length && { islands }), problems: problems.map((p, i) => ({ level: p.level, metric: p.metric, message: lines[i] })) }, null, 2) + '\n')
   if (lines.length) console.log('\n' + lines.join('\n'))
   if (process.env.GITHUB_STEP_SUMMARY) {
