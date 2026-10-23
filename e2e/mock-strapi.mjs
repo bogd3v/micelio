@@ -241,6 +241,7 @@ const referencesVueEs = [
 const englishComments = [
   {
     id: 101,
+    documentId: 'cmt-ana',
     content: 'Great introduction to composables.',
     blocked: false,
     blockedThread: false,
@@ -252,6 +253,7 @@ const englishComments = [
   },
   {
     id: 102,
+    documentId: 'cmt-reply',
     content: 'Thanks, glad it helped!',
     blocked: false,
     blockedThread: false,

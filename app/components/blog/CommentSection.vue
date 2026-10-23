@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Comment, CommentFilter, CommentFormData } from '~/interfaces/comment'
-import { matchesCommentFilter } from '~/helpers/comments'
+import { isCommentAnchor, matchesCommentFilter } from '~/helpers/comments'
 import { COMMENT_LIMITS } from '~/constants/comments'
 
 const FILTERS: CommentFilter[] = ['all', 'blog', 'fediverse']
@@ -120,8 +120,17 @@ function cancelReply() {
   formData.threadOf = undefined
 }
 
-onMounted(() => {
-  fetchComments()
+// The comments load after the page, so the browser has already looked for a `#comment-<documentId>` target and missed it; the header variants' `scroll-padding-top` keeps it clear of the sticky header
+function scrollToLinkedComment() {
+  const fragment = window.location.hash.slice(1)
+  if (!isCommentAnchor(fragment)) return
+  document.getElementById(fragment)?.scrollIntoView()
+}
+
+onMounted(async () => {
+  await fetchComments()
+  await nextTick()
+  scrollToLinkedComment()
 })
 </script>
 

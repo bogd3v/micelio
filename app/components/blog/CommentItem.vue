@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Comment } from '~/interfaces/comment'
 import { formatDotDate } from '~/helpers/formatDate'
-import { isFediverseComment } from '~/helpers/comments'
+import { commentAnchorId, isFediverseComment } from '~/helpers/comments'
 
 const props = defineProps<{
   comment: Comment
@@ -25,7 +25,7 @@ const showActions = computed<boolean>(() => Boolean((props.canReply && !props.co
 </script>
 
 <template>
-  <article :class="['myc-comment', { 'myc-comment-fediverse': fediverse }]">
+  <article :id="commentAnchorId(comment)" :class="['myc-comment', { 'myc-comment-fediverse': fediverse }]">
     <BlogAuthorBadge :author="{ name }" />
     <div class="myc-comment-body">
       <header class="myc-comment-head">
