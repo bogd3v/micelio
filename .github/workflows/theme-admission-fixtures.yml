@@ -43,6 +43,8 @@ jobs:
       modes: '["dynamic", "static"]'
       # Baselines of a fixture would be megabytes of PNGs; the core's own themes cover visual regression
       visual: false
+      # data-only has a valid record (partial: nothing was verified by a person), admission-broken one the schema refuses
+      accessibility-root: test/fixtures/admission/accessibility
       display-font: false
       fail-on-errors: false
       artifact-prefix: fixtures
@@ -94,6 +96,7 @@ jobs:
           jq -e '.package.digest | startswith("sha256:")' "${pass}"
           jq -e '[.checks.quality.specs[].passed] | add > 0' "${pass}"
           jq -e '[.checks.performance[].status] | length == 2 and all(. == "passed")' "${pass}"
+          jq -e '.accessibility.status == "partial" and .accessibility.current and (.accessibility.record.lines | length) == 18' "${pass}"
           jq -e '.ok == false and .package == null' "${broken}"
           jq -e '[.builds[] | select(.kind == "shared")] | length == 2' "${broken}"
           # Each pattern is a regular expression over the error messages of one check
@@ -101,7 +104,8 @@ jobs:
           expect static '^theme "admission-broken", mode "day": "ink-muted" on "surface" has 1\.90:1, needs 4\.5:1'
           expect performance '^ERROR \[theme admission-broken, dynamic mode\] home: cssKb [0-9.]+ exceeds the budget of [0-9.]+$'
           expect quality 'a11y\.spec\.ts › home has no axe violations: [\s\S]*color-contrast'
-          echo "data-only passed; admission-broken failed with the contrast, budget and axe messages"
+          expect accessibility '^test/fixtures/admission/accessibility/admission-broken\.json: lines\.keyboard\.focus-visible\.issue: '
+          echo "data-only passed with its accessibility record; admission-broken failed with the contrast, budget, axe and record messages"
       # Every baseline visual.spec.ts takes of the data-only theme, as <mode>/<viewport>/<page>.png: 52 when this was written. A page or
       # viewport added to the spec changes the number on purpose
       - name: Check the baselines

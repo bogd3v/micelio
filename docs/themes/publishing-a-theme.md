@@ -12,10 +12,11 @@ my-theme/                  the theme folder: what the package holds (creating-a-
   theme.css
   fonts/  images/  i18n/
 __screenshots__/my-theme/  visual baselines, outside the theme folder (a file the package does not allow fails theme:pack)
+accessibility/my-theme.json  the manual accessibility record (docs/themes/accessibility-checklist.md), outside the theme folder too
 .github/workflows/admission.yml
 ```
 
-Each theme folder is named after its `id` (the core refuses a folder whose name differs), so a theme cannot sit at the repository root. Several themes in one repository work the same way: one folder each, and one baseline folder each under `__screenshots__/<id>/`.
+Each theme folder is named after its `id` (the core refuses a folder whose name differs), so a theme cannot sit at the repository root. Several themes in one repository work the same way: one folder each, one baseline folder each under `__screenshots__/<id>/` and one record each, `accessibility/<id>.json`.
 
 ## 2. Run admission
 
@@ -42,6 +43,7 @@ jobs:
 | `modes` | every mode the core budgets in CI | JSON array of site modes (`["dynamic", "static", "landing"]`) |
 | `quality`, `visual` | `true`, `true` | Visual regression and axe; `visual: false` runs axe and the other specs without screenshots |
 | `snapshot-root` | `__screenshots__` | Where the baselines are: `<snapshot-root>/<id>/<mode>/<viewport>/` (the core passes `e2e/theme/__screenshots__`) |
+| `accessibility-root` | `accessibility` | Where the manual accessibility records are: `<accessibility-root>/<id>.json` |
 | `display-font` | `true` | Also measure dynamic mode with the heaviest curated display font (ADR 0005, section 9) |
 | `fail-on-errors` | `true` | `false` only for a caller that checks the reports itself |
 | `artifact-prefix` | `admission` | Prefix of the artifacts; two calls in one run need different ones |
@@ -53,7 +55,7 @@ Your report is for iterating: publishing (#312) runs admission again on bogd3v's
 
 ## 3. What it runs
 
-1. **Plan, `theme:check` and `theme:pack`** (`npm run theme:admit -- plan` and `static`): the contract validator, the public hooks, the contrast matrix, the static budgets and the package with its digest.
+1. **Plan, `theme:check` and `theme:pack`** (`npm run theme:admit -- plan` and `static`): the contract validator, the public hooks, the contrast matrix, the static budgets and the package with its digest. The same step reads the manual accessibility record, `<accessibility-root>/<id>.json`.
 2. **Performance budgets per site mode** (`npm run perf -- --check --theme <id> --mode <mode>`), the same run and limits as the core's own themes (`docs/performance.md`).
    - **Dynamic mode, data-only theme:** no `nuxt build` of its own. The core is built once per call, with a neutral data-only theme (`test/fixtures/themes/minimal`), and each theme is installed into that build's theme store (`npm run theme:admit -- install`), at the build's compile key, as a server serves it (ADR 0009). The report names that build (`builds[].coreBuild`).
    - **Dynamic mode, theme with code** (`slots/` or `templates/`), or a theme whose layout variants differ from the shared build's until #402: a build made with the theme, as before. The report says why (`builds[].kind: "own"`, `reason`).
@@ -67,6 +69,7 @@ Your report is for iterating: publishing (#312) runs admission again on bogd3v's
 | --- | --- |
 | Contract, public hooks and package problems (`theme:check`, `theme:pack`) | `theme:check` warnings, such as fonts over the 100 KB target |
 | Contrast below AA in any mode | Budget targets (`warn` limits of `scripts/perf/budgets.json`) |
+| An accessibility record that does not match its schema or cannot be read | No accessibility record, a record of another version, a line of the checklist that failed |
 | A budget `error` limit, a FOUC rule, a third-party request | |
 | An axe violation, a visual diff or a missing baseline, a motion or reflow failure | |
 | A check that produced no result (a job that crashed or was cancelled, a quality run where no test passed), or an install into the shared build that failed | |
@@ -86,9 +89,10 @@ Every message is the one the check prints today, unchanged, so the report reads 
 | `builds` | Per performance and quality build: `kind` (`shared` or `own`), `coreBuild` (the Nuxt build id), `baseTheme` or `reason` |
 | `package` | `file`, `digest` (`sha256:`), `bytes`; `null` when the theme cannot be packed |
 | `checks` | The status of each check, every page measurement per mode, and the passed, failed and skipped tests per quality spec |
-| `errors`, `warnings` | `check` (`static`, `performance`, `quality`, `admission`), `kind` (`contract`, `contrast`, `budget`, `third-party`, `axe`, `visual`, `motion`, `missing`…), `message`, `mode` |
+| `accessibility` | Optional, when the theme has a valid record: `status` (`passed`, `partial` when a line was not verified, `failed`), `current` (the record is for this version) and the `record` as written (`docs/themes/accessibility-checklist.md`) |
+| `errors`, `warnings` | `check` (`static`, `performance`, `quality`, `accessibility`, `admission`), `kind` (`contract`, `contrast`, `budget`, `third-party`, `axe`, `visual`, `motion`, `missing`…), `message`, `mode` |
 
-A field is added without a version change when it is optional; a change of meaning or a removal raises `schemaVersion`.
+A field is added without a version change when it is optional, and so is a new value of an enum such as `check` (`accessibility` was added this way: a reader that validates against an older schema must accept unknown values); a change of meaning or a removal raises `schemaVersion`.
 
 ## 6. Baselines
 
@@ -120,7 +124,3 @@ MICELIO_THEME_DIRS=test/fixtures/themes/minimal NUXT_PUBLIC_THEME=minimal npm ru
 npm run theme:admit -- install --theme my-theme --output .output --purpose performance --out admission/my-theme/build-performance.json
 npm run perf -- --check --theme my-theme --mode dynamic
 ```
-
-## 8. Not yet
-
-- The manual accessibility record of `docs/themes/accessibility-checklist.md` is not part of the report yet (#311, next part).
