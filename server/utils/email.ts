@@ -1,11 +1,11 @@
-import nodemailer from 'nodemailer'
+import nodemailer, { type Mail, type SMTPSentMessageInfo, type SMTPTransportOptions } from 'nodemailer'
 import { smtpTransportOptions, welcomeEmailFooter } from '~/helpers/email'
 import { blogUrl, confirmUrl as buildConfirmUrl, unsubscribeHeaders, unsubscribeUrl } from '~/helpers/newsletter'
 import type { NewsletterLanguage } from '~/interfaces/newsletter'
 import { escapeHtml } from '~/helpers/code'
 
 /** A nodemailer transport built from the SMTP settings of the runtime config. Each call builds a new one; nothing is pooled. */
-export function createTransporter() {
+export function createTransporter(): Mail<SMTPSentMessageInfo, SMTPTransportOptions> {
   const config = useRuntimeConfig()
 
   return nodemailer.createTransport(smtpTransportOptions({

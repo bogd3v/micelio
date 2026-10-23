@@ -1,4 +1,5 @@
 import { toValue, type MaybeRef } from 'vue'
+import type { AsyncData, NuxtError } from '#app'
 import type {
   StrapiAbout,
   RawStrapiArticle,
@@ -10,27 +11,42 @@ import { defaultLocale } from '~/interfaces'
 import { toStrapiPost } from '~/helpers/post'
 import { toQueryString } from '~/helpers/query'
 
+/** The filters, page and sort of `fetchPosts`; each may be a ref, read again when the list refreshes. */
+export interface FetchPostsParams {
+  page?: MaybeRef<number | undefined>
+  pageSize?: MaybeRef<number | undefined>
+  locale?: MaybeRef<Locale | undefined>
+  category?: MaybeRef<string | undefined>
+  tag?: MaybeRef<string | undefined>
+  search?: MaybeRef<string | undefined>
+  sort?: MaybeRef<BlogSort | undefined>
+  /** With `search`, matches the article body as well as the title. */
+  content?: MaybeRef<boolean | undefined>
+}
+
+/** The helpers `useStrapi` returns. */
+export interface StrapiHelpers {
+  fetchPosts: (params?: FetchPostsParams) => AsyncData<{ data: PostListItem[], pagination: PaginationMeta }, NuxtError | undefined>
+  fetchPost: (slug: string, locale?: Locale) => AsyncData<StrapiPost | null | undefined, NuxtError | undefined>
+  fetchCategories: (locale?: MaybeRef<Locale | undefined>) => AsyncData<CategoryEntry[], NuxtError | undefined>
+  fetchTags: (locale?: Locale) => AsyncData<TagCount[], NuxtError | undefined>
+  fetchAbout: (locale?: Locale) => AsyncData<StrapiAbout | undefined, NuxtError | undefined>
+  searchPosts: (queryStr: string, locale?: Locale, content?: boolean) => Promise<SearchPostResult[]>
+  getMediaUrl: (url: string | { url: string } | undefined | null) => string
+}
+
 /**
  * Strapi data access for client pages. Every helper below goes through
  * this app's Nitro server routes (/api/*) — the Strapi URL and API token
  * are never used from the browser. These are plain functions (not
  * composables), returned from the useStrapi() factory.
  */
-export function useStrapi() {
+export function useStrapi(): StrapiHelpers {
   const config = useRuntimeConfig()
   // On the server this is the visitor's event.$fetch, which carries the address for the CMS rate limits
   const requestFetch = useRequestFetch()
 
-  function fetchPosts(params?: {
-    page?: MaybeRef<number | undefined>
-    pageSize?: MaybeRef<number | undefined>
-    locale?: MaybeRef<Locale | undefined>
-    category?: MaybeRef<string | undefined>
-    tag?: MaybeRef<string | undefined>
-    search?: MaybeRef<string | undefined>
-    sort?: MaybeRef<BlogSort | undefined>
-    content?: MaybeRef<boolean | undefined>
-  }) {
+  function fetchPosts(params?: FetchPostsParams) {
     const buildQuery = () => {
       return toQueryString({
         page: toValue(params?.page),

@@ -11,7 +11,7 @@ work are the [engineering standard](docs/engineering-standard.md).
 ## What is specific to this repository
 
 - Commands, structure and conventions are in [AGENTS.md](AGENTS.md); the roadmap is the open epics (`gh issue list --label épica`).
-- Run `npm run check` (types, lint and tests with coverage) before opening the pull request.
+- Run `npm run check` (types, lint, tests with coverage, licences and the copy of the standard) before opening the pull request.
 - Third-party material goes in [THIRD-PARTY.md](THIRD-PARTY.md) and [REUSE.toml](REUSE.toml); `reuse lint`
   checks it in CI.
 - Decisions that are expensive to undo are ADRs in [docs/adr/](docs/adr/README.md), written from the

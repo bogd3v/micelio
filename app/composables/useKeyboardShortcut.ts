@@ -13,7 +13,7 @@
  * useKeyboardShortcut('k', () => { isSearchOpen.value = true })
  * ```
  */
-export function useKeyboardShortcut(key: string, handler: () => void) {
+export function useKeyboardShortcut(key: string, handler: () => void): void {
   if (getCurrentInstance() === null) {
     console.warn(
       '[useKeyboardShortcut] must be called inside a component setup context; shortcut was not registered.',

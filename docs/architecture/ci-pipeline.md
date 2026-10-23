@@ -4,8 +4,8 @@
 
 Every push to `main` runs `.github/workflows/deploy.yml`:
 
-1. Lint, type check, `npm audit` (critical), design tokens check and unit tests with coverage thresholds
-2. Integration tests and Playwright e2e tests
+1. The `check` job: `npm audit` (critical), type check, lint (with `theme:check`), unit tests with coverage thresholds, licences, the copy of the standard and REUSE
+2. Integration tests, Playwright e2e tests, performance budgets and theme quality
 3. Build the Docker image (`Dockerfile`: Node 22 builder, distroless Node 22 runtime, non-root) and push it to GHCR as `:edge` and `:<short sha>`
 4. Ask Dokploy to redeploy the application, which pulls `:edge`
 
@@ -14,6 +14,21 @@ The same job also pushes `ghcr.io/bogd3v/micelio-builder` (target `static`): gen
 The pipeline can also be started by hand from the Actions tab (`workflow_dispatch`); on `main` it builds and deploys like a push. Dependabot opens weekly update PRs for npm, the GitHub Actions and the Docker base image.
 
 The server, DNS and reverse proxy (Traefik on Dokploy) are managed with Terraform in the private `bogdev-infra` repository.
+
+## Shared and local workflows
+
+The checks every Micelio repository runs come from [`micelio-engineering`](https://github.com/bogd3v/micelio-engineering), called with `uses:` and pinned by commit SHA. A job that calls a reusable workflow reports its statuses as `<caller job> / <job name>`, which are the names the ruleset of `main` requires.
+
+| Workflow | Source | Required status |
+| --- | --- | --- |
+| `deploy.yml`, job `check` | `check.yml` of `micelio-engineering`, with `test-script: test:coverage`, `standard` and `reuse` on, no `format:check` (the formatter is the stylistic rules of `@nuxt/eslint`, inside lint) and no build job (every browser job builds) | `check / Check` |
+| `dco.yml` | `dco.yml` of `micelio-engineering` | `dco / Signed-off-by` |
+| `scorecard.yml` | `scorecard.yml` of `micelio-engineering` | none |
+| `add-to-project.yml` | `add-to-project.yml` of `bogd3v/.github` | none |
+
+The rest stays here because it is this repository's own: the integration, e2e, static, landing, performance and theme quality jobs and the image builds of `deploy.yml` (Nuxt builds, the Playwright image, the deployment); `contract.yml` (this repository's suite, which `micelio-cms` also calls); `codeql.yml` (`micelio-engineering` ships no CodeQL workflow; `analyze` stays a required check); `release.yml` (the reusable one has no check of the `cms_line`, of the version in `docs/openapi.json` or that `deploy.yml` passed on the commit); `static-site.yml`, `theme-snapshots.yml` and `pr-labels.yml`.
+
+The ESLint and TypeScript bases come from `@micelio/eslint-config` (`eslint.config.mjs`, prepended to the `@nuxt/eslint` config so that its `eslint-config-prettier` entry does not switch off the stylistic rules) and `@micelio/tsconfig` (the `extends` of every generated `.nuxt/tsconfig.*.json`, set in `nuxt.config.ts`; Nuxt's own options override it). `@micelio/prettier-config` is not used: standard, section 15, lets the stylistic rules inside lint be the formatter.
 
 ## Code scanning
 

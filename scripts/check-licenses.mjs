@@ -1,20 +1,16 @@
-// Fails on production dependencies whose license is not compatible with AGPL-3.0 (issue #306).
-// Dev dependencies are not distributed: they only warn. Exceptions: scripts/licenses-allow.json.
+// Fails on production dependencies whose license is not on the allowlist of @micelio/eslint-config
+// (ADR 0007, issue #306). Dev dependencies are not distributed: they only warn. Exceptions: scripts/licenses-allow.json.
 import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
-const ALLOWED = [
-  'MIT', 'ISC', 'BSD-2-Clause', 'BSD-3-Clause', '0BSD', 'Apache-2.0', 'MPL-2.0', 'CC0-1.0', 'MIT-0',
-  'CC-BY-3.0', 'CC-BY-4.0', 'Unlicense', 'BlueOak-1.0.0', 'Python-2.0', 'Zlib', 'OFL-1.1', 'WTFPL',
-]
-const ALLOWED_PREFIXES = ['LGPL-', 'GPL-3.0', 'AGPL-3.0']
-// GPL-2.0 only if "or later" (then GPL-3.0 applies); GPL-2.0-only fails.
-const ALLOWED_GPL2 = ['GPL-2.0-or-later', 'GPL-2.0+']
+// GPL-2.0 is allowed only "or later" (then GPL-3.0 applies); GPL-2.0-only fails.
+const { allowed, allowedPrefixes, allowedGpl2 } = createRequire(import.meta.url)('@micelio/eslint-config/licenses.json')
 
 export function idAllowed(id) {
-  if (ALLOWED_GPL2.includes(id)) return true
+  if (allowedGpl2.includes(id)) return true
   const name = id.replace(/\+$/, '')
-  return ALLOWED.includes(name) || ALLOWED_PREFIXES.some(p => name.startsWith(p))
+  return allowed.includes(name) || allowedPrefixes.some(p => name.startsWith(p))
 }
 
 // SPDX expression: OR passes if one side is allowed, AND needs all, `X WITH exc`
