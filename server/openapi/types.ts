@@ -25,7 +25,7 @@ export interface ParameterSpec {
 export interface SuccessResponse {
   status: 200 | 201
   /** The media type of the body; JSON when absent. */
-  contentType?: 'application/json' | 'application/xml' | 'application/rss+xml' | 'text/plain' | 'application/octet-stream'
+  contentType?: 'application/json' | 'application/jrd+json' | 'application/xml' | 'application/rss+xml' | 'text/plain' | 'application/octet-stream'
   /**
    * The zod schema of the JSON body as the route sends it, read as output.
    *
