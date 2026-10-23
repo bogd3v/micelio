@@ -2590,6 +2590,48 @@ describe('/_islands/ (islands are built in every mode, ADR 0006)', () => {
   })
 })
 
+describe('layout variants chosen at runtime (#402)', () => {
+  const CHOSEN: Record<string, string[]> = {
+    '/': ['RegionHeaderBar', 'RegionFooterColumns', 'RegionHomeShowcase'],
+    '/blog': ['RegionHeaderBar', 'RegionFooterColumns', 'RegionPostListGrid'],
+    '/blog/understanding-vue-composables': ['RegionHeaderBar', 'RegionFooterColumns', 'RegionArticleAside'],
+  }
+  const VARIANTS = ['RegionHeaderBar', 'RegionHeaderCentered', 'RegionHomeShowcase', 'RegionHomeIndex', 'RegionPostListGrid', 'RegionPostListList', 'RegionArticleAside', 'RegionArticleCentered', 'RegionFooterColumns', 'RegionFooterMinimal']
+
+  // Each variant is its own chunk, found by the component name it declares (defineOptions)
+  function variantChunks(): Map<string, string> {
+    const dir = join(useTestContext().nuxt!.options.nitro.output!.dir!, 'public/_nuxt')
+    const chunks = new Map<string, string>()
+    for (const file of readdirSync(dir).filter(name => name.endsWith('.js'))) {
+      const source = readFileSync(join(dir, file), 'utf8')
+      for (const name of VARIANTS) if (new RegExp(`["'\`]${name}["'\`]`).test(source)) chunks.set(name, file)
+    }
+    return chunks
+  }
+
+  it('builds all ten variants, each one the build\'s theme does not use in a chunk of its own', () => {
+    const chunks = variantChunks()
+    expect([...chunks.keys()].sort()).toEqual([...VARIANTS].sort())
+    // The chosen ones are bundled with their region (the header and footer share the layout's chunk)
+    const unchosen = VARIANTS.filter(name => !Object.values(CHOSEN).flat().includes(name))
+    expect(unchosen).toHaveLength(5)
+    const files = [...chunks.values()]
+    for (const name of unchosen) expect(files.filter(file => file === chunks.get(name)), name).toHaveLength(1)
+  })
+
+  it('sends a page only the chunks of the variants the active theme chose, preloaded, and no other', async () => {
+    const chunks = variantChunks()
+    for (const [path, chosen] of Object.entries(CHOSEN)) {
+      const html = await $fetch<string>(path)
+      for (const name of VARIANTS) {
+        const file = chunks.get(name)!
+        if (chosen.includes(name)) expect(html, `${path} ${name}`).toMatch(new RegExp(`<link rel="modulepreload"[^>]*${file.replace('.', '\\.')}`))
+        else expect(html.includes(file), `${path} ${name}`).toBe(false)
+      }
+    }
+  })
+})
+
 describe('theme specimen (built only with MICELIO_SPECIMEN=1)', () => {
   it('has no /_theme route', async () => {
     for (const path of ['/_theme', '/es/_theme']) expect((await fetch(path)).status, path).toBe(404)
