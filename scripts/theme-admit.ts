@@ -13,6 +13,7 @@ import { loadHooks } from '../modules/theme/hooks'
 import { BUILT_IN_INDEX, BUILT_IN_STORE_PATH } from '../modules/theme/install/constants'
 import { installTheme } from '../modules/theme/install/install'
 import type { BuiltInIndex } from '../modules/theme/install/types'
+import { readLayoutCss } from '../modules/theme/layout/variants'
 import { buildPackage, writePackage } from '../modules/theme/registry/build'
 import { discoverThemes, themeRoots } from '../modules/theme/themes'
 import type { InstalledTheme } from '../modules/theme/types'
@@ -163,7 +164,8 @@ function readIndex(store: string): BuiltInIndex {
 }
 
 /**
- * Install: adds a data-only theme to the built-in store of an existing build, at that build's compile key, as the server would load it.
+ * Install: adds a data-only theme to the built-in store of an existing build, at that build's compile key and with its layout variants' CSS
+ * (read from this checkout, as the build read it), as the server would load it.
  * It runs the checks of the build (contract, public hooks, package): contrast and the static budgets are reported by `static`, so one
  * run reports every problem of a theme instead of stopping at the first.
  */
@@ -177,7 +179,7 @@ async function install(): Promise<void> {
   const record = { purpose: required('purpose'), kind: 'shared', coreBuild: index.coreBuild, baseTheme: index.buildTheme }
   let result: Awaited<ReturnType<typeof installTheme>>
   try {
-    result = await installTheme({ kind: 'folder', dir: theme.dir }, { storeDir: store, hooks: loadHooks(join(ROOT, 'app')), coreBuild: index.coreBuild, buildChecksOnly: true })
+    result = await installTheme({ kind: 'folder', dir: theme.dir }, { storeDir: store, hooks: loadHooks(join(ROOT, 'app')), coreBuild: index.coreBuild, buildChecksOnly: true, layoutCss: readLayoutCss(join(ROOT, 'app/theme/layout')) })
     for (const warning of result.warnings) process.stdout.write(`warning: ${warning}\n`)
     index.themes[id] = { digest: result.digest, version: result.manifest.version, code: result.manifest.code }
     writeFileSync(join(store, BUILT_IN_INDEX), JSON.stringify(index))
