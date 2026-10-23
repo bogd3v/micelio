@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { describe, expect, it, vi } from 'vitest'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
-import { REGION_VARIANTS, alternateVariants, readLayoutCss, registerAlternates, registerVariants } from '../modules/theme/layout/variants'
+import { REGION_VARIANTS, alternateVariants, readLayoutCss, registerAlternates, regionVariantsModule, registerVariants, variantsWithoutPrefetch } from '../modules/theme/layout/variants'
+import type { ManifestEntries } from '../modules/theme/layout/variants'
 import { LAYOUT_REGIONS } from '../modules/theme/constants'
 import type { LayoutRegion, ThemeContext } from '../modules/theme/types'
 
@@ -96,21 +97,34 @@ describe('registerVariants', () => {
     return ctx
   }
 
-  it('registers the component of each region\'s first variant when the theme names none, and no CSS (the store carries it)', () => {
-    const { components, layoutCss } = setup(undefined)
-    expect(components).toEqual([
-      { name: 'RegionHeader', filePath: join('/app', 'theme/layout/header/Bar.vue') },
-      { name: 'RegionHome', filePath: join('/app', 'theme/layout/home/Showcase.vue') },
-      { name: 'RegionPostList', filePath: join('/app', 'theme/layout/postList/Grid.vue') },
-      { name: 'RegionArticle', filePath: join('/app', 'theme/layout/article/Aside.vue') },
-      { name: 'RegionFooter', filePath: join('/app', 'theme/layout/footer/Columns.vue') },
-    ])
-    for (const region of LAYOUT_REGIONS) expect(layoutCss[region]).toEqual([])
+  it('registers one component per region, which chooses the variant at runtime, whatever the theme names, and no CSS', () => {
+    for (const layout of [undefined, { header: 'centered', home: 'index', postList: 'list', article: 'centered', footer: 'minimal' }]) {
+      const { components, layoutCss } = setup(layout)
+      expect(components).toEqual([
+        { name: 'RegionHeader', filePath: join('/app', 'theme/layout/header/RegionHeader.ts') },
+        { name: 'RegionHome', filePath: join('/app', 'theme/layout/home/RegionHome.ts') },
+        { name: 'RegionPostList', filePath: join('/app', 'theme/layout/postList/RegionPostList.ts') },
+        { name: 'RegionArticle', filePath: join('/app', 'theme/layout/article/RegionArticle.ts') },
+        { name: 'RegionFooter', filePath: join('/app', 'theme/layout/footer/RegionFooter.ts') },
+      ])
+      for (const region of LAYOUT_REGIONS) expect(layoutCss[region]).toEqual([])
+    }
   })
 
-  it('registers only the regions it is given, with the variant the theme chose', () => {
+  it('registers only the regions it is given', () => {
     const { components } = setup({ home: 'showcase' }, ['home'])
-    expect(components).toEqual([{ name: 'RegionHome', filePath: join('/app', 'theme/layout/home/Showcase.vue') }])
+    expect(components).toEqual([{ name: 'RegionHome', filePath: join('/app', 'theme/layout/home/RegionHome.ts') }])
+  })
+
+  it('has a region file typed as the region\'s first variant, reading the generated list of its variants', () => {
+    for (const region of LAYOUT_REGIONS) {
+      const { component, variants } = REGION_VARIANTS[region]
+      const first = variants[0]![0]!.toUpperCase() + variants[0]!.slice(1)
+      const source = readFileSync(join(process.cwd(), 'app/theme/layout', region, `${component}.ts`), 'utf8')
+      expect(source, region).toContain(`import type ${first} from './${first}.vue'`)
+      expect(source, region).toContain(`import variants from '#micelio/regions/${region}.mjs'`)
+      expect(source, region).toContain(`defineRegion<typeof ${first}>('${region}', '${component}', variants)`)
+    }
   })
 
   it('has a component name and at least one variant for every region', () => {
@@ -160,7 +174,7 @@ describe('registerAlternates', () => {
   it('registers the default variant as the alternate when the theme uses the other one', () => {
     const { components } = setup({ header: 'centered', footer: 'minimal' })
     expect(components.filter(component => component.global).map(component => component.name)).toEqual(['RegionHeaderBar', 'RegionHomeIndex', 'RegionPostListList', 'RegionArticleCentered', 'RegionFooterColumns'])
-    expect(components.find(component => component.name === 'RegionHeader')!.filePath).toBe(join('/app', 'theme/layout/header/Centered.vue'))
+    expect(components.find(component => component.name === 'RegionHeader')!.filePath).toBe(join('/app', 'theme/layout/header/RegionHeader.ts'))
   })
 
   it('imports the CSS of the alternates only, since the chosen variants\' CSS is compiled into the theme', () => {
@@ -181,9 +195,11 @@ describe('registerAlternates', () => {
   })
 
   it('registers nothing without the specimen flag (setupLayout)', async () => {
+    const addTemplate = vi.fn()
+    vi.doMock('nuxt/kit', () => ({ addTemplate, addTypeTemplate: vi.fn(), extendPages: vi.fn() }))
     const { setupLayout } = await import('../modules/theme/layout')
     const make = (dev: boolean): ThemeContext => ({
-      nuxt: { options: { srcDir: '/app', dev } },
+      nuxt: { options: { srcDir: '/app', buildDir: '/build', alias: {}, dev }, hook: () => {} },
       load: () => ({ manifest: { id: 'x' } }),
       layoutCss: Object.fromEntries(LAYOUT_REGIONS.map(region => [region, []])),
       components: [],
@@ -195,14 +211,50 @@ describe('registerAlternates', () => {
       setupLayout(plain)
       expect(plain.components.some(component => component.global)).toBe(false)
       expect(plain.layoutCss.header).toHaveLength(0)
+      expect(addTemplate.mock.calls.map(([template]) => template.filename)).toEqual(LAYOUT_REGIONS.map(region => `micelio/regions/${region}.mjs`))
       process.env.MICELIO_SPECIMEN = '1'
       const specimen = make(false)
       setupLayout(specimen)
       expect(specimen.components.filter(component => component.global)).toHaveLength(5)
       expect(specimen.layoutCss.header).toHaveLength(1)
     } finally {
+      vi.doUnmock('nuxt/kit')
       if (previous === undefined) delete process.env.MICELIO_SPECIMEN
       else process.env.MICELIO_SPECIMEN = previous
     }
+  })
+})
+
+describe('variantsWithoutPrefetch', () => {
+  it('turns prefetch off for the core\'s layout variants only', () => {
+    const manifest: ManifestEntries = {
+      'theme/layout/header/Centered.vue': { src: 'theme/layout/header/Centered.vue', prefetch: true },
+      'theme/layout/postList/List.vue': { src: 'theme/layout/postList/List.vue', prefetch: true },
+      'theme/layout/header/RegionHeader.ts': { src: 'theme/layout/header/RegionHeader.ts', prefetch: true },
+      'components/myc/MycSearchIsland.vue': { src: 'components/myc/MycSearchIsland.vue', prefetch: true },
+      '_chunk.js': { prefetch: true },
+    }
+    variantsWithoutPrefetch(manifest, '/app')
+    expect(Object.fromEntries(Object.entries(manifest).map(([key, entry]) => [key, entry.prefetch]))).toEqual({
+      'theme/layout/header/Centered.vue': false,
+      'theme/layout/postList/List.vue': false,
+      'theme/layout/header/RegionHeader.ts': true,
+      'components/myc/MycSearchIsland.vue': true,
+      '_chunk.js': true,
+    })
+  })
+})
+
+describe('regionVariantsModule', () => {
+  it('imports the chosen variant statically and every other one on demand, in the order of REGION_VARIANTS', () => {
+    const source = regionVariantsModule('header', '/app/theme/layout', 'centered')
+    expect(source).toContain('import Chosen from "/app/theme/layout/header/Centered.vue"')
+    expect(source).toMatch(/"bar": \{ load: \(\) => import\("\/app\/theme\/layout\/header\/Bar\.vue"\) \},\n {2}"centered": \{ component: Chosen \},/)
+  })
+
+  it('bundles the region\'s first variant when the theme names none', () => {
+    const source = regionVariantsModule('footer', '/app/theme/layout')
+    expect(source).toContain('import Chosen from "/app/theme/layout/footer/Columns.vue"')
+    expect(source).toContain('"minimal": { load: () => import("/app/theme/layout/footer/Minimal.vue") },')
   })
 })
