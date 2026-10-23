@@ -1,4 +1,5 @@
-html[data-layout-header="bar"] {
+/* Matches without data-layout-header, which only the specimen writes to keep its bundled alternates apart (ADR 0009, 2026-10-22 amendment) */
+html:not([data-layout-header]:not([data-layout-header="bar"])) {
     --myc-header-h: 64px;
     scroll-padding-top: calc(var(--myc-header-h) + var(--space-4));
 }
@@ -211,7 +212,7 @@ html[data-layout-header="bar"] {
 }
 
 @media (min-width: 768px) {
-    html[data-layout-header="bar"] {
+    html:not([data-layout-header]:not([data-layout-header="bar"])) {
         --myc-header-h: 136px;
     }
 

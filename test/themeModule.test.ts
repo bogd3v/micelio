@@ -127,8 +127,8 @@ describe('readLayoutCss', () => {
     for (const region of LAYOUT_REGIONS) {
       expect(Object.keys(css[region]!).sort()).toEqual([...REGION_VARIANTS[region].variants].sort())
     }
-    expect(css.header!.bar).toContain('data-layout-header="bar"')
-    expect(css.header!.centered).toContain('data-layout-header="centered"')
+    expect(css.header!.bar).toContain('html:not([data-layout-header]:not([data-layout-header="bar"]))')
+    expect(css.header!.centered).toContain('html:not([data-layout-header]:not([data-layout-header="centered"]))')
   })
 })
 

@@ -1,5 +1,6 @@
 /* Logo centered above the navigation (ADR 0005, section 5); sticky like the bar */
-html[data-layout-header="centered"] {
+/* Matches without data-layout-header, which only the specimen writes to keep its bundled alternates apart (ADR 0009, 2026-10-22 amendment) */
+html:not([data-layout-header]:not([data-layout-header="centered"])) {
     --myc-header-h: 64px;
     scroll-padding-top: calc(var(--myc-header-h) + var(--space-4));
 }
@@ -220,7 +221,7 @@ html[data-layout-header="centered"] {
 }
 
 @media (min-width: 768px) {
-    html[data-layout-header="centered"] {
+    html:not([data-layout-header]:not([data-layout-header="centered"])) {
         --myc-header-h: 152px;
     }
 
