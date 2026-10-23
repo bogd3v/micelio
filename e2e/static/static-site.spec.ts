@@ -58,6 +58,11 @@ test('the pages render their content without JavaScript', async ({ browser }) =>
   await context.close()
 })
 
+test('an article names the site actor in fediverse:creator, though the fediverse module is off', async ({ request }) => {
+  const html = await (await request.get('/blog/understanding-vue-composables')).text()
+  expect(html).toContain('<meta name="fediverse:creator" content="@blog@cms.example.com">')
+})
+
 test('module pages are not generated', async ({ request }) => {
   for (const path of ['/account', '/account/sign-in', '/es/account', '/drafts', '/es/drafts', '/newsletter/unsubscribe', '/es/confirm', '/es/newsletter/unsubscribe', '/confirm', '/_theme']) {
     expect((await request.get(path)).status(), path).toBe(404)

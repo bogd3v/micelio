@@ -71,6 +71,7 @@ beforeEach(() => {
   mock.theme.value = null
   mock.homePage.value = null
   mock.securityContact.value = null
+  mock.fediverseUsername.value = null
   for (const module of Object.keys(mock.modules) as (keyof typeof mock.modules)[]) mock.modules[module] = true
   umami.requests.length = 0
 })
@@ -850,6 +851,34 @@ describe('/.well-known/webfinger', () => {
   })
 })
 
+describe('fediverse:creator on an article', () => {
+  async function creator(): Promise<string | null> {
+    const response = await fetch('/blog/understanding-vue-composables', { headers: { accept: 'text/html' } })
+    expect(response.status).toBe(200)
+    const html = await response.text()
+    return /<meta name="fediverse:creator" content="([^"]*)">/.exec(html)?.[1] ?? null
+  }
+
+  it('renders the configured handle on the server', async () => {
+    expect(await creator()).toBe('@bogdev@api.bogdev.com.co')
+  })
+
+  it('takes the @user from the site settings and keeps the configured host', async () => {
+    mock.fediverseUsername.value = 'notes'
+    expect(await creator()).toBe('@notes@api.bogdev.com.co')
+  })
+
+  it('is absent when federation is off', async () => {
+    mock.modules.fediverse = false
+    expect(await creator()).toBeNull()
+  })
+
+  it('is absent when the CMS fails', async () => {
+    mock.failures.site = true
+    expect(await creator()).toBeNull()
+  })
+})
+
 describe('/sitemap.xml', () => {
   async function sitemap(): Promise<string> {
     const response = await fetch('/sitemap.xml')
@@ -1262,10 +1291,11 @@ describe('/api/site', () => {
       privacyContactEmail: '',
       supportHandle: 'micelio',
       modules: { comments: true, newsletter: true },
+      fediverseHandle: '@bogdev@api.bogdev.com.co',
     })
     expect(mock.siteRequests).toEqual([expect.objectContaining({
       path: '/api/site-setting',
-      query: { populate: { author: { fields: ['name', 'url'] }, logo: { fields: ['url', 'alternativeText', 'width', 'height'] }, favicon: { fields: ['url', 'alternativeText', 'width', 'height'] }, defaultOgImage: { fields: ['url', 'alternativeText', 'width', 'height'] }, socialLinks: 'true', modules: 'true', theme: { populate: '*' }, homePage: { fields: ['slug'] } }, locale: 'es' },
+      query: { populate: { author: { fields: ['name', 'url'] }, logo: { fields: ['url', 'alternativeText', 'width', 'height'] }, favicon: { fields: ['url', 'alternativeText', 'width', 'height'] }, defaultOgImage: { fields: ['url', 'alternativeText', 'width', 'height'] }, socialLinks: 'true', modules: 'true', theme: { populate: '*' }, homePage: { fields: ['slug'] }, fediverse: { fields: ['username'] } }, locale: 'es' },
       authorization: 'Bearer test-api-token',
     })])
   })

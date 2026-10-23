@@ -164,6 +164,8 @@ export interface Site {
   theme?: SiteTheme
   /** The page shown at `/` in this locale; absent keeps the blog home */
   homePage?: { slug: string }
+  /** The site actor's fediverse handle (`@user@host`) for `fediverse:creator`; absent when federation is off. */
+  fediverseHandle?: string
 }
 
 /**
@@ -186,7 +188,7 @@ export interface ThemeSettings {
  *
  * @public
  */
-export type SiteSettings = Partial<Omit<Site, 'author' | 'modules' | 'theme'>> & {
+export type SiteSettings = Partial<Omit<Site, 'author' | 'modules' | 'theme' | 'fediverseHandle'>> & {
   author?: Partial<SiteAuthor>
   modules?: Partial<SiteModules>
   theme?: ThemeSettings

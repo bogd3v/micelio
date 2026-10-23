@@ -4,7 +4,7 @@ import { activeTheme } from './activeTheme'
 import type { Locale, Site, AppSiteConfig } from '~/interfaces'
 import { effectiveModules } from '~/helpers/modules'
 import { moduleRequirements } from '~/helpers/runtimeConfig'
-import { mergeSite, resolveSiteMedia, siteFromAppConfig } from '~/helpers/site'
+import { fediverseCreator, mergeSite, resolveSiteMedia, siteFromAppConfig } from '~/helpers/site'
 import { SITE_POPULATE } from '../lib/constants'
 import { parseSiteSettings } from '../schemas/site'
 
@@ -21,6 +21,13 @@ interface LoadedSite {
   securityContact?: string
 }
 
+// The site actor's handle when Strapi's `fediverse` switch is on, not the effective module: the actor lives on the CMS,
+// so a static site's articles still have an author on the fediverse (docs/api.md, "Fediverse creator")
+function siteFediverseHandle(site: Pick<Site, 'modules'>, username?: string): string | undefined {
+  if (!site.modules.fediverse) return undefined
+  return fediverseCreator(String(useRuntimeConfig().public.fediverseHandle ?? ''), username)
+}
+
 /** The site identity: Strapi's site-setting over app.config.ts, field by field, with the modules that actually work. `quiet` skips the error log (the startup check). */
 export async function loadSite(locale: Locale, options: { quiet?: boolean } = {}): Promise<LoadedSite> {
   const { runtime } = activeTheme()
@@ -34,7 +41,9 @@ export async function loadSite(locale: Locale, options: { quiet?: boolean } = {}
     const parsed = parseSiteSettings(response.data)
     const settings = resolveSiteMedia(parsed, useRuntimeConfig().public.strapiUrl)
     const theme = resolveTheme(settings?.theme, runtime.palette, runtime.id)
-    loaded = { site: { ...mergeSite(defaults, settings), ...(theme && { theme }) }, fromStrapi: true, securityContact: parsed?.securityContact }
+    const site = { ...mergeSite(defaults, settings), ...(theme && { theme }) }
+    const fediverseHandle = siteFediverseHandle(site, parsed?.fediverseUsername)
+    loaded = { site: { ...site, ...(fediverseHandle && { fediverseHandle }) }, fromStrapi: true, securityContact: parsed?.securityContact }
   } catch (error: unknown) {
     if (!options.quiet) logError('cms.site-setting', 'Fetching the site settings failed', { error })
     loaded = { site: defaults, fromStrapi: false }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { absoluteUrl, ALL_MODULES_ON, defaultOgImageUrl, fediverseUser, iconType, mergeSite, pageTitle, resolveSiteImage, resolveSiteMedia, siteFromAppConfig, personStructuredData, siteLogoUrl, xHandle } from '../app/helpers/site'
+import { absoluteUrl, ALL_MODULES_ON, defaultOgImageUrl, fediverseCreator, fediverseUser, iconType, mergeSite, pageTitle, resolveSiteImage, resolveSiteMedia, siteFromAppConfig, personStructuredData, siteLogoUrl, xHandle } from '../app/helpers/site'
 import type { AppSiteConfig } from '../app/interfaces/site'
 import { parseSiteSettings } from '../server/schemas/site'
 import { Locale } from '../app/interfaces/locale'
@@ -87,6 +87,38 @@ describe('fediverseUser', () => {
     expect(fediverseUser('@bogdev@api.bogdev.com.co')).toBe('@bogdev')
     expect(fediverseUser('bogdev@example.org')).toBe('@bogdev')
     expect(fediverseUser('')).toBe('')
+  })
+})
+
+describe('fediverseCreator', () => {
+  it('keeps the configured handle, with a leading @', () => {
+    expect(fediverseCreator('@blog@cms.example.com')).toBe('@blog@cms.example.com')
+    expect(fediverseCreator(' blog@cms.example.com ')).toBe('@blog@cms.example.com')
+  })
+
+  it('takes the @user of the site settings at the configured host', () => {
+    expect(fediverseCreator('@blog@example.com', 'notes')).toBe('@notes@example.com')
+    expect(fediverseCreator('@blog@example.com', '')).toBe('@blog@example.com')
+  })
+
+  it('answers undefined for what is not a handle', () => {
+    for (const configured of ['', '@blog', 'https://example.com/@blog', '@a@b@c', '@blog@exa mple.com']) {
+      expect(fediverseCreator(configured, 'notes')).toBeUndefined()
+    }
+  })
+})
+
+describe('parseSiteSettings fediverse', () => {
+  it('flattens the component to its username', () => {
+    expect(parseSiteSettings({ fediverse: { id: 1, username: 'notes', displayName: 'Notes' } })?.fediverseUsername).toBe('notes')
+  })
+
+  it('drops a missing, empty or invalid username, alone', () => {
+    for (const fediverse of [null, {}, { username: null }, { username: '' }, { username: 'Not Valid' }, { username: 'a'.repeat(31) }]) {
+      const parsed = parseSiteSettings({ name: 'Micelio', fediverse })
+      expect(parsed).toMatchObject({ name: 'Micelio' })
+      expect(parsed && 'fediverseUsername' in parsed).toBe(false)
+    }
   })
 })
 

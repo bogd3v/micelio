@@ -62,6 +62,7 @@ export const SITE_POPULATE = {
   modules: true,
   theme: { populate: '*' },
   homePage: { fields: ['slug'] },
+  fediverse: { fields: ['username'] },
 }
 
 /** The Strapi populate of the RSS feed, which reads the cover URL and the category name. */

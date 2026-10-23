@@ -7918,6 +7918,11 @@
           },
           "homePage": {
             "$ref": "#/components/schemas/SiteHomePage"
+          },
+          "fediverseHandle": {
+            "description": "The site actor's handle (`@user@host`), which articles name in `fediverse:creator`; absent when federation is off.",
+            "type": "string",
+            "pattern": "^@[^@\\s/]+@[^@\\s/]+$"
           }
         },
         "required": [
@@ -7939,7 +7944,7 @@
           "modules"
         ],
         "additionalProperties": false,
-        "description": "The site identity, its modules and, when overrides apply, its theme. Empty strings mean unset. `theme` and `homePage` are absent when they do not apply."
+        "description": "The site identity, its modules and, when overrides apply, its theme. Empty strings mean unset. `theme`, `homePage` and `fediverseHandle` are absent when they do not apply."
       },
       "SiteAuthor": {
         "type": "object",

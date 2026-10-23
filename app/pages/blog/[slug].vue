@@ -82,9 +82,11 @@ useSeoMeta({
 })
 
 useHead({
-  meta: () => post.value?.seo?.metaRobots
-    ? [{ name: 'robots', content: post.value.seo.metaRobots }]
-    : [],
+  meta: () => [
+    ...(post.value?.seo?.metaRobots ? [{ name: 'robots', content: post.value.seo.metaRobots }] : []),
+    // Mastodon's author attribution on link cards (docs/api.md, "Article head")
+    ...(site.value.fediverseHandle ? [{ name: 'fediverse:creator', content: site.value.fediverseHandle }] : []),
+  ],
 })
 
 const structuredData = computed(() => {
