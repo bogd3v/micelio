@@ -16,13 +16,12 @@ import { specimenEnabled } from './specimen/setup'
  * components and CSS come only when `specimenEnabled` is true, so no other build bundles them.
  */
 export function setupLayout(ctx: ThemeContext): void {
-  const layoutRoot = join(ctx.nuxt.options.srcDir, 'theme/layout')
   ctx.nuxt.options.alias['#micelio/regions'] = join(ctx.nuxt.options.buildDir, REGIONS_DIR)
   for (const region of LAYOUT_REGIONS) {
     addTemplate({
       filename: `${REGIONS_DIR}/${region}.mjs`,
       write: true,
-      getContents: () => regionVariantsModule(region, layoutRoot, ctx.load().manifest.layout?.[region]),
+      getContents: () => regionVariantsModule(region, ctx.load().manifest.layout?.[region]),
     })
   }
   addTypeTemplate({
