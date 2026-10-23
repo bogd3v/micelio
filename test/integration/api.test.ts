@@ -1276,6 +1276,7 @@ describe('theme from Strapi', () => {
   it('without a theme renders the first mode and no overrides', async () => {
     const { html } = await page(PAGE)
     expect(html).toMatch(/<html[^>]* data-theme="noche" data-scheme="dark"/)
+    expect(html).toMatch(/<html[^>]* data-layout-header="bar"/)
     expect(html).not.toMatch(/<html[^>]*data-mode-default/)
     expect(html).not.toContain('theme-overrides')
     const site = await $fetch<{ theme?: unknown }>('/api/site')

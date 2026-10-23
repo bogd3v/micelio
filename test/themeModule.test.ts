@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
-import { REGION_VARIANTS, alternateVariants, registerAlternates, registerVariants } from '../modules/theme/layout/variants'
+import { REGION_VARIANTS, alternateVariants, readLayoutCss, registerAlternates, registerVariants } from '../modules/theme/layout/variants'
 import { LAYOUT_REGIONS } from '../modules/theme/constants'
 import type { LayoutRegion, ThemeContext } from '../modules/theme/types'
 
@@ -96,7 +96,7 @@ describe('registerVariants', () => {
     return ctx
   }
 
-  it('registers the component and CSS of each region\'s first variant when the theme names none', () => {
+  it('registers the component of each region\'s first variant when the theme names none, and no CSS (the store carries it)', () => {
     const { components, layoutCss } = setup(undefined)
     expect(components).toEqual([
       { name: 'RegionHeader', filePath: join('/app', 'theme/layout/header/Bar.vue') },
@@ -105,9 +105,7 @@ describe('registerVariants', () => {
       { name: 'RegionArticle', filePath: join('/app', 'theme/layout/article/Aside.vue') },
       { name: 'RegionFooter', filePath: join('/app', 'theme/layout/footer/Columns.vue') },
     ])
-    expect(layoutCss.header[0]!()).toBe(`@import "${join('/app', 'theme/layout/header/bar.css')}";`)
-    expect(layoutCss.footer[0]!()).toBe(`@import "${join('/app', 'theme/layout/footer/columns.css')}";`)
-    expect(layoutCss.home[0]!()).toBe(`@import "${join('/app', 'theme/layout/home/showcase.css')}";`)
+    for (const region of LAYOUT_REGIONS) expect(layoutCss[region]).toEqual([])
   })
 
   it('registers only the regions it is given, with the variant the theme chose', () => {
@@ -120,6 +118,17 @@ describe('registerVariants', () => {
       expect(REGION_VARIANTS[region].component).toMatch(/^Region[A-Z]/)
       expect(REGION_VARIANTS[region].variants.length).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('readLayoutCss', () => {
+  it('reads the CSS file of every variant of every region, and nothing else', () => {
+    const css = readLayoutCss(join(process.cwd(), 'app/theme/layout'))
+    for (const region of LAYOUT_REGIONS) {
+      expect(Object.keys(css[region]!).sort()).toEqual([...REGION_VARIANTS[region].variants].sort())
+    }
+    expect(css.header!.bar).toContain('data-layout-header="bar"')
+    expect(css.header!.centered).toContain('data-layout-header="centered"')
   })
 })
 
@@ -154,16 +163,10 @@ describe('registerAlternates', () => {
     expect(components.find(component => component.name === 'RegionHeader')!.filePath).toBe(join('/app', 'theme/layout/header/Centered.vue'))
   })
 
-  it('imports the alternates before the active variant, so the active :root and html rules win', () => {
+  it('imports the CSS of the alternates only, since the chosen variants\' CSS is compiled into the theme', () => {
     const { layoutCss } = setup(undefined)
-    expect(layoutCss.header.map(source => source())).toEqual([
-      `@import "${join('/app', 'theme/layout/header/centered.css')}";`,
-      `@import "${join('/app', 'theme/layout/header/bar.css')}";`,
-    ])
-    expect(layoutCss.footer.map(source => source())).toEqual([
-      `@import "${join('/app', 'theme/layout/footer/minimal.css')}";`,
-      `@import "${join('/app', 'theme/layout/footer/columns.css')}";`,
-    ])
+    expect(layoutCss.header.map(source => source())).toEqual([`@import "${join('/app', 'theme/layout/header/centered.css')}";`])
+    expect(layoutCss.footer.map(source => source())).toEqual([`@import "${join('/app', 'theme/layout/footer/minimal.css')}";`])
   })
 
   it('lists the alternates for the specimen', () => {
@@ -191,11 +194,12 @@ describe('registerAlternates', () => {
       const plain = make(false)
       setupLayout(plain)
       expect(plain.components.some(component => component.global)).toBe(false)
-      expect(plain.layoutCss.header).toHaveLength(1)
+      expect(plain.layoutCss.header).toHaveLength(0)
       process.env.MICELIO_SPECIMEN = '1'
       const specimen = make(false)
       setupLayout(specimen)
       expect(specimen.components.filter(component => component.global)).toHaveLength(5)
+      expect(specimen.layoutCss.header).toHaveLength(1)
     } finally {
       if (previous === undefined) delete process.env.MICELIO_SPECIMEN
       else process.env.MICELIO_SPECIMEN = previous

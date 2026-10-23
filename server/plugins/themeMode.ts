@@ -16,7 +16,7 @@ export default defineNitroPlugin((nitroApp) => {
   // contentSecurityPolicy.ts runs first (alphabetical) and hashes scripts only: anything pushed here must be a
   // style, which style-src 'unsafe-inline' allows. A script would be blocked.
   nitroApp.hooks.hook('render:html', async (html, { event }) => {
-    const { digest, modes, fonts, display: themeDisplay } = activeTheme().runtime
+    const { digest, modes, fonts, display: themeDisplay, layout } = activeTheme().runtime
     const first = modes[0]
     if (!first) return
     // Strapi down or slow: the theme's own first mode and colors, as before
@@ -31,7 +31,7 @@ export default defineNitroPlugin((nitroApp) => {
     const initial = chosen ?? first
     // data-mode-default is read by the init script (modules/theme/init-script.mjs); the visitor's stored choice still wins
     const list = modes.map(mode => `${mode.id}:${mode.scheme}`).join(',')
-    html.htmlAttrs.push(`data-theme="${initial.id}" data-scheme="${initial.scheme}"${chosen ? ` data-mode-default="${chosen.id}"` : ''} ${MODES_ATTRIBUTE}="${list}"`)
+    html.htmlAttrs.push(`data-theme="${initial.id}" data-scheme="${initial.scheme}"${chosen ? ` data-mode-default="${chosen.id}"` : ''} ${MODES_ATTRIBUTE}="${list}" data-layout-header="${layout.header}"`)
     const font = displayFontOverride(theme?.displayFont, themeDisplay, assets)
     const css = [themeOverridesCss(theme, modes.map(mode => mode.id)), font?.css].filter(Boolean).join('')
     html.head = insertThemeLinks(html.head, digest, themePreloadLinks(fonts, themeDisplay, Boolean(font)))

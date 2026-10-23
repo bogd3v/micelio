@@ -1,8 +1,5 @@
-:root {
+html[data-layout-header="bar"] {
     --myc-header-h: 64px;
-}
-
-html {
     scroll-padding-top: calc(var(--myc-header-h) + var(--space-4));
 }
 
@@ -214,7 +211,7 @@ html {
 }
 
 @media (min-width: 768px) {
-    :root {
+    html[data-layout-header="bar"] {
         --myc-header-h: 136px;
     }
 

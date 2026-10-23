@@ -12,6 +12,9 @@ export type InstallSource
   = | { kind: 'package', data: Uint8Array, pin: ThemePin, attestation?: Uint8Array }
     | { kind: 'folder', dir: string }
 
+/** The core's CSS of each layout variant, by region and variant name (`readLayoutCss`); the entry carries the ones a theme chose. */
+export type LayoutCss = Partial<Record<LayoutRegion, Record<string, string>>>
+
 /** What `installTheme` needs besides the source. */
 export interface InstallOptions {
   /** The root of the store; the layout version is a folder inside it. */
@@ -33,6 +36,13 @@ export interface InstallOptions {
    * @defaultValue false
    */
   buildChecksOnly?: boolean
+  /**
+   * The core's CSS of the layout variants (ADR 0009, section 6). The entry's stylesheet carries the CSS of the variants the theme
+   * chose, so `coreBuild` must identify these bytes: a change to the CSS is a new core build.
+   *
+   * @defaultValue no variant CSS
+   */
+  layoutCss?: LayoutCss
 }
 
 /** One file of a compiled entry, as its manifest lists it. */

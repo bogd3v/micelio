@@ -112,7 +112,7 @@ export async function installTheme(source: InstallSource, options: InstallOption
     const report = options.buildChecksOnly ? undefined : checkTheme(theme, options.hooks)
     const problems = report ? report.errors.map(issue => issue.message) : themeProblems(theme, options.hooks)
     if (problems.length) throw new InstallError('validation', subject, problems.join('; ').replaceAll(dir, '.'))
-    const compiled = await compileTheme({ theme, packageDigest, code, coreBuild: options.coreBuild })
+    const compiled = await compileTheme({ theme, packageDigest, code, coreBuild: options.coreBuild, layoutCss: options.layoutCss })
     const total = [...compiled.files].reduce((sum, [path, data]) => sum + (/\.(gz|br)$/.test(path) ? 0 : data.length), 0)
     if (total > MAX_ENTRY_BYTES) throw new InstallError('compile', subject, `the compiled theme is ${total} bytes before compression; the limit is ${MAX_ENTRY_BYTES}`)
     const entry = buildEntryManifest({

@@ -157,7 +157,8 @@
         grid-column: 4 / span 7;
     }
 
-    :where(.myc-article-page[data-layout="aside"]) .myc-article-share {
+    /* Not in :where(): the theme stylesheet loads before the core's, so this rule has to win over `.myc-share` by specificity */
+    .myc-article-page[data-layout="aside"] .myc-article-share {
         position: sticky;
         top: calc(var(--myc-header-h) + var(--space-6));
         grid-column: span 2;

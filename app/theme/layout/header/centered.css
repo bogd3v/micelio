@@ -1,9 +1,6 @@
 /* Logo centered above the navigation (ADR 0005, section 5); sticky like the bar */
-:root {
+html[data-layout-header="centered"] {
     --myc-header-h: 64px;
-}
-
-html {
     scroll-padding-top: calc(var(--myc-header-h) + var(--space-4));
 }
 
@@ -223,7 +220,7 @@ html {
 }
 
 @media (min-width: 768px) {
-    :root {
+    html[data-layout-header="centered"] {
         --myc-header-h: 152px;
     }
 
