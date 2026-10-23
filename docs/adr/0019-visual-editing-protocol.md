@@ -1,6 +1,6 @@
 # ADR-0019: The visual editing protocol between the admin and the frontend
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-23
 **Deciders:** Micelio maintainer
 
@@ -115,5 +115,5 @@ Assumed and not checked by that spike: that one route can leave out `X-Frame-Opt
 - `micelio-plugin-core` gains `contract/preview.ts`, its JSON Schema and drift lint, the admin routes that issue and exchange tokens, the preview route that serves the document a grant names, and the host check entry for `frame-src`.
 - The frontend gains `/_preview`, the grant cookie, the draft route for pages, the preview script and stylesheet, the markers on preview responses, the `frameAncestors` option, and a `theme:check` rule that refuses selectors on the markers. It changes nothing in `app/` before builder phase 1. [ADR-0003](0003-session-in-httponly-cookie.md) and [ADR-0004](0004-hash-based-csp.md) are amended when that ships. `docs/security.md`, its ASVS mapping, `docs/api.md`, `docs/openapi.json` and `.env.example` change with it.
 - `micelio-cms` adds the sites' origins to the admin's `frame-src` in `config/middlewares`.
-- The spike of section 7 is a task of the next epic, before builder phase 1. Its result amends this record before the record is accepted.
+- The spike of section 7 is a task of the next epic, before builder phase 1. Its result amends this record.
 - Multi-site previews use the site's `url` and the hosts of [ADR-0017](0017-distribution-plugins-multisite-editorial.md) section 4. API tokens stay per instance, as that record says.

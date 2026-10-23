@@ -22,7 +22,7 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0016](0016-categories-from-the-cms.md) | Categories come from the CMS: data instead of constants, a stable optional color, `featured`, and theme contract 2 | Accepted | 2026-10-18 |
 | [0017](0017-distribution-plugins-multisite-editorial.md) | Micelio as Strapi plugins with `micelio-cms` as the reference distribution, several sites per CMS, and an editorial workflow of its own | Accepted | 2026-10-20 |
 | [0018](0018-blocks-as-a-contract.md) | Blocks as a contract: `{ id, schema, options, cost, static }`, options from the theme contract, a generated catalogue checked for drift, and no free positioning, per-element CSS, inline styles or raw HTML | Accepted | 2026-10-21 |
-| [0019](0019-visual-editing-protocol.md) | Visual editing: the frontend is the only renderer, its draft route in an admin iframe behind a single-use token exchanged for a short-lived grant, versioned `postMessage` envelopes, blocks addressed by catalogue id and position, and `frame-ancestors` relaxed only for a granted preview | Proposed | 2026-10-23 |
+| [0019](0019-visual-editing-protocol.md) | Visual editing: the frontend is the only renderer, its draft route in an admin iframe behind a single-use token exchanged for a short-lived grant, versioned `postMessage` envelopes, blocks addressed by catalogue id and position, and `frame-ancestors` relaxed only for a granted preview | Accepted | 2026-10-23 |
 
 ## Writing a new record
 
