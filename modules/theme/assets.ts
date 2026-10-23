@@ -1,9 +1,9 @@
 import { cpSync, existsSync, lstatSync, mkdirSync, rmSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { join, relative, resolve, sep } from 'node:path'
 import { useLogger } from 'nuxt/kit'
-import { isThemePath } from './context'
 import type { ThemeContext } from './types'
 import { IMAGES_URL, IMAGE_FILE } from './constants'
+import { discoverThemes } from './themes'
 import { STATIC_CSP } from '../../app/constants/security'
 
 const logger = useLogger('micelio-theme')
@@ -27,19 +27,40 @@ export function copyServed(ctx: ThemeContext, source: string, target: string, fo
   cpSync(source, target, { recursive: true, filter: allowed })
 }
 
+/** A theme whose `images/` the build serves, and the URL folder it is served at. */
+interface ServedImages {
+  id: string
+  source: string
+  url: string
+}
+
 /**
- * The theme's images/ is served at /theme/images/. IPX only reads public directories and
+ * The image folders the build serves: the build theme's at `/theme/images/`, and those of every other theme whose slots are
+ * compiled in at `/theme/<id>/images/` (ADR 0009, amendment of 2026-10-23). A theme without `images/` is left out.
+ */
+export function servedImages(buildTheme: { id: string, dir: string }, themes: readonly { id: string, dir: string }[]): ServedImages[] {
+  const others = themes.filter(theme => theme.id !== buildTheme.id && existsSync(join(theme.dir, 'slots')))
+  return [
+    { id: buildTheme.id, source: join(buildTheme.dir, 'images'), url: IMAGES_URL },
+    ...others.map(theme => ({ id: theme.id, source: join(theme.dir, 'images'), url: `theme/${theme.id}/images` })),
+  ].filter(served => existsSync(served.source))
+}
+
+/**
+ * The themes' images/ are served under /theme/ (`servedImages`). IPX only reads public directories and
  * rejects symlinks, so the files are copied under a public root that also goes into image.dirs.
  */
 function setupImages(ctx: ThemeContext): void {
-  const { nuxt, dir } = ctx
-  const source = join(dir, 'images')
-  if (!existsSync(source)) return
+  const { nuxt } = ctx
+  const served = servedImages(ctx, discoverThemes(ctx.roots))
+  if (served.length === 0) return
   const publicRoot = join(nuxt.options.buildDir, 'micelio/public')
-  const target = join(publicRoot, IMAGES_URL)
 
-  function copyImages(): void {
-    copyServed(ctx, source, target, 'images', IMAGE_FILE, 'an image (png, jpg, webp, avif, gif, svg)')
+  function copyImages(only?: string): void {
+    for (const { id, source, url } of served) {
+      // copyServed names the theme in its messages
+      if (only === undefined || only === id) copyServed({ ...ctx, id }, source, join(publicRoot, url), 'images', IMAGE_FILE, 'an image (png, jpg, webp, avif, gif, svg)')
+    }
   }
   copyImages()
 
@@ -48,16 +69,19 @@ function setupImages(ctx: ThemeContext): void {
   if (installed) throw new Error('micelio-theme must be listed before @nuxt/image in nuxt.config.ts: image.dirs is read when @nuxt/image is set up')
   const image = (nuxt.options as { image?: { dirs?: string[] } }).image ||= {}
   image.dirs = [...(image.dirs ?? []), publicRoot]
-  ;(nuxt.options.routeRules ||= {})[`/${IMAGES_URL}/**`] = { headers: { 'Content-Security-Policy': STATIC_CSP } }
+  // No page lives under /theme/ (the specimen is /_theme)
+  ;(nuxt.options.routeRules ||= {})['/theme/**'] = { headers: { 'Content-Security-Policy': STATIC_CSP } }
 
   // The build empties buildDir after the modules are set up, so the copy is made again once the templates are written
   nuxt.hook('app:templatesGenerated', () => {
-    if (!existsSync(target)) copyImages()
+    if (served.some(({ url }) => !existsSync(join(publicRoot, url)))) copyImages()
   })
   nuxt.hook('builder:watch', (_event, path) => {
-    if (!isThemePath(ctx, path)) return
+    const abs = [resolve(nuxt.options.srcDir, path), resolve(nuxt.options.rootDir, path)]
+    const theme = served.find(({ source }) => abs.some(file => file.startsWith(join(source, '..') + sep)))
+    if (!theme) return
     try {
-      copyImages()
+      copyImages(theme.id)
     } catch (error) {
       logger.error((error as Error).message)
     }
@@ -65,10 +89,11 @@ function setupImages(ctx: ThemeContext): void {
 }
 
 /**
- * Serves the active theme's images, at build time.
+ * Serves the build theme's images and those of the other themes whose slots are compiled in, at build time.
  *
  * @remarks
- * `images/` is served at `/theme/images/`, copied under `micelio/` in the build folder with the `STATIC_CSP` header, because IPX reads
+ * `images/` is served at `/theme/images/`, and the images of every other theme whose slots are compiled in at
+ * `/theme/<id>/images/`, copied under `micelio/` in the build folder with the `STATIC_CSP` header, because IPX reads
  * public directories. A missing folder is skipped. The fonts are files of the theme's store entry, served at `/_t/<digest>/fonts/`. The theme's messages are compiled when it is installed and reach the pages from the store.
  * Images are copied again when they change in dev.
  *

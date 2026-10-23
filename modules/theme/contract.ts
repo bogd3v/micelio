@@ -18,6 +18,8 @@ const RESERVED_THEME_IDS: readonly string[] = ['myc', 'micelio']
 export function themeIdProblem(id: string): string | null {
   if (!THEME_ID.test(id)) return `"id" must match ${THEME_ID} (${THEME_ID_HINT})`
   if (RESERVED_THEME_IDS.includes(id)) return `"id" "${id}" is reserved for the core: a theme's own classes (<id>-*) must not be confusable with the core's`
+  // /theme/images/ is the build theme's folder, so a theme "images" would be served at the ambiguous /theme/images/images/ (ADR 0009, 2026-10-23)
+  if (id === 'images') return `"id" "images" is reserved: another theme's images are served at /theme/<id>/images/, which would collide with /theme/images/`
   return null
 }
 /**

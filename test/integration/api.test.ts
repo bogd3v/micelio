@@ -2766,6 +2766,32 @@ describe('layout variants chosen at runtime (#402)', () => {
   })
 })
 
+describe('slots and images of the other built-in themes (#402)', () => {
+  const SANDBOX = 'default-src \'none\'; style-src \'unsafe-inline\'; frame-ancestors \'none\'; sandbox'
+
+  it('builds the starter\'s own ThemeMark as a chunk no Bogota page references', async () => {
+    const dir = join(useTestContext().nuxt!.options.nitro.output!.dir!, 'public/_nuxt')
+    const starter = readdirSync(dir).filter(file => file.endsWith('.js') && readFileSync(join(dir, file), 'utf8').includes('starter-mark'))
+    expect(starter).toHaveLength(1)
+    for (const path of ['/', '/blog', '/blog/understanding-vue-composables', '/about']) {
+      expect((await $fetch<string>(path)).includes(starter[0]!), path).toBe(false)
+    }
+  })
+
+  it('serves the build theme\'s images at /theme/images/ and another theme\'s at /theme/<id>/images/, sandboxed', async () => {
+    for (const path of ['/theme/images/copeton.png', '/theme/starter/images/favicon.svg']) {
+      const response = await fetch(path)
+      expect(response.status, path).toBe(200)
+      expect(response.headers.get('content-security-policy'), path).toBe(SANDBOX)
+    }
+    expect((await fetch('/theme/bogota/images/copeton.png')).status).toBe(404)
+  })
+
+  it('keeps the build theme\'s slots on /theme/images/', async () => {
+    expect(await $fetch<string>('/')).toMatch(/\/theme\/images\/copeton\.png/)
+  })
+})
+
 describe('theme specimen (built only with MICELIO_SPECIMEN=1)', () => {
   it('has no /_theme route', async () => {
     for (const path of ['/_theme', '/es/_theme']) expect((await fetch(path)).status, path).toBe(404)

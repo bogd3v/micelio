@@ -174,7 +174,7 @@ The core styles every variant from your roles, and your own rules for variants y
 "images": { "favicon": "favicon.svg", "ogImage": "og.png", "profile": "me.png" }
 ```
 
-All three are optional files of `images/` (png, jpg, webp, avif, gif or svg). The core uses them only when Strapi has nothing: the favicon and the default share image of the site settings win over `favicon` and `ogImage`, and `profile` is the picture of the about profile block when the content has no photo. Images are served at `/theme/images/`; a listed file that does not exist fails validation.
+All three are optional files of `images/` (png, jpg, webp, avif, gif or svg). The core uses them only when Strapi has nothing: the favicon and the default share image of the site settings win over `favicon` and `ogImage`, and `profile` is the picture of the about profile block when the content has no photo. Images are served at `/theme/images/`; a listed file that does not exist fails validation. In a slot, write an image's URL whole inside a quoted string or attribute (`'/theme/images/hero.jpg'`, `src="/theme/images/bird.png"`): when an image is built for another theme, the build rewrites that prefix to `/theme/<id>/images/`, and a URL assembled at runtime (`'/theme/' + 'images/…'`) would point at the wrong theme's images.
 
 ### Properties of the core a theme sees
 

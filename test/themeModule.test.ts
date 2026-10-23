@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
 import { REGION_VARIANTS, alternateVariants, readLayoutCss, registerAlternates, regionVariantsModule, registerVariants, variantsWithoutPrefetch } from '../modules/theme/layout/variants'
-import type { ManifestEntries } from '../modules/theme/layout/variants'
+import type { ManifestEntries } from '../modules/theme/prefetch'
 import { LAYOUT_REGIONS } from '../modules/theme/constants'
 import type { LayoutRegion, ThemeContext } from '../modules/theme/types'
 
