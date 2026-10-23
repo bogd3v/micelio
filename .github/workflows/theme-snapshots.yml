@@ -1,7 +1,9 @@
 name: Theme Snapshots
 
-# Renders the visual baselines of e2e/theme in the Playwright image and uploads them; CI never commits them.
-# Run it on the branch that changes a theme, unzip theme-snapshots-<theme> into e2e/theme/__screenshots__/<theme>/ and commit (docs/theme-testing.md)
+# Renders the visual baselines of e2e/theme in the Playwright image and uploads them as <artifact-prefix>-snapshots-<theme>; CI never commits them.
+# By hand in the core (Actions, input `ref`): the installed themes of that ref, as theme-snapshots-<theme>. Called from a theme's own
+# repository, private or public: the themes of `theme-dirs`, built as admission builds them (docs/themes/publishing-a-theme.md, section 6).
+# Unzip the artifact into <snapshot-root>/<theme>/, review the images and commit them (docs/theme-testing.md).
 on:
   workflow_dispatch:
     inputs:
@@ -9,73 +11,46 @@ on:
         description: Branch, tag or SHA to render
         required: true
         default: main
+  workflow_call:
+    inputs:
+      theme-dirs:
+        description: Theme folders, or folders of themes, in the caller's repository, one per line
+        type: string
+        default: .
+      themes:
+        description: JSON array of the theme ids to render; empty renders every theme found in theme-dirs
+        type: string
+        default: ''
+      core-repository:
+        description: The core repository to render against
+        type: string
+        default: bogd3v/micelio
+      core-ref:
+        description: Tag, branch or SHA of the core; empty uses its latest release. Pin the same ref as the `uses:` line
+        type: string
+        default: ''
+      snapshot-root:
+        description: Folder of the visual baselines in the caller's repository, one subfolder per theme id
+        type: string
+        default: __screenshots__
+      artifact-prefix:
+        description: Prefix of the artifacts, <artifact-prefix>-snapshots-<theme id>
+        type: string
+        default: admission
 
 permissions:
   contents: read
 
 jobs:
-  discover:
-    name: Themes
-    runs-on: ubuntu-latest
-    outputs:
-      themes: ${{ steps.read.outputs.themes }}
-      playwright: ${{ steps.read.outputs.playwright }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.ref }}
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Read the installed themes and the Playwright version
-        id: read
-        run: |
-          echo "themes=$(npx jiti scripts/theme-check.ts --list)" >> "$GITHUB_OUTPUT"
-          version="$(node -p "require('./package-lock.json').packages['node_modules/playwright-core'].version")"
-          echo "${version}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
-          echo "playwright=${version}" >> "$GITHUB_OUTPUT"
-
-  update:
-    name: Snapshots (${{ matrix.theme }})
-    needs: discover
-    runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v${{ needs.discover.outputs.playwright }}-noble
-      options: --ipc=host
-    strategy:
-      fail-fast: false
-      matrix:
-        theme: ${{ fromJSON(needs.discover.outputs.themes) }}
-    env:
-      NUXT_PUBLIC_THEME: ${{ matrix.theme }}
-      MICELIO_SPECIMEN: 1
-      E2E_BUILD: 1
-      HOME: /root
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.ref }}
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Build
-        run: npm run build
-      - name: Render the baselines
-        run: npm run test:theme:update -- e2e/theme/visual.spec.ts
-      - name: Upload baselines
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: theme-snapshots-${{ matrix.theme }}
-          path: e2e/theme/__screenshots__/${{ matrix.theme }}/
-          retention-days: 14
+  # `inputs.ref` exists only in the run by hand: a called workflow sees its call's inputs, and `github.event_name` is the caller's event
+  render:
+    name: Render
+    uses: ./.github/workflows/theme-admission.yml
+    with:
+      theme-dirs: ${{ !inputs.ref && inputs.theme-dirs || '' }}
+      themes: ${{ inputs.themes || '' }}
+      core-repository: ${{ inputs.ref && github.repository || inputs.core-repository }}
+      core-ref: ${{ inputs.ref || inputs.core-ref }}
+      snapshot-root: ${{ inputs.ref && 'e2e/theme/__screenshots__' || inputs.snapshot-root }}
+      artifact-prefix: ${{ inputs.ref && 'theme' || inputs.artifact-prefix }}
+      update-snapshots: true

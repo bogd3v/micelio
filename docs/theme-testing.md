@@ -30,11 +30,11 @@ Baselines are committed in `e2e/theme/__screenshots__/<theme>/<mode>/<viewport>/
 
 ## Create or update the baselines
 
-1. Push the branch. If the `Theme Quality` job fails (new theme, missing or changed baselines), download the artifact `theme-snapshots-<theme>` of that run. It holds the images as rendered by the run; the failing diffs are in `theme-report-<theme>`.
-2. Or start **Theme Snapshots** by hand (Actions, `workflow_dispatch`, input `ref`) to render the baselines of any branch.
+1. Push the branch. If the `Theme Quality` check fails (job `Themes / Quality (<theme>)`: new theme, missing or changed baselines), download the artifact `theme-snapshots-<theme>` of that run. It holds the images as rendered by the run; the failing diffs are in `theme-report-<theme>`.
+2. Or start **Theme Snapshots** by hand (Actions, `workflow_dispatch`, input `ref`) to render the baselines of a branch that includes the change making `deploy.yml` call the admission workflow (#311; its plan needs `--installed`, so older refs fail with "No theme to admit"); it uploads `theme-snapshots-<theme>` for every installed theme. A theme repository calls the same workflow ([publishing-a-theme.md](themes/publishing-a-theme.md), section 6).
 3. Review the images, unzip them into `e2e/theme/__screenshots__/<theme>/` and commit. CI never commits baselines.
 
-The `Theme Quality` check gates `deploy`, like `Performance Budgets`.
+The `Theme Quality` check gates `deploy`, like `Performance Budgets`. Both read the result of the `Themes` job, which runs the installed themes through the same admission a theme repository calls (`.github/workflows/theme-admission.yml`, [publishing-a-theme.md](themes/publishing-a-theme.md)): `Theme Quality` passes when `theme:check`, `theme:pack`, visual regression and axe passed for every theme.
 
 The `<mode>-reduced` motion projects keep a Playwright trace (`trace.zip`, without screenshots) of a failing test in `theme-report-<theme>`, under `test-results-theme/`. The suite has no retries on purpose, so a test that hangs leaves nothing else to diagnose it from; open the trace with `npx playwright show-trace <trace.zip>`. Passing tests keep none.
 

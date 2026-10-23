@@ -324,9 +324,7 @@ The workflow `.github/workflows/deploy.yml` runs on pushes to `main`, on pull re
 | **Performance Budgets** | One run per installed theme and site mode, built with that theme. The limits of `scripts/perf/budgets.json` are page budgets (JS, CSS, HTML and font weight, LCP, CLS, accessibility and so on) and apply to every theme. A theme that cannot meet one gets a recorded exception in the same file, `themes.<id> = { "reason": "...", "mode": "static" (optional), "limits": { ... } }`, added in the PR that adds the theme; never a looser global limit. Bogotá has one for static mode (LCP and fonts; see `docs/performance.md` and #350). Also asserts the FOUC rules above. See `docs/performance.md`. |
 | **Theme Quality** | Visual regression and axe (WCAG 2.0, 2.1 and 2.2 A and AA) per theme, mode and viewport (1280 and 390 px) of home, blog, an article, about and `/_theme`. See `docs/theme-testing.md`. A theme is also admitted with the manual check of `docs/themes/accessibility-checklist.md`. |
 
-`Performance Budgets` and `Theme Quality` both gate `deploy`.
-
-A theme kept in its own repository runs the same checks through the reusable admission workflow, which also writes its admission report: [`publishing-a-theme.md`](publishing-a-theme.md).
+`Performance Budgets` and `Theme Quality` both gate `deploy`. Both come from the `Themes` job, which runs the reusable admission workflow (`.github/workflows/theme-admission.yml`) for the installed themes. A theme kept in its own repository calls the same workflow, which also writes its admission report: [`publishing-a-theme.md`](publishing-a-theme.md).
 
 The 25 KB gzip CSS limit and the two font families are `theme:check` static budgets, not performance metrics. The 150.8 KB font ceiling appears in both places: as the `fontKb` page limit and as the `theme:check` error threshold.
 

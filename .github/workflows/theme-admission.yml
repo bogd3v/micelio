@@ -2,14 +2,15 @@ name: Theme Admission
 
 # The gate to publish a theme version (ADR 0008, decision 5; #311): `theme:check` and `theme:pack`, the performance budgets per site mode,
 # visual regression and axe, and one admission-report.json per theme (schema: themes/admission-report.schema.json).
-# Called from a theme's own repository, private or public, or from the core. How to call it: docs/themes/publishing-a-theme.md.
+# Called from a theme's own repository, private or public, and by the core's deploy.yml for its installed themes; theme-snapshots.yml calls it
+# with update-snapshots to render baselines. How to call it: docs/themes/publishing-a-theme.md.
 # A data-only theme is installed into one core build shared by every theme of the call; a theme with code gets a build of its own.
 # Static and landing generate their site per theme inside `npm run perf`. Every step lives in `npm run theme:admit` of the core ref.
 on:
   workflow_call:
     inputs:
       theme-dirs:
-        description: Theme folders, or folders of themes, in the caller's repository, one per line. Empty when the caller is the core and `themes` names its installed themes
+        description: Theme folders, or folders of themes, in the caller's repository, one per line. Empty admits the core's own installed themes (deploy.yml)
         type: string
         default: .
       themes:
@@ -52,10 +53,23 @@ on:
         description: Prefix of every artifact of this call; two calls in one workflow run need different prefixes
         type: string
         default: admission
+      update-snapshots:
+        description: Render the visual baselines and upload them as <artifact-prefix>-snapshots-<theme id>, instead of admitting (no performance, no report); theme-snapshots.yml sets it
+        type: boolean
+        default: false
     outputs:
       ok:
         description: '"true" when every report has no error'
         value: ${{ jobs.report.outputs.ok }}
+      static:
+        description: '"passed" when `theme:check` and `theme:pack` passed for every theme, "failed" otherwise'
+        value: ${{ jobs.report.outputs.static }}
+      performance:
+        description: '"passed" when every performance run of every theme passed, "failed" otherwise'
+        value: ${{ jobs.report.outputs.performance }}
+      quality:
+        description: '"passed" when visual regression and axe passed for every theme, "skipped" when quality is off, "failed" otherwise'
+        value: ${{ jobs.report.outputs.quality }}
       reports:
         description: Name of the artifact that holds <theme id>/admission-report.json and the package of each theme
         value: ${{ jobs.report.outputs.artifact }}
@@ -74,7 +88,7 @@ jobs:
       core-ref: ${{ steps.ref.outputs.ref }}
       external: ${{ steps.ref.outputs.external }}
       theme-dirs: ${{ steps.dirs.outputs.theme-dirs }}
-      playwright: ${{ steps.core.outputs.playwright }}
+      image: ${{ steps.core.outputs.image }}
     steps:
       - name: Resolve the core ref
         id: ref
@@ -100,14 +114,13 @@ jobs:
         with:
           path: theme-source
           persist-credentials: false
+      # The browser jobs run in the Playwright image of the core ref, pinned by digest, like the core's own CI (#698)
       - name: Read the core
         id: core
         run: |
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           node -e "require('./package.json').scripts['theme:admit'] || (console.error('This core ref predates theme admission (#311): pass a core-ref at or after the one in the uses: line'), process.exit(1))"
-          version="$(node -p "require('./package-lock.json').packages['node_modules/playwright-core'].version")"
-          echo "${version}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'
-          echo "playwright=${version}" >> "$GITHUB_OUTPUT"
+          scripts/ci/playwright-image.sh | grep '^image=' >> "$GITHUB_OUTPUT"
       # Paths stay inside the caller's checkout: no absolute path, no `..`
       - name: Locate the theme folders
         id: dirs
@@ -125,6 +138,7 @@ jobs:
             if [[ "${dir}" == /* || "/${dir}/" == */../* ]]; then echo "::error::theme-dirs: ${dir} must be a path inside the repository"; exit 1; fi
             dirs+=("${prefix}${dir}")
           done <<< "${THEME_DIRS}"
+          if [ "${EXTERNAL}" = true ] && [ "${#dirs[@]}" -eq 0 ]; then echo "::error::theme-dirs is empty: name the theme folders of your repository"; exit 1; fi
           joined="$(IFS=:; echo "${dirs[*]}")"
           if [[ "${SNAPSHOT_ROOT}" == /* || "/${SNAPSHOT_ROOT}/" == */../* ]]; then echo "::error::snapshot-root must be a path inside the repository"; exit 1; fi
           echo "theme-dirs=${joined}" >> "$GITHUB_OUTPUT"
@@ -145,12 +159,17 @@ jobs:
           QUALITY: ${{ inputs.quality }}
           DISPLAY_FONT: ${{ inputs.display-font }}
           SNAPSHOT_ROOT: ${{ steps.dirs.outputs.snapshot-root }}
+          # Only the core admits its own installed themes; an empty theme-dirs from a theme repository is an error below
+          INSTALLED: ${{ inputs.theme-dirs == '' && steps.ref.outputs.external == 'false' }}
+          PERFORMANCE: ${{ !inputs.update-snapshots }}
         run: |
-          npm run --silent theme:admit -- plan --themes "${THEMES}" --modes "${MODES}" --quality "${QUALITY}" --display-font "${DISPLAY_FONT}" --snapshot-root "${SNAPSHOT_ROOT}" --out admission/plan.json
+          npm run --silent theme:admit -- plan --themes "${THEMES}" --modes "${MODES}" --quality "${QUALITY}" --display-font "${DISPLAY_FONT}" --snapshot-root "${SNAPSHOT_ROOT}" \
+            --installed "${INSTALLED}" --performance "${PERFORMANCE}" --out admission/plan.json
           echo "plan=$(jq -c . admission/plan.json)" >> "$GITHUB_OUTPUT"
           echo "shared-builds=$(jq -c .sharedBuilds admission/plan.json)" >> "$GITHUB_OUTPUT"
       # Errors here do not stop the run: the report collects them with everything else
       - name: Check and pack each theme
+        if: ${{ !inputs.update-snapshots }}
         env:
           MICELIO_THEME_DIRS: ${{ steps.dirs.outputs.theme-dirs }}
         run: |
@@ -210,9 +229,16 @@ jobs:
   performance:
     name: Performance (${{ matrix.theme }}, ${{ matrix.mode }}, ${{ matrix.font }} font)
     needs: [plan, core-build]
-    if: always() && needs.plan.result == 'success' && needs.core-build.result != 'failure' && needs.core-build.result != 'cancelled'
+    if: always() && needs.plan.result == 'success' && needs.core-build.result != 'failure' && needs.core-build.result != 'cancelled' && fromJSON(needs.plan.outputs.plan).performance[0] != null
     runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.plan.outputs.image }}
+      options: --ipc=host
     timeout-minutes: 30
+    # The image's default shell is sh; bash as on a runner, for the arrays and `pipefail`
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -222,6 +248,8 @@ jobs:
       NUXT_PUBLIC_THEME: ${{ matrix.theme }}
       # Site mode of ADR 0006, read at build time
       NUXT_PUBLIC_SITE_MODE: ${{ matrix.mode }}
+      # Chromium only, but the same HOME as every job in the image
+      HOME: /root
       THEME: ${{ matrix.theme }}
       MODE: ${{ matrix.mode }}
       FONT: ${{ matrix.font }}
@@ -245,8 +273,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright browsers
-        uses: ./.github/actions/playwright
       - name: Download the shared core build
         if: matrix.mode == 'dynamic' && matrix.build == 'shared'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -280,16 +306,21 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  # Visual regression and axe in every mode and viewport (projects of playwright.theme.config.ts), in the Playwright image the baselines come from
+  # Visual regression and axe in every mode and viewport (projects of playwright.theme.config.ts), in the Playwright image the baselines come from.
+  # With update-snapshots it only renders the baselines
   quality:
-    name: Quality (${{ matrix.theme }})
+    name: ${{ inputs.update-snapshots && 'Snapshots' || 'Quality' }} (${{ matrix.theme }})
     needs: [plan, core-build]
     if: always() && needs.plan.result == 'success' && needs.core-build.result != 'failure' && needs.core-build.result != 'cancelled' && fromJSON(needs.plan.outputs.plan).quality[0] != null
     runs-on: ubuntu-latest
     timeout-minutes: 45
     container:
-      image: mcr.microsoft.com/playwright:v${{ needs.plan.outputs.playwright }}-noble
+      image: ${{ needs.plan.outputs.image }}
       options: --ipc=host
+    # The image's default shell is sh; bash as on a runner, for the arrays and `pipefail`
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -302,7 +333,7 @@ jobs:
       HOME: /root
       THEME: ${{ matrix.theme }}
       THEME_SNAPSHOT_DIR: ${{ matrix.snapshots }}
-      THEME_SKIP_VISUAL: ${{ !inputs.visual && '1' || '' }}
+      THEME_SKIP_VISUAL: ${{ !inputs.visual && !inputs.update-snapshots && '1' || '' }}
       THEME_REPORT_JSON: admission/${{ matrix.theme }}/quality.json
     steps:
       - name: Checkout the core
@@ -342,10 +373,11 @@ jobs:
           npm run --silent theme:admit -- build-info --output .output --purpose quality --reason "${REASON}" --out "admission/${THEME}/build-quality.json"
       - name: Run visual regression and axe
         id: test
+        if: ${{ !inputs.update-snapshots }}
         continue-on-error: ${{ !inputs.fail-on-errors }}
         run: npm run test:theme
       - name: Upload the result
-        if: always()
+        if: ${{ always() && !inputs.update-snapshots }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ inputs.artifact-prefix }}-data-quality-${{ matrix.theme }}
@@ -356,30 +388,35 @@ jobs:
         if: failure() || steps.test.outcome == 'failure'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: ${{ inputs.artifact-prefix }}-theme-report-${{ matrix.theme }}
+          name: ${{ inputs.artifact-prefix }}-report-${{ matrix.theme }}
           path: |
             playwright-report-theme/
             test-results-theme/
           retention-days: 7
-      # Never committed by CI: a human reviews the images and commits them (docs/theme-testing.md)
-      - name: Render the baselines as they stand now
-        if: ${{ !cancelled() && inputs.visual && steps.test.outcome == 'failure' }}
+      # Never committed by CI: a human reviews the images and commits them (docs/theme-testing.md). After a failed run they are the
+      # baselines as they render now; with update-snapshots, the reason for the run
+      - name: Render the baselines
+        id: render
+        if: ${{ !cancelled() && (inputs.update-snapshots || (inputs.visual && steps.test.outcome == 'failure')) }}
         run: npm run test:theme:update -- e2e/theme/visual.spec.ts
-      - name: Upload baselines
-        if: ${{ !cancelled() && inputs.visual && steps.test.outcome == 'failure' }}
+      - name: Upload the baselines
+        if: ${{ !cancelled() && steps.render.outcome != 'skipped' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: ${{ inputs.artifact-prefix }}-theme-snapshots-${{ matrix.theme }}
+          name: ${{ inputs.artifact-prefix }}-snapshots-${{ matrix.theme }}
           path: ${{ matrix.snapshots }}/
-          retention-days: 7
+          retention-days: 14
 
   report:
     name: Admission report
     needs: [plan, performance, quality]
-    if: always() && needs.plan.result == 'success'
+    if: always() && needs.plan.result == 'success' && !inputs.update-snapshots
     runs-on: ubuntu-latest
     outputs:
       ok: ${{ steps.report.outputs.ok }}
+      static: ${{ steps.report.outputs.static }}
+      performance: ${{ steps.report.outputs.performance }}
+      quality: ${{ steps.report.outputs.quality }}
       artifact: ${{ inputs.artifact-prefix }}-reports
     steps:
       - name: Checkout the core
@@ -417,7 +454,14 @@ jobs:
             jq -e .ok "reports/${id}/admission-report.json" > /dev/null || ok=false
             cp collected/"${id}"/*.tgz "reports/${id}/" 2>/dev/null || true
           done
-          echo "ok=${ok}" >> "$GITHUB_OUTPUT"
+          # One result per check across every theme, for a caller that gates them separately (deploy.yml)
+          status() { jq -rs "$1" reports/*/admission-report.json; }
+          {
+            echo "ok=${ok}"
+            echo "static=$(status 'if all(.[]; .checks.static.status == "passed") then "passed" else "failed" end')"
+            echo "performance=$(status 'if all(.[]; all(.checks.performance[]; .status == "passed")) then "passed" else "failed" end')"
+            echo "quality=$(status 'if all(.[]; .checks.quality.status == "skipped") then "skipped" elif all(.[]; .checks.quality.status == "passed") then "passed" else "failed" end')"
+          } >> "$GITHUB_OUTPUT"
       - name: Upload the reports
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

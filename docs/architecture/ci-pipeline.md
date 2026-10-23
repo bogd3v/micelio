@@ -5,7 +5,7 @@
 Every push to `main` runs `.github/workflows/deploy.yml`:
 
 1. The `check` job: `npm audit` (critical), type check, lint (with `theme:check`), unit tests with coverage thresholds, licences, the copy of the standard and REUSE
-2. Integration tests, Playwright e2e tests, performance budgets and theme quality
+2. Integration tests and Playwright e2e tests, and the installed themes through theme admission (`.github/workflows/theme-admission.yml`: `theme:check` and `theme:pack`, the performance budgets, visual regression and axe; [docs/theme-testing.md](../theme-testing.md))
 3. Build the Docker image (`Dockerfile`: Node 22 builder, distroless Node 22 runtime, non-root) and push it to GHCR as `:edge` and `:<short sha>`
 4. Ask Dokploy to redeploy the application, which pulls `:edge`
 
@@ -26,7 +26,7 @@ The checks every Micelio repository runs come from [`micelio-engineering`](https
 | `scorecard.yml` | `scorecard.yml` of `micelio-engineering` | none |
 | `add-to-project.yml` | `add-to-project.yml` of `bogd3v/.github` | none |
 
-The rest stays here because it is this repository's own: the integration, e2e, static, landing, performance and theme quality jobs and the image builds of `deploy.yml` (Nuxt builds, the Playwright image, the deployment); `contract.yml` (this repository's suite, which `micelio-cms` also calls); `codeql.yml` (`micelio-engineering` ships no CodeQL workflow; `analyze` stays a required check); `release.yml` (the reusable one has no check of the `cms_line`, of the version in `docs/openapi.json` or that `deploy.yml` passed on the commit); `static-site.yml`, `theme-snapshots.yml` and `pr-labels.yml`.
+The rest stays here because it is this repository's own: the integration, e2e, static and landing jobs, the call of theme admission with its two gates and the image builds of `deploy.yml` (Nuxt builds, the Playwright image, the deployment); `contract.yml` (this repository's suite, which `micelio-cms` also calls); `codeql.yml` (`micelio-engineering` ships no CodeQL workflow; `analyze` stays a required check); `release.yml` (the reusable one has no check of the `cms_line`, of the version in `docs/openapi.json` or that `deploy.yml` passed on the commit); `theme-admission.yml` and `theme-snapshots.yml` (Micelio's theme checks, which theme repositories also call); `static-site.yml` and `pr-labels.yml`.
 
 The ESLint and TypeScript bases come from `@micelio/eslint-config` (`eslint.config.mjs`, prepended to the `@nuxt/eslint` config so that its `eslint-config-prettier` entry does not switch off the stylistic rules) and `@micelio/tsconfig` (the `extends` of every generated `.nuxt/tsconfig.*.json`, set in `nuxt.config.ts`; Nuxt's own options override it). `@micelio/prettier-config` is not used: standard, section 15, lets the stylistic rules inside lint be the formatter.
 

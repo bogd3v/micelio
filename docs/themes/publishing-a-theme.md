@@ -36,7 +36,7 @@ jobs:
 
 | Input | Default | Meaning |
 | --- | --- | --- |
-| `theme-dirs` | `.` | Theme folders, or folders of themes, one per line, relative to your repository |
+| `theme-dirs` | `.` | Theme folders, or folders of themes, one per line, relative to your repository (empty admits the core's own installed themes: what `deploy.yml` does) |
 | `themes` | every theme found | JSON array of ids, to admit only some |
 | `core-repository`, `core-ref` | `bogd3v/micelio`, its latest release | The core to admit against |
 | `modes` | every mode the core budgets in CI | JSON array of site modes (`["dynamic", "static", "landing"]`) |
@@ -45,8 +45,9 @@ jobs:
 | `display-font` | `true` | Also measure dynamic mode with the heaviest curated display font (ADR 0005, section 9) |
 | `fail-on-errors` | `true` | `false` only for a caller that checks the reports itself |
 | `artifact-prefix` | `admission` | Prefix of the artifacts; two calls in one run need different ones |
+| `update-snapshots` | `false` | Render the baselines instead of admitting; `theme-snapshots.yml` sets it (section 6) |
 
-The outputs are `ok` (`"true"` when no report has an error) and `reports`, the name of the artifact (`admission-reports` by default) with `<id>/admission-report.json` and the package of each theme.
+The outputs are `ok` (`"true"` when no report has an error), `reports`, the name of the artifact (`admission-reports` by default) with `<id>/admission-report.json` and the package of each theme, and one result per check across every theme: `static` (`theme:check` and `theme:pack`), `performance` and `quality`, each `"passed"` or `"failed"` (`quality` is `"skipped"` with `quality: false`). The core's `deploy.yml` gates `Performance Budgets` and `Theme Quality` on them.
 
 Your report is for iterating: publishing (#312) runs admission again on bogd3v's side, against the core release it publishes for.
 
@@ -91,7 +92,22 @@ A field is added without a version change when it is optional; a change of meani
 
 ## 6. Baselines
 
-The first run of a theme has no baselines and fails visual regression. Download the `admission-theme-snapshots-<id>` artifact (`<artifact-prefix>-theme-snapshots-<id>`) of that run, review the images, unzip them into `__screenshots__/<id>/` and commit; never commit images rendered on your machine (`docs/theme-testing.md`).
+The first run of a theme has no baselines and fails visual regression. Render them in the Playwright image of the core with `theme-snapshots.yml`, which builds the theme as admission does and uploads `admission-snapshots-<id>` (`<artifact-prefix>-snapshots-<id>`):
+
+```yaml
+name: Snapshots
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  snapshots:
+    uses: bogd3v/micelio/.github/workflows/theme-snapshots.yml@v0.5.0
+    with:
+      theme-dirs: my-theme
+      core-ref: v0.5.0
+```
+
+It takes `theme-dirs`, `themes`, `core-repository`, `core-ref`, `snapshot-root` and `artifact-prefix`, as admission does. A failed admission run also uploads the baselines as they render now, under the same name. Review the images, unzip them into `__screenshots__/<id>/` and commit; never commit images rendered on your machine (`docs/theme-testing.md`).
 
 ## 7. Locally
 
@@ -108,5 +124,3 @@ npm run perf -- --check --theme my-theme --mode dynamic
 ## 8. Not yet
 
 - The manual accessibility record of `docs/themes/accessibility-checklist.md` is not part of the report yet (#311, next part).
-- `theme-snapshots.yml` is not callable yet; baselines come from the `admission-theme-snapshots-<id>` artifact of a failed admission run.
-- The core's own `deploy.yml` still runs its theme jobs itself; it moves to this workflow in the next part of #311.
