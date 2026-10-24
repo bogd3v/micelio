@@ -438,6 +438,7 @@
       "menu": "Open menu",
       "theme": "Color theme",
       "language": "Language",
+      "languageOption": "{code}, {name}",
       "languages": {
         "es": "Español",
         "en": "English"
@@ -468,7 +469,7 @@
       "placeholderStatic": "Search articles and pages",
       "unavailable": "Search is unavailable right now",
       "content": "Also search the content",
-      "close": "Esc · Close search",
+      "close": "Esc, close search",
       "minLength": "Type {count} or more letters to search articles",
       "loading": "Searching…",
       "empty": "No results for “{query}”",
