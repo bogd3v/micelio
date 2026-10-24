@@ -86,7 +86,8 @@ jobs:
           UPGRADE_NOTES: ${{ inputs.upgrade_notes }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          contract=$(grep -oP 'CONTRACT_VERSION = \K\d+' modules/theme/constants.ts)
+          contract=$(grep -oP 'CONTRACT_VERSION\b[^=]*=\s*\{\s*major:\s*\K\d+\s*,\s*minor:\s*\d+' modules/theme/constants.ts | sed -E 's/\s*,\s*minor:\s*/./' || true)
+          if [ -z "$contract" ]; then echo "::error::CONTRACT_VERSION not found in modules/theme/constants.ts"; exit 1; fi
           node_range=$(node -p "require('./package.json').engines.node")
           args=(-f tag_name="$TAG" -f target_commitish="$GITHUB_SHA" -f configuration_file_path=.github/release.yml)
           if [ -n "$PREVIOUS" ]; then args+=(-f previous_tag_name="$PREVIOUS"); fi
