@@ -29,7 +29,16 @@ description: Branch, commit and open a pull request in the Micelio frontend the 
 
 ## Tracking
 
-If the PR advances an issue of the Micelio plan (epic #240), update the issue's **Progress** section after opening it: the PR, what changed with numbers, and what remains. Tick the epic's checkbox when the issue is done. `gh issue view <n> --json body -q .body` and `gh issue edit <n> --body-file <file>`.
+If the PR advances an issue of the Micelio plan (epics #316 and #408 here, bogd3v/micelio-plugin-core#62 for the builder), update the issue's **Progress** section after opening it: the PR, what changed with numbers, and what remains. Tick the epic's checkbox when the issue is done. `gh issue view <n> --json body -q .body` and `gh issue edit <n> --body-file <file>`.
+
+## Delivery with the maintainer
+
+The maintainer tests on Docker and certifies the DCO; the agent never pushes on its own (standard, section 13). The order, for every issue that carries a "Verified by the maintainer on Docker" criterion:
+
+1. **Ready to test.** When `npm run check` and the relevant suites pass, tell the maintainer the change is ready and give the Docker steps to try it: the frontend image built from the branch (`docker build -t micelio:<branch> .`) run against the plugin's Compose (`micelio-plugin-core`, `compose.dev.yml`, `docs/operate/manual-testing.md`), and what to look at. Then wait.
+2. **Commit, when the maintainer says the test is done.** Give the exact commands and the message, and run them only when asked: `git add <paths>` (explicit paths), `git commit -s -m "<title>" -m "<body>" -m "Co-Authored-By: …"`. The `-s` is the maintainer's certification, so the maintainer runs the commit or confirms it after reading the message; an agent-run commit without `-s` is amended by the maintainer with `git commit --amend --reset-author -s --no-edit`.
+3. **Push and PR, when the maintainer confirms the commit.** `git push -u origin <branch>`, then open the PR through the REST API (`gh api repos/bogd3v/micelio/pulls -f title= -f head= -f base=main -F body=@pr.md`; `gh pr create` fails on this account), with the Docker steps of step 1 under `## Tests` and `Refs #N` or `Closes #N`. Update the issue's Progress section in the same step.
+4. **Never** push, merge, tag, release or deploy without that confirmation, and never amend or force-push a commit the maintainer signed.
 
 ## Before and after opening
 
