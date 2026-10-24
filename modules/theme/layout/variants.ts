@@ -120,29 +120,29 @@ export function variantsWithoutPrefetch(manifest: ManifestEntries, srcDir: strin
 }
 
 /**
- * Specimen only (MICELIO_SPECIMEN=1, dev): every variant the theme does not use is registered under its own name
- * (`RegionHeaderCentered`) with its CSS, which is scoped by `data-layout` and, for the header's `html` rules, by
- * `data-layout-header`. The CSS goes in the bundle; the active variant's own CSS is in the theme's stylesheet.
+ * Specimen only (MICELIO_SPECIMEN=1, dev): every variant is registered under its own name (`RegionHeaderCentered`) with its
+ * CSS, so `/_theme` shows the alternates of whichever theme is active at runtime.
+ *
+ * @remarks
+ * The CSS is scoped by `data-layout` and, for the header's `html` rules, by `data-layout-header`, and goes in the bundle. The
+ * active variant's CSS is also in the theme's stylesheet, which the server links before the bundle: the bundle's copy is the
+ * same rules at the place `main.css` imported them before #402.
  */
-export function registerAlternates(ctx: ThemeContext, regions: readonly LayoutRegion[] = LAYOUT_REGIONS): void {
+export function registerSpecimenVariants(ctx: ThemeContext, regions: readonly LayoutRegion[] = LAYOUT_REGIONS): void {
   const base = join(ctx.nuxt.options.srcDir, 'theme/layout')
-  const { layout } = ctx.load().manifest
   for (const region of regions) {
     const { component, variants } = REGION_VARIANTS[region]
-    const active = layout?.[region] ?? variants[0]!
-    for (const variant of variants.filter(name => name !== active)) {
+    for (const variant of variants) {
       ctx.components.push({ name: `${component}${pascal(variant)}`, filePath: join(base, region, `${pascal(variant)}.vue`), global: true })
-      ctx.layoutCss[region].unshift(() => `@import "${join(base, region, `${variant}.css`)}";`)
     }
+    ctx.layoutCss[region].unshift(...variants.map(variant => () => `@import "${join(base, region, `${variant}.css`)}";`))
   }
 }
 
-/** The alternates of every region, for the specimen: `{ region, variant, component }`. */
-export function alternateVariants(ctx: ThemeContext, regions: readonly LayoutRegion[] = LAYOUT_REGIONS): Array<{ region: LayoutRegion, variant: string, component: string }> {
-  const { layout } = ctx.load().manifest
+/** Every variant of every region, for the specimen, which leaves out the active theme's at runtime: `{ region, variant, component }`. */
+export function specimenVariants(regions: readonly LayoutRegion[] = LAYOUT_REGIONS): Array<{ region: LayoutRegion, variant: string, component: string }> {
   return regions.flatMap((region) => {
     const { component, variants } = REGION_VARIANTS[region]
-    const active = layout?.[region] ?? variants[0]!
-    return variants.filter(name => name !== active).map(variant => ({ region, variant, component: `${component}${pascal(variant)}` }))
+    return variants.map(variant => ({ region, variant, component: `${component}${pascal(variant)}` }))
   })
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { variants as alternates } from '#micelio/specimen-variants'
+import { variants } from '#micelio/specimen-variants'
 import type { FieldGuideTopic } from '~/interfaces'
 import { fieldGuideTopics } from '~/helpers/categoryList'
 import { ARTICLE, CATEGORIES_SAMPLE, FEATURED_POST, POSTS } from '../fixtures'
@@ -7,7 +7,9 @@ import { ARTICLE, CATEGORIES_SAMPLE, FEATURED_POST, POSTS } from '../fixtures'
 const { t } = useI18n()
 const { layout } = useThemeData()
 
-// Headers and footers the theme does not use; the specimen registers them under their own names
+// The variants the active theme does not use: the specimen registers every variant under its own name
+const alternates = variants.filter(({ region, variant }) => layout[region] !== variant)
+// Headers and footers
 const chrome = alternates
   .filter(({ region }) => region === 'header' || region === 'footer')
   .map(({ region, variant, component }) => ({
@@ -21,7 +23,7 @@ const chrome = alternates
       ...(region === 'header' || variant === 'minimal' ? { label: t('specimen.regions.navLabel', { variant: t(`specimen.regions.variantNames.${variant}`) }) } : {}),
     },
   }))
-// Post list, home and article variants the theme does not use
+// Post list, home and article variants
 const content = alternates
   .filter(({ region }) => region === 'postList' || region === 'home' || region === 'article')
   .map(({ region, variant, component }) => ({ region, variant, component, view: resolveComponent(component) }))
