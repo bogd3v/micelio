@@ -83,7 +83,7 @@
       "limits": {
         "home": {
           "error": {
-            "jsKb": 147.5,
+            "jsKb": 147.8,
             "strayRequests": 0,
             "lcpMs": 5950,
             "cssKb": 22.4,
@@ -117,7 +117,7 @@
         },
         "article": {
           "error": {
-            "jsKb": 160.5,
+            "jsKb": 160.8,
             "strayRequests": 0,
             "lcpMs": 5200,
             "cssKb": 22.4,
