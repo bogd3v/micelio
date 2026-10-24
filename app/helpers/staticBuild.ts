@@ -168,6 +168,9 @@ export function mediaFileName(url: string, hash: string): string {
   return `${hash}-${base.replace(/[^\w.-]/g, '_')}`
 }
 
+// A `speculationrules` script, any quoting of its type; `injectSpeculationRules` removes it before adding ours
+const SPECULATION_SCRIPT = /<script\b[^>]*\btype=["']?speculationrules["']?[^>]*>[\s\S]*?<\/script>/g
+
 // NuxtImg and NuxtPicture write an inline `onerror` on the server; the hash CSP blocks inline handlers, so under it the attribute is dead weight
 const NUXT_IMG_TAG = /<img\b[^>]*\bdata-nuxt-(?:img|pic)\b[^>]*>/gi
 const IMAGE_ERROR_HANDLER = / onerror="this\.setAttribute\(&#39;data-error&#39;, 1\)"/
@@ -200,7 +203,13 @@ export function injectCspMeta(html: string, policy: string): string {
  * Throws when there is no `</head>`: a page without the rules would break the shared policy.
  */
 export function injectSpeculationRules(html: string, rules: SpeculationRules): string {
-  const clean = html.replace(/<script\b[^>]*\btype=["']?speculationrules["']?[^>]*>[\s\S]*?<\/script>/g, '')
+  // Repeat until nothing matches: one pass can join the pieces around a removed script into a new one.
+  let clean = html
+  let previous: string
+  do {
+    previous = clean
+    clean = clean.replace(SPECULATION_SCRIPT, '')
+  } while (clean !== previous)
   const end = clean.indexOf('</head>')
   if (end === -1) throw new Error('no </head> to put the speculation rules in')
   return `${clean.slice(0, end)}<script type="speculationrules">${JSON.stringify(rules)}</script>${clean.slice(end)}`
