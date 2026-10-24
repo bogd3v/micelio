@@ -21,6 +21,7 @@ on:
       - test/fixtures/admission/**
       - test/fixtures/themes/data-only/**
       - test/fixtures/themes/minimal/**
+      - test/fixtures/themes/alternates/**
   workflow_dispatch:
 
 permissions:
@@ -37,6 +38,7 @@ jobs:
     with:
       theme-dirs: |
         test/fixtures/themes/data-only
+        test/fixtures/themes/alternates
         test/fixtures/admission/admission-broken
       core-repository: ${{ github.repository }}
       core-ref: ${{ github.sha }}
@@ -97,6 +99,11 @@ jobs:
           jq -e '[.checks.quality.specs[].passed] | add > 0' "${pass}"
           jq -e '[.checks.performance[].status] | length == 2 and all(. == "passed")' "${pass}"
           jq -e '.accessibility.status == "partial" and .accessibility.current and (.accessibility.record.lines | length) == 18' "${pass}"
+          # alternates uses the other variant of every region on the shared build (the default variants): measure.mjs allows its variant chunks
+          alternates=reports/alternates/admission-report.json
+          jq -e '.ok == true and (.errors | length) == 0' "${alternates}"
+          jq -e '[.builds[] | select(.kind == "shared" and .baseTheme == "minimal")] | length == 2' "${alternates}"
+          jq -e '[.checks.performance[].status] | length == 2 and all(. == "passed")' "${alternates}"
           jq -e '.ok == false and .package == null' "${broken}"
           jq -e '[.builds[] | select(.kind == "shared")] | length == 2' "${broken}"
           # Each pattern is a regular expression over the error messages of one check
@@ -105,7 +112,7 @@ jobs:
           expect performance '^ERROR \[theme admission-broken, dynamic mode\] home: cssKb [0-9.]+ exceeds the budget of [0-9.]+$'
           expect quality 'a11y\.spec\.ts › home has no axe violations: [\s\S]*color-contrast'
           expect accessibility '^test/fixtures/admission/accessibility/admission-broken\.json: lines\.keyboard\.focus-visible\.issue: '
-          echo "data-only passed with its accessibility record; admission-broken failed with the contrast, budget, axe and record messages"
+          echo "data-only passed with its accessibility record, alternates on the shared build with its variant allowance; admission-broken failed with the contrast, budget, axe and record messages"
       # Every baseline visual.spec.ts takes of the data-only theme, as <mode>/<viewport>/<page>.png: 52 when this was written. A page or
       # viewport added to the spec changes the number on purpose
       - name: Check the baselines

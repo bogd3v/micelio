@@ -42,7 +42,7 @@
     "test:e2e": "npm run test:e2e:main && npm run test:e2e:site && npm run test:e2e:playground && npm run test:e2e:scene-ui",
     "test:contract": "node scripts/contract/run.mjs",
     "test:e2e:main": "playwright test",
-    "test:e2e:site": "playwright test -c playwright.modules-off.config.ts && playwright test -c playwright.empty-site.config.ts && playwright test -c playwright.theme-overrides.config.ts && playwright test -c playwright.home-page.config.ts && playwright test -c playwright.categories.config.ts",
+    "test:e2e:site": "playwright test -c playwright.modules-off.config.ts && playwright test -c playwright.empty-site.config.ts && playwright test -c playwright.theme-overrides.config.ts && playwright test -c playwright.home-page.config.ts && playwright test -c playwright.categories.config.ts && playwright test -c playwright.runtime-theme.config.ts",
     "test:e2e:playground": "playwright test -c playwright.playground.config.ts",
     "test:e2e:scene-ui": "playwright test -c playwright.scene.config.ts && playwright test -c playwright.native-ui.config.ts",
     "test:static": "node scripts/test-static.mjs",

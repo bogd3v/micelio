@@ -110,6 +110,8 @@ jobs:
         env:
           # /_theme is registered at build time only with this flag (modules/theme/specimen/setup.ts)
           MICELIO_SPECIMEN: 1
+          # The data-only fixture theme e2e/runtime-theme.spec.ts serves from this build at boot (#402)
+          MICELIO_THEME_DIRS: test/fixtures/themes/alternates
       - name: Run e2e tests
         run: npm run "test:e2e:${E2E_GROUP}" ${E2E_PROJECT:+-- --project="${E2E_PROJECT}"}
         env:

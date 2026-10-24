@@ -17,10 +17,14 @@ interface Servers {
   emptySite?: boolean
   /** The site's origin when it is not the BogDev one: a Worker's CSP names it (e2e/playground) */
   siteUrl?: string
+  /** Serve this installed theme instead of the build's (`NUXT_PUBLIC_THEME` read at boot; e2e/runtime-theme.spec.ts) */
+  theme?: string
+  /** Extra theme directories (`MICELIO_THEME_DIRS`): dev compiles them; a build must have been made with them */
+  themeDirs?: string
 }
 
 /** The mock Strapi and the Nuxt server (dev, or the build with E2E_BUILD=1) pointed at it, with BogDev's site values (neutral ones with `emptySite`). */
-export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false, privacyJurisdiction = '', categoryArticles = false, emptySite = false, siteUrl = emptySite ? 'https://example.com' : 'https://bogdev.com.co' }: Servers): PlaywrightTestConfig['webServer'] {
+export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false, privacyJurisdiction = '', categoryArticles = false, emptySite = false, siteUrl = emptySite ? 'https://example.com' : 'https://bogdev.com.co', theme, themeDirs }: Servers): PlaywrightTestConfig['webServer'] {
   return [
     {
       command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=http://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''}${homePage ? ' MOCK_HOME_PAGE=1' : ''}${privacyJurisdiction ? ` MOCK_PRIVACY_JURISDICTION=${privacyJurisdiction}` : ''}${categoryArticles ? ' MOCK_CATEGORY_ARTICLES=1' : ''}${emptySite ? ' MOCK_EMPTY_SITE=1' : ''} node e2e/mock-strapi.mjs`,
@@ -37,6 +41,8 @@ export function webServers({ mockPort, appPort, modulesOff = false, themeOverrid
         `NUXT_PUBLIC_STRAPI_URL=http://127.0.0.1:${mockPort}`,
         `NUXT_PUBLIC_SITE_URL=${siteUrl}`,
         'NUXT_STRAPI_API_TOKEN=e2e-api-token',
+        ...(theme ? [`NUXT_PUBLIC_THEME=${theme}`] : []),
+        ...(themeDirs ? [`MICELIO_THEME_DIRS=${themeDirs}`] : []),
         ...(emptySite
           ? [
               'NUXT_MEDIA_URL=https://resources.example.com',

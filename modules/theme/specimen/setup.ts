@@ -2,7 +2,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { addTemplate, addTypeTemplate, extendPages } from 'nuxt/kit'
 import type { ThemeContext } from '../types'
-import { alternateVariants } from '../layout/variants'
+import { specimenVariants } from '../layout/variants'
 
 const DIR = dirname(fileURLToPath(import.meta.url))
 const SPECIMEN_MODULE = '#micelio/specimen'
@@ -19,13 +19,13 @@ export function specimenEnabled(ctx: ThemeContext): boolean {
  * @remarks
  * Runs at build time. `micelio/specimen.css` is always written, and it imports the specimen styles only when the page exists.
  * When `specimenEnabled` is true, the setup also registers the page's `en` and `es` messages, serves its media at
- * `/_theme/media/`, writes the `#micelio/specimen-variants` module with the alternate variants and its type declarations, and
+ * `/_theme/media/`, writes the `#micelio/specimen-variants` module with every variant and its type declarations, and
  * adds the page route. `#micelio/specimen` tells the server whether the page exists, in every build.
  */
 export function setupSpecimen(ctx: ThemeContext): void {
   const enabled = specimenEnabled(ctx)
 
-  // The server writes data-layout-header only when the alternates are bundled (ADR 0009, 2026-10-22 amendment)
+  // The server writes data-layout-header only when every variant is bundled (ADR 0009, 2026-10-22 amendment)
   addTypeTemplate({
     filename: 'types/micelio-specimen.d.ts',
     getContents: () => `declare module '${SPECIMEN_MODULE}' {\n  export const specimen: boolean\n}\n`,
@@ -50,18 +50,18 @@ export function setupSpecimen(ctx: ThemeContext): void {
   })
   // The specimen's own images, same-origin at /_theme/media/ (only when the page exists)
   ;(ctx.nuxt.options.nitro.publicAssets ||= []).push({ dir: join(DIR, 'media'), baseURL: '/_theme/media' })
-  // Not part of #micelio/theme: the active theme's data never lists the alternates
+  // Not part of #micelio/theme: the active theme's data never lists the other variants
   ctx.nuxt.options.alias['#micelio/specimen-variants'] = join(ctx.nuxt.options.buildDir, 'micelio/specimen-variants.mjs')
   addTemplate({
     filename: 'micelio/specimen-variants.mjs',
     write: true,
-    getContents: () => `export const variants = ${JSON.stringify(alternateVariants(ctx), null, 2)}\nexport default variants\n`,
+    getContents: () => `export const variants = ${JSON.stringify(specimenVariants(), null, 2)}\nexport default variants\n`,
   })
   addTypeTemplate({
     filename: 'types/micelio-specimen-variants.d.ts',
     getContents: () => `declare module '#micelio/specimen-variants' {
   export interface SpecimenVariant {
-    region: string
+    region: keyof import('~/interfaces').ThemeData['layout']
     variant: string
     component: string
   }

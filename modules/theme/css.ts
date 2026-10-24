@@ -20,7 +20,7 @@ function joinCss(sources: CssSource[]): string {
  *
  * @remarks
  * Runs at build time. The five region templates are empty in a plain build: the CSS of the variants a theme chose travels in the
- * theme's stylesheet (`install/compile.ts`, ADR 0009 section 6), and only the specimen puts its alternates here. The theme's
+ * theme's stylesheet (`install/compile.ts`, ADR 0009 section 6), and only the specimen puts every variant's CSS here. The theme's
  * own stylesheet (roles, fonts, `theme.css`, slot styles and the mode switch's rules) and `sections.css` are no longer in the
  * bundle: the store compiles them (`install/compile.ts`) and `server/plugins/themeMode.ts` links them (ADR 0009, section 6).
  * Each template is generated again on every regeneration.
