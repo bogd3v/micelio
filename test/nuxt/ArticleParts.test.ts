@@ -9,6 +9,7 @@ import StrapiQuoteBlock from '~/components/strapi/QuoteBlock.vue'
 import BlogReferences from '~/components/blog/References.vue'
 import { numberReferences } from '~/helpers/citations'
 import type { StrapiBlock, StrapiQuote, StrapiReference, StrapiRichText } from '~/interfaces'
+import { mockClipboard } from './clipboardFixture'
 
 registerEndpoint('/api/comments/flat', () => ({
   data: [
@@ -39,14 +40,13 @@ describe('BlogTableOfContents', () => {
 
 describe('BlogCopyLinkButton', () => {
   it('copies the link and announces it', async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined)
-    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    const clipboard = mockClipboard()
     const wrapper = await mountSuspended(BlogCopyLinkButton, { props: { url: 'https://bogdev.com.co/blog/rag' } })
     expect(wrapper.get('button').text()).toBe('Copy link')
     expect(wrapper.get('[aria-live="polite"]').text()).toBe('')
     await wrapper.get('button').trigger('click')
     await flushPromises()
-    expect(writeText).toHaveBeenCalledWith('https://bogdev.com.co/blog/rag')
+    expect(clipboard.written).toEqual(['https://bogdev.com.co/blog/rag'])
     expect(wrapper.get('button').text()).toBe('Link copied ✓')
     expect(wrapper.get('[aria-live="polite"]').text()).toBe('Link copied ✓')
   })
