@@ -24,7 +24,7 @@ import { loadDefaultTheme } from '../server/lib/builtInStore'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 // The neutral data-only theme (one mode, no slots, default layout) the shared core build is made with: a theme with the same id replaces it
-// in that build's store, which is what the server would do. TODO(#402): once slots and layout variants load at runtime, the shared build is the default theme's
+// in that build's store, which is what the server would do
 const BASE_THEME = 'minimal'
 const BASE_THEME_DIR = 'test/fixtures/themes/minimal'
 
@@ -94,7 +94,6 @@ function themesToAdmit(): InstalledTheme[] {
 /** Plan: the matrix of every job, written as one JSON line for `$GITHUB_OUTPUT`. */
 function plan(): void {
   const themes = themesToAdmit()
-  const [base] = discoverThemes([join(ROOT, BASE_THEME_DIR)])
   const budgets = JSON.parse(readFileSync(join(ROOT, 'scripts/perf/budgets.json'), 'utf8')) as { modes: Record<string, { ci?: boolean }> }
   const known = Object.keys(budgets.modes).filter(mode => budgets.modes[mode]!.ci !== false)
   const modes = listInput('modes') ?? known
@@ -107,7 +106,7 @@ function plan(): void {
   // Baselines live outside the theme folder, which the package must not include: <snapshot-root>/<id>/<mode>/<viewport>/
   const snapshotRoot = args['snapshot-root'] && args['snapshot-root'] !== 'true' ? args['snapshot-root'] : 'e2e/theme/__screenshots__'
   const planned = themes.map((theme) => {
-    const reason = ownBuildReason(theme, base!)
+    const reason = ownBuildReason(theme)
     return { id: theme.id, build: reason ? 'own' : 'shared', ...(reason && { reason }) }
   })
   const performance = planned.flatMap(theme => measured.flatMap(mode => ['default', ...(heaviest && mode === 'dynamic' ? ['heaviest'] : [])].map(font => ({ theme: theme.id, mode, font, build: theme.build, ...(theme.reason && { reason: theme.reason }) }))))

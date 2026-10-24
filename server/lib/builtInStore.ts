@@ -7,7 +7,7 @@ import { loadEntrySync } from '../../modules/theme/install/store'
 import type { BuiltInIndex } from '../../modules/theme/install/types'
 import type { BuiltInTheme } from './types'
 import { THEME_DIGEST } from '../../modules/theme/registry/constants'
-import { LAYOUT_REGIONS, THEME_ID } from '../../modules/theme/constants'
+import { THEME_ID } from '../../modules/theme/constants'
 
 // The built-in store of the image (ADR 0009, section 1): the themes compiled at build, loaded and verified once at boot.
 
@@ -50,30 +50,21 @@ function readIndex(storeDir: string): BuiltInIndex {
  * Loads the instance's default theme: `configured` (`NUXT_PUBLIC_THEME`), or the build's own theme when it is blank.
  *
  * @remarks
- * Slots and layout variants are compiled for the build's theme until #402, so another theme can stand in only when it ships no code,
- * the build's theme ships none either, and both use the same layout variants. A rule #402 deletes.
+ * Any theme of the built-in store can be the default: the build compiles in the layout variants and the slots of every theme
+ * it installs, and the pages choose them at runtime (#402).
  *
  * @param configured - The runtime value of `NUXT_PUBLIC_THEME`; blanks count as unset.
- * @throws `Error` naming `NUXT_PUBLIC_THEME` when the theme is not in the store or cannot stand in for the build's theme.
+ * @throws `Error` naming `NUXT_PUBLIC_THEME` when the theme is not in the store or its entry fails verification.
  */
 export function loadDefaultTheme(storeDir: string, configured: unknown): BuiltInTheme {
   const { buildTheme } = readIndex(storeDir)
   const id = typeof configured === 'string' ? configured.trim() : ''
   if (id === '' || id === buildTheme) return loadBuiltInTheme(storeDir, buildTheme)
-  let theme: BuiltInTheme
   try {
-    theme = loadBuiltInTheme(storeDir, id)
+    return loadBuiltInTheme(storeDir, id)
   } catch (error) {
     throw new Error(`NUXT_PUBLIC_THEME is "${id}": ${(error as Error).message}`, { cause: error })
   }
-  const build = loadBuiltInTheme(storeDir, buildTheme)
-  if (theme.runtime.code || build.runtime.code) {
-    throw new Error(`NUXT_PUBLIC_THEME is "${id}" but this build was made for "${buildTheme}": a theme with code (slots) needs its own build until layouts and slots load at runtime. Rebuild with NUXT_PUBLIC_THEME=${id}.`)
-  }
-  if (LAYOUT_REGIONS.some(region => theme.runtime.layout[region] !== build.runtime.layout[region])) {
-    throw new Error(`NUXT_PUBLIC_THEME is "${id}" but its layout variants differ from the ones this build, made for "${buildTheme}", carries. Rebuild with NUXT_PUBLIC_THEME=${id}.`)
-  }
-  return theme
 }
 
 /**

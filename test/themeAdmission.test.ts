@@ -252,15 +252,14 @@ describe('reportSummary', () => {
 })
 
 describe('ownBuildReason', () => {
-  const [base] = discoverThemes([join(ROOT, 'test/fixtures/themes/minimal')])
   const theme = (dir: string) => discoverThemes([join(ROOT, dir)])[0]!
 
   it('admits a data-only theme with the default layout on the shared build', () => {
-    expect(ownBuildReason(theme('test/fixtures/themes/data-only'), base!)).toBeUndefined()
+    expect(ownBuildReason(theme('test/fixtures/themes/data-only'))).toBeUndefined()
   })
 
   it('gives a theme with slots a build of its own', () => {
-    expect(ownBuildReason(theme('themes/starter'), base!)).toMatch(/^ships slots\/ or templates\//)
+    expect(ownBuildReason(theme('themes/starter'))).toMatch(/^ships slots\/ or templates\//)
   })
 })
 

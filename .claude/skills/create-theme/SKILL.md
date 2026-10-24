@@ -35,6 +35,7 @@ Use it to make a theme or change how one looks. Not for core components, pages o
 - Own attributes `data-<id>-*` (checked). Own classes `<id>-*` (review by hand).
 - No `!important`; no remote `@import`; `url()` only to `/fonts/...` or `/theme/images/...` or `#fragment`.
 - Slots: only the listed names, no `<style>` (CSS goes in `slots/*.css`), static unless `"island": true` in `theme.json`.
+- Slot images: write the URL whole in a quoted string or attribute (`'/theme/images/hero.jpg'`); another theme's build rewrites that prefix to `/theme/<id>/images/`, so a URL assembled at runtime breaks. The id `images` is reserved.
 - Every animation under `@media (prefers-reduced-motion: no-preference)` (review by hand).
 - User-facing text in `i18n/<locale>.json` under `theme.*`, files `en` and `es` (review by hand: another file name adds a locale).
 - `id` equals the folder name; `"contract": 2`; `$schema` is `../theme.schema.json` (review by hand).

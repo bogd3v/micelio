@@ -60,14 +60,14 @@ describe('loadDefaultTheme', () => {
     expect(() => loadDefaultTheme(store, '__proto__')).toThrow(/NUXT_PUBLIC_THEME is "__proto__"/)
   })
 
-  it('refuses a theme with code when the build was made for another one', () => {
+  it('serves a theme with code on a build made for another one, since its slots are compiled in (#402)', () => {
     useBuild('minimal', themes)
-    expect(() => loadDefaultTheme(store, 'starter')).toThrow(/"starter".*made for "minimal".*Rebuild/)
+    expect(loadDefaultTheme(store, 'starter').runtime.id).toBe('starter')
   })
 
-  it('refuses any other theme on a build whose own theme ships code', () => {
+  it('serves any other theme on a build whose own theme ships code', () => {
     useBuild('starter', themes)
-    expect(() => loadDefaultTheme(store, 'minimal')).toThrow(/"minimal".*made for "starter"/)
+    expect(loadDefaultTheme(store, 'minimal').runtime.id).toBe('minimal')
     expect(loadDefaultTheme(store, 'starter').runtime.id).toBe('starter')
   })
 })
