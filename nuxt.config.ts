@@ -155,7 +155,9 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
   experimental: {
-    viewTransition: true,
+    // Static and landing sites ship no JS: their cross-document opt-in is in base/view-transition.css, behind prefers-reduced-motion.
+    // With the flag on, Nuxt 4.6 also injects an unconditional `@view-transition` on noScripts pages, which ignores reduced motion.
+    viewTransition: !staticSite,
     // Prefetch a link's route on hover or focus, not when it scrolls into view (ADR 0006, section 3; docs/performance.md)
     defaults: { nuxtLink: { prefetchOn: { interaction: true, visibility: false } } },
     // Under noScripts the payload would still be written as _payload.json

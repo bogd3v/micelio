@@ -86,6 +86,14 @@ describe('speculation rules and the CSP', () => {
     expect(injectSpeculationRules(once, speculationRules({ prerender: true }))).toBe(once)
   })
 
+  it('replaces a speculationrules script the framework rendered', () => {
+    const rules = speculationRules({ prerender: false })
+    const framework = '<script type="speculationrules">{"prerender":[{"where":{"href_matches":"/account/password"}}]}</script>'
+    const html = injectSpeculationRules(`<head><meta>${framework}</head>`, rules)
+    expect(html).toBe(`<head><meta><script type="speculationrules">${JSON.stringify(rules)}</script></head>`)
+    expect(html).not.toContain('/account/password')
+  })
+
   it('refuses a page with no head', () => {
     expect(() => injectSpeculationRules('<body></body>', speculationRules({ prerender: true }))).toThrow('no </head>')
   })

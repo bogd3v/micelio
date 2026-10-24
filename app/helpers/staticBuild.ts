@@ -196,13 +196,14 @@ export function injectCspMeta(html: string, policy: string): string {
 /**
  * The HTML with the Speculation Rules as one `<script type="speculationrules">` at the end of the `<head>` (ADR 0004 amendment).
  * Added to the generated pages, not rendered by the app: the error shell (`404.html`) has no app head, and every page must carry the same script.
- * A page that has the script already is left as it is. Throws when there is no `</head>`: a page without the rules would break the shared policy.
+ * Any `speculationrules` script already in the page is replaced: since Nuxt 4.6 a `noScripts` page renders its own, which prerenders every page route (account, drafts, confirm) and would count a pageview under analytics, so it must never win over ours.
+ * Throws when there is no `</head>`: a page without the rules would break the shared policy.
  */
 export function injectSpeculationRules(html: string, rules: SpeculationRules): string {
-  const end = html.indexOf('</head>')
+  const clean = html.replace(/<script\b[^>]*\btype=["']?speculationrules["']?[^>]*>[\s\S]*?<\/script>/g, '')
+  const end = clean.indexOf('</head>')
   if (end === -1) throw new Error('no </head> to put the speculation rules in')
-  if (html.includes('type="speculationrules"')) return html
-  return `${html.slice(0, end)}<script type="speculationrules">${JSON.stringify(rules)}</script>${html.slice(end)}`
+  return `${clean.slice(0, end)}<script type="speculationrules">${JSON.stringify(rules)}</script>${clean.slice(end)}`
 }
 
 /** The routes whose inline-script hashes differ from the most common set among the pages (empty when all agree). */
