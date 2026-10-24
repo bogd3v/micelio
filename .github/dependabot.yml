@@ -15,6 +15,10 @@ updates:
       - dependency-name: "*"
         update-types:
           - version-update:semver-major
+      # Pinned at 1.63.0 (with the `playwright-core` override): Playwright 1.64's Chromium 156 shifts the mask of `time` in the
+      # `specimen/cards` baselines. Lift both pins in the PR that fixes it or regenerates the baselines from the CI artifact
+      - dependency-name: "@playwright/test"
+      - dependency-name: playwright-core
     groups:
       testing:
         patterns:
