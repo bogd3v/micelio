@@ -168,11 +168,11 @@ export function mediaFileName(url: string, hash: string): string {
   return `${hash}-${base.replace(/[^\w.-]/g, '_')}`
 }
 
-// NuxtImg writes an inline `onerror` on the server; the hash CSP blocks inline handlers, so under it the attribute is dead weight
-const NUXT_IMG_TAG = /<img\b[^>]*\bdata-nuxt-img\b[^>]*>/gi
+// NuxtImg and NuxtPicture write an inline `onerror` on the server; the hash CSP blocks inline handlers, so under it the attribute is dead weight
+const NUXT_IMG_TAG = /<img\b[^>]*\bdata-nuxt-(?:img|pic)\b[^>]*>/gi
 const IMAGE_ERROR_HANDLER = / onerror="this\.setAttribute\(&#39;data-error&#39;, 1\)"/
 
-/** The HTML without the inert `onerror` handler `@nuxt/image` adds to its images (only on `data-nuxt-img` tags). */
+/** The HTML without the inert `onerror` handler `@nuxt/image` adds to its images and pictures (only on `data-nuxt-img` and `data-nuxt-pic` tags). */
 export function stripImageErrorHandlers(html: string): string {
   return html.replace(NUXT_IMG_TAG, tag => tag.replace(IMAGE_ERROR_HANDLER, ''))
 }
