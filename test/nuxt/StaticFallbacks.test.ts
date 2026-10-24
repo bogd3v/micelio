@@ -94,7 +94,7 @@ describe('static fallbacks', () => {
       const links = wrapper.findAll('a')
       expect(links.map(link => link.attributes('href'))).toEqual(['/es', '/'])
       expect(links.map(link => link.attributes('aria-current'))).toEqual([undefined, 'true'])
-      expect(links.map(link => link.attributes('aria-label'))).toEqual(['Español', 'English'])
+      expect(links.map(link => link.attributes('aria-label'))).toEqual(['ES · Español', 'EN · English'])
     })
 
     it('falls back to the blog of the other language on blog pages, until the build rewrites the href', async () => {

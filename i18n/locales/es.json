@@ -468,7 +468,7 @@
       "placeholderStatic": "Buscar artículos y páginas",
       "unavailable": "La búsqueda no está disponible ahora",
       "content": "Buscar también en el contenido",
-      "close": "Cerrar búsqueda",
+      "close": "Esc · Cerrar búsqueda",
       "minLength": "Escribe {count} letras o más para buscar artículos",
       "loading": "Buscando…",
       "empty": "Sin resultados para «{query}»",
