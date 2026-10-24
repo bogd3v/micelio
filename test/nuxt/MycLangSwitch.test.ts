@@ -10,7 +10,7 @@ describe('MycLangSwitch', () => {
     const buttons = wrapper.findAll('button')
     expect(buttons.map(b => b.text())).toEqual(['ES', 'EN'])
     expect(buttons.map(b => b.attributes('lang'))).toEqual(['es', 'en'])
-    expect(buttons.map(b => b.attributes('aria-label'))).toEqual(['Español', 'English'])
+    expect(buttons.map(b => b.attributes('aria-label'))).toEqual(['ES Español', 'EN English'])
     expect(buttons.map(b => b.attributes('aria-pressed'))).toEqual(['false', 'true'])
   })
 

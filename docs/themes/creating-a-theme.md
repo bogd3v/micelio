@@ -196,6 +196,7 @@ The slots are a closed list; each one's purpose, props and core default are in [
 Rules (`modules/theme/island.ts`, `slots.ts`):
 
 - **No `<style>` block in any slot.** Slot CSS goes in `slots/*.css`; every `.css` there is imported in file name order into the `myc.theme` layer and checked like `theme.css`.
+- **Text a mark draws is the link's visible text.** `ThemeMark` renders inside the brand link, whose label is `{site}, home`, so a letter or wordmark drawn as SVG `<text>` or HTML text must be part of the site name or not count as visible text (an `aria-hidden` wordmark as in Bogotá, or `<defs>` plus `<use>` as in the starter). Otherwise axe reports `label-content-name-mismatch` (WCAG 2.5.3) at admission.
 - **A slot is static by default**: no `@event`, `on*` attributes or `v-model`, no `v-bind` with an object or a dynamic argument, and none of the lifecycle hooks, `watch*`, `useState`, timers, `requestAnimationFrame` or `addEventListener`. The error says which one it found.
 - **Any slot may declare `"island": true`** when it needs JavaScript (Bogotá's `ThemeDivider` does). An island may be interactive but still may not ship `<style>`. Slots are plain components today, so every slot hydrates either way.
 

@@ -22,6 +22,11 @@ function staticHref(next: Locale): string {
   return localizedPath(headerSection(route.path) === 'blog' ? '/blog' : '/', next)
 }
 
+// The label starts with the visible code (WCAG 2.5.3, label in name)
+function optionLabel(option: Locale): string {
+  return t('myc.header.languageOption', { code: option.toUpperCase(), name: t(`myc.header.languages.${option}`) })
+}
+
 async function select(next: Locale): Promise<void> {
   if (next === locale.value) return
   await router.push(switchLocale(next))
@@ -39,7 +44,7 @@ async function select(next: Locale): Promise<void> {
         class="myc-seg"
         :lang="option"
         :hreflang="option"
-        :aria-label="t(`myc.header.languages.${option}`)"
+        :aria-label="optionLabel(option)"
         :aria-current="locale === option ? 'true' : undefined"
       >
         {{ option.toUpperCase() }}
@@ -49,7 +54,7 @@ async function select(next: Locale): Promise<void> {
         type="button"
         class="myc-seg"
         :lang="option"
-        :aria-label="t(`myc.header.languages.${option}`)"
+        :aria-label="optionLabel(option)"
         :aria-pressed="locale === option ? 'true' : 'false'"
         @click="select(option)"
       >
