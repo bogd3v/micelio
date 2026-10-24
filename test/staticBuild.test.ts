@@ -193,9 +193,11 @@ describe('media on the CMS origin', () => {
 describe('static headers', () => {
   const policy = contentSecurityPolicy({ scriptHashes: ['abc='], imageOrigins: [] })
 
-  it('removes the inline onerror of NuxtImg and nothing else', () => {
+  it('removes the inline onerror of NuxtImg and NuxtPicture and nothing else', () => {
     const img = '<img src="/a.png" data-nuxt-img onerror="this.setAttribute(&#39;data-error&#39;, 1)" alt="x">'
     expect(stripImageErrorHandlers(img)).toBe('<img src="/a.png" data-nuxt-img alt="x">')
+    const picture = '<img width="1600" data-nuxt-pic onerror="this.setAttribute(&#39;data-error&#39;, 1)" alt="x">'
+    expect(stripImageErrorHandlers(picture)).toBe('<img width="1600" data-nuxt-pic alt="x">')
     expect(stripImageErrorHandlers('<img onerror="alert(1)">')).toBe('<img onerror="alert(1)">')
     expect(stripImageErrorHandlers('<div data-nuxt-img onerror="this.setAttribute(&#39;data-error&#39;, 1)">')).toContain('onerror')
   })
