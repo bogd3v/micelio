@@ -72,9 +72,11 @@ Set all three to turn the fediverse features on. The CMS side is in [micelio-cms
 | Variable | Required | Default | Read | What it does |
 | --- | --- | --- | --- | --- |
 | `NUXT_PUBLIC_FEDIVERSE_LOCALE` | No | `es-CO` | Runtime | The locale whose articles are federated. |
-| `NUXT_PUBLIC_FEDIVERSE_HANDLE` | Fediverse only | empty | Runtime | The site's account handle, for example `@blog@cms.example.org`. |
+| `NUXT_PUBLIC_FEDIVERSE_HANDLE` | Fediverse only | empty | Runtime | The site's account handle, for example `@blog@cms.example.org`. Its host must be the CMS's handle host (`FEDIVERSE_HANDLE_HOST`, or the CMS host). Also read by a static build, for the `fediverse:creator` tag of each article. |
 | `NUXT_PUBLIC_FEDIVERSE_ACTOR_URL` | Fediverse only | empty | Runtime | The ActivityPub actor, for example `https://cms.example.org/fediverse/user/blog`. |
 | `NUXT_PUBLIC_FEDIVERSE_ARTICLES_URL` | Fediverse only | empty | Runtime | Base URL of the federated articles, for example `https://cms.example.org/fediverse/articles`. |
+
+**Author on Mastodon link cards.** With the fediverse switched on in the site settings and `NUXT_PUBLIC_FEDIVERSE_HANDLE` set, every article carries `<meta name="fediverse:creator">` with the site actor's handle (the `@user` comes from the site settings' fediverse username when set; [API](../api.md), "Fediverse creator"). Mastodon credits the author only when the actor lists the site's domain in `attributionDomains`, which the CMS actor must publish.
 
 ### Handle on the site domain
 

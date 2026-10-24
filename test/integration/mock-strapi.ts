@@ -69,6 +69,8 @@ interface MockStrapiResult {
   securityContact: { value: string | null }
   /** The raw request headers of the last `/.well-known/webfinger` call, to prove nothing of the visitor's reaches the CMS */
   webfingerHeaders: { value: IncomingMessage['headers'] | null }
+  /** The `username` of the `fediverse` component site-setting answers with (the component is null when this is) */
+  fediverseUsername: { value: string | null }
   users: Array<{ id: number, username: string, email: string, password: string, confirmed: boolean, role: string }>
   /** Extra keys the CMS answers carry, to prove they do not reach the client; a test that sets one clears it */
   leaks: { commentsEnvelope: Record<string, unknown>, draftRow: Record<string, unknown> }
@@ -546,6 +548,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
   const homePage: MockStrapiResult['homePage'] = { value: null }
   const securityContact: MockStrapiResult['securityContact'] = { value: null }
   const webfingerHeaders: MockStrapiResult['webfingerHeaders'] = { value: null }
+  const fediverseUsername: MockStrapiResult['fediverseUsername'] = { value: null }
   const authMock = createAuthMock({ frontendUrl: 'https://bogdev.test' })
   const draftsMock = createDraftsMock({ userFromAuth: authMock.userFromAuth, publishedArticles: articles })
 
@@ -785,6 +788,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
           supportHandle: 'micelio',
           securityContact: securityContact.value,
           modules: { id: 1, ...modules },
+          fediverse: fediverseUsername.value ? { id: 1, username: fediverseUsername.value } : null,
           theme: theme.value,
           homePage: homePage.value?.[locale as 'en' | 'es'] ? { id: 1, documentId: 'home-page', slug: homePage.value[locale as 'en' | 'es'] } : null,
         },
@@ -1021,7 +1025,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address()
       const port = typeof address === 'object' && address !== null ? address.port : 0
-      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, securityContact, webfingerHeaders, users: authMock.users, leaks, articles })
+      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, securityContact, webfingerHeaders, fediverseUsername, users: authMock.users, leaks, articles })
     })
   })
 }

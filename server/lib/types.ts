@@ -28,6 +28,8 @@ export interface LoadedCategory {
 export interface ParsedSiteSettings extends SiteSettings {
   /** The public security contact, a `mailto:` or `https:` URI that `validSecurityContact` accepted. */
   securityContact?: string
+  /** The `username` of the CMS's `fediverse` component, the `@user` of the site actor's handle. */
+  fediverseUsername?: string
 }
 
 declare module 'h3' {

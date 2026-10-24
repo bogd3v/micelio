@@ -78,5 +78,6 @@ export const siteSchema = responseSchema<Site>()(
     modules: siteModulesSchema,
     theme: siteThemeSchema.optional(),
     homePage: z.strictObject({ slug: z.string() }).meta({ id: 'SiteHomePage', description: 'The page shown at `/` in this locale.' }).optional(),
-  }).meta({ id: 'Site', description: 'The site identity, its modules and, when overrides apply, its theme. Empty strings mean unset. `theme` and `homePage` are absent when they do not apply.' }),
+    fediverseHandle: z.string().regex(/^@[^@\s/]+@[^@\s/]+$/).optional().meta({ description: 'The site actor\'s handle (`@user@host`), which articles name in `fediverse:creator`; absent when federation is off.' }),
+  }).meta({ id: 'Site', description: 'The site identity, its modules and, when overrides apply, its theme. Empty strings mean unset. `theme`, `homePage` and `fediverseHandle` are absent when they do not apply.' }),
 )

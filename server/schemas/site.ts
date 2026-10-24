@@ -45,6 +45,8 @@ const modules = z.object(
 )
 
 const slug = z.string().regex(/^[a-z][a-z0-9-]*$/)
+/** The `preferredUsername` the CMS accepts (micelio-cms `site.fediverse`). */
+const FEDIVERSE_USERNAME = /^[a-z0-9_]+$/
 const accentOverride = z.object({ mode: slug, color: z.string().regex(/^#[\da-f]{6}$/i) })
 
 /** Strapi sends null for what was never set; each field drops itself when invalid. */
@@ -99,7 +101,9 @@ export const siteSettingsSchema = z.object({
   modules: lenient(modules),
   theme: lenient(theme),
   homePage: lenient(homePage.nullish().transform(value => value ?? undefined)),
-})
+  // The CMS's `fediverse` component, flattened to the one field the frontend reads
+  fediverse: lenient(z.object({ username: lenient(z.string().regex(FEDIVERSE_USERNAME).max(30)) }).nullish()),
+}).transform(({ fediverse, ...settings }) => ({ ...settings, ...(fediverse?.username && { fediverseUsername: fediverse.username }) }))
 
 /** The site settings from a CMS body, or null when the body is not an object. */
 export function parseSiteSettings(data: unknown): ParsedSiteSettings | null {

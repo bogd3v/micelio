@@ -648,6 +648,7 @@ const server = createServer(async (req, res) => {
           securityContact: null,
           timezone: null,
           homePage: null,
+          fediverse: null,
           modules: { id: 1, ...Object.fromEntries(['newsletter', 'comments', 'accounts', 'drafts', 'fediverse', 'search', 'support'].map(module => [module, true])) },
         },
       })
@@ -684,6 +685,8 @@ const server = createServer(async (req, res) => {
         // MOCK_MODULES_OFF=1 runs e2e/modules-off.spec.ts against a site with every module off
         // MOCK_HOME_PAGE=1 makes the showcase page the home page of each locale (e2e/home-page.spec.ts); unset, there is no homePage
         homePage: process.env.MOCK_HOME_PAGE === '1' ? { id: 1, documentId: 'page-showcase', slug: locale === 'es' ? 'muestra' : 'showcase' } : null,
+        // Never saved in the admin: the handle keeps the @user of NUXT_PUBLIC_FEDIVERSE_HANDLE
+        fediverse: null,
         modules: { id: 1, ...Object.fromEntries(['newsletter', 'comments', 'accounts', 'drafts', 'fediverse', 'search', 'support'].map(module => [module, process.env.MOCK_MODULES_OFF !== '1'])) },
         // MOCK_THEME=1 runs e2e/theme-overrides.spec.ts against a site with a default mode, a low-contrast accent and the Fraunces display font.
         // MOCK_DISPLAY_FONT=<id> alone sets only that display font (the perf run of the heaviest one, scripts/perf/measure.mjs). Unset, there is no `theme` key

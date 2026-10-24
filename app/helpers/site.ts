@@ -95,6 +95,18 @@ export function xHandle(links: readonly SocialLink[]): string | null {
   return match ? `@${match[1]}` : null
 }
 
+/**
+ * The site actor's handle for `fediverse:creator`: `username` (the CMS's site settings) at the host of `configured`
+ * (`NUXT_PUBLIC_FEDIVERSE_HANDLE`, whose host must be the CMS's handle host; nothing checks it), or `configured` itself when `username` is empty.
+ *
+ * @returns `@user@host`, or undefined when `configured` is not a handle.
+ */
+export function fediverseCreator(configured: string, username?: string): string | undefined {
+  const match = configured.trim().match(/^@?([^@\s/]+)@([^@\s/]+)$/)
+  if (!match) return undefined
+  return `@${username || match[1]}@${match[2]}`
+}
+
 /** The local part of a fediverse handle: `@blog@cms.example.org` → `@blog`. */
 export function fediverseUser(handle: string): string {
   const user = handle.replace(/^@/, '').split('@')[0]
