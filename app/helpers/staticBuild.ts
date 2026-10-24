@@ -168,6 +168,9 @@ export function mediaFileName(url: string, hash: string): string {
   return `${hash}-${base.replace(/[^\w.-]/g, '_')}`
 }
 
+// A `speculationrules` script, any quoting of its type; `injectSpeculationRules` removes it before adding ours
+const SPECULATION_SCRIPT = /<script\b[^>]*\btype=["']?speculationrules["']?[^>]*>[\s\S]*?<\/script>/g
+
 // NuxtImg and NuxtPicture write an inline `onerror` on the server; the hash CSP blocks inline handlers, so under it the attribute is dead weight
 const NUXT_IMG_TAG = /<img\b[^>]*\bdata-nuxt-(?:img|pic)\b[^>]*>/gi
 const IMAGE_ERROR_HANDLER = / onerror="this\.setAttribute\(&#39;data-error&#39;, 1\)"/
@@ -196,13 +199,20 @@ export function injectCspMeta(html: string, policy: string): string {
 /**
  * The HTML with the Speculation Rules as one `<script type="speculationrules">` at the end of the `<head>` (ADR 0004 amendment).
  * Added to the generated pages, not rendered by the app: the error shell (`404.html`) has no app head, and every page must carry the same script.
- * A page that has the script already is left as it is. Throws when there is no `</head>`: a page without the rules would break the shared policy.
+ * Any `speculationrules` script already in the page is replaced: since Nuxt 4.6 a `noScripts` page renders its own, which prerenders every page route (account, drafts, confirm) and would count a pageview under analytics, so it must never win over ours.
+ * Throws when there is no `</head>`: a page without the rules would break the shared policy.
  */
 export function injectSpeculationRules(html: string, rules: SpeculationRules): string {
-  const end = html.indexOf('</head>')
+  // Repeat until nothing matches: one pass can join the pieces around a removed script into a new one.
+  let clean = html
+  let previous: string
+  do {
+    previous = clean
+    clean = clean.replace(SPECULATION_SCRIPT, '')
+  } while (clean !== previous)
+  const end = clean.indexOf('</head>')
   if (end === -1) throw new Error('no </head> to put the speculation rules in')
-  if (html.includes('type="speculationrules"')) return html
-  return `${html.slice(0, end)}<script type="speculationrules">${JSON.stringify(rules)}</script>${html.slice(end)}`
+  return `${clean.slice(0, end)}<script type="speculationrules">${JSON.stringify(rules)}</script>${clean.slice(end)}`
 }
 
 /** The routes whose inline-script hashes differ from the most common set among the pages (empty when all agree). */

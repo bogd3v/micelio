@@ -4,6 +4,7 @@ import { flushPromises } from '@vue/test-utils'
 import { createError } from 'h3'
 import BlogFediverseBar from '~/components/blog/FediverseBar.vue'
 import BlogCommentSection from '~/components/blog/CommentSection.vue'
+import { mockClipboard } from './clipboardFixture'
 
 registerEndpoint('/api/fediverse/stats/doc-fedi', () => ({ likes: 4, boosts: 1 }))
 
@@ -44,8 +45,7 @@ describe('BlogFediverseBar', () => {
   })
 
   it('opens the reply block with the article address, copy and open on the instance', async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined)
-    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    const clipboard = mockClipboard()
     const open = vi.spyOn(window, 'open').mockReturnValue(null)
     const wrapper = await mountSuspended(BlogFediverseBar, { props: { slug: 'rag', documentId: 'doc-fedi' } })
     const toggle = wrapper.get('button[aria-controls="myc-fedi-reply"]')
@@ -60,7 +60,7 @@ describe('BlogFediverseBar', () => {
     expect(wrapper.get('.myc-fedi-reply-address').text()).toBe('https://api.bogdev.com.co/fediverse/articles/doc-fedi')
     await wrapper.get('.myc-fedi-reply-url button').trigger('click')
     await flushPromises()
-    expect(writeText).toHaveBeenCalledWith('https://api.bogdev.com.co/fediverse/articles/doc-fedi')
+    expect(clipboard.written).toEqual(['https://api.bogdev.com.co/fediverse/articles/doc-fedi'])
     expect(wrapper.get('.myc-fedi-reply-url button').text()).toBe('Copied ✓')
 
     await wrapper.get('form').trigger('submit')

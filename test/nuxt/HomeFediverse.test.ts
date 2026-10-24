@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import HomeFediverse from '~/components/home/Fediverse.vue'
+import { mockClipboard } from './clipboardFixture'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -9,14 +10,13 @@ afterEach(() => {
 
 describe('HomeFediverse', () => {
   it('shows the configured handle and announces the copy', async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined)
-    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    const clipboard = mockClipboard()
     const wrapper = await mountSuspended(HomeFediverse)
     expect(wrapper.attributes('id')).toBe('fediverso')
     expect(wrapper.get('.myc-fedi-handle').text()).toBe('@bogdev@api.bogdev.com.co')
     await wrapper.get('.myc-fedi-copy button').trigger('click')
     await flushPromises()
-    expect(writeText).toHaveBeenCalledWith('@bogdev@api.bogdev.com.co')
+    expect(clipboard.written).toEqual(['@bogdev@api.bogdev.com.co'])
     expect(wrapper.get('.myc-fedi-copy button').text()).toBe('Copied ✓')
     expect(wrapper.get('.myc-fedi-copy [aria-live="polite"]').text()).toBe('@bogdev@api.bogdev.com.co copied')
   })
