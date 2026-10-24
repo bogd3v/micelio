@@ -15,6 +15,7 @@ import { SWD_MODEL, swdMilligramsPerView } from './carbon.mjs'
 import { checkFouc } from './fouc.mjs'
 import { collectSamples } from './lighthouse-samples.mjs'
 import { budgetKeysOf, ISLANDS_PREFIX, islandBudgetErrors, islandElement, islandMetrics, islandProblems, isStrayRequest } from './islands.mjs'
+import { storeLayouts, variantAllowance, variantBudgetErrors } from './variants.mjs'
 
 const ROOT = new URL('../../', import.meta.url).pathname
 // PERF_*_PORT: another set of ports when these are taken (parallel runs on one machine)
@@ -51,7 +52,16 @@ const pages = pagesToMeasure(args.pages)
 const exception = budgets.themes?.[theme] && [budgets.themes[theme].mode ?? budgetMode].flat().includes(budgetMode) ? budgets.themes[theme] : undefined
 // The heavy registry is TypeScript; every island in it needs a budget, and every heavy budget an island
 const { HEAVY_ISLANDS } = await createJiti(import.meta.url).import('../../app/islands/lib/constants.ts')
-const budgetErrors = islandBudgetErrors(HEAVY_ISLANDS, budgets.modes)
+const { REGION_VARIANTS } = await createJiti(import.meta.url).import('../../modules/theme/layout/variants.ts')
+const { BUILT_IN_STORE_PATH, STORE_DIR } = await createJiti(import.meta.url).import('../../modules/theme/install/constants.ts')
+const budgetErrors = [...islandBudgetErrors(HEAVY_ISLANDS, budgets.modes), ...variantBudgetErrors(REGION_VARIANTS, budgets.variants)]
+// A theme served by an image built for another theme loads its own variants as chunks: its dynamic JS limits grow by their allowances
+const storeDir = join(ROOT, '.output/server', BUILT_IN_STORE_PATH)
+const layouts = isStatic || args.base ? undefined : storeLayouts(storeDir, join(storeDir, STORE_DIR, 'entries'), theme)
+for (const { name } of pages) {
+  const { kb, variants } = variantAllowance(layouts, name, budgets.variants.jsKb)
+  if (kb) console.log(`note  [${label}] ${name}: the jsKb limit grows by ${kb} for the variants ${variants.join(', ')}, which the build's theme does not use`)
+}
 if (budgetErrors.length) throw new Error(`budgets.json:\n${budgetErrors.join('\n')}`)
 const heavyIslands = HEAVY_ISLANDS.flatMap(island => budgetKeysOf(island, modeBudgets.islands).map(key => ({ island, key })))
 for (const [id, entry] of Object.entries(budgets.themes ?? {})) {
@@ -385,6 +395,8 @@ function limitsFor(page, level) {
   const global = modeBudgets.limits[page]?.[level] ?? {}
   const limits = { ...global, ...(exception?.limits?.[page]?.[level] ?? {}) }
   if (level === 'error' && extraFontKb && limits.fontKb !== undefined) limits.fontKb = Math.round((limits.fontKb + extraFontKb) * 10) / 10
+  const variants = variantAllowance(layouts, page, budgets.variants.jsKb)
+  if (level === 'error' && variants.kb && limits.jsKb !== undefined) limits.jsKb = Math.round((limits.jsKb + variants.kb) * 10) / 10
   return limits
 }
 
