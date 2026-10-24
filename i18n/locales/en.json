@@ -468,7 +468,7 @@
       "placeholderStatic": "Search articles and pages",
       "unavailable": "Search is unavailable right now",
       "content": "Also search the content",
-      "close": "Close search",
+      "close": "Esc · Close search",
       "minLength": "Type {count} or more letters to search articles",
       "loading": "Searching…",
       "empty": "No results for “{query}”",
