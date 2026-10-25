@@ -6,7 +6,7 @@ import { toStrapiPost } from '~/helpers/post'
 import { articlePath } from '~/helpers/translations'
 import { pageTitle } from '~/helpers/site'
 
-definePageMeta({ middleware: 'editor' })
+definePageMeta({ middleware: 'editor', previewGrant: true })
 
 const { locale, t } = useI18n()
 const site = useSite()
@@ -38,6 +38,12 @@ watch(() => categoryLabel(post.value?.category), (label) => {
 }, { immediate: true })
 
 setAlternates({})
+useStaticPreview()
+
+const preview = data.value.preview
+const version = data.value.article.updatedAt
+// The locale of the draft as the CMS holds it: null for a type that is not localised, which is what the admin asks for in `load-draft`
+if (preview && version) usePreviewFrame({ adminOrigin: preview.adminOrigin, documentId, locale: data.value.article.locale ?? null, version })
 
 useSeoMeta({
   title: () => pageTitle(t('drafts.meta.article', { title: post.value?.title ?? '' }), site.value.name),
@@ -52,6 +58,7 @@ onBeforeUnmount(() => {
 <template>
   <div v-if="post">
     <DraftsStrip
+      v-if="!data?.preview"
       :state="state"
       :updated-at="data?.article.updatedAt"
       :author="post.author?.name ?? ''"

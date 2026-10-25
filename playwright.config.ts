@@ -17,8 +17,9 @@ export default defineConfig({
   // e2e/playground runs in playwright.playground.config.ts (Chromium, Firefox and WebKit, against the build)
   // e2e/scene runs in playwright.scene.config.ts (Chromium, Firefox and WebKit, against the build)
   // e2e/native-ui runs in playwright.native-ui.config.ts (Chromium, Firefox and WebKit)
+  // e2e/preview runs in playwright.preview.config.ts (Chromium, Firefox and WebKit, against the build)
   // e2e/landing runs in playwright.landing.config.ts against a generated landing (npm run test:landing)
-  testIgnore: ['modules-off.spec.ts', 'empty-site.spec.ts', 'theme-overrides.spec.ts', 'home-page.spec.ts', 'categories.spec.ts', 'runtime-theme.spec.ts', 'theme/**', 'static/**', 'landing/**', 'playground/**', 'contract/**', 'scene/**', 'native-ui/**'],
+  testIgnore: ['modules-off.spec.ts', 'empty-site.spec.ts', 'theme-overrides.spec.ts', 'home-page.spec.ts', 'categories.spec.ts', 'runtime-theme.spec.ts', 'theme/**', 'static/**', 'landing/**', 'playground/**', 'contract/**', 'scene/**', 'native-ui/**', 'preview/**'],
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,

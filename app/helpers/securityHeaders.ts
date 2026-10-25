@@ -16,6 +16,11 @@ interface ContentSecurityPolicyOptions {
   connectSources?: string[]
   /** Extra `form-action` origins: the static newsletter provider (ADR 0004, amendment). Default none. */
   formOrigins?: string[]
+  /**
+   * The one origin that may frame the page, in place of `'none'`: the admin of a preview whose grant the CMS accepted (ADR 0019, section 5).
+   * Checked by `cspOrigin()`; a value it refuses keeps `'none'`. Default none.
+   */
+  frameAncestors?: string
 }
 
 const SCRIPT_PATTERN = /<script\b([^>]*)>([\s\S]*?)<\/script(?=[\s/>])[^>]*>/gi
@@ -37,7 +42,7 @@ const FRAME_ORIGINS = [
  * The security headers sent with every response, by lowercase name.
  *
  * @remarks
- * HSTS for one year, `nosniff`, `DENY` framing, a referrer policy, a permissions policy that turns off camera, microphone,
+ * HSTS for one year, `nosniff`, `DENY` framing (dropped only from a draft page shown to a preview grant, `usePreviewFrame`; ADR 0019), a referrer policy, a permissions policy that turns off camera, microphone,
  * geolocation, payment and USB, and same-origin COOP. The Content-Security-Policy is built by `contentSecurityPolicy()`.
  */
 export const SECURITY_HEADERS: Record<string, string> = {
@@ -93,7 +98,7 @@ function origins(urls: string[]): string[] {
  * `default-src`, `font-src` and `form-action` start at `'self'`; `object-src`, `base-uri` and `frame-ancestors` are `'none'`;
  * `frame-src` allows only the YouTube and Vimeo embed origins; `img-src` adds `data:` and, unless `imageBlobs` is false, `blob:`.
  * Scripts allow `'self'` and the hashes given; styles allow `'unsafe-inline'`. The options add their sources, and
- * `frame-ancestors` is left out when `meta` is set.
+ * `frame-ancestors` is left out when `meta` is set. Without `frameAncestors` the policy is the one every page has had, byte for byte.
  */
 export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): string {
   const hashes = [...new Set(options.scriptHashes)].map(hash => `'sha256-${hash}'`)
@@ -109,7 +114,7 @@ export function contentSecurityPolicy(options: ContentSecurityPolicyOptions): st
     ['frame-src', FRAME_ORIGINS],
     ...(options.workerSources?.length ? [['worker-src', [...new Set(options.workerSources)]] as [string, string[]]] : []),
     // `report-uri` and `sandbox` are never emitted; a meta ignores `frame-ancestors`
-    ...(options.meta ? [] : [['frame-ancestors', ['\'none\'']] as [string, string[]]]),
+    ...(options.meta ? [] : [['frame-ancestors', [(options.frameAncestors && cspOrigin(options.frameAncestors)) || '\'none\'']] as [string, string[]]]),
     ['base-uri', ['\'none\'']],
     ['form-action', ['\'self\'', ...origins(options.formOrigins ?? [])]],
     ['object-src', ['\'none\'']],

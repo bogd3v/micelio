@@ -3,7 +3,7 @@
   "info": {
     "title": "Micelio site API",
     "version": "0.5.0",
-    "description": "The HTTP routes every Micelio site serves: 36 paths and 38 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
+    "description": "The HTTP routes every Micelio site serves: 38 paths and 40 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
     "license": {
       "name": "AGPL-3.0-only",
       "identifier": "AGPL-3.0-only"
@@ -207,6 +207,135 @@
           },
           "502": {
             "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: An empty body: the CMS could not be reached, redirected, or sent more than 64 KiB. Any other CMS error passes through with its status and body.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_preview": {
+      "get": {
+        "operationId": "getPreview",
+        "summary": "Open a draft in the admin's iframe with a preview token",
+        "description": "The CMS gives the admin page a one-use token (`docs/operate/preview.md`); the frame opens this route with it. The frontend exchanges the token for a grant, keeps the grant in the `__Host-micelio_preview` cookie (`HttpOnly`, `Secure`, `SameSite=None`, `Partitioned`) and redirects to the draft route without the token. A token that is used, expired, altered or of another site, a grant for another admin origin, and a site with `NUXT_PREVIEW_ADMIN_ORIGIN` unset all answer the same 404 page. Answers `private, no-store`.",
+        "tags": [
+          "Drafts"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "description": "The preview token.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "The mode of the draft route: `dynamic` (default) or `static`, which leaves every island on its static alternative.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "dynamic",
+                "static"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "The draft route of the document the grant names, without the token.",
+            "headers": {
+              "Location": {
+                "description": "Where to go next.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -3197,11 +3326,116 @@
         }
       }
     },
+    "/api/drafts/pages/{documentId}": {
+      "get": {
+        "operationId": "getApiDraftsPagesByDocumentId",
+        "summary": "Get the draft of a page",
+        "description": "Editors only, with their own session, or the admin's iframe with a preview grant cookie (ADR 0019), which shows only the document the grant names. Anyone else gets `notFound`. Answers `private, no-store`.",
+        "tags": [
+          "Drafts"
+        ],
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "description": "The page document id.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language of the draft: `en` or `es`. Optional.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The draft page. With a preview grant `preview` carries the admin origin.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftPageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/drafts/{documentId}": {
       "get": {
         "operationId": "getApiDraftsByDocumentId",
         "summary": "Get a draft and its published version",
-        "description": "Editors only; anyone else gets `notFound`. Answers `private, no-store`.",
+        "description": "Editors only, with their own session, or the admin's iframe with a preview grant cookie (ADR 0019), which shows only the document the grant names. Anyone else gets `notFound`. Answers `private, no-store`.",
         "tags": [
           "Drafts"
         ],
@@ -3232,7 +3466,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The draft and, when there is one, its published version.",
+            "description": "The draft and, when there is one, its published version. With a preview grant there is no published version and `preview` carries the admin origin.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6285,7 +6519,11 @@
                 "type": "null"
               }
             ],
-            "description": "Null when the article has no published version."
+            "description": "Null when the article has no published version, and always null when the request came with a preview grant."
+          },
+          "preview": {
+            "description": "Present when the request came with a preview grant.",
+            "$ref": "#/components/schemas/DraftPreview"
           }
         },
         "required": [
@@ -6419,6 +6657,45 @@
         ],
         "additionalProperties": false,
         "description": "The drafts, most recently updated first, with their count."
+      },
+      "DraftPageResponse": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          },
+          "updatedAt": {
+            "description": "The `updatedAt` of the draft, which names the version the preview frame shows; null when the CMS sent none.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "preview": {
+            "description": "Present when the request came with a preview grant.",
+            "$ref": "#/components/schemas/DraftPreview"
+          }
+        },
+        "required": [
+          "page",
+          "updatedAt"
+        ],
+        "additionalProperties": false,
+        "description": "A page draft for the preview page."
+      },
+      "DraftPreview": {
+        "type": "object",
+        "properties": {
+          "adminOrigin": {
+            "type": "string",
+            "description": "The origin of the admin page that frames the draft: the only origin the frame talks to."
+          }
+        },
+        "required": [
+          "adminOrigin"
+        ],
+        "additionalProperties": false,
+        "description": "Present on a draft answered to a preview grant (ADR 0019)."
       },
       "FaqItem": {
         "type": "object",

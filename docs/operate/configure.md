@@ -30,6 +30,7 @@ Start from `.env.example` in the repository. Nuxt reads only the `NUXT_*` names 
 | `MICELIO_CACHE_DIR` | No | `~/.cache/micelio` | Build time | Directory of the cache of pulled theme packages. |
 | `NUXT_PUBLIC_SOURCE_URL` | No | the upstream repository | Runtime | Link to the source code in the footer, required by the AGPL when you run a modified copy ([ADR 0007](../adr/0007-license.md)). A value that is not an `http(s)` URL falls back to the upstream repository. |
 | `NUXT_MEDIA_URL` | No | empty | Runtime | Host of the Strapi uploads when they are served from another host, added to the images Content Security Policy. Empty: only the site and Strapi load. |
+| `NUXT_PREVIEW_ADMIN_ORIGIN` | No | empty | Runtime | The origin of the CMS admin that may frame a draft of this site, such as `https://cms.example.com` (`http` or `https`, no path). Empty: the preview is off and `/_preview` answers 404. It becomes the `frame-ancestors` of the draft routes that carry a valid preview grant and no other response. An invalid value turns the preview off and logs a warning at boot. See [Preview drafts in the admin](preview.md). |
 
 ## Security contact
 

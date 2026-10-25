@@ -6,6 +6,7 @@ import type { StrapiSEO } from '~/interfaces/strapi-seo'
 import type { StrapiRichText } from '~/interfaces/strapi-blocks'
 import { createAuthMock } from '../../e2e/fixtures/auth.mjs'
 import { createDraftsMock } from '../../e2e/fixtures/drafts.mjs'
+import { createPreviewMock } from '../../e2e/fixtures/preview.mjs'
 import { triangleGlb } from '../../e2e/fixtures/glb.mjs'
 import { findPages } from '../../e2e/fixtures/pages.mjs'
 
@@ -71,6 +72,8 @@ interface MockStrapiResult {
   webfingerHeaders: { value: IncomingMessage['headers'] | null }
   /** The `username` of the `fediverse` component site-setting answers with (the component is null when this is) */
   fediverseUsername: { value: string | null }
+  /** The preview routes of the plugin: `issue` makes a one-use token, `calls` records what the frontend sent, `state.permission` false makes both routes answer 403 */
+  preview: ReturnType<typeof createPreviewMock>
   users: Array<{ id: number, username: string, email: string, password: string, confirmed: boolean, role: string }>
   /** Extra keys the CMS answers carry, to prove they do not reach the client; a test that sets one clears it */
   leaks: { commentsEnvelope: Record<string, unknown>, draftRow: Record<string, unknown> }
@@ -551,6 +554,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
   const fediverseUsername: MockStrapiResult['fediverseUsername'] = { value: null }
   const authMock = createAuthMock({ frontendUrl: 'https://bogdev.test' })
   const draftsMock = createDraftsMock({ userFromAuth: authMock.userFromAuth, publishedArticles: articles })
+  const preview = createPreviewMock({ apiToken: 'test-api-token' })
 
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     const method = req.method || 'GET'
@@ -588,6 +592,12 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
         res.writeHead(502, { 'Content-Type': 'text/plain' })
         res.end('Bad Gateway')
       }
+      return
+    }
+
+    const previewed = preview.handle(method, url.pathname, query, req.headers, body)
+    if (previewed) {
+      sendJson(res, previewed.status, previewed.body)
       return
     }
 
@@ -1025,7 +1035,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address()
       const port = typeof address === 'object' && address !== null ? address.port : 0
-      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, securityContact, webfingerHeaders, fediverseUsername, users: authMock.users, leaks, articles })
+      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, securityContact, webfingerHeaders, fediverseUsername, users: authMock.users, leaks, articles, preview })
     })
   })
 }

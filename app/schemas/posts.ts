@@ -3,6 +3,7 @@ import type { CategoryEntry } from '~/interfaces/design'
 import type { ReadingPath, ReadingPathStep } from '~/interfaces/blog'
 import type { PaginationMeta, StrapiPaginatedResponse } from '~/interfaces/strapi-response'
 import type { DraftArticleResponse, PublishedVersion } from '~/interfaces/draft'
+import type { DraftPreview } from '~/interfaces/preview'
 import type { PostListItem, RawStrapiArticle, SearchPostResult, StrapiAuthorRef, StrapiCategoryRef, StrapiLocalization, StrapiTagRef, TagCount } from '~/interfaces/strapi-post'
 import type { StrapiReference } from '~/interfaces/strapi-reference'
 import { imageCreditSchema, mediaRefSchema, seoSchema, strapiBlockSchema } from './blocks'
@@ -168,7 +169,16 @@ export const publishedVersionSchema = responseSchema<PublishedVersion>()(
   z.strictObject({ slug: z.string(), updatedAt: z.string().nullable(), publishedAt: z.string().nullable() }).meta({ id: 'PublishedVersion', description: 'The published version of a draft: its slug and its dates.' }),
 )
 
+/** What a draft answer carries when the request came with a preview grant. */
+export const draftPreviewSchema = responseSchema<DraftPreview>()(
+  z.strictObject({ adminOrigin: z.string().meta({ description: 'The origin of the admin page that frames the draft: the only origin the frame talks to.' }) }).meta({ id: 'DraftPreview', description: 'Present on a draft answered to a preview grant (ADR 0019).' }),
+)
+
 /** A draft and its published version (`GET /api/drafts/{documentId}`). */
 export const draftArticleResponseSchema = responseSchema<DraftArticleResponse>()(
-  z.strictObject({ article: articleSchema, published: publishedVersionSchema.nullable().meta({ description: 'Null when the article has no published version.' }) }).meta({ id: 'DraftArticleResponse', description: 'A draft for the preview page, with its published version when it has one.' }),
+  z.strictObject({
+    article: articleSchema,
+    published: publishedVersionSchema.nullable().meta({ description: 'Null when the article has no published version, and always null when the request came with a preview grant.' }),
+    preview: draftPreviewSchema.optional().meta({ description: 'Present when the request came with a preview grant.' }),
+  }).meta({ id: 'DraftArticleResponse', description: 'A draft for the preview page, with its published version when it has one.' }),
 )

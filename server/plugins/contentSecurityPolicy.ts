@@ -26,6 +26,8 @@ export default defineNitroPlugin((nitroApp) => {
       ...islands,
       // A scene fetches its model from its media origin: that page, and only that origin (ADR 0004, amendment of #246)
       connectSources: [...islands.connectSources ?? [], ...sceneModelOrigins(document, mediaOrigins)],
+      // Only a draft page the CMS showed to a valid preview grant sets this (`usePreviewFrame`); every other page keeps 'none' (ADR 0019, section 5)
+      frameAncestors: event.context.previewFrameAncestors as string | undefined,
     }))
   })
 })

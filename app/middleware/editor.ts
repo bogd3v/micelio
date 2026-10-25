@@ -1,4 +1,16 @@
-export default defineNuxtRouteMiddleware(async () => {
+import { PREVIEW_COOKIE } from '~/constants/preview'
+
+/**
+ * Opens a page to an editor, and answers 404 to anyone else.
+ *
+ * @remarks
+ * A page that sets `previewGrant` in its meta also opens for a request that carries a preview grant (ADR 0019, section 3). The grant cookie is `HttpOnly`, so only the server sees it and the answer travels in the payload to the client's own run of the middleware. The grant is not checked here: the draft's API route asks the CMS, and a refusal is the same 404 as a missing session. It lives in this middleware, not in one of its own, so the head of every public page keeps the same prefetch links.
+ */
+export default defineNuxtRouteMiddleware(async (to) => {
+  if (to.meta.previewGrant) {
+    const hasGrant = useState<boolean>('preview-grant', () => import.meta.server && Boolean(useRequestHeaders(['cookie']).cookie?.includes(`${PREVIEW_COOKIE}=`)))
+    if (hasGrant.value) return
+  }
   const { ensure, isEditor } = useAuth()
   await ensure()
   if (isEditor.value) return

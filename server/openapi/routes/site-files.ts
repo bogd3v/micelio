@@ -9,8 +9,27 @@ const CATEGORY_FEED_PARAMETER = {
   schema: { type: 'string', pattern: '^[a-z-]+\\.xml$' },
 } as const
 
+/** The preview entry point, which opens the admin's iframe on a draft (ADR 0019). */
+const PREVIEW_ROUTES: RouteEntry[] = [
+  {
+    file: 'server/routes/_preview.get.ts',
+    method: 'get',
+    path: '/_preview',
+    summary: 'Open a draft in the admin\'s iframe with a preview token',
+    description: 'The CMS gives the admin page a one-use token (`docs/operate/preview.md`); the frame opens this route with it. The frontend exchanges the token for a grant, keeps the grant in the `__Host-micelio_preview` cookie (`HttpOnly`, `Secure`, `SameSite=None`, `Partitioned`) and redirects to the draft route without the token. A token that is used, expired, altered or of another site, a grant for another admin origin, and a site with `NUXT_PREVIEW_ADMIN_ORIGIN` unset all answer the same 404 page. Answers `private, no-store`.',
+    tag: 'Drafts',
+    parameters: [
+      { name: 'token', in: 'query', description: 'The preview token.', schema: { type: 'string' }, required: true },
+      { name: 'mode', in: 'query', description: 'The mode of the draft route: `dynamic` (default) or `static`, which leaves every island on its static alternative.', schema: { type: 'string', enum: ['dynamic', 'static'] } },
+    ],
+    response: { status: 303, description: 'The draft route of the document the grant names, without the token.' },
+    errors: ['notFound', 'tooManyRequests', 'upstreamUnavailable'],
+  },
+]
+
 /** Operations outside `/api`: the RSS feeds, the sitemap, `robots.txt`, `security.txt` and WebFinger. They answer text or a JRD, not problem details. */
 export const SITE_FILE_ROUTES: RouteEntry[] = [
+  ...PREVIEW_ROUTES,
   {
     file: 'server/routes/feed.xml.ts',
     method: 'get',

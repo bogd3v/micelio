@@ -99,6 +99,8 @@ export default defineNuxtConfig({
     newsletterFrom: '',
     // Site-specific values come from NUXT_* variables (docs/operate/configure.md); empty defaults keep the core neutral
     mediaUrl: '',
+    // The origin of the admin that may frame a draft (ADR 0019); empty turns the preview off. Server only, so no page carries it
+    previewAdminOrigin: '',
     umamiUrl: '',
     umamiCollectPath: '/api/bd',
     siteCacheSeconds: 60,
@@ -144,6 +146,7 @@ export default defineNuxtConfig({
     '/es/confirm': { headers: tokenPageHeaders },
     '/newsletter/unsubscribe': { headers: tokenPageHeaders },
     '/es/newsletter/unsubscribe': { headers: tokenPageHeaders },
+    '/_preview': { headers: tokenPageHeaders },
     '/_theme': { headers: privatePageHeaders },
     '/es/_theme': { headers: privatePageHeaders },
     '/api/auth/**': { headers: { 'cache-control': 'private, no-store' } },

@@ -56,6 +56,31 @@ describe('contentSecurityPolicy formOrigins', () => {
   })
 })
 
+describe('contentSecurityPolicy frameAncestors', () => {
+  const base = { scriptHashes: ['abc'], imageOrigins: ['https://media.example.com'] }
+  const ancestors = (options: Partial<Parameters<typeof contentSecurityPolicy>[0]> = {}): string | undefined =>
+    contentSecurityPolicy({ ...base, ...options }).split('; ').find(directive => directive.startsWith('frame-ancestors'))
+
+  it('keeps today\'s policy byte for byte without the option, or with one that names nothing', () => {
+    const today = 'default-src \'self\'; script-src \'self\' \'sha256-abc\'; style-src \'self\' \'unsafe-inline\'; img-src \'self\' data: blob: https://media.example.com; media-src \'self\' https://media.example.com; font-src \'self\'; connect-src \'self\'; frame-src https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://youtube-nocookie.com https://player.vimeo.com https://vimeo.com; frame-ancestors \'none\'; base-uri \'none\'; form-action \'self\'; object-src \'none\''
+    expect(contentSecurityPolicy(base)).toBe(today)
+    for (const frameAncestors of [undefined, '', 'nope', 'https://*.example.com', 'ftp://cms.example.com', 'https://a;b.com']) {
+      expect(contentSecurityPolicy({ ...base, frameAncestors }), String(frameAncestors)).toBe(today)
+    }
+  })
+
+  it('names the one origin in place of \'none\', and changes nothing else', () => {
+    expect(ancestors({ frameAncestors: 'https://cms.example.com' })).toBe('frame-ancestors https://cms.example.com')
+    expect(ancestors({ frameAncestors: 'http://localhost:1337/admin' })).toBe('frame-ancestors http://localhost:1337')
+    const framed = contentSecurityPolicy({ ...base, frameAncestors: 'https://cms.example.com' })
+    expect(framed.replace('frame-ancestors https://cms.example.com', 'frame-ancestors \'none\'')).toBe(contentSecurityPolicy(base))
+  })
+
+  it('leaves frame-ancestors out of a meta policy, which cannot carry it', () => {
+    expect(ancestors({ meta: true, frameAncestors: 'https://cms.example.com' })).toBeUndefined()
+  })
+})
+
 describe('contentSecurityPolicy', () => {
   const policy = contentSecurityPolicy({
     scriptHashes: ['abc=', 'abc=', 'def='],

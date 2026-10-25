@@ -1,3 +1,5 @@
+import { pageFixtures } from './pages.mjs'
+
 const draftAuthor = { id: 31, documentId: 'author-1', name: 'Alejandro Ramirez', avatar: null }
 
 export const draftArticles = [
@@ -42,6 +44,17 @@ export const draftArticles = [
     localizations: [],
   },
 ]
+
+/** The page draft the preview and the editor's page route show: the English showcase page, edited. It has a scene, which is a heavy island. */
+export const draftPage = {
+  ...pageFixtures[0],
+  id: 801,
+  documentId: 'doc-page-draft',
+  title: 'Field Notes, draft',
+  slug: 'field-notes-draft',
+  updatedAt: '2026-10-24T09:30:00.000Z',
+  publishedAt: null,
+}
 
 function strapiError(status, name, message) {
   return { status, body: { data: null, error: { status, name, message, details: {} } } }
@@ -93,6 +106,14 @@ export function createDraftsMock({ userFromAuth, publishedArticles }) {
       }
       const published = publishedVersion(documentId, locale)
       return published ? { status: 200, body: { data: published, meta: {} } } : strapiError(404, 'NotFoundError', 'Not Found')
+    }
+
+    const page = pathname.match(/^\/api\/pages\/([^/]+)$/)
+    if (page && query.status === 'draft') {
+      if (!isEditor(headers)) return strapiError(403, 'ForbiddenError', 'Forbidden')
+      return decodeURIComponent(page[1]) === draftPage.documentId && (query.locale || 'en') === draftPage.locale
+        ? { status: 200, body: { data: draftPage, meta: {} } }
+        : strapiError(404, 'NotFoundError', 'Not Found')
     }
 
     if (pathname === '/api/articles' && query.status !== undefined && query.status !== 'published' && !isEditor(headers)) {

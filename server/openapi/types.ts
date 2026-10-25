@@ -21,9 +21,9 @@ export interface ParameterSpec {
   required?: boolean
 }
 
-/** The successful answer of a route. */
+/** The successful answer of a route. A `303` has no body: it carries `Location` and, for `/_preview`, the grant cookie. */
 export interface SuccessResponse {
-  status: 200 | 201
+  status: 200 | 201 | 303
   /** The media type of the body; JSON when absent. */
   contentType?: 'application/json' | 'application/jrd+json' | 'application/xml' | 'application/rss+xml' | 'text/plain' | 'application/octet-stream'
   /**
