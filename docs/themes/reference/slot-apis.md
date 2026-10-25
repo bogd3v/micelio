@@ -567,8 +567,10 @@ A draft for the preview page, with its published version when it has one.
 ```ts
 export interface DraftArticleResponse {
   article: RawStrapiArticle
-  /** Null when the article has no published version. */
+  /** Null when the article has no published version, and always null when the request came with a preview grant. */
   published: PublishedVersion | null
+  /** Present when the request came with a preview grant, which is what lets the admin frame the draft. */
+  preview?: DraftPreview
 }
 ```
 
@@ -927,6 +929,23 @@ export interface Page {
 | Name | Kind | Summary |
 | --- | --- | --- |
 | `PostTransitionNames` | interface | Names a post's media and title take in a view transition (ADR 0005, section 10). |
+
+### `~/interfaces/preview`
+
+| Name | Kind | Summary |
+| --- | --- | --- |
+| `DraftPreview` | interface | What a draft answer carries when the request came with a preview grant (ADR 0019). |
+
+#### `DraftPreview`
+
+What a draft answer carries when the request came with a preview grant (ADR 0019).
+
+```ts
+export interface DraftPreview {
+  /** The origin of the admin page that frames the draft: the only origin the frame talks to. */
+  adminOrigin: string
+}
+```
 
 ### `~/interfaces/site`
 

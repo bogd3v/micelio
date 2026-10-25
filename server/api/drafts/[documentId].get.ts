@@ -17,13 +17,24 @@ async function fetchPublishedVersion(event: H3Event, jwt: string, path: string, 
   }
 }
 
+function draftArticle(raw: RawStrapiArticle, locale: Locale | undefined): RawStrapiArticle {
+  return publicArticle({ ...raw, blocks: renderArticleBlocks(raw.blocks, raw.references, markdownRenderer(locale)) })
+}
+
 export default defineEventHandler(async (event): Promise<DraftArticleResponse> => {
   preventCaching(event)
-  const jwt = editorSession(event)
   const documentId = getRouterParam(event, 'documentId')
   if (!documentId) throw draftNotFound()
-
   const locale = draftLocale(event)
+
+  // A grant (the admin's iframe, ADR 0019) shows the one document it names; the published version is the editor's to compare, so there is none
+  const grant = previewAdminOrigin() ? previewGrantOf(event) : null
+  if (grant) {
+    const raw = await fetchPreviewDraft<RawStrapiArticle>(event, grant, documentId, { populate: ARTICLE_POPULATE })
+    return { article: draftArticle(raw, locale), published: null, preview: draftPreview() }
+  }
+
+  const jwt = editorSession(event)
   const path = `/api/articles/${encodeURIComponent(documentId)}`
   const query = qs.stringify({ status: 'draft', locale, populate: ARTICLE_POPULATE }, { skipNulls: true })
 
@@ -33,6 +44,5 @@ export default defineEventHandler(async (event): Promise<DraftArticleResponse> =
   ])
   if (!draft.data) throw draftNotFound()
 
-  const article = publicArticle({ ...draft.data, blocks: renderArticleBlocks(draft.data.blocks, draft.data.references, markdownRenderer(locale)) })
-  return { article, published }
+  return { article: draftArticle(draft.data, locale), published }
 })

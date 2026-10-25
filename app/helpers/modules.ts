@@ -7,7 +7,7 @@ const MODULE_PATHS: Readonly<Record<SiteModule, readonly string[]>> = {
   newsletter: ['/api/newsletter', '/confirm', '/newsletter'],
   comments: ['/api/comments'],
   accounts: ['/api/auth', '/account'],
-  drafts: ['/api/drafts', '/drafts'],
+  drafts: ['/api/drafts', '/drafts', '/_preview'],
   fediverse: ['/api/fediverse'],
   search: ['/api/search'],
   support: [],

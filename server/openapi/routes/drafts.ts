@@ -1,4 +1,4 @@
-import { draftListResponseSchema } from '~/schemas/drafts'
+import { draftListResponseSchema, draftPageResponseSchema } from '~/schemas/drafts'
 import { draftArticleResponseSchema } from '~/schemas/posts'
 import type { ParameterSpec, RouteEntry } from '../types'
 
@@ -23,14 +23,29 @@ export const DRAFT_ROUTES: RouteEntry[] = [
     method: 'get',
     path: '/api/drafts/{documentId}',
     summary: 'Get a draft and its published version',
-    description: 'Editors only; anyone else gets `notFound`. Answers `private, no-store`.',
+    description: 'Editors only, with their own session, or the admin\'s iframe with a preview grant cookie (ADR 0019), which shows only the document the grant names. Anyone else gets `notFound`. Answers `private, no-store`.',
     tag: 'Drafts',
     session: 'required',
     parameters: [
       { name: 'documentId', in: 'path', description: 'The article document id.' },
       LOCALE_PARAMETER,
     ],
-    response: { status: 200, schema: draftArticleResponseSchema, description: 'The draft and, when there is one, its published version.' },
+    response: { status: 200, schema: draftArticleResponseSchema, description: 'The draft and, when there is one, its published version. With a preview grant there is no published version and `preview` carries the admin origin.' },
+    errors: ['notFound', 'upstreamUnavailable'],
+  },
+  {
+    file: 'server/api/drafts/pages/[documentId].get.ts',
+    method: 'get',
+    path: '/api/drafts/pages/{documentId}',
+    summary: 'Get the draft of a page',
+    description: 'Editors only, with their own session, or the admin\'s iframe with a preview grant cookie (ADR 0019), which shows only the document the grant names. Anyone else gets `notFound`. Answers `private, no-store`.',
+    tag: 'Drafts',
+    session: 'required',
+    parameters: [
+      { name: 'documentId', in: 'path', description: 'The page document id.' },
+      LOCALE_PARAMETER,
+    ],
+    response: { status: 200, schema: draftPageResponseSchema, description: 'The draft page. With a preview grant `preview` carries the admin origin.' },
     errors: ['notFound', 'upstreamUnavailable'],
   },
 ]

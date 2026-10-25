@@ -1,3 +1,5 @@
+import type { Page } from './page'
+import type { DraftPreview } from './preview'
 import type { RawStrapiArticle } from './strapi-post'
 
 /**
@@ -68,6 +70,17 @@ export interface PublishedVersion {
  */
 export interface DraftArticleResponse {
   article: RawStrapiArticle
-  /** Null when the article has no published version. */
+  /** Null when the article has no published version, and always null when the request came with a preview grant. */
   published: PublishedVersion | null
+  /** Present when the request came with a preview grant, which is what lets the admin frame the draft. */
+  preview?: DraftPreview
+}
+
+/** A page draft for the preview page. */
+export interface DraftPageResponse {
+  page: Page
+  /** The `updatedAt` of the draft, which names the version the preview frame shows; null when the CMS sent none. */
+  updatedAt: string | null
+  /** Present when the request came with a preview grant, which is what lets the admin frame the draft. */
+  preview?: DraftPreview
 }

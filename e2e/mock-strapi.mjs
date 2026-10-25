@@ -4,6 +4,7 @@ import qs from 'qs'
 import { aboutBlocks } from './fixtures/about.mjs'
 import { createAuthMock } from './fixtures/auth.mjs'
 import { createDraftsMock } from './fixtures/drafts.mjs'
+import { createPreviewMock } from './fixtures/preview.mjs'
 import { noisePng, texturedGlb, triangleGlb } from './fixtures/glb.mjs'
 import { findPages } from './fixtures/pages.mjs'
 
@@ -470,6 +471,8 @@ function sendPng(res) {
 
 const authMock = createAuthMock({ frontendUrl: process.env.MOCK_FRONTEND_URL || 'http://127.0.0.1:3210' })
 const draftsMock = createDraftsMock({ userFromAuth: authMock.userFromAuth, publishedArticles: articles })
+// The preview routes of the plugin, and a test-only route that makes a token (e2e/preview); off unless MOCK_PREVIEW=1
+const previewMock = process.env.MOCK_PREVIEW === '1' ? createPreviewMock({ apiToken: 'e2e-api-token' }) : null
 
 const server = createServer(async (req, res) => {
   const method = req.method || 'GET'
@@ -486,6 +489,18 @@ const server = createServer(async (req, res) => {
       sendJson(res, auth.status, auth.body)
     }
     return
+  }
+
+  if (previewMock) {
+    if (method === 'POST' && url.pathname === '/__mock/preview-token') {
+      sendJson(res, 200, { token: previewMock.issue(body) })
+      return
+    }
+    const previewed = previewMock.handle(method, url.pathname, query, req.headers, body)
+    if (previewed) {
+      sendJson(res, previewed.status, previewed.body)
+      return
+    }
   }
 
   const drafts = draftsMock.handle(method, url.pathname, query, req.headers)

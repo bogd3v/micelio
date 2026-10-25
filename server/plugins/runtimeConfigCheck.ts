@@ -1,5 +1,6 @@
 import { buildSiteMode } from '#micelio/build-site-mode'
 import { isStaticMode } from '~/helpers/siteMode'
+import { cspOrigin } from '~/helpers/securityHeaders'
 import { Locale } from '~/interfaces/locale'
 import { forwardHeaders, isSafeForwardTarget, parseTrustProxy } from '../lib/clientIp'
 import { insecureUpstream } from '../lib/upstreams'
@@ -11,6 +12,8 @@ export default defineNitroPlugin(() => {
   if (mismatch) throw new Error(mismatch)
   // Invalid proxy settings stop the boot instead of failing on the first visitor
   parseTrustProxy(config.trustProxy)
+  const adminOrigin = String(config.previewAdminOrigin ?? '')
+  if (adminOrigin && !cspOrigin(adminOrigin)) logWarn('config.preview-origin', 'NUXT_PREVIEW_ADMIN_ORIGIN is not an http or https origin, so the preview is off. Use an origin such as https://cms.example.com.')
   const secret = strapiForwarderSecret()
   forwardHeaders(secret, '127.0.0.1')
   if (secret && !isSafeForwardTarget(config.public.strapiUrl)) {

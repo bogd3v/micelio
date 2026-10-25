@@ -162,7 +162,7 @@ describe('OpenAPI document', () => {
 
   it('requires the session cookie only where a session is needed', () => {
     const secured = operations().filter(([, , operation]) => operation.security).map(([method, path]) => `${method} ${path}`).sort()
-    expect(secured).toEqual(['delete /api/auth/me', 'get /api/auth/me', 'get /api/drafts', 'get /api/drafts/{documentId}', 'post /api/auth/change-password'])
+    expect(secured).toEqual(['delete /api/auth/me', 'get /api/auth/me', 'get /api/drafts', 'get /api/drafts/pages/{documentId}', 'get /api/drafts/{documentId}', 'post /api/auth/change-password'])
     const scheme = (built.components as { securitySchemes: { sessionCookie: { in: string, name: string } } }).securitySchemes.sessionCookie
     expect(scheme).toMatchObject({ in: 'cookie', name: '__Host-micelio_session' })
   })

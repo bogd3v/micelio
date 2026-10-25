@@ -16,7 +16,7 @@ import { confirmationToken, resetCode, testUsers } from '../../e2e/fixtures/auth
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
 import { aboutSchema } from '~/schemas/blocks'
 import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/schemas/comments'
-import { draftListResponseSchema } from '~/schemas/drafts'
+import { draftListResponseSchema, draftPageResponseSchema } from '~/schemas/drafts'
 import { pageSchema } from '~/schemas/pages'
 import { siteSchema } from '~/schemas/site'
 import { articlePageSchema, articleSchema, categoryCountSchema, draftArticleResponseSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
@@ -38,6 +38,8 @@ process.env.NUXT_SMTP_USER = 'test'
 process.env.NUXT_SMTP_PASS = 'test'
 process.env.NUXT_NEWSLETTER_FROM = 'BogDev <no-reply@bogdev.test>'
 process.env.NUXT_STRAPI_API_TOKEN = 'test-api-token'
+const ADMIN_ORIGIN = 'https://cms.bogdev.test'
+process.env.NUXT_PREVIEW_ADMIN_ORIGIN = ADMIN_ORIGIN
 const FORWARDER_SECRET = 'forwarder-secret-0123456789-abcdefghij'
 process.env.NUXT_STRAPI_FORWARDER_SECRET = FORWARDER_SECRET
 process.env.NUXT_PUBLIC_SITE_URL = SITE_URL
@@ -69,6 +71,8 @@ beforeEach(() => {
   mock.failures.webfinger = ''
   mock.webfingerHeaders.value = null
   mock.theme.value = null
+  mock.preview.calls.length = 0
+  mock.preview.state.permission = true
   mock.homePage.value = null
   mock.securityContact.value = null
   mock.fediverseUsername.value = null
@@ -2486,6 +2490,225 @@ describe('/api/drafts', () => {
     const articleRequests = mock.requests.filter(request => request.path.startsWith('/api/articles'))
     expect(articleRequests.length).toBeGreaterThan(0)
     expect(articleRequests.every(request => request.query.status === undefined || request.query.status === 'published')).toBe(true)
+  })
+})
+
+describe('the preview of the admin (ADR 0019)', () => {
+  const FRAME_ANCESTORS_NONE = 'frame-ancestors \'none\''
+  const noRedirect = { redirect: 'manual' } as const
+
+  /** Opens `/_preview` with a fresh token and returns the response and the grant cookie it sets. */
+  async function openPreview(binding: Parameters<typeof mock.preview.issue>[0], suffix = ''): Promise<{ response: Response, cookie: string }> {
+    const token = mock.preview.issue(binding)
+    const response = await fetch(`/_preview?token=${token}${suffix}`, noRedirect)
+    const cookie = response.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_preview='))?.split(';')[0] ?? ''
+    return { response, cookie }
+  }
+
+  it('sets the grant cookie and redirects to the draft route without the token', async () => {
+    const token = mock.preview.issue({ documentId: 'doc-linux', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    const response = await fetch(`/_preview?token=${token}`, noRedirect)
+    expect(response.status).toBe(303)
+    expect(response.headers.get('location')).toBe('/drafts/doc-linux?locale=en')
+    expect(response.headers.get('location')).not.toContain(token)
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow')
+    expect(response.headers.get('referrer-policy')).toBe('no-referrer')
+    const cookie = response.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_preview='))!
+    expect(cookie).toMatch(/; Path=\/(;|$)/)
+    expect(cookie).not.toMatch(/Domain=/i)
+    for (const attribute of ['HttpOnly', 'Secure', 'SameSite=None', 'Partitioned']) expect(cookie, attribute).toContain(attribute)
+    expect(Number(/Max-Age=(\d+)/i.exec(cookie)?.[1])).toBeGreaterThan(800)
+    expect(Number(/Max-Age=(\d+)/i.exec(cookie)?.[1])).toBeLessThanOrEqual(900)
+    expect(cookie).not.toContain(token)
+    // The frontend's own API token, and nothing else, exchanged the token
+    expect(mock.preview.calls).toMatchObject([{ kind: 'exchange', authorization: 'Bearer test-api-token', token }])
+  })
+
+  it('redirects a page to the page draft route, in Spanish with its prefix, and keeps the mode', async () => {
+    expect((await openPreview({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', adminOrigin: ADMIN_ORIGIN })).response.headers.get('location')).toBe('/drafts/pages/doc-page-draft?locale=en')
+    expect((await openPreview({ documentId: 'doc-draft-pihole', locale: 'es', adminOrigin: ADMIN_ORIGIN })).response.headers.get('location')).toBe('/es/drafts/doc-draft-pihole?locale=es')
+    expect((await openPreview({ documentId: 'doc-linux', locale: 'en', adminOrigin: ADMIN_ORIGIN }, '&mode=static')).response.headers.get('location')).toBe('/drafts/doc-linux?locale=en&mode=static')
+  })
+
+  it('answers the same 404 to a used, unknown, altered, missing or repeated token, never a 403', async () => {
+    const token = mock.preview.issue({ documentId: 'doc-linux', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    expect((await fetch(`/_preview?token=${token}`, noRedirect)).status).toBe(303)
+    const attempts = [`token=${token}`, 'token=never-issued', `token=${token}x`, 'token=', '', `token=${token}&token=${token}`, `token=${'a'.repeat(300)}`]
+    for (const query of attempts) {
+      const response = await fetch(`/_preview?${query}`, noRedirect)
+      expect(response.status, query).toBe(404)
+      expect(response.headers.getSetCookie().filter(value => value.startsWith('__Host-micelio_preview='))).toEqual([])
+      expect(response.headers.get('cache-control')).toMatch(/^(no-cache|private, no-store)$/)
+    }
+  })
+
+  it('answers 404 to a grant for another admin origin or a content type it cannot show', async () => {
+    expect((await openPreview({ documentId: 'doc-linux', locale: 'en', adminOrigin: 'https://evil.test' })).response.status).toBe(404)
+    const token = mock.preview.issue({ documentId: 'doc-linux', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    mock.preview.state.permission = false
+    const refused = await fetch(`/_preview?token=${token}`, noRedirect)
+    expect(refused.status).toBe(404)
+  })
+
+  it('does not call the CMS for a request with no token', async () => {
+    expect((await fetch('/_preview', noRedirect)).status).toBe(404)
+    expect(mock.preview.calls).toEqual([])
+  })
+
+  it('shows the article draft to the grant and says who may frame it', async () => {
+    const { cookie } = await openPreview({ documentId: 'doc-linux', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    mock.preview.calls.length = 0
+    const response = await fetch('/api/drafts/doc-linux?locale=en', { headers: { cookie } })
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    const body = await response.json() as { article: { title: string }, published: unknown, preview: { adminOrigin: string } }
+    expect(draftArticleResponseSchema.safeParse(body).error?.issues ?? []).toEqual([])
+    expect(body).toMatchObject({ article: { title: 'Linux Server Hardening Guide, second edition' }, published: null, preview: { adminOrigin: ADMIN_ORIGIN } })
+    // The API token and the grant, from the cookie; the editor session and its JWT are not involved
+    expect(mock.preview.calls).toMatchObject([{ kind: 'draft', authorization: 'Bearer test-api-token', grant: cookie.split('=')[1] }])
+    expect(JSON.stringify(body)).not.toContain(cookie.split('=')[1]!)
+  })
+
+  it('shows the page draft to the grant, with the sections of the page', async () => {
+    const { cookie } = await openPreview({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    const response = await fetch('/api/drafts/pages/doc-page-draft?locale=en', { headers: { cookie } })
+    expect(response.status).toBe(200)
+    const body = await response.json() as { page: { title: string, sections: unknown[] }, updatedAt: string, preview: { adminOrigin: string } }
+    expect(draftPageResponseSchema.safeParse(body).error?.issues ?? []).toEqual([])
+    expect(body.page.title).toBe('Field Notes, draft')
+    expect(body.page.sections.length).toBeGreaterThan(1)
+    expect(body).toMatchObject({ updatedAt: '2026-10-24T09:30:00.000Z', preview: { adminOrigin: ADMIN_ORIGIN } })
+  })
+
+  it('shows the page draft to an editor session, with the editor JWT and no grant', async () => {
+    const login = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'origin': SITE_URL },
+      body: JSON.stringify({ identifier: testUsers.editor.username, password: testUsers.editor.password }),
+    })
+    const cookie = login.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_session='))!.split(';')[0]!
+    mock.requests.length = 0
+    mock.preview.calls.length = 0
+    const response = await fetch('/api/drafts/pages/doc-page-draft?locale=en', { headers: { cookie } })
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    const body = await response.json() as { page: { title: string }, updatedAt: string, preview?: unknown }
+    expect(draftPageResponseSchema.safeParse(body).error?.issues ?? []).toEqual([])
+    expect(body.page.title).toBe('Field Notes, draft')
+    expect(body.preview).toBeUndefined()
+    const draftRequest = mock.requests.find(request => request.path === '/api/pages/doc-page-draft')
+    expect(draftRequest).toMatchObject({ authorization: 'Bearer mock-jwt-102' })
+    expect(draftRequest?.query.status).toBe('draft')
+    expect(mock.preview.calls).toEqual([])
+    expect((await fetch('/api/drafts/pages/doc-nope?locale=en', { headers: { cookie } })).status).toBe(404)
+  })
+
+  it('answers 404 to a reader asking for a page draft', async () => {
+    const login = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'origin': SITE_URL },
+      body: JSON.stringify({ identifier: testUsers.reader.username, password: testUsers.reader.password }),
+    })
+    const cookie = login.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_session='))!.split(';')[0]!
+    expect((await fetch('/api/drafts/pages/doc-page-draft?locale=en', { headers: { cookie } })).status).toBe(404)
+  })
+
+  it('rate limits the token exchange by address bucket, so an IPv6 /64 cannot rotate past it', async () => {
+    const from = (address: string) => fetch('/_preview?token=never-issued', { ...noRedirect, headers: { 'x-forwarded-for': address } })
+    for (let i = 0; i < 30; i++) expect((await from(`2001:db8:99:1::${i + 1}`)).status).toBe(404)
+    const sameNetwork = await from('2001:db8:99:1:ffff::1')
+    expect(sameNetwork.status).toBe(429)
+    expect(sameNetwork.headers.get('retry-after')).toBeTruthy()
+    expect((await from('2001:db8:99:2::1')).status).toBe(404)
+  })
+
+  it('answers the same 404 to a grant for another document, an ended grant and a made up one, and 404 to a page draft without a session', async () => {
+    const { cookie } = await openPreview({ documentId: 'doc-linux', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    expect((await fetch('/api/drafts/doc-draft-pihole?locale=es', { headers: { cookie } })).status).toBe(404)
+    expect((await fetch('/api/drafts/doc-linux?locale=en', { headers: { cookie: '__Host-micelio_preview=made-up-grant' } })).status).toBe(404)
+    mock.preview.expireGrants()
+    expect((await fetch('/api/drafts/doc-linux?locale=en', { headers: { cookie } })).status).toBe(404)
+    mock.requests.length = 0
+    expect((await fetch('/api/drafts/pages/doc-page-draft')).status).toBe(404)
+    expect(mock.requests).toEqual([])
+  })
+
+  it('does not take a grant for a session: the editor routes still need the editor', async () => {
+    const { cookie } = await openPreview({ documentId: 'doc-linux', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    for (const path of ['/api/drafts', '/api/drafts/doc-draft-pihole?locale=es']) {
+      expect((await fetch(path, { headers: { cookie } })).status, path).toBe(404)
+    }
+  })
+
+  it('frames the draft page for the admin origin and nothing else', async () => {
+    const { cookie } = await openPreview({ documentId: 'doc-linux', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    const framed = await fetch('/drafts/doc-linux?locale=en', { headers: { cookie } })
+    expect(framed.status).toBe(200)
+    expect(await framed.text()).toContain('Linux Server Hardening Guide, second edition')
+    const policy = framed.headers.get('content-security-policy') ?? ''
+    expect(policy).toContain(`frame-ancestors ${ADMIN_ORIGIN};`)
+    expect(policy).not.toContain(FRAME_ANCESTORS_NONE)
+    expect(framed.headers.get('x-frame-options')).toBeNull()
+    // The rest of the policy is a page's own
+    expect(policy).toContain('base-uri \'none\'')
+    expect(policy).toContain('object-src \'none\'')
+    expect(framed.headers.get('cache-control')).toBe('private, no-store')
+    expect(framed.headers.get('x-robots-tag')).toBe('noindex, nofollow')
+  })
+
+  it('frames the page draft the same way', async () => {
+    const { cookie } = await openPreview({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    const framed = await fetch('/drafts/pages/doc-page-draft?locale=en', { headers: { cookie } })
+    expect(framed.status).toBe(200)
+    expect(await framed.text()).toContain('Field Notes, draft')
+    expect(framed.headers.get('content-security-policy')).toContain(`frame-ancestors ${ADMIN_ORIGIN};`)
+    expect(framed.headers.get('x-frame-options')).toBeNull()
+  })
+
+  it('keeps \'none\' and DENY on the draft route without a grant, with a refused grant and on its errors', async () => {
+    const { cookie } = await openPreview({ documentId: 'doc-linux', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    const responses = [
+      await fetch('/drafts/doc-linux?locale=en'),
+      await fetch('/drafts/doc-linux?locale=en', { headers: { cookie: '__Host-micelio_preview=made-up-grant' } }),
+      await fetch('/drafts/doc-draft-pihole?locale=es', { headers: { cookie } }),
+      await fetch('/drafts/pages/doc-page-draft', { headers: { cookie } }),
+      await fetch('/_preview?token=never-issued'),
+      await fetch('/_preview'),
+    ]
+    for (const response of responses) {
+      expect(response.status).toBe(404)
+      expect(response.headers.get('content-security-policy') ?? '').toContain(FRAME_ANCESTORS_NONE)
+      expect(response.headers.get('content-security-policy') ?? '').not.toContain(ADMIN_ORIGIN)
+      expect(response.headers.get('x-frame-options')).toBe('DENY')
+    }
+  })
+
+  it('leaves every public page byte for byte as it was: \'none\' and DENY, no preview code, no admin origin', async () => {
+    for (const path of ['/', '/blog', '/es/blog', '/about', '/privacy', '/showcase', '/blog/linux-server-hardening-guide']) {
+      const response = await fetch(path)
+      const html = await response.text()
+      expect(response.headers.get('content-security-policy') ?? '', path).toContain(FRAME_ANCESTORS_NONE)
+      expect(response.headers.get('x-frame-options'), path).toBe('DENY')
+      for (const trace of [ADMIN_ORIGIN, 'preview-grant', 'previewAdminOrigin', 'micelio_preview']) expect(html, `${path} ${trace}`).not.toContain(trace)
+    }
+    expect(mock.preview.calls).toEqual([])
+  })
+
+  it('keeps the preview routes out of the sitemap, the feeds and the robots file', async () => {
+    const output = (await Promise.all(['/sitemap.xml', '/feed.xml', '/robots.txt'].map(async path => (await fetch(path)).text()))).join('\n')
+    for (const trace of ['/_preview', 'doc-page-draft', 'field-notes-draft']) expect(output).not.toContain(trace)
+  })
+
+  it('leaves the islands on their static alternative in the static mode, and loads them in the dynamic one', async () => {
+    const { cookie } = await openPreview({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    const dynamic = await (await fetch('/drafts/pages/doc-page-draft?locale=en', { headers: { cookie } })).text()
+    const staticMode = await (await fetch('/drafts/pages/doc-page-draft?locale=en&mode=static', { headers: { cookie } })).text()
+    for (const html of [dynamic, staticMode]) expect(html).toContain('<micelio-scene')
+    expect(dynamic).toMatch(/<script[^>]*id="micelio-island-scene"/)
+    expect(dynamic).toMatch(/<script[^>]*src="[^"]*\/_islands\/[^"]*loader[^"]*"/)
+    expect(staticMode).not.toMatch(/<script[^>]*id="micelio-island-/)
+    expect(staticMode).not.toMatch(/<script[^>]*src="[^"]*\/_islands\//)
   })
 })
 

@@ -16,6 +16,8 @@ Work reaches `main` through the gates of [`docs/factory.md`](https://github.com/
 docker run --rm -v "$COPY":/app -w /app node:22.23-slim sh -c 'npm ci && npm run check'
 ```
 
+The suites that drive a browser (`test:e2e:*`, `test:theme`) need Playwright's browsers, which `node:22.23-slim` lacks. CI runs them in the image `scripts/ci/playwright-image.sh` resolves, which has Node 24 (the job installs Node 22 over it). For the same Node as `check`, build an image `FROM node:22.23-slim` that runs `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npx -y playwright@<the version of @playwright/test> install --with-deps chromium firefox webkit`, and in it run `npm ci && npm run build && E2E_BUILD=1 npm run test:e2e:<group>` over the same bind mount (`:z`); say in the pull request which image ran.
+
 ## Pre-1.0
 
 While the version is `0.y.z` Micelio is alpha and not stable (section 7 of the standard, "Before 1.0.0"). A breaking change raises `y` and needs no deprecation period and no ADR: only the `!` in the PR title, a `BREAKING CHANGE:` paragraph and upgrade notes. Add no compatibility layers nobody asked for; never call a release stable.
@@ -55,7 +57,7 @@ npm run test:integration  # Run API-route integration tests (test/integration/, 
 npm run test:contract     # Run the server routes against the demo image of micelio-cms with Postgres, which the script starts and removes (needs Docker and a build; docs/architecture/contract-tests.md)
 npm run test:static       # Generate a static site against the mock Strapi and run e2e/static/
 npm run test:landing      # Generate a landing (home page, no articles) against the mock Strapi and run e2e/landing/ (the default theme, then starter)
-npm run test:e2e          # Playwright e2e (e2e/; mock Strapi + dev server, or `.output` with `E2E_BUILD=1` after `npm run build`, as CI does, with `MICELIO_SPECIMEN=1 MICELIO_THEME_DIRS=test/fixtures/themes/alternates`). A spec that reads built CSS or the production CSP fails on the dev server. CI runs test:e2e:main, :site, :playground (per engine: `-- --project=chromium|firefox|webkit`) and :scene-ui as parallel jobs
+npm run test:e2e          # Playwright e2e (e2e/; mock Strapi + dev server, or `.output` with `E2E_BUILD=1` after `npm run build`, as CI does, with `MICELIO_SPECIMEN=1 MICELIO_THEME_DIRS=test/fixtures/themes/alternates`). A spec that reads built CSS or the production CSP fails on the dev server. CI runs test:e2e:main, :site, :playground (per engine: `-- --project=chromium|firefox|webkit`), :scene-ui and :preview (the admin's iframe on a second origin, against the build) as parallel jobs
 npm run test:theme        # Theme visual regression and axe (e2e/theme/, needs a build with MICELIO_SPECIMEN=1; docs/theme-testing.md)
 npm run test:theme:update # Same with --update-snapshots=changed (baselines are committed from the CI artifact, not made locally)
 npm run perf              # Performance budgets on a production build (run npm run build first; see docs/performance.md)

@@ -164,6 +164,7 @@ function successResponse(route: RouteEntry, components: Record<string, JsonSchem
   const typeNote = response.type && !response.schema ? ` Body: \`${response.type}\` (\`app/interfaces\`).` : ''
   const cacheNote = response.cache ? ` Cache-Control: \`${response.cache}\`.` : ''
   const description = `${response.description}${typeNote}${cacheNote}`
+  if (response.status === 303) return { description, headers: { Location: { description: 'Where to go next.', schema: { type: 'string' } } } }
   const schema: JsonSchema = response.schema ? responseSchemaOf(response.schema, components) : contentType === JSON_MEDIA_TYPE ? { description: response.type ? `The TypeScript type ${response.type}.` : 'An object.' } : { type: 'string' }
   return { description, content: { [contentType]: { schema } } }
 }

@@ -1,4 +1,4 @@
-/** The `frame-ancestors` directive every response carries, so nothing can be embedded by default (ASVS V3.4.6). */
+/** The `frame-ancestors` directive every response carries, so nothing can be embedded by default (ASVS V3.4.6). A draft page shown to a preview grant replaces it with the admin origin (ADR 0019). */
 export const FRAME_ANCESTORS_NONE = 'frame-ancestors \'none\''
 
 /** Where a site publishes its security contact (RFC 9116). */

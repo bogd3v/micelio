@@ -94,6 +94,7 @@ jobs:
           - { name: playground-firefox, group: playground, project: firefox }
           - { name: playground-webkit, group: playground, project: webkit }
           - { name: scene-ui, group: scene-ui, project: '' }
+          - { name: preview, group: preview, project: '' }
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
