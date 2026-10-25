@@ -15,6 +15,7 @@ describe('moduleForPath', () => {
     expect(moduleForPath('/es/account/sign-in')).toBe('accounts')
     expect(moduleForPath('/api/auth/me')).toBe('accounts')
     expect(moduleForPath('/drafts/doc-1')).toBe('drafts')
+    expect(moduleForPath('/api/preview/api%3A%3Apage.page/doc-1/weight')).toBe('drafts')
     expect(moduleForPath('/api/fediverse/stats')).toBe('fediverse')
     expect(moduleForPath('/api/search')).toBe('search')
   })

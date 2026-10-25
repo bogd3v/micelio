@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { isIslandScript, parseLoadDraft, previewDraftPath, previewMode, readyMessage, secondsUntil } from '../app/helpers/preview'
+import { isIslandScript, parseLoadDraft, previewDraftPath, previewMode, readyMessage, secondsUntil, withoutIndex } from '../app/helpers/preview'
 import { satisfiesSchema } from '../app/helpers/jsonSchema'
 import type { JsonSchema } from '../app/helpers/jsonSchema'
 import previewSchema from '../app/preview/preview.schema.json'
@@ -21,6 +21,18 @@ describe('previewMode', () => {
   })
 })
 
+describe('withoutIndex', () => {
+  it('reads a plain number of up to three digits', () => {
+    expect(withoutIndex('0')).toBe(0)
+    expect(withoutIndex('7')).toBe(7)
+    expect(withoutIndex('999')).toBe(999)
+  })
+
+  it('is undefined for anything else, so a request cannot ask for a block it did not number', () => {
+    for (const value of ['', '-1', '1.5', '1e2', '1000', ' 1', '0x1', 'a', undefined, null, 3, ['1'], { 0: '1' }]) expect(withoutIndex(value)).toBeUndefined()
+  })
+})
+
 describe('isIslandScript', () => {
   it('holds for the declaration of a heavy island and the script of a light one', () => {
     expect(isIslandScript({ tag: 'script', props: { id: 'micelio-island-scene', type: 'application/json' } })).toBe(true)
@@ -34,6 +46,13 @@ describe('isIslandScript', () => {
     expect(isIslandScript({ tag: 'script', key: 'speculation-rules' })).toBe(false)
     expect(isIslandScript({ tag: 'link', props: { href: '/_islands/x.css', id: 'micelio-island-x' } })).toBe(false)
     expect(isIslandScript({})).toBe(false)
+  })
+})
+
+describe('previewDraftPath without a block', () => {
+  it('names the block to leave out, after the mode', () => {
+    expect(previewDraftPath('page', 'doc-1', 'en', 'static', 2)).toBe('/drafts/pages/doc-1?locale=en&mode=static&without=2')
+    expect(previewDraftPath('article', 'doc-1', 'es', 'dynamic', 0)).toBe('/es/drafts/doc-1?locale=es&without=0')
   })
 })
 

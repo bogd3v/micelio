@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { brotliDecompressSync, gunzipSync } from 'node:zlib'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { request as httpRequest } from 'node:http'
@@ -14,6 +15,7 @@ import { HASHED_TOKENS, startMockStrapi, WEBFINGER_JRD } from './mock-strapi'
 import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
 import { confirmationToken, resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
+import { draftPage } from '../../e2e/fixtures/drafts.mjs'
 import { aboutSchema } from '~/schemas/blocks'
 import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/schemas/comments'
 import { draftListResponseSchema, draftPageResponseSchema } from '~/schemas/drafts'
@@ -22,6 +24,9 @@ import { siteSchema } from '~/schemas/site'
 import { articlePageSchema, articleSchema, categoryCountSchema, draftArticleResponseSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
 import { contrastRatio, parseHex } from '~/helpers/color'
 import { inlineScripts } from '~/helpers/securityHeaders'
+import { declaredAssets, fontsOf, kb as weightKb } from '~/helpers/weight'
+import type { WeightReport } from '~/interfaces/preview'
+import { weightReportResponseSchema } from '~/schemas/preview'
 
 const SITE_URL = 'https://bogdev.test'
 
@@ -1505,6 +1510,18 @@ describe('site modules', () => {
     expect(mock.requests).toEqual([])
   })
 
+  it('answers 404 on the weight route when drafts are off, without a call to the CMS, whatever the grant', async () => {
+    const response = await fetch(`/_preview?token=${mock.preview.issue({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', adminOrigin: ADMIN_ORIGIN })}`, { redirect: 'manual', headers: { 'x-forwarded-for': '2001:db8:98::2' } })
+    const cookie = response.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_preview='))!.split(';')[0]!
+    mock.modules.drafts = false
+    mock.preview.calls.length = 0
+    mock.requests.length = 0
+    const weight = await fetch('/api/preview/api%3A%3Apage.page/doc-page-draft/weight?locale=en', { headers: { cookie, 'x-forwarded-for': '2001:db8:98::1' } })
+    expect(weight.status).toBe(404)
+    expect(mock.preview.calls).toEqual([])
+    expect(mock.requests).toEqual([])
+  })
+
   it('answers 404 on the pages of a module that is off, in both locales', async () => {
     mock.modules.accounts = false
     mock.modules.newsletter = false
@@ -2709,6 +2726,244 @@ describe('the preview of the admin (ADR 0019)', () => {
     expect(dynamic).toMatch(/<script[^>]*src="[^"]*\/_islands\/[^"]*loader[^"]*"/)
     expect(staticMode).not.toMatch(/<script[^>]*id="micelio-island-/)
     expect(staticMode).not.toMatch(/<script[^>]*src="[^"]*\/_islands\//)
+  })
+})
+
+describe('the weight of a draft (bogd3v/micelio#730)', () => {
+  const PAGE = 'api%3A%3Apage.page/doc-page-draft'
+  const ARTICLE = 'api::article.article/doc-linux'
+
+  /** Opens `/_preview` with a fresh token and returns the grant cookie. */
+  async function grantFor(binding: Omit<Parameters<typeof mock.preview.issue>[0], 'adminOrigin'>): Promise<string> {
+    const response = await fetch(`/_preview?token=${mock.preview.issue({ locale: 'en', ...binding, adminOrigin: ADMIN_ORIGIN })}`, { redirect: 'manual', headers: visitor() })
+    return response.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_preview='))!.split(';')[0]!
+  }
+
+  const pageGrant = () => grantFor({ kind: 'page', documentId: 'doc-page-draft' })
+
+  // Each call comes from an address of its own, so the rate limit of one test does not reach the next
+  let visitors = 0
+  const visitor = (): Record<string, string> => ({ 'x-forwarded-for': `2001:db8:97:${++visitors}::1` })
+
+  async function weigh(path: string, cookie: string, query = ''): Promise<{ response: Response, report?: WeightReport }> {
+    const response = await fetch(`/api/preview/${path}/weight${query}`, { headers: { cookie, ...visitor() } })
+    if (response.status !== 200) return { response }
+    const body = await response.json()
+    expect(weightReportResponseSchema.safeParse(body).error?.issues ?? []).toEqual([])
+    return { response, report: (body as { data: WeightReport }).data }
+  }
+
+  /** What `npm run perf` does for a page, over a real socket: the bytes as the server sends them with `Accept-Encoding: br, gzip`. */
+  async function sentOverHttp(url: string, cookie?: string): Promise<{ sent: number, text: string }> {
+    return new Promise((resolve, reject) => {
+      httpRequest(url, { headers: { 'accept-encoding': 'br, gzip', ...(cookie && { cookie }) } }, (res) => {
+        const chunks: Buffer[] = []
+        res.on('data', (chunk: Buffer) => chunks.push(chunk))
+        res.on('end', () => {
+          const raw = Buffer.concat(chunks)
+          const encoding = res.headers['content-encoding']
+          const body = encoding === 'br' ? brotliDecompressSync(raw) : encoding === 'gzip' ? gunzipSync(raw) : raw
+          resolve({ sent: raw.length, text: body.toString('utf8') })
+        })
+        res.on('error', reject)
+      }).on('error', reject).end()
+    })
+  }
+
+  it('measures the page draft in both modes, one entry per section, and keeps the on-demand script out of the total', async () => {
+    const cookie = await pageGrant()
+    const { response, report } = await weigh(PAGE, cookie, '?locale=en')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow')
+    expect(response.headers.get('referrer-policy')).toBe('no-referrer')
+    const sections = (await (await fetch('/api/drafts/pages/doc-page-draft?locale=en', { headers: { cookie } })).json() as { page: { sections: Array<{ __component: string }> } }).page.sections
+    expect(report!.mode).toBe('dynamic')
+    expect(report!.blocks.map(block => block.id)).toEqual(sections.map(section => section.__component.replace('section.', '')))
+    expect(report!.blocks.length).toBeGreaterThan(5)
+    for (const part of ['htmlKb', 'cssKb', 'jsKb', 'fontKb', 'imagesKb'] as const) expect(report![part], part).toBeGreaterThan(0)
+    // The sum of the parts is the total, within the rounding of five numbers to a tenth
+    expect(Math.abs(report!.totalKb - (report!.htmlKb + report!.cssKb + report!.jsKb + report!.fontKb + report!.imagesKb))).toBeLessThan(0.3)
+    // The scene is the one heavy island of the page: its script is on demand and belongs to its block alone
+    expect(report!.onDemandKb).toBeGreaterThan(100)
+    expect(report!.blocks.filter(block => block.onDemandKb > 0).map(block => block.id)).toEqual(['scene'])
+    expect(report!.blocks.find(block => block.id === 'scene')!.onDemandKb).toBeCloseTo(report!.onDemandKb, 1)
+    expect(report!.totalKb).toBeLessThan(report!.totalKb + report!.onDemandKb)
+    for (const block of report!.blocks) expect(block.kb, block.id).toBeGreaterThanOrEqual(0)
+    // At least the markup of each block is attributed to it
+    expect(report!.blocks.some(block => block.kb > 0)).toBe(true)
+
+    const staticMode = (await weigh(PAGE, cookie, '?locale=en&mode=static')).report!
+    expect(staticMode.mode).toBe('static')
+    expect(staticMode.onDemandKb).toBe(0)
+    expect(staticMode.blocks.map(block => block.id)).toEqual(report!.blocks.map(block => block.id))
+    // No island declaration and no loader: the static mode sends less script than the dynamic one
+    expect(staticMode.jsKb).toBeLessThan(report!.jsKb)
+  })
+
+  /** `measureWeight` of `scripts/perf/measure.mjs` for a URL: the columns `npm run perf` reports, in kilobytes, from the bytes as sent. */
+  async function measuredAsCi(url: string): Promise<Record<'htmlKb' | 'cssKb' | 'jsKb' | 'fontKb', number>> {
+    const page = await sentOverHttp(url)
+    const { scripts, stylesheets, fonts } = declaredAssets(page.text, url)
+    const total = async (urls: Iterable<string>) => (await Promise.all([...urls].map(asset => sentOverHttp(asset)))).reduce(
+      (sum, asset) => ({ sent: sum.sent + asset.sent, texts: [...sum.texts, asset.text] }),
+      { sent: 0, texts: [] as string[] },
+    )
+    const js = await total(scripts)
+    const css = await total(stylesheets)
+    ;[...stylesheets].forEach((cssUrl, index) => {
+      for (const font of fontsOf(css.texts[index]!, cssUrl)) fonts.add(font)
+    })
+    const font = await total(fonts)
+    return { htmlKb: weightKb(page.sent), cssKb: weightKb(css.sent), jsKb: weightKb(js.sent), fontKb: weightKb(font.sent) }
+  }
+
+  // The draft is an edit of the showcase page. Published as `/showcase` it is a page of the app; set as the home page it is `/`, a route of its own whose script differs
+  it.each([
+    ['a page published at its own path', '/showcase', null],
+    ['the page set as the home page', '/', { en: 'showcase' }],
+  ])('weighs %s as npm run perf measures it, within 2 % on every column', async (_, path, home) => {
+    const cookie = await pageGrant()
+    const saved = { slug: draftPage.slug, updatedAt: draftPage.updatedAt }
+    try {
+      draftPage.slug = 'showcase'
+      draftPage.updatedAt = `2026-10-25T12:0${path === '/' ? 1 : 0}:00.000Z`
+      mock.homePage.value = home
+      const { report } = await weigh(PAGE, cookie, '?locale=en')
+      const expected = await measuredAsCi(new URL(path, useTestContext().url!).href)
+      for (const name of ['htmlKb', 'cssKb', 'jsKb', 'fontKb'] as const) {
+        expect(Math.abs(report![name] - expected[name]) / expected[name], `${name}: ${report![name]} against ${expected[name]}`).toBeLessThan(0.02)
+      }
+    } finally {
+      Object.assign(draftPage, saved)
+      mock.homePage.value = null
+    }
+  })
+
+  it('measures the draft route alone when the page is not published at its path', async () => {
+    const cookie = await pageGrant()
+    expect((await fetch('/field-notes-draft')).status).toBe(404)
+    const { report } = await weigh(PAGE, cookie, '?locale=en')
+    const url = new URL('/drafts/pages/doc-page-draft?locale=en', useTestContext().url!).href
+    const page = await sentOverHttp(url, cookie)
+    expect(report!.htmlKb).toBe(weightKb(page.sent))
+    // The scripts the draft route declares and nothing of another route
+    const { scripts } = declaredAssets(page.text, url)
+    const sent = (await Promise.all([...scripts].map(script => sentOverHttp(script)))).reduce((sum, script) => sum + script.sent, 0)
+    expect(report!.jsKb).toBe(weightKb(sent))
+  })
+
+  it('measures an article draft too, and a bare unencoded content type', async () => {
+    const cookie = await grantFor({ documentId: 'doc-linux' })
+    const { report } = await weigh(ARTICLE, cookie)
+    expect(report!.blocks.map(block => block.id)).toEqual(['rich-text'])
+    expect(report!.totalKb).toBeGreaterThan(0)
+  })
+
+  it('leaves out the block it is asked to, only for a grant', async () => {
+    const cookie = await pageGrant()
+    const count = async (query: string, headers: Record<string, string>) => ((await (await fetch(`/api/drafts/pages/doc-page-draft${query}`, { headers })).json()) as { page: { sections: unknown[] } }).page.sections.length
+    const all = await count('?locale=en', { cookie })
+    expect(await count('?locale=en&without=0', { cookie })).toBe(all - 1)
+    expect(await count(`?locale=en&without=${all - 1}`, { cookie })).toBe(all - 1)
+    // A position past the zone, or not a number, leaves everything in
+    for (const without of ['999', '-1', 'x', '']) expect(await count(`?locale=en&without=${without}`, { cookie }), without).toBe(all)
+    const login = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'origin': SITE_URL },
+      body: JSON.stringify({ identifier: testUsers.editor.username, password: testUsers.editor.password }),
+    })
+    const session = login.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_session='))!.split(';')[0]!
+    expect(await count('?locale=en&without=0', { cookie: session })).toBe(all)
+  })
+
+  it('keeps a report 5 minutes per version of the draft and measures again once the draft is saved', async () => {
+    const cookie = await pageGrant()
+    mock.preview.calls.length = 0
+    const first = (await weigh(PAGE, cookie, '?locale=es')).report!
+    const rendered = mock.preview.calls.filter(call => call.kind === 'draft').length
+    // The draft is read once for its version, once for the whole page and once for each block left out
+    expect(rendered).toBe(2 + first.blocks.length)
+    mock.preview.calls.length = 0
+    expect((await weigh(PAGE, cookie, '?locale=es')).report).toEqual(first)
+    expect(mock.preview.calls.filter(call => call.kind === 'draft')).toHaveLength(1)
+    const saved = draftPage.updatedAt
+    try {
+      draftPage.updatedAt = '2026-10-25T10:00:00.000Z'
+      mock.preview.calls.length = 0
+      await weigh(PAGE, cookie, '?locale=es')
+      expect(mock.preview.calls.filter(call => call.kind === 'draft')).toHaveLength(rendered)
+    } finally {
+      draftPage.updatedAt = saved
+    }
+  })
+
+  it('shares a report in progress between the requests that ask for it', async () => {
+    const cookie = await pageGrant()
+    const saved = draftPage.updatedAt
+    try {
+      draftPage.updatedAt = '2026-10-25T11:00:00.000Z'
+      mock.preview.calls.length = 0
+      const [first, second] = await Promise.all([weigh(PAGE, cookie, '?locale=en'), weigh(PAGE, cookie, '?locale=en')])
+      expect(second.report).toEqual(first.report)
+      // Two reads for the version, one render of the page and one per block: the second request rendered nothing
+      expect(mock.preview.calls.filter(call => call.kind === 'draft')).toHaveLength(2 + 1 + first.report!.blocks.length)
+    } finally {
+      draftPage.updatedAt = saved
+    }
+  })
+
+  it('answers within 3 seconds for a page of ten blocks', async () => {
+    const cookie = await pageGrant()
+    // A locale and mode no test above asked for, so nothing is cached
+    const started = performance.now()
+    const { report } = await weigh(PAGE, cookie, '?locale=es&mode=static')
+    const seconds = (performance.now() - started) / 1000
+    expect(report!.blocks.length).toBeGreaterThanOrEqual(10)
+    expect(seconds).toBeLessThan(3)
+  })
+
+  it('answers the same 404 without a grant, for another content type or a document id outside the alphabet, and never calls the CMS to find out', async () => {
+    const cookie = await pageGrant()
+    mock.requests.length = 0
+    mock.preview.calls.length = 0
+    for (const path of [PAGE, 'api::tag.tag/doc-page-draft', 'toString/doc-page-draft', 'api%3A%3Apage.page/a%20b']) {
+      expect((await fetch(`/api/preview/${path}/weight`, { headers: visitor() })).status, path).toBe(404)
+    }
+    // With a grant, the content type and the document id are still checked before the CMS is asked
+    for (const path of ['api::tag.tag/doc-page-draft', 'toString/doc-page-draft', 'api%3A%3Apage.page/a%20b']) {
+      expect((await fetch(`/api/preview/${path}/weight`, { headers: { cookie, ...visitor() } })).status, path).toBe(404)
+    }
+    expect(mock.requests.filter(request => request.path.startsWith('/api/micelio/'))).toEqual([])
+    expect(mock.preview.calls).toEqual([])
+  })
+
+  it('answers the same 404 to a made up grant, a grant for another document and an ended grant, after the CMS refused it', async () => {
+    const cookie = await pageGrant()
+    expect((await fetch(`/api/preview/${PAGE}/weight`, { headers: { cookie: '__Host-micelio_preview=made-up-grant', ...visitor() } })).status).toBe(404)
+    expect((await fetch('/api/preview/api%3A%3Apage.page/doc-other/weight', { headers: { cookie, ...visitor() } })).status).toBe(404)
+    mock.preview.expireGrants()
+    expect((await fetch(`/api/preview/${PAGE}/weight`, { headers: { cookie, ...visitor() } })).status).toBe(404)
+  })
+
+  it('refuses an editor session, which the draft routes accept: the report needs the grant', async () => {
+    const login = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'origin': SITE_URL },
+      body: JSON.stringify({ identifier: testUsers.editor.username, password: testUsers.editor.password }),
+    })
+    const cookie = login.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_session='))!.split(';')[0]!
+    expect((await fetch(`/api/preview/${PAGE}/weight`, { headers: { cookie, ...visitor() } })).status).toBe(404)
+  })
+
+  it('answers 400 to an unsupported locale and rate limits the renders by address bucket', async () => {
+    const cookie = await pageGrant()
+    expect((await fetch(`/api/preview/${PAGE}/weight?locale=fr`, { headers: { cookie, ...visitor() } })).status).toBe(400)
+    const from = (address: string) => fetch(`/api/preview/${PAGE}/weight?locale=en`, { headers: { cookie, 'x-forwarded-for': address } })
+    for (let i = 0; i < 12; i++) expect((await from(`2001:db8:98:1::${i + 1}`)).status).toBe(200)
+    const limited = await from('2001:db8:98:1:ffff::1')
+    expect(limited.status).toBe(429)
+    expect(limited.headers.get('retry-after')).toBeTruthy()
   })
 })
 

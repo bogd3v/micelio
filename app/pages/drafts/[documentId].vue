@@ -3,6 +3,7 @@ import type { DraftArticleResponse, DraftViewState, Locale, StrapiPost } from '~
 import { draftViewState } from '~/helpers/drafts'
 import { isLocale } from '~/helpers/locale'
 import { toStrapiPost } from '~/helpers/post'
+import { withoutIndex } from '~/helpers/preview'
 import { articlePath } from '~/helpers/translations'
 import { pageTitle } from '~/helpers/site'
 
@@ -21,7 +22,7 @@ const draftLocale: Locale = isLocale(route.query.locale) ? route.query.locale : 
 
 const { data, error } = await useAsyncData<DraftArticleResponse>(
   `draft-${documentId}-${draftLocale}`,
-  () => requestFetch<DraftArticleResponse>(`/api/drafts/${encodeURIComponent(documentId)}`, { query: { locale: draftLocale } }),
+  () => requestFetch<DraftArticleResponse>(`/api/drafts/${encodeURIComponent(documentId)}`, { query: { locale: draftLocale, without: withoutIndex(route.query.without) } }),
 )
 
 if (error.value || !data.value) {

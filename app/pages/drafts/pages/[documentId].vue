@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DraftPageResponse, Locale } from '~/interfaces'
 import { isLocale } from '~/helpers/locale'
+import { withoutIndex } from '~/helpers/preview'
 import { pageTitle } from '~/helpers/site'
 
 definePageMeta({ middleware: 'editor', previewGrant: true })
@@ -16,7 +17,7 @@ const draftLocale: Locale = isLocale(route.query.locale) ? route.query.locale : 
 
 const { data, error } = await useAsyncData<DraftPageResponse>(
   `draft-page-${documentId}-${draftLocale}`,
-  () => requestFetch<DraftPageResponse>(`/api/drafts/pages/${encodeURIComponent(documentId)}`, { query: { locale: draftLocale } }),
+  () => requestFetch<DraftPageResponse>(`/api/drafts/pages/${encodeURIComponent(documentId)}`, { query: { locale: draftLocale, without: withoutIndex(route.query.without) } }),
 )
 
 if (error.value || !data.value) {

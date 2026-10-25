@@ -17,6 +17,7 @@ The preview is **off** until you set one variable.
 - The draft routes are `/drafts/<documentId>` for an article and `/drafts/pages/<documentId>` for a page (`/es/…` in Spanish). With the cookie they show the one document the grant names; with an editor session they work as before. Add `?mode=static` to show every island on its static alternative.
 - A draft shown to a valid grant is the only response that allows framing: `frame-ancestors <NUXT_PREVIEW_ADMIN_ORIGIN>` and no `X-Frame-Options`. Every other response, the draft route without a grant and its errors included, keeps `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
 - Every preview answer is `private, no-store` and `X-Robots-Tag: noindex, nofollow`. The routes are in no sitemap, feed or search index, and public pages do not change.
+- `GET /api/preview/<content type>/<documentId>/weight` answers what the draft weighs (HTML, scripts, styles, fonts, images, and the script of its islands apart), per block, for the cost meter of the plugin. It takes the same grant cookie as the draft routes and no other credential. How a server without a browser obtains a grant for it is open in bogd3v/micelio-plugin-core#46 (`docs/api.md`, `docs/performance.md`).
 - A static or landing site has no preview (the drafts module is off in those modes).
 
 ## The cookie in a cross-site frame

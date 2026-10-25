@@ -1,6 +1,14 @@
 import { draftListResponseSchema, draftPageResponseSchema } from '~/schemas/drafts'
 import { draftArticleResponseSchema } from '~/schemas/posts'
+import { weightReportResponseSchema } from '~/schemas/preview'
 import type { ParameterSpec, RouteEntry } from '../types'
+
+const WITHOUT_PARAMETER: ParameterSpec = {
+  name: 'without',
+  in: 'query',
+  description: 'The position of one block to leave out of the render, for the weight report. Read only with a preview grant; ignored otherwise. Optional.',
+  schema: { type: 'integer', minimum: 0, maximum: 999 },
+}
 
 const LOCALE_PARAMETER: ParameterSpec = { name: 'locale', in: 'query', description: 'The language of the draft: `en` or `es`. Optional.' }
 
@@ -29,6 +37,7 @@ export const DRAFT_ROUTES: RouteEntry[] = [
     parameters: [
       { name: 'documentId', in: 'path', description: 'The article document id.' },
       LOCALE_PARAMETER,
+      WITHOUT_PARAMETER,
     ],
     response: { status: 200, schema: draftArticleResponseSchema, description: 'The draft and, when there is one, its published version. With a preview grant there is no published version and `preview` carries the admin origin.' },
     errors: ['notFound', 'upstreamUnavailable'],
@@ -44,8 +53,25 @@ export const DRAFT_ROUTES: RouteEntry[] = [
     parameters: [
       { name: 'documentId', in: 'path', description: 'The page document id.' },
       LOCALE_PARAMETER,
+      WITHOUT_PARAMETER,
     ],
     response: { status: 200, schema: draftPageResponseSchema, description: 'The draft page. With a preview grant `preview` carries the admin origin.' },
     errors: ['notFound', 'upstreamUnavailable'],
+  },
+  {
+    file: 'server/api/preview/[uid]/[documentId]/weight.get.ts',
+    method: 'get',
+    path: '/api/preview/{uid}/{documentId}/weight',
+    summary: 'Get the weight of a draft',
+    description: 'The weight of the draft as a visitor would download it, measured on the rendered page and never estimated: the draft is rendered in the requested mode and once more without each of its blocks, so a block\'s share is the difference. KB are 1024 bytes as this server sends them (HTML, the scripts, stylesheets and fonts it declares, and the images not marked `loading="lazy"`). `onDemandKb` is the script its islands load only once one is used, apart from `totalKb`. Authorised by the preview grant cookie of ADR 0019, which shows only the document it names; anyone else gets `notFound`, as does a content type that is not an article or a page. Kept 5 minutes per version of the draft. Answers `private, no-store`.',
+    tag: 'Drafts',
+    parameters: [
+      { name: 'uid', in: 'path', description: 'The content type of the document: `api::article.article` or `api::page.page`, URL-encoded as the client sees fit.', schema: { type: 'string', enum: ['api::article.article', 'api::page.page'] } },
+      { name: 'documentId', in: 'path', description: 'The document id the grant names.' },
+      LOCALE_PARAMETER,
+      { name: 'mode', in: 'query', description: 'The mode to render in: `dynamic` (default) or `static`, which leaves every island on its static alternative, as the preview does.', schema: { type: 'string', enum: ['dynamic', 'static'] } },
+    ],
+    response: { status: 200, schema: weightReportResponseSchema, description: 'The weight report of the draft in the requested mode.' },
+    errors: ['invalidRequest', 'notFound', 'tooManyRequests', 'upstreamUnavailable'],
   },
 ]

@@ -16,6 +16,8 @@ const RATE_LIMITS = {
   newsletterGlobal: { limit: 100, windowMs: 60 * 60 * 1000 },
   // The preview token is a one-use secret: guessing it is as hard as the CMS makes it, but each try costs a call to the CMS
   previewPerIp: { limit: 30, windowMs: 60 * 1000 },
+  // A report renders the draft once more for each of its blocks: far dearer than a preview, and the admin asks once per save
+  previewWeightPerIp: { limit: 12, windowMs: 60 * 1000 },
   webfingerPerIp: { limit: 30, windowMs: 60 * 1000 },
   // The CMS counts every forwarded lookup against the frontend's own address, with the site settings and feeds: half of its default `api` rule (600 a minute) stays for them
   webfingerGlobal: { limit: 300, windowMs: 60 * 1000 },

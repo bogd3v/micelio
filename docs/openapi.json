@@ -3,7 +3,7 @@
   "info": {
     "title": "Micelio site API",
     "version": "0.5.0",
-    "description": "The HTTP routes every Micelio site serves: 38 paths and 40 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
+    "description": "The HTTP routes every Micelio site serves: 39 paths and 41 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
     "license": {
       "name": "AGPL-3.0-only",
       "identifier": "AGPL-3.0-only"
@@ -3352,6 +3352,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "without",
+            "in": "query",
+            "description": "The position of one block to leave out of the render, for the weight report. Read only with a preview grant; ignored otherwise. Optional.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 999
+            }
           }
         ],
         "security": [
@@ -3456,6 +3467,17 @@
             "required": false,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "without",
+            "in": "query",
+            "description": "The position of one block to leave out of the render, for the weight report. Read only with a preview grant; ignored otherwise. Optional.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 999
             }
           }
         ],
@@ -4869,6 +4891,190 @@
                       }
                     }
                   ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The content service failed or is unreachable.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/preview/{uid}/{documentId}/weight": {
+      "get": {
+        "operationId": "getApiPreviewByUidByDocumentIdWeight",
+        "summary": "Get the weight of a draft",
+        "description": "The weight of the draft as a visitor would download it, measured on the rendered page and never estimated: the draft is rendered in the requested mode and once more without each of its blocks, so a block's share is the difference. KB are 1024 bytes as this server sends them (HTML, the scripts, stylesheets and fonts it declares, and the images not marked `loading=\"lazy\"`). `onDemandKb` is the script its islands load only once one is used, apart from `totalKb`. Authorised by the preview grant cookie of ADR 0019, which shows only the document it names; anyone else gets `notFound`, as does a content type that is not an article or a page. Kept 5 minutes per version of the draft. Answers `private, no-store`.",
+        "tags": [
+          "Drafts"
+        ],
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "description": "The content type of the document: `api::article.article` or `api::page.page`, URL-encoded as the client sees fit.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "api::article.article",
+                "api::page.page"
+              ]
+            }
+          },
+          {
+            "name": "documentId",
+            "in": "path",
+            "description": "The document id the grant names.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "The language of the draft: `en` or `es`. Optional.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "The mode to render in: `dynamic` (default) or `static`, which leaves every island on its static alternative, as the preview does.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "dynamic",
+                "static"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The weight report of the draft in the requested mode.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeightReportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The `code` is one of:\n- `invalidRequest`: The request is malformed or a parameter is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "invalidRequest"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
                 }
               }
             }
@@ -9540,6 +9746,111 @@
         ],
         "additionalProperties": false,
         "description": "The request was handled; an unknown or used token answers the same."
+      },
+      "WeightBlock": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The block's catalogue id: its component name without the namespace."
+          },
+          "kb": {
+            "type": "number",
+            "minimum": 0,
+            "description": "What the page weighs more with the block than without it, in KB as sent."
+          },
+          "onDemandKb": {
+            "type": "number",
+            "minimum": 0,
+            "description": "The script its island loads only once it is used; 0 for a block that has none."
+          }
+        },
+        "required": [
+          "id",
+          "kb",
+          "onDemandKb"
+        ],
+        "additionalProperties": false,
+        "description": "The share of one block of a draft in its weight."
+      },
+      "WeightReport": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "dynamic",
+              "static"
+            ]
+          },
+          "htmlKb": {
+            "type": "number",
+            "minimum": 0
+          },
+          "cssKb": {
+            "type": "number",
+            "minimum": 0,
+            "description": "The stylesheets the page declares."
+          },
+          "jsKb": {
+            "type": "number",
+            "minimum": 0,
+            "description": "The scripts the page declares, `modulepreload` links included."
+          },
+          "fontKb": {
+            "type": "number",
+            "minimum": 0,
+            "description": "The fonts the page preloads and its stylesheets reference."
+          },
+          "imagesKb": {
+            "type": "number",
+            "minimum": 0,
+            "description": "The images the page loads without scrolling: those not marked `loading=\"lazy\"`."
+          },
+          "totalKb": {
+            "type": "number",
+            "minimum": 0,
+            "description": "HTML, CSS, JS, fonts and images; never `onDemandKb`."
+          },
+          "onDemandKb": {
+            "type": "number",
+            "minimum": 0,
+            "description": "The script the islands of the page load only once one is used, apart from `totalKb`."
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeightBlock"
+            },
+            "description": "One entry per block of the draft's zone, in order."
+          }
+        },
+        "required": [
+          "mode",
+          "htmlKb",
+          "cssKb",
+          "jsKb",
+          "fontKb",
+          "imagesKb",
+          "totalKb",
+          "onDemandKb",
+          "blocks"
+        ],
+        "additionalProperties": false,
+        "description": "The weight of a draft as a visitor would download it, measured on the rendered page."
+      },
+      "WeightReportResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/WeightReport"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "additionalProperties": false,
+        "description": "The weight report of a draft."
       }
     }
   }
