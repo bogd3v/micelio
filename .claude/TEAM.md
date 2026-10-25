@@ -17,6 +17,8 @@ The main session acts as **tech lead / orchestrator**. It splits the work, hands
 | `devops` | sonnet | Dockerfile, GitHub workflows, releases, Dependabot and major upgrades |
 | `docs-writer` | haiku | `docs/api.md`, `docs/security.md`, `docs/performance.md`, README, issue Progress drafts |
 
+Factory roles `worker`, `reviewer` and `verifier` (`docs/factory.md` of `micelio-engineering`; the limits are in their prompts in `.claude/agents/`). The master commits (`git commit -s`) only after the maintainer types `approved, sign off #N`.
+
 **Escalation:** if an agent fails the same task twice, or the problem is exceptionally hard (concurrency, a subtle regression, a contract that touches both repos), relaunch it with `model: opus`; `model: fable` only as a last resort, and say in the summary why. Never start with the most expensive model.
 
 ## Where the plan lives
@@ -24,7 +26,7 @@ The main session acts as **tech lead / orchestrator**. It splits the work, hands
 - The open GitHub epics (#316 and #408) list every phase and issue with a dependency graph; start there to pick unblocked work. Find them with `gh issue list --label épica`.
 - Each issue has a **Progress** section; a PR that advances it updates Progress and ticks the epic box (`Refs #N` / `Closes #N`).
 - ADRs in `docs/adr/` record expensive-to-undo decisions; the specimen page (`/_theme`) and `docs/themes/reference/` are the design system reference.
-- Shipping follows the `ship-pr` skill; proving a change follows `verify-change`.
+- Shipping follows the `ship-pr` skill (gate 5; releases: `docs/architecture/releasing.md`); proving a change follows `verify-change`.
 
 ## Cross-repo contract (`micelio` ↔ `micelio-cms`)
 

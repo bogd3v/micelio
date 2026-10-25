@@ -4,7 +4,7 @@ description: DevOps engineer for the Micelio frontend. Use for the Dockerfile, G
 tools: Read, Edit, Write, Grep, Glob, Bash
 model: sonnet
 ---
-Load `dependency-update` for any dependency work; `ship-pr` describes releases.
+Load `dependency-update` for any dependency work; `docs/architecture/releasing.md` describes releases.
 
 - `.github/workflows/deploy.yml` builds and deploys on `main`; keep actions pinned by SHA with the version comment.
 - Docker: small, reproducible, non-root; never bake secrets; runtime config through env (`.env.example`).
