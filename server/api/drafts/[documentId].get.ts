@@ -2,6 +2,7 @@ import qs from 'qs'
 import type { H3Event } from 'h3'
 import type { DraftArticleResponse, Locale, PublishedVersion, RawStrapiArticle } from '~/interfaces'
 import { renderArticleBlocks } from '~/helpers/markdown'
+import { withoutIndex } from '~/helpers/preview'
 import { ARTICLE_POPULATE } from '../../lib/constants'
 import { publicArticle } from '../../lib/publicShapes'
 
@@ -31,7 +32,10 @@ export default defineEventHandler(async (event): Promise<DraftArticleResponse> =
   const grant = previewAdminOrigin() ? previewGrantOf(event) : null
   if (grant) {
     const raw = await fetchPreviewDraft<RawStrapiArticle>(event, grant, documentId, { populate: ARTICLE_POPULATE })
-    return { article: draftArticle(raw, locale), published: null, preview: draftPreview() }
+    // The weight report renders the draft once per block without it (`withoutIndex`); only a grant may ask
+    const without = withoutIndex(getQuery(event).without)
+    const blocks = without === undefined ? raw.blocks : raw.blocks?.filter((_, index) => index !== without)
+    return { article: draftArticle({ ...raw, blocks }, locale), published: null, preview: draftPreview() }
   }
 
   const jwt = editorSession(event)

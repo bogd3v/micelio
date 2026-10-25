@@ -23,6 +23,16 @@ export function previewMode(value: unknown): PreviewMode {
   return value === 'static' ? 'static' : 'dynamic'
 }
 
+/**
+ * The position of the block a weight measurement leaves out, from a `without` query; `undefined` for anything but a plain number below 1000.
+ *
+ * @remarks
+ * Only the draft routes read it, and only on a request with a preview grant (`GET /api/preview/{uid}/{documentId}/weight` renders the draft once per block without it).
+ */
+export function withoutIndex(value: unknown): number | undefined {
+  return typeof value === 'string' && /^\d{1,3}$/.test(value) ? Number(value) : undefined
+}
+
 /** What `isIslandScript` reads of a head tag: the entry id and the attributes of a `<script>`. */
 interface HeadTagLike {
   tag?: string
@@ -47,13 +57,13 @@ export function isIslandScript(tag: HeadTagLike): boolean {
  * The path of the draft route for a document, as `/_preview` redirects to it.
  *
  * @remarks
- * A locale that is not one the site serves, or none, opens the default one. The token is never part of it.
+ * A locale that is not one the site serves, or none, opens the default one. The token is never part of it. `without` is the position of a block to leave out, for the weight report.
  */
-export function previewDraftPath(kind: 'article' | 'page', documentId: string, locale: string | null, mode?: PreviewMode): string {
+export function previewDraftPath(kind: 'article' | 'page', documentId: string, locale: string | null, mode?: PreviewMode, without?: number): string {
   const served = Object.values(Locale).find(item => item === locale) ?? defaultLocale
   const prefix = served === defaultLocale ? '' : `/${served}`
   const route = kind === 'page' ? 'drafts/pages' : 'drafts'
-  const query = new URLSearchParams({ locale: served, ...(mode === 'static' && { mode }) })
+  const query = new URLSearchParams({ locale: served, ...(mode === 'static' && { mode }), ...(without !== undefined && { without: String(without) }) })
   return `${prefix}/${route}/${encodeURIComponent(documentId)}?${query}`
 }
 

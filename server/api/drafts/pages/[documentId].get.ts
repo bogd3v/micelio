@@ -1,5 +1,6 @@
 import qs from 'qs'
 import type { DraftPageResponse, Page } from '~/interfaces'
+import { withoutIndex } from '~/helpers/preview'
 import { PAGE_POPULATE } from '../../../lib/constants'
 import { parsePage } from '../../../schemas/page'
 
@@ -14,6 +15,10 @@ export default defineEventHandler(async (event): Promise<DraftPageResponse> => {
   let raw: unknown
   if (grant) {
     raw = await fetchPreviewDraft<unknown>(event, grant, documentId, { populate: PAGE_POPULATE })
+    // The weight report renders the draft once per block without it (`withoutIndex`); only a grant may ask
+    const without = withoutIndex(getQuery(event).without)
+    const sections = (raw as { sections?: unknown } | null)?.sections
+    if (without !== undefined && Array.isArray(sections)) raw = { ...raw as object, sections: sections.filter((_, index) => index !== without) }
   } else {
     const jwt = editorSession(event)
     const query = qs.stringify({ status: 'draft', locale, populate: PAGE_POPULATE }, { skipNulls: true })

@@ -147,6 +147,7 @@ export default defineNuxtConfig({
     '/newsletter/unsubscribe': { headers: tokenPageHeaders },
     '/es/newsletter/unsubscribe': { headers: tokenPageHeaders },
     '/_preview': { headers: tokenPageHeaders },
+    '/api/preview/**': { headers: tokenPageHeaders },
     '/_theme': { headers: privatePageHeaders },
     '/es/_theme': { headers: privatePageHeaders },
     '/api/auth/**': { headers: { 'cache-control': 'private, no-store' } },

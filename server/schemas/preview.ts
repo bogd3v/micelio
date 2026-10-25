@@ -1,5 +1,7 @@
 import { z } from 'zod'
-import { PREVIEW_TOKEN_MAX_LENGTH } from '~/constants/preview'
+import { PREVIEW_CONTENT_TYPES, PREVIEW_TOKEN_MAX_LENGTH } from '~/constants/preview'
+import { previewMode } from '~/helpers/preview'
+import { Locale } from '~/interfaces/locale'
 
 /** The query of `/_preview`: the token, and optionally the mode the draft route opens in. Anything else is ignored. */
 export const previewQuerySchema = z.object({
@@ -21,3 +23,15 @@ export const previewGrantSchema = z.object({
 
 /** The grant of an exchange, with what it is bound to. */
 export type PreviewGrant = z.infer<typeof previewGrantSchema>['data']
+
+/** The route parameters of the weight report: the content type of the preview kinds and the document, checked before any CMS call. */
+export const weightParamsSchema = z.object({
+  uid: z.string().refine(uid => Object.hasOwn(PREVIEW_CONTENT_TYPES, uid)),
+  documentId: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/),
+})
+
+/** The query of the weight report: the language the draft is rendered in (default `en`) and the mode (default `dynamic`; anything but `static` is `dynamic`, as for `/_preview`). */
+export const weightQuerySchema = z.object({
+  locale: z.preprocess(value => value === '' ? undefined : value, z.enum(Object.values(Locale) as [Locale, ...Locale[]], { error: 'Unsupported locale' }).optional()),
+  mode: z.unknown().optional().transform(previewMode),
+})

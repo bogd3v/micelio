@@ -26,7 +26,6 @@ const DEBUG_PORT = Number(process.env.PERF_DEBUG_PORT ?? 9223)
 const DEFAULT_THEME = 'bogota'
 // Written after a static generate: which theme and mode the output belongs to
 const BUILD_MARKER = join(ROOT, '.output', 'perf-build.json')
-const FONT_URL = /url\(\s*['"]?([^'")]+\.(?:woff2?|ttf|otf))/g
 
 const args = parseArgs(process.argv.slice(2))
 const budgets = JSON.parse(readFileSync(new URL('./budgets.json', import.meta.url), 'utf8'))
@@ -54,6 +53,8 @@ const exception = budgets.themes?.[theme] && [budgets.themes[theme].mode ?? budg
 const { HEAVY_ISLANDS } = await createJiti(import.meta.url).import('../../app/islands/lib/constants.ts')
 const { REGION_VARIANTS } = await createJiti(import.meta.url).import('../../modules/theme/layout/variants.ts')
 const { BUILT_IN_STORE_PATH, STORE_DIR } = await createJiti(import.meta.url).import('../../modules/theme/install/constants.ts')
+// The measurement of what a page declares is shared with the weight report of a draft (GET /api/preview/{uid}/{documentId}/weight)
+const { declaredAssets, fontsOf, kb } = await createJiti(import.meta.url).import('../../app/helpers/weight.ts')
 const budgetErrors = [...islandBudgetErrors(HEAVY_ISLANDS, budgets.modes), ...variantBudgetErrors(REGION_VARIANTS, budgets.variants)]
 // A theme served by an image built for another theme loads its own variants as chunks: its dynamic JS limits grow by their allowances
 const storeDir = join(ROOT, '.output/server', BUILT_IN_STORE_PATH)
@@ -96,11 +97,6 @@ function themeDisplayFamily() {
   if (!existsSync(file)) return undefined
   const stack = JSON.parse(readFileSync(file, 'utf8')).type?.families?.display ?? ''
   return stack.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase()
-}
-
-/** Bytes as kilobytes with one decimal */
-function kb(value) {
-  return Math.round(value / 102.4) / 10
 }
 
 function parseArgs(list) {
@@ -189,29 +185,6 @@ function fetchAsSent(url) {
   })
 }
 
-function attribute(tag, name) {
-  return tag.match(new RegExp(`\\s${name}="([^"]*)"`))?.[1]
-}
-
-function declaredAssets(html, pageUrl) {
-  const scripts = new Set()
-  const stylesheets = new Set()
-  const fonts = new Set()
-  for (const tag of html.match(/<script\b[^>]*>/g) ?? []) {
-    const src = attribute(tag, 'src')
-    if (src) scripts.add(new URL(src, pageUrl).href)
-  }
-  for (const tag of html.match(/<link\b[^>]*>/g) ?? []) {
-    const href = attribute(tag, 'href')
-    const rel = attribute(tag, 'rel')
-    if (!href) continue
-    if (rel === 'modulepreload') scripts.add(new URL(href, pageUrl).href)
-    if (rel === 'stylesheet') stylesheets.add(new URL(href, pageUrl).href)
-    if (rel === 'preload' && attribute(tag, 'as') === 'font') fonts.add(new URL(href, pageUrl).href)
-  }
-  return { scripts, stylesheets, fonts }
-}
-
 async function measureWeight(url) {
   const page = await fetchAsSent(url)
   const { scripts, stylesheets, fonts } = declaredAssets(page.text, url)
@@ -222,7 +195,7 @@ async function measureWeight(url) {
   const js = await total(scripts)
   const css = await total(stylesheets)
   ;[...stylesheets].forEach((cssUrl, i) => {
-    for (const [, fontPath] of css.texts[i].matchAll(FONT_URL)) fonts.add(new URL(fontPath, cssUrl).href)
+    for (const font of fontsOf(css.texts[i], cssUrl)) fonts.add(font)
   })
   const font = await total(fonts)
   // Inline scripts (the theme init) run before first paint too, so they count towards the initial JS; data (JSON, speculation rules) does not run
