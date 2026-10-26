@@ -46,3 +46,14 @@ export interface BuiltInTheme {
   entry: LoadedEntry
   runtime: RuntimeData
 }
+
+/** Who a preview grant acts for, as the CMS says in `meta.actor` of the draft (ADR 0019, section 3 and the amendment of 2026-10-25). */
+export type PreviewActor = 'admin' | 'system'
+
+/** The draft a request to the weight route redeemed, which its in-process sub-requests read instead of asking the CMS. */
+export interface PreviewDraftContext {
+  kind: 'article' | 'page'
+  documentId: string
+  /** The draft as the CMS sanitized it, still to be shaped by the draft route. */
+  draft: unknown
+}

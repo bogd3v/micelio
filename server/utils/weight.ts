@@ -1,13 +1,14 @@
 import { brotliDecompressSync, gunzipSync } from 'node:zlib'
 import type { H3Event } from 'h3'
 import { PAGE_SLUG_PATTERN } from '~/constants/pages'
-import { PREVIEW_COOKIE } from '~/constants/preview'
+import { PREVIEW_DRAFT_CONTEXT_KEY } from '~/constants/preview'
 import { localizedPath } from '~/helpers/locale'
 import { previewDraftPath } from '~/helpers/preview'
 import { declaredAssets, measurePage, weightReport } from '~/helpers/weight'
 import type { PageBytes, SentFile } from '~/helpers/weight'
 import type { Locale, PreviewMode, WeightReport } from '~/interfaces'
 import { ARTICLE_POPULATE, PAGE_POPULATE } from '../lib/constants'
+import type { PreviewActor, PreviewDraftContext } from '../lib/types'
 
 /** How long a report is kept, per document version (ADR 0019 and bogd3v/micelio#730). */
 const REPORT_CACHE_MS = 5 * 60 * 1000
@@ -35,12 +36,30 @@ function componentId(component: unknown): string {
   return typeof component === 'string' ? component.split('.').pop() || 'unknown' : 'unknown'
 }
 
-/** The draft's `updatedAt` and its blocks' ids, read with the grant (so a grant for another document is the draft 404). */
-async function readZone(event: H3Event, grant: string, kind: 'article' | 'page', documentId: string, locale: Locale): Promise<DraftZone> {
-  const draft = await fetchPreviewDraft<{ updatedAt?: unknown, slug?: unknown, sections?: unknown, blocks?: unknown }>(event, grant, documentId, { populate: kind === 'page' ? PAGE_POPULATE : ARTICLE_POPULATE })
-  const zone = kind === 'page' ? draft.sections : draft.blocks
+/** The draft as the CMS sanitized it, with who the grant that read it acts for. */
+interface RedeemedDraft {
+  actor: PreviewActor
+  draft: PreviewDraftContext['draft']
+}
+
+/**
+ * Redeems the preview grant of a weight request with the CMS, once, and returns the draft it names.
+ *
+ * @param grant - A grant of either actor (ADR 0019, amendment of 2026-10-25): the editor's from the cookie, or the CMS's own from `X-Micelio-Preview-Grant`.
+ *
+ * @throws The draft 404 when the CMS refuses the grant, the draft is missing or the answer does not say who the grant acts for.
+ */
+export async function redeemDraft(event: H3Event, grant: string, kind: 'article' | 'page', documentId: string): Promise<RedeemedDraft> {
+  const { data, actor } = await fetchPreviewDraft<PreviewDraftContext['draft']>(event, grant, documentId, { populate: kind === 'page' ? PAGE_POPULATE : ARTICLE_POPULATE }, { allowSystem: true })
+  return { actor, draft: data }
+}
+
+/** The draft's `updatedAt` and its blocks' ids. */
+async function zoneOf(draft: unknown, kind: 'article' | 'page', locale: Locale): Promise<DraftZone> {
+  const { updatedAt, slug, sections, blocks: articleBlocks } = draft as { updatedAt?: unknown, slug?: unknown, sections?: unknown, blocks?: unknown }
+  const zone = kind === 'page' ? sections : articleBlocks
   const blocks = Array.isArray(zone) ? zone.map(block => componentId((block as { __component?: unknown } | null)?.__component)) : []
-  return { updatedAt: typeof draft.updatedAt === 'string' ? draft.updatedAt : '', blocks, publicPath: await publicPathOf(kind, draft.slug, locale) }
+  return { updatedAt: typeof updatedAt === 'string' ? updatedAt : '', blocks, publicPath: await publicPathOf(kind, slug, locale) }
 }
 
 /** Where a visitor reads a document once it is published: `/` for the page set as the home page, `/<slug>` for any other page and `/blog/<slug>` for an article. */
@@ -83,7 +102,7 @@ function sentFile(path: string, { raw, encoding }: { raw: Buffer, encoding: stri
 
 async function localFile(event: H3Event | null, path: string, headers: Record<string, string>, isDraft: boolean): Promise<SentFile> {
   const response = await localResponse(event, path, headers)
-  // The draft route refuses a grant that expired or does not name the document with its 404
+  // The draft route answers 404 when the request carries no draft of this report
   if (response.status === 404 && isDraft) throw draftNotFound()
   if (response.status !== 200) throw new Error(`${isDraft ? 'The draft' : 'A declared asset'} answered ${response.status} to the measurement`)
   return sentFile(path, response)
@@ -161,12 +180,12 @@ async function mapLimit<R>(count: number, limit: number, work: (index: number) =
   return results
 }
 
-async function computeReport(event: H3Event, grant: string, kind: 'article' | 'page', documentId: string, locale: Locale, mode: PreviewMode, zone: DraftZone): Promise<WeightReport> {
+async function computeReport(event: H3Event, kind: 'article' | 'page', documentId: string, locale: Locale, mode: PreviewMode, zone: DraftZone): Promise<WeightReport> {
   const origin = getRequestURL(event).origin
   const fetchFile = fileFetcher(event)
   const render = async (without?: number): Promise<{ html: SentFile, url: string }> => {
     const path = previewDraftPath(kind, documentId, locale, mode, without)
-    const html = await localFile(event, path, { cookie: `${PREVIEW_COOKIE}=${grant}`, accept: 'text/html' }, true)
+    const html = await localFile(event, path, { accept: 'text/html' }, true)
     return { html, url: new URL(path, origin).href }
   }
   const measure = async (without?: number): Promise<PageBytes> => {
@@ -183,9 +202,9 @@ async function computeReport(event: H3Event, grant: string, kind: 'article' | 'p
 }
 
 /** Computes a report and forgets it when it fails, so the callers that share it all get the problem and the next request tries again. */
-async function computeAndKeep(key: string, event: H3Event, grant: string, kind: 'article' | 'page', documentId: string, locale: Locale, mode: PreviewMode, zone: DraftZone): Promise<WeightReport> {
+async function computeAndKeep(key: string, event: H3Event, kind: 'article' | 'page', documentId: string, locale: Locale, mode: PreviewMode, zone: DraftZone): Promise<WeightReport> {
   try {
-    return await computeReport(event, grant, kind, documentId, locale, mode, zone)
+    return await computeReport(event, kind, documentId, locale, mode, zone)
   } catch (error: unknown) {
     reports.delete(key)
     if (error instanceof Error && 'statusCode' in error) throw error
@@ -195,17 +214,17 @@ async function computeAndKeep(key: string, event: H3Event, grant: string, kind: 
 }
 
 /**
- * The weight report of the draft a preview grant names: the draft rendered in `mode` and once more without each of its blocks.
+ * The weight report of a draft the CMS gave to a preview grant: the draft rendered in `mode` and once more without each of its blocks.
  *
- * @param grant - The preview grant of the request, which the CMS checks when the draft is read.
+ * @param draft - What `redeemDraft` returned, so the CMS is asked for the draft once per report (a `system` grant is single use).
  *
  * @remarks
- * Kept 5 minutes per document version (`updatedAt`), so saving the draft measures it again. A report in progress is shared by the requests that ask for the same one, and a failed one is not kept. The draft renders run in this process with the grant as the cookie the admin's frame would send; the public page is rendered with none of the caller's headers.
+ * Kept 5 minutes per document version (`updatedAt`), so saving the draft measures it again. A report in progress is shared by the requests that ask for the same one, and a failed one is not kept. The draft is kept in this request's `event.context` for the length of the report: each render is a request made in process (`event.$fetch`) whose page and draft route read it from there, so neither the grant nor a cookie travels (ADR 0019, amendment of 2026-10-25). The public page is rendered with none of the caller's headers.
  *
- * @throws The draft 404 when the CMS refuses the grant or the draft is missing, and a 502 when a render or an asset fails.
+ * @throws A 502 when a render or an asset fails.
  */
-export async function previewWeightReport(event: H3Event, grant: string, kind: 'article' | 'page', documentId: string, locale: Locale, mode: PreviewMode): Promise<WeightReport> {
-  const zone = await readZone(event, grant, kind, documentId, locale)
+export async function previewWeightReport(event: H3Event, kind: 'article' | 'page', documentId: string, locale: Locale, mode: PreviewMode, draft: unknown): Promise<WeightReport> {
+  const zone = await zoneOf(draft, kind, locale)
   const { updatedAt } = zone
   const key = `${kind}:${documentId}:${locale}:${mode}:${updatedAt}`
   const now = Date.now()
@@ -214,7 +233,8 @@ export async function previewWeightReport(event: H3Event, grant: string, kind: '
   }
   const cached = reports.get(key)
   if (cached) return cached.report
-  const report = computeAndKeep(key, event, grant, kind, documentId, locale, mode, zone)
+  event.context[PREVIEW_DRAFT_CONTEXT_KEY] = { kind, documentId, draft } satisfies PreviewDraftContext
+  const report = computeAndKeep(key, event, kind, documentId, locale, mode, zone)
   reports.set(key, { expires: now + REPORT_CACHE_MS, report })
   if (reports.size > REPORT_CACHE_MAX) reports.delete(reports.keys().next().value!)
   return report

@@ -8,7 +8,7 @@ export type JsonSchema = Record<string, unknown>
 export type HttpMethod = 'get' | 'post' | 'delete'
 
 /** Where an OpenAPI parameter is sent. */
-export type ParameterLocation = 'query' | 'path'
+export type ParameterLocation = 'query' | 'path' | 'header'
 
 /** What the manifest says about one parameter: its description and, when no zod schema covers it, its type. */
 export interface ParameterSpec {

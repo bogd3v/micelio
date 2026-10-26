@@ -15,3 +15,9 @@ export const PREVIEW_CONTENT_TYPES: Readonly<Record<string, 'article' | 'page'>>
 
 /** The longest preview token the frontend sends to the CMS; the tokens the plugin makes are far shorter. */
 export const PREVIEW_TOKEN_MAX_LENGTH = 256
+
+/** The key of `event.context` under which the weight route hands the draft it redeemed to the sub-requests of its report (ADR 0019, amendment of 2026-10-25). */
+export const PREVIEW_DRAFT_CONTEXT_KEY = 'previewDraft'
+
+/** The longest grant the weight route reads from `X-Micelio-Preview-Grant`; the grants of the plugin are far shorter. */
+export const PREVIEW_GRANT_MAX_LENGTH = 256

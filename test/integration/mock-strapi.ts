@@ -72,7 +72,7 @@ interface MockStrapiResult {
   webfingerHeaders: { value: IncomingMessage['headers'] | null }
   /** The `username` of the `fediverse` component site-setting answers with (the component is null when this is) */
   fediverseUsername: { value: string | null }
-  /** The preview routes of the plugin: `issue` makes a one-use token, `calls` records what the frontend sent, `state.permission` false makes both routes answer 403 */
+  /** The preview routes of the plugin: `issue` makes a one-use token, `calls` records what the frontend sent, `issueSystem` makes the system grant the plugin mints for itself, `state.permission` false makes both routes answer 403, `state.omitActor` makes the draft answer without `meta.actor` */
   preview: ReturnType<typeof createPreviewMock>
   users: Array<{ id: number, username: string, email: string, password: string, confirmed: boolean, role: string }>
   /** Extra keys the CMS answers carry, to prove they do not reach the client; a test that sets one clears it */
