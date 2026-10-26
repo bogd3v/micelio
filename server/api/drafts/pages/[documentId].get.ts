@@ -10,11 +10,12 @@ export default defineEventHandler(async (event): Promise<DraftPageResponse> => {
   if (!documentId) throw draftNotFound()
   const locale = draftLocale(event)
 
-  // A grant (the admin's iframe, ADR 0019) shows the one document it names; otherwise the editor's own session, as for an article draft
-  const grant = previewAdminOrigin() ? previewGrantOf(event) : null
+  // A report in process hands its draft down (ADR 0019, amendment of 2026-10-25); otherwise a grant (the admin's iframe) shows the one document it names, or the editor's own session, as for an article draft
+  const inherited = previewContextDraft<unknown>(event, 'page', documentId)
+  const grant = inherited ? null : previewAdminOrigin() ? previewGrantOf(event) : null
   let raw: unknown
-  if (grant) {
-    raw = await fetchPreviewDraft<unknown>(event, grant, documentId, { populate: PAGE_POPULATE })
+  if (inherited || grant) {
+    raw = inherited ?? (await fetchPreviewDraft<unknown>(event, grant!, documentId, { populate: PAGE_POPULATE })).data
     // The weight report renders the draft once per block without it (`withoutIndex`); only a grant may ask
     const without = withoutIndex(getQuery(event).without)
     const sections = (raw as { sections?: unknown } | null)?.sections

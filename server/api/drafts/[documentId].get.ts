@@ -28,14 +28,15 @@ export default defineEventHandler(async (event): Promise<DraftArticleResponse> =
   if (!documentId) throw draftNotFound()
   const locale = draftLocale(event)
 
-  // A grant (the admin's iframe, ADR 0019) shows the one document it names; the published version is the editor's to compare, so there is none
-  const grant = previewAdminOrigin() ? previewGrantOf(event) : null
-  if (grant) {
-    const raw = await fetchPreviewDraft<RawStrapiArticle>(event, grant, documentId, { populate: ARTICLE_POPULATE })
+  // A report in process hands its draft down (ADR 0019, amendment of 2026-10-25); otherwise a grant (the admin's iframe) shows the one document it names, and the published version is the editor's to compare, so there is none
+  const inherited = previewContextDraft<RawStrapiArticle>(event, 'article', documentId)
+  const grant = inherited ? null : previewAdminOrigin() ? previewGrantOf(event) : null
+  if (inherited || grant) {
+    const raw = inherited ?? (await fetchPreviewDraft<RawStrapiArticle>(event, grant!, documentId, { populate: ARTICLE_POPULATE })).data
     // The weight report renders the draft once per block without it (`withoutIndex`); only a grant may ask
     const without = withoutIndex(getQuery(event).without)
     const blocks = without === undefined ? raw.blocks : raw.blocks?.filter((_, index) => index !== without)
-    return { article: draftArticle({ ...raw, blocks }, locale), published: null, preview: draftPreview() }
+    return { article: draftArticle({ ...raw, blocks }, locale), published: null, ...(grant && { preview: draftPreview() }) }
   }
 
   const jwt = editorSession(event)

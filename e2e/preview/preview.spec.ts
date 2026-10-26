@@ -162,3 +162,36 @@ test.describe('the modes of the draft route', () => {
     expect(staticMode.url()).toBe(`${APP}/drafts/pages/doc-page-draft?locale=en&mode=static`)
   })
 })
+
+// The CMS measures a draft at publish with a grant it mints for itself (ADR 0019, amendment of 2026-10-25). No browser: the production build, over a socket,
+// through the weight route, the draft page with its `editor` middleware and the draft API route, with no cookie
+test.describe('the weight of a draft for a system grant', () => {
+  async function systemGrant(request: APIRequestContext, binding: Binding): Promise<string> {
+    const response = await request.post(`http://127.0.0.1:${MOCK_PORT}/__mock/preview-system-grant`, { data: binding })
+    return (await response.json() as { grant: string }).grant
+  }
+
+  const weight = (request: APIRequestContext, grant: string, address: number) => request.get(`${APP}/api/preview/api%3A%3Apage.page/doc-page-draft/weight?locale=en&mode=static`, { headers: { 'x-micelio-preview-grant': grant, 'x-forwarded-for': `2001:db8:46:${address}::1` } })
+
+  test('measures a page whole with one grant, and the grant is spent', async ({ request, browserName }) => {
+    const address = ['chromium', 'firefox', 'webkit'].indexOf(browserName) + 1
+    const grant = await systemGrant(request, { kind: 'page', documentId: 'doc-page-draft' })
+    const measured = await weight(request, grant, address)
+    expect(measured.status()).toBe(200)
+    expect(measured.headers()['set-cookie']).toBeUndefined()
+    expect(measured.headers()['content-security-policy']).toContain('frame-ancestors \'none\'')
+    const report = (await measured.json() as { data: { blocks: unknown[], totalKb: number } }).data
+    expect(report.blocks.length).toBeGreaterThanOrEqual(10)
+    expect(report.totalKb).toBeGreaterThan(0)
+    expect((await weight(request, grant, address)).status()).toBe(404)
+  })
+
+  test('is refused by the draft routes and shows nothing', async ({ request }) => {
+    const grant = await systemGrant(request, { kind: 'page', documentId: 'doc-page-draft' })
+    for (const path of ['/api/drafts/pages/doc-page-draft?locale=en', '/drafts/pages/doc-page-draft?locale=en']) {
+      const response = await request.get(`${APP}${path}`, { headers: { 'cookie': `__Host-micelio_preview=${grant}`, 'x-micelio-preview-grant': grant } })
+      expect(response.status(), path).toBe(404)
+      expect(response.headers()['x-frame-options'], path).toBe('DENY')
+    }
+  })
+})

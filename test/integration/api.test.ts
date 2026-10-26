@@ -15,7 +15,7 @@ import { HASHED_TOKENS, startMockStrapi, WEBFINGER_JRD } from './mock-strapi'
 import { MOCK_REDIRECT_TARGET, MOCK_TRACKER_SCRIPT, startMockUmami } from './mock-umami'
 import { confirmationToken, resetCode, testUsers } from '../../e2e/fixtures/auth.mjs'
 import { pageFixtures } from '../../e2e/fixtures/pages.mjs'
-import { draftPage } from '../../e2e/fixtures/drafts.mjs'
+import { draftArticles, draftPage } from '../../e2e/fixtures/drafts.mjs'
 import { aboutSchema } from '~/schemas/blocks'
 import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/schemas/comments'
 import { draftListResponseSchema, draftPageResponseSchema } from '~/schemas/drafts'
@@ -78,6 +78,7 @@ beforeEach(() => {
   mock.theme.value = null
   mock.preview.calls.length = 0
   mock.preview.state.permission = true
+  mock.preview.state.omitActor = false
   mock.homePage.value = null
   mock.securityContact.value = null
   mock.fediverseUsername.value = null
@@ -2846,7 +2847,12 @@ describe('the weight of a draft (bogd3v/micelio#730)', () => {
     const { report } = await weigh(PAGE, cookie, '?locale=en')
     const url = new URL('/drafts/pages/doc-page-draft?locale=en', useTestContext().url!).href
     const page = await sentOverHttp(url, cookie)
-    expect(report!.htmlKb).toBe(weightKb(page.sent))
+    // The page the admin's frame receives carries the origin that may frame it in its payload; the render of the report is made in process from the draft the
+    // route kept and carries none, as a published page has none (ADR 0019, amendment of 2026-10-25), so it is that much lighter and never heavier
+    expect(page.text).toContain(new URL(ADMIN_ORIGIN).host)
+    const difference = weightKb(page.sent) - report!.htmlKb
+    expect(difference, `${report!.htmlKb} KB against ${weightKb(page.sent)} KB`).toBeGreaterThanOrEqual(0)
+    expect(difference).toBeLessThanOrEqual(0.2)
     // The scripts the draft route declares and nothing of another route
     const { scripts } = declaredAssets(page.text, url)
     const sent = (await Promise.all([...scripts].map(script => sentOverHttp(script)))).reduce((sum, script) => sum + script.sent, 0)
@@ -2882,8 +2888,8 @@ describe('the weight of a draft (bogd3v/micelio#730)', () => {
     mock.preview.calls.length = 0
     const first = (await weigh(PAGE, cookie, '?locale=es')).report!
     const rendered = mock.preview.calls.filter(call => call.kind === 'draft').length
-    // The draft is read once for its version, once for the whole page and once for each block left out
-    expect(rendered).toBe(2 + first.blocks.length)
+    // The CMS is asked for the draft once for the whole report: the renders read the copy the route kept (ADR 0019, amendment of 2026-10-25)
+    expect(rendered).toBe(1)
     mock.preview.calls.length = 0
     expect((await weigh(PAGE, cookie, '?locale=es')).report).toEqual(first)
     expect(mock.preview.calls.filter(call => call.kind === 'draft')).toHaveLength(1)
@@ -2892,7 +2898,7 @@ describe('the weight of a draft (bogd3v/micelio#730)', () => {
       draftPage.updatedAt = '2026-10-25T10:00:00.000Z'
       mock.preview.calls.length = 0
       await weigh(PAGE, cookie, '?locale=es')
-      expect(mock.preview.calls.filter(call => call.kind === 'draft')).toHaveLength(rendered)
+      expect(mock.preview.calls.filter(call => call.kind === 'draft')).toHaveLength(1)
     } finally {
       draftPage.updatedAt = saved
     }
@@ -2906,8 +2912,8 @@ describe('the weight of a draft (bogd3v/micelio#730)', () => {
       mock.preview.calls.length = 0
       const [first, second] = await Promise.all([weigh(PAGE, cookie, '?locale=en'), weigh(PAGE, cookie, '?locale=en')])
       expect(second.report).toEqual(first.report)
-      // Two reads for the version, one render of the page and one per block: the second request rendered nothing
-      expect(mock.preview.calls.filter(call => call.kind === 'draft')).toHaveLength(2 + 1 + first.report!.blocks.length)
+      // One read for each request and nothing for the renders: the second request rendered nothing
+      expect(mock.preview.calls.filter(call => call.kind === 'draft')).toHaveLength(2)
     } finally {
       draftPage.updatedAt = saved
     }
@@ -2921,6 +2927,200 @@ describe('the weight of a draft (bogd3v/micelio#730)', () => {
     const seconds = (performance.now() - started) / 1000
     expect(report!.blocks.length).toBeGreaterThanOrEqual(10)
     expect(seconds).toBeLessThan(3)
+  })
+
+  describe('with a system grant (ADR 0019, amendment of 2026-10-25, bogd3v/micelio#746)', () => {
+    const SYSTEM_HEADER = 'x-micelio-preview-grant'
+    const FRAME_ANCESTORS_NONE = 'frame-ancestors \'none\''
+
+    /** A system grant for the draft page or article as it is now, minted the way the plugin does at publish: bound to its `updatedAt`. */
+    function systemGrantFor(binding: { kind: 'article' | 'page', documentId: string, locale?: string }, version?: string): string {
+      const locale = binding.locale ?? 'en'
+      const current = binding.kind === 'page' ? draftPage.updatedAt : draftArticles.find(article => article.documentId === binding.documentId && article.locale === locale)!.updatedAt
+      return mock.preview.issueSystem({ ...binding, locale, version: version ?? current })
+    }
+
+    const pageSystemGrant = (version?: string) => systemGrantFor({ kind: 'page', documentId: 'doc-page-draft' }, version)
+
+    async function weighWithSystem(grant: string, path = PAGE, query = '?locale=en', headers: Record<string, string> = {}): Promise<Response> {
+      return fetch(`/api/preview/${path}/weight${query}`, { headers: { [SYSTEM_HEADER]: grant, ...visitor(), ...headers } })
+    }
+
+    // The three hops through the real routes with no cookie: the weight route, the draft page with its `editor` middleware, and the draft API route.
+    // This is the pin of the mechanism that rests on `__unenv__`, an internal of Nitro 2 (ADR 0019, amendment): a Nitro major re-runs it before it merges
+    it('measures a page of ten blocks whole with one system grant, asking the CMS once and sending no cookie', async () => {
+      const grant = pageSystemGrant()
+      mock.preview.calls.length = 0
+      const response = await weighWithSystem(grant, PAGE, '?locale=en&mode=static')
+      expect(response.status).toBe(200)
+      expect(response.headers.get('cache-control')).toBe('private, no-store')
+      expect(response.headers.get('set-cookie')).toBeNull()
+      expect(response.headers.get('content-security-policy') ?? '').toContain(FRAME_ANCESTORS_NONE)
+      expect(response.headers.get('x-frame-options')).toBe('DENY')
+      const body = await response.json()
+      expect(weightReportResponseSchema.safeParse(body).error?.issues ?? []).toEqual([])
+      const report = (body as { data: WeightReport }).data
+      expect(report.blocks.length).toBeGreaterThanOrEqual(10)
+      expect(report.totalKb).toBeGreaterThan(0)
+      expect(mock.preview.calls).toMatchObject([{ kind: 'draft', authorization: 'Bearer test-api-token', grant }])
+      expect(JSON.stringify(body)).not.toContain(grant)
+    })
+
+    it('measures the same as the editor\'s grant does, so there is one way to measure', async () => {
+      const saved = draftPage.updatedAt
+      try {
+        // A version of its own for each report, so neither is the other's cached copy
+        draftPage.updatedAt = '2026-10-26T08:00:00.000Z'
+        const system = (await (await weighWithSystem(pageSystemGrant(), PAGE, '?locale=en&mode=static')).json() as { data: WeightReport }).data
+        draftPage.updatedAt = '2026-10-26T08:01:00.000Z'
+        const editors = (await weigh(PAGE, await pageGrant(), '?locale=en&mode=static')).report!
+        expect(system.blocks.length).toBeGreaterThanOrEqual(10)
+        expect(system).toEqual(editors)
+      } finally {
+        draftPage.updatedAt = saved
+      }
+    })
+
+    it('measures an article with a system grant', async () => {
+      const response = await weighWithSystem(systemGrantFor({ kind: 'article', documentId: 'doc-linux' }), ARTICLE, '')
+      expect(response.status).toBe(200)
+      expect(((await response.json()) as { data: WeightReport }).data.blocks.map(block => block.id)).toEqual(['rich-text'])
+    })
+
+    it('spends the grant on its one use: a second request with it is the same 404', async () => {
+      const grant = pageSystemGrant()
+      expect((await weighWithSystem(grant, PAGE, '?locale=en&mode=static')).status).toBe(200)
+      expect((await weighWithSystem(grant, PAGE, '?locale=en&mode=static')).status).toBe(404)
+    })
+
+    it('refuses a grant that was minted for another version or another document, that ended, or that nobody minted, with the same 404', async () => {
+      const refused = [
+        await weighWithSystem(pageSystemGrant('2026-01-01T00:00:00.000Z'), PAGE, '?locale=es'),
+        await weighWithSystem(systemGrantFor({ kind: 'page', documentId: 'doc-other' }), PAGE, '?locale=es'),
+        await weighWithSystem('never-minted', PAGE, '?locale=es'),
+        await weighWithSystem('x'.repeat(300), PAGE, '?locale=es'),
+      ]
+      const ended = pageSystemGrant()
+      mock.preview.expireGrants()
+      refused.push(await weighWithSystem(ended, PAGE, '?locale=es'))
+      for (const response of refused) {
+        expect(response.status).toBe(404)
+        expect(await response.text()).not.toMatch(/version|document|locale|spent|expired/i)
+      }
+    })
+
+    it('does not ask the CMS for a grant that is too long or a path that is not a preview kind', async () => {
+      mock.preview.calls.length = 0
+      expect((await weighWithSystem('x'.repeat(300))).status).toBe(404)
+      for (const path of ['api::tag.tag/doc-page-draft', 'toString/doc-page-draft', 'api%3A%3Apage.page/a%20b']) {
+        expect((await weighWithSystem(pageSystemGrant(), path)).status, path).toBe(404)
+      }
+      expect(mock.preview.calls).toEqual([])
+    })
+
+    it('is accepted by the weight route only: the draft routes, the page and the exchange refuse it, and nothing frames', async () => {
+      const grant = pageSystemGrant()
+      const asCookie = { cookie: `__Host-micelio_preview=${grant}` }
+      const asHeader = { [SYSTEM_HEADER]: grant }
+      const articleGrant = systemGrantFor({ kind: 'article', documentId: 'doc-linux' })
+      const articleCookie = { cookie: `__Host-micelio_preview=${articleGrant}` }
+      const responses = [
+        await fetch('/api/drafts/pages/doc-page-draft?locale=en', { headers: asCookie }),
+        await fetch('/api/drafts/pages/doc-page-draft?locale=en', { headers: asHeader }),
+        await fetch('/drafts/pages/doc-page-draft?locale=en', { headers: asCookie }),
+        await fetch('/drafts/pages/doc-page-draft?locale=en', { headers: asHeader }),
+        await fetch('/api/drafts/doc-linux?locale=en', { headers: articleCookie }),
+        await fetch('/api/drafts/doc-linux?locale=en', { headers: { [SYSTEM_HEADER]: articleGrant } }),
+        await fetch('/drafts/doc-linux?locale=en', { headers: articleCookie }),
+        await fetch('/drafts/doc-linux?locale=en', { headers: { [SYSTEM_HEADER]: articleGrant } }),
+        await fetch(`/_preview?token=${grant}`, { redirect: 'manual', headers: visitor() }),
+      ]
+      // The CMS did answer the cookie requests with an actor of `system`: the refusal is the frontend's
+      expect(mock.preview.calls.filter(call => call.grant === grant).length).toBeGreaterThanOrEqual(1)
+      for (const response of responses) {
+        expect(response.status).toBe(404)
+        expect(response.headers.getSetCookie()).toEqual([])
+        expect(response.headers.get('content-security-policy') ?? '').toContain(FRAME_ANCESTORS_NONE)
+        expect(response.headers.get('content-security-policy') ?? '').not.toContain(ADMIN_ORIGIN)
+        expect(response.headers.get('x-frame-options')).toBe('DENY')
+      }
+    })
+
+    it('takes only a system grant in the header: the editor\'s grant is the cookie\'s', async () => {
+      const editor = await pageGrant()
+      expect((await weighWithSystem(editor.replace('__Host-micelio_preview=', ''), PAGE, '?locale=en&mode=static')).status).toBe(404)
+    })
+
+    it('does not let the network set what the weight route hands down', async () => {
+      mock.preview.calls.length = 0
+      mock.requests.length = 0
+      const forged = JSON.stringify({ kind: 'page', documentId: 'doc-page-draft', draft: { title: 'FORGED-TITLE-746', sections: [] } })
+      const attempts: Array<{ headers: Record<string, string> }> = [
+        { headers: { 'x-previewdraft': forged, 'cookie': `previewDraft=${forged}` } },
+        { headers: { 'x-nitro-context': forged, 'x-forwarded-for': '2001:db8:97:ff::1' } },
+      ]
+      for (const path of ['/api/drafts/pages/doc-page-draft?previewDraft=forged&context[previewDraft]=forged', '/drafts/pages/doc-page-draft?previewDraft=forged', '/api/drafts/doc-linux?previewDraft=forged']) {
+        for (const attempt of attempts) {
+          const response = await fetch(path, { ...attempt, method: 'GET' })
+          expect(response.status, path).toBe(404)
+          expect(await response.text(), path).not.toContain('FORGED-TITLE-746')
+        }
+      }
+      for (const path of ['/api/drafts/pages/doc-page-draft', '/drafts/pages/doc-page-draft']) {
+        const withBody = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: forged })
+        expect(withBody.status, path).not.toBe(200)
+        expect(await withBody.text(), path).not.toContain('FORGED-TITLE-746')
+      }
+      expect(mock.preview.calls).toEqual([])
+    })
+
+    it('answers 404, not a measurement, when the CMS does not say who the grant acts for', async () => {
+      mock.preview.state.omitActor = true
+      expect((await weighWithSystem(pageSystemGrant(), PAGE, '?locale=en&mode=static')).status).toBe(404)
+      const cookie = await pageGrant()
+      expect((await weigh(PAGE, cookie, '?locale=en&mode=static')).response.status).toBe(404)
+      expect((await fetch('/api/drafts/pages/doc-page-draft?locale=en', { headers: { cookie } })).status).toBe(404)
+      const articleCookie = await grantFor({ documentId: 'doc-linux' })
+      for (const path of ['/api/drafts/doc-linux?locale=en', '/drafts/doc-linux?locale=en']) {
+        const response = await fetch(path, { headers: { cookie: articleCookie } })
+        expect(response.status, path).toBe(404)
+        expect(response.headers.get('content-security-policy') ?? '').toContain(FRAME_ANCESTORS_NONE)
+        expect(response.headers.get('x-frame-options')).toBe('DENY')
+      }
+    })
+
+    it('limits a caller of the header per address in a bucket of its own, and never lets a refused grant use up the bucket of the document', async () => {
+      const PIHOLE = 'api%3A%3Aarticle.article/doc-draft-pihole'
+      const from = (address: string, grant: string, path = PIHOLE, query = '?locale=es&mode=static') => weighWithSystem(grant, path, query, { 'x-forwarded-for': address })
+      const pihole = () => systemGrantFor({ kind: 'article', documentId: 'doc-draft-pihole', locale: 'es' })
+      // Grants nobody minted still cost a call to the CMS, so 120 a minute from one address are counted, and the next one is limited
+      for (let i = 0; i < 120; i++) expect((await from('2001:db8:96:1::1', `never-minted-${i}`)).status).toBe(404)
+      const limited = await from('2001:db8:96:1::1', 'never-minted-last')
+      expect(limited.status).toBe(429)
+      expect(limited.headers.get('retry-after')).toBeTruthy()
+      // None of them reached the bucket of the document: a valid grant for it, from another address, is served
+      expect((await from('2001:db8:96:2::1', pihole())).status).toBe(200)
+    })
+
+    it('limits a document only after the CMS confirmed a system grant for it, and not the other documents of one address', async () => {
+      const targets = [
+        { path: PAGE, query: '?locale=en&mode=static', grant: pageSystemGrant },
+        { path: ARTICLE, query: '?locale=en&mode=static', grant: () => systemGrantFor({ kind: 'article', documentId: 'doc-linux' }) },
+        { path: 'api%3A%3Aarticle.article/doc-draft-pihole', query: '?locale=es&mode=static', grant: () => systemGrantFor({ kind: 'article', documentId: 'doc-draft-pihole', locale: 'es' }) },
+      ]
+      // 13 requests for three documents from one address: more than one document's bucket, fewer than each one's
+      const address = { 'x-forwarded-for': '2001:db8:96:3::1' }
+      const sizes = [3, 5, 5]
+      for (const [index, target] of targets.entries()) {
+        for (let i = 0; i < sizes[index]!; i++) expect((await weighWithSystem(target.grant(), target.path, target.query, address)).status, `${target.path} ${i}`).toBe(200)
+      }
+      // A burst for one document ends in a 429 with Retry-After, from any address
+      const burst = []
+      for (let i = 0; i < 6; i++) burst.push(await weighWithSystem(targets[2]!.grant(), targets[2]!.path, targets[2]!.query))
+      const refused = burst.find(response => response.status === 429)
+      expect(refused).toBeDefined()
+      expect(refused!.headers.get('retry-after')).toBeTruthy()
+    })
   })
 
   it('answers the same 404 without a grant, for another content type or a document id outside the alphabet, and never calls the CMS to find out', async () => {

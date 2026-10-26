@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { fetch, setup } from '@nuxt/test-utils/e2e'
+import { draftPage } from '../../e2e/fixtures/drafts.mjs'
 import { startMockStrapi } from './mock-strapi'
 
 // A server with no NUXT_PREVIEW_ADMIN_ORIGIN has no preview (ADR 0019, section 5): the default, and what an operator who never asked for it gets
@@ -48,5 +49,24 @@ describe('a server with the preview off', () => {
       expect(response.status, path).toBe(404)
     }
     expect(mock.preview.calls).toEqual([])
+  })
+
+  // A system grant frames nothing, so the budget is measured at publish whatever the operator chose for the admin (ADR 0019, amendment of 2026-10-25)
+  it('still measures a draft for a system grant, frames nothing, and keeps the draft routes closed to it', async () => {
+    const grant = mock.preview.issueSystem({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', version: draftPage.updatedAt })
+    mock.preview.calls.length = 0
+    const weight = await fetch('/api/preview/api%3A%3Apage.page/doc-page-draft/weight?locale=en&mode=static', { headers: { 'x-micelio-preview-grant': grant } })
+    expect(weight.status).toBe(200)
+    expect(weight.headers.getSetCookie()).toEqual([])
+    expect(weight.headers.get('content-security-policy') ?? '').toContain('frame-ancestors \'none\'')
+    expect(((await weight.json()) as { data: { blocks: unknown[] } }).data.blocks.length).toBeGreaterThan(5)
+    // The CMS was asked once: the renders read the copy the route kept
+    expect(mock.preview.calls).toHaveLength(1)
+    const again = mock.preview.issueSystem({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', version: draftPage.updatedAt })
+    for (const path of ['/api/drafts/pages/doc-page-draft?locale=en', '/drafts/pages/doc-page-draft?locale=en']) {
+      const response = await fetch(path, { headers: { 'x-micelio-preview-grant': again, 'cookie': `__Host-micelio_preview=${again}` } })
+      expect(response.status, path).toBe(404)
+      expect(response.headers.get('x-frame-options'), path).toBe('DENY')
+    }
   })
 })

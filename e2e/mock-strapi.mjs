@@ -496,6 +496,10 @@ const server = createServer(async (req, res) => {
       sendJson(res, 200, { token: previewMock.issue(body) })
       return
     }
+    if (method === 'POST' && url.pathname === '/__mock/preview-system-grant') {
+      sendJson(res, 200, { grant: previewMock.issueSystem(body) })
+      return
+    }
     const previewed = previewMock.handle(method, url.pathname, query, req.headers, body)
     if (previewed) {
       sendJson(res, previewed.status, previewed.body)

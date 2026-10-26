@@ -24,6 +24,9 @@ export const previewGrantSchema = z.object({
 /** The grant of an exchange, with what it is bound to. */
 export type PreviewGrant = z.infer<typeof previewGrantSchema>['data']
 
+/** The `meta` of the CMS's answer to a draft read: who the grant acts for (ADR 0019, amendment of 2026-10-25). An answer without it, or with another actor, does not parse. */
+export const previewDraftMetaSchema = z.object({ actor: z.enum(['admin', 'system']) })
+
 /** The route parameters of the weight report: the content type of the preview kinds and the document, checked before any CMS call. */
 export const weightParamsSchema = z.object({
   uid: z.string().refine(uid => Object.hasOwn(PREVIEW_CONTENT_TYPES, uid)),
