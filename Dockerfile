@@ -1,4 +1,4 @@
-FROM node:22.23-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392 AS builder
+FROM node:22.23-slim@sha256:de170b39439eb0e5a3444ad7d60b015614a381e10fecae2e30ec9e735122f38d AS builder
 
 ARG GIT_COMMIT_SHA=unknown
 ARG GIT_COMMIT_DATE=unknown
@@ -16,7 +16,7 @@ RUN npm rebuild && npm run theme:pull -- --frozen && npm run build
 
 # Builder image (ghcr.io/bogd3v/micelio-builder): generates a static site at run time and serves it.
 # Declared before the production stage, which must stay last (the default target). docs/operate/static-site.md
-FROM node:22.23-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392 AS static
+FROM node:22.23-slim@sha256:de170b39439eb0e5a3444ad7d60b015614a381e10fecae2e30ec9e735122f38d AS static
 
 ARG GIT_COMMIT_SHA=unknown
 ARG GIT_COMMIT_DATE=unknown
