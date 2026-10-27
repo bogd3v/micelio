@@ -1,9 +1,13 @@
-// The admin side of the preview for e2e/preview: static pages on `http://localhost:<ADMIN_PORT>` (another site than the frontend at
-// 127.0.0.1) that frame a draft and talk to it as the CMS admin page does. The same files are served on `http://127.0.0.1:<ADMIN_PORT>`
-// too, which is another origin: the "stranger" that must not be heard.
-import { createServer } from 'node:http'
+// The admin side of the preview for e2e/preview: static pages on `https://localhost:<ADMIN_PORT>` (another site than the frontend at
+// 127.0.0.1) that frame a draft and talk to it as the CMS admin page does. The same files are served on `https://127.0.0.1:<ADMIN_PORT>`
+// too, which is another origin: the "stranger" that must not be heard. The certificate and key are the throwaway ones of `ADMIN_TLS_DIR` (e2e/preview/tls.ts).
+import { readFileSync } from 'node:fs'
+import { createServer } from 'node:https'
+import { join } from 'node:path'
 
 const port = Number(process.env.ADMIN_PORT ?? 4400)
+const tlsDir = process.env.ADMIN_TLS_DIR
+if (!tlsDir) throw new Error('ADMIN_TLS_DIR is not set: the admin page is served over https')
 
 // Records every message the frame posts, with the origin and whether the sender is the frame; `send` posts one to the frame
 const ADMIN_PAGE = `<!doctype html>
@@ -47,7 +51,7 @@ const FILES = {
   '/sibling.html': ['text/html; charset=utf-8', SIBLING_PAGE],
 }
 
-createServer((req, res) => {
+createServer({ cert: readFileSync(join(tlsDir, 'cert.pem')), key: readFileSync(join(tlsDir, 'key.pem')) }, (req, res) => {
   const { pathname } = new URL(req.url ?? '/', 'http://localhost')
   const file = FILES[pathname]
   if (!file) {

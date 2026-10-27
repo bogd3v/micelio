@@ -21,15 +21,19 @@ interface Servers {
   theme?: string
   /** Extra theme directories (`MICELIO_THEME_DIRS`): dev compiles them; a build must have been made with them */
   themeDirs?: string
-  /** Turn the preview of drafts on for an admin page served at `http://localhost:<adminPort>` by `e2e/preview/admin-server.mjs`, and let the mock Strapi make preview tokens (e2e/preview) */
-  adminPort?: number
+  /**
+   * Turn the preview of drafts on for an admin page served at `https://localhost:<adminPort>` by `e2e/preview/admin-server.mjs`, and let the mock Strapi make preview tokens (e2e/preview).
+   * The site and the admin page are served over https with the certificate in `tlsDir` (`e2e/preview/tls.ts`): the grant cookie is `Secure`, and Playwright's Linux WebKit stores none from an http page.
+   */
+  preview?: { adminPort: number, tlsDir: string }
 }
 
 /** The mock Strapi and the Nuxt server (dev, or the build with E2E_BUILD=1) pointed at it, with BogDev's site values (neutral ones with `emptySite`). */
-export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false, privacyJurisdiction = '', categoryArticles = false, emptySite = false, siteUrl = emptySite ? 'https://example.com' : 'https://bogdev.com.co', theme, themeDirs, adminPort }: Servers): PlaywrightTestConfig['webServer'] {
+export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false, privacyJurisdiction = '', categoryArticles = false, emptySite = false, siteUrl = emptySite ? 'https://example.com' : 'https://bogdev.com.co', theme, themeDirs, preview }: Servers): PlaywrightTestConfig['webServer'] {
+  const scheme = preview ? 'https' : 'http'
   return [
     {
-      command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=http://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''}${homePage ? ' MOCK_HOME_PAGE=1' : ''}${privacyJurisdiction ? ` MOCK_PRIVACY_JURISDICTION=${privacyJurisdiction}` : ''}${categoryArticles ? ' MOCK_CATEGORY_ARTICLES=1' : ''}${emptySite ? ' MOCK_EMPTY_SITE=1' : ''}${adminPort ? ' MOCK_PREVIEW=1' : ''} node e2e/mock-strapi.mjs`,
+      command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=${scheme}://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''}${homePage ? ' MOCK_HOME_PAGE=1' : ''}${privacyJurisdiction ? ` MOCK_PRIVACY_JURISDICTION=${privacyJurisdiction}` : ''}${categoryArticles ? ' MOCK_CATEGORY_ARTICLES=1' : ''}${emptySite ? ' MOCK_EMPTY_SITE=1' : ''}${preview ? ' MOCK_PREVIEW=1' : ''} node e2e/mock-strapi.mjs`,
       port: mockPort,
       reuseExistingServer: !process.env.CI,
       timeout: 15_000,
@@ -45,7 +49,13 @@ export function webServers({ mockPort, appPort, modulesOff = false, themeOverrid
         'NUXT_STRAPI_API_TOKEN=e2e-api-token',
         ...(theme ? [`NUXT_PUBLIC_THEME=${theme}`] : []),
         ...(themeDirs ? [`MICELIO_THEME_DIRS=${themeDirs}`] : []),
-        ...(adminPort ? [`NUXT_PREVIEW_ADMIN_ORIGIN=http://localhost:${adminPort}`] : []),
+        ...(preview
+          ? [
+              `NUXT_PREVIEW_ADMIN_ORIGIN=https://localhost:${preview.adminPort}`,
+              // Nitro takes the PEM text itself, not a path
+              `NITRO_SSL_CERT="$(cat "${preview.tlsDir}/cert.pem")" NITRO_SSL_KEY="$(cat "${preview.tlsDir}/key.pem")"`,
+            ]
+          : []),
         ...(emptySite
           ? [
               'NUXT_MEDIA_URL=https://resources.example.com',
@@ -70,10 +80,10 @@ export function webServers({ mockPort, appPort, modulesOff = false, themeOverrid
       timeout: 240_000,
     },
     // The admin side of the preview: a page on another site that frames the draft, as the CMS admin does
-    ...(adminPort
+    ...(preview
       ? [{
-          command: `ADMIN_PORT=${adminPort} node e2e/preview/admin-server.mjs`,
-          port: adminPort,
+          command: `ADMIN_PORT=${preview.adminPort} ADMIN_TLS_DIR="${preview.tlsDir}" node e2e/preview/admin-server.mjs`,
+          port: preview.adminPort,
           reuseExistingServer: !process.env.CI,
           timeout: 15_000,
         }]
