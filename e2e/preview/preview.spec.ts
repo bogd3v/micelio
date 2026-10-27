@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import type { APIRequestContext, Frame, Page } from '@playwright/test'
+import type { APIRequestContext, Frame, Page, Response } from '@playwright/test'
 
 // ADR 0019: the admin frames a draft of the frontend. The admin is a page on http://localhost (e2e/preview/admin-server.mjs), the frontend
 // is on http://127.0.0.1: two sites, so the grant cookie is a third-party partitioned one. The same admin files on http://127.0.0.1 are the
@@ -48,7 +48,8 @@ function settled(frame: Frame): Promise<void> {
 }
 
 // Whether the engine sends the partitioned grant cookie inside a frame of another site, with its default settings (ADR 0019, section 7).
-// WebKit blocks third-party cookies, partitioned ones included; the preview there needs the admin and the site on one site, or the fallback of the spike
+// WebKit blocks third-party cookies, partitioned ones included, so the frame tests below skip there. What WebKit has instead is the fallback of the
+// amendment of 2026-10-26: the same address opened as a top-level page, where the cookie is first-party. 'the draft as a top-level page' is the block for it (skipped on WebKit until #763)
 const SENDS_PARTITIONED_COOKIE: Record<string, boolean> = { chromium: true, firefox: true, webkit: false }
 
 test.describe('the grant cookie in a frame of another site', () => {
@@ -65,8 +66,53 @@ test.describe('the grant cookie in a frame of another site', () => {
   })
 })
 
+// The fallback of the amendment of 2026-10-26 for an engine that refuses the cookie in a frame: the admin opens `/_preview?token=…` as a tab, a page of the
+// site, where the cookie is first-party
+test.describe('the draft as a top-level page', () => {
+  // Playwright's Linux WebKit stores no `Secure` cookie from an http page, first-party included, and this harness is http: the grant cookie never lands.
+  // bogd3v/micelio#763 (the preview e2e over https) un-skips this block
+  test.skip(({ browserName }) => browserName === 'webkit', 'Playwright\'s Linux WebKit stores no Secure cookie from an http page; bogd3v/micelio#763 (preview e2e over https) un-skips this block')
+
+  /** Opens the tab from the admin's page as the pane's button does, and waits for the draft's own response (after the redirect). */
+  async function openTab(page: Page, request: APIRequestContext): Promise<{ tab: Page, draft: Response }> {
+    const token = await tokenFor(request, { documentId: 'doc-linux', locale: 'en' })
+    await page.goto(`${ADMIN}/admin.html?src=about:blank`)
+    const answered = page.context().waitForEvent('response', response => response.url().startsWith(`${APP}/drafts/`))
+    const [tab] = await Promise.all([
+      page.context().waitForEvent('page'),
+      page.evaluate((url) => { window.open(url, '_blank') }, `${APP}/_preview?token=${token}`),
+    ])
+    return { tab, draft: await answered }
+  }
+
+  test('opens in a new tab with the grant cookie, reloads, and cuts the link to the admin that opened it', async ({ page, request }) => {
+    const { tab, draft } = await openTab(page, request)
+    expect(draft.status()).toBe(200)
+    expect(draft.headers()['cross-origin-opener-policy']).toBe('same-origin')
+    await expect(tab.getByRole('heading', { level: 1, name: ARTICLE_TITLE })).toBeVisible()
+    expect(tab.url()).toBe(`${APP}/drafts/doc-linux?locale=en`)
+    expect((await page.context().cookies()).map(cookie => cookie.name)).toContain('__Host-micelio_preview')
+    expect(await tab.evaluate(() => window.opener)).toBeNull()
+
+    const reloaded = await tab.reload()
+    expect(reloaded!.status()).toBe(200)
+    await expect(tab.getByRole('heading', { level: 1, name: ARTICLE_TITLE })).toBeVisible()
+  })
+
+  test('is refused and cannot be framed once the cookie is cleared, as in the frame', async ({ page, request }) => {
+    const { tab } = await openTab(page, request)
+    await expect(tab.getByRole('heading', { level: 1, name: ARTICLE_TITLE })).toBeVisible()
+    await page.context().clearCookies()
+
+    const reloaded = await tab.reload()
+    expect(reloaded!.status()).toBe(404)
+    expect(reloaded!.headers()['content-security-policy']).toContain('frame-ancestors \'none\'')
+    expect(reloaded!.headers()['x-frame-options']).toBe('DENY')
+  })
+})
+
 test.describe('the draft in the admin\'s frame', () => {
-  test.skip(({ browserName }) => !SENDS_PARTITIONED_COOKIE[browserName], 'This engine refuses the grant cookie in a frame of another site: the test above pins it')
+  test.skip(({ browserName }) => !SENDS_PARTITIONED_COOKIE[browserName], 'This engine refuses the grant cookie in a frame of another site: the test above pins it; the fallback is in \'the draft as a top-level page\' (amendment of 2026-10-26; skipped on WebKit until bogd3v/micelio#763)')
 
   test('is opened with the grant cookie and says ready to the admin', async ({ page, request }) => {
     const frame = await openAdmin(page, request, { documentId: 'doc-linux', locale: 'en' })
@@ -142,7 +188,7 @@ test.describe('the draft in the admin\'s frame', () => {
 })
 
 test.describe('the modes of the draft route', () => {
-  test.skip(({ browserName }) => !SENDS_PARTITIONED_COOKIE[browserName], 'This engine refuses the grant cookie in a frame of another site: the cookie test pins it')
+  test.skip(({ browserName }) => !SENDS_PARTITIONED_COOKIE[browserName], 'This engine refuses the grant cookie in a frame of another site: the cookie test pins it; the fallback is in \'the draft as a top-level page\' (amendment of 2026-10-26; skipped on WebKit until bogd3v/micelio#763)')
 
   test('loads the islands of a page draft in the dynamic mode and leaves them on their static alternative in the static mode', async ({ page, request }) => {
     const islands: string[] = []
