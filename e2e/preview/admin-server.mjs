@@ -33,6 +33,16 @@ window.addSibling = (src) => new Promise((resolve) => {
   sibling.src = src
   document.body.append(sibling)
 })
+// Reads a weight report as the cost meter does: a credentialed \`fetch\` from the admin page. The browser hides the answer of a route that sends no CORS headers
+// for this origin, and the call then rejects with a \`TypeError\` that says nothing else
+window.readWeight = async (url) => {
+  try {
+    const response = await fetch(url, { credentials: 'include' })
+    return { status: response.status, body: await response.json() }
+  } catch (error) {
+    return { failed: String(error) }
+  }
+}
 frame.src = params.get('src')
 `
 

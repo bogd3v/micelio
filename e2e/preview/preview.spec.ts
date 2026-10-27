@@ -56,6 +56,12 @@ function settled(frame: Frame): Promise<void> {
 // retries of CI add to them, so a test that reaches it should be counted.
 const SENDS_PARTITIONED_COOKIE: Record<string, boolean> = { chromium: true, firefox: true, webkit: false }
 
+// The weight report of a draft, read by the admin page with a credentialed `fetch` (bogd3v/micelio#766)
+const WEIGHT = `${APP}/api/preview/api%3A%3Aarticle.article/doc-linux/weight?locale=en&mode=static`
+
+interface Read { status?: number, body?: { data?: { totalKb: number, blocks: unknown[] } }, failed?: string }
+const readWeight = (page: Page): Promise<Read> => page.evaluate(url => (window as unknown as { readWeight: (url: string) => Promise<Read> }).readWeight(url), WEIGHT)
+
 /**
  * Opens the tab from the admin's page as the pane's button does, and waits until it has settled on the draft. Its first response is not awaited:
  * `Cross-Origin-Opener-Policy: same-origin` moves the tab to another browsing context group, and WebKit does not always report the response of the
@@ -85,6 +91,16 @@ test.describe('the grant cookie, in a frame of another site and as a page of the
     if (!sent) expect(draft.headers()['x-frame-options']).toBe('DENY')
     if (sent) await expect(frame.getByRole('heading', { level: 1, name: ARTICLE_TITLE })).toBeVisible()
     else expect((await page.context().cookies()).map(cookie => cookie.name)).not.toContain('__Host-micelio_preview')
+
+    // The admin page reads the weight report with the same grant (ADR 0019, amendment of 2026-10-25, bogd3v/micelio#766). Where the engine sends no cookie in a
+    // cross-site fetch (WebKit, as in its frame) the answer is the refusal, which the page can read too. It adds no exchange with `/_preview`
+    const read = await readWeight(page)
+    expect(read.failed).toBeUndefined()
+    expect(read.status).toBe(sent ? 200 : 404)
+    if (sent) {
+      expect(read.body!.data!.totalKb).toBeGreaterThan(0)
+      expect(read.body!.data!.blocks.length).toBeGreaterThan(0)
+    }
   })
 
   // A fresh token for the same address as above, opened as a page of the site: the cookie is first-party and every engine keeps it. Beside the refusal above it
@@ -224,6 +240,15 @@ test.describe('the modes of the draft route', () => {
     await settled(staticMode)
     expect(islands).toEqual([])
     expect(staticMode.url()).toBe(`${APP}/drafts/pages/doc-page-draft?locale=en&mode=static`)
+  })
+})
+
+// The cost meter of the plugin reads the weight report from the admin page with the editor's grant (ADR 0019, amendment of 2026-10-25, bogd3v/micelio#766):
+// a credentialed `fetch` of the cookie the frame got, which the browser lets the page read only if the route says so for the admin's origin
+test.describe('the weight of a draft, read by the admin page with the editor\'s grant', () => {
+  test('is hidden from a page of another origin, which gets no Access-Control header', async ({ page }) => {
+    await page.goto(`${STRANGER}/admin.html?src=about:blank`)
+    expect((await readWeight(page)).failed).toContain('TypeError')
   })
 })
 

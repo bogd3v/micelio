@@ -3156,6 +3156,58 @@ describe('the weight of a draft (bogd3v/micelio#730)', () => {
     expect((await fetch(`/api/preview/${PAGE}/weight`, { headers: { cookie, ...visitor() } })).status).toBe(404)
   })
 
+  // The admin page reads the report with the editor's grant in a credentialed `fetch` (ADR 0019, amendment of 2026-10-25, bogd3v/micelio#766)
+  describe('for the admin page of another origin', () => {
+    const CORS = ['access-control-allow-origin', 'access-control-allow-credentials']
+
+    it('sends the three headers to the admin origin only, with the same report', async () => {
+      const cookie = await pageGrant()
+      const asAdmin = await fetch(`/api/preview/${PAGE}/weight?locale=en&mode=static`, { headers: { cookie, origin: ADMIN_ORIGIN, ...visitor() } })
+      expect(asAdmin.status).toBe(200)
+      expect(asAdmin.headers.get('access-control-allow-origin')).toBe(ADMIN_ORIGIN)
+      expect(asAdmin.headers.get('access-control-allow-credentials')).toBe('true')
+      expect(asAdmin.headers.get('vary')).toContain('Origin')
+      const body = await asAdmin.json()
+      expect(weightReportResponseSchema.safeParse(body).error?.issues ?? []).toEqual([])
+      // Same report as a request with no Origin: only who may read it changes
+      const plain = await fetch(`/api/preview/${PAGE}/weight?locale=en&mode=static`, { headers: { cookie, ...visitor() } })
+      expect(plain.headers.get('access-control-allow-origin')).toBeNull()
+      expect(Object.keys((body as { data: Record<string, unknown> }).data).sort()).toEqual(Object.keys(((await plain.json()) as { data: Record<string, unknown> }).data).sort())
+    })
+
+    it('sends no Access-Control header to another origin, a lookalike or a missing one, and reflects none', async () => {
+      const cookie = await pageGrant()
+      for (const origin of ['https://evil.test', `${ADMIN_ORIGIN}.evil.test`, `${ADMIN_ORIGIN}/`, 'http://cms.bogdev.test', `${ADMIN_ORIGIN}:8443`, ADMIN_ORIGIN.toUpperCase(), 'null', SITE_URL, '*']) {
+        const response = await fetch(`/api/preview/${PAGE}/weight?locale=en&mode=static`, { headers: { cookie, origin, ...visitor() } })
+        expect(response.status, origin).toBe(200)
+        for (const name of CORS) expect(response.headers.get(name), `${origin} ${name}`).toBeNull()
+        expect(response.headers.get('vary') ?? '', origin).not.toContain('Origin')
+      }
+    })
+
+    it('sends the headers on a refusal to the admin origin, still the same 404, and none to a stranger', async () => {
+      const cookie = await pageGrant()
+      mock.preview.expireGrants()
+      const asAdmin = await fetch(`/api/preview/${PAGE}/weight`, { headers: { cookie, origin: ADMIN_ORIGIN, ...visitor() } })
+      expect(asAdmin.status).toBe(404)
+      expect(asAdmin.headers.get('access-control-allow-origin')).toBe(ADMIN_ORIGIN)
+      const noGrant = await fetch(`/api/preview/${PAGE}/weight`, { headers: { origin: ADMIN_ORIGIN, ...visitor() } })
+      expect(noGrant.status).toBe(404)
+      const stranger = await fetch(`/api/preview/${PAGE}/weight`, { headers: { cookie, origin: 'https://evil.test', ...visitor() } })
+      expect(stranger.status).toBe(404)
+      expect(stranger.headers.get('access-control-allow-origin')).toBeNull()
+    })
+
+    it('adds no CORS header to the other preview routes', async () => {
+      const cookie = await pageGrant()
+      for (const path of ['/api/drafts/pages/doc-page-draft?locale=en', '/drafts/pages/doc-page-draft?locale=en']) {
+        const response = await fetch(path, { headers: { cookie, origin: ADMIN_ORIGIN, ...visitor() } })
+        expect(response.status, path).toBe(200)
+        expect(response.headers.get('access-control-allow-origin'), path).toBeNull()
+      }
+    })
+  })
+
   it('answers 400 to an unsupported locale and rate limits the renders by address bucket', async () => {
     const cookie = await pageGrant()
     expect((await fetch(`/api/preview/${PAGE}/weight?locale=fr`, { headers: { cookie, ...visitor() } })).status).toBe(400)

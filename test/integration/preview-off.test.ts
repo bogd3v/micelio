@@ -51,6 +51,18 @@ describe('a server with the preview off', () => {
     expect(mock.preview.calls).toEqual([])
   })
 
+  it('sends no Access-Control header on the weight route, whatever the Origin, for a cookie or a system grant', async () => {
+    const cookie = '__Host-micelio_preview=preview-grant-1-yyyyyyyyyyyyyyyyyyyyyyyy'
+    const grant = mock.preview.issueSystem({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', version: draftPage.updatedAt })
+    for (const origin of ['https://cms.off.test', 'https://evil.test']) {
+      for (const headers of [{ cookie }, { 'x-micelio-preview-grant': grant }] as Record<string, string>[]) {
+        const response = await fetch('/api/preview/api%3A%3Apage.page/doc-page-draft/weight?locale=en&mode=static', { headers: { ...headers, origin } })
+        for (const name of ['access-control-allow-origin', 'access-control-allow-credentials']) expect(response.headers.get(name), `${origin} ${name}`).toBeNull()
+        expect(response.headers.get('vary') ?? '', origin).not.toContain('Origin')
+      }
+    }
+  })
+
   // A system grant frames nothing, so the budget is measured at publish whatever the operator chose for the admin (ADR 0019, amendment of 2026-10-25)
   it('still measures a draft for a system grant, frames nothing, and keeps the draft routes closed to it', async () => {
     const grant = mock.preview.issueSystem({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', version: draftPage.updatedAt })

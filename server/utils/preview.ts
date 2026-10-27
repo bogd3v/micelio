@@ -18,6 +18,19 @@ export function previewAdminOrigin(): string {
   return cspOrigin(String(useRuntimeConfig().previewAdminOrigin ?? ''))
 }
 
+/**
+ * Lets the admin page read this response with the editor's grant: sends `Access-Control-Allow-Origin`, `Access-Control-Allow-Credentials: true` and `Vary: Origin` when the request's `Origin` is exactly the configured admin origin, and nothing otherwise.
+ *
+ * @remarks
+ * No wildcard and no other origin is reflected, and with the preview off (`previewAdminOrigin()` is `''`) no request matches. It decides who may read the answer, never who gets it: the grant check is the route's own. Only the weight route calls it (ADR 0019, amendment of 2026-10-25). A `GET` with the cookie is a simple request, so no preflight is answered.
+ */
+export function allowPreviewAdminOrigin(event: H3Event): void {
+  const adminOrigin = previewAdminOrigin()
+  if (!adminOrigin || getRequestHeader(event, 'origin') !== adminOrigin) return
+  setHeaders(event, { 'Access-Control-Allow-Origin': adminOrigin, 'Access-Control-Allow-Credentials': 'true' })
+  appendResponseHeader(event, 'Vary', 'Origin')
+}
+
 /** The preview grant of the request, from `__Host-micelio_preview`, or `null` when the cookie is absent. */
 export function previewGrantOf(event: H3Event): string | null {
   return getCookie(event, PREVIEW_COOKIE) || null
