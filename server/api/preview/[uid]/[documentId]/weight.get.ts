@@ -10,6 +10,8 @@ export default defineEventHandler(async (event): Promise<WeightReportResponse> =
   preventCaching(event)
   setHeader(event, 'X-Robots-Tag', 'noindex, nofollow')
   setHeader(event, 'Referrer-Policy', 'no-referrer')
+  // The admin page reads the report with the editor's grant in a credentialed `fetch`; the refusals carry the headers too, so it can tell a 404 from a blocked answer
+  allowPreviewAdminOrigin(event)
   const sent = getRequestHeader(event, PREVIEW_GRANT_HEADER) || null
   const systemGrant = sent && sent.length <= PREVIEW_GRANT_MAX_LENGTH ? sent : null
   // The header opens the route whatever `NUXT_PREVIEW_ADMIN_ORIGIN` says: a `system` grant frames nothing. The cookie stays behind that gate
