@@ -9,7 +9,7 @@ if (!first || !second) {
 function normalize(text) {
   return text
     .replace(/\/_nuxt\/[\w.-]+/g, '/_nuxt/X')
-    // The theme store digest depends on the core build (ADR 0009), so two builds never share it
+    // The theme store digest depends on the core build (ADR 0009): builds of different compiler sources (modules/theme/, app/helpers/) or variant CSS do not share it
     .replace(/\/_t\/[0-9a-f]{64}\//g, '/_t/D/')
     .replace(/'sha256-[^']+'/g, '\'sha256-X\'')
     .replace(/"?buildId"?:"[^"]+"/g, 'buildId')

@@ -135,7 +135,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 200,
-            "description": "The Nuxt build id, which is the core build of the theme store's compile key (ADR 0009, section 1)."
+            "description": "The id of the core build, which is part of the theme store's compile key: a hash of the compiler's sources and the variant CSS (ADR 0009, section 1)."
           },
           "baseTheme": {
             "description": "The theme the shared build was made with; absent for `own`.",
