@@ -23,7 +23,7 @@ Nothing from a theme is executed, imported or evaluated at any step. A source is
 
 ## The built-in store and `/_t/`
 
-The image build installs every theme of the build (`themes/`, the lock's, `MICELIO_THEME_DIRS`) into a built-in store with `modules/theme/built-in-store.ts`, at the build's own core build id, and copies it to `.output/server/micelio/store`. It runs the checks of the Nuxt build (contract, public hooks, package) and `allowCode`; contrast and budgets are admission checks, which the build does not make for a theme the operator installed by hand. In development the store is `node_modules/.cache/micelio/built-in-store/<build id>/`.
+The image build installs every theme of the build (`themes/`, the lock's, `MICELIO_THEME_DIRS`) into a built-in store with `modules/theme/built-in-store.ts`, at the build's own core build id (`coreBuildOf` in `modules/theme/core-build.ts`: a hash of the sources of `modules/theme/` and `app/helpers/` and of the variant CSS), and copies it to `.output/server/micelio/store`. It runs the checks of the Nuxt build (contract, public hooks, package) and `allowCode`; contrast and budgets are admission checks, which the build does not make for a theme the operator installed by hand. In development the store is `node_modules/.cache/micelio/built-in-store/<build id>/`.
 
 At boot `server/plugins/builtInTheme.ts` loads the build's theme from it, verifies the entry against its manifest and parses `runtime.json` (`install/runtime.ts`); a defect stops the boot. `GET /_t/<digest>/<file>` serves that entry's files from memory ([API](../api.md)). The pages read the theme's modes, images, layout variants and Mermaid overrides from it (`useThemeData()`, below); the following PRs of #401 move the stylesheet and `NUXT_PUBLIC_THEME`.
 
@@ -67,7 +67,7 @@ The `url()` of the theme's CSS is rewritten on the parsed tree to `/_t/<digest>/
 ## Digests
 
 - The **package digest** is the sha256 of the `.tgz` (of the file tree, for a folder). It is what a pin names.
-- The **entry digest** (the `<digest>` of `/_t/<digest>/`, 64 hex digits) is a hash of the package digest and the **compile key**: the core build, the compiler version, the versions and targets of Lightning CSS and the message compiler, and the contract. A core upgrade gives new URLs, so an `immutable` file never changes under one URL.
+- The **entry digest** (the `<digest>` of `/_t/<digest>/`, 64 hex digits) is a hash of the package digest and the **compile key**: the core build, the compiler version, the versions and targets of Lightning CSS and the message compiler, and the contract. Any change to what decides the bytes (the compile key, including the core build) gives new URLs, so an `immutable` file never changes under one URL. The core build of the built-in store is a hash of the compiler's sources and the variant CSS, not the Nuxt build id (random on every build), so two builds of the same sources give the same digest and the same HTML.
 - Compilation is deterministic: the same package and compile key give the same bytes (gzip with no timestamp, a stable order of files and rules). `test/themeInstall.test.ts` installs twice, in two stores, and compares every byte.
 
 ## Store layout and trust

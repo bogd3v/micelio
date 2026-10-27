@@ -86,7 +86,7 @@ Every message is the one the check prints today, unchanged, so the report reads 
 | `theme` | `id`, `version`, the `contract` it declares, `code` |
 | `core` | `repository`, `ref`, `sha`, `version`, the `contract` it implements |
 | `run` | The workflow run URL |
-| `builds` | Per performance and quality build: `kind` (`shared` or `own`), `coreBuild` (the Nuxt build id), `baseTheme` or `reason` |
+| `builds` | Per performance and quality build: `kind` (`shared` or `own`), `coreBuild` (the id of the core build: a hash of the compiler's sources and the variant CSS), `baseTheme` or `reason` |
 | `package` | `file`, `digest` (`sha256:`), `bytes`; `null` when the theme cannot be packed |
 | `checks` | The status of each check, every page measurement per mode, and the passed, failed and skipped tests per quality spec |
 | `accessibility` | Optional, when the theme has a valid record: `status` (`passed`, `partial` when a line was not verified, `failed`), `current` (the record is for this version) and the `record` as written (`docs/themes/accessibility-checklist.md`) |
