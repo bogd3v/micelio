@@ -22,4 +22,7 @@ The preview is **off** until you set one variable.
 
 ## The cookie in a cross-site frame
 
-The admin and the site are different sites, so the grant cookie is `SameSite=None; Secure; Partitioned` (a partitioned cookie is kept for that admin only). Serve both over HTTPS. A browser that blocks third-party cookies for a partitioned cookie too shows the admin the plain "preview unavailable" state of the plugin; which browsers do is recorded in the pull request that added the preview and in ADR 0019, section 7.
+The admin and the site are different sites, so the grant cookie is `SameSite=None; Secure; Partitioned` (a partitioned cookie is kept for that admin only). Serve both over HTTPS. Chromium and Firefox send it in the admin's frame. WebKit (Safari) refuses it in a frame of another site, so there the frame shows the site's 404 page and never says `ready`. Two ways around it, measured in [ADR 0019](../adr/0019-visual-editing-protocol.md) (amendment of 2026-10-26):
+
+- **Put the admin and the site on one registrable domain** (`cms.example.org` and `example.org`, under a suffix of the public suffix list). WebKit then sends the cookie in the frame and the preview works in place. `NUXT_PREVIEW_ADMIN_ORIGIN` stays the admin's full origin.
+- **Open the preview in a new tab.** The plugin's pane is to offer this for a browser that refuses the cookie (decided in the amendment, not shipped yet): the draft opens as a page of the site, where the cookie is first-party. The tab does not follow the admin's saves; reload it to see one.
