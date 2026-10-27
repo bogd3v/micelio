@@ -1,13 +1,13 @@
-import { createHash } from 'node:crypto'
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve, sep } from 'node:path'
 import { addTypeTemplate, useLogger } from 'nuxt/kit'
 import { isThemePath } from './context'
+import { coreBuildOf } from './core-build'
 import { loadHooks } from './hooks'
 import { readLayoutCss } from './layout/variants'
 import { BUILT_IN_INDEX, BUILT_IN_STORE_PATH, SERVE_PREFIX, STORE_DIR } from './install/constants'
 import { installTheme } from './install/install'
-import type { BuiltInIndex, LayoutCss } from './install/types'
+import type { BuiltInIndex } from './install/types'
 import { discoverThemes } from './themes'
 import type { ThemeContext } from './types'
 
@@ -15,17 +15,12 @@ const MODULE = '#micelio/built-in-store'
 /** A store folder untouched for this long belongs to a build nobody is running any more. */
 const STALE_STORE_MS = 60 * 60 * 1000
 
-/** Identifies the core build and the variant CSS it carries, which the entries embed: edited CSS gives new digests. */
-function coreBuildOf(buildId: string, layoutCss: LayoutCss): string {
-  return `${buildId}-${createHash('sha256').update(JSON.stringify(layoutCss)).digest('hex').slice(0, 12)}`
-}
-
 /**
  * Installs every theme of the build into the built-in store and records them in its index (ADR 0009, section 1).
  *
  * @remarks
  * Runs at build and dev setup, in the build's process: the themes are the operator's own (`themes/`, the lock's, `MICELIO_THEME_DIRS`)
- * and were validated by `createContext`. Each is compiled for this build (`coreBuild` is the Nuxt build id and a hash of the layout variants' CSS, which each entry carries), code themes included,
+ * and were validated by `createContext`. Each is compiled for this build (`coreBuild` is a hash of the compiler's sources and of the layout variants' CSS, which each entry carries, so the same sources give the same URLs), code themes included,
  * since their slots are compiled into the same build. The store lives under `node_modules/.cache/micelio/built-in-store/<build id>/`, is rebuilt on every
  * start, folders older than an hour are removed, and a production build copies it to `.output/server/micelio/store`. The server finds it by `#micelio/built-in-store` in
  * development and next to its entry in production. A static build also publishes the build theme's files at `/_t/<digest>/`, and
@@ -50,7 +45,7 @@ export async function setupBuiltInStore(ctx: ThemeContext): Promise<void> {
   const hooks = loadHooks(nuxt.options.srcDir)
   const layoutRoot = join(nuxt.options.srcDir, 'theme/layout')
   let layoutCss = readLayoutCss(layoutRoot)
-  const index: BuiltInIndex = { coreBuild: coreBuildOf(nuxt.options.buildId, layoutCss), buildTheme: ctx.id, themes: {} }
+  const index: BuiltInIndex = { coreBuild: coreBuildOf(layoutCss), buildTheme: ctx.id, themes: {} }
   for (const old of existsSync(cache) ? readdirSync(cache) : []) {
     if (Date.now() - statSync(join(cache, old)).mtimeMs > STALE_STORE_MS) rmSync(join(cache, old), { recursive: true, force: true })
   }
@@ -72,7 +67,7 @@ export async function setupBuiltInStore(ctx: ThemeContext): Promise<void> {
       const edited = readLayoutCss(layoutRoot)
       if (JSON.stringify(edited) === JSON.stringify(layoutCss)) return false
       layoutCss = edited
-      index.coreBuild = coreBuildOf(nuxt.options.buildId, layoutCss)
+      index.coreBuild = coreBuildOf(layoutCss)
       for (const theme of discoverThemes(ctx.roots)) await install(theme.dir, theme.id)
       return true
     })

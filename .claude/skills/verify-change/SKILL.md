@@ -48,7 +48,7 @@ node e2e/mock-strapi.mjs &
 NUXT_PUBLIC_STRAPI_URL=http://127.0.0.1:4310 PORT=3211 node .output/server/index.mjs &
 ```
 
-For `main`, build it in a worktree (`git worktree add <dir> origin/main`, symlink `node_modules`) and serve it on another port. `compare-html.mjs` ignores asset hashes, theme store digests (`/_t/<digest>/`, which change with every build), CSP hashes, timestamps and the Nuxt payload (its keys follow async resolution order); a remaining diff in a Nuxt auto key (`$f…`) only means source lines moved. The CSP is not applied by the dev server, so always probe a production build. The probe can also run against https://bogdev.com.co after a deploy.
+For `main`, build it in a worktree (`git worktree add <dir> origin/main`, symlink `node_modules`) and serve it on another port. `compare-html.mjs` ignores asset hashes, theme store digests (`/_t/<digest>/`, which change when the compiler sources or the layout variant CSS do), CSP hashes, timestamps and the Nuxt payload (its keys follow async resolution order); a remaining diff in a Nuxt auto key (`$f…`) only means source lines moved. The CSP is not applied by the dev server, so always probe a production build. The probe can also run against https://bogdev.com.co after a deploy.
 
 ## 4. After merge
 

@@ -53,7 +53,7 @@ const Status = z.enum(['passed', 'failed', 'skipped', 'missing']).describe('`mis
 const Build = z.strictObject({
   purpose: z.enum(['performance', 'quality']).describe('`quality` builds carry the specimen page (`MICELIO_SPECIMEN=1`).'),
   kind: z.enum(['shared', 'own']).describe('`shared`: one core build made without the theme and shared by every theme under admission; the theme was installed into its store. `own`: a build made with the theme, which a theme with code needs.'),
-  coreBuild: z.string().min(1).max(200).describe('The Nuxt build id, which is the core build of the theme store\'s compile key (ADR 0009, section 1).'),
+  coreBuild: z.string().min(1).max(200).describe('The id of the core build, which is part of the theme store\'s compile key: a hash of the compiler\'s sources and the variant CSS (ADR 0009, section 1).'),
   baseTheme: z.string().max(64).optional().describe('The theme the shared build was made with; absent for `own`.'),
   reason: z.string().max(400).optional().describe('Why the theme could not use the shared build; absent for `shared`.'),
 })
