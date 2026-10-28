@@ -15,6 +15,14 @@ useSeoMeta({
   description: () => t('specimen.lead'),
   robots: 'noindex, nofollow',
 })
+
+// A frame shows a whole region next to the page's own: its `h1` reads as a level-4 heading under the group's label (WCAG 1.3.1), and
+// the buttons that open the search or the menu are inert, since a copy has nothing to open (WCAG 2.1.1). Client side, like the id
+// renames of SpecimenRegions; the server HTML keeps both (docs/theme-testing.md)
+onMounted(() => {
+  for (const heading of document.querySelectorAll('.myc-specimen-frame h1')) heading.setAttribute('aria-level', '4')
+  for (const button of document.querySelectorAll('.myc-specimen-frame button[aria-haspopup="dialog"]')) button.setAttribute('inert', '')
+})
 </script>
 
 <template>

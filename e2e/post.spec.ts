@@ -136,7 +136,7 @@ test('jumps from a citation to its reference and back without hiding under the h
   const headerBottom = await page.locator('header').first().evaluate(header => header.getBoundingClientRect().bottom)
   expect((await reference.boundingBox())!.y).toBeGreaterThanOrEqual(headerBottom)
 
-  await reference.getByRole('link', { name: 'Volver a la cita 2 en el texto' }).focus()
+  await reference.getByRole('link', { name: 'Volver al texto, cita 2' }).focus()
   await page.keyboard.press('Enter')
   await expect(page).toHaveURL(/#cite-2$/)
   expect((await page.locator('#cite-2').boundingBox())!.y).toBeGreaterThanOrEqual(headerBottom)
