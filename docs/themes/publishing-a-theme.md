@@ -71,7 +71,7 @@ Your report is for iterating: publishing runs admission again on bogd3v's side, 
 | --- | --- |
 | Contract, public hooks and package problems (`theme:check`, `theme:pack`) | `theme:check` warnings, such as fonts over the 100 KB target |
 | Contrast below AA in any mode | Budget targets (`warn` limits of `scripts/perf/budgets.json`) |
-| An accessibility record that does not match its schema or cannot be read | No accessibility record, a record of another version, a line of the checklist that failed or was not verified |
+| An accessibility record that does not match its schema or cannot be read | No accessibility record, a record of another version, a line of the checklist that failed (also one with `cause: "core"`, which publishing lets through) or was not verified |
 | A budget `error` limit, a FOUC rule, a third-party request | |
 | An axe violation, a visual diff or a missing baseline, a motion or reflow failure | |
 | A check that produced no result (a job that crashed or was cancelled, a quality run where no test passed), or an install into the shared build that failed | |
@@ -91,7 +91,7 @@ Every message is the one the check prints today, unchanged, so the report reads 
 | `builds` | Per performance and quality build: `kind` (`shared` or `own`), `coreBuild` (the id of the core build: a hash of the compiler's sources and the variant CSS), `baseTheme` or `reason` |
 | `package` | `file`, `digest` (`sha256:`), `bytes`; `null` when the theme cannot be packed |
 | `checks` | The status of each check, every page measurement per mode, and the passed, failed and skipped tests per quality spec |
-| `accessibility` | Optional, when the theme has a valid record: `status` (`passed`, `partial` when a line was not verified, `failed`), `current` (the record is for this version) and the `record` as written (`docs/themes/accessibility-checklist.md`) |
+| `accessibility` | Optional, when the theme has a valid record: `status` (`passed`; `passed-with-core-failures` when only lines with `cause: "core"` failed; `partial` when a line was not verified; `failed` when a line failed because of the theme), `current` (the record is for this version) and the `record` as written (`docs/themes/accessibility-checklist.md`) |
 | `errors`, `warnings` | `check` (`static`, `performance`, `quality`, `accessibility`, `admission`), `kind` (`contract`, `contrast`, `budget`, `third-party`, `axe`, `visual`, `motion`, `missing`…), `message`, `mode` |
 
 A field is added without a version change when it is optional, and so is a new value of an enum such as `check` (`accessibility` was added this way: a reader that validates against an older schema must accept unknown values); a change of meaning or a removal raises `schemaVersion`.
@@ -145,7 +145,7 @@ Publishing is split between the core's reusable workflows, which decide and writ
 
 `theme-publish.yml` (decisions are `npm run theme:publish -- gate` of the core ref):
 
-1. **The gate.** Refuses a report with errors, one for another theme, one without a version, contract or package, a package whose sha256 is not the report's, and a package that does not unpack by the rules a client applies. It also requires the manual accessibility record (standard, section 9; `docs/themes/accessibility-checklist.md`): a missing record, a record of another version (`current: false`), an invalid one and one with a **failed** line block, and the message names `<accessibility-root>/<id>.json`. A **partial** record (lines not verified) does not block; it stays in the report and the run shows a warning.
+1. **The gate.** Refuses a report with errors, one for another theme, one without a version, contract or package, a package whose sha256 is not the report's, and a package that does not unpack by the rules a client applies. It also requires the manual accessibility record (standard, section 9; `docs/themes/accessibility-checklist.md`): a missing record, a record of another version (`current: false`), an invalid one and one with a line that **failed because of the theme** block (a failure with `cause: "core"`, which must link an issue in `bogd3v/micelio`, does not: it stays in the report, the summary of the admission run names it, and the publish run prints a notice and lists it in its summary, the core's only release notes of a theme version). The blocking message names `<accessibility-root>/<id>.json`. A **partial** record (lines not verified) does not block; it stays in the report and the run shows a warning. The gate checks only the shape of a `core` issue link: the maintainer who starts Publish confirms that each linked issue tracks that failure.
 2. **A new version.** `<id>:<version>` must not exist. A published version never changes: a fix is a new version, and a yanked version cannot be published again.
 3. **The artifact.** `ghcr.io/bogd3v/micelio-themes/<id>:<version>` is one layer, the `.tgz` itself (`application/vnd.micelio.theme.package.v1.tar+gzip`), so its digest is the digest a lock pins. The manifest annotations (`io.micelio.theme.*`) carry the contract, license, tier and the digests of the package and of the report.
 4. **The report.** `admission-report.json` is attached to the package as a referrer (`application/vnd.micelio.theme.admission-report.v1+json`) and its digest is the `report` of the index entry.

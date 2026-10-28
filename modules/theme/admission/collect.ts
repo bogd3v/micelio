@@ -1,4 +1,4 @@
-import { ACCESSIBILITY_LINES, ADMISSION_REPORT_VERSION, AccessibilityRecordSchema, AdmissionReportSchema } from './report'
+import { ACCESSIBILITY_LINES, ADMISSION_REPORT_VERSION, AccessibilityRecordSchema, AdmissionReportSchema, coreFailures } from './report'
 import type { AdmissionAccessibility, AdmissionIssue, AdmissionPerformanceRun, AdmissionQuality } from './report'
 import type { AdmissionReport } from './types'
 
@@ -135,7 +135,7 @@ function qualityResult(input: ReportInput, errors: AdmissionIssue[]): AdmissionQ
  * The manual accessibility record that `theme:admit static` read, checked against its schema and the theme version.
  *
  * @remarks
- * No record, a record of another version and a failed line are warnings here, because admission also runs for themes that have no record; `publishBlockers` (`modules/theme/publish/gate.ts`) is what blocks publishing.
+ * No record, a record of another version and a failed line are warnings here (a failure caused by the core is one too: it never makes the status `failed`, and a record with nothing else wrong is `passed-with-core-failures`, not `passed`), because admission also runs for themes that have no record; `publishBlockers` (`modules/theme/publish/gate.ts`) is what blocks publishing.
  * A record that does not match the schema is an error, so a typo never reads as a check that was made.
  */
 function accessibilityResult(input: ReportInput, version: string | null, errors: AdmissionIssue[], warnings: AdmissionIssue[]): AdmissionAccessibility | undefined {
@@ -163,9 +163,9 @@ function accessibilityResult(input: ReportInput, version: string | null, errors:
   if (!current) warnings.push({ check: 'accessibility', kind: 'stale', message: `${file} records version ${record.version ?? '(none)'}, not ${version ?? '(none)'}: run the checklist again if the version changes CSS, markup or slots` })
   const results = ACCESSIBILITY_LINES.map(line => [line, record.lines[line]] as const)
   for (const [line, entry] of results) {
-    if (entry.result === 'fail') warnings.push({ check: 'accessibility', kind: 'manual', message: clip(`${line} failed (${entry.issue})${entry.note ? `: ${entry.note}` : ''}`) })
+    if (entry.result === 'fail') warnings.push({ check: 'accessibility', kind: 'manual', message: clip(`${line} failed${entry.cause === 'core' ? ' because of the core' : ''} (${entry.issue})${entry.note ? `: ${entry.note}` : ''}`) })
   }
-  const status = results.some(([, entry]) => entry.result === 'fail') ? 'failed' : results.some(([, entry]) => entry.result === 'not-verified') ? 'partial' : 'passed'
+  const status = results.some(([, entry]) => entry.result === 'fail' && entry.cause !== 'core') ? 'failed' : results.some(([, entry]) => entry.result === 'not-verified') ? 'partial' : coreFailures(record).length > 0 ? 'passed-with-core-failures' : 'passed'
   return { status, current, record }
 }
 
@@ -238,7 +238,8 @@ export function reportSummary(report: AdmissionReport): string {
     '',
     `Core ${report.core.repository}@${report.core.ref} (${report.core.sha.slice(0, 12)}, ${report.core.version}, contract ${report.core.contract})${report.builds.map(build => `; ${build.purpose} build ${build.kind} \`${build.coreBuild}\``).join('')}`,
     '',
-    ...(report.accessibility ? [`Manual accessibility check ${report.accessibility.status}${report.accessibility.current ? '' : ' (another version)'}, ${report.accessibility.record.date} by ${report.accessibility.record.by}`, ''] : []),
+    ...(report.accessibility ? [`Manual accessibility check ${report.accessibility.status.replaceAll('-', ' ')}${report.accessibility.current ? '' : ' (another version)'}, ${report.accessibility.record.date} by ${report.accessibility.record.by}`, ''] : []),
+    ...(report.accessibility ? coreFailures(report.accessibility.record).map(({ line, issue }) => `- Failed because of the core: ${line} (${issue})`) : []),
     ...report.errors.map(issue => `- **error** (${issue.check}, ${issue.kind}) ${issue.message.split('\n')[0]}`),
     ...report.warnings.map(issue => `- warning (${issue.check}, ${issue.kind}) ${issue.message.split('\n')[0]}`),
   ]

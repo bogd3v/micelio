@@ -4,7 +4,7 @@
 import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { AdmissionReportSchema } from '../modules/theme/admission/report'
+import { AdmissionReportSchema, coreFailures } from '../modules/theme/admission/report'
 import { THEME_ID } from '../modules/theme/constants'
 import { ANNOTATIONS } from '../modules/theme/publish/constants'
 import { entryFromPackage } from '../modules/theme/publish/entry'
@@ -65,8 +65,10 @@ function gate(): void {
   const { version, entry } = entryFromPackage(bytes, report.package.digest, reportDigest)
   if (version !== report.theme.version) throw new Error(`the package is version ${version}, the report says ${report.theme.version}`)
   if (report.accessibility?.status === 'partial') process.stdout.write(`::warning::${id}@${version}: the accessibility record has lines that were not verified; the version is published with the record as it stands\n`)
+  const core = report.accessibility ? coreFailures(report.accessibility.record) : []
+  for (const { line, issue } of core) process.stdout.write(`::notice::${id}@${version}: ${line} fails because of the core (${issue}); it does not block publishing\n`)
   const out = required('out')
-  writeJson(out, { id, version, package: file, digest: entry.digest, report: join(dir, 'admission-report.json'), reportDigest, contract: entry.contract, license: entry.license, tier: entry.tier, code: entry.code })
+  writeJson(out, { id, version, package: file, digest: entry.digest, report: join(dir, 'admission-report.json'), reportDigest, contract: entry.contract, license: entry.license, tier: entry.tier, code: entry.code, coreFailures: core })
   writeJson(`${out}.annotations.json`, {
     $manifest: {
       [ANNOTATIONS.contract]: entry.contract,

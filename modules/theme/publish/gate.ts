@@ -9,7 +9,7 @@ import type { AdmissionReport } from '../admission/types'
  *
  * @remarks
  * A report blocks when it has errors, when it is for another theme, when it has no version, contract or package, and when the manual
- * accessibility record is missing, is for another version (`current: false`) or has a failed line. `partial` (lines not verified) does
+ * accessibility record is missing, is for another version (`current: false`) or has a line that failed because of the theme. A failed line with `cause: "core"` (an issue of `bogd3v/micelio`, checked by the record's schema) stays in the report and does not block. `partial` (lines not verified) does
  * not block. An invalid record is already an error of the report.
  *
  * @param report - The `admission-report.json` of the run, already validated against its schema.
@@ -26,6 +26,9 @@ export function publishBlockers(report: AdmissionReport, id: string, accessibili
   const record = report.accessibility
   if (!record) blockers.push(`there is no valid manual accessibility record (${accessibilityFile}): run docs/themes/accessibility-checklist.md on this version and commit the record`)
   else if (!record.current) blockers.push(`the accessibility record (${accessibilityFile}) is for version ${record.record.version ?? 'none'}, not for ${report.theme.version ?? 'this version'}: run the checklist again`)
-  else if (record.status === 'failed') blockers.push(`the accessibility record (${accessibilityFile}) has a failed line: fix what failed and run the checklist again`)
+  else {
+    const failed = Object.entries(record.record.lines).filter(([, line]) => line.result === 'fail' && line.cause !== 'core').map(([name]) => name)
+    if (failed.length > 0) blockers.push(`the accessibility record (${accessibilityFile}) has a failed line (${failed.join(', ')}): fix what failed and run the checklist again`)
+  }
   return blockers
 }
