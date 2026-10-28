@@ -53,7 +53,7 @@ Put the mouse away.
 Orca on Linux with Firefox (`sudo dnf install orca`, toggle with Super+Alt+S), NVDA on Windows or VoiceOver on macOS.
 
 - [ ] `screen-reader.landmarks` Landmarks: one `main`, a `header`, a `footer`, and every `nav` with its own name.
-- [ ] `screen-reader.headings` Headings: one `h1` and no skipped levels; the heading list reads as an outline of the page.
+- [ ] `screen-reader.headings` Headings: one `h1` and no skipped levels; the heading list reads as an outline of the page. On the specimen the `h1` of the copies inside its frames are exposed as level 4 (`docs/theme-testing.md`), so it has one level-1 heading too.
 - [ ] `screen-reader.names` Every control has a name that says what it does, out of context.
 - [ ] `screen-reader.announcements` After an action (theme switch, subscribe, comment, copy), the result is announced.
 - [ ] `screen-reader.language` The language of the page is right, and a change of language is marked.

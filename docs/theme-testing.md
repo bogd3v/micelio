@@ -7,6 +7,8 @@
 
 `a11y.spec.ts` also asserts that every id of `/_theme` is unique. The variants the theme does not use repeat the ids of the active ones (`latest-title`, `references`, heading ids), so `SpecimenRegions.vue` renames them in the browser (`-copy<N>`, plus `for`, `form`, `headers`, `aria-labelledby`, `aria-describedby`, `aria-controls`, `aria-owns`, `aria-activedescendant`, `aria-details`, `aria-errormessage` and `href="#…"` inside the same frame). It runs after hydration, so the server HTML still has the duplicates, and a subtree that remounts later gets its original ids back; production pages are unaffected.
 
+The specimen shows a whole region inside each `.myc-specimen-frame`, so its copies bring their own `h1` and their search and menu buttons. `modules/theme/specimen/page.vue` adjusts them when it mounts (client side, like the id renames; the server HTML keeps them): an `h1` inside a frame gets `aria-level="4"`, so the specimen has one level-1 heading, and the buttons with `aria-haspopup="dialog"` get `inert`, since a copy has nothing to open. `core-a11y.spec.ts` asserts both, besides the axe run of the Spanish article (its citation and back links are named by their visible text) and the focus indicator of the `log` and `row` post-list variants: pixels that change by 3:1 or more around the row when the keyboard focuses its link, in normal and forced colors.
+
 ## Motion projects (`e2e/theme/motion/`)
 
 Besides the screenshot projects, `playwright.theme.config.ts` has three projects per mode of the theme (desktop, no screenshots, so no baselines), made for ADR 0005, section 10:

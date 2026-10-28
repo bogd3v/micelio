@@ -219,7 +219,7 @@
       "count": "{n} fuente · APA 7 | {n} fuentes · APA 7",
       "citeLabel": "Referencia {n}",
       "back": "volver al texto",
-      "backLabel": "Volver a la cita {n} en el texto",
+      "backLabel": "Volver al texto, cita {n}",
       "note": "Los enlaces abren la fuente original en una pestaña nueva.",
       "accessed": "Consultadas el {date}."
     },
