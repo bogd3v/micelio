@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Micelio site API",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "description": "The HTTP routes every Micelio site serves: 39 paths and 41 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
     "license": {
       "name": "AGPL-3.0-only",
