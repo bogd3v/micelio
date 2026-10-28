@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "number",
+      "const": 1,
+      "description": "The format of the index, which is also the tag it is published under (`index:v1`)."
+    },
+    "themes": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "versions": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "description": "The `sha256:` digest of the `.tgz`, which is also the digest of the package artifact's layer."
+                },
+                "contract": {
+                  "type": "string",
+                  "description": "The theme contract the version declares, as `major.minor`."
+                },
+                "license": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "description": "The SPDX id (or `LicenseRef-*`) from the package's `theme.json`."
+                },
+                "tier": {
+                  "type": "string",
+                  "enum": [
+                    "official",
+                    "verified",
+                    "community"
+                  ],
+                  "description": "Who stands behind the version (ADR 0008, decision 7); the publish workflow writes only `official`."
+                },
+                "distribution": {
+                  "type": "string",
+                  "enum": [
+                    "public",
+                    "licensed"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "published",
+                    "yanked",
+                    "incompatible"
+                  ],
+                  "description": "`yanked` stays pullable for locks that pin it and is never resolved for a new range."
+                },
+                "code": {
+                  "type": "boolean",
+                  "description": "Whether the package ships `slots/` or `templates/`, which only an image built with it can run (ADR 0009, section 4)."
+                },
+                "report": {
+                  "description": "The `sha256:` digest of the admission report attached to the package artifact as a referrer.",
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "yank": {
+                  "description": "Why and when the version was yanked; present only with status `yanked`.",
+                  "type": "object",
+                  "properties": {
+                    "reason": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    },
+                    "at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    }
+                  },
+                  "required": [
+                    "reason",
+                    "at"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "digest",
+                "contract",
+                "license",
+                "tier",
+                "distribution",
+                "status",
+                "code"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "versions"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "version",
+    "themes"
+  ],
+  "additionalProperties": false,
+  "description": "The index of the registry: `themes[id].versions[version]` (ADR 0008, section 4).",
+  "$id": "https://github.com/bogd3v/micelio/blob/main/themes/registry-index.schema.json",
+  "title": "Micelio theme registry index (version 1)"
+}

@@ -2,10 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { signerOptions, trustRootProblem, verifyBundle } from '../modules/theme/registry/attestation'
-import type { VerifyBundleOptions } from '../modules/theme/registry/attestation'
 import { DEFAULT_SIGNER, MAX_BUNDLE_BYTES } from '../modules/theme/registry/constants'
 import { RegistryError } from '../modules/theme/registry/error'
-import type { RegistryFailure } from '../modules/theme/registry/types'
+import type { RegistryFailure, VerifyBundleOptions } from '../modules/theme/registry/types'
 import shippedRoot from '../modules/theme/registry/trusted_root.json'
 
 // A real bundle: the SLSA provenance that npm published for @sigstore/verify 4.1.2, signed by a GitHub Actions workflow of the

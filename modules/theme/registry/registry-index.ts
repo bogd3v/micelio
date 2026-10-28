@@ -3,37 +3,42 @@ import { THEME_ID, THEME_VERSION, VERSION_MAX_LENGTH } from '../constants'
 import { parseContractVersion } from '../version'
 import { ATTESTATION_TAG_SUFFIX, THEME_DIGEST } from './constants'
 import { RegistryError } from './error'
+import type { RegistryIndex } from './types'
 
 // The index of the registry (ADR 0008, section 4): every theme and version with its digest, contract, tier, distribution and status.
-// #312 writes it; this is the shape the client accepts. Fields it does not know are ignored, so the format can grow.
+// `theme:publish` (#312) writes it and `themes/registry-index.schema.json` is generated from this schema (`npm run theme:schema`). The
+// client ignores fields it does not know, so the format can grow. The signature is not a field: it is a Sigstore bundle at `index:v1.att`.
 
 const MAX_THEMES = 10_000
 const MAX_VERSIONS = 1000
 
 const Version = z.object({
-  digest: z.string().regex(THEME_DIGEST),
-  contract: z.string().refine(value => parseContractVersion(value) !== null, { error: 'must be major.minor' }),
-  license: z.string().max(128),
-  tier: z.enum(['official', 'verified', 'community']),
+  digest: z.string().regex(THEME_DIGEST).describe('The `sha256:` digest of the `.tgz`, which is also the digest of the package artifact\'s layer.'),
+  contract: z.string().refine(value => parseContractVersion(value) !== null, { error: 'must be major.minor' }).describe('The theme contract the version declares, as `major.minor`.'),
+  license: z.string().max(128).describe('The SPDX id (or `LicenseRef-*`) from the package\'s `theme.json`.'),
+  tier: z.enum(['official', 'verified', 'community']).describe('Who stands behind the version (ADR 0008, decision 7); the publish workflow writes only `official`.'),
   distribution: z.enum(['public', 'licensed']),
-  status: z.enum(['published', 'yanked', 'incompatible']),
-  code: z.boolean(),
-  report: z.string().max(512).optional(),
+  status: z.enum(['published', 'yanked', 'incompatible']).describe('`yanked` stays pullable for locks that pin it and is never resolved for a new range.'),
+  code: z.boolean().describe('Whether the package ships `slots/` or `templates/`, which only an image built with it can run (ADR 0009, section 4).'),
+  report: z.string().max(512).optional().describe('The `sha256:` digest of the admission report attached to the package artifact as a referrer.'),
+  yank: z.object({ reason: z.string().min(1).max(500), at: z.iso.datetime() }).optional().describe('Why and when the version was yanked; present only with status `yanked`.'),
 })
 
-/** One version of a theme in the index. */
-export type IndexVersion = z.infer<typeof Version>
-
-/** The index: `themes[id].versions[version]`. */
-export interface RegistryIndex {
-  version: 1
-  themes: Record<string, { versions: Record<string, IndexVersion> }>
-}
-
-const Index = z.object({
-  version: z.literal(1),
+/** The schema of the index document. */
+export const IndexSchema = z.object({
+  version: z.literal(1).describe('The format of the index, which is also the tag it is published under (`index:v1`).'),
   themes: z.record(z.string(), z.object({ versions: z.record(z.string(), Version) })),
-})
+}).describe('The index of the registry: `themes[id].versions[version]` (ADR 0008, section 4).')
+
+/** The JSON Schema of the index, written to `themes/registry-index.schema.json`. */
+export function registryIndexJsonSchema(): Record<string, unknown> {
+  const schema = z.toJSONSchema(IndexSchema, { target: 'draft-2020-12', unrepresentable: 'any' }) as Record<string, unknown>
+  return {
+    ...schema,
+    $id: 'https://github.com/bogd3v/micelio/blob/main/themes/registry-index.schema.json',
+    title: 'Micelio theme registry index (version 1)',
+  }
+}
 
 /**
  * Reads and validates the text of the index.
@@ -58,7 +63,7 @@ export function parseIndex(text: string): RegistryIndex {
     const keys = [id, ...(typeof theme === 'object' && theme !== null && typeof theme.versions === 'object' && theme.versions !== null ? Object.keys(theme.versions) : [])]
     if (keys.includes('__proto__')) throw new RegistryError('registry', 'the index has a key that is not valid')
   }
-  const parsed = Index.safeParse(value)
+  const parsed = IndexSchema.safeParse(value)
   if (!parsed.success) throw new RegistryError('registry', `the index is not valid: ${parsed.error.issues[0]?.path.join('.') || 'root'}`)
   const themes = Object.entries(parsed.data.themes)
   if (themes.length > MAX_THEMES) throw new RegistryError('registry', `the index lists more than ${MAX_THEMES} themes`)

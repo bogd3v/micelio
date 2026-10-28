@@ -114,9 +114,6 @@ export const AdmissionReportSchema = z.strictObject({
   warnings: z.array(Issue).max(1000),
 }).describe('The admission report of one theme version: `admission-report.json`, written by `npm run theme:admit -- report`.')
 
-/** An admission report as `theme:admit report` writes it. */
-export type AdmissionReport = z.infer<typeof AdmissionReportSchema>
-
 /** One error or warning of a report. */
 export type AdmissionIssue = z.infer<typeof Issue>
 

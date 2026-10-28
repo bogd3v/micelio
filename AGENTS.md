@@ -16,6 +16,8 @@ Work reaches `main` through the gates of [`docs/factory.md`](https://github.com/
 docker run --rm -v "$COPY":/app -w /app node:22.23-slim sh -c 'npm ci && npm run check'
 ```
 
+The container runs as root, so the run leaves root-owned `coverage/`, `.micelio/` and report folders in `$COPY` that make the next `rsync --delete` fail. Add `--user "$(id -u):$(id -g)" -e HOME=/tmp/h` (and `mkdir -p $HOME` in the `sh -c`) to run as yourself, or remove those folders with a root container before you sync again.
+
 The suites that drive a browser (`test:e2e:*`, `test:theme`) need Playwright's browsers, which `node:22.23-slim` lacks. CI runs them in the image `scripts/ci/playwright-image.sh` resolves, which has Node 24 (the job installs Node 22 over it). For the same Node as `check`, build an image `FROM node:22.23-slim` that runs `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npx -y playwright@<the version of @playwright/test> install --with-deps chromium firefox webkit`, and in it run `npm ci && npm run build && E2E_BUILD=1 npm run test:e2e:<group>` over the same bind mount (`:z`); say in the pull request which image ran. `npm run perf` runs in that same image after `npm run build` (`npm ci && npm run build && npm run perf -- --check`; `--mode static --theme <id>` for one static budget). Do not delete `.nuxt` after `npm ci`: `postinstall` runs `nuxt prepare` once, and without it the next build fails (rerun `npx nuxt prepare` if you did). `test:e2e:preview` serves the site and the admin page over https with a certificate that `e2e/preview/tls.ts` makes per run with `openssl` (Playwright's Linux WebKit stores no `Secure` cookie from an `http` page); the image needs the `openssl` command (the CI image has it; `node:22.23-slim` does not, so `apt-get install openssl` in the image built from it).
 
 ## Pre-1.0
@@ -42,10 +44,11 @@ npm run check        # The fast part of CI before a PR: typecheck, lint, test:co
 npm run typecheck    # Nuxt type checking, then `vue-tsc -p test` for test/ and e2e/ (test/tsconfig.json)
 npm run lint         # ESLint (@micelio/eslint-config under @nuxt/eslint; its stylistic rules are the formatter), the primitives, class and placement checks, and the OpenAPI, theme schema, reference and theme:check drift checks
 npm run openapi      # Regenerate docs/openapi.json from server/openapi/ and the zod schemas after adding or changing a route or a schema (`lint:openapi` fails on drift)
-npm run theme:schema # Regenerate themes/theme.schema.json and themes/admission-report.schema.json after changing modules/theme/contract.ts or admission/report.ts
+npm run theme:schema # Regenerate themes/theme.schema.json, themes/admission-report.schema.json and themes/registry-index.schema.json after changing modules/theme/contract.ts, admission/report.ts or registry/registry-index.ts
 npm run theme:reference # Regenerate docs/themes/reference/ after changing roles, layout variants, hooks, slots or the TSDoc of a `@public` slot API
 npm run theme:pack -- <id> # Pack a theme into .micelio/packages/ (needs `version` and `license`)
 npm run theme:admit -- <step> # The theme admission steps that .github/workflows/theme-admission.yml runs (docs/themes/publishing-a-theme.md)
+npm run theme:publish -- <step> # The publish steps that .github/workflows/theme-publish.yml, theme-index-prepare.yml, theme-push-bundle.yml and theme-index-listed.yml run (gate, index, check-base, verify, listed; docs/themes/publishing-a-theme.md)
 npm run theme:add -- <id>[@range]|./x.tgz # Pin a theme in themes.lock.json; `theme:pull [-- --frozen]` installs the locked ones, `theme:outdated` lists newer ones (docs/operate/themes.md)
 npm run theme:new -- <id> # New theme: copies themes/starter/ to themes/<id>/ and renames it ([--name "Name"])
 npm run theme:check  # Contract, hooks, contrast matrix and static budgets of the installed themes ([id] and --json)

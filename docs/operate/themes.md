@@ -2,7 +2,7 @@
 
 **Kind:** how-to. Goal: pin a theme from the registry, or from a file, install it with `npm run theme:pull` and build with it.
 
-Micelio is pre-1.0 and not stable. The registry and its publish workflows (#311 and #312) are not live yet: the client below is ready, and it refuses a registry whose index, packages and attestations it cannot verify.
+Micelio is pre-1.0 and not stable. The registry has no published theme yet: the admission and publish workflows (#311 and #312) are in the core, and the first publication needs the organisation setup of `docs/themes/publishing-a-theme.md`. The client below is ready, and it refuses a registry whose index, packages and attestations it cannot verify.
 
 ## The lock
 

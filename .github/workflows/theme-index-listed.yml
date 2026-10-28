@@ -1,0 +1,84 @@
+name: Theme Index Listed
+
+# Fails when the signed index does not list a version that theme-publish.yml pushed (ADR 0008, decision 4; #312). GitHub keeps one pending run per concurrency
+# group and cancels an older pending run for a newer one, so a request to the index can be lost after its package was pushed and attested. Nothing is written
+# here: the failure names the re-run (sign-index.yml with action add) that lists the version. Called from a bogd3v repository, last, even if the job before it was
+# cancelled. The caller to copy: docs/themes/registry-workflows/publish.yml; how it fits: docs/themes/publishing-a-theme.md.
+on:
+  workflow_call:
+    inputs:
+      theme:
+        description: Id of the theme
+        type: string
+        required: true
+      version:
+        description: Exact version
+        type: string
+        required: true
+      digest:
+        description: The sha256 digest of the package (the `digest` output of theme-publish.yml)
+        type: string
+        required: true
+      report-digest:
+        description: The sha256 digest of the admission report (the `report-digest` output of theme-publish.yml)
+        type: string
+        default: ''
+      core-ref:
+        description: A release tag (vX.Y.Z) or a full commit SHA of bogd3v/micelio whose scripts decide the result; pin the same ref as the `uses:` line
+        type: string
+        required: true
+      registry:
+        description: The registry whose index is read
+        type: string
+        default: ghcr.io/bogd3v/micelio-themes
+
+permissions:
+  contents: read
+
+jobs:
+  listed:
+    name: Listed (${{ inputs.theme }}@${{ inputs.version }})
+    if: github.repository_owner == 'bogd3v'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: read
+    env:
+      REGISTRY: ${{ inputs.registry }}
+      THEME: ${{ inputs.theme }}
+      VERSION: ${{ inputs.version }}
+      DIGEST: ${{ inputs.digest }}
+      REPORT_DIGEST: ${{ inputs.report-digest }}
+    steps:
+      - name: Check the inputs
+        env:
+          CORE_REF: ${{ inputs.core-ref }}
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          [[ "${CORE_REF}" =~ ^(v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?|[0-9a-f]{40})$ ]] || fail "core-ref must be a release tag (vX.Y.Z) or a full commit SHA"
+          [[ "${THEME}" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ && ${#THEME} -le 64 ]] || fail "theme is not a theme id"
+          [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.0-9A-Za-z]*)$ && ${#VERSION} -le 128 ]] || fail "version is not a semver version"
+          [[ "${DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]] || fail "digest is not a sha256 digest"
+          [[ -z "${REPORT_DIGEST}" || "${REPORT_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]] || fail "report-digest is not a sha256 digest"
+      - name: Checkout the core
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: bogd3v/micelio
+          ref: ${{ inputs.core-ref }}
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # No install script of any dependency runs
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      # Reads the index the registry holds (its signature must verify) and looks for the version
+      - name: Check the index lists the version
+        run: |
+          export MICELIO_THEME_REGISTRY="${REGISTRY}"
+          args=(--theme "${THEME}" --version "${VERSION}" --digest "${DIGEST}")
+          if [ -n "${REPORT_DIGEST}" ]; then args+=(--report-digest "${REPORT_DIGEST}"); fi
+          npm run --silent theme:publish -- listed "${args[@]}"

@@ -104,6 +104,8 @@ A version is `public` or `licensed`. A licensed version is installed with a lice
 
 **Amendment (2026-10-19, #399):** [ADR-0009](0009-theme-delivery-at-runtime.md) brings runtime delivery into scope for themes that ship no code, and amends decisions 1 (the allowlist gains `slots/*.css`, `slots/*.ts`, `fonts/*.txt` and subfolders of `images/`), 3 (runtime themes are served from the site's own theme store, not from object storage), 6 (the pin of a data-only theme is an exact version and digest stored in Strapi; a different theme means a different build only for code themes), 7 (a server install verifies every package, whatever its tier, and refuses code) and 10 (the byte-identical init script and CSP hash are dropped, and `NUXT_PUBLIC_THEME` becomes the instance's default theme), option G, the Trade-offs and this section. Its section 10 lists the sentences it amends.
 
+**Amendment (2026-10-28, #312):** [ADR-0009](0009-theme-delivery-at-runtime.md) amends decision 4: "only the publish workflow writes" the index becomes a split between the core's reusable workflows, which write, and two files of `micelio-themes`, whose jobs sign (the package attestation and the index signature).
+
 ## Options considered
 
 ### A. GHCR for public themes, S3 for licensed, behind one client (chosen)

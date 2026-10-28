@@ -1,14 +1,17 @@
 // Generates themes/theme.schema.json from the contract in modules/theme/contract.ts (ADR 0005, section 6), and
-// themes/admission-report.schema.json from the admission report in modules/theme/admission/report.ts (#311).
+// themes/admission-report.schema.json from the admission report in modules/theme/admission/report.ts (#311), and
+// themes/registry-index.schema.json from the index in modules/theme/registry/registry-index.ts (#312).
 // `npm run theme:schema` writes them; `npm run lint:schema` (part of `npm run lint`) fails when a file is out of date.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { admissionReportJsonSchema } from '../modules/theme/admission/report'
 import { themeJsonSchema } from '../modules/theme/contract'
+import { registryIndexJsonSchema } from '../modules/theme/registry/registry-index'
 
 const SCHEMAS = [
   { file: 'themes/theme.schema.json', source: 'modules/theme/contract.ts', schema: themeJsonSchema() },
   { file: 'themes/admission-report.schema.json', source: 'modules/theme/admission/report.ts', schema: admissionReportJsonSchema() },
+  { file: 'themes/registry-index.schema.json', source: 'modules/theme/registry/registry-index.ts', schema: registryIndexJsonSchema() },
 ]
 
 let stale = false
