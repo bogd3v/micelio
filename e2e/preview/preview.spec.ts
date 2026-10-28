@@ -63,9 +63,10 @@ interface Read { status?: number, body?: { data?: { totalKb: number, blocks: unk
 const readWeight = (page: Page): Promise<Read> => page.evaluate(url => (window as unknown as { readWeight: (url: string) => Promise<Read> }).readWeight(url), WEIGHT)
 
 /**
- * Opens the tab from the admin's page as the pane's button does, and waits until it has settled on the draft. Its first response is not awaited:
- * `Cross-Origin-Opener-Policy: same-origin` moves the tab to another browsing context group, and WebKit does not always report the response of the
- * page it leaves, while a reload begun before the move ends aborts.
+ * Opens the tab from the admin's page as the pane's button does, and waits until it has settled on the draft and Nuxt has hydrated it. Its first
+ * response is not awaited: `Cross-Origin-Opener-Policy: same-origin` moves the tab to another browsing context group, and WebKit does not always
+ * report the response of the page it leaves, while a reload begun before the move ends aborts. A reload begun while the page still hydrates aborts
+ * too (Firefox: `NS_BINDING_ABORTED`; WebKit: `Frame load interrupted`), because the router and the messages of the locale are still settling.
  */
 async function openTab(page: Page, request: APIRequestContext): Promise<Page> {
   const token = await tokenFor(request, { documentId: 'doc-linux', locale: 'en' })
@@ -76,7 +77,13 @@ async function openTab(page: Page, request: APIRequestContext): Promise<Page> {
   ])
   await tab.waitForURL(`${APP}/drafts/doc-linux?locale=en`)
   await tab.waitForLoadState('load')
+  await hydrated(tab)
   return tab
+}
+
+/** Waits until Nuxt has hydrated the page of the production build, which exposes `useNuxtApp` on `window`. */
+async function hydrated(page: Page): Promise<void> {
+  await expect.poll(() => page.evaluate(() => (window as unknown as { useNuxtApp: () => { isHydrating: boolean } }).useNuxtApp().isHydrating)).toBe(false)
 }
 
 test.describe('the grant cookie, in a frame of another site and as a page of the site', () => {
@@ -232,12 +239,16 @@ test.describe('the modes of the draft route', () => {
     const dynamic = await openAdmin(page, request, { kind: 'page', documentId: 'doc-page-draft', locale: 'en' })
     await expect(dynamic.locator('micelio-scene').first()).toBeAttached()
     await expect.poll(() => islands.length).toBeGreaterThan(0)
+    // The scene is in the HTML before the page hydrates and says ready: a `ready` still to come when the next admin page begins to load reaches that page in
+    // Firefox (as a message whose source is not its frame), and its count is then 2. Wait for the first one, so the page below hears only its own frame
+    await expect.poll(async () => (await received(page)).length).toBe(1)
 
     islands.length = 0
     const staticMode = await openAdmin(page, request, { kind: 'page', documentId: 'doc-page-draft', locale: 'en' }, '&mode=static')
     await expect(staticMode.locator('micelio-scene').first()).toBeAttached()
     await expect.poll(async () => (await received(page)).length).toBe(1)
     await settled(staticMode)
+    expect((await received(page)).map(message => [message.data.type, message.fromFrame])).toEqual([['ready', true]])
     expect(islands).toEqual([])
     expect(staticMode.url()).toBe(`${APP}/drafts/pages/doc-page-draft?locale=en&mode=static`)
   })
