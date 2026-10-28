@@ -164,6 +164,7 @@ jobs:
         id: plan
         env:
           MICELIO_THEME_DIRS: ${{ steps.dirs.outputs.theme-dirs }}
+          MICELIO_ADMISSION: 'true'
           THEMES: ${{ inputs.themes }}
           MODES: ${{ inputs.modes }}
           QUALITY: ${{ inputs.quality }}
@@ -182,6 +183,7 @@ jobs:
         if: ${{ !inputs.update-snapshots }}
         env:
           MICELIO_THEME_DIRS: ${{ steps.dirs.outputs.theme-dirs }}
+          MICELIO_ADMISSION: 'true'
           ACCESSIBILITY_ROOT: ${{ steps.dirs.outputs.accessibility-root }}
         run: |
           for id in $(jq -r '.themes[].id' admission/plan.json); do
@@ -256,6 +258,7 @@ jobs:
         include: ${{ fromJSON(needs.plan.outputs.plan).performance }}
     env:
       MICELIO_THEME_DIRS: ${{ needs.plan.outputs.theme-dirs }}
+      MICELIO_ADMISSION: 'true'
       NUXT_PUBLIC_THEME: ${{ matrix.theme }}
       # Site mode of ADR 0006, read at build time
       NUXT_PUBLIC_SITE_MODE: ${{ matrix.mode }}
@@ -338,6 +341,7 @@ jobs:
         include: ${{ fromJSON(needs.plan.outputs.plan).quality }}
     env:
       MICELIO_THEME_DIRS: ${{ needs.plan.outputs.theme-dirs }}
+      MICELIO_ADMISSION: 'true'
       NUXT_PUBLIC_THEME: ${{ matrix.theme }}
       MICELIO_SPECIMEN: 1
       E2E_BUILD: 1

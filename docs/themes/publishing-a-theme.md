@@ -35,6 +35,8 @@ jobs:
       core-ref: v0.5.2
 ```
 
+A theme of `theme-dirs` wins over a theme of the core with the same id: the core ref you admit against may still ship a theme (Bogotá, until it leaves the core) that your repository now owns, and from the first release that carries this change (`v0.5.2` does not) the run leaves the core's out and prints `using <id> from <path>, not the core's` once per step. The workflows set `MICELIO_ADMISSION=true` for this; the core's own build, `nuxt dev`, `deploy.yml` and the image do not, and two folders of `theme-dirs` with the same id are still an error (`Theme "<id>" is installed twice`).
+
 | Input | Default | Meaning |
 | --- | --- | --- |
 | `theme-dirs` | `.` | Theme folders, or folders of themes, one per line, relative to your repository (empty admits the core's own installed themes: what `deploy.yml` does) |
@@ -119,6 +121,7 @@ The steps are scripts of the core, so you can run them in a core checkout with `
 
 ```bash
 export MICELIO_THEME_DIRS=../my-repo/my-theme
+export MICELIO_ADMISSION=true                           # your copy wins over a core theme with the same id
 npm run theme:check -- my-theme                         # contract, contrast, static budgets
 MICELIO_THEME_DIRS=test/fixtures/themes/minimal NUXT_PUBLIC_THEME=minimal npm run build   # the shared build
 npm run theme:admit -- install --theme my-theme --output .output --purpose performance --out admission/my-theme/build-performance.json
