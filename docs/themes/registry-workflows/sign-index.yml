@@ -1,0 +1,116 @@
+# Copy to bogd3v/micelio-themes/.github/workflows/sign-index.yml (ADR 0009, amendment of 2026-10-28; #312).
+# The job `attest` is defined in THIS file, so the certificate of the index signature names
+#   https://github.com/bogd3v/micelio-themes/.github/workflows/sign-index.yml@refs/heads/main
+# which is DEFAULT_SIGNER.index in modules/theme/registry/constants.ts, apart from publish.yml, so a compromised publish workflow cannot
+# also vouch for the index. publish.yml calls it with `uses: ./.github/workflows/sign-index.yml` (action add); a maintainer starts it
+# directly to yank, or to list a version a failed run left pushed and attested. Create the environment `theme-index` in this repository with the maintainers as required reviewers: its approval stands
+# between a request and a signature. The signing job and the write run only in bogd3v/micelio-themes (`github.repository`), not in a repository that calls this file. Replace v0.6.0 and core-ref together.
+name: Sign index
+
+on:
+  workflow_call:
+    inputs:
+      action: { type: string, required: true }
+      theme: { type: string, required: true }
+      version: { type: string, required: true }
+      digest: { type: string, default: '' }
+      report-digest: { type: string, default: '' }
+      reason: { type: string, default: '' }
+  workflow_dispatch:
+    inputs:
+      action:
+        description: '`yank` a listed version, or `add` a version publish.yml pushed and attested but a failed run did not list'
+        type: choice
+        options: [yank, add]
+        required: true
+      theme:
+        description: Id of the theme
+        type: string
+        required: true
+      version:
+        description: Exact version
+        type: string
+        required: true
+      digest:
+        description: For `add`, the sha256 digest of the package (the `digest` output of the run that pushed it)
+        type: string
+        default: ''
+      report-digest:
+        description: For `add`, the sha256 digest of the admission report (the `report-digest` output of the run that pushed the package)
+        type: string
+        default: ''
+      reason:
+        description: For `yank`, why, in one line (at most 500 characters); it is written in the index
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+# Read, change, sign and write is one critical section: two requests at once would each start from the same index and one change would be lost
+concurrency:
+  group: theme-registry-index
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    uses: bogd3v/micelio/.github/workflows/theme-index-prepare.yml@v0.6.0
+    with:
+      action: ${{ inputs.action }}
+      theme: ${{ inputs.theme }}
+      version: ${{ inputs.version }}
+      digest: ${{ inputs.digest }}
+      report-digest: ${{ inputs.report-digest }}
+      reason: ${{ inputs.reason }}
+      core-ref: v0.6.0
+    permissions:
+      contents: read
+      packages: read
+
+  # The only job that signs the index
+  attest:
+    needs: prepare
+    # In a called workflow `github.repository` is the caller's: another repository of the organisation must not get a signature or an approval of its own
+    if: github.repository == 'bogd3v/micelio-themes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: theme-index
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Download the index
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.prepare.outputs.index-artifact }}
+          path: index
+      - name: Sign the index
+        id: attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: index/index.json
+      - name: Keep the bundle
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+        run: mkdir -p bundle && cp "${BUNDLE}" bundle/bundle.json
+      - name: Upload the bundle
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: theme-index-bundle-${{ needs.prepare.outputs.index-artifact }}
+          path: bundle/bundle.json
+          retention-days: 7
+
+  write:
+    needs: [prepare, attest]
+    if: github.repository == 'bogd3v/micelio-themes'
+    uses: bogd3v/micelio/.github/workflows/theme-push-bundle.yml@v0.6.0
+    with:
+      kind: index
+      digest: ${{ needs.prepare.outputs.digest }}
+      bundle-artifact: theme-index-bundle-${{ needs.prepare.outputs.index-artifact }}
+      index-artifact: ${{ needs.prepare.outputs.index-artifact }}
+      core-ref: v0.6.0
+    permissions:
+      contents: read
+      packages: write

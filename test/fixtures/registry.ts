@@ -2,10 +2,9 @@ import { createHash } from 'node:crypto'
 import { createServer } from 'node:http'
 import type { IncomingMessage, Server, ServerResponse } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import type { BundleVerifier } from '../../modules/theme/registry/attestation'
 import { ATTESTATION_TAG_SUFFIX, BUNDLE_MEDIA_TYPE, INDEX_MEDIA_TYPE, PACKAGE_MEDIA_TYPE } from '../../modules/theme/registry/constants'
 import { RegistryError } from '../../modules/theme/registry/error'
-import type { SignerIdentity } from '../../modules/theme/registry/types'
+import type { BundleVerifier, SignerIdentity } from '../../modules/theme/registry/types'
 
 // A registry on a loopback port, speaking just enough of the OCI distribution protocol for the client: manifests, blobs, an
 // optional bearer-token challenge and a redirect of blobs to a second origin. It records every request it receives.

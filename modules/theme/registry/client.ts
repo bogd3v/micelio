@@ -2,16 +2,14 @@ import { createHash } from 'node:crypto'
 import { CONTRACT_VERSION } from '../constants'
 import { parseContractVersion } from '../version'
 import { signerOptions, verifyBundle } from './attestation'
-import type { BundleVerifier } from './attestation'
 import { ATTESTATION_TAG_SUFFIX, BUNDLE_MEDIA_TYPE, DEFAULT_REGISTRY, INDEX_MEDIA_TYPE, INDEX_REPOSITORY, INDEX_TAG, MAX_BUNDLE_BYTES, MAX_COMPRESSED_BYTES, MAX_INDEX_BYTES, PACKAGE_MEDIA_TYPE } from './constants'
 import { RegistryError, withPin } from './error'
 import { parseIndex } from './registry-index'
-import type { RegistryIndex } from './registry-index'
 import { createOciClient } from './oci'
 import type { OciClientOptions, OciDescriptor } from './oci'
 import { assertPin } from './pin'
 import { compareVersions, highestSatisfying } from './semver'
-import type { LockEntry, SignerIdentity, ThemePin } from './types'
+import type { BundleVerifier, LockEntry, RegistryIndex, SignerIdentity, ThemePin } from './types'
 
 /** A theme version the index offers, resolved to what a lock entry needs. */
 export interface ResolvedTheme extends ThemePin, Pick<LockEntry, 'contract' | 'tier' | 'distribution' | 'code'> {

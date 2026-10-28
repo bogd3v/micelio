@@ -1,5 +1,6 @@
 import { ACCESSIBILITY_LINES, ADMISSION_REPORT_VERSION, AccessibilityRecordSchema, AdmissionReportSchema } from './report'
-import type { AdmissionAccessibility, AdmissionIssue, AdmissionPerformanceRun, AdmissionQuality, AdmissionReport } from './report'
+import type { AdmissionAccessibility, AdmissionIssue, AdmissionPerformanceRun, AdmissionQuality } from './report'
+import type { AdmissionReport } from './types'
 
 // Turns what each admission job wrote (`theme:admit static`, `perf --out`, Playwright's JSON report, the build records) into one report.
 // Every input is `unknown`: a job that crashed leaves a file missing or cut, and the report says so instead of throwing.
@@ -134,7 +135,7 @@ function qualityResult(input: ReportInput, errors: AdmissionIssue[]): AdmissionQ
  * The manual accessibility record that `theme:admit static` read, checked against its schema and the theme version.
  *
  * @remarks
- * No record, a record of another version and a failed line are warnings: whether they block publishing is the registry's rule (#312).
+ * No record, a record of another version and a failed line are warnings here, because admission also runs for themes that have no record; `publishBlockers` (`modules/theme/publish/gate.ts`) is what blocks publishing.
  * A record that does not match the schema is an error, so a typo never reads as a check that was made.
  */
 function accessibilityResult(input: ReportInput, version: string | null, errors: AdmissionIssue[], warnings: AdmissionIssue[]): AdmissionAccessibility | undefined {

@@ -1,0 +1,177 @@
+name: Theme Publish
+
+# Publishes one admitted theme version to the registry (ADR 0008, decisions 3 and 4; #312): the package as an OCI artifact with ORAS and the admission
+# report as a referrer. It signs nothing: the provenance attestation is made by a job of bogd3v/micelio-themes' publish.yml, so that the certificate names
+# the file the core pins (DEFAULT_SIGNER), and pushed by theme-push-bundle.yml; theme-index-prepare.yml then makes the index entry. Called from a bogd3v repository
+# after theme-admission.yml, in the same run, with its outputs; a run from any other owner does nothing. Every decision lives in `npm run theme:publish`
+# of the core ref. The caller to copy: docs/themes/registry-workflows/publish.yml; how it fits: docs/themes/publishing-a-theme.md.
+on:
+  workflow_call:
+    inputs:
+      theme:
+        description: Id of the theme to publish
+        type: string
+        required: true
+      reports:
+        description: The `reports` output of theme-admission.yml, the artifact that holds <theme id>/admission-report.json and the package
+        type: string
+        required: true
+      admitted:
+        description: The `ok` output of theme-admission.yml; the version is published only when it is "true"
+        type: string
+        required: true
+      accessibility-root:
+        description: Where the manual accessibility records are in the caller's repository, as given to the admission; only to name the record in a message
+        type: string
+        default: accessibility
+      core-ref:
+        description: A release tag (vX.Y.Z) or a full commit SHA of bogd3v/micelio whose scripts decide what is published; pin the same ref as the `uses:` line
+        type: string
+        required: true
+      registry:
+        description: The registry to publish to
+        type: string
+        default: ghcr.io/bogd3v/micelio-themes
+    outputs:
+      version:
+        description: The version that was published
+        value: ${{ jobs.publish.outputs.version }}
+      digest:
+        description: The sha256 digest of the package
+        value: ${{ jobs.publish.outputs.digest }}
+      report-digest:
+        description: The sha256 digest of the admission report attached to the package
+        value: ${{ jobs.publish.outputs.report-digest }}
+      package-artifact:
+        description: The artifact that holds the package (package.tgz), for the job that attests it
+        value: ${{ jobs.publish.outputs.package-artifact }}
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish ${{ inputs.theme }}
+    # Only a repository of the bogd3v organisation publishes: every version this workflow writes is `official` (ADR 0008, decision 7)
+    if: github.repository_owner == 'bogd3v' && inputs.admitted == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # One publish of a theme at a time, so the check that the version is new and the push cannot interleave
+    concurrency:
+      group: theme-publish-${{ inputs.theme }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      package-artifact: ${{ steps.gate.outputs.artifact }}
+      version: ${{ steps.gate.outputs.version }}
+      digest: ${{ steps.gate.outputs.digest }}
+      report-digest: ${{ steps.gate.outputs.report-digest }}
+    env:
+      THEME: ${{ inputs.theme }}
+      REGISTRY: ${{ inputs.registry }}
+    steps:
+      - name: Check the core ref
+        env:
+          CORE_REF: ${{ inputs.core-ref }}
+        run: |
+          if [[ ! "${CORE_REF}" =~ ^(v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?|[0-9a-f]{40})$ ]]; then
+            echo "::error::core-ref must be a release tag (vX.Y.Z) or a full commit SHA"
+            exit 1
+          fi
+      - name: Checkout the core
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: bogd3v/micelio
+          ref: ${{ inputs.core-ref }}
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # No install script of any dependency runs in a job that can write the registry and sign
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Download the admission reports
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ inputs.reports }}
+          path: reports
+      # The admission report and the package decide: errors, the manual accessibility record (missing, stale or with a failed line blocks)
+      - name: Decide whether the version may be published
+        id: gate
+        env:
+          ACCESSIBILITY_ROOT: ${{ inputs.accessibility-root }}
+        run: |
+          npm run --silent theme:publish -- gate --theme "${THEME}" --reports reports --accessibility-root "${ACCESSIBILITY_ROOT}" --out publish/gate.json
+          {
+            echo "version=$(jq -r .version publish/gate.json)"
+            echo "digest=$(jq -r .digest publish/gate.json)"
+            echo "report-digest=$(jq -r .reportDigest publish/gate.json)"
+            echo "package=$(jq -r .package publish/gate.json)"
+            echo "report=$(jq -r .report publish/gate.json)"
+            echo "artifact=theme-package-${THEME}-$(jq -r .digest publish/gate.json | cut -c8-23)"
+          } >> "$GITHUB_OUTPUT"
+      - name: Setup ORAS
+        uses: oras-project/setup-oras@5e2f2482b30b0cb3e14e67f89a80c88c659a7c63 # v2.0.3
+        with:
+          version: 1.2.3
+      - name: Log in to the registry
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          [[ "${REGISTRY}" == ghcr.io/bogd3v/* ]] || { echo "::error::The registry must be under ghcr.io/bogd3v: the token goes nowhere else"; exit 1; }
+          printf '%s' "${GH_TOKEN}" | oras login "${REGISTRY%%/*}" --username "${ACTOR}" --password-stdin
+      # A published version never changes. Only "not found" lets the push go on: any other answer (denied, unreachable) stops it
+      - name: Check the version is new
+        env:
+          VERSION: ${{ steps.gate.outputs.version }}
+        run: |
+          if answer="$(oras manifest fetch "${REGISTRY}/${THEME}:${VERSION}" 2>&1)"; then
+            echo "::error::${THEME}@${VERSION} is already published: a version never changes, publish a new version"
+            exit 1
+          fi
+          if ! grep -qiE 'not found|manifest unknown|name unknown|404' <<< "${answer}"; then
+            echo "::error::Cannot tell whether ${THEME}@${VERSION} exists: ${answer:0:300}"
+            exit 1
+          fi
+      # The layer is the .tgz as it is, so its digest is the package digest the lock pins; the media types are the ones the client reads (constants.ts)
+      - name: Push the package
+        env:
+          VERSION: ${{ steps.gate.outputs.version }}
+          DIGEST: ${{ steps.gate.outputs.digest }}
+          PACKAGE: ${{ steps.gate.outputs.package }}
+        run: |
+          oras push "${REGISTRY}/${THEME}:${VERSION}" "${PACKAGE}:application/vnd.micelio.theme.package.v1.tar+gzip" --annotation-file publish/gate.json.annotations.json
+          oras manifest fetch "${REGISTRY}/${THEME}:${VERSION}" | jq -e --arg digest "${DIGEST}" '(.layers | length) == 1 and .layers[0].digest == $digest' > /dev/null
+      - name: Attach the admission report
+        env:
+          VERSION: ${{ steps.gate.outputs.version }}
+          REPORT: ${{ steps.gate.outputs.report }}
+        run: oras attach --artifact-type application/vnd.micelio.theme.admission-report.v1+json "${REGISTRY}/${THEME}:${VERSION}" "${REPORT}:application/json"
+      # The file the signing job attests: its sha256 is the package digest
+      - name: Keep the package for the attestation
+        env:
+          PACKAGE: ${{ steps.gate.outputs.package }}
+        run: mkdir -p keep && cp "${PACKAGE}" keep/package.tgz
+      - name: Upload the package
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.gate.outputs.artifact }}
+          path: keep/package.tgz
+          retention-days: 7
+      - name: Summary
+        env:
+          VERSION: ${{ steps.gate.outputs.version }}
+          DIGEST: ${{ steps.gate.outputs.digest }}
+          REPORT_DIGEST: ${{ steps.gate.outputs.report-digest }}
+        run: |
+          {
+            echo "### Pushed ${THEME}@${VERSION}"
+            echo "- Package: \`${REGISTRY}/${THEME}:${VERSION}\` (\`${DIGEST}\`)"
+            echo "- Admission report: \`${REPORT_DIGEST}\`"
+            echo "- Not installable yet: it needs its attestation and an index entry"
+          } >> "$GITHUB_STEP_SUMMARY"

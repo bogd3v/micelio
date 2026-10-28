@@ -94,3 +94,50 @@ export interface SignerIdentity {
   /** The subject alternative name of the workflow that signs the index. */
   index: string
 }
+
+/** One version of a theme in the index. */
+export interface IndexVersion {
+  /** The `sha256:` digest of the `.tgz`, which is also the digest of the package artifact's layer. */
+  digest: string
+  /** The theme contract the version declares, as `major.minor`. */
+  contract: string
+  /** The SPDX id (or `LicenseRef-*`) from the package's `theme.json`. */
+  license: string
+  tier: Exclude<ThemeTier, 'local'>
+  distribution: Exclude<ThemeDistribution, 'file'>
+  /** `yanked` stays pullable for locks that pin it and is never resolved for a new range. */
+  status: 'published' | 'yanked' | 'incompatible'
+  /** Whether the package ships `slots/` or `templates/`. */
+  code: boolean
+  /** The `sha256:` digest of the admission report attached to the package artifact as a referrer. */
+  report?: string | undefined
+  /** Why and when the version was yanked; present only with status `yanked`. */
+  yank?: { reason: string, at: string } | undefined
+}
+
+/** The index: `themes[id].versions[version]`. */
+export interface RegistryIndex {
+  version: 1
+  themes: Record<string, { versions: Record<string, IndexVersion> }>
+}
+
+/** The digest a signed statement must name. */
+export interface BundleSubject {
+  algorithm: 'sha256' | 'sha512'
+  /** Lowercase hex. */
+  hex: string
+}
+
+/** What `verifyBundle` checks a bundle against. */
+export interface VerifyBundleOptions {
+  subject: BundleSubject
+  /** The exact subject alternative name of the signing certificate. */
+  san: string
+  /** The exact OIDC issuer of the signing certificate. */
+  issuer: string
+  /** The Sigstore trusted root to verify against; the one shipped with Micelio when not given. */
+  root?: unknown
+}
+
+/** A function that verifies a bundle, so callers can be tested without real signatures. */
+export type BundleVerifier = (bundle: Uint8Array, options: VerifyBundleOptions) => void

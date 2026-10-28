@@ -1,6 +1,6 @@
 # Publishing a theme
 
-How a theme folder becomes a published version. This page covers **admission**, the gate every version passes first (ADR 0008, decision 5). Publishing to the registry and yanking a version come with #312, and `theme:submit` for creators without GitHub Actions with #404; until then a version is admitted, not published.
+How a theme folder becomes a published version. This page covers **admission**, the gate every version passes first (ADR 0008, decision 5), then **publishing** to the registry and **yanking** a version (sections 8 to 11). Only bogd3v publishes, and every version is `official`; `theme:submit` for creators without GitHub Actions and the other tiers come with #404.
 
 ## 1. Repository layout
 
@@ -51,7 +51,7 @@ jobs:
 
 The outputs are `ok` (`"true"` when no report has an error), `reports`, the name of the artifact (`admission-reports` by default) with `<id>/admission-report.json` and the package of each theme, and one result per check across every theme: `static` (`theme:check` and `theme:pack`), `performance` and `quality`, each `"passed"` or `"failed"` (`quality` is `"skipped"` with `quality: false`). The core's `deploy.yml` gates `Performance Budgets` and `Theme Quality` on them.
 
-Your report is for iterating: publishing (#312) runs admission again on bogd3v's side, against the core release it publishes for.
+Your report is for iterating: publishing runs admission again on bogd3v's side, against the core release it publishes for.
 
 ## 3. What it runs
 
@@ -65,16 +65,16 @@ Your report is for iterating: publishing (#312) runs admission again on bogd3v's
 
 ## 4. Errors and warnings
 
-| Blocks publishing (error) | Published with the version (warning) |
+| Blocks admission (error) | Does not block admission (warning) |
 | --- | --- |
 | Contract, public hooks and package problems (`theme:check`, `theme:pack`) | `theme:check` warnings, such as fonts over the 100 KB target |
 | Contrast below AA in any mode | Budget targets (`warn` limits of `scripts/perf/budgets.json`) |
-| An accessibility record that does not match its schema or cannot be read | No accessibility record, a record of another version, a line of the checklist that failed |
+| An accessibility record that does not match its schema or cannot be read | No accessibility record, a record of another version, a line of the checklist that failed or was not verified |
 | A budget `error` limit, a FOUC rule, a third-party request | |
 | An axe violation, a visual diff or a missing baseline, a motion or reflow failure | |
 | A check that produced no result (a job that crashed or was cancelled, a quality run where no test passed), or an install into the shared build that failed | |
 
-Every message is the one the check prints today, unchanged, so the report reads like the log.
+Every message is the one the check prints today, unchanged, so the report reads like the log. Publishing adds its own rule on the accessibility record (section 8): admission also runs for the core's own themes on every push, which have no record yet, so it only warns.
 
 ## 5. The report
 
@@ -124,3 +124,61 @@ MICELIO_THEME_DIRS=test/fixtures/themes/minimal NUXT_PUBLIC_THEME=minimal npm ru
 npm run theme:admit -- install --theme my-theme --output .output --purpose performance --out admission/my-theme/build-performance.json
 npm run perf -- --check --theme my-theme --mode dynamic
 ```
+
+## 8. Publish
+
+Publishing is split between the core's reusable workflows, which decide and write, and two files of `bogd3v/micelio-themes` (#313), whose jobs sign. The split is what keeps the identities the core pins (`DEFAULT_SIGNER` in `modules/theme/registry/constants.ts`): a Sigstore certificate names the file that defines the job that signs, so the package attestation must come from a job of `micelio-themes/.github/workflows/publish.yml` and the index signature from a job of `.../sign-index.yml`, both on `refs/heads/main`. Both run only from a repository of the bogd3v organisation (`github.repository_owner`), so every version is `official`.
+
+| File | Where | Does |
+| --- | --- | --- |
+| `theme-publish.yml` | core | Gate, new-version check, `oras push` of the package, the admission report as a referrer; uploads the package for the signing job. Signs nothing |
+| `publish.yml`, job `attest` | `micelio-themes` | Attests the package (`actions/attest-build-provenance`), uploads the bundle |
+| `theme-push-bundle.yml` | core | Verifies the bundle as a client does, against `DEFAULT_SIGNER`, then pushes it to `<id>:<version>.att`, or the index and its bundle to `index:v1` and `index:v1.att` |
+| `theme-index-prepare.yml` | core | Makes the next index (add or yank), after verifying the signature of the one the registry holds. Writes and signs nothing |
+| `theme-index-listed.yml` | core | Last job of `publish.yml`: reads the signed index and fails, naming the re-run, if it does not list the version the run pushed. Writes nothing |
+| `sign-index.yml`, job `attest` | `micelio-themes` | Signs the index, in the environment `theme-index` and the concurrency group `theme-registry-index`; calls the two core workflows around it |
+
+**What to create in `micelio-themes`:** copy `docs/themes/registry-workflows/publish.yml` and `sign-index.yml` of the core release you pin to `.github/workflows/` under those names (the templates are checked by the core's tests: the pinned identities, one signing job each, one release). Replace `v0.6.0` and `core-ref` together when you move to another release. A maintainer starts `Publish` with the theme id; `Sign index` with `action: yank` is the yank (section 9). Do not rename the files, move the signing jobs or run them from another branch than `main`: every client would refuse what they sign, and `theme-push-bundle.yml` refuses the bundle first (`npm run theme:publish -- verify`).
+
+`theme-publish.yml` (decisions are `npm run theme:publish -- gate` of the core ref):
+
+1. **The gate.** Refuses a report with errors, one for another theme, one without a version, contract or package, a package whose sha256 is not the report's, and a package that does not unpack by the rules a client applies. It also requires the manual accessibility record (standard, section 9; `docs/themes/accessibility-checklist.md`): a missing record, a record of another version (`current: false`), an invalid one and one with a **failed** line block, and the message names `<accessibility-root>/<id>.json`. A **partial** record (lines not verified) does not block; it stays in the report and the run shows a warning.
+2. **A new version.** `<id>:<version>` must not exist. A published version never changes: a fix is a new version, and a yanked version cannot be published again.
+3. **The artifact.** `ghcr.io/bogd3v/micelio-themes/<id>:<version>` is one layer, the `.tgz` itself (`application/vnd.micelio.theme.package.v1.tar+gzip`), so its digest is the digest a lock pins. The manifest annotations (`io.micelio.theme.*`) carry the contract, license, tier and the digests of the package and of the report.
+4. **The report.** `admission-report.json` is attached to the package as a referrer (`application/vnd.micelio.theme.admission-report.v1+json`) and its digest is the `report` of the index entry.
+5. **The attestation** is pushed after the package, to `<id>:<version>.att`, by `theme-push-bundle.yml`.
+
+`theme-index-prepare.yml` writes nothing; `theme-push-bundle.yml` writes `index:v1` (`themes/registry-index.schema.json` is its schema, generated from `modules/theme/registry/registry-index.ts`; `npm run theme:schema`) and its signature `index:v1.att`. Preparing trusts nothing the caller passes but the digest: for `add` it reads the package from the registry, verifies its attestation against the publish signer as a client does, and derives license, contract and `code` from the package (never from the caller); the tier is `official`. The new index must be a valid successor of the old (only new versions and `published` to `yanked`, `successorProblems`), and the write is refused when the registry's index is not the one that was read (`theme:publish -- check-base`, tested). The signature is not a field of the index: it is the bundle at `index:v1.att`, which a client verifies against the index signer before it reads anything.
+
+**When a run stops half way.** The package is pushed before it is attested and listed, so a failure after that (a rejected approval of `theme-index`, a cancelled run, a registry error) leaves the version pushed and not listed. A new run of the same version stops at "is already published". Re-run the failed jobs of the same run: the artifacts it needs (the package, the bundle and the index) are kept for 7 days. If the index was written and only its signature failed, the repeated `write` job finds its own index in the registry (`check-base` answers `written`) and pushes the signature alone; until then clients refuse the index. If another index change landed in between, the re-run of an earlier `prepare` is refused as stale: run `Sign index` (`sign-index.yml`) with `action: add`, the theme, the version, the package digest and the report digest, which prepares the change again from the current index and still needs the approval of `theme-index`. If the package is wrong, publish a new version; a pushed version is never overwritten.
+
+**The limit of the queue, and the check at the end.** One group, `theme-registry-index`, serializes every change of the index, and GitHub keeps in a group one running run and one pending run: a newer pending run cancels the older pending one. The running run waits for the approval of `theme-index`, so while it waits two publishes (or a publish and a yank) can queue behind it and the third cancels the second. The cancelled run has already pushed and attested its package, and nothing lists it. Nothing is lost silently: the last job of `publish.yml`, `listed`, runs even when `index` was cancelled and fails with the exact re-run (`theme:publish -- listed`; for a version listed with another package digest it names both), for example:
+
+```
+calm@1.2.0 is pushed and attested but not in the index: its request to the index was cancelled or failed. Run "Sign index" (sign-index.yml) with action add, theme calm, version 1.2.0, digest sha256:…, report-digest sha256:…
+```
+
+Run `Sign index` with those inputs: it prepares the change from the current index and still needs the approval of `theme-index`. Approve the pending request before starting the next publish, or start publishes one at a time; a version cannot be double-listed (`addVersion` refuses it) and a yank cannot be cancelled into silence either: a cancelled `Sign index` run is shown as cancelled and is started again with the same inputs. We chose the check over a job that lists every unlisted version because a registry has no list of themes (a new theme has no repository in the index to scan), so such a job would heal only some cases and add a second path that signs; the re-run is the path that already exists and is tested. A cancelled run of `theme-publish.yml` itself (its group is per theme) pushed nothing: start it again.
+
+Each entry says whether the version has `code` (`slots/` or `templates/`), which is how the theme picker and a server tell what an image can activate (ADR 0009, section 4).
+
+## 9. Yank
+
+Run `Sign index` (`sign-index.yml` of `micelio-themes`) with `action: yank`, the theme, the version and a reason. A yank marks a `published` version `yanked` with a one-line reason (500 characters at most) and the time. It goes through the index workflow because the core pins one identity for the index. A yanked version:
+
+- is never resolved for a new range: `theme:add` and `theme:outdated` skip it;
+- stays pullable for a lock that already pins it: `theme:pull --frozen` still installs it;
+- cannot be published again, and cannot be un-yanked: publish a new version.
+
+## 10. What yank cannot do
+
+Yank is the only kill switch until a core release rotates the trust root. ADR 0008 has no status that removes an already-installed theme from a site: a yank stops new installs and new ranges, and a site that pinned the digest keeps it. `incompatible` (set by #314, not by these workflows) is refused by the same rule as `yanked`, on purpose: only a site's own pin installs it. Revoking the publish or index identity needs a core release with a new `DEFAULT_SIGNER`, so renaming `publish.yml` or `sign-index.yml`, or changing the branch they run from, is changing the trust root.
+
+## 11. Organisation setup (once, by an owner)
+
+The workflows cannot do these; they are not in the repository's files:
+
+1. In `bogd3v`, make the package `micelio-themes` and its sub-packages **public**, so a client pulls with no credentials.
+2. Give write access to the packages only to the repository that calls the workflows (`bogd3v/micelio-themes`, Actions access on each package), and to nobody else.
+3. In `micelio-themes`, add `.github/workflows/publish.yml` and `sign-index.yml` from `docs/themes/registry-workflows/` (section 8), and create the environment `theme-index` with the maintainers as required reviewers. Protect `main` and limit who can change `.github/workflows/`: the branch is part of both identities. Limit the deployment branches of the environment `theme-index` to `main`. The signing jobs and the write carry `if: github.repository == 'bogd3v/micelio-themes'`: in a called workflow `github.repository` and the environment are the caller's, so without the guard any other repository of the organisation could call `sign-index.yml` and get a signature under the pinned identity with no approval. Keep the guard when you edit the files.
+4. Pin the `uses:` lines and `core-ref` of both files to a core release that contains these workflows; update them together.

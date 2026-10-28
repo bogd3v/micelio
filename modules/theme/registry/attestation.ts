@@ -4,7 +4,7 @@ import { PolicyError, toSignedEntity, toTrustMaterial, VerificationError, Verifi
 import { MAX_BUNDLE_BYTES } from './constants'
 import { RegistryError, safeText } from './error'
 import trustedRootJson from './trusted_root.json'
-import type { SignerIdentity } from './types'
+import type { SignerIdentity, VerifyBundleOptions } from './types'
 
 // Offline verification of a Sigstore bundle (ADR 0009, section 3): the signing certificate chains to the Fulcio CA of the trusted
 // root, the transparency log entry (inclusion proof and signed time) is in the log of the trusted root, the signature is valid, the
@@ -17,27 +17,6 @@ const PROVENANCE = 'https://slsa.dev/provenance/'
 /** Verification errors that say the trust material does not cover the bundle (the root is out of date or the bundle is not from this log). */
 const ROOT_CODES = new Set(['CERTIFICATE_ERROR', 'TLOG_ERROR', 'TLOG_INCLUSION_PROOF_ERROR', 'TLOG_INCLUSION_PROMISE_ERROR', 'TLOG_MISSING_INCLUSION_ERROR', 'TIMESTAMP_ERROR', 'PUBLIC_KEY_ERROR'])
 const UPGRADE = 'the Sigstore trust root shipped with this version of Micelio does not verify it; if the package was signed recently, upgrade Micelio (the root is refreshed in every release)'
-
-/** The digest a signed statement must name. */
-export interface BundleSubject {
-  algorithm: 'sha256' | 'sha512'
-  /** Lowercase hex. */
-  hex: string
-}
-
-/** What `verifyBundle` checks a bundle against. */
-export interface VerifyBundleOptions {
-  subject: BundleSubject
-  /** The exact subject alternative name of the signing certificate. */
-  san: string
-  /** The exact OIDC issuer of the signing certificate. */
-  issuer: string
-  /** The Sigstore trusted root to verify against; the one shipped with Micelio when not given. */
-  root?: unknown
-}
-
-/** A function that verifies a bundle, so callers can be tested without real signatures. */
-export type BundleVerifier = (bundle: Uint8Array, options: VerifyBundleOptions) => void
 
 /**
  * The first problem with the validity of a trusted root at `now`, or `null` when it can verify a bundle signed now.

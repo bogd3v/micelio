@@ -28,7 +28,7 @@ Each run is recorded as a JSON file in the theme's repository, `<accessibility-r
 ```
 
 - `lines` has every id of this checklist (the code before each line below), each `pass`, `fail` with the `issue` that tracks it, or `not-verified` with a `note` that says why. A record that misses a line, fails one without an issue or is not valid JSON is an error of the report.
-- `version` is the theme version that was checked. A record of another version, a missing record and a failed line are warnings: they are published with the version, and the registry decides what it requires (#312).
+- `version` is the theme version that was checked. Admission only warns about a record of another version, a missing record and a failed line, because it also runs for themes that have no record yet. Publishing (`docs/themes/publishing-a-theme.md`, section 8) refuses a missing record, a record of another version and a failed line; lines not verified do not block and are published with the report.
 - `by` names whoever ran the checklist, as they want to be named. Record nothing else about them.
 
 A failing line gets its own issue, linked from the record. Until a theme's repository runs admission, record the run in the Progress section of the issue that admits it, as the results below were. The core's own themes have no record yet, so `deploy.yml` reports a `missing` warning for each; a record for them comes when a person repeats lines 1 and 2, as the last results say.
