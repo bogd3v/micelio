@@ -16,6 +16,7 @@ import { checkFouc } from './fouc.mjs'
 import { collectSamples } from './lighthouse-samples.mjs'
 import { budgetKeysOf, ISLANDS_PREFIX, islandBudgetErrors, islandElement, islandMetrics, islandProblems, isStrayRequest } from './islands.mjs'
 import { storeLayouts, variantAllowance, variantBudgetErrors } from './variants.mjs'
+import { displayFamilyOf, installedManifest } from './theme-manifest.mjs'
 
 const ROOT = new URL('../../', import.meta.url).pathname
 // PERF_*_PORT: another set of ports when these are taken (parallel runs on one machine)
@@ -43,6 +44,8 @@ const isStatic = budgetMode === 'static' || budgetMode === 'landing'
 const searchQuery = typeof args['search-query'] === 'string' ? args['search-query'] : 'vue'
 const displayFont = args['display-font'] === 'heaviest' ? heaviestDisplayFont() : typeof args['display-font'] === 'string' ? args['display-font'] : undefined
 const extraFontKb = displayFont ? budgets.displayFont?.extraFontKb ?? 60 : 0
+// The display family of the copy discovery chose (an admitted repository theme replaces a core one), to tell whether the override emits anything
+const themeDisplayFamily = displayFamilyOf(await installedManifest(ROOT, theme))
 const label = `theme ${theme}, ${mode} mode${displayFont ? `, display font ${displayFont}` : ''}`
 if (!modeBudgets) throw new Error(`budgets.json has budgets for the modes ${Object.keys(budgets.modes).join(', ')}, not "${mode}" (${label})`)
 // --pages home,article=/posts/x: measure these pages only; `name=path` points a budgeted page at another path (a real site, not the mock)
@@ -67,7 +70,7 @@ if (budgetErrors.length) throw new Error(`budgets.json:\n${budgetErrors.join('\n
 const heavyIslands = HEAVY_ISLANDS.flatMap(island => budgetKeysOf(island, modeBudgets.islands).map(key => ({ island, key })))
 for (const [id, entry] of Object.entries(budgets.themes ?? {})) {
   if (!entry?.reason) throw new Error(`budgets.json: the exception for theme "${id}" needs a "reason"`)
-  if (!existsSync(new URL(`../../themes/${id}/theme.json`, import.meta.url))) console.warn(`warn  budgets.json: "themes.${id}" is not an installed theme in themes/`)
+  if (!(await installedManifest(ROOT, id))) console.warn(`warn  budgets.json: "themes.${id}" is not an installed theme`)
 }
 
 /** The budgeted pages of the mode, narrowed and re-pathed by `--pages` */
@@ -89,14 +92,6 @@ function heaviestDisplayFont() {
     .sort((a, b) => b.size - a.size)
   if (!heaviest) throw new Error('app/assets/fonts/display/ has no font')
   return heaviest.id
-}
-
-/** The theme's own display family from its manifest, to tell whether the override emits anything */
-function themeDisplayFamily() {
-  const file = new URL(`../../themes/${theme}/theme.json`, import.meta.url)
-  if (!existsSync(file)) return undefined
-  const stack = JSON.parse(readFileSync(file, 'utf8')).type?.families?.display ?? ''
-  return stack.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase()
 }
 
 function parseArgs(list) {
@@ -425,7 +420,7 @@ try {
     problems.push(...compare(name, metrics, limitsFor(name, 'error'), 'error'), ...compare(name, metrics, limitsFor(name, 'warn'), 'warn'))
     for (const message of checkFouc(html, url, stylesheets)) problems.push({ level: 'error', page: name, message })
     // The run proves nothing if the font never reached the page (a theme using it itself emits nothing)
-    if (displayFont && themeDisplayFamily() !== displayFont.replace(/-/g, ' ') && !html.includes(`/fonts/display/${displayFont}-latin-wght.woff2`)) {
+    if (displayFont && themeDisplayFamily !== displayFont.replace(/-/g, ' ') && !html.includes(`/fonts/display/${displayFont}-latin-wght.woff2`)) {
       problems.push({ level: 'error', page: name, message: `the display font "${displayFont}" is not in the page` })
     }
     report.push({ page: name, path, metrics })

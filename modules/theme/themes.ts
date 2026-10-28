@@ -16,6 +16,11 @@ export function themeRoots(rootDir: string, extra: string | undefined = process.
   return [join(rootDir, 'themes'), join(rootDir, PULLED_THEMES_DIR), ...(extra ?? '').split(delimiter).filter(Boolean).map(dir => resolve(rootDir, dir))]
 }
 
+/** Set by the admission jobs (`theme-admission.yml`, `theme-snapshots.yml`): a theme of `MICELIO_THEME_DIRS` replaces a core theme with the same id. */
+export const ADMISSION_ENV = 'MICELIO_ADMISSION'
+
+const announced = new Set<string>()
+
 function isPulledRoot(root: string): boolean {
   return normalize(root).split(sep).slice(-2).join('/') === PULLED_THEMES_DIR
 }
@@ -27,6 +32,10 @@ function isPulledRoot(root: string): boolean {
  * A theme that is both pulled (`.micelio/themes/`, from the lock) and in another root is read from the other one, so a theme author
  * can work on a checkout, and a notice says so. With `CI=true` that is an error: a build must not use an unpinned theme by accident.
  *
+ * With `MICELIO_ADMISSION=true` (admission of a theme repository's themes, ADR 0008) a theme of the given roots (every root after
+ * the first, which is the core's `themes/`, and not the pulled one) replaces a core theme with the same id, and a notice says so once.
+ * Two given roots with the same id are still an error.
+ *
  * @throws `Error` when a theme is installed twice, or is both local and locked in CI.
  */
 export function discoverThemes(roots: string[]): InstalledTheme[] {
@@ -35,8 +44,19 @@ export function discoverThemes(roots: string[]): InstalledTheme[] {
     const dirs = isThemeDir(root) ? [root] : readdirSync(root, { withFileTypes: true }).filter(entry => entry.isDirectory() && !entry.name.startsWith('.')).map(entry => join(root, entry.name)).filter(isThemeDir)
     return dirs.map(dir => ({ theme: loadTheme(dir), pulled: isPulledRoot(root) }))
   })
-  const local = new Map(found.filter(item => !item.pulled).map(item => [item.theme.id, item.theme.dir]))
-  const themes = found.filter((item) => {
+  const given = process.env[ADMISSION_ENV] === 'true' ? new Map(found.filter(item => !item.pulled && !coreItem(roots, item.theme.dir)).map(item => [item.theme.id, item.theme.dir])) : new Map<string, string>()
+  const kept = found.filter((item) => {
+    const winner = given.get(item.theme.id)
+    if (winner === undefined || !coreItem(roots, item.theme.dir)) return true
+    const notice = `using ${item.theme.id} from ${winner}, not the core's`
+    if (!announced.has(notice)) {
+      announced.add(notice)
+      console.warn(notice)
+    }
+    return false
+  })
+  const local = new Map(kept.filter(item => !item.pulled).map(item => [item.theme.id, item.theme.dir]))
+  const themes = kept.filter((item) => {
     const shadow = item.pulled ? local.get(item.theme.id) : undefined
     if (shadow === undefined) return true
     if (process.env.CI === 'true') throw new Error(`Theme "${item.theme.id}" is in themes.lock.json and also at ${shadow}: a CI build uses only the locked one. Remove one of them.`)
@@ -50,6 +70,12 @@ export function discoverThemes(roots: string[]): InstalledTheme[] {
     seen.set(theme.id, theme.dir)
   }
   return themes
+}
+
+/** True when the theme folder is directly under the first root, the core's `themes/`. */
+function coreItem(roots: string[], dir: string): boolean {
+  const core = roots[0]
+  return core !== undefined && resolve(dir, '..') === resolve(core)
 }
 
 function loadTheme(dir: string): InstalledTheme {
