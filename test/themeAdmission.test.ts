@@ -6,7 +6,7 @@ import { assembleReport, reportSummary } from '../modules/theme/admission/collec
 import type { ReportInput } from '../modules/theme/admission/collect'
 import { ownBuildReason } from '../modules/theme/admission/plan'
 import { readAccessibilityRecord } from '../modules/theme/admission/record'
-import { ACCESSIBILITY_LINES, AdmissionReportSchema, admissionReportJsonSchema } from '../modules/theme/admission/report'
+import { ACCESSIBILITY_LINES, AdmissionReportSchema, admissionReportJsonSchema, coreFailures } from '../modules/theme/admission/report'
 import { discoverThemes } from '../modules/theme/themes'
 
 const ROOT = resolve(__dirname, '..')
@@ -166,6 +166,24 @@ describe('the manual accessibility record', () => {
       ['stale', expect.stringMatching(/records version 0\.9\.0, not 1\.0\.0/)],
       ['manual', `keyboard.focus-visible failed (${issue}): card links`],
     ])
+  })
+
+  it('warns on a failure caused by the core without making the record failed, and does not call it passed', () => {
+    const issue = 'https://github.com/bogd3v/micelio/issues/616'
+    const report = assembleReport(withRecord({ ...RECORD, lines: { ...lines, 'zoom.reflow-320': { result: 'fail', cause: 'core', issue } } }))
+    expect(report.ok).toBe(true)
+    expect(report.accessibility?.status).toBe('passed-with-core-failures')
+    expect(report.warnings.map(item => [item.kind, item.message])).toEqual([['manual', `zoom.reflow-320 failed because of the core (${issue})`]])
+    const summary = reportSummary(report)
+    expect(summary).toContain('Manual accessibility check passed with core failures, 2026-10-20 by A maintainer')
+    expect(summary).toContain(`- Failed because of the core: zoom.reflow-320 (${issue})`)
+  })
+
+  it('lists a core failure in the summary of a partial record too, and coreFailures finds only core lines', () => {
+    const core = { result: 'fail', cause: 'core', issue: 'https://github.com/bogd3v/micelio/issues/616' }
+    const report = assembleReport(withRecord({ ...RECORD, lines: { ...lines, 'zoom.reflow-320': core, 'screen-reader.names': { result: 'not-verified', note: 'no screen reader' }, 'keyboard.order': { result: 'fail', cause: 'theme', issue: 'https://github.com/example/calm/issues/7' } } }))
+    expect(reportSummary(report)).toContain('- Failed because of the core: zoom.reflow-320')
+    expect(coreFailures(report.accessibility!.record)).toEqual([{ line: 'zoom.reflow-320', issue: core.issue }])
   })
 
   it('counts lines that were not verified as partial', () => {

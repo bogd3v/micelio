@@ -174,4 +174,6 @@ jobs:
             echo "- Package: \`${REGISTRY}/${THEME}:${VERSION}\` (\`${DIGEST}\`)"
             echo "- Admission report: \`${REPORT_DIGEST}\`"
             echo "- Not installable yet: it needs its attestation and an index entry"
+            # The release notes of this version: the core has no other channel for them (docs/themes/publishing-a-theme.md, section 8)
+            jq -r '.coreFailures[] | "- Known failure caused by the core: `\(.line)`, tracked at \(.issue)"' publish/gate.json
           } >> "$GITHUB_STEP_SUMMARY"

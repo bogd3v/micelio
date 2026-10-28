@@ -94,6 +94,46 @@ describe('what publishing requires of the admission report', () => {
     expect(blockers(reportOf({}, failed))).toEqual([expect.stringMatching(/has a failed line/)])
   })
 
+  it('blocks a failed line whose cause is the theme, said or by default, and names the line', () => {
+    const issue = 'https://github.com/example/calm/issues/7'
+    for (const cause of [{}, { cause: 'theme' }]) {
+      const failed = { ...RECORD, lines: { ...lines, 'keyboard.order': { result: 'fail', issue, ...cause } } }
+      expect(blockers(reportOf({}, failed))).toEqual([expect.stringMatching(/has a failed line \(keyboard\.order\)/)])
+    }
+  })
+
+  it('lets a failed line through whose cause is the core with an issue of bogd3v/micelio, and keeps it in the report', () => {
+    const issue = 'https://github.com/bogd3v/micelio/issues/617'
+    const record = { ...RECORD, lines: { ...lines, 'keyboard.focus-visible': { result: 'fail', cause: 'core', issue } } }
+    const report = reportOf({}, record)
+    expect(report.ok).toBe(true)
+    expect(report.accessibility?.status).toBe('passed-with-core-failures')
+    expect(report.accessibility?.record.lines['keyboard.focus-visible']).toMatchObject({ cause: 'core', issue })
+    expect(report.warnings.map(warning => warning.message)).toContain(`keyboard.focus-visible failed because of the core (${issue})`)
+    expect(blockers(report)).toEqual([])
+  })
+
+  it('still blocks on the theme\'s failure when a core failure sits beside it', () => {
+    const core = { result: 'fail', cause: 'core', issue: 'https://github.com/bogd3v/micelio/issues/617' }
+    const record = { ...RECORD, lines: { ...lines, 'keyboard.focus-visible': core, 'zoom.200': { result: 'fail', issue: 'https://github.com/example/calm/issues/9' } } }
+    expect(blockers(reportOf({}, record))).toEqual([expect.stringMatching(/has a failed line \(zoom\.200\)/)])
+  })
+
+  it('makes a core failure with an issue outside bogd3v/micelio, or a lookalike URL, an error of the record', () => {
+    for (const issue of ['https://github.com/example/calm/issues/7', 'https://github.com/bogd3v/micelio-cms/issues/7', 'https://github.com/bogd3v/micelio/pull/7', 'https://github.com/bogd3v/micelio/issues/7#x', 'https://github.com.evil.test/bogd3v/micelio/issues/7']) {
+      const report = reportOf({}, { ...RECORD, lines: { ...lines, 'keyboard.order': { result: 'fail', cause: 'core', issue } } })
+      expect(report.ok, issue).toBe(false)
+      expect(report.errors[0]!.message).toMatch(/keyboard\.order\.issue: a failure with cause "core" must link an issue in bogd3v\/micelio/)
+      expect(blockers(report).join('\n')).toMatch(/admission found 1 error/)
+    }
+  })
+
+  it('makes a core failure without an issue, or a cause that is neither, an error of the record', () => {
+    for (const line of [{ result: 'fail', cause: 'core' }, { result: 'fail', cause: 'both', issue: 'https://github.com/bogd3v/micelio/issues/1' }, { result: 'pass', cause: 'core' }]) {
+      expect(reportOf({}, { ...RECORD, lines: { ...lines, 'keyboard.order': line } }).ok).toBe(false)
+    }
+  })
+
   it('blocks a record that is not valid, through the report\'s own error', () => {
     const report = reportOf({}, { ...RECORD, lines: {} })
     expect(report.ok).toBe(false)
@@ -403,6 +443,10 @@ describe('the workflows', () => {
     expect(push).toContain(`/${INDEX_REPOSITORY}:${INDEX_TAG}" "index/index.json:${INDEX_MEDIA_TYPE}"`)
     expect(push).toContain(`/${INDEX_REPOSITORY}:${INDEX_TAG}${ATTESTATION_TAG_SUFFIX}" "bundle/bundle.json:${BUNDLE_MEDIA_TYPE}"`)
     expect(Object.values(ANNOTATIONS).every(key => key.startsWith('io.micelio.theme.'))).toBe(true)
+  })
+
+  it('list the core failures of the record in the summary of the publish run, from the gate\'s own output', () => {
+    expect(publish).toMatch(/jq -r '\.coreFailures\[\] \|[^\n]*Known failure caused by the core[^\n]*' publish\/gate\.json\n\s*\} >> "\$GITHUB_STEP_SUMMARY"/)
   })
 
   it('run only for the organisation, install without scripts and keep inputs out of scripts', () => {

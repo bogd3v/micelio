@@ -22,13 +22,15 @@ Each run is recorded as a JSON file in the theme's repository, `<accessibility-r
   "lines": {
     "keyboard.operable": { "result": "pass" },
     "keyboard.focus-visible": { "result": "fail", "issue": "https://github.com/example/theme/issues/12", "note": "Card links at 390 px" },
+    "zoom.reflow-320": { "result": "fail", "cause": "core", "issue": "https://github.com/bogd3v/micelio/issues/616", "note": "The specimen page is 330 px wide" },
     "zoom.text-spacing": { "result": "not-verified", "note": "No text spacing bookmarklet yet" }
   }
 }
 ```
 
 - `lines` has every id of this checklist (the code before each line below), each `pass`, `fail` with the `issue` that tracks it, or `not-verified` with a `note` that says why. A record that misses a line, fails one without an issue or is not valid JSON is an error of the report.
-- `version` is the theme version that was checked. Admission only warns about a record of another version, a missing record and a failed line, because it also runs for themes that have no record yet. Publishing (`docs/themes/publishing-a-theme.md`, section 8) refuses a missing record, a record of another version and a failed line; lines not verified do not block and are published with the report.
+- A `fail` line has an optional `cause`: `"theme"` (the default) when the theme's CSS, markup or slots cause it, `"core"` when the core or the specimen page does and the theme cannot fix it. A `core` failure must link an issue in `bogd3v/micelio` (`https://github.com/bogd3v/micelio/issues/<number>`); any other issue is an error of the report. It stays in the report as a warning, does not make the `status` `failed` (a record with only core failures is `passed-with-core-failures`, never `passed`) and is listed in the summary of the admission run and of the publish run. Use `core` only for what a change in the theme could not fix: a failure the theme causes keeps its default.
+- `version` is the theme version that was checked. Admission only warns about a record of another version, a missing record and a failed line, because it also runs for themes that have no record yet. Publishing (`docs/themes/publishing-a-theme.md`, section 8) refuses a missing record, a record of another version and a line that failed because of the theme (not one with `cause: "core"`); lines not verified do not block and are published with the report.
 - `by` names whoever ran the checklist, as they want to be named. Record nothing else about them.
 
 A failing line gets its own issue, linked from the record. Until a theme's repository runs admission, record the run in the Progress section of the issue that admits it, as the results below were. The core's own themes have no record yet, so `deploy.yml` reports a `missing` warning for each; a record for them comes when a person repeats lines 1 and 2, as the last results say.

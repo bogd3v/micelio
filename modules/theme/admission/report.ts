@@ -19,11 +19,19 @@ export const ACCESSIBILITY_LINES = [
 
 const Note = z.string().min(1).max(1000)
 
+/** The only issues a failure with `cause: "core"` may link: the core's tracker, where the fix is. */
+const CORE_ISSUE = /^https:\/\/github\.com\/bogd3v\/micelio\/issues\/[1-9]\d*$/
+
 const AccessibilityLine = z.discriminatedUnion('result', [
   z.strictObject({ result: z.literal('pass'), note: Note.optional() }),
-  z.strictObject({ result: z.literal('fail'), issue: z.url({ protocol: /^https$/ }).max(400).describe('The issue that tracks the failure, an `https` URL.'), note: Note.optional() }),
+  z.strictObject({
+    result: z.literal('fail'),
+    issue: z.url({ protocol: /^https$/ }).max(400).describe('The issue that tracks the failure, an `https` URL; for `cause: "core"`, an issue of `bogd3v/micelio`.'),
+    cause: z.enum(['theme', 'core']).optional().describe('Whose fault the failure is: `theme` (the default) blocks publishing; `core` (the core or the specimen page, which the theme cannot fix) is shown in the report and does not block, and must link an issue in `bogd3v/micelio`.'),
+    note: Note.optional(),
+  }).refine(line => line.cause !== 'core' || CORE_ISSUE.test(line.issue), { path: ['issue'], message: 'a failure with cause "core" must link an issue in bogd3v/micelio (https://github.com/bogd3v/micelio/issues/<number>)' }),
   z.strictObject({ result: z.literal('not-verified'), note: Note.describe('Why the line was not verified.') }),
-]).meta({ id: 'AccessibilityLine', description: 'The result of one line of the checklist: a failure links its issue, a line not verified says why.' })
+]).meta({ id: 'AccessibilityLine', description: 'The result of one line of the checklist: a failure links its issue and may name the core as its cause, a line not verified says why.' })
 
 /** The manual accessibility record of a theme version: `<accessibility-root>/<theme id>.json`, written by whoever ran the checklist. */
 export const AccessibilityRecordSchema = z.strictObject({
@@ -35,8 +43,13 @@ export const AccessibilityRecordSchema = z.strictObject({
   lines: z.strictObject(Object.fromEntries(ACCESSIBILITY_LINES.map(line => [line, AccessibilityLine])) as Record<(typeof ACCESSIBILITY_LINES)[number], typeof AccessibilityLine>),
 }).describe('The manual check of docs/themes/accessibility-checklist.md for one theme version (standard, section 9).')
 
+/** The lines of a record that failed because of the core, each with the issue of `bogd3v/micelio` that tracks it. */
+export function coreFailures(record: z.infer<typeof AccessibilityRecordSchema>): { line: string, issue: string }[] {
+  return Object.entries(record.lines).flatMap(([line, entry]) => entry.result === 'fail' && entry.cause === 'core' ? [{ line, issue: entry.issue }] : [])
+}
+
 const Accessibility = z.strictObject({
-  status: z.enum(['passed', 'partial', 'failed']).describe('`passed`: every line passed; `partial`: none failed but some were not verified; `failed`: at least one line failed.'),
+  status: z.enum(['passed', 'passed-with-core-failures', 'partial', 'failed']).describe('`passed`: every line passed; `passed-with-core-failures`: no theme failure and nothing unverified, but at least one line failed with `cause: "core"` (listed in the report and the publish run); `partial`: no theme failure but some lines were not verified; `failed`: at least one line failed because of the theme.'),
   current: z.boolean().describe('Whether the record is for the version under admission; a record of another version is a warning.'),
   record: AccessibilityRecordSchema,
 }).describe('The theme\'s manual accessibility record, when it has one; absent when it has none or it is invalid (both are reported as issues).')
