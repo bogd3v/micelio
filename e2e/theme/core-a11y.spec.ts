@@ -110,10 +110,17 @@ async function indicatorPixels(page: Page, link: Locator, row: Locator): Promise
 for (const forcedColors of ['none', 'active'] as const) {
   test(`the log and row post-list variants show a focus indicator of 3:1 (forced colors ${forcedColors})`, async ({ page }) => {
     await page.emulateMedia({ forcedColors })
+    // A theme whose `postList` is `list` has rows only: the blog hides the view switch, so the log never renders
+    await openPage(page, PAGES.find(item => item.name === 'blog')!)
+    const hasLogView = (await page.locator('.myc-blog-views').count()) > 0
     await openSpecimen(page)
     const log = page.locator('.myc-log-link').first()
     const rows = page.locator('.myc-post-row-link').first()
-    for (const link of [log, rows]) {
+    // A theme that shows the log must have its links on the specimen: fail now, not by timeout
+    if (hasLogView) await expect(log).toBeAttached()
+    else await expect(page.locator('.myc-log-link')).toHaveCount(0)
+    await expect(rows).toBeAttached()
+    for (const link of hasLogView ? [log, rows] : [rows]) {
       const { pixels, edge } = await indicatorPixels(page, link, link.locator('xpath=ancestor::li[1]'))
       // At least one whole edge of the row: a stray changed pixel (a hover, a transition) is not an indicator
       expect(pixels).toBeGreaterThanOrEqual(edge)
