@@ -4,7 +4,7 @@
 # which is DEFAULT_SIGNER.index in modules/theme/registry/constants.ts, apart from publish.yml, so a compromised publish workflow cannot
 # also vouch for the index. publish.yml calls it with `uses: ./.github/workflows/sign-index.yml` (action add); a maintainer starts it
 # directly to yank, or to list a version a failed run left pushed and attested. Create the environment `theme-index` in this repository with the maintainers as required reviewers: its approval stands
-# between a request and a signature. The signing job and the write run only in bogd3v/micelio-themes (`github.repository`), not in a repository that calls this file. Replace v0.5.3 and core-ref together.
+# between a request and a signature. The signing job and the write run only in bogd3v/micelio-themes (`github.repository`), not in a repository that calls this file. Replace v0.5.4 and core-ref together.
 name: Sign index
 
 on:
@@ -54,7 +54,7 @@ concurrency:
 
 jobs:
   prepare:
-    uses: bogd3v/micelio/.github/workflows/theme-index-prepare.yml@v0.5.3
+    uses: bogd3v/micelio/.github/workflows/theme-index-prepare.yml@v0.5.4
     with:
       action: ${{ inputs.action }}
       theme: ${{ inputs.theme }}
@@ -62,7 +62,7 @@ jobs:
       digest: ${{ inputs.digest }}
       report-digest: ${{ inputs.report-digest }}
       reason: ${{ inputs.reason }}
-      core-ref: v0.5.3
+      core-ref: v0.5.4
     permissions:
       contents: read
       packages: read
@@ -104,13 +104,13 @@ jobs:
   write:
     needs: [prepare, attest]
     if: github.repository == 'bogd3v/micelio-themes'
-    uses: bogd3v/micelio/.github/workflows/theme-push-bundle.yml@v0.5.3
+    uses: bogd3v/micelio/.github/workflows/theme-push-bundle.yml@v0.5.4
     with:
       kind: index
       digest: ${{ needs.prepare.outputs.digest }}
       bundle-artifact: theme-index-bundle-${{ needs.prepare.outputs.index-artifact }}
       index-artifact: ${{ needs.prepare.outputs.index-artifact }}
-      core-ref: v0.5.3
+      core-ref: v0.5.4
     permissions:
       contents: read
       packages: write
