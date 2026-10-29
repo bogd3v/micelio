@@ -126,6 +126,15 @@ jobs:
         run: |
           [ "$(jq -r .digest index/index.json.info)" = "${DIGEST}" ] || { echo "::error::The index to write is not the one that was signed"; exit 1; }
           state="$(MICELIO_THEME_REGISTRY="${REGISTRY}" npm run --silent theme:publish -- check-base --info index/index.json.info)" || { echo "${state}"; exit 1; }
+          # A first index (`base` null) was made because an anonymous read found nothing; GHCR answers the same for a package that is not public, so the
+          # login of this job (which can see private packages) confirms there is none before it writes: an index that exists is never replaced by one made from empty.
+          # oras-go maps every 404 of a manifest to `<ref>: not found`; any other answer (denied, a certificate, a timeout) stops the job
+          if [ "${state}" = "state=write" ] && [ "$(jq -r .base index/index.json.info)" = null ]; then
+            if held="$(oras manifest fetch "${REGISTRY}/index:v1" 2>&1)"; then
+              echo "::error::An index exists that an anonymous reader cannot see: make the package ${REGISTRY}/index public and run again"; exit 1
+            fi
+            echo "${held}" | grep -qE ': not found$' || { echo "::error::Could not tell whether ${REGISTRY}/index:v1 exists: ${held}"; exit 1; }
+          fi
           if [ "${state}" = "state=write" ]; then
             oras push "${REGISTRY}/index:v1" "index/index.json:application/vnd.micelio.theme.index.v1+json"
           fi

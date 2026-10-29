@@ -16,6 +16,8 @@ const HOST = /^[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?$/
 const COMPONENT = /^[a-z0-9]+(?:[._-][a-z0-9]+)*$/
 const OCI_MANIFEST = 'application/vnd.oci.image.manifest.v1+json'
 const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308])
+/** The error code GHCR's token service gives, with a 403, to an anonymous reader of a repository that does not exist or is not public. */
+const DENIED = 'DENIED'
 
 /** A registry address, split: the origin to call and the repository path every theme lives under. */
 export interface RegistryLocation {
@@ -105,7 +107,8 @@ function challenge(header: string | null): Record<string, string> | null {
  * for the `pull` scope of the repository being read, never for the scope the registry names. A redirect (or a token realm) must
  * be `https` (or loopback `http` when the registry itself is) and, if it is an IP address, the registry's own; `Authorization`
  * is dropped when a redirect changes origin. Each body is read with a byte cap while streaming, and the whole request, body
- * included, has a timeout.
+ * included, has a timeout. The registry is read anonymously by every site, so a token service that answers 403 `DENIED` (GHCR's
+ * answer for a repository nobody has pushed, or that is not public) means the repository is not there for this reader: `not-found`.
  *
  * @throws `RegistryError` (`registry`) from this function when the address is invalid. The returned calls throw `RegistryError`
  * (`network`, `size`, `digest`, `not-found`, `registry`).
@@ -174,6 +177,17 @@ export function createOciClient(options: OciClientOptions): OciClient {
     return Buffer.concat(chunks)
   }
 
+  /** Whether a token service answer is `{"errors":[{"code":"DENIED",…}]}`; any other body, or one that is not JSON, is not. */
+  async function isDenied(response: Response): Promise<boolean> {
+    try {
+      const body = JSON.parse((await readCapped(response, MAX_SMALL_BYTES)).toString('utf8')) as { errors?: unknown }
+      return Array.isArray(body.errors) && body.errors.some(item => typeof item === 'object' && item !== null && (item as { code?: unknown }).code === DENIED)
+    } catch (error) {
+      if (error instanceof RegistryError) throw error
+      return false
+    }
+  }
+
   async function token(info: Record<string, string>, repository: string, signal: AbortSignal): Promise<string> {
     const realm = new URL(info.realm ?? '', origin)
     allowed(realm, 'the token realm')
@@ -181,6 +195,7 @@ export function createOciClient(options: OciClientOptions): OciClient {
     realm.searchParams.set('service', info.service ?? registryHost)
     realm.searchParams.set('scope', `repository:${repository}:pull`)
     const response = await send(realm, new Headers({ 'accept': 'application/json', 'accept-encoding': 'identity' }), signal)
+    if (response.status === 403 && (await isDenied(response))) throw new RegistryError('not-found', `${repository} is not in the registry or is not public`)
     if (!response.ok) throw new RegistryError('registry', `the token service answered ${response.status}`)
     const body = JSON.parse((await readCapped(response, MAX_SMALL_BYTES)).toString('utf8')) as { token?: unknown, access_token?: unknown }
     const value = body.token ?? body.access_token
