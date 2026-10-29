@@ -2,7 +2,7 @@
 # The job `attest` is defined in THIS file, so the certificate of the package's attestation names
 #   https://github.com/bogd3v/micelio-themes/.github/workflows/publish.yml@refs/heads/main
 # which is DEFAULT_SIGNER.packages in modules/theme/registry/constants.ts. Do not move that job into another file or rename this one:
-# every client would refuse the versions. Everything else is a reusable workflow of the core, pinned to one release (replace v0.5.4 and
+# every client would refuse the versions. Everything else is a reusable workflow of the core, pinned to one release (replace v0.5.5 and
 # core-ref together). Run it from the default branch only (`main`): the ref is part of the identity.
 name: Publish
 
@@ -20,22 +20,22 @@ permissions:
 jobs:
   # Baselines are read from __screenshots__/<id>/ and the accessibility record from accessibility/<id>.json of this repository (publishing-a-theme.md)
   admission:
-    uses: bogd3v/micelio/.github/workflows/theme-admission.yml@v0.5.4
+    uses: bogd3v/micelio/.github/workflows/theme-admission.yml@v0.5.5
     with:
       theme-dirs: ${{ inputs.theme }}
       themes: '["${{ inputs.theme }}"]'
-      core-ref: v0.5.4
+      core-ref: v0.5.5
     permissions:
       contents: read
 
   publish:
     needs: admission
-    uses: bogd3v/micelio/.github/workflows/theme-publish.yml@v0.5.4
+    uses: bogd3v/micelio/.github/workflows/theme-publish.yml@v0.5.5
     with:
       theme: ${{ inputs.theme }}
       reports: ${{ needs.admission.outputs.reports }}
       admitted: ${{ needs.admission.outputs.ok }}
-      core-ref: v0.5.4
+      core-ref: v0.5.5
     permissions:
       contents: read
       packages: write
@@ -74,14 +74,14 @@ jobs:
 
   bundle:
     needs: [publish, attest]
-    uses: bogd3v/micelio/.github/workflows/theme-push-bundle.yml@v0.5.4
+    uses: bogd3v/micelio/.github/workflows/theme-push-bundle.yml@v0.5.5
     with:
       kind: package
       theme: ${{ inputs.theme }}
       version: ${{ needs.publish.outputs.version }}
       digest: ${{ needs.publish.outputs.digest }}
       bundle-artifact: theme-bundle-${{ inputs.theme }}-${{ needs.publish.outputs.version }}
-      core-ref: v0.5.4
+      core-ref: v0.5.5
     permissions:
       contents: read
       packages: write
@@ -107,13 +107,13 @@ jobs:
   listed:
     needs: [publish, index]
     if: ${{ always() && needs.publish.result == 'success' }}
-    uses: bogd3v/micelio/.github/workflows/theme-index-listed.yml@v0.5.4
+    uses: bogd3v/micelio/.github/workflows/theme-index-listed.yml@v0.5.5
     with:
       theme: ${{ inputs.theme }}
       version: ${{ needs.publish.outputs.version }}
       digest: ${{ needs.publish.outputs.digest }}
       report-digest: ${{ needs.publish.outputs.report-digest }}
-      core-ref: v0.5.4
+      core-ref: v0.5.5
     permissions:
       contents: read
       packages: read
