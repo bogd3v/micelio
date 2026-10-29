@@ -23,8 +23,7 @@ Factory roles `worker`, `reviewer` and `verifier` (`docs/factory.md` of `micelio
 
 ## Where the plan lives
 
-- The open GitHub epics (#316 and #408) list every phase and issue with a dependency graph; start there to pick unblocked work. Find them with `gh issue list --label épica`.
-- Each issue has a **Progress** section; a PR that advances it updates Progress and ticks the epic box (`Refs #N` / `Closes #N`).
+- The roadmap and the **Progress** section of each issue: `AGENTS.md`, "Plan and Progress".
 - ADRs in `docs/adr/` record expensive-to-undo decisions; the specimen page (`/_theme`) and `docs/themes/reference/` are the design system reference.
 - Shipping follows the `ship-pr` skill (gate 5; releases: `docs/architecture/releasing.md`); proving a change follows `verify-change`.
 
@@ -61,7 +60,3 @@ Clone both repos side by side (`../micelio-cms`) so agents can read the other si
 - Never call the `strapi` MCP server (it points at production, `api.bogdev.com.co/mcp`) or the `dokploy` MCP server. Subagents do not list MCP tools on purpose; if a task seems to need them, stop and report.
 - Never read or print `~/.claude/secrets/`, `.env` or tokens. Use `.env.example` to learn variable names.
 - Code, identifiers, commits, PR titles and descriptions in English (see `AGENTS.md`).
-
-## Cost guide
-
-- Reading and mapping → haiku. Writing code and tests → sonnet. Judgment (design, review, security) → opus. Fable only for justified escalation.

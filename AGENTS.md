@@ -10,15 +10,10 @@ The rules shared by every Micelio repository live in [`docs/engineering-standard
 
 Work reaches `main` through the gates of [`docs/factory.md`](https://github.com/bogd3v/micelio-engineering/blob/main/docs/factory.md) of `micelio-engineering`; the role prompts are in `.claude/agents/`.
 
-**Docker of the worker and the verifier:** `node:22.23-slim` over a clean copy of the worktree, `$COPY`. The `Dockerfile` image cannot run `npm run check`: `.dockerignore` drops `AGENTS.md` and `docs/`. The maintainer tests the demo stack of `micelio-cms` (`compose.demo.yml`) with this branch's image.
+**Docker.** Run the steps of [`docs/architecture/testing-a-branch.md`](docs/architecture/testing-a-branch.md): `npm run check` in `node:22.23-slim` over a clean copy of the worktree, the browser suites, and the maintainer's test, by stack:
 
-```bash
-docker run --rm -v "$COPY":/app -w /app node:22.23-slim sh -c 'npm ci && npm run check'
-```
-
-The container runs as root, so the run leaves root-owned `coverage/`, `.micelio/` and report folders in `$COPY` that make the next `rsync --delete` fail. Add `--user "$(id -u):$(id -g)" -e HOME=/tmp/h` (and `mkdir -p $HOME` in the `sh -c`) to run as yourself, or remove those folders with a root container before you sync again.
-
-The suites that drive a browser (`test:e2e:*`, `test:theme`) need Playwright's browsers, which `node:22.23-slim` lacks. CI runs them in the image `scripts/ci/playwright-image.sh` resolves, which has Node 24 (the job installs Node 22 over it). For the same Node as `check`, build an image `FROM node:22.23-slim` that runs `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npx -y playwright@<the version of @playwright/test> install --with-deps chromium firefox webkit`, and in it run `npm ci && npm run build && E2E_BUILD=1 npm run test:e2e:<group>` over the same bind mount (`:z`); say in the pull request which image ran. `npm run perf` runs in that same image after `npm run build` (`npm ci && npm run build && npm run perf -- --check`; `--mode static --theme <id>` for one static budget). Do not delete `.nuxt` after `npm ci`: `postinstall` runs `nuxt prepare` once, and without it the next build fails (rerun `npx nuxt prepare` if you did). `test:e2e:preview` serves the site and the admin page over https with a certificate that `e2e/preview/tls.ts` makes per run with `openssl` (Playwright's Linux WebKit stores no `Secure` cookie from an `http` page); the image needs the `openssl` command (the CI image has it; `node:22.23-slim` does not, so `apt-get install openssl` in the image built from it).
+- `compose.dev.yml` of `micelio-plugin-core` (`npm run dev:docker`, `FRONTEND_IMAGE` set to this branch's image) for the plugin and every feature that talks to it (preview, weight report, cost meter).
+- `compose.demo.yml` of `micelio-cms` only for what the distribution adds (bootstrap, migrations, content schemas, multisite, upgrade from the last release), and for one end-to-end pass with the released plugin before a release.
 
 ## Pre-1.0
 
