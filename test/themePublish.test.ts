@@ -15,7 +15,7 @@ import { ATTESTATION_TAG_SUFFIX, BUNDLE_MEDIA_TYPE, DEFAULT_SIGNER, INDEX_MEDIA_
 import type { RegistryError } from '../modules/theme/registry/error'
 import { parseIndex } from '../modules/theme/registry/registry-index'
 import type { IndexVersion } from '../modules/theme/registry/types'
-import { digestOf, startRegistry, stubBundle, stubVerifier, TEST_IDENTITY } from './fixtures/registry'
+import { digestOf, GHCR_DENIED, startRegistry, stubBundle, stubVerifier, TEST_IDENTITY, tokenRefusedFor } from './fixtures/registry'
 import type { FakeRegistry } from './fixtures/registry'
 import { packageOf } from './fixtures/tar'
 
@@ -255,6 +255,60 @@ describe('publishing and yanking against a registry', () => {
     expect(digestOf((await client(fake).fetch({ id: 'calm', version: '1.0.0', digest: DIGEST })).data)).toBe(DIGEST)
   })
 
+  describe('on a registry whose index does not exist yet, as GHCR answers it (a 401 challenge, then 403 DENIED from the token service)', () => {
+    it('makes the first index from the empty one', async () => {
+      const fake = await start()
+      fake.publish('calm', '1.0.0', BODY)
+      const refused = tokenRefusedFor(fake, 'index')
+      const next = await nextIndex({ registry: fake.registry, identity: TEST_IDENTITY, verifier: stubVerifier, fetch: refused, change: { action: 'add', id: 'calm', version: '1.0.0', digest: DIGEST } })
+      expect(next.base).toBeNull()
+      expect(Object.keys(parseIndex(next.document).themes.calm!.versions)).toEqual(['1.0.0'])
+    })
+
+    it('lets check-base write the first index, and refuses a base when there is none', async () => {
+      const fake = await start()
+      fake.publish('calm', '1.0.0', BODY)
+      const refused = tokenRefusedFor(fake, 'index')
+      await expect(assertBase({ registry: fake.registry, base: null, fetch: refused })).resolves.toBe('write')
+      await expect(assertBase({ registry: fake.registry, base: `sha256:${'0'.repeat(64)}`, fetch: refused })).rejects.toThrow(/changed while it was being signed/)
+    })
+
+    it('reports the version as pushed but not listed, with the re-run', async () => {
+      const fake = await start()
+      fake.publish('calm', '1.0.0', BODY)
+      const error = await rejection(() => assertListed({ registry: fake.registry, identity: TEST_IDENTITY, verifier: stubVerifier, fetch: tokenRefusedFor(fake, 'index'), id: 'calm', version: '1.0.0', digest: DIGEST }))
+      expect(error).toBeInstanceOf(PublishError)
+      expect(error.message).toMatch(/calm@1\.0\.0 is pushed and attested but not in the index/)
+    })
+
+    it('still fails with registry on any other answer of the token service', async () => {
+      const fake = await start()
+      fake.publish('calm', '1.0.0', BODY)
+      const answers = [
+        { status: 500, body: GHCR_DENIED.body },
+        { status: 403, body: '{"errors":[{"code":"UNAUTHORIZED","message":"authentication required"}]}' },
+        { status: 403, body: 'denied' },
+        { status: 403, body: '' },
+      ]
+      for (const answer of answers) {
+        const fetchWith = tokenRefusedFor(fake, 'index', answer)
+        const change = { action: 'add' as const, id: 'calm', version: '1.0.0', digest: DIGEST }
+        expect(((await rejection(() => nextIndex({ registry: fake.registry, identity: TEST_IDENTITY, verifier: stubVerifier, fetch: fetchWith, change }))) as RegistryError).failure).toBe('registry')
+        expect(((await rejection(() => assertBase({ registry: fake.registry, base: null, fetch: fetchWith }))) as RegistryError).failure).toBe('registry')
+        expect(((await rejection(() => assertListed({ registry: fake.registry, identity: TEST_IDENTITY, verifier: stubVerifier, fetch: fetchWith, id: 'calm', version: '1.0.0', digest: DIGEST }))) as RegistryError).failure).toBe('registry')
+      }
+    })
+
+    it('gives the client the not-found of a registry with no theme, on resolve and on install', async () => {
+      const fake = await start()
+      const registry = createRegistry({ registry: fake.registry, identity: TEST_IDENTITY, verifier: stubVerifier, fetch: tokenRefusedFor(fake, 'index') })
+      const error = (await rejection(() => registry.resolve('calm'))) as RegistryError
+      expect(error.failure).toBe('not-found')
+      expect(error.message).toMatch(/is not in the registry or is not public/)
+      expect(((await rejection(() => registry.fetch({ id: 'calm', version: '1.0.0', digest: DIGEST }))) as RegistryError).failure).toBe('not-found')
+    })
+  })
+
   it('leaves both versions of two publishes made one after the other, each from the index the first left', async () => {
     const fake = await start()
     const second = packageOf({ 'theme.json': JSON.stringify({ ...THEME, version: '1.1.0' }), 'theme.css': 'b{}' })
@@ -462,6 +516,19 @@ describe('the workflows', () => {
   it('never sign: the identity of an attestation is the file of micelio-themes whose job makes it', () => {
     for (const text of [publish, prepare, push, listedWorkflow]) expect(text).not.toMatch(/attest-build-provenance|id-token/)
     expect(publish).not.toContain('index:v1')
+  })
+
+  it('confirm with the login of the write job that a first index replaces none, before the push', () => {
+    const write = push.slice(push.indexOf('- name: Write the index and its signature'))
+    const guard = write.indexOf('"$(jq -r .base index/index.json.info)" = null')
+    const fetchBase = write.indexOf('oras manifest fetch "${REGISTRY}/index:v1" 2>&1')
+    const pushIndex = write.indexOf('oras push "${REGISTRY}/index:v1" ')
+    expect(guard).toBeGreaterThan(write.indexOf('check-base'))
+    expect(fetchBase).toBeGreaterThan(guard)
+    expect(pushIndex).toBeGreaterThan(fetchBase)
+    expect(write).toContain('An index exists that an anonymous reader cannot see')
+    // an answer that is not "not found" stops the write too
+    expect(write).toContain(`grep -qE ': not found$' || { echo "::error::Could not tell whether`)
   })
 
   it('leave the pinned signer as it is: the templates are the files DEFAULT_SIGNER names, each with one signing job', () => {

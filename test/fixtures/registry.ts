@@ -198,3 +198,21 @@ export async function startRegistry(behaviour: RegistryBehaviour = {}, prefix = 
     },
   }
 }
+
+/** What GHCR's token service answers, with no credentials, for a repository that does not exist or is not public (checked with curl, 2026-10-29). */
+export const GHCR_DENIED = { status: 403, body: '{"errors":[{"code":"DENIED","message":"requested access to the resource is denied"}]}' }
+
+/**
+ * A `fetch` that behaves like GHCR for one repository of the fake registry: its manifests answer a 401 challenge and the token realm answers `answer`
+ * for it, as GHCR does for a repository nobody has pushed. Everything else goes to the fake registry.
+ */
+export function tokenRefusedFor(fake: FakeRegistry, repository: string, answer: { status: number, body: string } = GHCR_DENIED): typeof fetch {
+  const prefix = fake.registry.slice(fake.registry.indexOf('/') + 1)
+  const origin = `http://${fake.registry.slice(0, fake.registry.indexOf('/'))}`
+  return async (input, init) => {
+    const url = new URL(String(input))
+    if (url.pathname.startsWith(`/v2/${prefix}/${repository}/`)) return new Response(null, { status: 401, headers: { 'www-authenticate': `Bearer realm="${origin}/token",service="fake"` } })
+    if (url.pathname === '/token' && url.searchParams.get('scope') === `repository:${prefix}/${repository}:pull`) return new Response(answer.body, { status: answer.status, headers: { 'content-type': 'application/json' } })
+    return fetch(input, init)
+  }
+}
