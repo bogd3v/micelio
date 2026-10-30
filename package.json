@@ -80,7 +80,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
-    "@micelio/eslint-config": "^0.1.2",
+    "@micelio/eslint-config": "^0.2.0",
     "@micelio/tsconfig": "^0.1.0",
     "@nuxt/eslint": "^1.17.0",
     "@nuxt/test-utils": "^4.3.4",
