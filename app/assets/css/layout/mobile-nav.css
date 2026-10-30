@@ -2,24 +2,14 @@
     --myc-tabbar-h: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
+/* The page ends above the fixed layers: the tab bar (phones only, 0px from 768px) and, while it shows, the privacy notice (--myc-notice-h is set only then) */
 body {
-    padding-bottom: var(--myc-tabbar-h);
+    padding-bottom: calc(var(--myc-tabbar-h) + var(--myc-notice-h, 0px));
 }
 
 /* A focused element scrolls into the free area, not under the tab bar or the privacy notice (WCAG 2.4.11); the header is reserved by its layout */
 html {
-    scroll-padding-bottom: var(--myc-tabbar-h);
-}
-
-/* On a phone the notice spans the width: the page ends above it and focus scrolls clear of it. On desktop it floats in a corner and is left alone */
-@media (max-width: 767.98px) {
-    html {
-        scroll-padding-bottom: calc(var(--myc-tabbar-h) + var(--myc-notice-h, 0px));
-    }
-
-    body {
-        padding-bottom: calc(var(--myc-tabbar-h) + var(--myc-notice-h, 0px));
-    }
+    scroll-padding-bottom: calc(var(--myc-tabbar-h) + var(--myc-notice-h, 0px));
 }
 
 .myc-tabbar {
