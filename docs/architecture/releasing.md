@@ -8,7 +8,17 @@ Only the maintainer releases. Run the **Release** workflow from the Actions tab 
 
 1. It defaults to a **dry run**: it computes the next version from the titles of the PRs merged since the last `vX.Y.Z` tag (the highest wins: `!` is breaking, `feat` adds, the rest fixes) and prints the notes, without tagging. Tick *release_candidate* for `vX.Y.Z-rc.N`, which moves neither `X.Y` nor `latest`.
 2. `package.json` must already hold that version, because the tag and `version` match: merge a `chore(release): X.Y.Z` PR first, which also runs `npm run openapi` so that `docs/openapi.json` (`info.version`) matches; `lint:openapi` and this workflow fail otherwise. The first release is the version `package.json` declares.
-3. Untick *dry_run* and give *cms_line* (the `micelio-cms` line it was tested with, e.g. `0.1`) and, if a PR is breaking, *upgrade_notes*. The workflow checks that the pipeline passed on the commit, re-tags that commit's images as `X.Y.Z`, `X.Y` and `latest` (no rebuild), tags `main` and publishes the release.
+3. Untick *dry_run* and give *cms_line* (the `micelio-cms` line it was tested with, e.g. `0.1`) and,
+   if a PR is breaking, *upgrade_notes*.
+   The workflow checks that the pipeline passed on the commit,
+   re-tags that commit's images as `X.Y.Z`, `X.Y` and `latest` (no rebuild),
+   tags `main` and publishes the release,
+   whose body ends with the table of the theme compatibility results.
+   Before the release job, the workflow runs the latest non-yanked version of every published theme
+   through admission on the commit (`theme-compat.yml`);
+   an official theme that fails stops the release,
+   in a dry run it is a warning ([publishing-a-theme.md](../themes/publishing-a-theme.md),
+   section 12).
 
 The release body starts with **Upgrade notes**, then the theme contract, the `micelio-cms` line and the minimum Node; the generated notes follow with **Breaking changes** first. Edit the body afterwards to expand the upgrade notes; a published tag or image tag is never moved. Every merge to `main` publishes the images `:edge` and `:<short sha>` and does not touch `latest`.
 

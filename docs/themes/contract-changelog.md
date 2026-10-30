@@ -10,6 +10,33 @@ What each version of the theme contract added or broke. This is a reference for 
 - The build fails when a theme declares another major, when it needs a minor the core does not implement (`needs contract 2.5; this core implements 2.4`), and when it declares less than it uses (`declares contract 2.0 but uses 2.1`). `npm run theme:check -- --json` reports `contract.declared`, `contract.used` and `contract.core` for each theme.
 - **Adding to the contract bumps the minor.** In the same change: raise `CONTRACT_VERSION.minor` and add the new rows to `CONTRACT_ADDITIONS` in `modules/theme/constants.ts` (kind and name of each addition, so the validator knows what needs the minor), add a section to this file, and run `npm run theme:schema` and `npm run theme:reference`.
 
+## Making a contract change
+
+What counts as a break, and what to write, so that a change does not strand a published theme (#314;
+the contract promise is section 6 of the engineering standard).
+
+- **Breaking** (a new major, `contract: 3`): removing or renaming a role, slot,
+  layout variant or hook; changing a slot API (a prop, a return value,
+  a default that a theme can depend on);
+  changing a hook's markup so that selectors of a published theme stop matching;
+  tightening what `theme.json` accepts.
+- **Not breaking** (a new minor): adding something optional with a core default.
+  Add it as the changelog above says.
+- **A major needs**, in the same pull request:
+  the migration note in [Upgrade notes](creating-a-theme.md#upgrade-notes), a section in this file,
+  `CONTRACT_VERSION.major` raised, and (before 1.0,
+  `!` in the title and a `BREAKING CHANGE:` paragraph) the upgrade notes of the release.
+  After 1.0 it also needs an ADR and a deprecation window:
+  the old name or signature keeps working for at least one more minor,
+  with a build warning that names the replacement (standard, section 7).
+- **Label the pull request `contract`** when it touches roles, hooks, slots or layout variants:
+  `theme-compat-runs.yml` then runs admission of the latest published version of every theme against
+  the branch, and the release repeats it ([publishing-a-theme.md](publishing-a-theme.md),
+  section 12).
+- **A change that breaks a published theme** and is not a new major is a bug of the core:
+  the compatibility check blocks the release when the theme is `official`;
+  for the other tiers the theme's version is marked `incompatible` from that core.
+
 ## Manifest changes inside 2.0
 
 These did not move the version, because they add no role, slot, variant or hook (#309):

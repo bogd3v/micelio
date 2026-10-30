@@ -113,6 +113,8 @@ export interface IndexVersion {
   report?: string | undefined
   /** Why and when the version was yanked; present only with status `yanked`. */
   yank?: { reason: string, at: string } | undefined
+  /** From which core, why and when the version was marked incompatible; present only with status `incompatible` (#314). Without it the version is incompatible with every core. */
+  incompatible?: { core: string, reason: string, at: string } | undefined
 }
 
 /** The index: `themes[id].versions[version]`. */

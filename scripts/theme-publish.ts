@@ -90,7 +90,8 @@ async function index(): Promise<void> {
   let change: IndexChange
   if (action === 'add') change = { action, ...base, digest: required('digest'), ...(args['report-digest'] ? { reportDigest: args['report-digest'] } : {}) }
   else if (action === 'yank') change = { action, ...base, reason: process.env.YANK_REASON ?? '', at: new Date() }
-  else throw new Error('--action is add or yank')
+  else if (action === 'incompatible') change = { action, ...base, core: required('core'), reason: process.env.YANK_REASON ?? '', at: new Date() }
+  else throw new Error('--action is add, yank or incompatible')
   const next = await nextIndex({ registry, identity, change })
   const out = resolve(required('out'))
   mkdirSync(dirname(out), { recursive: true })
