@@ -7,7 +7,7 @@ import { buildTokensCss } from '../modules/theme/tokens.mjs'
 import type { ThemeData } from '../modules/theme/tokens.mjs'
 
 const SCRIPT = join(process.cwd(), 'scripts/build-tokens.mjs')
-const BOGOTA = 'themes/bogota/theme.json'
+const STARTER = 'themes/starter/theme.json'
 
 const fixture: ThemeData = {
   modes: [{ id: 'noche', scheme: 'dark' }, { id: 'dia', scheme: 'light' }],
@@ -166,10 +166,10 @@ describe('buildTokensCss', () => {
 
 describe('scripts/build-tokens.mjs', () => {
   it('prints the roles of a theme, or writes them to a file', () => {
-    const printed = execFileSync('node', [SCRIPT, BOGOTA], { encoding: 'utf8' })
-    expect(printed).toBe(buildTokensCss(JSON.parse(readFileSync(BOGOTA, 'utf8'))))
+    const printed = execFileSync('node', [SCRIPT, STARTER], { encoding: 'utf8' })
+    expect(printed).toBe(buildTokensCss(JSON.parse(readFileSync(STARTER, 'utf8'))))
     const out = join(mkdtempSync(join(tmpdir(), 'myc-tokens-')), 'roles.css')
-    execFileSync('node', [SCRIPT, BOGOTA, out])
+    execFileSync('node', [SCRIPT, STARTER, out])
     expect(readFileSync(out, 'utf8')).toBe(printed)
   })
 
@@ -180,8 +180,8 @@ describe('scripts/build-tokens.mjs', () => {
   })
 })
 
-describe('Bogotá\'s theme.json', () => {
-  const data = JSON.parse(readFileSync(BOGOTA, 'utf8')) as ThemeData & { contract: number, id: string }
+describe('the starter\'s theme.json', () => {
+  const data = JSON.parse(readFileSync(STARTER, 'utf8')) as ThemeData & { contract: number, id: string }
   const generated = buildTokensCss(data)
 
   it('declares every contract v1 role that is not a color', () => {
@@ -206,20 +206,20 @@ describe('Bogotá\'s theme.json', () => {
   })
 
   it('defines every color token of the design system in both modes', () => {
-    // Bogotá's primitives and base roles (25), plus the semantic roles of ADR 0005 (29)
-    expect(data.color.tokens).toHaveLength(54)
+    // The starter's primitives and base roles, plus the semantic roles of ADR 0005 (the core defaults the soft link role)
+    expect(data.color.tokens).toHaveLength(47)
     const names = data.color.tokens.map(token => token.name)
-    for (const role of ['accent', 'accent-hover', 'on-accent', 'link-soft', 'danger-soft', 'info', 'category-1', 'category-5-soft', 'code-keyword']) {
+    for (const role of ['accent', 'accent-hover', 'on-accent', 'danger-soft', 'info', 'category-1', 'category-5-soft', 'code-keyword']) {
       expect(names).toContain(role)
     }
     for (const { name } of data.color.tokens) {
-      expect(block(generated, '[data-theme="noche"]')).toContain(`--${name}:`)
-      expect(block(generated, '[data-theme="dia"]')).toContain(`--${name}:`)
+      expect(block(generated, '[data-theme="light"]')).toContain(`--${name}:`)
+      expect(block(generated, '[data-theme="dark"]')).toContain(`--${name}:`)
     }
   })
 
-  it('declares its modes, contract, and an empty layout and slots', () => {
-    expect(data).toMatchObject({ contract: '2.0', id: 'bogota', layout: {}, slots: {} })
-    expect(data.modes.map(mode => [mode.id, mode.scheme])).toEqual([['noche', 'dark'], ['dia', 'light']])
+  it('declares its modes and contract', () => {
+    expect(data).toMatchObject({ contract: '2.0', id: 'starter' })
+    expect(data.modes.map(mode => [mode.id, mode.scheme])).toEqual([['light', 'light'], ['dark', 'dark']])
   })
 })

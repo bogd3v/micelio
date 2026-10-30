@@ -29,7 +29,7 @@ Settings, Secrets and variables, Actions.
 | `NUXT_PUBLIC_STRAPI_URL` | variable | yes | Strapi URL reachable from the runner |
 | `NUXT_PUBLIC_SITE_URL` | variable | yes | Public URL of the site (canonical links, feed, sitemap) |
 | `NUXT_MEDIA_URL` | variable | if media is on another origin | Media origin, as in `.env.example` |
-| `NUXT_PUBLIC_THEME` | variable | no | Theme id (default `bogota`) |
+| `NUXT_PUBLIC_THEME` | variable | no | Theme id (default `bogota`, which the workflow installs from `themes.lock.json` with `theme:pull`) |
 | `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION` | variable | no | Provider form endpoint (`https:`); the newsletter is off when empty or invalid. See [Newsletter](#newsletter) |
 | `NUXT_PUBLIC_NEWSLETTER_FORM_FIELD` | variable | no | The provider's name for the email field (default `email`) |
 | `CLOUDFLARE_PAGES_PROJECT` | variable | yes | Pages project name |
@@ -108,9 +108,11 @@ If the CMS site settings have a security contact, the build writes `.output/publ
 
 ## Building on a private machine
 
-When Strapi is not reachable from GitHub, build where it is:
+When Strapi is not reachable from GitHub, build where it is. The default theme is pulled from the registry, so the machine needs read access to `ghcr.io` once (`npm run theme:pull -- --frozen` installs what `themes.lock.json` pins), or set `NUXT_PUBLIC_THEME=starter` to build offline:
 
 ```bash
+npm ci
+npm run theme:pull -- --frozen
 NUXT_PUBLIC_SITE_MODE=static \
 NUXT_PUBLIC_STRAPI_URL=http://strapi.internal:1337 \
 NUXT_PUBLIC_SITE_URL=https://example.com \
@@ -141,7 +143,7 @@ Nothing is baked in: the site is generated when the container runs, so every set
 | `NUXT_PUBLIC_SITE_MODE` | no | `static` (default) or `landing` |
 | `NUXT_PUBLIC_SITE_URL` | yes for real sites | Public URL (canonical links, feed, sitemap) |
 | `NUXT_MEDIA_URL` | if media is on another origin | Media origin |
-| `NUXT_PUBLIC_THEME` | no | Theme id (default `bogota`) |
+| `NUXT_PUBLIC_THEME` | no | Theme id (default `bogota`, which the builder image installs from `themes.lock.json`) |
 | `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION`, `NUXT_PUBLIC_NEWSLETTER_FORM_FIELD` | no | See [Newsletter](#newsletter) |
 
 `/out` is a volume owned by uid 1000. Images are downloaded from Strapi during generation, so the generated site needs no CMS at runtime. Nuxt writes `.nuxt`, `.output` and `node_modules/.cache` inside the container, which uid 1000 owns, so the image works with `--read-only` only if those are tmpfs mounts; there is no need for that normally.
@@ -156,6 +158,7 @@ Regenerate by running `generate` again into the same volume (the CMS rebuild hoo
 ## Preview locally
 
 ```bash
+npm run theme:pull -- --frozen   # once after npm ci; or NUXT_PUBLIC_THEME=starter
 NUXT_PUBLIC_SITE_MODE=static npm run generate
 node scripts/static-serve.mjs
 ```

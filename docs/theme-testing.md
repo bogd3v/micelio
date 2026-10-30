@@ -1,6 +1,6 @@
 # Theme visual regression and axe
 
-`npm run test:theme` (`playwright.theme.config.ts`, specs in `e2e/theme/`) checks the **active theme** (`NUXT_PUBLIC_THEME`, default `bogota`) against a production build with the specimen page (`MICELIO_SPECIMEN=1`) and the mock Strapi. There is one Playwright project per mode of the theme's `theme.json` and per viewport (1280 and 390 px), named `<mode>-<viewport>`; each project stores the mode in `localStorage` (`micelio-theme`) before the first load.
+`npm run test:theme` (`playwright.theme.config.ts`, specs in `e2e/theme/`) checks the **active theme** (`NUXT_PUBLIC_THEME`, default `bogota`, which `npm run theme:pull` installs from the lock; `starter` is in the repository) against a production build with the specimen page (`MICELIO_SPECIMEN=1`) and the mock Strapi. There is one Playwright project per mode of the theme's `theme.json` and per viewport (1280 and 390 px), named `<mode>-<viewport>`; each project stores the mode in `localStorage` (`micelio-theme`) before the first load.
 
 - `visual.spec.ts`: home, blog, an article, about (full page) and each `.myc-specimen-group[data-section]` group of `/_theme` (the page sections of #244 are one group per section, `page-<kind>`, with every variant) (one image per group; the `regions` group also holds the variants of every region the theme does not use, which only the specimen build registers). Dates (`time`) and the footer year are masked; images from outside the server are replaced by a fixed pixel; animations and motion are off; the run waits for fonts and the Mermaid diagrams. `maxDiffPixelRatio` is 0.001: text renders identically in the same Docker image, the margin only absorbs sub-pixel noise between CPUs. No retries: a screenshot that needs one is a bug.
 - `a11y.spec.ts`: axe (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa` and `wcag22aa`, which adds `target-size`) on the same pages, modes and viewports. Violations fail; nothing is excluded. Axe finds only part of the problems, so admission also needs the manual check of [`docs/themes/accessibility-checklist.md`](themes/accessibility-checklist.md), which says when it is repeated and where its result is recorded.
@@ -33,11 +33,11 @@ Baselines are committed in `e2e/theme/__screenshots__/<theme>/<mode>/<viewport>/
 
 ## Create or update the baselines
 
-1. Push the branch. If the `Theme Quality` check fails (job `Themes / Quality (<theme>)`: new theme, missing or changed baselines), download the artifact `theme-snapshots-<theme>` of that run. It holds the images as rendered by the run; the failing diffs are in `theme-report-<theme>`.
-2. Or start **Theme Snapshots** by hand (Actions, `workflow_dispatch`, input `ref`) to render the baselines of a branch that includes the change making `deploy.yml` call the admission workflow (#311; its plan needs `--installed`, so older refs fail with "No theme to admit"); it uploads `theme-snapshots-<theme>` for every installed theme. A theme repository calls the same workflow ([publishing-a-theme.md](themes/publishing-a-theme.md), section 6).
-3. Review the images, unzip them into `e2e/theme/__screenshots__/<theme>/` and commit. CI never commits baselines.
+The core runs these specs in no pipeline of its own: the theme repository admits each theme it publishes with `theme-admission.yml` (`micelio-themes` for the official ones, [publishing-a-theme.md](themes/publishing-a-theme.md)), and the baselines of a theme live there, in `<theme-dir>/__screenshots__` or the folder its workflow names. The core keeps only the starter's, in `e2e/theme/__screenshots__/starter/`, for a local run of the starter.
 
-The `Theme Quality` check gates `deploy`, like `Performance Budgets`. Both read the result of the `Themes` job, which runs the installed themes through the same admission a theme repository calls (`.github/workflows/theme-admission.yml`, [publishing-a-theme.md](themes/publishing-a-theme.md)): `Theme Quality` passes when `theme:check`, `theme:pack`, visual regression and axe passed for every theme.
+1. In a theme repository, push the branch. If the admission's quality check fails (new theme, missing or changed baselines), download the artifact `theme-snapshots-<theme>` of that run. It holds the images as rendered by the run; the failing diffs are in `theme-report-<theme>`.
+2. Or start **Theme Snapshots** by hand (the `theme-snapshots.yml` workflow, `workflow_dispatch`, input `ref`) on a branch of the core to render the baselines of the themes installed there; a theme repository calls the same workflow ([publishing-a-theme.md](themes/publishing-a-theme.md), section 6).
+3. Review the images, unzip them into the theme's baseline folder and commit. CI never commits baselines.
 
 The `<mode>-reduced` motion projects keep a Playwright trace (`trace.zip`, without screenshots) of a failing test in `theme-report-<theme>`, under `test-results-theme/`. The suite has no retries on purpose, so a test that hangs leaves nothing else to diagnose it from; open the trace with `npx playwright show-trace <trace.zip>`. Passing tests keep none.
 
@@ -64,7 +64,7 @@ A data-only theme runs on a build it was not made with: the core is built with `
 ## Locally
 
 ```bash
-MICELIO_SPECIMEN=1 NUXT_PUBLIC_THEME=bogota npm run build
+MICELIO_SPECIMEN=1 NUXT_PUBLIC_THEME=starter npm run build
 E2E_BUILD=1 npx playwright test -c playwright.theme.config.ts e2e/theme/a11y.spec.ts   # OS independent
 ```
 

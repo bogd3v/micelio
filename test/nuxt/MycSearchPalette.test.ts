@@ -35,7 +35,7 @@ describe('MycSearchPalette', () => {
   beforeEach(() => {
     searches.length = 0
     serveCategories()
-    useTheme().sync('noche')
+    useTheme().sync('light')
   })
 
   it('opens as a modal combobox with topics and actions', async () => {
@@ -51,7 +51,7 @@ describe('MycSearchPalette', () => {
     // The CMS names, in its order, only the categories with articles
     expect(labels(wrapper)).toEqual([
       'Garden', 'Kitchen', 'Workshop', 'Cellar', 'Loft',
-      'Switch to the Day theme', 'Follow on the fediverse',
+      'Switch to the Dark theme', 'Follow on the fediverse',
     ])
     expect(wrapper.get('#topic-garden .myc-result-hint').text()).toBe('03')
     expect(wrapper.get('.myc-palette-note').text()).toBe('Type 3 or more letters to search articles')
@@ -60,7 +60,7 @@ describe('MycSearchPalette', () => {
   it('filters topics locally without calling the API for short queries', async () => {
     const wrapper = await mountOpen()
     await wrapper.get('input').setValue('el')
-    expect(labels(wrapper)).toEqual(['Cellar', 'Switch to the Day theme', 'Follow on the fediverse'])
+    expect(labels(wrapper)).toEqual(['Cellar', 'Switch to the Dark theme', 'Follow on the fediverse'])
     expect(searches).toHaveLength(0)
   })
 
@@ -102,7 +102,7 @@ describe('MycSearchPalette', () => {
     await wrapper.get('input').setValue('nada que ver')
     await vi.waitFor(() => expect(wrapper.find('.myc-palette-note').text()).toBe('No results for “nada que ver”'), { timeout: 2000 })
     expect(wrapper.get('[role="status"]').text()).toBe('No results for “nada que ver”')
-    expect(labels(wrapper)).toEqual(['Switch to the Day theme', 'Follow on the fediverse'])
+    expect(labels(wrapper)).toEqual(['Switch to the Dark theme', 'Follow on the fediverse'])
   })
 
   it('moves the active option with the arrows and runs the theme action with Enter', async () => {
@@ -116,7 +116,7 @@ describe('MycSearchPalette', () => {
     await input.trigger('keydown', { key: 'ArrowUp' })
     expect(input.attributes('aria-activedescendant')).toBe('action-theme')
     await input.trigger('keydown', { key: 'Enter' })
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dia')
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
     expect(wrapper.emitted('close')).toHaveLength(1)
   })
 

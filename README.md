@@ -4,7 +4,7 @@ A site engine built with **Nuxt 4** and **Strapi CMS**, following a **JAMStack a
 
 > **Micelio is pre-1.0 and not stable.** Any `0.y` release may break contracts (content types, the API, the theme contract, environment variables, image names) without a deprecation period. Read the upgrade notes of every release you cross and pin an exact version (`X.Y.Z`) for anything you keep running. See ["Before 1.0.0"](docs/adr/0010-semantic-versioning.md#4-before-100) in ADR 0010.
 
-[BogDev](https://bogdev.com.co) is the reference site running Micelio, and its design is the default theme.
+[BogDev](https://bogdev.com.co) is the reference site running Micelio. Its design is the default theme, `bogota`, which lives in [micelio-themes](https://github.com/bogd3v/micelio-themes) and is installed from the registry (`themes.lock.json` pins its version and digest; [docs/operate/themes.md](docs/operate/themes.md)). The repository carries one theme of its own, `themes/starter/`, for offline work and tests.
 
 ## Features
 
@@ -43,7 +43,7 @@ You need Node.js 22.12 or later and a running [micelio-cms](https://github.com/b
 git clone https://github.com/bogd3v/micelio.git
 cd micelio
 npm install
-npm run theme:pull     # installs the themes pinned in themes.lock.json (none by default)
+npm run theme:pull     # installs the themes pinned in themes.lock.json (the default theme, bogota); without it use NUXT_PUBLIC_THEME=starter
 cp .env.example .env   # set NUXT_PUBLIC_STRAPI_URL, NUXT_STRAPI_API_TOKEN and NUXT_PUBLIC_SITE_URL
 npm run dev            # http://localhost:3000
 ```

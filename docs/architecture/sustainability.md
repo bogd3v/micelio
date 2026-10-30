@@ -32,9 +32,9 @@ The guidelines are grouped in five sections: 2 User Experience Design, 3 Web Dev
 | 2.6 Avoid being manipulative or deceptive | Met | The engine carries no advertising. Analytics is first-party, proxied by the server (ADR 0002). Checked by the zero third-party budget |
 | 2.7 Make deliverables understandable and reusable | Partly | Documentation in `docs/`, generated reference (`docs/openapi.json`, `docs/themes/reference/`) and a contract for themes (ADR 0005) |
 | 2.8 Use a design system for interface consistency | Met | Semantic roles and `myc-*` components, enforced by `npm run lint` (`check-classes`, `check-primitives`) |
-| 2.9 Optimize media to reduce resource use | Partly | Images go through `@nuxt/image`; the home photos of Bogotá are WebP at quality 80, 390 px on phones (#367). Lazy loading below the fold. `imageKb` reports what a page loads without scrolling, but no image limit exists yet |
+| 2.9 Optimize media to reduce resource use | Partly | Images go through `@nuxt/image`; the home photos of the default theme, `bogota`, are WebP at quality 80, 390 px on phones (#367). Lazy loading below the fold. `imageKb` reports what a page loads without scrolling, but no image limit exists yet |
 | 2.10 Ensure animation is proportionate and easy to control | Met | The scroll reveal runs only under `prefers-reduced-motion: no-preference`; heavy islands with motion keep their fallback under reduced motion (ADR 0006) |
-| 2.11 Use optimized web typography | Met | Fonts are self-hosted and subset (latin, only the axes used). Bogotá's fonts are 35.5 KB. Checked by the `fontKb` limit and the FOUC check |
+| 2.11 Use optimized web typography | Met | Fonts are self-hosted and subset (latin, only the axes used). The default theme's fonts are 35.5 KB. Checked by the `fontKb` limit and the FOUC check |
 | 2.12 Avoid unwanted notifications | Partly | The newsletter sends only after a sign-up, with a confirmation page (`confirm.vue`). The unsubscribe page is in `newsletter/` |
 | 2.13 Reduce the impact of downloadable and physical documents | Not applicable | The engine serves no downloadable documents; the feeds are XML |
 | 2.14 Involve users early in the project | Owner | Process of the project |

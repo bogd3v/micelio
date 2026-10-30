@@ -7,8 +7,9 @@ import { createRegistry } from '../modules/theme/registry/client'
 import { addTheme, outdatedThemes, pullThemes } from '../modules/theme/registry/commands'
 import type { RegistryContext } from '../modules/theme/registry/commands'
 import { RegistryError } from '../modules/theme/registry/error'
-import { formatLock, readLock, writeLock } from '../modules/theme/registry/lock'
-import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
+import { DEFAULT_REGISTRY, THEME_DIGEST } from '../modules/theme/registry/constants'
+import { formatLock, parseLock, readLock, writeLock } from '../modules/theme/registry/lock'
+import { DEFAULT_THEME, discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
 import { digestOf, startRegistry, stubVerifier, TEST_IDENTITY } from './fixtures/registry'
 import type { FakeRegistry } from './fixtures/registry'
 import { packageOf } from './fixtures/tar'
@@ -337,10 +338,10 @@ describe('the commands', () => {
     return spawnSync(join(ROOT, 'node_modules/.bin/jiti'), [join(ROOT, 'scripts', script), ...args], { encoding: 'utf8', cwd: ROOT })
   }
 
-  it('theme:pull --frozen passes with the lock of the repository', () => {
-    const result = run('theme-pull.ts', '--frozen')
-    expect(result.stdout).toContain('0 theme(s) installed')
-    expect(result.status).toBe(0)
+  it('pins the default theme in the lock of the repository, in the form theme:add writes', () => {
+    const text = readFileSync(join(ROOT, 'themes.lock.json'), 'utf8')
+    expect(text).toBe(formatLock(parseLock(text)))
+    expect(readLock(ROOT)[DEFAULT_THEME]).toMatchObject({ version: expect.stringMatching(/^\d+\.\d+\.\d+$/), digest: expect.stringMatching(THEME_DIGEST), tier: 'official', distribution: 'public', registry: DEFAULT_REGISTRY, code: true })
   })
 
   it('theme:add prints the usage without a spec', () => {

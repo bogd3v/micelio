@@ -20,9 +20,10 @@ env:
   BUILDER_IMAGE_NAME: ${{ github.repository }}-builder
 
 jobs:
-  # The fast checks of section 15 of the standard, from micelio-engineering: npm audit, typecheck, lint (with theme:check), unit tests with
-  # coverage, licences, the copy of the standard and REUSE. Formatting is the stylistic rules inside lint, so there is no format:check;
-  # there is no build job either, since every browser job below builds. Its status for the ruleset is `check / Check`.
+  # The fast checks of section 15 of the standard, from micelio-engineering: npm audit, typecheck, lint (with theme:check of the starter), unit
+  # tests with coverage, licences, the copy of the standard and REUSE. It pulls no theme: `nuxt prepare` and the tests take the starter.
+  # Formatting is the stylistic rules inside lint, so there is no format:check; there is no build job either, since every browser job
+  # below builds (with the default theme, which themes.lock.json pins and `theme:pull` installs). Its status for the ruleset is `check / Check`.
   check:
     uses: bogd3v/micelio-engineering/.github/workflows/check.yml@0ce60010c72b13625ec223db96901e6b498c3409 # main
     with:
@@ -45,6 +46,9 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      # The default theme is the one the lock pins; the starter is only the offline fixture (docs/operate/themes.md)
+      - name: Install the pinned themes
+        run: npm run theme:pull -- --frozen
       - name: Run integration tests
         run: npm run test:integration
 
@@ -105,6 +109,9 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      # The default theme is the one the lock pins; the starter is only the offline fixture (docs/operate/themes.md)
+      - name: Install the pinned themes
+        run: npm run theme:pull -- --frozen
       # The built server answers at once; nuxt dev compiled each route on demand and timed out
       - name: Build
         run: npm run build
@@ -163,6 +170,9 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      # The default theme is the one the lock pins; the starter is only the offline fixture (docs/operate/themes.md)
+      - name: Install the pinned themes
+        run: npm run theme:pull -- --frozen
       - name: Generate the static site and run the tests
         run: npm run test:static
       # The same site on every engine: the playground's Worker policy, and the view-transition fallback
@@ -202,6 +212,9 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      # The default theme is the one the lock pins; the starter is only the offline fixture (docs/operate/themes.md)
+      - name: Install the pinned themes
+        run: npm run theme:pull -- --frozen
       - name: Generate the landing and run the tests
         run: npm run test:landing
       - name: Upload Playwright report
@@ -212,47 +225,65 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  # The installed themes through the same admission a theme repository runs (theme-admission.yml, #311): theme:check and theme:pack,
-  # the performance budgets per theme, site mode and font, and visual regression and axe per theme, in the Playwright image.
-  # Baselines are rendered in that image: a human commits them from the theme-snapshots-<theme> artifact (docs/theme-testing.md)
-  themes:
-    name: Themes
-    uses: ./.github/workflows/theme-admission.yml
-    with:
-      theme-dirs: ''
-      core-repository: ${{ github.repository }}
-      core-ref: ${{ github.sha }}
-      snapshot-root: e2e/theme/__screenshots__
-      artifact-prefix: theme
-
-  # One stable check name per gate for deploy, read from the admission's result per check: an admission that ended without them fails both
-  performance-gate:
+  # The performance budgets (scripts/perf/budgets.json) of the default theme the image ships: the one themes.lock.json pins, installed by
+  # `theme:pull`, in the same modes and display font runs that theme admission measures (docs/performance.md). Theme admission in
+  # micelio-themes measures the theme against a pinned core ref, so this is the run that sees a core change move a budget before it deploys
+  performance:
     name: Performance Budgets
-    needs: themes
-    if: always()
+    needs: playwright-image
     runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.playwright-image.outputs.image }}
+      options: --ipc=host
+    timeout-minutes: 30
+    # The image's default shell is sh; bash as on a runner
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { mode: dynamic, font: default }
+          - { mode: dynamic, font: heaviest }
+          - { mode: static, font: default }
+    env:
+      # Chromium only, but the same HOME as every job in the image
+      HOME: /root
+      # Site mode of ADR 0006, read at build time
+      NUXT_PUBLIC_SITE_MODE: ${{ matrix.mode }}
+      MODE: ${{ matrix.mode }}
+      FONT: ${{ matrix.font }}
     steps:
-      - name: Require every performance run to pass
-        env:
-          RESULT: ${{ needs.themes.outputs.performance }}
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      # The default theme is the one the lock pins; the starter is only the offline fixture (docs/operate/themes.md)
+      - name: Install the pinned themes
+        run: npm run theme:pull -- --frozen
+      # A static run generates its own site inside the perf script, against the mock Strapi
+      - name: Build
+        if: matrix.mode == 'dynamic'
+        run: npm run build
+      - name: Check performance budgets
         run: |
-          echo "performance: ${RESULT:-no result}"
-          test "${RESULT}" = "passed"
-
-  theme-quality-gate:
-    name: Theme Quality
-    needs: themes
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Require every theme to pass theme:check, theme:pack, visual regression and axe
-        env:
-          STATIC: ${{ needs.themes.outputs.static }}
-          QUALITY: ${{ needs.themes.outputs.quality }}
-        run: |
-          echo "theme:check and theme:pack: ${STATIC:-no result}; visual regression and axe: ${QUALITY:-no result}"
-          test "${STATIC}" = "passed"
-          test "${QUALITY}" = "passed"
+          extra=()
+          if [ "${FONT}" = heaviest ]; then extra=(--display-font heaviest); fi
+          npm run perf -- --check --mode "${MODE}" "${extra[@]}" --out "perf-${MODE}-${FONT}.json"
+      - name: Upload the result
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: perf-${{ matrix.mode }}-${{ matrix.font }}
+          path: perf-${{ matrix.mode }}-${{ matrix.font }}.json
+          if-no-files-found: ignore
+          retention-days: 14
 
   # Built while the tests run; only the commit tag is pushed, and deploy promotes it to edge (releases add X.Y.Z, X.Y and latest: release.yml)
   build-and-push:
@@ -466,8 +497,7 @@ jobs:
   deploy:
     name: Deploy to Dokploy
     runs-on: ubuntu-latest
-    # `themes` as well as its two gates: a failed admission job blocks the deploy even when the reports it left say passed
-    needs: [check, integration-tests, e2e-tests, e2e-static, e2e-landing, themes, performance-gate, theme-quality-gate, build-and-push, merge-builder]
+    needs: [check, integration-tests, e2e-tests, e2e-static, e2e-landing, performance, build-and-push, merge-builder]
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     concurrency:
       group: production-deploy

@@ -95,12 +95,33 @@ function loadTheme(dir: string): InstalledTheme {
   return { id: manifest.id, dir, manifest }
 }
 
-/** The installed theme with this id, or an error that names the installed ones. */
-export function selectTheme(themes: InstalledTheme[], id: string): InstalledTheme {
+/** The id of the theme the core ships for offline work, tests and `nuxt prepare` (`themes/starter/`). */
+export const STARTER_THEME = 'starter'
+
+/**
+ * The installed theme with this id, or an error that says how to install it.
+ *
+ * @param locked - The ids `themes.lock.json` pins: a locked theme that is missing needs `theme:pull`, not `theme:add`.
+ * @throws `Error` naming the installed themes, the command that installs this one, and the starter when it is installed.
+ */
+export function selectTheme(themes: InstalledTheme[], id: string, locked: readonly string[] = []): InstalledTheme {
   const found = themes.find(theme => theme.id === id)
   if (!found) {
     const installed = themes.map(theme => theme.id).join(', ') || 'none'
-    throw new Error(`NUXT_PUBLIC_THEME is "${id}" but that theme is not installed (installed: ${installed}). Add it to themes/ or to a directory in MICELIO_THEME_DIRS, or install it from the registry: npm run theme:add -- ${id}, then npm run theme:pull.`)
+    const install = locked.includes(id) ? 'themes.lock.json pins it: run npm run theme:pull' : `install it from the registry: npm run theme:add -- ${id}, then npm run theme:pull`
+    const starter = themes.some(theme => theme.id === STARTER_THEME) ? ` Or work with the theme the core ships: NUXT_PUBLIC_THEME=${STARTER_THEME}.` : ''
+    throw new Error(`NUXT_PUBLIC_THEME is "${id}" but that theme is not installed (installed: ${installed}). Add it to themes/ or to a directory in MICELIO_THEME_DIRS, or ${install}.${starter}`)
   }
   return found
+}
+
+/**
+ * The theme a build uses: `selectTheme`, except that `nuxt prepare` and type checks (`prepare`), which generate types and serve nothing,
+ * take the starter when nobody named a theme and the default is not installed, so `npm ci` works before `theme:pull`.
+ *
+ * @throws `Error` as `selectTheme` does.
+ */
+export function activeTheme(themes: InstalledTheme[], id: string, options: { named: boolean, prepare: boolean, locked: readonly string[] }): InstalledTheme {
+  const fallback = options.prepare && !options.named && !themes.some(theme => theme.id === id)
+  return (fallback && themes.find(theme => theme.id === STARTER_THEME)) || selectTheme(themes, id, options.locked)
 }

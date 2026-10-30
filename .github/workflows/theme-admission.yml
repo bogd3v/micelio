@@ -2,7 +2,7 @@ name: Theme Admission
 
 # The gate to publish a theme version (ADR 0008, decision 5; #311): `theme:check` and `theme:pack`, the performance budgets per site mode,
 # visual regression and axe, and one admission-report.json per theme (schema: themes/admission-report.schema.json).
-# Called from a theme's own repository, private or public, and by the core's deploy.yml for its installed themes; theme-snapshots.yml calls it
+# Called from a theme's own repository, private or public (the core's deploy.yml stopped calling it for its starter, #313); theme-snapshots.yml calls it
 # with update-snapshots to render baselines. How to call it: docs/themes/publishing-a-theme.md.
 # A data-only theme is installed into one core build shared by every theme of the call; a theme with code gets a build of its own.
 # Static and landing generate their site per theme inside `npm run perf`. Every step lives in `npm run theme:admit` of the core ref.
@@ -10,7 +10,7 @@ on:
   workflow_call:
     inputs:
       theme-dirs:
-        description: Theme folders, or folders of themes, in the caller's repository, one per line. Empty admits the core's own installed themes (deploy.yml)
+        description: Theme folders, or folders of themes, in the caller's repository, one per line. Empty admits the core's own installed themes
         type: string
         default: .
       themes:
@@ -469,7 +469,7 @@ jobs:
             jq -e .ok "reports/${id}/admission-report.json" > /dev/null || ok=false
             cp collected/"${id}"/*.tgz "reports/${id}/" 2>/dev/null || true
           done
-          # One result per check across every theme, for a caller that gates them separately (deploy.yml)
+          # One result per check across every theme, for a caller that gates them separately
           status() { jq -rs "$1" reports/*/admission-report.json; }
           {
             echo "ok=${ok}"

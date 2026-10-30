@@ -1,7 +1,8 @@
 import { resolve, sep } from 'node:path'
 import type { Nuxt } from '@nuxt/schema'
 import { updateTemplates } from 'nuxt/kit'
-import { DEFAULT_THEME, discoverThemes, selectTheme, themeRoots } from './themes'
+import { DEFAULT_THEME, activeTheme, discoverThemes, themeRoots } from './themes'
+import { readLock } from './registry/lock'
 import type { InstalledTheme, ThemeContext, CssSource, LayoutRegion } from './types'
 import { loadHooks } from './hooks'
 import { validateThemes } from './validate'
@@ -21,10 +22,14 @@ declare module '@nuxt/schema' {
  * validated, not only the active one (ADR 0005, section 6). The returned `load` runs discovery and validation again, so a
  * regeneration in dev sees the edits made to a theme.
  *
+ * `nuxt prepare` and type checks (`_prepare`) use the starter when no theme is named and the default is not installed yet (`activeTheme`);
+ * `nuxt dev` and `nuxt build` fail and say to run `theme:pull` or to use the starter.
+ *
  * @throws `Error` when an installed theme is invalid, or the active theme is not installed; the message names each problem.
  */
 export function createContext(nuxt: Nuxt): ThemeContext {
-  const id = process.env.NUXT_PUBLIC_THEME || nuxt.options.runtimeConfig.public.theme || DEFAULT_THEME
+  const named = process.env.NUXT_PUBLIC_THEME || nuxt.options.runtimeConfig.public.theme
+  const id = named || DEFAULT_THEME
   const roots = themeRoots(nuxt.options.rootDir)
   // Discovery runs again on every regeneration, so editing a theme in dev needs no restart
   const hooks = loadHooks(nuxt.options.srcDir)
@@ -32,7 +37,7 @@ export function createContext(nuxt: Nuxt): ThemeContext {
   const load = (): InstalledTheme => {
     const themes = discoverThemes(roots)
     validateThemes(themes, hooks)
-    return selectTheme(themes, id)
+    return activeTheme(themes, id, { named: Boolean(named), prepare: Boolean(nuxt.options._prepare), locked: Object.keys(readLock(nuxt.options.rootDir)) })
   }
   const active = load()
   return {

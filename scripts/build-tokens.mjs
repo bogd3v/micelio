@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { buildTokensCss } from '../modules/theme/tokens.mjs'
 
-const DEFAULT_INPUT = fileURLToPath(new URL('../themes/bogota/theme.json', import.meta.url))
+const DEFAULT_INPUT = fileURLToPath(new URL('../themes/starter/theme.json', import.meta.url))
 
 function parseArgs(argv) {
   const opts = { aliases: {}, files: [] }

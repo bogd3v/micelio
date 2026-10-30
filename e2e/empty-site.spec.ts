@@ -3,10 +3,10 @@ import { test, expect } from '@playwright/test'
 // Run by playwright.empty-site.config.ts: the mock's site-setting has no value, so every page shows the app.config.ts defaults
 
 const BOGDEV_STRINGS = ['bogdev', 'Alejandro', 'hotmail', 'ale9420', 'devbog', 'buymeacoffee']
-// The head and the feed carry only site content; the body of the default theme (themes/bogota/) names Bogotá and Colombia
+// The head and the feed carry only site content; the body of the default theme (`bogota`, installed by `theme:pull`) names Bogotá and Colombia
 const PLACE_STRINGS = ['bogot', 'colombia', 'software developer']
 
-// Out of scope: the Bogotá theme's images (themes/bogota/), at the URL the build serves them from
+// Out of scope: the Bogotá theme's images (the `bogota` package), at the URL the build serves them from
 const THEME_LEGACY = [
   /\/theme\/images\/bogdev\.svg/g,
   /\\u002Ftheme\\u002Fimages\\u002Fbogdev\.svg/g,

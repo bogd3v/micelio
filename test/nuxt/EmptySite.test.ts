@@ -5,6 +5,7 @@ import BlogAuthorCard from '~/components/blog/AuthorCard.vue'
 import BlogBuyMeACoffee from '~/components/blog/BuyMeACoffee.vue'
 import PrivacyPage from '~/pages/privacy.vue'
 import UnsubscribePage from '~/pages/newsletter/unsubscribe.vue'
+import { mergeThemeMessages } from './themeData'
 
 // app.config.ts ships with empty values; an empty value renders as absent
 
@@ -25,10 +26,13 @@ describe('BlogBuyMeACoffee without a handle', () => {
 })
 
 describe('BlogAuthorCard', () => {
-  it('shows the active theme\'s bio (Bogota keeps BogDev\'s text) and the author name', async () => {
+  it('shows the active theme\'s bio when it has one, else the core\'s, and the author name', async () => {
     const wrapper = await mountSuspended(BlogAuthorCard, { props: { author: { name: 'Ada' } } })
     expect(wrapper.get('.myc-author-card-name').text()).toBe('Ada')
-    expect(wrapper.get('.myc-author-card-bio').text()).toBe('Exploring privacy, DIY, AI, software and Linux from Bogotá.')
+    expect(wrapper.get('.myc-author-card-bio').text()).toBe('Writing about the topics covered on this blog.')
+    mergeThemeMessages({ author: { bio: 'Notes from the garden.' } })
+    const themed = await mountSuspended(BlogAuthorCard, { props: { author: { name: 'Ada' } } })
+    expect(themed.get('.myc-author-card-bio').text()).toBe('Notes from the garden.')
   })
 })
 

@@ -124,15 +124,6 @@ describe('RegionFooter', () => {
     expect(unused.findAll('nav.myc-foot-nav').map(nav => nav.get('h2').text())).toEqual(['Navigate', 'Subscribe'])
   })
 
-  it('keeps the panorama decorative', async () => {
-    const wrapper = await mountSuspended(RegionFooter)
-    const layers = wrapper.findAll('.bogota-land svg')
-    expect(layers).toHaveLength(4)
-    expect(layers.every(svg => svg.attributes('aria-hidden') === 'true')).toBe(true)
-    expect(wrapper.get('.bogota-land img').attributes('alt')).toBe('')
-    expect(wrapper.text()).toContain('Monserrate · 3,152 m')
-  })
-
   it('links to the privacy page next to the copyright', async () => {
     const wrapper = await mountSuspended(RegionFooter)
     const link = wrapper.get('.myc-foot-legal a.myc-foot-privacy')

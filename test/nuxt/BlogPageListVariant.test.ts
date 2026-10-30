@@ -3,10 +3,10 @@ import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import BlogPage from '~/pages/blog/index.vue'
 
-import { BOGOTA_THEME_DATA, setThemeData } from './themeData'
+import { STARTER_THEME_DATA, setThemeData } from './themeData'
 
 beforeEach(() => {
-  setThemeData({ layout: { ...BOGOTA_THEME_DATA.layout, postList: 'list' } })
+  setThemeData({ layout: { ...STARTER_THEME_DATA.layout, postList: 'list' } })
 })
 
 registerEndpoint('/api/posts', () => ({

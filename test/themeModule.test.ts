@@ -1,12 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { discoverThemes, selectTheme, themeRoots } from '../modules/theme/themes'
+import { createContext } from '../modules/theme/context'
+import { DEFAULT_THEME, activeTheme, discoverThemes, selectTheme } from '../modules/theme/themes'
 import { REGION_VARIANTS, readLayoutCss, regionVariantsModule, registerSpecimenVariants, registerVariants, specimenVariants, variantsWithoutPrefetch } from '../modules/theme/layout/variants'
 import type { ManifestEntries } from '../modules/theme/prefetch'
 import { LAYOUT_REGIONS } from '../modules/theme/constants'
-import type { LayoutRegion, ThemeContext } from '../modules/theme/types'
+import type { InstalledTheme, LayoutRegion, ThemeContext } from '../modules/theme/types'
 
 function theme(root: string, folder: string, manifest: object = { id: folder }): void {
   mkdirSync(join(root, folder), { recursive: true })
@@ -65,8 +66,8 @@ describe('theme discovery', () => {
   it('finds the themes of the repository and of MICELIO_THEME_DIRS', () => {
     const extra = mkdtempSync(join(tmpdir(), 'myc-themes-'))
     theme(extra, 'minimal')
-    const ids = discoverThemes(themeRoots(process.cwd(), extra)).map(found => found.id)
-    expect(ids).toEqual(['bogota', 'starter', 'minimal'])
+    const ids = discoverThemes([join(process.cwd(), 'themes'), extra]).map(found => found.id)
+    expect(ids).toEqual(['starter', 'minimal'])
   })
 
   it('accepts a directory that is itself a theme, and skips missing ones', () => {
@@ -76,12 +77,87 @@ describe('theme discovery', () => {
   })
 
   it('selects an installed theme', () => {
-    expect(selectTheme(discoverThemes(themeRoots(process.cwd(), '')), 'bogota').id).toBe('bogota')
+    expect(selectTheme(discoverThemes([join(process.cwd(), 'themes')]), 'starter').id).toBe('starter')
   })
 
   it('fails naming the missing theme and the installed ones', () => {
-    const installed = discoverThemes(themeRoots(process.cwd(), ''))
-    expect(() => selectTheme(installed, 'nope')).toThrow(/"nope".*not installed.*bogota/)
+    const installed = discoverThemes([join(process.cwd(), 'themes')])
+    expect(() => selectTheme(installed, 'nope')).toThrow(/"nope".*not installed.*starter/)
+  })
+})
+
+describe('the theme a build uses', () => {
+  const installed = (...ids: string[]): InstalledTheme[] => ids.map(id => ({ id, dir: `/themes/${id}`, manifest: { id } }) as unknown as InstalledTheme)
+  const build = { named: false, prepare: false, locked: [DEFAULT_THEME] }
+
+  it('is bogota unless a theme is named, and the lock pins it', () => {
+    expect(DEFAULT_THEME).toBe('bogota')
+    expect(Object.keys(JSON.parse(readFileSync(join(process.cwd(), 'themes.lock.json'), 'utf8')) as object)).toContain(DEFAULT_THEME)
+  })
+
+  it('is the theme that was asked for when it is installed', () => {
+    expect(activeTheme(installed('bogota', 'starter'), 'bogota', build).id).toBe('bogota')
+    expect(activeTheme(installed('starter'), 'starter', { ...build, named: true }).id).toBe('starter')
+  })
+
+  it('tells a build whose locked default is not pulled to run theme:pull or to use the starter', () => {
+    expect(() => activeTheme(installed('starter'), DEFAULT_THEME, build)).toThrow(
+      'NUXT_PUBLIC_THEME is "bogota" but that theme is not installed (installed: starter). Add it to themes/ or to a directory in MICELIO_THEME_DIRS, or themes.lock.json pins it: run npm run theme:pull. Or work with the theme the core ships: NUXT_PUBLIC_THEME=starter.',
+    )
+  })
+
+  it('tells a build whose default is not locked to run theme:add and then theme:pull', () => {
+    expect(() => activeTheme(installed('starter'), DEFAULT_THEME, { ...build, locked: [] })).toThrow(/install it from the registry: npm run theme:add -- bogota, then npm run theme:pull\. Or work with .*NUXT_PUBLIC_THEME=starter/)
+  })
+
+  it('does not offer the starter when it is not installed', () => {
+    expect(() => activeTheme(installed('minimal'), DEFAULT_THEME, build)).toThrow(/\(installed: minimal\)\..*theme:pull\.$/)
+    expect(() => selectTheme([], 'x')).toThrow(/\(installed: none\)/)
+  })
+
+  it('lets nuxt prepare and type checks take the starter when nobody named a theme', () => {
+    expect(activeTheme(installed('starter', 'minimal'), DEFAULT_THEME, { ...build, prepare: true }).id).toBe('starter')
+    expect(activeTheme(installed('bogota', 'starter'), DEFAULT_THEME, { ...build, prepare: true }).id).toBe('bogota')
+  })
+
+  it('does not let a prepare replace a theme that was named, or one that no starter can stand in for', () => {
+    expect(() => activeTheme(installed('starter'), 'bogota', { ...build, named: true, prepare: true })).toThrow(/"bogota" but that theme is not installed/)
+    expect(() => activeTheme(installed('minimal'), DEFAULT_THEME, { ...build, prepare: true })).toThrow(/not installed/)
+  })
+})
+
+describe('the context of a build without the default theme pulled', () => {
+  // A checkout with the starter and the lock of this repository, which pins bogota, but no .micelio/themes/
+  function checkout(): string {
+    const root = tmp()
+    cpSync(join(process.cwd(), 'themes/starter'), join(root, 'themes/starter'), { recursive: true })
+    cpSync(join(process.cwd(), 'themes.lock.json'), join(root, 'themes.lock.json'))
+    return root
+  }
+  const nuxtOf = (rootDir: string, options: { prepare: boolean, theme?: string }): Parameters<typeof createContext>[0] =>
+    ({ options: { rootDir, srcDir: join(process.cwd(), 'app'), _prepare: options.prepare, runtimeConfig: { public: { theme: options.theme ?? '' } }, watch: [] } }) as unknown as Parameters<typeof createContext>[0]
+
+  it('stops nuxt dev and nuxt build, and says to run theme:pull or to use the starter', () => {
+    expect(() => createContext(nuxtOf(checkout(), { prepare: false }))).toThrow(
+      'NUXT_PUBLIC_THEME is "bogota" but that theme is not installed (installed: starter). Add it to themes/ or to a directory in MICELIO_THEME_DIRS, or themes.lock.json pins it: run npm run theme:pull. Or work with the theme the core ships: NUXT_PUBLIC_THEME=starter.',
+    )
+  })
+
+  it('lets nuxt prepare, which npm ci runs, use the starter', () => {
+    expect(createContext(nuxtOf(checkout(), { prepare: true })).id).toBe('starter')
+  })
+
+  it('uses the starter when it is the theme asked for, and still stops nuxt prepare for another missing one', () => {
+    expect(createContext(nuxtOf(checkout(), { prepare: false, theme: 'starter' })).id).toBe('starter')
+    expect(() => createContext(nuxtOf(checkout(), { prepare: true, theme: 'bogota' }))).toThrow(/theme:pull/)
+  })
+
+  it('uses the pulled theme once theme:pull has installed it', () => {
+    const root = checkout()
+    const pulled = join(root, '.micelio/themes/bogota')
+    cpSync(join(process.cwd(), 'test/fixtures/themes/minimal'), pulled, { recursive: true })
+    writeFileSync(join(pulled, 'theme.json'), readFileSync(join(pulled, 'theme.json'), 'utf8').replace('"id": "minimal"', '"id": "bogota"'))
+    expect(createContext(nuxtOf(root, { prepare: false })).id).toBe('bogota')
   })
 })
 

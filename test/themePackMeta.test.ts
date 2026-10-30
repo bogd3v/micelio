@@ -100,7 +100,6 @@ describe('packProblems', () => {
 
 describe('the installed themes', () => {
   it.each([
-    ['bogota', 'AGPL-3.0-only'],
     ['starter', 'MIT-0'],
   ])('%s declares a version and the license %s, and can be packed', (id, license) => {
     const manifest = JSON.parse(readFileSync(join(process.cwd(), 'themes', id, 'theme.json'), 'utf8')) as { version?: string, license?: string }

@@ -41,7 +41,7 @@ In development the server reads the cache folder directly. When a file of a them
 
 `server/plugins/builtInTheme.ts` also puts the theme's compiled messages by locale in `event.context.themeMessages`, deep-frozen and shared by every request. The plugin `app/plugins/theme-messages.ts` runs after the locale is known: on the server it takes the page's locale, puts it in the shared state `myc-theme-messages` (so the payload carries that one locale) and adds it to vue-i18n with `setLocaleMessage(locale, { ...current, ...theme })`, a new top-level object, because the server shares the locale's own object between requests and `mergeLocaleMessage` would copy all of it. Slots and pages keep reading `t('theme.…')`. When a visitor switches language, `i18n:beforeLocaleSwitch` fetches `/_t/<digest>/runtime.json` (immutable, precompressed) once for the other locale and `i18n:localeSwitched` applies it after the core messages loaded; if the fetch fails the page keeps working and each place uses its fallback.
 
-In a component test, `test/nuxt/setup.ts` gives every test Bogotá's data; `setThemeData({ … })` changes it.
+In a component test, `test/nuxt/setup.ts` gives every test the starter's data and messages; `setThemeData({ … })` changes the data and `mergeThemeMessages({ … })` adds messages under `theme.`. The `nuxt` project also builds the fixture `test/fixtures/code-themes/second`, a second theme with a slot.
 
 ## Isolation
 

@@ -2,6 +2,7 @@ import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import HomeFieldGuideCard from '~/components/home/FieldGuideCard.vue'
 import { serveCategories } from './categoriesFixture'
+import { mergeThemeMessages } from './themeData'
 
 describe('HomeFieldGuideCard', () => {
   beforeEach(() => serveCategories())
@@ -19,6 +20,7 @@ describe('HomeFieldGuideCard', () => {
   })
 
   it('keeps the bird and note the theme keys by slug', async () => {
+    mergeThemeMessages({ illustration: { privacidad: { name: 'Masked flowerpiercer', scientific: 'Diglossa cyanea' } }, guide: { note: { privacidad: 'Black mask, blue plumage: sees without being seen.' } } })
     const wrapper = await mountSuspended(HomeFieldGuideCard, { props: { category: 'privacidad', count: 0, figure: 0, pillar: 1 } })
     expect(wrapper.attributes('href')).toBe('/blog/category/privacidad')
     expect(wrapper.classes()).toContain('myc-guide-pillar')
@@ -26,7 +28,7 @@ describe('HomeFieldGuideCard', () => {
     expect(wrapper.get('.myc-guide-bird').text()).toBe('Masked flowerpiercer · Diglossa cyanea')
     expect(wrapper.find('.myc-guide-note').exists()).toBe(true)
     expect(wrapper.get('.myc-guide-foot').text()).toContain('No articles yet')
-    expect(wrapper.get('svg').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.get('.myc-guide-note').text()).toBe('Black mask, blue plumage: sees without being seen.')
   })
 
   it('renders a figure card with its article count and no description', async () => {
