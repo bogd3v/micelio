@@ -21,8 +21,8 @@ describe('useThemeHud', () => {
   })
 
   it('returns only the fields the theme provides', () => {
-    withMessages({ 'theme.hud.city': 'Bogotá', 'theme.hud.altitude': '2,640 m' })
-    expect(useThemeHud().value).toEqual({ city: 'Bogotá', altitude: '2,640 m' })
+    withMessages({ 'theme.hud.city': 'Lisbon', 'theme.hud.altitude': '2,640 m' })
+    expect(useThemeHud().value).toEqual({ city: 'Lisbon', altitude: '2,640 m' })
   })
 
   it('returns every field, and ignores keys outside theme.hud', () => {

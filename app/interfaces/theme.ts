@@ -1,5 +1,5 @@
 /**
- * A mode id declared by the active theme (`noche` | `dia` in Bogotá).
+ * A mode id declared by the active theme (`light` | `dark` in the starter).
  *
  * @public
  */

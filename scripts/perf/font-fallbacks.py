@@ -4,12 +4,11 @@ Each weight and width range gets its own face, sized against the variable font a
 text keeps its line breaks when the web font swaps in. Method and numbers: docs/performance.md.
 
     pip install fonttools brotli
-    python3 scripts/perf/font-fallbacks.py [--theme bogota] [ARIAL_REGULAR ARIAL_BOLD MONO_REGULAR]
-    python3 scripts/perf/font-fallbacks.py --theme starter [TIMES_REGULAR TIMES_BOLD]
+    python3 scripts/perf/font-fallbacks.py [--theme starter] [TIMES_REGULAR TIMES_BOLD]
     python3 scripts/perf/font-fallbacks.py --display [SANS_REGULAR SANS_BOLD SERIF_REGULAR SERIF_BOLD]
 
-The metric files default to Liberation Sans and Liberation Mono, which share Arial's and Courier
-New's advance widths; the starter uses Liberation Serif, which shares Times New Roman's. `--display` writes
+The metric files default to Liberation Serif, which shares Times New Roman's advance widths, for the starter.
+The other themes keep their own tooling (Bogotá's is in micelio-themes). `--display` writes
 app/assets/fonts/display-fallbacks.css for the curated display fonts (one `/* <id> */` section each,
 which the server embeds), the sans ones against Liberation Sans and the serif ones against Liberation Serif.
 """
@@ -21,8 +20,6 @@ from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / 'themes/bogota/font-fallbacks.css'
-FONTS = ROOT / 'themes/bogota/fonts'
 STARTER_OUT = ROOT / 'themes/starter/font-fallbacks.css'
 STARTER_FONTS = ROOT / 'themes/starter/fonts'
 DISPLAY_DIR = ROOT / 'app/assets/fonts/display'
@@ -51,13 +48,6 @@ FREQUENCIES = {
 
 ARIAL = 'local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo")'
 ARIAL_BOLD = 'local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("Arimo Bold")'
-COURIER = 'local("Courier New"), local("CourierNewPSMT"), local("Liberation Mono"), local("Cousine")'
-
-# (font-weight range, Archivo wght it is sized at, bold fallback)
-WEIGHTS = [('100 349', 300, False), ('350 449', 400, False), ('450 549', 500, False),
-           ('550 649', 600, True), ('650 900', 700, True)]
-# (font-stretch range or None for normal, Archivo wdth it is sized at)
-WIDTHS = [(None, 100), ('106% 118%', 112), ('119% 125%', 125)]
 
 
 def average_width(font: TTFont) -> float:
@@ -71,13 +61,10 @@ def instance(path: Path, axes: dict) -> TTFont:
     return instantiateVariableFont(TTFont(path), axes)
 
 
-def face(family: str, src: str, size: float, ascent: float, descent: float,
-         weight: str | None = None, stretch: str | None = None) -> str:
+def face(family: str, src: str, size: float, ascent: float, descent: float, weight: str | None = None) -> str:
     lines = [f'    font-family: "{family}";']
     if weight:
         lines.append(f'    font-weight: {weight};')
-    if stretch:
-        lines.append(f'    font-stretch: {stretch};')
     lines += [
         f'    src: {src};',
         f'    size-adjust: {size * 100:.2f}%;',
@@ -138,41 +125,13 @@ def display(metrics: list[str]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument('--theme', choices=['bogota', 'starter'], default='bogota')
+    parser.add_argument('--theme', choices=['starter'], default='starter')
     parser.add_argument('--display', action='store_true', help='the curated display fonts of the core')
-    parser.add_argument('metrics', nargs='*', help='metric font files (3 for bogota, 2 for starter), optional')
+    parser.add_argument('metrics', nargs='*', help='metric font files (2 for the starter, 4 with --display), optional')
     args = parser.parse_args()
     if args.display:
         return display(args.metrics)
-    if args.theme == 'starter':
-        return starter(args.metrics)
-    sans, sans_bold, mono = (Path(p) for p in (args.metrics if len(args.metrics) == 3 else (
-        '/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf',
-        '/usr/share/fonts/liberation-sans-fonts/LiberationSans-Bold.ttf',
-        '/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf',
-    )))
-    regular_width = average_width(TTFont(sans))
-    bold_width = average_width(TTFont(sans_bold))
-
-    archivo = TTFont(FONTS / 'archivo-latin-var.woff2')
-    archivo_em = archivo['head'].unitsPerEm
-    ascent, descent = archivo['hhea'].ascent / archivo_em, -archivo['hhea'].descent / archivo_em
-
-    faces = []
-    for stretch, wdth in WIDTHS:
-        for weight, wght, bold in WEIGHTS:
-            width = average_width(instance(FONTS / 'archivo-latin-var.woff2', {'wght': wght, 'wdth': wdth}))
-            size = width / (bold_width if bold else regular_width)
-            faces.append(face('Archivo Fallback', ARIAL_BOLD if bold else ARIAL, size, ascent, descent, weight, stretch))
-
-    jetbrains = TTFont(FONTS / 'jetbrains-mono-latin-var.woff2')
-    jetbrains_em = jetbrains['head'].unitsPerEm
-    size = average_width(instance(FONTS / 'jetbrains-mono-latin-var.woff2', {'wght': 400})) / average_width(TTFont(mono))
-    faces.append(face('JetBrains Mono Fallback', COURIER, size,
-                      jetbrains['hhea'].ascent / jetbrains_em, -jetbrains['hhea'].descent / jetbrains_em))
-
-    OUT.write_text(HEADER + '\n'.join(faces))
-    print(f'{OUT.relative_to(ROOT)} generated ({len(faces)} faces)')
+    return starter(args.metrics)
 
 
 if __name__ == '__main__':

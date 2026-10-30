@@ -1,40 +1,13 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, watchEffect } from 'vue'
-import ThemeIllustration from '~~/themes/bogota/slots/ThemeIllustration.vue'
 import DefaultIllustration from '~/theme/defaults/ThemeIllustration.vue'
 import { useIllustrationCaption } from '~/composables/useIllustrationCaption'
 import { useCategoryLabel } from '~/composables/useCategoryLabel'
 import MycCategoryTag from '~/components/myc/MycCategoryTag.vue'
 import { categoryColor } from '~/helpers/categories'
 import { GARDEN_CATEGORIES, serveCategories } from './categoriesFixture'
-
-// The slugs of BogDev's categories, which the theme `bogota` draws birds for (ADR 0016, section 8)
-const BIRDS = ['privacidad', 'diy', 'ia', 'software', 'linux']
-
-describe('ThemeIllustration (Bogotá)', () => {
-  it('draws a distinct bird for each slug it knows, in the color it is given', async () => {
-    const drawings = new Set<string>()
-    for (const category of BIRDS) {
-      const wrapper = await mountSuspended(ThemeIllustration, { props: { category, color: 'var(--category-3)', size: 160 } })
-      const svg = wrapper.get('svg')
-      expect(svg.attributes('aria-hidden')).toBe('true')
-      expect(svg.attributes('width')).toBe('160')
-      expect(svg.attributes('height')).toBe('120')
-      expect(svg.attributes('style')).toContain('color: var(--category-3)')
-      expect(svg.findAll('path').length).toBeGreaterThan(3)
-      drawings.add(svg.html())
-    }
-    expect(drawings.size).toBe(5)
-  })
-
-  it('draws nothing for a slug the theme does not know, not an empty box', async () => {
-    const wrapper = await mountSuspended(ThemeIllustration, { props: { category: 'garden', color: 'var(--category-1)' } })
-    expect(wrapper.find('svg').exists()).toBe(false)
-    expect(wrapper.element.nodeType).toBe(8)
-    expect(wrapper.html()).not.toContain('--category-0')
-  })
-})
+import { mergeThemeMessages } from './themeData'
 
 describe('ThemeIllustration (core default)', () => {
   it('draws nothing, for any slug', async () => {
@@ -48,6 +21,7 @@ describe('ThemeIllustration (core default)', () => {
 
 describe('useIllustrationCaption', () => {
   it('reads the theme messages of the slugs it knows and gives null for any other', async () => {
+    mergeThemeMessages({ illustration: { garden: { name: 'Hoopoe', scientific: 'Upupa epops' }, kitchen: { name: 'Robin' } } })
     let caption: ReturnType<typeof useIllustrationCaption> = () => null
     await mountSuspended(defineComponent({
       setup() {
@@ -55,14 +29,9 @@ describe('useIllustrationCaption', () => {
         return () => h('div')
       },
     }))
-    expect(BIRDS.map(category => caption(category))).toEqual([
-      { name: 'Masked flowerpiercer', scientific: 'Diglossa cyanea' },
-      { name: 'Blue-and-white swallow', scientific: 'Pygochelidon cyanoleuca' },
-      { name: 'Sparkling violetear', scientific: 'Colibri coruscans' },
-      { name: 'Great thrush', scientific: 'Turdus fuscater' },
-      { name: 'Yellow-hooded blackbird', scientific: 'Chrysomus icterocephalus bogotensis' },
-    ])
-    expect(caption('garden')).toBeNull()
+    expect(caption('garden')).toEqual({ name: 'Hoopoe', scientific: 'Upupa epops' })
+    expect(caption('kitchen')).toEqual({ name: 'Robin', scientific: '' })
+    expect(caption('cellar')).toBeNull()
   })
 })
 

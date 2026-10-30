@@ -10,7 +10,7 @@ Read `AGENTS.md` (code style, CSS architecture) and the specimen page (`/_theme`
 ## Design system
 
 - Reuse `app/components/myc/` (`MycButton`, `MycCategoryTag`, `MycCallout`, `MycCodeBlock`…) before writing a new element; buttons and button-like links are always `<MycButton>`.
-- Colors, spacing and type come from the tokens (`var(--…)`) declared in the active theme's `theme.json` (`themes/bogota/theme.json`); the build generates the CSS from it, so no generated file is checked in. `npm run tokens` prints it.
+- Colors, spacing and type come from the tokens (`var(--…)`) declared in the active theme's `theme.json` (`themes/starter/theme.json` for the one in the repository; the default theme is pulled into `.micelio/themes/`); the build generates the CSS from it, so no generated file is checked in. `npm run tokens` prints it.
 - Themes are `data-theme="noche" | "dia"` on `<html>`; check both.
 
 ## CSS

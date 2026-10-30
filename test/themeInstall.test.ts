@@ -60,14 +60,14 @@ afterEach(() => {
 })
 
 describe('installing a theme folder', () => {
-  it('compiles Bogota into a store entry', async () => {
+  it('compiles the starter into a store entry', async () => {
     const store = scratch()
-    const result = await installTheme({ kind: 'folder', dir: join(ROOT, 'themes/bogota') }, options(store, { allowCode: true }))
+    const result = await installTheme({ kind: 'folder', dir: join(ROOT, 'themes/starter') }, options(store, { allowCode: true }))
     expect(result.created).toBe(true)
     expect(result.manifest.code).toBe(true)
     const entry = (await loadEntry(store, result.digest))!
     const paths = [...entry.files.keys()]
-    for (const path of ['theme.css', 'theme.css.gz', 'theme.css.br', 'sections.css', 'runtime.json', 'runtime.json.gz']) expect(paths).toContain(path)
+    for (const path of ['theme.css', 'theme.css.gz', 'theme.css.br', 'runtime.json', 'runtime.json.gz']) expect(paths).toContain(path)
     expect(paths.some(path => path.startsWith('fonts/') && path.endsWith('.woff2'))).toBe(true)
     expect(paths.some(path => path.startsWith('fonts/') && path.endsWith('.txt'))).toBe(true)
     expect(paths.some(path => path.startsWith('images/'))).toBe(true)
@@ -77,6 +77,18 @@ describe('installing a theme folder', () => {
     expect(css).toMatch(/@layer myc\.settings/)
     expect(css).toMatch(/@layer myc\.theme/)
     expect(css).toMatch(/@layer myc\.components/)
+  })
+
+  it('compiles sections.css with its compressed copies when the theme has one', async () => {
+    const store = scratch()
+    const dir = join(scratch(), 'starter')
+    cpSync(join(ROOT, 'themes/starter'), dir, { recursive: true })
+    writeFileSync(join(dir, 'sections.css'), '.myc-section[data-section="hero"] { top: 0 }\n')
+    const result = await installTheme({ kind: 'folder', dir }, options(store, { allowCode: true }))
+    const entry = (await loadEntry(store, result.digest))!
+    const paths = [...entry.files.keys()]
+    for (const path of ['sections.css', 'sections.css.gz', 'sections.css.br']) expect(paths).toContain(path)
+    expect(entry.files.get('sections.css')!.toString()).toContain('[data-section=hero]{top:0}')
   })
 
   it('compiles the starter and writes runtime.json with everything the server reads', async () => {

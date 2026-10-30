@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import RegionHeader from '~/theme/layout/header/Bar.vue'
+import { mergeThemeMessages } from './themeData'
 
 describe('RegionHeader', () => {
   it('marks the active link with aria-current', async () => {
@@ -13,9 +14,10 @@ describe('RegionHeader', () => {
   })
 
   it('shows the HUD strip with the fediverse chip, search and theme control', async () => {
+    mergeThemeMessages({ hud: { city: 'Lisbon', coords: '38.72°N 9.14°W' } })
     const wrapper = await mountSuspended(RegionHeader, { props: { active: 'home' } })
-    expect(wrapper.get('.myc-hud').text()).toContain('Bogotá')
-    expect(wrapper.get('.myc-hud').text()).toContain('4.61°N 74.08°W')
+    expect(wrapper.get('.myc-hud').text()).toContain('Lisbon')
+    expect(wrapper.get('.myc-hud').text()).toContain('38.72°N 9.14°W')
     const chip = wrapper.get('a.myc-chip')
     expect(chip.attributes('href')).toBe('/#fediverso')
     expect(chip.text()).toContain('@bogdev')

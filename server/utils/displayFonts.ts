@@ -22,7 +22,7 @@ const SPECS: Record<DisplayFont, DisplayFontSpec> = {
   'space-grotesk': { family: 'Space Grotesk', weights: '300 700', kind: 'sans' },
 }
 
-/** The latin subset of the files (the range of themes/bogota/fonts.css) */
+/** The latin subset of the files (the "latin" range of the Google Fonts stylesheet) */
 const UNICODE_RANGE = 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0300-0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2190-2193,U+2212,U+2215,U+FEFF,U+FFFD'
 
 /** What the build knows (`#micelio/display-fonts`): file versions and generated fallback faces per font id. */

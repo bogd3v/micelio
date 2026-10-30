@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { BOGOTA_THEME_DATA, setThemeData } from './themeData'
+import { STARTER_THEME_DATA, setThemeData } from './themeData'
 
 describe('useThemeData', () => {
   it('returns what the server put in the payload', () => {
-    expect(useThemeData()).toEqual(BOGOTA_THEME_DATA)
+    expect(useThemeData()).toEqual(STARTER_THEME_DATA)
     setThemeData({ id: 'other' })
     expect(useThemeData().id).toBe('other')
   })

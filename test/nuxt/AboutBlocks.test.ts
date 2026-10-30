@@ -11,6 +11,7 @@ import StrapiOpenSourceBlock from '~/components/strapi/OpenSourceBlock.vue'
 import StrapiContactBlock from '~/components/strapi/ContactBlock.vue'
 import { createMarkdownRenderer, renderBlocks } from '~/helpers/markdown'
 import { categoriesSettled, serveCategories } from './categoriesFixture'
+import { STARTER_THEME_DATA, mergeThemeMessages, setThemeData } from './themeData'
 
 const blocks = aboutBlocks('en') as StrapiBlock[]
 
@@ -29,7 +30,9 @@ describe('StrapiBlocksRenderer', () => {
 })
 
 describe('StrapiProfileBlock', () => {
-  it('shows the facts, the calls to action and the mascot as fallback', async () => {
+  it('shows the facts, the calls to action and the theme\'s mascot as fallback', async () => {
+    setThemeData({ images: { ...STARTER_THEME_DATA.images, profile: `/_t/${STARTER_THEME_DATA.digest}/images/mascot.png` } })
+    mergeThemeMessages({ profile: { alt: 'Illustration of a rufous-collared sparrow, the blog\'s mascot bird' } })
     const wrapper = await mountSuspended(StrapiProfileBlock, { props: { block: block<StrapiProfile>('about.profile') } })
     expect(wrapper.get('h1').text()).toBe('Hi, I am Alejandro.')
     expect(wrapper.findAll('dt').map(dt => dt.text())).toEqual(['Name', 'Habitat', 'Specialty', 'Call'])
@@ -61,6 +64,7 @@ describe('StrapiTopicsBlock', () => {
   it('puts the two pillars first and labels the rest by number', async () => {
     const topics = block<StrapiTopics>('about.topics')
     const shuffled = { ...topics, topics: [...topics.topics!].reverse() }
+    mergeThemeMessages({ illustration: { privacidad: { name: 'Masked flowerpiercer', scientific: 'Diglossa cyanea' } } })
     const wrapper = await mountSuspended(StrapiTopicsBlock, { props: { block: shuffled } })
     await vi.waitFor(() => expect(wrapper.findAll('.myc-topic-pillar')).toHaveLength(2))
     const cards = wrapper.findAll('.myc-topic')

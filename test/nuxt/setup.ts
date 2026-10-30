@@ -1,10 +1,10 @@
 import { beforeEach } from 'vitest'
-import en from '../../themes/bogota/i18n/en.json'
-import es from '../../themes/bogota/i18n/es.json'
+import en from '../../themes/starter/i18n/en.json'
+import es from '../../themes/starter/i18n/es.json'
 import { compileMessages } from '../../modules/theme/install/messages'
 import { setThemeData } from './themeData'
 
-// The server provides the theme's data and messages to every page; the test app has no server, so each test starts with Bogota's.
+// The server provides the theme's data and messages to every page; the test app has no server, so each test starts with the starter's.
 beforeEach(() => {
   setThemeData()
   const { $i18n } = useNuxtApp()

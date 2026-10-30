@@ -1,16 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MockInstance } from 'vitest'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { contrastProblems } from '../modules/theme/contrast'
 import { buildPalette } from '../modules/theme/palette'
 import type { ThemePalette } from '../modules/theme/palette'
-import { discoverThemes, themeRoots } from '../modules/theme/themes'
+import { discoverThemes } from '../modules/theme/themes'
 import type { ThemeManifest } from '../modules/theme/types'
 import { resetThemeLog, resolveTheme, themeOverridesCss } from '../server/utils/theme'
 import type { ThemeSettings } from '../app/interfaces/site'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
-const installed = discoverThemes(themeRoots(root, ''))
+const installed = discoverThemes([join(root, 'themes')])
 const manifestOf = (id: string): ThemeManifest => installed.find(theme => theme.id === id)!.manifest
 
 type TokenValue = string | Record<string, string>
@@ -25,11 +26,9 @@ function withTokens(manifest: ThemeManifest, patch: Record<string, TokenValue>):
 }
 
 const THEMES = [
-  ['bogota', manifestOf('bogota')],
   ['starter', manifestOf('starter')],
-  ['bogota with link and focus as the accent', withTokens(manifestOf('bogota'), { link: '{accent}', focus: '{accent}' })],
   ['starter with link and focus as the accent (link-soft is the core default)', withTokens(manifestOf('starter'), { link: '{accent}', focus: '{accent}' })],
-  ['bogota with link as the accent and link-soft as accent-soft', withTokens(manifestOf('bogota'), { 'link': '{accent}', 'focus': '{accent}', 'link-soft': '{accent-soft}' })],
+  ['starter with link as the accent and link-soft as accent-soft', withTokens(manifestOf('starter'), { 'link': '{accent}', 'focus': '{accent}', 'link-soft': '{accent-soft}' })],
 ] as const
 
 const RULE_ROLES = ['accent', 'on-accent', 'link', 'focus']
@@ -88,21 +87,21 @@ describe.each(THEMES)('accent override on %s', (_name, manifest) => {
 })
 
 describe('resolveTheme', () => {
-  const palette = buildPalette(manifestOf('bogota'))
-  const resolve = (raw: ThemeSettings | null | undefined): ReturnType<typeof resolveTheme> => resolveTheme(raw, palette, 'bogota')
+  const palette = buildPalette(manifestOf('starter'))
+  const resolve = (raw: ThemeSettings | null | undefined): ReturnType<typeof resolveTheme> => resolveTheme(raw, palette, 'starter')
 
   it('derives accent-soft, accent-hover and on-accent from the accent', () => {
-    expect(resolve({ accentOverrides: [{ mode: 'dia', color: '#8a1c1c' }] })).toMatchInlineSnapshot(`
+    expect(resolve({ accentOverrides: [{ mode: 'light', color: '#8a1c1c' }] })).toMatchInlineSnapshot(`
       {
         "accents": {
-          "dia": {
+          "light": {
             "accent": "#8a1c1c",
-            "accentHover": "#761e1b",
-            "accentSoft": "#e7cdc2",
-            "onAccent": "#f3e9df",
+            "accentHover": "#77231e",
+            "accentSoft": "#ead3c9",
+            "onAccent": "#f6f1e7",
           },
         },
-        "id": "bogota",
+        "id": "starter",
       }
     `)
   })
@@ -115,34 +114,34 @@ describe('resolveTheme', () => {
   })
 
   it('emits nothing for the theme\'s own accent, in any case', () => {
-    const { noche } = palette.modes
-    expect(resolve({ accentOverrides: [{ mode: 'noche', color: noche!.accent.toUpperCase() }] })).toBeNull()
+    const { dark } = palette.modes
+    expect(resolve({ accentOverrides: [{ mode: 'dark', color: dark!.accent.toUpperCase() }] })).toBeNull()
   })
 
   it('keeps a display font only when it is a value of the enum', () => {
-    expect(resolve({ displayFont: 'newsreader', defaultMode: 'dia' })?.displayFont).toBe('newsreader')
-    expect(resolve({ displayFont: 'toString' as never, defaultMode: 'dia' })?.displayFont).toBeUndefined()
+    expect(resolve({ displayFont: 'newsreader', defaultMode: 'light' })?.displayFont).toBe('newsreader')
+    expect(resolve({ displayFont: 'toString' as never, defaultMode: 'light' })?.displayFont).toBeUndefined()
     expect(resolve({ displayFont: 'comic-sans' as never })).toBeNull()
   })
 
   it('ignores a theme that is not the build, and says so, but keeps the rest', () => {
-    const theme = resolve({ themeId: 'other', defaultMode: 'dia', displayFont: 'fraunces' })
-    expect(theme).toEqual({ id: 'bogota', defaultMode: 'dia', displayFont: 'fraunces', accents: {} })
+    const theme = resolve({ themeId: 'other', defaultMode: 'light', displayFont: 'fraunces' })
+    expect(theme).toEqual({ id: 'starter', defaultMode: 'light', displayFont: 'fraunces', accents: {} })
     expect(warned()).toContainEqual(expect.stringContaining('"other" is not installed'))
     warn.mockClear()
-    resolve({ themeId: 'bogota', defaultMode: 'dia' })
+    resolve({ themeId: 'starter', defaultMode: 'light' })
     expect(warn).not.toHaveBeenCalled()
   })
 
   it('logs the same adjustment once', () => {
-    const settings = { accentOverrides: [{ mode: 'dia', color: '#ffff00' }] }
+    const settings = { accentOverrides: [{ mode: 'light', color: '#ffff00' }] }
     resolve(settings)
     resolve(settings)
     expect(warn).toHaveBeenCalledTimes(1)
   })
 
   it('keeps a defaultMode only when the theme has that mode', () => {
-    expect(resolve({ defaultMode: 'noche' })?.defaultMode).toBe('noche')
+    expect(resolve({ defaultMode: 'dark' })?.defaultMode).toBe('dark')
     expect(resolve({ defaultMode: 'sepia' })).toBeNull()
     expect(resolve({ defaultMode: 'constructor' })).toBeNull()
   })
@@ -154,10 +153,10 @@ describe('resolveTheme', () => {
   it('keeps the theme\'s accent, and says so, when no lightness passes', () => {
     const impossible: ThemePalette = {
       ...palette,
-      modes: { dia: { ...palette.modes.dia!, 'surface': '#000000', 'surface-raised': '#ffffff', 'surface-sunken': '#000000' } },
+      modes: { light: { ...palette.modes.light!, 'surface': '#000000', 'surface-raised': '#ffffff', 'surface-sunken': '#000000' } },
       rules: [{ role: 'accent', surfaces: ['surface', 'surface-raised'], min: 10 }],
     }
-    expect(resolveTheme({ accentOverrides: [{ mode: 'dia', color: '#8a1c1c' }] }, impossible, 'bogota')).toBeNull()
+    expect(resolveTheme({ accentOverrides: [{ mode: 'light', color: '#8a1c1c' }] }, impossible, 'starter')).toBeNull()
     expect(warned()).toContainEqual(expect.stringContaining('reaches no contrast'))
   })
 })

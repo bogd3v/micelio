@@ -6,17 +6,17 @@ import { fileURLToPath } from 'node:url'
 import { FONT_TOTAL_MAX_BYTES, checkTheme } from '../modules/theme/check'
 import { CONTRAST_RULES, contrastProblems } from '../modules/theme/contrast'
 import { loadHooks } from '../modules/theme/hooks'
-import { discoverThemes, themeRoots } from '../modules/theme/themes'
+import { discoverThemes } from '../modules/theme/themes'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const fixtures = fileURLToPath(new URL('./fixtures/themes', import.meta.url))
 const hooks = loadHooks(fileURLToPath(new URL('../app', import.meta.url)))
-const installed = discoverThemes(themeRoots(root, ''))
+const installed = discoverThemes([join(root, 'themes')])
 const cases = installed.flatMap(theme => theme.manifest.modes.map(mode => ({ id: theme.id, mode: mode.id })))
 
 describe('contrast matrix of the installed themes', () => {
-  it('installs at least Bogotá', () => {
-    expect(installed.map(theme => theme.id)).toContain('bogota')
+  it('installs at least the starter', () => {
+    expect(installed.map(theme => theme.id)).toContain('starter')
   })
 
   describe.each(cases)('$id in $mode', ({ id, mode }) => {
@@ -89,9 +89,9 @@ describe('checkTheme', () => {
     expect(checkTheme(minimal!, hooks)).toEqual({ theme: 'minimal', contract: { declared: '2.0', used: '2.0', core: '2.0' }, errors: [], warnings: [] })
   })
 
-  it('has no font warning for Bogotá (fonts under the 100 KB target, #350)', () => {
-    const bogota = installed.find(theme => theme.id === 'bogota')!
-    const report = checkTheme(bogota, hooks)
+  it('has no font warning for the starter (fonts under the 100 KB target)', () => {
+    const starter = installed.find(theme => theme.id === 'starter')!
+    const report = checkTheme(starter, hooks)
     expect(report.errors).toEqual([])
     expect(report.warnings).toEqual([])
   })

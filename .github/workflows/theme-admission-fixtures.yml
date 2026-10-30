@@ -1,7 +1,7 @@
 name: Theme Admission Fixtures
 
 # Proves the reusable admission (theme-admission.yml, #311) end to end: a data-only theme passes and a broken one fails with the messages
-# of theme:check, npm run perf and axe, both on one shared core build, with the per-check outputs deploy.yml gates on; and theme-snapshots.yml,
+# of theme:check, npm run perf and axe, both on one shared core build, with the per-check outputs a caller gates on; and theme-snapshots.yml,
 # called as a theme repository calls it, renders the baselines of the data-only theme. Runs when the admission or what it calls changes.
 on:
   pull_request:

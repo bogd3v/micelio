@@ -22,7 +22,7 @@ afterEach(() => rmSync(tmp, { recursive: true, force: true }))
 describe('scaffoldTheme', () => {
   it('sets id and name and leaves no starter text behind', () => {
     const target = join(tmp, 'my-theme')
-    scaffoldTheme(STARTER, target, 'my-theme', ['bogota', 'starter'], 'My Theme')
+    scaffoldTheme(STARTER, target, 'my-theme', ['starter'], 'My Theme')
     const manifest = JSON.parse(readFileSync(join(target, 'theme.json'), 'utf8')) as Record<string, unknown>
     expect(manifest.id).toBe('my-theme')
     expect(manifest.name).toBe('My Theme')
@@ -34,7 +34,7 @@ describe('scaffoldTheme', () => {
   })
 
   it('produces a theme the real checker accepts', () => {
-    scaffoldTheme(STARTER, join(tmp, 'checked'), 'checked', ['bogota', 'starter'], 'Checked')
+    scaffoldTheme(STARTER, join(tmp, 'checked'), 'checked', ['starter'], 'Checked')
     const [theme] = discoverThemes([join(tmp, 'checked')])
     const report = checkTheme(theme!, loadHooks(join(__dirname, '..', 'app')))
     expect(report.errors).toEqual([])
@@ -77,7 +77,7 @@ describe('scaffoldTheme', () => {
   })
 
   it('rejects an installed id and an existing folder', () => {
-    expect(() => scaffoldTheme(STARTER, join(tmp, 'bogota'), 'bogota', ['bogota'])).toThrow(/already installed/)
+    expect(() => scaffoldTheme(STARTER, join(tmp, 'starter'), 'starter', ['starter'])).toThrow(/already installed/)
     expect(() => scaffoldTheme(STARTER, tmp, 'fresh', [])).toThrow(/already exists/)
   })
 })

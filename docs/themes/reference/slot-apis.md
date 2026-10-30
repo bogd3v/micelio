@@ -1820,7 +1820,7 @@ export interface StrapiSEO {
 
 | Name | Kind | Summary |
 | --- | --- | --- |
-| `ThemeMode` | type | A mode id declared by the active theme (`noche` \| `dia` in Bogotá). |
+| `ThemeMode` | type | A mode id declared by the active theme (`light` \| `dark` in the starter). |
 | `ThemeModeDefinition` | interface | A mode of the active theme, as the theme module lists it. |
 
 #### `ThemeModeDefinition`

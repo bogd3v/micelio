@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 import { compileMessages } from '../../modules/theme/install/messages'
-import { BOGOTA_THEME_DATA } from './themeData'
+import { STARTER_THEME_DATA } from './themeData'
 
 // A locale the app does not list, so the frozen messages stay out of the ones the other tests use (the types only know en and es)
 const XX = 'xx' as 'es'
@@ -33,7 +33,7 @@ describe('the theme messages plugin', () => {
 
   it('fetches the messages of the other locale from the theme\'s immutable file, once', async () => {
     let requests = 0
-    registerEndpoint(`/_t/${BOGOTA_THEME_DATA.digest}/runtime.json`, () => {
+    registerEndpoint(`/_t/${STARTER_THEME_DATA.digest}/runtime.json`, () => {
       requests++
       return { messages: { es: compileMessages({ theme: { fetched: { text: 'Traído' } } }) } }
     })
@@ -45,7 +45,7 @@ describe('the theme messages plugin', () => {
   })
 
   it('keeps the page working, with the core fallbacks, when the file cannot be fetched', async () => {
-    registerEndpoint(`/_t/${BOGOTA_THEME_DATA.digest}/runtime.json`, () => {
+    registerEndpoint(`/_t/${STARTER_THEME_DATA.digest}/runtime.json`, () => {
       throw createError({ statusCode: 500 })
     })
     useNuxtApp().payload.state['$smyc-theme-messages'] = {}

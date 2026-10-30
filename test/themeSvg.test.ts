@@ -27,7 +27,7 @@ function rejected(svg: string | Buffer): string {
 }
 
 describe('svg that passes', () => {
-  it.each(['themes/bogota/images/bogdev.svg', 'themes/bogota/images/bogdev-black.svg', 'themes/bogota/images/bogdev-white.svg', 'themes/starter/images/favicon.svg'])('accepts the shipped %s', (file) => {
+  it.each(['themes/starter/images/favicon.svg'])('accepts the shipped %s', (file) => {
     expect(() => checkContent(file, readFileSync(join(process.cwd(), file)))).not.toThrow()
   })
 

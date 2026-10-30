@@ -27,7 +27,7 @@ function filesOf(dir: string, prefix = ''): string[] {
   return readdirSync(join(dir, prefix), { withFileTypes: true }).flatMap(entry => entry.isDirectory() ? filesOf(dir, `${prefix}${entry.name}/`) : [`${prefix}${entry.name}`]).sort()
 }
 
-describe.each(['bogota', 'starter'])('packing %s', (id) => {
+describe.each(['starter'])('packing %s', (id) => {
   const theme = installed(id)
 
   it('gives the same bytes and digest twice', () => {
@@ -45,12 +45,10 @@ describe.each(['bogota', 'starter'])('packing %s', (id) => {
     expect(built.manifestName).toBe(`${id}-0.1.0.manifest.json`)
   })
 
-  it('carries its own license and README', () => {
-    if (id !== 'bogota') return
+  it('carries its own license', () => {
     const paths = buildPackage(theme, hooks).manifest.files.map(file => file.path)
-    expect(paths).toContain('README.md')
     expect(paths).toContain('LICENSE')
-    expect(readFileSync(join(theme.dir, 'LICENSE'), 'utf8')).toBe(readFileSync(join(ROOT, 'LICENSES/AGPL-3.0-only.txt'), 'utf8'))
+    expect(readFileSync(join(theme.dir, 'LICENSE'), 'utf8')).toContain('Permission is hereby granted, free of charge')
   })
 
   it('says it has code (slots)', () => {
@@ -287,13 +285,13 @@ describe('the command', () => {
   it('names the installed themes for an unknown id', () => {
     const result = run('nope')
     expect(result.status).toBe(1)
-    expect(result.stderr).toMatch(/"nope" is not installed \(installed: bogota, starter\)/)
+    expect(result.stderr).toMatch(/"nope" is not installed \(installed: starter[,)]/)
   })
 })
 
 describe('the size of the packages', () => {
   it('stays well under the caps', () => {
-    for (const id of ['bogota', 'starter']) {
+    for (const id of ['starter']) {
       const built = buildPackage(installed(id), hooks)
       expect(built.tgz.length).toBeLessThan(1024 * 1024)
       expect(built.manifest.size).toBeLessThan(2 * 1024 * 1024)

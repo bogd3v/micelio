@@ -2,11 +2,11 @@
 
 **Kind:** how-to. Goal: pin a theme from the registry, or from a file, install it with `npm run theme:pull` and build with it.
 
-Micelio is pre-1.0 and not stable. The registry has no published theme yet: the admission and publish workflows (#311 and #312) are in the core, and the first publication needs the organisation setup of `docs/themes/publishing-a-theme.md`. The client below is ready, and it refuses a registry whose index, packages and attestations it cannot verify.
+Micelio is pre-1.0 and not stable. The registry (`ghcr.io/bogd3v/micelio-themes`) lists `bogota`, the default theme, published from [micelio-themes](https://github.com/bogd3v/micelio-themes) with the workflows of this repository (`docs/themes/publishing-a-theme.md`). The client below refuses a registry whose index, packages and attestations it cannot verify.
 
 ## The lock
 
-`themes.lock.json` at the repository root pins every theme a site installs from the registry or from a file, by exact version and digest. It is committed. An empty lock (`{}`) means the site uses only the themes in `themes/`.
+`themes.lock.json` at the repository root pins every theme a site installs from the registry or from a file, by exact version and digest. It is committed. An empty lock (`{}`) means the site uses only the themes in `themes/`. The lock of this repository pins `bogota`, which is `DEFAULT_THEME`: the theme the image serves when nothing else is chosen.
 
 ```json
 {
@@ -56,6 +56,16 @@ Micelio is pre-1.0 and not stable. The registry has no published theme yet: the 
 - Nothing from a package is executed at pull time.
 
 A theme added from a file (`distribution: file`) has no attestation: you are its signer. The registry's server-side install, tiers and revocation come with #400 and #403.
+
+## The default theme
+
+`bogota` is not in this repository. `npm run theme:pull` installs it from the lock into `.micelio/themes/bogota/`, and `npm run dev`, `npm run build` and `npm run generate` then use it, as the image does. Without it they stop and say what to run:
+
+```text
+NUXT_PUBLIC_THEME is "bogota" but that theme is not installed (installed: starter). Add it to themes/ or to a directory in MICELIO_THEME_DIRS, or themes.lock.json pins it: run npm run theme:pull. Or work with the theme the core ships: NUXT_PUBLIC_THEME=starter.
+```
+
+`themes/starter/` is the theme in the repository, for work with no network and for the unit and component tests. `npm ci` (which runs `nuxt prepare`), `npm run typecheck`, `npm run lint` and `npm test` take it when no theme is named and the default is not pulled, so they need neither the lock nor the network. A site that wants another default runs `npm run theme:add -- <id>` and sets `NUXT_PUBLIC_THEME=<id>`; it may also remove `bogota` from its lock.
 
 ## In the Docker image
 

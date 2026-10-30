@@ -24,12 +24,10 @@ Apache-2.0, from the Sigstore project. Both files are data, used unmodified.
 
 ## Fonts
 
-Under the SIL Open Font License 1.1; the license text ships next to each file. The Bogotá files are subsets of the previous full files (fewer glyphs and a narrower axis range, `scripts/perf/subset-theme-fonts.py`, sources pinned in `scripts/perf/bogota-font-sources.json`); the licenses declare no Reserved Font Name.
+Under the SIL Open Font License 1.1; the license text ships next to each file. The licenses declare no Reserved Font Name.
 
 | Font | Files | License |
 | --- | --- | --- |
-| Archivo, The Archivo Project Authors | `themes/bogota/fonts/archivo-latin-var.woff2` | OFL-1.1 (`OFL-Archivo.txt`) |
-| JetBrains Mono, The JetBrains Mono Project Authors | `themes/bogota/fonts/jetbrains-mono-latin-var.woff2` | OFL-1.1 (`OFL-JetBrainsMono.txt`) |
 | Fraunces, The Fraunces Project Authors | `themes/starter/fonts/fraunces-latin-var.woff2` | OFL-1.1 (`OFL-Fraunces.txt`) |
 | Archivo, The Archivo Project Authors | `app/assets/fonts/display/archivo-latin-wght.woff2` (curated display font, served at `/fonts/display/`) | OFL-1.1 (`OFL-Archivo.txt`) |
 | Fraunces, The Fraunces Project Authors | `app/assets/fonts/display/fraunces-latin-wght.woff2` (curated display font, served at `/fonts/display/`) | OFL-1.1 (`OFL-Fraunces.txt`) |
@@ -57,7 +55,6 @@ The curated display fonts in `app/assets/fonts/display/` are subset from the var
 
 | Material | Files | Source and license |
 | --- | --- | --- |
-| Photo of the Sumapaz páramo | `themes/bogota/images/hero/sumapaz-day.jpg`, `sumapaz-night.jpg` | Original: [Paisaje Sumapaz, Colombia.jpg](https://commons.wikimedia.org/wiki/File:Paisaje_Sumapaz,_Colombia.jpg), Parque Nacional Natural Sumapaz, 1 October 2016, by Danielfjio (own work, Wiki Loves Earth 2019), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Changes: crop, sky extension, color grade toward the Salmona tones (day), night grade with added moon and stars (night), fade into the background color. The modified versions are also CC BY-SA 4.0 (ShareAlike). Visible credit in the hero footer: "FOTO: DANIELFJIO · WIKIMEDIA COMMONS · CC BY-SA 4.0 · RECORTADA Y ETALONADA", linking to the file page and the license |
 | Heroicons | `app/components/icons/*.vue` | [Heroicons](https://heroicons.com), MIT, Tailwind Labs (`app/components/icons/LICENSE-heroicons`) |
 
 ## Logos and trademarks
@@ -70,11 +67,11 @@ Logos of other projects are used only to link to them, unmodified, and remain tr
 
 ## Names and marks of Micelio and BogDev
 
-The names Micelio and BogDev, the Micelio logo and mark (`brand/`, outside the AGPL, see [TRADEMARKS.md](TRADEMARKS.md)), the BogDev logos and the Bogotá theme's mark (`themes/bogota/images/bogdev*.svg`, `copeton.png`, `og-image.png`) are the maintainer's own work. Their files are distributed with the code under the AGPL, but no trademark rights are granted (AGPL section 7(e)): a fork or another site may not present itself as BogDev or as the official Micelio.
+The names Micelio and BogDev, the Micelio logo and mark (`brand/`, outside the AGPL, see [TRADEMARKS.md](TRADEMARKS.md)), and the BogDev logos are the maintainer's own work. The mark of the Bogotá theme (`bogdev*.svg`, `copeton.png`, `og-image.png`) is too, and is in [micelio-themes](https://github.com/bogd3v/micelio-themes), which carries the same statement. Their files are distributed with the code under the AGPL, but no trademark rights are granted (AGPL section 7(e)): a fork or another site may not present itself as BogDev or as the official Micelio.
 
 ## Themes in this repository
 
-`themes/starter/` is licensed under MIT-0 (`themes/starter/LICENSE`), so a theme started from it with `npm run theme:new` may take any license. `themes/bogota/` is BogDev's theme and is under the AGPL with the rest of the repository. Their fonts and images keep the licenses listed above.
+`themes/starter/` is licensed under MIT-0 (`themes/starter/LICENSE`), so a theme started from it with `npm run theme:new` may take any license. BogDev's theme, `bogota`, is in [micelio-themes](https://github.com/bogd3v/micelio-themes) (AGPL-3.0-only, with its own fonts, photo and licence list) and is installed from the registry (`themes.lock.json`). The starter's font keeps the license listed above.
 
 ## Site content
 

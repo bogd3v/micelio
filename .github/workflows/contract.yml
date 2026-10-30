@@ -53,6 +53,9 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      # The default theme is the one the lock pins; the starter is only the offline fixture (docs/operate/themes.md)
+      - name: Install the pinned themes
+        run: npm run theme:pull -- --frozen
       - name: Build
         run: npm run build
       # Postgres comes from a copy in GHCR, so Docker Hub's pull rate limit cannot fail the run (docs/architecture/ci-pipeline.md)
