@@ -118,9 +118,25 @@ test('keeps the blog filters when switching language from the sheet', async ({ p
   await expect(page).toHaveURL(/\/es\/blog\/tag\/vue\?sort=fediverse$/)
 })
 
-test('hides the tab bar on desktop', async ({ page }) => {
+test('hides the tab bar on desktop and leaves the page as it is', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto('/', { waitUntil: 'networkidle' })
   await expect(page.getByRole('navigation', { name: 'Bottom navigation' })).toBeHidden()
+  await page.getByRole('region', { name: 'Privacy notice' }).getByRole('button', { name: 'Got it' }).click()
+  await expect(page.locator('.myc-privacy-notice')).toHaveCount(0)
   expect(await page.evaluate(() => getComputedStyle(document.body).paddingBottom)).toBe('0px')
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollPaddingBottom)).toBe('0px')
+})
+
+test('keeps the end of the page clear of the privacy notice on desktop', async ({ page }) => {
+  for (const width of [800, 1280]) {
+    await page.setViewportSize({ width, height: 800 })
+    await page.goto('/', { waitUntil: 'networkidle' })
+    const notice = page.locator('.myc-privacy-notice')
+    await expect(notice).toBeVisible()
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    const noticeBox = await notice.boundingBox()
+    const footerBox = await page.locator('footer').last().boundingBox()
+    expect(footerBox!.y + footerBox!.height, `${width} px`).toBeLessThanOrEqual(noticeBox!.y + 1)
+  }
 })
