@@ -1,0 +1,190 @@
+name: Theme Compatibility
+
+# Does the latest non-yanked version of every published theme still pass admission on a core release candidate? (#314, ADR 0008, decision 5; standard, section 6)
+# Reads the signed index and, for each theme, the commit its signed provenance says it was built from; then calls theme-admission.yml once per theme, with that commit of the
+# themes repository as the source (its `theme-source-repository` and `theme-source-ref`), against the core ref. An `official` version that fails, has no valid report or names no
+# source commit fails the run (unless `fail-on-blocked` is false: release.yml reads `blocked` itself, so a dry run can warn). A version of another tier that fails never blocks:
+# it is listed in `incompatible`, with the exact `Sign index` inputs in the summary, for the maintainer to mark in the index through the signed path of a yank
+# (`action: incompatible`, docs/themes/publishing-a-theme.md, section 12). The workflow has no secret and a read-only token; it writes nothing.
+# Called by release.yml (before it tags) and by theme-compat-runs.yml (weekly, and for pull requests labeled `contract`).
+on:
+  workflow_call:
+    inputs:
+      core-ref:
+        description: The core commit to check, as a full SHA (the commit about to be released or the head of a pull request)
+        type: string
+        required: true
+      registry:
+        description: The registry whose index lists the published themes
+        type: string
+        default: ghcr.io/bogd3v/micelio-themes
+      source-repository:
+        description: The repository the themes are published from; a provenance that names another repository is not a source
+        type: string
+        default: bogd3v/micelio-themes
+      core-repository:
+        description: The core repository to check against
+        type: string
+        default: bogd3v/micelio
+      artifact-prefix:
+        description: Prefix of every artifact of this call
+        type: string
+        default: compat
+      fail-on-blocked:
+        description: Fail the run when an official theme fails; false for a caller that reads `blocked` itself
+        type: boolean
+        default: true
+      propose-marks:
+        description: Propose marking the failing versions of the other tiers incompatible from the core version; true only when publishing a release, whose package.json holds the version being released (not a dry run, nor the weekly runs)
+        type: boolean
+        default: false
+    outputs:
+      decided:
+        description: '"true" when the decision was made: the only thing a caller may read from the run''s conclusion, because the admission of a community theme may fail its job without blocking anything'
+        value: ${{ jobs.decide.outputs.decided }}
+      blocked:
+        description: '"true" when an official theme fails or could not be checked'
+        value: ${{ jobs.decide.outputs.blocked }}
+      incompatible:
+        description: 'JSON array of {theme, version, core, reason}: published versions of the other tiers that fail, to mark in the index'
+        value: ${{ jobs.decide.outputs.incompatible }}
+      core-version:
+        description: The version of the core ref, which is the `core` of each mark
+        value: ${{ jobs.plan.outputs.core-version }}
+      results:
+        description: Name of the artifact that holds results.json and results.md, the table of the release notes
+        value: ${{ jobs.decide.outputs.results }}
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      core-version: ${{ steps.plan.outputs.core-version }}
+    steps:
+      - name: Checkout the core
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ inputs.core-repository }}
+          ref: ${{ inputs.core-ref }}
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # No install script of any dependency runs
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Read the index and the source commit of each theme
+        id: plan
+        env:
+          MICELIO_THEME_REGISTRY: ${{ inputs.registry }}
+          SOURCE_REPOSITORY: ${{ inputs.source-repository }}
+        run: |
+          npm run --silent theme:compat -- plan --source "${SOURCE_REPOSITORY}" --out compat/plan.json
+          echo "matrix=$(jq -c '.matrix' compat/plan.json)" >> "$GITHUB_OUTPUT"
+          echo "core-version=$(jq -r '.core.version' compat/plan.json)" >> "$GITHUB_OUTPUT"
+      - name: Upload the plan
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.artifact-prefix }}-plan
+          path: compat
+          retention-days: 14
+
+  # theme-admission.yml, with the published version's own commit of the themes repository as the source. Its errors do not fail this
+  # call; `decide` reads the reports and decides what each tier does with them. One call per theme, so each has its own commit and artifacts
+  admission:
+    name: Admission (${{ matrix.id }})
+    needs: plan
+    if: needs.plan.outputs.matrix != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    uses: ./.github/workflows/theme-admission.yml
+    with:
+      theme-source-repository: ${{ inputs.source-repository }}
+      theme-source-ref: ${{ matrix.commit }}
+      theme-dirs: ${{ matrix.id }}
+      themes: ${{ format('["{0}"]', matrix.id) }}
+      core-repository: ${{ inputs.core-repository }}
+      core-ref: ${{ inputs.core-ref }}
+      fail-on-errors: false
+      artifact-prefix: ${{ inputs.artifact-prefix }}-${{ matrix.n }}
+    permissions:
+      contents: read
+
+  decide:
+    name: Decide
+    needs: [plan, admission]
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      decided: ${{ steps.decide.outputs.decided }}
+      blocked: ${{ steps.decide.outputs.blocked }}
+      incompatible: ${{ steps.decide.outputs.incompatible }}
+      results: ${{ inputs.artifact-prefix }}-results
+    steps:
+      - name: Checkout the core
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ inputs.core-repository }}
+          ref: ${{ inputs.core-ref }}
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+      - name: Download the plan
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ inputs.artifact-prefix }}-plan
+          path: compat
+      # No reports when admission was skipped (nothing to check) or never started: every planned theme then counts as failed
+      - name: Download the reports
+        if: needs.admission.result != 'skipped'
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: ${{ inputs.artifact-prefix }}-*-reports
+          path: reports
+          merge-multiple: true
+      - name: Decide
+        id: decide
+        env:
+          PROPOSE_MARKS: ${{ inputs.propose-marks }}
+        run: |
+          mkdir -p reports
+          marks=()
+          if [ "$PROPOSE_MARKS" = true ]; then marks+=(--marks); fi
+          npm run --silent theme:compat -- decide --plan compat/plan.json --reports reports --out compat/results.json --summary compat/results.md "${marks[@]}"
+          {
+            echo "decided=true"
+            echo "blocked=$(jq -r .blocked compat/results.json)"
+            echo "incompatible=$(jq -c .incompatible compat/results.json)"
+          } >> "$GITHUB_OUTPUT"
+          { cat compat/results.md; echo; } >> "$GITHUB_STEP_SUMMARY"
+          # What marks a failing community theme: the same signed path as a yank, started by the maintainer (a workflow of this repository holds no signing identity)
+          jq -r '.incompatible[] | "- Mark `\(.theme)@\(.version)` incompatible: run **Sign index** in bogd3v/micelio-themes with action `incompatible`, theme `\(.theme)`, version `\(.version)`, core `\(.core)`, reason `\(.reason)`"' compat/results.json >> compat/marks.md
+          if [ -s compat/marks.md ]; then { echo "#### To mark in the index"; cat compat/marks.md; echo; } >> "$GITHUB_STEP_SUMMARY"; fi
+      - name: Upload the results
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.artifact-prefix }}-results
+          path: compat
+          retention-days: 30
+      - name: Fail when an official theme does not work with the core
+        if: inputs.fail-on-blocked && steps.decide.outputs.blocked == 'true'
+        run: |
+          echo "::error::An official theme fails on this core or could not be checked: see the table in the summary"
+          exit 1

@@ -42,6 +42,7 @@ A theme of `theme-dirs` wins over a theme of the core with the same id: an older
 | `theme-dirs` | `.` | Theme folders, or folders of themes, one per line, relative to your repository (empty admits the core's own installed themes, which the core's `deploy.yml` did until #313) |
 | `themes` | every theme found | JSON array of ids, to admit only some |
 | `core-repository`, `core-ref` | `bogd3v/micelio`, its latest release | The core to admit against |
+| `theme-source-repository`, `theme-source-ref` | the caller's own repository and commit | Admit the theme folders of another repository, at a tag, branch or SHA. Only the core's compatibility check sets them (section 12); every other caller leaves them empty |
 | `modes` | every mode the core budgets in CI | JSON array of site modes (`["dynamic", "static", "landing"]`) |
 | `quality`, `visual` | `true`, `true` | Visual regression and axe; `visual: false` runs axe and the other specs without screenshots |
 | `snapshot-root` | `__screenshots__` | Where the baselines are: `<snapshot-root>/<id>/<mode>/<viewport>/` (the core passes `e2e/theme/__screenshots__`) |
@@ -177,7 +178,14 @@ Run `Sign index` (`sign-index.yml` of `micelio-themes`) with `action: yank`, the
 
 ## 10. What yank cannot do
 
-Yank is the only kill switch until a core release rotates the trust root. ADR 0008 has no status that removes an already-installed theme from a site: a yank stops new installs and new ranges, and a site that pinned the digest keeps it. `incompatible` (set by #314, not by these workflows) is refused by the same rule as `yanked`, on purpose: only a site's own pin installs it. Revoking the publish or index identity needs a core release with a new `DEFAULT_SIGNER`, so renaming `publish.yml` or `sign-index.yml`, or changing the branch they run from, is changing the trust root.
+Yank is the only kill switch until a core release rotates the trust root.
+ADR 0008 has no status that removes an already-installed theme from a site:
+a yank stops new installs and new ranges, and a site that pinned the digest keeps it.
+`incompatible` (section 12) is refused by the same rule as `yanked` on a core it fails on,
+on purpose: only a site's own pin installs it there.
+Revoking the publish or index identity needs a core release with a new `DEFAULT_SIGNER`,
+so renaming `publish.yml` or `sign-index.yml`, or changing the branch they run from,
+is changing the trust root.
 
 ## 11. Organisation setup (once, by an owner)
 
@@ -187,3 +195,64 @@ The workflows cannot do these; they are not in the repository's files:
 2. Give write access to the packages only to the repository that calls the workflows (`bogd3v/micelio-themes`, Actions access on each package), and to nobody else.
 3. In `micelio-themes`, add `.github/workflows/publish.yml` and `sign-index.yml` from `docs/themes/registry-workflows/` (section 8), and create the environment `theme-index` with the maintainers as required reviewers. Protect `main` and limit who can change `.github/workflows/`: the branch is part of both identities. Limit the deployment branches of the environment `theme-index` to `main`. The signing jobs and the write carry `if: github.repository == 'bogd3v/micelio-themes'`: in a called workflow `github.repository` and the environment are the caller's, so without the guard any other repository of the organisation could call `sign-index.yml` and get a signature under the pinned identity with no approval. Keep the guard when you edit the files.
 4. Pin the `uses:` lines and `core-ref` of both files to a core release that contains these workflows; update them together.
+
+## 12. Compatibility with a new core
+
+A core change can break a theme that was published: a renamed public hook,
+a layout variant whose markup changed, a slot prop (ADR 0005, standard section 6).
+Before every release,
+the latest non-yanked version of every theme in the index goes through admission again,
+on the commit about to be released (#314).
+
+| File | Does |
+| --- | --- |
+| `theme-compat.yml` | Reusable. Reads the signed index and, for each theme, the commit its verified provenance says it was built from (`npm run theme:compat -- plan`); calls `theme-admission.yml` once per theme with that commit of `bogd3v/micelio-themes` as the source (`theme-source-repository`, `theme-source-ref`) on the core ref; decides from the reports (`theme:compat -- decide`). No secret, a read-only token; writes nothing |
+| `release.yml` | Runs it before the release job, on `github.sha`, in a dry run too. The release job stops (a warning in a dry run) when an official theme fails, and the table is added to the release notes |
+| `theme-compat-runs.yml` | Runs it every week against `main`, and for a pull request of this repository labeled `contract` (roles, hooks, slots or layout variants) against its head |
+
+**The commit of a version.**
+A package is attested by `publish.yml` of `micelio-themes`,
+and the SLSA provenance names the commit it was built from.
+The check reads it from the bundle it has already verified,
+so the sources it admits are the ones that were published, not the head of the themes repository.
+A provenance that names another repository, or no full commit, makes the version **not checked**,
+which counts as a failure for an `official` theme.
+
+**What each tier does.**
+
+- An `official` version that fails admission,
+  has no valid report or is not checked **fails the run**, and blocks the release.
+- A version of another tier that fails never blocks anything.
+  In a release that publishes, and whose `package.json` already holds the version being released
+  (the `version` job of `Release` compares them before the check starts),
+  it is listed in `incompatible` with `core` set to that version and the first error as the reason,
+  and the summary prints the inputs of the next step.
+  The weekly and `contract` runs, a dry run of `Release` and a run that publishes before the
+  `chore(release)` pull request is merged propose no mark,
+  because the `package.json` they check still holds a released version:
+  they only report it in the table.
+  The admission job of a theme that cannot even install or build turns that leg of the call red;
+  the release reads the `decided` and `blocked` outputs, not the conclusion of the call,
+  so it is never blocked by it.
+- **Marking** is the signed path of a yank:
+  run `Sign index` (`sign-index.yml` of `micelio-themes`) with `action: incompatible`, the theme,
+  the version, `core` and the reason.
+  The core's workflows hold no signing identity and no token for another repository,
+  so the maintainer starts it, and it needs the approval of the environment `theme-index`.
+  The index entry becomes `status: incompatible` with `incompatible: { core, reason, at }`;
+  only a `published` version is marked, `successorProblems` accepts exactly that change,
+  and a mark does not change afterwards.
+
+**What a client does with it.**
+`theme:add` and `theme:outdated` skip a version marked `incompatible` on a core at or above `core`,
+say so (`skipped <id>@<version> is marked incompatible with micelio 0.6.0 and later: <reason>`) and
+install the highest version that remains; a core below it installs the version as before.
+A site that pinned the digest keeps it, as with a yank.
+An `incompatible` entry with no `incompatible` field, from an older index, is skipped on every core.
+
+**Before a release** there is nothing to run: `Release` does the check.
+If it reports an official theme, fix it in `micelio-themes`,
+publish the new version and run `Release` again.
+The table (theme, version, tier, result, link to the report) is in the run summary,
+in the artifact `compat-results` and in the release notes.
+The themes repository must be readable with the workflow's token (public today).

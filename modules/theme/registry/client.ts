@@ -1,15 +1,15 @@
 import { createHash } from 'node:crypto'
-import { CONTRACT_VERSION } from '../constants'
+import { CONTRACT_VERSION, THEME_VERSION } from '../constants'
 import { parseContractVersion } from '../version'
 import { signerOptions, verifyBundle } from './attestation'
 import { ATTESTATION_TAG_SUFFIX, BUNDLE_MEDIA_TYPE, DEFAULT_REGISTRY, INDEX_MEDIA_TYPE, INDEX_REPOSITORY, INDEX_TAG, MAX_BUNDLE_BYTES, MAX_COMPRESSED_BYTES, MAX_INDEX_BYTES, PACKAGE_MEDIA_TYPE } from './constants'
-import { RegistryError, withPin } from './error'
+import { RegistryError, safeText, withPin } from './error'
 import { parseIndex } from './registry-index'
 import { createOciClient } from './oci'
 import type { OciClientOptions, OciDescriptor } from './oci'
 import { assertPin } from './pin'
-import { compareVersions, highestSatisfying } from './semver'
-import type { BundleVerifier, RegistryIndex, SignerIdentity, ThemePin, ThemeRegistry } from './types'
+import { compareVersions, highestSatisfying, satisfies } from './semver'
+import type { BundleVerifier, IndexVersion, RegistryIndex, SignerIdentity, ThemePin, ThemeRegistry } from './types'
 
 /** Options of `createRegistry`. */
 export interface RegistryOptions extends Partial<Pick<OciClientOptions, 'fetch' | 'timeoutMs'>> {
@@ -22,6 +22,11 @@ export interface RegistryOptions extends Partial<Pick<OciClientOptions, 'fetch' 
   identity: SignerIdentity | null
   /** Verifies a bundle; `verifyBundle` (offline Sigstore verification) when not given. Tests pass a stand-in. */
   verifier?: BundleVerifier
+  /**
+   * The version of the core that runs this client, to tell which `incompatible` versions it can still install (#314). When not
+   * given, every version the index marks `incompatible` is skipped.
+   */
+  core?: string
 }
 
 /** The theme `id` of the index; an id such as `constructor` is not found unless the index itself lists it. */
@@ -38,6 +43,13 @@ function singleLayer(manifest: { layers: OciDescriptor[] }, mediaType: string, w
   const layer = manifest.layers[0]
   if (manifest.layers.length !== 1 || !layer || layer.mediaType !== mediaType) throw new RegistryError('registry', `${what} must hold one layer of ${mediaType}`, pin)
   return layer
+}
+
+/** Whether the index marks `entry` incompatible with `core`: from the version it names on, or always when it names none or `core` is unknown. */
+function incompatibleWith(entry: IndexVersion, core: string | undefined): boolean {
+  if (entry.status !== 'incompatible') return false
+  if (!entry.incompatible || core === undefined || !THEME_VERSION.test(core)) return true
+  return compareVersions(core, entry.incompatible.core) >= 0
 }
 
 /** Whether this core can run a package that declares `contract`: the same major and a minor it implements. */
@@ -59,6 +71,9 @@ function compatible(contract: string): boolean {
  */
 export function createRegistry(options: RegistryOptions): ThemeRegistry {
   const registry = options.registry ?? DEFAULT_REGISTRY
+  const core = options.core
+  /** Whether a version may be resolved for a new range: published, or marked incompatible only for cores newer than this one. */
+  const offered = (entry: IndexVersion): boolean => entry.status === 'published' || (entry.status === 'incompatible' && !incompatibleWith(entry, core))
   const verifier = options.verifier ?? verifyBundle
   const oci = createOciClient({ registry, ...(options.fetch ? { fetch: options.fetch } : {}), ...(options.timeoutMs ? { timeoutMs: options.timeoutMs } : {}) })
   let cached: Promise<RegistryIndex> | undefined
@@ -100,6 +115,14 @@ export function createRegistry(options: RegistryOptions): ThemeRegistry {
     }
   }
 
+  /** Why the versions of `range` that the index marks incompatible with this core are not offered, newer than `chosen` when there is one. */
+  function skippedNotes(versions: Record<string, IndexVersion>, range: string, chosen: string | null | undefined): string[] {
+    return Object.entries(versions)
+      .filter(([version, entry]) => incompatibleWith(entry, core) && satisfies(version, range) && (chosen === undefined || chosen === null || compareVersions(version, chosen) > 0))
+      .sort(([a], [b]) => compareVersions(b, a))
+      .map(([version, entry]) => `${version} is marked incompatible with ${entry.incompatible ? `micelio ${safeText(entry.incompatible.core)} and later: ${safeText(entry.incompatible.reason)}` : 'this core'}`)
+  }
+
   function assertName(id: string): void {
     assertPin({ id, version: '0.0.0', digest: `sha256:${'0'.repeat(64)}` })
     if (id === INDEX_REPOSITORY) throw new RegistryError('pin', `"${INDEX_REPOSITORY}" is the registry's index, not a theme id`)
@@ -110,22 +133,23 @@ export function createRegistry(options: RegistryOptions): ThemeRegistry {
       assertName(id)
       const theme = themeOf(await index(), id)
       if (!theme) throw new RegistryError('not-found', `the registry ${registry} has no theme "${id}"`, { id })
-      const candidates = Object.entries(theme.versions).filter(([, entry]) => entry.status === 'published' && compatible(entry.contract))
+      const candidates = Object.entries(theme.versions).filter(([, entry]) => offered(entry) && compatible(entry.contract))
       const version = highestSatisfying(candidates.map(([name]) => name), range)
       const entry = version === null ? undefined : theme.versions[version]
       if (version === null || !entry) {
-        throw new RegistryError('not-found', `no published version of "${id}" satisfies ${range.slice(0, 40)} and contract ${CONTRACT_VERSION.major}.${CONTRACT_VERSION.minor}`, { id })
+        const left = skippedNotes(theme.versions, range, undefined)
+        throw new RegistryError('not-found', `no published version of "${id}" satisfies ${range.slice(0, 40)} and contract ${CONTRACT_VERSION.major}.${CONTRACT_VERSION.minor}${left.length > 0 ? `; ${left.join('; ')}` : ''}`, { id })
       }
       const pin = { id, version, digest: entry.digest }
       if (entry.distribution === 'licensed') throw new RegistryError('unsupported', 'is a licensed theme; licensed distribution is not supported yet', pin)
-      return { ...pin, contract: entry.contract, tier: entry.tier, distribution: entry.distribution, code: entry.code, registry }
+      return { ...pin, contract: entry.contract, tier: entry.tier, distribution: entry.distribution, code: entry.code, registry, skipped: skippedNotes(theme.versions, range, version) }
     },
     async newer(id, current) {
       assertName(id)
       const theme = themeOf(await index(), id)
       if (!theme) throw new RegistryError('not-found', `the registry ${registry} has no theme "${id}"`, { id })
       return Object.entries(theme.versions)
-        .filter(([version, entry]) => entry.status === 'published' && entry.distribution === 'public' && compatible(entry.contract) && compareVersions(version, current) > 0)
+        .filter(([version, entry]) => offered(entry) && entry.distribution === 'public' && compatible(entry.contract) && compareVersions(version, current) > 0)
         .map(([version]) => version)
         .sort((a, b) => compareVersions(b, a))
     },
@@ -147,7 +171,7 @@ export function createRegistry(options: RegistryOptions): ThemeRegistry {
         const identity = signer()
         const listed = versionOf(await index(), pin)
         if (listed?.digest !== pin.digest) throw new RegistryError('listing', `the index does not list ${pin.id}@${pin.version} with this digest`)
-        const allowed = listed.status === 'published' || (fetchOptions.locked === true && (listed.status === 'yanked' || listed.status === 'incompatible'))
+        const allowed = offered(listed) || (fetchOptions.locked === true && (listed.status === 'yanked' || listed.status === 'incompatible'))
         if (!allowed) throw new RegistryError('listing', `the index marks this version ${listed.status}`)
         const layer = singleLayer(await oci.manifest(pin.id, pin.version), PACKAGE_MEDIA_TYPE, 'the package', pin)
         if (layer.digest !== pin.digest) throw new RegistryError('digest', `the registry's ${pin.version} is ${layer.digest}`)

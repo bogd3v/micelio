@@ -28,7 +28,7 @@ Micelio is pre-1.0 and not stable. The registry (`ghcr.io/bogd3v/micelio-themes`
 
 | Command | What it does |
 | --- | --- |
-| `npm run theme:add -- <id>[@range]` | Resolves the highest published version that satisfies the range (`1.2.3`, `^1.2.3`, `~1.2.3`, `1.2`, `1` or `*`; no range means the latest stable) and works with this core's contract, downloads it, checks it and writes the lock entry. Yanked versions and those marked incompatible are skipped. |
+| `npm run theme:add -- <id>[@range]` | Resolves the highest published version that satisfies the range (`1.2.3`, `^1.2.3`, `~1.2.3`, `1.2`, `1` or `*`; no range means the latest stable) and works with this core's contract, downloads it, checks it and writes the lock entry. Yanked versions and those the index marks incompatible with this core (from the core version it names on) are skipped, and the command says which and why. |
 | `npm run theme:add -- ./<id>-<version>.tgz` | The same for a package you made with `npm run theme:pack`: the entry is `tier: local`, `distribution: file`. |
 | `npm run theme:pull` | Installs every locked theme into `.micelio/themes/<id>/` (gitignored). |
 | `npm run theme:pull -- --frozen` | Fails if the lock is missing, is not in the form `theme:add` writes, names a package that cannot be pulled, or disagrees with a package. CI and the Dockerfile use it. |

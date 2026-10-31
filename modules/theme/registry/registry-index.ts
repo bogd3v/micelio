@@ -22,6 +22,11 @@ const Version = z.object({
   code: z.boolean().describe('Whether the package ships `slots/` or `templates/`, which only an image built with it can run (ADR 0009, section 4).'),
   report: z.string().max(512).optional().describe('The `sha256:` digest of the admission report attached to the package artifact as a referrer.'),
   yank: z.object({ reason: z.string().min(1).max(500), at: z.iso.datetime() }).optional().describe('Why and when the version was yanked; present only with status `yanked`.'),
+  incompatible: z.object({
+    core: z.string().max(VERSION_MAX_LENGTH).regex(THEME_VERSION).describe('The first core version the version fails on, as `X.Y.Z`; a core below it still installs the version.'),
+    reason: z.string().min(1).max(500),
+    at: z.iso.datetime(),
+  }).optional().describe('From which core, why and when the version was marked incompatible; present only with status `incompatible` (#314). An `incompatible` entry without it is incompatible with every core.'),
 })
 
 /** The schema of the index document. */

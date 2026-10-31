@@ -25,6 +25,14 @@ on:
         description: Tag, branch or SHA of the core; empty uses its latest release. Pin the same ref as the `uses:` line
         type: string
         default: ''
+      theme-source-repository:
+        description: The repository whose theme folders are admitted (owner/name); empty is the caller's own, which is every caller but the core's compatibility check (#314)
+        type: string
+        default: ''
+      theme-source-ref:
+        description: Tag, branch or SHA of theme-source-repository to check out; empty is the default of the checkout (the caller's own commit when the repository is empty)
+        type: string
+        default: ''
       modes:
         description: JSON array of site modes to measure; empty measures every mode the core budgets in CI
         type: string
@@ -101,11 +109,13 @@ jobs:
           CORE_REPOSITORY: ${{ inputs.core-repository }}
           CORE_REF: ${{ inputs.core-ref }}
           CALLER: ${{ github.repository }}
+          SOURCE_REPOSITORY: ${{ inputs.theme-source-repository }}
         run: |
           ref="${CORE_REF}"
           if [ -z "${ref}" ]; then ref="$(gh release view --repo "${CORE_REPOSITORY}" --json tagName --jq .tagName)"; fi
           echo "ref=${ref}" >> "$GITHUB_OUTPUT"
-          echo "external=$([ "${CALLER}" = "${CORE_REPOSITORY}" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+          # The themes are in another repository than the core's when the caller is not the core, or when a source repository is named
+          echo "external=$([ "${CALLER}" = "${CORE_REPOSITORY}" ] && [ -z "${SOURCE_REPOSITORY}" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
       - name: Checkout the core
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -116,6 +126,8 @@ jobs:
         if: steps.ref.outputs.external == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          repository: ${{ inputs.theme-source-repository || github.repository }}
+          ref: ${{ inputs.theme-source-ref }}
           path: theme-source
           persist-credentials: false
       # The browser jobs run in the Playwright image of the core ref, pinned by digest, like the core's own CI (#698)
@@ -278,6 +290,8 @@ jobs:
         if: needs.plan.outputs.external == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          repository: ${{ inputs.theme-source-repository || github.repository }}
+          ref: ${{ inputs.theme-source-ref }}
           path: theme-source
           persist-credentials: false
       - name: Setup Node.js
@@ -361,6 +375,8 @@ jobs:
         if: needs.plan.outputs.external == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          repository: ${{ inputs.theme-source-repository || github.repository }}
+          ref: ${{ inputs.theme-source-ref }}
           path: theme-source
           persist-credentials: false
       - name: Setup Node.js

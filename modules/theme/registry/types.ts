@@ -113,6 +113,8 @@ export interface IndexVersion {
   report?: string | undefined
   /** Why and when the version was yanked; present only with status `yanked`. */
   yank?: { reason: string, at: string } | undefined
+  /** From which core, why and when the version was marked incompatible; present only with status `incompatible` (#314). Without it the version is incompatible with every core. */
+  incompatible?: { core: string, reason: string, at: string } | undefined
 }
 
 /** The index: `themes[id].versions[version]`. */
@@ -146,6 +148,8 @@ export type BundleVerifier = (bundle: Uint8Array, options: VerifyBundleOptions) 
 export interface ResolvedTheme extends ThemePin, Pick<LockEntry, 'contract' | 'tier' | 'distribution' | 'code'> {
   /** The registry the entry was resolved against, as set. */
   registry: string
+  /** Newer versions in the range that were left out because the index marks them incompatible with this core, one sentence each (#314). */
+  skipped: string[]
 }
 
 /** A package the registry served and whose attestation verified. */

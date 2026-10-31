@@ -1,7 +1,7 @@
 name: Theme Index Prepare
 
 # Makes the registry's next index (ADR 0008, decision 4; ADR 0009, section 3 and the amendment of 2026-10-28; #312), writes nothing to the registry and signs nothing.
-# `add` reads the package, verifies its attestation against the publish signer and derives the entry from the package; `yank` marks a published version. Either way
+# `add` reads the package, verifies its attestation against the publish signer and derives the entry from the package; `yank` marks a published version; `incompatible` marks a published version that fails from a core version on (#314). Either way
 # the new index is checked against the one the registry holds, whose signature must verify (npm run theme:publish -- index). The job of bogd3v/micelio-themes'
 # sign-index.yml signs the result, so the certificate names that file, and theme-push-bundle.yml writes it. Called from a bogd3v repository.
 # The caller to copy: docs/themes/registry-workflows/sign-index.yml; how it fits: docs/themes/publishing-a-theme.md.
@@ -9,7 +9,7 @@ on:
   workflow_call:
     inputs:
       action:
-        description: '`add` lists a version theme-publish.yml pushed; `yank` marks a published version yanked'
+        description: '`add` lists a version theme-publish.yml pushed; `yank` marks a published version yanked; `incompatible` marks it incompatible with a core version and later'
         type: string
         required: true
       theme:
@@ -29,7 +29,11 @@ on:
         type: string
         default: ''
       reason:
-        description: For `yank`, why, in one line of at most 500 characters; it is written in the index
+        description: For `yank` and `incompatible`, why, in one line of at most 500 characters; it is written in the index
+        type: string
+        default: ''
+      core:
+        description: For `incompatible`, the first core version (X.Y.Z, or X.Y.Z-rc.N) the version fails on
         type: string
         default: ''
       core-ref:
@@ -68,6 +72,7 @@ jobs:
       ACTION: ${{ inputs.action }}
       THEME: ${{ inputs.theme }}
       VERSION: ${{ inputs.version }}
+      INDEX_CORE: ${{ inputs.core }}
     steps:
       - name: Check the inputs
         env:
@@ -77,9 +82,12 @@ jobs:
         run: |
           fail() { echo "::error::$1"; exit 1; }
           [[ "${CORE_REF}" =~ ^(v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?|[0-9a-f]{40})$ ]] || fail "core-ref must be a release tag (vX.Y.Z) or a full commit SHA"
-          [[ "${ACTION}" == add || "${ACTION}" == yank ]] || fail "action is add or yank"
+          [[ "${ACTION}" == add || "${ACTION}" == yank || "${ACTION}" == incompatible ]] || fail "action is add, yank or incompatible"
           [[ "${THEME}" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ && ${#THEME} -le 64 ]] || fail "theme is not a theme id"
           [[ "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.0-9A-Za-z]*)$ && ${#VERSION} -le 128 ]] || fail "version is not a semver version"
+          if [ "${ACTION}" = incompatible ]; then
+            [[ "${INDEX_CORE}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]] || fail "incompatible needs core, a core version (X.Y.Z or X.Y.Z-rc.N)"
+          fi
           if [ "${ACTION}" = add ]; then
             [[ "${DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]] || fail "add needs the sha256 digest of the package"
             [[ -z "${REPORT_DIGEST}" || "${REPORT_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]] || fail "report-digest is not a sha256 digest"
@@ -112,6 +120,7 @@ jobs:
             args+=(--digest "${DIGEST}")
             if [ -n "${REPORT_DIGEST}" ]; then args+=(--report-digest "${REPORT_DIGEST}"); fi
           fi
+          if [ "${ACTION}" = incompatible ]; then args+=(--core "${INDEX_CORE}"); fi
           npm run --silent theme:publish -- index "${args[@]}"
           {
             echo "digest=$(jq -r .digest index/index.json.info)"
@@ -128,6 +137,8 @@ jobs:
             if [ "${ACTION}" = add ]; then
               echo "- Package: \`${DIGEST}\`"
               jq -r --arg id "${THEME}" --arg v "${VERSION}" '.themes[$id].versions[$v] | "- Contract \(.contract), license \(.license), code: \(.code), tier \(.tier)"' index/index.json
+            elif [ "${ACTION}" = incompatible ]; then
+              jq -r --arg id "${THEME}" --arg v "${VERSION}" '.themes[$id].versions[$v].incompatible | "- Incompatible from core \(.core): \(.reason)"' index/index.json
             else
               jq -r --arg id "${THEME}" --arg v "${VERSION}" '.themes[$id].versions[$v].yank | "- Reason: \(.reason)"' index/index.json
             fi
