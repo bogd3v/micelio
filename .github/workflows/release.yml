@@ -36,9 +36,61 @@ env:
   BUILDER_IMAGE: ghcr.io/${{ github.repository }}-builder
 
 jobs:
+  # Whether package.json holds the version this run would release. Only then does a mark name the right core: the `Release` job fails (warns, in a dry run)
+  # when it does not, but only after the compatibility check, which must not have proposed anything by then
+  version:
+    name: Version
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      matches: ${{ steps.matches.outputs.matches }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Compare package.json with the version to release
+        id: matches
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RC: ${{ inputs.release_candidate }}
+        run: |
+          if [ "$RC" = true ]; then
+            node scripts/release/version.mjs --rc > plan.json
+          else
+            node scripts/release/version.mjs > plan.json
+          fi
+          expected=$(node -p "require('./plan.json').version.replace(/-rc\..*/, '')")
+          actual=$(node -p "require('./package.json').version")
+          if [ "$actual" = "$expected" ]; then echo "matches=true" >> "$GITHUB_OUTPUT"; else echo "matches=false" >> "$GITHUB_OUTPUT"; fi
+
+  # Every published theme must still pass admission on the commit about to be released (#314). An official theme that fails blocks the release below;
+  # a failing community theme is listed in the notes and marked incompatible in the index by the maintainer. Runs in a dry run too, to warn
+  compat:
+    name: Theme compatibility
+    needs: version
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/theme-compat.yml
+    with:
+      core-ref: ${{ github.sha }}
+      fail-on-blocked: false
+      # Marks name the core from package.json, which is the release only when this run publishes and the version job found them equal (the version check of the release job comes after this call)
+      propose-marks: ${{ !inputs.dry_run && needs.version.outputs.matches == 'true' }}
+    permissions:
+      contents: read
+
   release:
     name: Release
-    if: github.ref == 'refs/heads/main'
+    needs: compat
+    if: github.ref == 'refs/heads/main' && !cancelled() && needs.compat.result != 'skipped'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -133,6 +185,8 @@ jobs:
           CMS_LINE: ${{ inputs.cms_line }}
           UPGRADE_NOTES: ${{ inputs.upgrade_notes }}
           DRY_RUN: ${{ inputs.dry_run }}
+          COMPAT_DECIDED: ${{ needs.compat.outputs.decided }}
+          COMPAT_BLOCKED: ${{ needs.compat.outputs.blocked }}
         run: |
           failed=0
           fail() {
@@ -153,6 +207,13 @@ jobs:
           if gh api "repos/$REPO/git/ref/tags/$TAG" >/dev/null 2>&1; then fail "The tag $TAG already exists. A published version never changes."; fi
           passed=$(gh run list --repo "$REPO" --workflow deploy.yml --branch main --event push --commit "$GITHUB_SHA" --status success --json conclusion -q 'length')
           [ "$passed" -ge 1 ] || fail "CI/CD Pipeline has not passed on $GITHUB_SHA."
+          # A published official theme that fails admission on this commit (or could not be checked) blocks the release; the table is in the notes
+          # The conclusion of the call is not read: the admission of a community theme may fail its job, and that never blocks a release
+          if [ "$COMPAT_DECIDED" != true ]; then
+            fail "The theme compatibility check did not reach a decision: it proves nothing about the published themes."
+          elif [ "$COMPAT_BLOCKED" != false ]; then
+            fail "An official theme fails admission on $GITHUB_SHA or could not be checked: see the table under Theme compatibility."
+          fi
           short="${GITHUB_SHA::7}"
           for image in "$IMAGE" "$BUILDER_IMAGE"; do
             if ! docker buildx imagetools inspect "$image:$short" >/dev/null 2>&1; then
@@ -164,6 +225,24 @@ jobs:
             fi
           done
           if [ "$failed" = 1 ] && [ "$DRY_RUN" != true ]; then exit 1; fi
+
+      # The table of the release notes: theme, version, tier, result and the link to the report
+      - name: Download the theme compatibility results
+        if: ${{ !cancelled() && needs.compat.outputs.decided == 'true' }}
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.compat.outputs.results }}
+          path: compat-results
+
+      - name: Add the theme compatibility results to the release notes
+        run: |
+          {
+            echo
+            echo "## Theme compatibility"
+            echo
+            if [ -f compat-results/results.md ]; then cat compat-results/results.md; else echo "_The table was not available when the notes were written._"; fi
+          } >> release-notes.md
+          tail -n +"$(grep -n '^## Theme compatibility' release-notes.md | cut -d: -f1)" release-notes.md >> "$GITHUB_STEP_SUMMARY"
 
       # A manifest copy of the image already built and tested for this commit: nothing is rebuilt
       - name: Tag the images

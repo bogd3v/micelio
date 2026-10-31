@@ -44,6 +44,7 @@ npm run theme:reference # Regenerate docs/themes/reference/ after changing roles
 npm run theme:pack -- <id> # Pack a theme into .micelio/packages/ (needs `version` and `license`)
 npm run theme:admit -- <step> # The theme admission steps that .github/workflows/theme-admission.yml runs (docs/themes/publishing-a-theme.md)
 npm run theme:publish -- <step> # The publish steps that .github/workflows/theme-publish.yml, theme-index-prepare.yml, theme-push-bundle.yml and theme-index-listed.yml run (gate, index, check-base, verify, listed; docs/themes/publishing-a-theme.md)
+npm run theme:compat -- plan|decide # Compatibility of published themes with a core (docs/themes/publishing-a-theme.md, section 12)
 npm run theme:add -- <id>[@range]|./x.tgz # Pin a theme in themes.lock.json; `theme:pull [-- --frozen]` installs the locked ones, `theme:outdated` lists newer ones (docs/operate/themes.md)
 npm run theme:new -- <id> # New theme: copies themes/starter/ to themes/<id>/ and renames it ([--name "Name"])
 npm run theme:check  # Contract, hooks, contrast matrix and static budgets of the installed themes ([id] and --json)

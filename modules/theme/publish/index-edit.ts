@@ -49,11 +49,40 @@ export function yankVersion(index: RegistryIndex, id: string, version: string, r
 }
 
 /**
+ * The index with a published version marked `incompatible` from a core version on, with the reason and the time (#314).
+ *
+ * @throws `PublishError` when the version is not listed or is not `published`, `core` is not a version, or the reason is empty, longer than 500 characters or has a control character.
+ */
+export function markIncompatible(index: RegistryIndex, id: string, version: string, core: string, reason: string, at: Date): RegistryIndex {
+  assertName(id, version)
+  if (core.length > VERSION_MAX_LENGTH || !THEME_VERSION.test(core)) throw new PublishError(`"${core.slice(0, 64)}" is not a core version`)
+  const text = reason.trim()
+  if (text === '' || text.length > MAX_REASON_LENGTH || [...text].some(char => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127)) {
+    throw new PublishError(`an incompatible mark needs a reason of one line, at most ${MAX_REASON_LENGTH} characters`)
+  }
+  const theme = Object.hasOwn(index.themes, id) ? index.themes[id] : undefined
+  const current = theme && Object.hasOwn(theme.versions, version) ? theme.versions[version] : undefined
+  if (!theme || !current) throw new PublishError(`${id}@${version} is not in the index`)
+  if (current.status !== 'published') throw new PublishError(`${id}@${version} is ${current.status}, not published: only a published version is marked incompatible`)
+  const marked: IndexVersion = { ...current, status: 'incompatible', incompatible: { core, reason: text, at: at.toISOString() } }
+  return { ...index, themes: { ...index.themes, [id]: { versions: { ...theme.versions, [version]: marked } } } }
+}
+
+/** Whether `after` is `before` with only the mark of a yank or of an incompatibility added to a published version. */
+function isAllowedMark(before: IndexVersion, after: IndexVersion): boolean {
+  if (before.status !== 'published') return false
+  const unmarked = { ...before, yank: undefined, incompatible: undefined }
+  if (after.status === 'yanked') return after.yank !== undefined && after.incompatible === undefined && isDeepStrictEqual({ ...after, status: 'published', yank: undefined, incompatible: undefined }, unmarked)
+  if (after.status === 'incompatible') return after.incompatible !== undefined && after.yank === undefined && isDeepStrictEqual({ ...after, status: 'published', yank: undefined, incompatible: undefined }, unmarked)
+  return false
+}
+
+/**
  * What differs between two indexes beyond what the publish workflows may do, one line each; empty when `next` is a valid successor of `previous`.
  *
  * @remarks
  * The signing workflow runs this on its own: it vouches for `next` only if every listed version is unchanged except that a
- * `published` one became `yanked` with a reason, and every new version is an `official`, `public`, `published` one.
+ * `published` one became `yanked` with a reason or `incompatible` from a core version, and every new version is an `official`, `public`, `published` one.
  */
 export function successorProblems(previous: RegistryIndex, next: RegistryIndex): string[] {
   const problems: string[] = []
@@ -62,15 +91,13 @@ export function successorProblems(previous: RegistryIndex, next: RegistryIndex):
       const after = Object.hasOwn(next.themes, id) && Object.hasOwn(next.themes[id]!.versions, version) ? next.themes[id]!.versions[version] : undefined
       if (!after) problems.push(`${id}@${version} was removed`)
       else if (isDeepStrictEqual(before, after)) continue
-      else if (!(before.status === 'published' && after.status === 'yanked' && after.yank && isDeepStrictEqual({ ...after, status: 'published', yank: undefined }, { ...before, yank: undefined }))) {
-        problems.push(`${id}@${version} was changed`)
-      }
+      else if (!isAllowedMark(before, after)) problems.push(`${id}@${version} was changed`)
     }
   }
   for (const [id, theme] of Object.entries(next.themes)) {
     for (const [version, entry] of Object.entries(theme.versions)) {
       if (Object.hasOwn(previous.themes, id) && Object.hasOwn(previous.themes[id]!.versions, version)) continue
-      if (entry.status !== 'published' || entry.tier !== PUBLISH_TIER || entry.distribution !== 'public' || entry.yank) problems.push(`${id}@${version} is new and not an official, public, published version`)
+      if (entry.status !== 'published' || entry.tier !== PUBLISH_TIER || entry.distribution !== 'public' || entry.yank || entry.incompatible) problems.push(`${id}@${version} is new and not an official, public, published version`)
     }
   }
   return problems

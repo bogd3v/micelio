@@ -8,7 +8,7 @@ import { parseIndex } from '../registry/registry-index'
 import type { BundleVerifier, RegistryIndex, SignerIdentity } from '../registry/types'
 import { entryFromPackage } from './entry'
 import { PublishError } from './error'
-import { addVersion, EMPTY_INDEX, serializeIndex, successorProblems, yankVersion } from './index-edit'
+import { addVersion, EMPTY_INDEX, markIncompatible, serializeIndex, successorProblems, yankVersion } from './index-edit'
 
 // The signing workflow's side of an index change (ADR 0009, section 3): it reads the index it signed last, applies one change, checks
 // the result with its own rules and returns the text to sign. It trusts nothing the publish workflow says about a package: the entry
@@ -18,6 +18,7 @@ import { addVersion, EMPTY_INDEX, serializeIndex, successorProblems, yankVersion
 export type IndexChange
   = | { action: 'add', id: string, version: string, digest: string, reportDigest?: string }
     | { action: 'yank', id: string, version: string, reason: string, at: Date }
+    | { action: 'incompatible', id: string, version: string, core: string, reason: string, at: Date }
 
 /** Options of `nextIndex`. */
 export interface NextIndexOptions {
@@ -63,6 +64,18 @@ async function currentIndex(oci: OciClient, identity: SignerIdentity, verifier: 
   const body = await oci.blob(INDEX_REPOSITORY, layer.digest, MAX_INDEX_BYTES)
   verifier(await bundleOf(oci, INDEX_REPOSITORY, INDEX_TAG), { subject: { algorithm: 'sha256', hex: layer.digest.slice('sha256:'.length) }, ...signerOptions(identity, 'index') })
   return { index: parseIndex(body.toString('utf8')), base: layer.digest }
+}
+
+/**
+ * The index the registry holds, after its signature verifies against the index signer.
+ *
+ * @throws `PublishError` when the registry has no index; `RegistryError` when it cannot be read or does not verify.
+ */
+export async function readSignedIndex(options: { registry: string, identity: SignerIdentity, fetch?: typeof fetch, verifier?: BundleVerifier }): Promise<RegistryIndex> {
+  const oci = createOciClient({ registry: options.registry, ...(options.fetch ? { fetch: options.fetch } : {}) })
+  const current = await currentIndex(oci, options.identity, options.verifier ?? verifyBundle)
+  if (!current) throw new PublishError('the registry has no index yet: there is nothing to check')
+  return current.index
 }
 
 /** The package the registry holds for `id:version`, after its attestation verifies against the package signer. */
@@ -160,7 +173,7 @@ export async function assertListed(options: AssertListedOptions): Promise<void> 
  *
  * @remarks
  * `add` reads the package from the registry, verifies its attestation against the publish signer and lists what the package says it
- * is (never what the caller says), then lists it. `yank` marks a published version. Both refuse a change the index rules forbid and
+ * is (never what the caller says), then lists it. `yank` and `incompatible` mark a published version. Each refuses a change the index rules forbid and
  * check the result against the previous index with `successorProblems`.
  *
  * @throws `PublishError` when the change is refused, `RegistryError` when the registry or a signature is not what is expected.
@@ -178,8 +191,10 @@ export async function nextIndex(options: NextIndexOptions): Promise<NextIndex> {
     const listed = entryFromPackage(data, change.digest, change.reportDigest)
     if (listed.id !== change.id || listed.version !== change.version) throw new PublishError(`the package is ${listed.id}@${listed.version}, not ${change.id}@${change.version}`)
     next = addVersion(previous, change.id, change.version, listed.entry)
-  } else {
+  } else if (change.action === 'yank') {
     next = yankVersion(previous, change.id, change.version, change.reason, change.at)
+  } else {
+    next = markIncompatible(previous, change.id, change.version, change.core, change.reason, change.at)
   }
   const problems = successorProblems(previous, next)
   if (problems.length > 0) throw new PublishError(`the new index is not a valid successor: ${problems.join('; ')}`)

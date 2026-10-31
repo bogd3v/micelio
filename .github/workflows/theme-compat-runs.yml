@@ -1,0 +1,31 @@
+name: Theme Compatibility (runs)
+
+# The same compatibility check as the release's (theme-compat.yml, #314), run every week against `main` so breakage shows before a release, and for a pull request
+# labeled `contract` (it touches roles, hooks, slots or layout variants) against the pull request's head. A failing official theme fails the run. The admission of a community
+# theme that fails its job turns that leg of the run red without blocking anything: the table in the summary says which themes block. These runs propose no mark: the core
+# in `package.json` is already released. Read-only token, no secret.
+# Only for pull requests of this repository: a fork's code must not run next to a registry read.
+on:
+  schedule:
+    - cron: '17 5 * * 1'
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compat:
+    name: Published themes
+    if: github.event_name != 'pull_request' || (contains(github.event.pull_request.labels.*.name, 'contract') && github.event.pull_request.head.repo.full_name == github.repository && (github.event.action != 'labeled' || github.event.label.name == 'contract'))
+    uses: ./.github/workflows/theme-compat.yml
+    with:
+      core-ref: ${{ github.event.pull_request.head.sha || github.sha }}
+    permissions:
+      contents: read

@@ -37,12 +37,23 @@ export interface PulledTheme extends ThemePin {
   cached: boolean
 }
 
+/** The version of the core at `root`, from its `package.json`; `undefined` when it cannot be read, which makes every `incompatible` version skipped. */
+function coreVersion(root: string): string | undefined {
+  try {
+    const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { version?: unknown }
+    return typeof version === 'string' ? version : undefined
+  } catch {
+    return undefined // not a core checkout: the client then skips every version marked incompatible
+  }
+}
+
 /** Builds the context from the environment: `MICELIO_THEME_REGISTRY` and the cache directory. */
 export function createContext(root: string, env: NodeJS.ProcessEnv = process.env, log: (line: string) => void = line => process.stdout.write(`${line}\n`)): RegistryContext {
   const clients = new Map<string, ThemeRegistry>()
+  const core = coreVersion(root)
   // one client per registry, so the index is read once for the whole lock
   const registryFor = (registry: string): ThemeRegistry => {
-    const known = clients.get(registry) ?? createRegistry({ registry, identity: identityFor(registry, env) })
+    const known = clients.get(registry) ?? createRegistry({ registry, identity: identityFor(registry, env), ...(core ? { core } : {}) })
     clients.set(registry, known)
     return known
   }
@@ -128,6 +139,7 @@ export async function addTheme(context: RegistryContext, spec: string): Promise<
     if (extra !== undefined) throw new RegistryError('pin', 'a theme is <id> or <id>@<range>, with one @')
     const registry = context.registryFor(context.registry)
     const resolved = await registry.resolve(name, range)
+    for (const note of resolved.skipped) context.log(`skipped ${name}@${note}`)
     const { data } = await obtain(context, registry, resolved, false)
     const { unpacked, contract } = inspect(resolved, data)
     if (unpacked.code !== resolved.code) throw new RegistryError('lock', `the index says code is ${resolved.code} but the package makes it ${unpacked.code}`, resolved)

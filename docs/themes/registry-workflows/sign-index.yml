@@ -4,7 +4,7 @@
 # which is DEFAULT_SIGNER.index in modules/theme/registry/constants.ts, apart from publish.yml, so a compromised publish workflow cannot
 # also vouch for the index. publish.yml calls it with `uses: ./.github/workflows/sign-index.yml` (action add); a maintainer starts it
 # directly to yank, or to list a version a failed run left pushed and attested. Create the environment `theme-index` in this repository with the maintainers as required reviewers: its approval stands
-# between a request and a signature. The signing job and the write run only in bogd3v/micelio-themes (`github.repository`), not in a repository that calls this file. Replace v0.5.5 and core-ref together.
+# between a request and a signature. The signing job and the write run only in bogd3v/micelio-themes (`github.repository`), not in a repository that calls this file. Replace v0.5.5 and core-ref together. `action: incompatible` and the `core` input need the first release of the core that carries #314 (theme-index-prepare.yml of v0.5.5 has neither): move both pins to it before copying this file.
 name: Sign index
 
 on:
@@ -16,12 +16,13 @@ on:
       digest: { type: string, default: '' }
       report-digest: { type: string, default: '' }
       reason: { type: string, default: '' }
+      core: { type: string, default: '' }
   workflow_dispatch:
     inputs:
       action:
-        description: '`yank` a listed version, or `add` a version publish.yml pushed and attested but a failed run did not list'
+        description: '`yank` a listed version, `incompatible` marks it incompatible with a core version and later (the maintainer runs it with the inputs that theme-compat.yml of the core prints), or `add` a version publish.yml pushed and attested but a failed run did not list'
         type: choice
-        options: [yank, add]
+        options: [yank, incompatible, add]
         required: true
       theme:
         description: Id of the theme
@@ -40,7 +41,11 @@ on:
         type: string
         default: ''
       reason:
-        description: For `yank`, why, in one line (at most 500 characters); it is written in the index
+        description: For `yank` and `incompatible`, why, in one line (at most 500 characters); it is written in the index
+        type: string
+        default: ''
+      core:
+        description: For `incompatible`, the first core version (X.Y.Z or X.Y.Z-rc.N) the version fails on
         type: string
         default: ''
 
@@ -62,6 +67,7 @@ jobs:
       digest: ${{ inputs.digest }}
       report-digest: ${{ inputs.report-digest }}
       reason: ${{ inputs.reason }}
+      core: ${{ inputs.core }}
       core-ref: v0.5.5
     permissions:
       contents: read
