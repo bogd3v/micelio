@@ -1,7 +1,7 @@
 import { pinProblem } from '../registry/pin'
 import type { ThemePin } from '../registry/types'
 import { InstallError } from './error'
-import { installedEntry } from './install'
+import { installedEntry } from './installed'
 import { installIsolated } from './isolated'
 import type { IsolationLimits } from './isolated'
 import { readKeptPackage } from './store'

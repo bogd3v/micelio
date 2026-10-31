@@ -4,6 +4,7 @@ import { fediverseStatsByIdSchema, fediverseStatsSchema } from '~/schemas/fedive
 import { aboutSchema } from '~/schemas/blocks'
 import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/schemas/comments'
 import { siteSchema } from '~/schemas/site'
+import { themeStatusSchema } from '~/schemas/theme'
 import { pageSchema } from '~/schemas/pages'
 import { articlePageSchema, articleSchema, categoryCountSchema, readingPathSchema, searchResultSchema, tagCountSchema } from '~/schemas/posts'
 import { guestCommentSchema } from '../../schemas/comments'
@@ -153,6 +154,16 @@ export const CONTENT_ROUTES: RouteEntry[] = [
     parameters: [{ ...LOCALE_PARAMETER, description: 'The language: `en` (default) or `es`.' }],
     response: { status: 200, schema: siteSchema, description: 'The site identity, its modules and, when overrides apply, its theme.', cache: READ_CACHE_5_MIN },
     errors: ['invalidRequest'],
+  },
+  {
+    file: 'server/api/theme/status.get.ts',
+    method: 'get',
+    path: '/api/theme/status',
+    summary: 'Get the active theme and the one the site settings ask for',
+    description: 'The state of the theme switch (ADR 0009), read from memory: it calls neither the CMS nor the registry. `error` says why the theme the site settings name was not activated; the active theme stays. Public: the ids and digests are in every page, and the message carries no URL or path.',
+    tag: 'Content',
+    response: { status: 200, schema: themeStatusSchema, description: 'The active, requested and last good theme, the last error, and what this image can activate.', cache: 'public, s-maxage=5, stale-while-revalidate=10' },
+    errors: [],
   },
   {
     file: 'server/api/comments/index.get.ts',

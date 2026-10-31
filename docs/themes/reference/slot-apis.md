@@ -1066,8 +1066,12 @@ What Strapi's `theme` component held, validated and not yet checked against the 
 
 ```ts
 export interface ThemeSettings {
-  /** The theme id Strapi asked for; the server checks it against the built theme before use. */
+  /** The theme id Strapi asked for. The server activates it in the background (ADR 0009, section 5); empty means the instance's default theme. */
   themeId?: string
+  /** The exact version of the theme, with `themeDigest` the pin of a theme installed at runtime. */
+  themeVersion?: string
+  /** `sha256:` of the theme's package; without it and the version, `themeId` names a theme built into the image. */
+  themeDigest?: string
   /** The mode the site opens in, before the visitor picks one. */
   defaultMode?: string
   /** One per mode, the first one kept. */

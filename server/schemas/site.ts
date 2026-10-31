@@ -52,6 +52,9 @@ const accentOverride = z.object({ mode: slug, color: z.string().regex(/^#[\da-f]
 /** Strapi sends null for what was never set; each field drops itself when invalid. */
 const theme = z.object({
   themeId: lenient(slug.nullish().transform(value => value ?? undefined)),
+  // Not checked beyond their size here: the server checks the pin's grammar before it uses it (ADR 0009, section 2), and an invalid one is logged and ignored
+  themeVersion: lenient(z.string().max(128).nullish().transform(value => value ?? undefined)),
+  themeDigest: lenient(z.string().max(128).nullish().transform(value => value ?? undefined)),
   defaultMode: lenient(slug.nullish().transform(value => value ?? undefined)),
   displayFont: lenient(z.enum(DISPLAY_FONTS).nullish().transform(value => value ?? undefined)),
   // Item by item: an invalid one is dropped, and the first valid one of a mode wins

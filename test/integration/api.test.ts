@@ -21,6 +21,7 @@ import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/sche
 import { draftListResponseSchema, draftPageResponseSchema } from '~/schemas/drafts'
 import { pageSchema } from '~/schemas/pages'
 import { siteSchema } from '~/schemas/site'
+import { themeStatusSchema } from '~/schemas/theme'
 import { articlePageSchema, articleSchema, categoryCountSchema, draftArticleResponseSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
 import { contrastRatio, parseHex } from '~/helpers/color'
 import { inlineScripts } from '~/helpers/securityHeaders'
@@ -1282,6 +1283,34 @@ describe('/api/pages/[slug]', () => {
     }
     // The second failure reached Strapi again (fetch may retry, so compare, not count)
     expect(attempts[1]).toBeGreaterThan(attempts[0]!)
+  })
+})
+
+describe('/api/theme/status', () => {
+  it('answers the state of the theme switch from memory, without calling Strapi, and no method changes it', async () => {
+    const response = await fetch('/api/theme/status')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('public, s-maxage=5, stale-while-revalidate=10')
+    const status = themeStatusSchema.parse(await response.json())
+    expect(status.error).toBeNull()
+    expect(status.available.builtIn.map(theme => theme.id)).toContain(status.active.id)
+    expect(status.available.registry.install).toBe(false)
+    expect(mock.requests).toEqual([])
+    for (const method of ['POST', 'PUT', 'DELETE']) expect((await fetch('/api/theme/status', { method })).status, method).toBeGreaterThanOrEqual(404)
+  })
+
+  it('follows the theme the site settings name, and says why when it cannot', async () => {
+    const before = mock.theme.value
+    mock.theme.value = { id: 1, themeId: 'nowhere', themeVersion: null, themeDigest: null, defaultMode: null, displayFont: null, accentOverrides: [] }
+    try {
+      await fetch('/api/site')
+      const status = themeStatusSchema.parse(await (await fetch('/api/theme/status')).json())
+      expect(status.requested).toEqual({ id: 'nowhere' })
+      expect(status.error).toMatchObject({ rule: 'unknown' })
+      expect(status.error!.message).not.toMatch(/https?:|\//)
+    } finally {
+      mock.theme.value = before
+    }
   })
 })
 

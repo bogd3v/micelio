@@ -34,6 +34,8 @@ export interface ParsedSiteSettings extends SiteSettings {
 
 declare module 'h3' {
   interface H3EventContext {
+    /** The theme this request renders, the one active when it arrived: a switch during the render does not change it. */
+    activeTheme?: BuiltInTheme
     /** The active theme's data for the page, set on every request by `server/plugins/builtInTheme.ts`. */
     theme?: ThemeData
     /** The active theme's messages by locale, frozen and shared by every request; a page takes the one of its locale. */
@@ -45,6 +47,8 @@ declare module 'h3' {
 export interface BuiltInTheme {
   entry: LoadedEntry
   runtime: RuntimeData
+  /** The package digest the image's lock pins for this theme, when it came from the registry: what a site's `themeDigest` names. */
+  pinned?: string
 }
 
 /** Who a preview grant acts for, as the CMS says in `meta.actor` of the draft (ADR 0019, section 3 and the amendment of 2026-10-25). */

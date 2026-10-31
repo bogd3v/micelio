@@ -3,6 +3,7 @@ import { specimen } from '#micelio/specimen'
 import { MODES_ATTRIBUTE } from '../../modules/theme/init-script.mjs'
 import { Locale, defaultLocale } from '~/interfaces/locale'
 import { displayFontOverride, insertThemeLinks, themePreloadLinks } from '../utils/displayFonts'
+import { overridesFor } from '../lib/themeSwitch/request'
 import { activeTheme } from '../utils/activeTheme'
 import { themeOverridesCss } from '../utils/theme'
 
@@ -17,17 +18,19 @@ export default defineNitroPlugin((nitroApp) => {
   // contentSecurityPolicy.ts runs first (alphabetical) and hashes scripts only: anything pushed here must be a
   // style, which style-src 'unsafe-inline' allows. A script would be blocked.
   nitroApp.hooks.hook('render:html', async (html, { event }) => {
-    const { digest, modes, fonts, display: themeDisplay, layout } = activeTheme().runtime
+    // The theme this request began with, not the one active now: a page never mixes two themes
+    const { digest, modes, fonts, display: themeDisplay, layout } = (event.context.activeTheme ?? activeTheme()).runtime
     const first = modes[0]
     if (!first) return
     // Strapi down or slow: the theme's own first mode and colors, as before
-    let site: Awaited<ReturnType<typeof loadSiteCached>>['site'] | undefined
+    let loaded: Awaited<ReturnType<typeof loadSiteCached>> | undefined
     try {
-      ({ site } = await loadSiteCached(pathLocale(event.path)))
+      loaded = await loadSiteCached(pathLocale(event.path))
     } catch {
-      site = undefined
+      loaded = undefined
     }
-    const theme = site?.theme
+    // Overrides resolved against another theme (a switch happened while this page rendered) are left out
+    const theme = overridesFor(loaded, digest)
     const chosen = modes.find(mode => mode.id === theme?.defaultMode)
     const initial = chosen ?? first
     // data-mode-default is read by the init script (modules/theme/init-script.mjs); the visitor's stored choice still wins

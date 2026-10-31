@@ -77,5 +77,21 @@ The `Dockerfile` runs `npm run theme:pull -- --frozen` before `npm run build`. A
 
 - A shared store (several replicas) needs a file system where creating a file exclusively works. That is not verified for network file systems yet; use one store per replica until it is.
 - After a core upgrade, the themes the store holds are compiled again at boot from the packages it kept, with no request to the registry.
-- Entries compiled for earlier core builds stay until they are removed; `pruneStore` in `modules/theme/install/store.ts` removes them and the packages nothing uses, and there is no command for it yet.
+- Entries compiled for earlier core builds stay until you remove them: `npm run theme:prune -- --store <dir>` (from a checkout of the release you run, after `npm run build`, or with `--built-in` pointing at the image's `.output/server/micelio/store`) removes them and the packages nothing uses, and keeps the packages of the active and last good themes. A request never removes anything.
 - The Compose files live in `micelio-cms` ([install](install.md)) and do not mount a store volume yet; add one to yours, owned by the server's user.
+
+## Switch the theme from the CMS
+
+**Kind:** how-to. Goal: let an editor with the right role pick a theme in Strapi and see the site change with no build and no new image ([ADR 0009](../adr/0009-theme-delivery-at-runtime.md), #403).
+
+1. Set `MICELIO_THEME_STORE` to a directory on a volume that survives restarts (see above). Without it only the themes built into the image can be picked.
+2. In the site settings of the CMS (default language) the theme field names `themeId`, the exact `themeVersion` and the `themeDigest` of its package. Only the CMS admin role (Super Admin) can change it; the API token of the frontend cannot ([docs/security.md](../security.md)). The picker is a `micelio-cms` change (micelio-cms#97).
+3. The server reads the settings within a minute (`NUXT_SITE_CACHE_SECONDS`), resolves the pin in the background and switches when the new theme is complete. Pages keep the current theme until then; nothing waits for the registry.
+
+What the server does with the pin, in order: it checks its grammar; uses a theme built into the image or already in the store; and otherwise, if `MICELIO_THEME_INSTALL` is on, downloads it from `MICELIO_THEME_REGISTRY` and checks the index, the tier (`MICELIO_THEME_TIERS`, default `official,verified`), the attestation and the digest, unpacks it with the safe unpack, validates the contract and the contrast and budget checks, and compiles it in a child process. A code theme (one with `slots/` or `templates/`) activates only on an image built with that exact package. At most 6 installs an hour; a pin that failed waits a minute, then two, up to an hour; the store holds at most 50 entries and 256 MiB.
+
+**Seeing why it did not change.** `GET /api/theme/status` (public, from memory) answers the active theme, the requested pin, the last good theme, the last error (one line: the rule and the reason) and what the image can activate. A failure never changes the site: the current theme stays. A registry that is down changes nothing already installed, and the server tries the same request again after a minute.
+
+**Replicas.** Either mount one store for all replicas (a volume where creating a file exclusively works; the first replica to see a new pin installs it and the others find it installed) or give each replica its own volume and let each install (the limits then apply to each). A platform that installs centrally sets `MICELIO_THEME_INSTALL=false` and mounts the store read-only: a missing theme is then reported on the status, never downloaded.
+
+**After a core upgrade** the server compiles the active and last good themes again at boot from their kept packages, before the first request, with no request to the registry; these do not count toward the limits. The `micelio-cms` Compose files do not mount a store volume yet.

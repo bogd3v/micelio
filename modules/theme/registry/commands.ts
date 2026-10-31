@@ -3,7 +3,6 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { cacheDir, cacheGet, cacheGetBundle, cachePut, cachePutBundle } from './cache'
 import { createRegistry } from './client'
-import type { ThemeRegistry } from './client'
 import { DEFAULT_REGISTRY, LOCK_FILE, MAX_COMPRESSED_BYTES, PULLED_THEMES_DIR } from './constants'
 import { RegistryError } from './error'
 import { identityFor } from './identity'
@@ -11,7 +10,7 @@ import { formatLock, readLock, writeLock } from './lock'
 import { checkIdentity, pruneThemes, writeTheme } from './materialize'
 import { assertPin } from './pin'
 import { unpackTheme } from './unpack'
-import type { LockEntry, ThemeLock, ThemePin, UnpackedTheme } from './types'
+import type { LockEntry, ThemeLock, ThemePin, ThemeRegistry, UnpackedTheme } from './types'
 
 // What `theme:add`, `theme:pull` and `theme:outdated` do, apart from reading the command line (#310).
 

@@ -21,7 +21,8 @@ export const ADMISSION_ENV = 'MICELIO_ADMISSION'
 
 const announced = new Set<string>()
 
-function isPulledRoot(root: string): boolean {
+/** Whether a theme root is the folder `theme:pull` fills, not one a person edits. */
+export function isPulledRoot(root: string): boolean {
   return normalize(root).split(sep).slice(-2).join('/') === PULLED_THEMES_DIR
 }
 

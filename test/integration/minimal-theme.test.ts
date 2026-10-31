@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { spawn } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { createServer } from 'node:net'
 import type { AddressInfo } from 'node:net'
 import { join } from 'node:path'
 import { fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
+import { parseHooks } from '../../modules/theme/hooks'
+import { installIsolated } from '../../modules/theme/install/isolated'
+import { readInstallInputs } from '../../server/lib/builtInStore'
 import { startMockStrapi } from './mock-strapi'
 
 // A build with its own theme: one light mode, no slots, no layout (#237, acceptance criteria).
@@ -159,4 +163,49 @@ describe('NUXT_PUBLIC_THEME at runtime, on the one build', () => {
   it('refuses to boot, naming the variable, when the theme is not in the build', async () => {
     await expect(startServer({ NUXT_PUBLIC_THEME: 'nope' })).rejects.toThrow(/NUXT_PUBLIC_THEME is "nope"/)
   })
+})
+
+describe('the theme store variables, on the one build', () => {
+  const output = (): string => useTestContext().nuxt!.options.nitro.output!.dir!
+
+  it('refuses to boot, naming the variable, for a relative store, an unknown switch and an unknown tier', async () => {
+    await expect(startServer({ MICELIO_THEME_STORE: 'themes' })).rejects.toThrow(/MICELIO_THEME_STORE must be an absolute path/)
+    const store = mkdtempSync(join(tmpdir(), 'micelio-store-'))
+    try {
+      await expect(startServer({ MICELIO_THEME_STORE: store, MICELIO_THEME_INSTALL: 'maybe' })).rejects.toThrow(/MICELIO_THEME_INSTALL must be/)
+      await expect(startServer({ MICELIO_THEME_STORE: store, MICELIO_THEME_TIERS: 'official,gold' })).rejects.toThrow(/MICELIO_THEME_TIERS names an unknown tier "gold"/)
+      await expect(startServer({ MICELIO_THEME_STORE: store, MICELIO_THEME_REGISTRY: 'not a registry' })).rejects.toThrow(/MICELIO_THEME_REGISTRY/)
+    } finally {
+      rmSync(store, { recursive: true, force: true })
+    }
+  })
+
+  it('boots with a store, serves the default theme, and answers its status', async () => {
+    const store = mkdtempSync(join(tmpdir(), 'micelio-store-'))
+    const server = await startServer({ MICELIO_THEME_STORE: store, NUXT_PUBLIC_THEME: 'minimal' })
+    try {
+      const status = await (await globalThis.fetch(`${server.origin}/api/theme/status`)).json() as { active: { id: string }, error: unknown, available: { registry: { install: boolean, tiers: string[] } } }
+      expect(status.active.id).toBe('minimal')
+      expect(status.error).toBeNull()
+      expect(status.available.registry).toEqual({ install: true, tiers: ['official', 'verified'] })
+    } finally {
+      await server.stop()
+      rmSync(store, { recursive: true, force: true })
+    }
+  })
+
+  it('installs in the child process of the build with the worker the build ships, to the digest the build compiled', async () => {
+    const storeDir = mkdtempSync(join(tmpdir(), 'micelio-worker-'))
+    try {
+      const built = join(output(), 'server/micelio')
+      const inputs = readInstallInputs(join(built, 'store'))
+      const expected = (JSON.parse(readFileSync(join(built, 'store/index.json'), 'utf8')) as { themes: Record<string, { digest: string }> }).themes['data-only']!.digest
+      // The inputs the build wrote are what a server install compiles with, so the same theme gives the same bytes
+      expect(parseHooks(JSON.parse(readFileSync(join(built, 'store/install-inputs.json'), 'utf8')).hooks)).toEqual(inputs.hooks)
+      const result = await installIsolated({ kind: 'folder', dir: join(process.cwd(), 'test/fixtures/themes/data-only') }, { storeDir, hooks: inputs.hooks, coreBuild: inputs.coreBuild, layoutCss: inputs.layoutCss, allowCode: true, buildChecksOnly: true }, { worker: join(built, 'worker.mjs') })
+      expect(result.digest).toBe(expected)
+    } finally {
+      rmSync(storeDir, { recursive: true, force: true })
+    }
+  }, 120_000)
 })

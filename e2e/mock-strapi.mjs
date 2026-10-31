@@ -471,6 +471,9 @@ function sendPng(res) {
 
 const authMock = createAuthMock({ frontendUrl: process.env.MOCK_FRONTEND_URL || 'http://127.0.0.1:3210' })
 const draftsMock = createDraftsMock({ userFromAuth: authMock.userFromAuth, publishedArticles: articles })
+// The theme the site settings name under MOCK_THEME_SWITCH=1, changed by POST /__mock/theme
+let switchedTheme = null
+
 // The preview routes of the plugin, and a test-only route that makes a token (e2e/preview); off unless MOCK_PREVIEW=1
 const previewMock = process.env.MOCK_PREVIEW === '1' ? createPreviewMock({ apiToken: 'e2e-api-token' }) : null
 
@@ -488,6 +491,13 @@ const server = createServer(async (req, res) => {
     } else {
       sendJson(res, auth.status, auth.body)
     }
+    return
+  }
+
+  // MOCK_THEME_SWITCH=1: a test changes the theme the site settings name while the site runs (e2e/theme-switch.spec.ts)
+  if (process.env.MOCK_THEME_SWITCH === '1' && method === 'POST' && url.pathname === '/__mock/theme') {
+    switchedTheme = { id: 1, themeId: body?.themeId ?? null, themeVersion: body?.themeVersion ?? null, themeDigest: body?.themeDigest ?? null, defaultMode: null, displayFont: null, accentOverrides: [] }
+    sendJson(res, 200, { ok: true })
     return
   }
 
@@ -709,7 +719,8 @@ const server = createServer(async (req, res) => {
         modules: { id: 1, ...Object.fromEntries(['newsletter', 'comments', 'accounts', 'drafts', 'fediverse', 'search', 'support'].map(module => [module, process.env.MOCK_MODULES_OFF !== '1'])) },
         // MOCK_THEME=1 runs e2e/theme-overrides.spec.ts against a site with a default mode, a low-contrast accent and the Fraunces display font.
         // MOCK_DISPLAY_FONT=<id> alone sets only that display font (the perf run of the heaviest one, scripts/perf/measure.mjs). Unset, there is no `theme` key
-        ...((process.env.MOCK_THEME === '1' || process.env.MOCK_DISPLAY_FONT) && {
+        ...(switchedTheme && { theme: switchedTheme }),
+        ...(!switchedTheme && (process.env.MOCK_THEME === '1' || process.env.MOCK_DISPLAY_FONT) && {
           theme: process.env.MOCK_THEME === '1'
             ? { id: 1, themeId: 'bogota', defaultMode: 'dia', displayFont: process.env.MOCK_DISPLAY_FONT || 'fraunces', accentOverrides: [{ id: 1, mode: 'noche', color: '#202020' }] }
             : { id: 1, themeId: null, defaultMode: null, displayFont: process.env.MOCK_DISPLAY_FONT, accentOverrides: [] },

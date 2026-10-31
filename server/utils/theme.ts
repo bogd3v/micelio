@@ -113,14 +113,17 @@ function resolveAccent(color: string, modeId: string, mode: ModePalette, rules: 
 }
 
 /**
- * The part of `site-setting.theme` that applies to the built theme, or null when nothing does.
- * Another `themeId` is ignored (a build has one theme), as are a `defaultMode` and overrides for modes it does not have,
- * and an accent equal to the theme's own. A failing accent is moved in OKLCH lightness until it passes.
+ * The part of `site-setting.theme` that applies to the active theme, or null when nothing does.
+ *
+ * @remarks
+ * `buildTheme` is the id of the active theme. A `themeId` that names another theme is not acted on here (the switch activates it, or
+ * reports why not, ADR 0009): the overrides go to the active theme meanwhile. A `defaultMode` and overrides for modes the theme does not have
+ * are ignored, and so is an accent equal to the theme's own. A failing accent is moved in OKLCH lightness until it passes.
  */
 export function resolveTheme(raw: ThemeSettings | null | undefined, palette: PaletteInput, buildTheme: string): SiteTheme | null {
   if (!raw) return null
   if (raw.themeId && raw.themeId !== buildTheme) {
-    logOnce(`Strapi's theme "${raw.themeId}" is not installed; this build has "${buildTheme}"`)
+    logOnce(`Strapi's theme "${raw.themeId}" is not the active theme "${buildTheme}" (yet, or it could not be activated); its overrides apply to the active one`)
   }
   const theme: SiteTheme = { id: buildTheme, accents: {} }
   if (raw.defaultMode && Object.hasOwn(palette.modes, raw.defaultMode)) theme.defaultMode = raw.defaultMode
