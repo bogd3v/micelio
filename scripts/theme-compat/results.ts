@@ -8,7 +8,7 @@ export interface CompatResult extends CompatEntry {
   outcome: 'pass' | 'fail' | 'unchecked'
   /** The first error, or why it was not checked; empty when it passed. */
   reason: string
-  /** The workflow run that made the report. */
+  /** The workflow run that made the report; `null` when there is no report or its `run` is not a GitHub Actions run URL. */
   report: string | null
 }
 
@@ -24,6 +24,24 @@ export interface CompatDecision {
 /** The reports of the themes that were admitted, by id; `undefined` when a theme's report is missing or does not match the schema. */
 export type ReportsById = Map<string, unknown>
 
+const RUN_URL = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/actions\/runs\/\d+(?:\/attempts\/\d+)?$/
+const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/
+
+/** Report text as one plain line: control and format characters (ANSI, bidi) and whitespace runs become one space, and backticks become `'` so the text cannot end a Markdown code span. */
+function plain(text: string): string {
+  return text.replace(/[\p{Cc}\p{Cf}]/gu, ' ').replace(/`/g, '\'').replace(/\s+/g, ' ').trim()
+}
+
+/** The run link of a report when it is a GitHub Actions run URL, else `null`: a report is untrusted, and its `z.url()` accepts whitespace, `|` and `)`. */
+function runLink(run: string | null): string | null {
+  return run !== null && RUN_URL.test(run) ? run : null
+}
+
+/** The version of a report when it is a semantic version, else a placeholder: it goes into a log line and a table. */
+function versionText(version: string | null): string {
+  return version === null ? 'no version' : SEMVER.test(version) ? version : 'an invalid version'
+}
+
 /**
  * Decides, from the plan and the admission reports, which versions block the release and which are marked incompatible.
  *
@@ -37,10 +55,11 @@ export function decide(checked: CompatEntry[], unchecked: Array<CompatEntry & { 
     const parsed = AdmissionReportSchema.safeParse(reports.get(entry.id))
     if (!parsed.success) return { ...entry, outcome: 'fail', reason: 'the admission report is missing or not valid: the admission did not finish', report: null }
     const report = parsed.data
-    if (report.theme.version !== entry.version) return { ...entry, outcome: 'fail', reason: `the report is for ${report.theme.version ?? 'no version'}, not ${entry.version}`, report: report.run }
-    if (report.ok) return { ...entry, outcome: 'pass', reason: '', report: report.run }
+    const run = runLink(report.run)
+    if (report.theme.version !== entry.version) return { ...entry, outcome: 'fail', reason: `the report is for ${versionText(report.theme.version)}, not ${entry.version}`, report: run }
+    if (report.ok) return { ...entry, outcome: 'pass', reason: '', report: run }
     const first = report.errors[0]
-    return { ...entry, outcome: 'fail', reason: first ? `${first.check}: ${first.message}` : 'the admission failed', report: report.run }
+    return { ...entry, outcome: 'fail', reason: first ? plain(`${first.check}: ${first.message}`) : 'the admission failed', report: run }
   })
   results.push(...unchecked.map((entry): CompatResult => ({ ...entry, outcome: 'unchecked', reason: entry.reason, report: null })))
   results.sort((a, b) => a.id.localeCompare(b.id))
@@ -54,7 +73,7 @@ export function decide(checked: CompatEntry[], unchecked: Array<CompatEntry & { 
 
 /** The line written to the index as the reason of an incompatible mark: one line of at most 500 characters. */
 export function markReason(result: CompatResult, core: string): string {
-  const text = `fails admission on micelio ${core}: ${result.reason}`.replace(/\s+/g, ' ')
+  const text = plain(`fails admission on micelio ${core}: ${result.reason}`)
   return text.length > 500 ? `${text.slice(0, 499)}…` : text
 }
 
@@ -64,7 +83,8 @@ export function markReason(result: CompatResult, core: string): string {
  * @param marks - Whether the failures of the other tiers will be marked in the index from `core` (a release that publishes), or only reported.
  */
 export function resultsTable(decision: CompatDecision, core: string, marks = true): string {
-  const cell = (text: string): string => text.replace(/\|/g, '\\|').replace(/\s+/g, ' ')
+  // Report text is untrusted: it is shown as a code span, so it never renders as Markdown or HTML. GFM still reads a pipe inside a span as a cell break
+  const cell = (text: string): string => `\`${plain(text).replace(/\\/g, '\\\\').replace(/\|/g, '\\|')}\``
   const rows = decision.results.map((result) => {
     const verdict = result.outcome === 'pass' ? 'pass' : result.outcome === 'unchecked' ? 'not checked' : 'fail'
     const consequence = decision.blocking.includes(result) ? ' (blocks the release)' : decision.incompatible.includes(result) ? (marks ? ' (incompatible from this core)' : ' (fails; not marked, the core is released)') : ''

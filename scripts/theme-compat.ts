@@ -104,7 +104,7 @@ function decision(): void {
   })
   writeFileSync(required('summary'), `${table}\n`)
   process.stdout.write(`${table}\n`)
-  for (const item of result.blocking) process.stdout.write(`::error::${item.id}@${item.version} (official) ${item.outcome === 'unchecked' ? 'was not checked' : 'fails on this core'}: ${item.reason}\n`)
+  for (const item of result.blocking) process.stdout.write(`::error::${item.id}@${item.version} (official) ${item.outcome === 'unchecked' ? 'was not checked' : 'fails on this core'}: ${item.reason.replace(/[\p{Cc}\p{Cf}\s]+/gu, ' ')}\n`)
 }
 
 try {

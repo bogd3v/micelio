@@ -321,11 +321,71 @@ describe('a breaking change of the core', () => {
     expect(readFileSync(join(dir, 'results.md'), 'utf8')).toContain('fail (fails; not marked, the core is released)')
   })
 
+  it('keeps a hostile reason inside its table cell: a backslash before a pipe, a pipe and a newline', () => {
+    const reason = 'x \\| a|b\n| injected | cell |\ny\\'
+    const table = resultsTable(decide([], [{ ...entryOf('community'), reason }], new Map()), '0.6.0')
+    const lines = table.split('\n')
+    const row = lines.find(line => line.startsWith('| starter |'))!
+    expect(lines).toHaveLength(5)
+    expect(row.replace(/\\\\|\\\|/g, '').split('|')).toHaveLength(7)
+    expect(row).toContain('x \\\\\\| a\\|b \\| injected \\| cell \\| y\\\\')
+  })
+
+  it('writes the reason of a failed admission on one line, so it cannot start a workflow command', () => {
+    const { hooks } = renamed()
+    const bad = reportFor('starter', hooks)
+    bad.ok = false
+    bad.errors = [{ check: 'static', kind: 'contract', message: 'one\n::set-output name=x::y' }] as typeof bad.errors
+    const reason = decide([entryOf('official')], [], new Map([['starter', bad]])).blocking[0]!.reason
+    expect(reason).toBe('static: one ::set-output name=x::y')
+  })
+
+  it('renders the link of a report only for a GitHub Actions run, and shows a version that is not semver as a placeholder', () => {
+    const { hooks } = renamed()
+    const hostile = ['https://a.example/x\n::warning::pwn', 'https://github.com/o/r/actions/runs/1\n::warning::pwn', 'https://github.com/o/r/actions/runs/1)|x', 'https://evil.example/o/r/actions/runs/1']
+    for (const run of hostile) {
+      const bad = { ...reportFor('starter', hooks), run }
+      expect(decide([entryOf('community')], [], new Map([['starter', bad]])).results[0]!.report).toBeNull()
+    }
+    expect(decide([entryOf('community')], [], new Map([['starter', reportFor('starter', hooks)]])).results[0]!.report).toBe('https://github.com/bogd3v/micelio-themes/actions/runs/1')
+    const odd = reportFor('starter', hooks)
+    odd.theme = { ...odd.theme, version: '1.0.0\n::set-output name=x::y' }
+    const reason = decide([entryOf('official')], [], new Map([['starter', odd]])).blocking[0]!.reason
+    expect(reason).toBe('the report is for an invalid version, not 1.0.0')
+  })
+
+  it('shows report text as a code span, so a link, an image or HTML in it is not rendered', () => {
+    const reason = 'see [get it](https://evil.example) ![x](https://evil.example/i.png) <img src=x> `code` \u001b[31m\u202eend'
+    const table = resultsTable(decide([], [{ ...entryOf('community'), reason }], new Map()), '0.6.0')
+    const row = table.split('\n').find(line => line.startsWith('| starter |'))!
+    expect(row).toContain(': `see [get it](https://evil.example) ![x](https://evil.example/i.png) <img src=x> \'code\' [31m end` |')
+    expect(row.match(/`/g)).toHaveLength(2)
+    expect(row.includes('\u001b') || row.includes('\u202e')).toBe(false)
+  })
+
+  it('keeps a backtick and a control character out of the reason written to the index and the marks', () => {
+    const result = { ...entryOf('community'), outcome: 'fail' as const, reason: 'x`, version `9.9.9`, reason `ok\u001b[2J', report: null }
+    const text = markReason(result, '0.6.0')
+    expect(text.includes('`') || text.includes('\u001b')).toBe(false)
+    expect(text).toBe('fails admission on micelio 0.6.0: x\', version \'9.9.9\', reason \'ok [2J')
+  })
+
+  it('writes the ::error:: line of an unchecked official theme on one line, so its reason cannot start a workflow command', () => {
+    const dir = temp()
+    const reason = 'its provenance names a/b\n::warning::x, not o/r'
+    writeFileSync(join(dir, 'plan.json'), JSON.stringify({ core: { version: '0.6.0' }, checked: [], unchecked: [{ ...entryOf('official'), reason }] }))
+    mkdirSync(join(dir, 'reports'), { recursive: true })
+    const done = spawnSync('npx', ['jiti', 'scripts/theme-compat.ts', 'decide', '--plan', join(dir, 'plan.json'), '--reports', join(dir, 'reports'), '--out', join(dir, 'results.json'), '--summary', join(dir, 'results.md')], { cwd: ROOT, encoding: 'utf8' })
+    expect(done.status).toBe(0)
+    expect(done.stdout).toContain('::error::starter@1.0.0 (official) was not checked: its provenance names a/b ::warning::x, not o/r')
+    expect(done.stdout.split('\n').filter(line => line.startsWith('::'))).toEqual([expect.stringMatching(/^::error::starter@1\.0\.0 /) as string])
+  })
+
   it('writes the table of the release notes: theme, version, tier, result and the link to the report', () => {
     const { hooks } = renamed()
     const table = resultsTable(decide([entryOf('community')], [], new Map([['starter', reportFor('starter', hooks)]])), '0.6.0')
     expect(table.split('\n').slice(0, 4)).toEqual(['### Published themes on micelio 0.6.0', '', '| Theme | Version | Tier | Result | Report |', '| --- | --- | --- | --- | --- |'])
-    expect(table).toMatch(/\| starter \| 1\.0\.0 \| community \| fail \(incompatible from this core\): static: .* \| \[report\]\(https:\/\/github\.com\/bogd3v\/micelio-themes\/actions\/runs\/1\) \|/)
+    expect(table).toMatch(/\| starter \| 1\.0\.0 \| community \| fail \(incompatible from this core\): `static: .*` \| \[report\]\(https:\/\/github\.com\/bogd3v\/micelio-themes\/actions\/runs\/1\) \|/)
     expect(resultsTable(decide([], [], new Map()), '0.6.0')).toContain('_none published_')
   })
 })
