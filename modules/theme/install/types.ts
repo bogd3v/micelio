@@ -137,5 +137,9 @@ export interface BuiltInIndex {
   coreBuild: string
   /** The theme the build was made for: the default when nothing else is configured. */
   buildTheme: string
-  themes: Record<string, { digest: string, version: string, code: boolean }>
+  /**
+   * `pinned` is the package digest the image's `themes.lock.json` pins for a theme that came from the registry: the digest a site's `themeDigest` names,
+   * which is not `packageDigest` of the entry (an installed folder has the digest of its file tree).
+   */
+  themes: Record<string, { digest: string, version: string, code: boolean, pinned?: string }>
 }

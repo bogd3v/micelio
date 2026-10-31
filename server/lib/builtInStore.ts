@@ -1,20 +1,22 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { z } from 'zod'
-import { BUILT_IN_INDEX, BUILT_IN_STORE_PATH, COMPILED_DIGEST } from '../../modules/theme/install/constants'
+import { BUILT_IN_INDEX, BUILT_IN_STORE_PATH, COMPILED_DIGEST, INSTALL_INPUTS } from '../../modules/theme/install/constants'
 import { parseRuntime } from '../../modules/theme/install/runtime'
 import { loadEntrySync } from '../../modules/theme/install/store'
-import type { BuiltInIndex } from '../../modules/theme/install/types'
+import type { BuiltInIndex, LayoutCss } from '../../modules/theme/install/types'
+import { parseHooks } from '../../modules/theme/hooks'
+import type { Hooks } from '../../modules/theme/types'
+import { LAYOUT_REGIONS, THEME_ID } from '../../modules/theme/constants'
 import type { BuiltInTheme } from './types'
 import { THEME_DIGEST } from '../../modules/theme/registry/constants'
-import { THEME_ID } from '../../modules/theme/constants'
 
 // The built-in store of the image (ADR 0009, section 1): the themes compiled at build, loaded and verified once at boot.
 
 const Index: z.ZodType<BuiltInIndex> = z.strictObject({
   coreBuild: z.string().min(1).max(200),
   buildTheme: z.string().regex(THEME_ID),
-  themes: z.record(z.string().regex(THEME_ID), z.strictObject({ digest: z.string().regex(COMPILED_DIGEST), version: z.string().max(128), code: z.boolean() })),
+  themes: z.record(z.string().regex(THEME_ID), z.strictObject({ digest: z.string().regex(COMPILED_DIGEST), version: z.string().max(128), code: z.boolean(), pinned: z.string().regex(THEME_DIGEST).optional() })),
 })
 
 /**
@@ -85,7 +87,7 @@ export function loadBuiltInTheme(storeDir: string, id?: string): BuiltInTheme {
   if (!THEME_DIGEST.test(entry.manifest.packageDigest)) throw new Error(`The built-in entry of theme "${wanted}" has a malformed package digest`)
   const file = entry.files.get('runtime.json')
   if (file === undefined) throw new Error(`The built-in entry of theme "${wanted}" has no runtime.json`)
-  return { entry, runtime: parseRuntime(file, listed.digest) }
+  return { entry, runtime: parseRuntime(file, listed.digest), ...(listed.pinned !== undefined && { pinned: listed.pinned }) }
 }
 
 /**
@@ -112,4 +114,32 @@ export function watchBuiltInIndex(storeDir: string, load: () => BuiltInTheme, on
       onError(error)
     }
   }
+}
+
+/** What a server install needs of the core build, as the build wrote it next to the built-in store. */
+export interface InstallInputs {
+  /** The core build the built-in entries were compiled for; an installed theme must be compiled for the same one. */
+  coreBuild: string
+  hooks: Hooks
+  layoutCss: LayoutCss
+}
+
+const Css = z.strictObject(Object.fromEntries(LAYOUT_REGIONS.map(region => [region, z.record(z.string().regex(/^[a-z0-9-]{1,32}$/), z.string().max(256 * 1024))]))).partial()
+
+/**
+ * The inputs a server install shares with the build: the core build id, the public hooks and the CSS of the layout variants.
+ *
+ * @remarks
+ * Written by the build with the built-in store, which the image's signature anchors, so it is read like the index.
+ *
+ * @throws `Error` when the file is missing or malformed: the image was built without the install inputs.
+ */
+export function readInstallInputs(storeDir: string): InstallInputs {
+  const raw = JSON.parse(readFileSync(join(storeDir, INSTALL_INPUTS), 'utf8')) as { hooks?: unknown, layoutCss?: unknown }
+  return { coreBuild: readIndex(storeDir).coreBuild, hooks: parseHooks(raw.hooks), layoutCss: Css.parse(raw.layoutCss) as LayoutCss }
+}
+
+/** The themes of the built-in store with their versions and whether they ship code, for the status of the active theme. */
+export function listBuiltInThemes(storeDir: string): Array<{ id: string, version: string, code: boolean }> {
+  return Object.entries(readIndex(storeDir).themes).map(([id, listed]) => ({ id, version: listed.version, code: listed.code }))
 }

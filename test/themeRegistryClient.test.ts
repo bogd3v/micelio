@@ -150,6 +150,27 @@ function list(fake: FakeRegistry, digest: string, fields: Record<string, unknown
   fake.publishIndex({ version: 1, themes: { sample: { versions: { '1.0.0': entry(digest, fields) } } } })
 }
 
+describe('what the index says about a pin', () => {
+  it('gives the entry of the exact version and digest, and nothing for another digest, another version or an unknown theme', async () => {
+    const fake = await withSample(undefined, { '1.1.0': entry(digestOf(Buffer.from('b')), { tier: 'community', status: 'yanked', code: true }) })
+    const client = create(fake)
+    expect(await client.listed({ id: 'sample', version: '1.0.0', digest: BODY_DIGEST })).toMatchObject({ digest: BODY_DIGEST, tier: 'official', status: 'published', code: false })
+    expect(await client.listed({ id: 'sample', version: '1.1.0', digest: digestOf(Buffer.from('b')) })).toMatchObject({ tier: 'community', status: 'yanked', code: true })
+    expect(await client.listed({ id: 'sample', version: '1.0.0', digest: digestOf(Buffer.from('other')) })).toBeUndefined()
+    expect(await client.listed({ id: 'sample', version: '9.9.9', digest: BODY_DIGEST })).toBeUndefined()
+    expect(await client.listed({ id: 'constructor', version: '1.0.0', digest: BODY_DIGEST })).toBeUndefined()
+  })
+
+  it('reads nothing without a signer identity and refuses an index that is not signed by it', async () => {
+    const fake = await withSample()
+    expect((await failure(() => create(fake, { identity: null }).listed({ id: 'sample', version: '1.0.0', digest: BODY_DIGEST }))).failure).toBe('signer')
+    expect(fake.seen).toEqual([])
+    const unsigned = await start()
+    unsigned.publishIndex({ version: 1, themes: {} }, false)
+    expect((await failure(() => create(unsigned).listed({ id: 'sample', version: '1.0.0', digest: BODY_DIGEST }))).failure).toBe('not-found')
+  })
+})
+
 describe('pulling a package', () => {
   const pin = { id: 'sample', version: '1.0.0', digest: BODY_DIGEST }
 

@@ -141,3 +141,37 @@ export interface VerifyBundleOptions {
 
 /** A function that verifies a bundle, so callers can be tested without real signatures. */
 export type BundleVerifier = (bundle: Uint8Array, options: VerifyBundleOptions) => void
+
+/** A theme version the index offers, resolved to what a lock entry needs. */
+export interface ResolvedTheme extends ThemePin, Pick<LockEntry, 'contract' | 'tier' | 'distribution' | 'code'> {
+  /** The registry the entry was resolved against, as set. */
+  registry: string
+}
+
+/** A package the registry served and whose attestation verified. */
+export interface FetchedPackage {
+  /** The `.tgz`, at most 2 MiB, whose sha256 equals the pin's digest. */
+  data: Buffer
+  /** The Sigstore bundle that vouches for it, to keep next to the package. */
+  bundle: Buffer
+}
+
+/** The registry behind one interface, so a server, the static builder and the CLI share it. */
+export interface ThemeRegistry {
+  /** The highest published version of `id` that satisfies `range` (default `*`) and this core's contract. */
+  resolve: (id: string, range?: string) => Promise<ResolvedTheme>
+  /** The versions of `id` newer than `current` that this core can install, highest first. */
+  newer: (id: string, current: string) => Promise<string[]>
+  /**
+   * What the index (read and verified first) says about the exact version a pin names, or `undefined` when it lists none or lists another digest.
+   * A server reads the tier, the status and `code` of a pin before it downloads anything.
+   */
+  listed: (pin: ThemePin) => Promise<IndexVersion | undefined>
+  /**
+   * The package a pin names with its attestation, after the index lists it with the same digest and status `published`, or
+   * `yanked` or `incompatible` when `locked` (the digest is this site's own pin), and the attestation verifies.
+   */
+  fetch: (pin: ThemePin, options?: { locked?: boolean }) => Promise<FetchedPackage>
+  /** Verifies, with no network, the attestation bundle of a package that was kept (for example in the cache). */
+  verify: (pin: ThemePin, bundle: Uint8Array) => void
+}

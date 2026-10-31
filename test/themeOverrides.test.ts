@@ -124,10 +124,10 @@ describe('resolveTheme', () => {
     expect(resolve({ displayFont: 'comic-sans' as never })).toBeNull()
   })
 
-  it('ignores a theme that is not the build, and says so, but keeps the rest', () => {
+  it('applies the overrides to the active theme when Strapi names another, and says so', () => {
     const theme = resolve({ themeId: 'other', defaultMode: 'light', displayFont: 'fraunces' })
     expect(theme).toEqual({ id: 'starter', defaultMode: 'light', displayFont: 'fraunces', accents: {} })
-    expect(warned()).toContainEqual(expect.stringContaining('"other" is not installed'))
+    expect(warned()).toContainEqual(expect.stringContaining('"other" is not the active theme'))
     warn.mockClear()
     resolve({ themeId: 'starter', defaultMode: 'light' })
     expect(warn).not.toHaveBeenCalled()

@@ -65,3 +65,9 @@ export const BUILT_IN_INDEX = 'index.json'
 
 /** Where the built-in store sits next to the server entry of a production build (`.output/server/micelio/store`). */
 export const BUILT_IN_STORE_PATH = 'micelio/store'
+
+/** What a server install needs of the core, beside the index: the public hooks and the layout variants' CSS, written by the build next to `index.json`. */
+export const INSTALL_INPUTS = 'install-inputs.json'
+
+/** The built worker of `installIsolated` in a production build, next to the built-in store's folder (`.output/server/micelio/worker.mjs`). */
+export const BUILT_WORKER = 'worker.mjs'

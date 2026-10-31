@@ -50,6 +50,10 @@ npm run dev            # http://localhost:3000
 
 Commands, conventions and the project structure are in [AGENTS.md](AGENTS.md); `npm run check` runs the fast checks before a pull request. Contributions follow [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Change the theme from the CMS
+
+A site can change its theme from the CMS without a new image: set `MICELIO_THEME_STORE` to a directory the server may write (a volume that survives restarts) and the theme named in the site settings is installed from the registry and activated within a minute or two. `MICELIO_THEME_INSTALL=false` turns the downloading off (only themes already in the store or built into the image activate), and `MICELIO_THEME_TIERS` says which tiers the server installs (default `official,verified`). Without a store only the themes built into the image activate. See [docs/operate/themes.md](docs/operate/themes.md).
+
 ## Documentation
 
 [docs/README.md](docs/README.md) has one entry point per reader:

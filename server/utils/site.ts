@@ -1,11 +1,12 @@
 import qs from 'qs'
 import { buildSiteMode } from '#micelio/build-site-mode'
-import { activeTheme } from './activeTheme'
+import { activeTheme, observeTheme } from './activeTheme'
 import type { Locale, Site, AppSiteConfig } from '~/interfaces'
 import { effectiveModules } from '~/helpers/modules'
 import { moduleRequirements } from '~/helpers/runtimeConfig'
 import { fediverseCreator, mergeSite, resolveSiteMedia, siteFromAppConfig } from '~/helpers/site'
 import { SITE_POPULATE } from '../lib/constants'
+import { decidesTheme } from '../lib/themeSwitch/request'
 import { parseSiteSettings } from '../schemas/site'
 
 // Strapi is optional for the identity, so a slow answer should not hold the page
@@ -19,6 +20,8 @@ interface LoadedSite {
   fromStrapi: boolean
   /** The `securityContact` of the site settings, validated; never in `site` because only `security.txt` reads it. */
   securityContact?: string
+  /** The digest of the theme `site.theme` was resolved against; a render of another theme leaves those overrides out. */
+  themeDigest: string
 }
 
 // The site actor's handle when Strapi's `fediverse` switch is on, not the effective module: the actor lives on the CMS,
@@ -31,6 +34,7 @@ function siteFediverseHandle(site: Pick<Site, 'modules'>, username?: string): st
 /** The site identity: Strapi's site-setting over app.config.ts, field by field, with the modules that actually work. `quiet` skips the error log (the startup check). */
 export async function loadSite(locale: Locale, options: { quiet?: boolean } = {}): Promise<LoadedSite> {
   const { runtime } = activeTheme()
+  const themeDigest = runtime.digest
   const defaults = siteFromAppConfig(useAppConfig().site as AppSiteConfig, runtime.images.favicon)
   const requirements = moduleRequirements(useRuntimeConfig())
   let loaded: LoadedSite
@@ -40,18 +44,26 @@ export async function loadSite(locale: Locale, options: { quiet?: boolean } = {}
     const response = await strapiFetch<{ data?: unknown }>(`/api/site-setting?${query}`, { timeout: SITE_TIMEOUT_MS })
     const parsed = parseSiteSettings(response.data)
     const settings = resolveSiteMedia(parsed, useRuntimeConfig().public.strapiUrl)
+    // The default language's settings decide the theme (the field is not translated). The switch happens in the background, so nothing here waits for it.
+    // A static build resolves its theme itself (#315) and never switches.
+    if (decidesTheme(locale, buildSiteMode)) observeTheme(settings?.theme)
     const theme = resolveTheme(settings?.theme, runtime.palette, runtime.id)
     const site = { ...mergeSite(defaults, settings), ...(theme && { theme }) }
     const fediverseHandle = siteFediverseHandle(site, parsed?.fediverseUsername)
-    loaded = { site: { ...site, ...(fediverseHandle && { fediverseHandle }) }, fromStrapi: true, securityContact: parsed?.securityContact }
+    loaded = { site: { ...site, ...(fediverseHandle && { fediverseHandle }) }, fromStrapi: true, securityContact: parsed?.securityContact, themeDigest }
   } catch (error: unknown) {
     if (!options.quiet) logError('cms.site-setting', 'Fetching the site settings failed', { error })
-    loaded = { site: defaults, fromStrapi: false }
+    loaded = { site: defaults, fromStrapi: false, themeDigest }
   }
   return { ...loaded, site: { ...loaded.site, modules: effectiveModules(loaded.site.modules, requirements, buildSiteMode) } }
 }
 
 const cache = new Map<Locale, { expires: number, value: Promise<LoadedSite> }>()
+
+/** Forgets the cached site settings; a theme switch calls it so no reader gets overrides resolved against the theme that was replaced. */
+export function clearSiteCache(): void {
+  cache.clear()
+}
 
 /** loadSite() kept for `siteCacheSeconds` (60 by default; at most ten seconds when Strapi failed), for checks that run on every request. */
 export function loadSiteCached(locale: Locale): Promise<LoadedSite> {

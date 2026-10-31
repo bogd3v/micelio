@@ -1,13 +1,16 @@
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve, sep } from 'node:path'
 import { addTypeTemplate, useLogger } from 'nuxt/kit'
 import { isThemePath } from './context'
 import { coreBuildOf } from './core-build'
+import { buildInstallWorker } from './install/bundle-worker'
 import { loadHooks } from './hooks'
 import { readLayoutCss } from './layout/variants'
-import { BUILT_IN_INDEX, BUILT_IN_STORE_PATH, SERVE_PREFIX, STORE_DIR } from './install/constants'
+import { BUILT_IN_INDEX, BUILT_IN_STORE_PATH, INSTALL_INPUTS, SERVE_PREFIX, STORE_DIR } from './install/constants'
 import { installTheme } from './install/install'
+import { lockedDigest } from './install/pinned'
 import type { BuiltInIndex } from './install/types'
+import { readLock } from './registry/lock'
 import { discoverThemes } from './themes'
 import type { ThemeContext } from './types'
 
@@ -43,6 +46,7 @@ export async function setupBuiltInStore(ctx: ThemeContext): Promise<void> {
   // `nuxt prepare` and type checks need the types, not the compiled themes
   if (nuxt.options._prepare) return
   const hooks = loadHooks(nuxt.options.srcDir)
+  const lock = readLock(nuxt.options.rootDir)
   const layoutRoot = join(nuxt.options.srcDir, 'theme/layout')
   let layoutCss = readLayoutCss(layoutRoot)
   const index: BuiltInIndex = { coreBuild: coreBuildOf(layoutCss), buildTheme: ctx.id, themes: {} }
@@ -51,14 +55,19 @@ export async function setupBuiltInStore(ctx: ThemeContext): Promise<void> {
   }
   rmSync(dir, { recursive: true, force: true })
   mkdirSync(dir, { recursive: true })
+  // A server install (ADR 0009, #403) checks a package against the same hooks and compiles it with the same variant CSS as these entries
+  const writeInputs = (): void => writeFileSync(join(dir, INSTALL_INPUTS), JSON.stringify({ hooks: JSON.parse(readFileSync(join(nuxt.options.srcDir, 'theme/hooks.json'), 'utf8')) as unknown, layoutCss }))
 
   async function install(themeDir: string, id: string): Promise<void> {
     const result = await installTheme({ kind: 'folder', dir: themeDir }, { storeDir: dir, hooks, coreBuild: index.coreBuild, allowCode: true, buildChecksOnly: true, layoutCss })
     for (const warning of result.warnings) useLogger('micelio-theme').warn(`Theme "${id}": ${warning}`)
-    index.themes[id] = { digest: result.digest, version: result.manifest.version, code: result.manifest.code }
+    // The lock's digest names the pulled package; a local folder that shadows it (outside CI) is other bytes and carries no pin
+    const pinned = lockedDigest(lock, id, themeDir)
+    index.themes[id] = { digest: result.digest, version: result.manifest.version, code: result.manifest.code, ...(pinned !== undefined && { pinned }) }
   }
   for (const theme of discoverThemes(ctx.roots)) await install(theme.dir, theme.id)
   writeFileSync(join(dir, BUILT_IN_INDEX), JSON.stringify(index))
+  writeInputs()
 
   if (nuxt.options.nitro.static) exposeStatically(nuxt, dir, index.themes[ctx.id]!.digest)
   if (nuxt.options.dev) {
@@ -68,14 +77,18 @@ export async function setupBuiltInStore(ctx: ThemeContext): Promise<void> {
       if (JSON.stringify(edited) === JSON.stringify(layoutCss)) return false
       layoutCss = edited
       index.coreBuild = coreBuildOf(layoutCss)
+      writeInputs()
       for (const theme of discoverThemes(ctx.roots)) await install(theme.dir, theme.id)
       return true
     })
     return
   }
   nuxt.hook('nitro:init', (nitro) => {
-    nitro.hooks.hook('compiled', (compiled) => {
-      cpSync(dir, join(compiled.options.output.serverDir, BUILT_IN_STORE_PATH), { recursive: true })
+    nitro.hooks.hook('compiled', async (compiled) => {
+      const { serverDir } = compiled.options.output
+      cpSync(dir, join(serverDir, BUILT_IN_STORE_PATH), { recursive: true })
+      // The server installs themes in a child process (ADR 0009, section 2), which needs a built worker
+      if (!nuxt.options.nitro.static) await buildInstallWorker(nuxt.options.rootDir, serverDir)
     })
   })
 }

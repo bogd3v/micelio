@@ -3,7 +3,7 @@
   "info": {
     "title": "Micelio site API",
     "version": "0.5.5",
-    "description": "The HTTP routes every Micelio site serves: 39 paths and 41 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
+    "description": "The HTTP routes every Micelio site serves: 40 paths and 42 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
     "license": {
       "name": "AGPL-3.0-only",
       "identifier": "AGPL-3.0-only"
@@ -5492,6 +5492,38 @@
         }
       }
     },
+    "/api/theme/status": {
+      "get": {
+        "operationId": "getApiThemeStatus",
+        "summary": "Get the active theme and the one the site settings ask for",
+        "description": "The state of the theme switch (ADR 0009), read from memory: it calls neither the CMS nor the registry. `error` says why the theme the site settings name was not activated; the active theme stays. Public: the ids and digests are in every page, and the message carries no URL or path.",
+        "tags": [
+          "Content"
+        ],
+        "responses": {
+          "200": {
+            "description": "The active, requested and last good theme, the last error, and what this image can activate. Cache-Control: `public, s-maxage=5, stale-while-revalidate=10`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThemeStatus"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/es/feed.xml": {
       "get": {
         "operationId": "getEsFeedXml",
@@ -9743,6 +9775,218 @@
         ],
         "additionalProperties": false,
         "description": "One quote or a grid of quotes."
+      },
+      "ThemeStatus": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              },
+              "digest": {
+                "type": "string"
+              },
+              "packageDigest": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "digest",
+              "packageDigest"
+            ],
+            "additionalProperties": false,
+            "description": "The theme every page renders now."
+          },
+          "requested": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "digest": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the site settings name now; `null` when they name none and the instance default applies."
+          },
+          "lastGood": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "digest": {
+                    "type": "string"
+                  },
+                  "packageDigest": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "digest",
+                  "packageDigest"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The theme that was active before the last switch."
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "rule": {
+                    "type": "string",
+                    "enum": [
+                      "pin",
+                      "unknown",
+                      "code",
+                      "off",
+                      "tier",
+                      "limit",
+                      "registry",
+                      "install",
+                      "integrity"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "at": {
+                    "type": "string"
+                  },
+                  "requested": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "string"
+                          },
+                          "digest": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "rule",
+                  "message",
+                  "at",
+                  "requested"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the last attempt to switch failed, until a later one succeeds; the active theme stays meanwhile. The message is one line with no URL and no path."
+          },
+          "available": {
+            "type": "object",
+            "properties": {
+              "builtIn": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "code"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "registry": {
+                "type": "object",
+                "properties": {
+                  "install": {
+                    "type": "boolean"
+                  },
+                  "tiers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "install",
+                  "tiers"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "builtIn",
+              "registry"
+            ],
+            "additionalProperties": false,
+            "description": "What this image can activate: the themes compiled into it (a code theme only from here) and whether data-only themes are installed from the registry, with the tiers allowed."
+          }
+        },
+        "required": [
+          "active",
+          "requested",
+          "lastGood",
+          "error",
+          "available"
+        ],
+        "additionalProperties": false,
+        "description": "The theme the server renders, the one the site settings ask for, and why a switch did not happen."
       },
       "UnsubscribeResponse": {
         "type": "object",

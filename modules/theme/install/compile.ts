@@ -1,10 +1,8 @@
-import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
 import { dirname, join, resolve, sep } from 'node:path'
 import { brotliCompressSync, constants as zlib } from 'node:zlib'
 import { bundleAsync } from 'lightningcss'
-import { CONTRACT_VERSION, DEFAULT_LAYOUT, FONT_ASSET_FILE, IMAGE_FILE, IMAGES_URL, URL_FUNCTIONS } from '../constants'
+import { DEFAULT_LAYOUT, FONT_ASSET_FILE, IMAGE_FILE, IMAGES_URL, URL_FUNCTIONS } from '../constants'
 import { cssUrls } from '../css-rules'
 import { themeDisplay } from '../display-family'
 import { readThemeFile } from '../files'
@@ -14,10 +12,13 @@ import { gzipDeterministic } from '../registry/gzip'
 import { buildTokensCss } from '../tokens.mjs'
 import type { InstalledTheme, LayoutRegion } from '../types'
 import { formatContractVersion, parseContractVersion } from '../version'
-import { COMPILED_DIGEST, COMPILER_VERSION, CSS_TARGETS, ENTRY_FILES, MAX_COMPILED_CSS_BYTES, MAX_MESSAGES_BYTES, PRECOMPRESSED, SERVE_PREFIX, STORE_VERSION } from './constants'
+import { COMPILED_DIGEST, ENTRY_FILES, MAX_COMPILED_CSS_BYTES, MAX_MESSAGES_BYTES, PRECOMPRESSED, SERVE_PREFIX } from './constants'
 import { InstallError } from './error'
+import { LIGHTNINGCSS_TARGETS, compileKey, compiledDigest } from './key'
 import { compileMessages, messageProblem } from './messages'
 import type { LayoutCss, RuntimeData } from './types'
+
+export { compileKey, compiledDigest } from './key'
 
 /** A theme compiled in memory: the files of its store entry, before the integrity manifest. */
 export interface CompiledTheme {
@@ -51,49 +52,8 @@ const REGION_LAYERS: ReadonlyArray<readonly [LayoutRegion, string]> = [
   ['article', 'myc.pages'],
 ]
 
-const LIGHTNINGCSS_TARGETS = Object.fromEntries(
-  Object.entries(CSS_TARGETS).map(([browser, [major, minor = 0]]) => [browser, (major << 16) | (minor << 8)]),
-)
 const LOCALE_FILE = /^([a-z]{2,3}(?:-[A-Za-z0-9]{2,8})?)\.json$/
 const VIRTUAL = { tokens: '.micelio-tokens.css', segmented: '.micelio-segmented.css', entry: '.micelio-entry.css' }
-
-function sha256(data: Uint8Array | string): string {
-  return createHash('sha256').update(data).digest('hex')
-}
-
-function packageVersion(name: string): string {
-  let dir = dirname(createRequire(import.meta.url).resolve(name))
-  for (let up = dirname(dir); ; dir = up, up = dirname(dir)) {
-    const file = join(dir, 'package.json')
-    if (existsSync(file)) {
-      const pkg = JSON.parse(readFileSync(file, 'utf8')) as { name?: string, version?: string }
-      if (pkg.name === name && pkg.version) return pkg.version
-    }
-    if (up === dir) throw new Error(`cannot find the version of ${name}`)
-  }
-}
-
-/**
- * Hash of everything besides the package that decides the compiled bytes: the compiler, the core build, Lightning CSS and the message compiler with their targets, and the contract.
- *
- * @param coreBuild - Identifies the core build; a different one gives a different key, so new URLs (ADR 0009, section 1).
- */
-export function compileKey(coreBuild: string): string {
-  return sha256(JSON.stringify({
-    compiler: COMPILER_VERSION,
-    store: STORE_VERSION,
-    core: coreBuild,
-    contract: CONTRACT_VERSION,
-    lightningcss: packageVersion('lightningcss'),
-    messageCompiler: packageVersion('@intlify/message-compiler'),
-    targets: LIGHTNINGCSS_TARGETS,
-  }))
-}
-
-/** The digest of a compiled entry: a hash of its inputs, so it is known before compiling and the CSS can name its own URLs. */
-export function compiledDigest(packageDigest: string, key: string): string {
-  return sha256(`${packageDigest}\n${key}`)
-}
 
 /** Every regular file under `dir` as a path with `/` separators, sorted; a symlink is an error and nothing is followed. */
 function walk(dir: string, prefix = ''): string[] {

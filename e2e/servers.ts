@@ -19,6 +19,8 @@ interface Servers {
   siteUrl?: string
   /** Serve this installed theme instead of the build's (`NUXT_PUBLIC_THEME` read at boot; e2e/runtime-theme.spec.ts) */
   theme?: string
+  /** Let a test change the theme the site settings name (`POST /__mock/theme`), and cache the site settings for one second (e2e/theme-switch.spec.ts) */
+  themeSwitch?: boolean
   /** Extra theme directories (`MICELIO_THEME_DIRS`): dev compiles them; a build must have been made with them */
   themeDirs?: string
   /**
@@ -29,11 +31,11 @@ interface Servers {
 }
 
 /** The mock Strapi and the Nuxt server (dev, or the build with E2E_BUILD=1) pointed at it, with BogDev's site values (neutral ones with `emptySite`). */
-export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false, privacyJurisdiction = '', categoryArticles = false, emptySite = false, siteUrl = emptySite ? 'https://example.com' : 'https://bogdev.com.co', theme, themeDirs, preview }: Servers): PlaywrightTestConfig['webServer'] {
+export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false, privacyJurisdiction = '', categoryArticles = false, emptySite = false, siteUrl = emptySite ? 'https://example.com' : 'https://bogdev.com.co', theme, themeDirs, themeSwitch = false, preview }: Servers): PlaywrightTestConfig['webServer'] {
   const scheme = preview ? 'https' : 'http'
   return [
     {
-      command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=${scheme}://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''}${homePage ? ' MOCK_HOME_PAGE=1' : ''}${privacyJurisdiction ? ` MOCK_PRIVACY_JURISDICTION=${privacyJurisdiction}` : ''}${categoryArticles ? ' MOCK_CATEGORY_ARTICLES=1' : ''}${emptySite ? ' MOCK_EMPTY_SITE=1' : ''}${preview ? ' MOCK_PREVIEW=1' : ''} node e2e/mock-strapi.mjs`,
+      command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=${scheme}://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''}${themeSwitch ? ' MOCK_THEME_SWITCH=1' : ''}${homePage ? ' MOCK_HOME_PAGE=1' : ''}${privacyJurisdiction ? ` MOCK_PRIVACY_JURISDICTION=${privacyJurisdiction}` : ''}${categoryArticles ? ' MOCK_CATEGORY_ARTICLES=1' : ''}${emptySite ? ' MOCK_EMPTY_SITE=1' : ''}${preview ? ' MOCK_PREVIEW=1' : ''} node e2e/mock-strapi.mjs`,
       port: mockPort,
       reuseExistingServer: !process.env.CI,
       timeout: 15_000,
@@ -48,6 +50,8 @@ export function webServers({ mockPort, appPort, modulesOff = false, themeOverrid
         `NUXT_PUBLIC_SITE_URL=${siteUrl}`,
         'NUXT_STRAPI_API_TOKEN=e2e-api-token',
         ...(theme ? [`NUXT_PUBLIC_THEME=${theme}`] : []),
+        // The site settings are cached for 60 s; a test waits for a switch, not for the cache
+        ...(themeSwitch ? ['NUXT_SITE_CACHE_SECONDS=1'] : []),
         ...(themeDirs ? [`MICELIO_THEME_DIRS=${themeDirs}`] : []),
         ...(preview
           ? [

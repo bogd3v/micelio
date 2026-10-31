@@ -9,36 +9,7 @@ import { createOciClient } from './oci'
 import type { OciClientOptions, OciDescriptor } from './oci'
 import { assertPin } from './pin'
 import { compareVersions, highestSatisfying } from './semver'
-import type { BundleVerifier, LockEntry, RegistryIndex, SignerIdentity, ThemePin } from './types'
-
-/** A theme version the index offers, resolved to what a lock entry needs. */
-export interface ResolvedTheme extends ThemePin, Pick<LockEntry, 'contract' | 'tier' | 'distribution' | 'code'> {
-  /** The registry the entry was resolved against, as set. */
-  registry: string
-}
-
-/** A package the registry served and whose attestation verified. */
-export interface FetchedPackage {
-  /** The `.tgz`, at most 2 MiB, whose sha256 equals the pin's digest. */
-  data: Buffer
-  /** The Sigstore bundle that vouches for it, to keep next to the package. */
-  bundle: Buffer
-}
-
-/** The registry behind one interface, so a server, the static builder and the CLI share it. */
-export interface ThemeRegistry {
-  /** The highest published version of `id` that satisfies `range` (default `*`) and this core's contract. */
-  resolve: (id: string, range?: string) => Promise<ResolvedTheme>
-  /** The versions of `id` newer than `current` that this core can install, highest first. */
-  newer: (id: string, current: string) => Promise<string[]>
-  /**
-   * The package a pin names with its attestation, after the index lists it with the same digest and status `published`, or
-   * `yanked` or `incompatible` when `locked` (the digest is this site's own pin), and the attestation verifies.
-   */
-  fetch: (pin: ThemePin, options?: { locked?: boolean }) => Promise<FetchedPackage>
-  /** Verifies, with no network, the attestation bundle of a package that was kept (for example in the cache). */
-  verify: (pin: ThemePin, bundle: Uint8Array) => void
-}
+import type { BundleVerifier, RegistryIndex, SignerIdentity, ThemePin, ThemeRegistry } from './types'
 
 /** Options of `createRegistry`. */
 export interface RegistryOptions extends Partial<Pick<OciClientOptions, 'fetch' | 'timeoutMs'>> {
@@ -157,6 +128,17 @@ export function createRegistry(options: RegistryOptions): ThemeRegistry {
         .filter(([version, entry]) => entry.status === 'published' && entry.distribution === 'public' && compatible(entry.contract) && compareVersions(version, current) > 0)
         .map(([version]) => version)
         .sort((a, b) => compareVersions(b, a))
+    },
+    async listed(pin) {
+      assertName(pin.id)
+      assertPin(pin)
+      try {
+        signer()
+        const found = versionOf(await index(), pin)
+        return found?.digest === pin.digest ? found : undefined
+      } catch (error) {
+        throw withPin(error, pin)
+      }
     },
     async fetch(pin, fetchOptions = {}) {
       assertName(pin.id)

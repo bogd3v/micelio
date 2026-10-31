@@ -38,6 +38,7 @@ export const MOCK_ROUTES: Record<string, string> = {
   'GET /api/fediverse/articles/stats': 'the fediverse module is off on the contract server (no fediverse configuration)',
   'GET /api/fediverse/articles/doc-vue-es/stats': 'the fediverse module is off on the contract server (no fediverse configuration)',
   'GET /uploads/*': 'static files, not an API answer',
+  'POST /__mock/theme': 'a route of the mock itself, not of the CMS: it changes the theme the site settings name for e2e/theme-switch.spec.ts',
   'POST /__mock/preview-token': 'a route of the mock itself, not of the CMS: it makes a preview token for e2e/preview',
   'POST /__mock/preview-system-grant': 'a route of the mock itself, not of the CMS: it makes a system grant for e2e/preview, as the plugin does for itself at publish',
 }

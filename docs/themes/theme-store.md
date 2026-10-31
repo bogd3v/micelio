@@ -1,6 +1,6 @@
 # The theme store and the install step
 
-How a theme becomes something a site can serve without a build. Explanation and reference for contributors and theme creators; the decision is [ADR 0009](../adr/0009-theme-delivery-at-runtime.md) (still `Proposed`). This page covers what `installTheme()` and `installIsolated()` do today (#400). The server and CLI callers come with the next parts.
+How a theme becomes something a site can serve without a build. Explanation and reference for contributors and theme creators; the decision is [ADR 0009](../adr/0009-theme-delivery-at-runtime.md). This page covers what `installTheme()` and `installIsolated()` do (#400) and how the server switches themes with them (#403, below).
 
 ## What `installTheme()` does
 
@@ -47,7 +47,7 @@ In a component test, `test/nuxt/setup.ts` gives every test the starter's data an
 
 `installIsolated(source, options, limits)` (`modules/theme/install/isolated.ts`) runs `installTheme` in a child process: an empty environment, `--max-old-space-size=256` and a `SIGKILL` at 60 s by default, and one install at a time (a second caller waits). Lightning CSS is native code, so a `worker_thread` limit could not stop it. A failure comes back as the same `InstallError`; running out of memory, exiting early and the timeout are rule `compile`. The child's peak memory is returned as `maxRssKb`.
 
-The worker is `worker.ts` next to it, loaded through jiti in tests and dev. A built server ships its own `worker.mjs` (decided with the callers, #403). A compiled entry holds at most 4 MiB of files, not counting the gzip and brotli copies.
+The worker is `worker.ts` next to it, loaded through jiti in tests and dev. A production build bundles it as `.output/server/micelio/worker.mjs` (`bundle-worker.ts`), with the native Lightning CSS copied beside it, and the server passes that path. A compiled entry holds at most 4 MiB of files, not counting the gzip and brotli copies.
 
 ## What a store entry holds
 
@@ -95,3 +95,15 @@ Errors are `InstallError` with a `rule` (`pin`, `package`, `identity`, `code`, `
 ## How a page links the theme
 
 `server/plugins/themeMode.ts` (`insertThemeLinks`) puts an inline `<style>` with the `@layer` order statement and `<link rel="stylesheet" href="/_t/<digest>/theme.css">` in the head right before the build's own stylesheet, after the init script, and the font preloads (`/_t/<digest>/fonts/<file>`) right after it. Lightning CSS drops the statement when it bundles, so the inline copy (`LAYER_ORDER`, a test keeps it equal to the first line of `main.css`) is what orders the layers. The theme's roles come before the build's stylesheet, as when they were bundled. A page with sections also links `/_t/<digest>/sections.css` (`SectionRenderer.vue`, when `useThemeData().sections` is true). The CSS of the layout variants is in `theme.css`, so it comes before the build's own rules of `myc.layout` and `myc.pages` (ADR 0009, amendment of 2026-10-22); the header's `:root` rules are scoped by `data-layout-header` only on a build with the specimen, the one place another header's CSS is bundled too, and `themeMode.ts` writes that attribute only there. The theme's `fonts/` is no longer copied to `/fonts/`.
+
+## How the server switches themes
+
+`server/lib/themeSwitch/` holds the one state of the active theme (#403). `server/plugins/builtInTheme.ts` starts it at boot: it reads the store variables (`readInstallConfig`, `readTiers`), loads the default theme from the built-in store, and `ready` cleans the store, compiles the remembered pins again for this core (`recompileStored`, one pin at a time, each attestation checked against its own digest) and activates them; the first request waits for that local work and for nothing else. A read of the site settings that comes before `ready` ends (the config check makes one) is recorded and resolved after it (`hold`), so a theme the CMS named while the server was down is tried after the remembered one is restored, not instead of it. The site settings are read once more in the background; a slow Strapi or registry holds no request. The build writes `install-inputs.json` next to the built-in store's `index.json` (the public hooks and the variant CSS), so a server install compiles with the same inputs as the image: the same package gives the same digest.
+
+- `createThemeSwitch()` (`switch.ts`) is pure of Nitro and tested with a fake registry. `observe(settings)` is called by `loadSite()` for the default language; it parses the pin, queues the target and returns. One switch runs at a time and the latest request wins.
+- `activeTheme()` (`server/utils/activeTheme.ts`) is what every reader calls; a request keeps the theme it began with in `event.context.activeTheme` and the digest in the `x-micelio-theme` request header.
+- `servedTheme(digest)` answers `/_t/`: the active theme, the last good one, and up to two replaced ones for 3,660 s.
+- `limits.ts` holds the install rate, the backoff and the store caps; `guardedFetch.ts` the private-address check on every hop of a download; `state.ts` the pins kept in `<store>/v1/state.json`; `prune.ts` the cleanup behind `npm run theme:prune`.
+- A switch calls `clearSiteCache()` and `purgePageCache()`, so nothing cached names the old stylesheet. The status is `themeStatus()` behind `GET /api/theme/status`.
+
+The operator's view is in [Install themes from the registry](../operate/themes.md#switch-the-theme-from-the-cms); the checks are listed in [docs/security.md](../security.md).
