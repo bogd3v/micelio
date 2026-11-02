@@ -75,7 +75,7 @@
     "qs": "^6.16.1",
     "quickjs-emscripten-core": "0.32.0",
     "sanitize-html": "^2.17.5",
-    "three": "0.186.1",
+    "three": "0.187.0",
     "vue": "^3.5.43",
     "vue-router": "^5.0.4",
     "zod": "^4.6.7"
