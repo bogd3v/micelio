@@ -51,6 +51,7 @@
     "test:e2e:scene-ui": "playwright test -c playwright.scene.config.ts && playwright test -c playwright.native-ui.config.ts",
     "test:static": "node scripts/test-static.mjs",
     "test:landing": "node scripts/test-landing.mjs",
+    "test:static-theme": "node scripts/test-static-theme.mjs",
     "test:theme": "playwright test -c playwright.theme.config.ts",
     "test:theme:update": "playwright test -c playwright.theme.config.ts --update-snapshots=changed",
     "perf": "node scripts/perf/measure.mjs --serve"

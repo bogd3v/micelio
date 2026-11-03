@@ -24,7 +24,19 @@ Site settings can still adjust the installed theme in four ways, called **overri
 
 ### Theme ID
 
-The site has one theme, the one it was built with. A Theme ID that names another theme is ignored, and the site keeps its own theme. Leave this field empty, or enter the name of the theme that the operator installed. Ask the operator which one it is.
+The Theme ID, with the exact version and the digest the theme picker adds,
+names the theme the site uses.
+Leave the fields empty to use the theme the operator set up.
+Ask the operator which themes the site can use.
+
+A site that runs on a server changes theme within about a minute.
+A static or landing site changes theme the next time it is rebuilt,
+which saving the site settings starts.
+If the theme cannot be used
+(it does not exist, it is not the version you named, or the operator does not allow its tier),
+a server site keeps its current theme.
+A static site is not rebuilt: the published site stays as it was.
+The operator can see why in the output of the rebuild.
 
 ### Default mode
 

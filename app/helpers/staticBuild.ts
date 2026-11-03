@@ -1,4 +1,5 @@
 import { SECURITY_TXT_PATH, STATIC_CSP } from '../constants/security'
+import { STATIC_AUDIT_PATH } from '../constants/site'
 import { SLUG_PATTERN } from '../constants/slug'
 import { feedPath } from './feed'
 import { localePrefixSource } from './localePrefix'
@@ -229,8 +230,8 @@ const REVALIDATE = 'public, max-age=0, must-revalidate'
 /** Strapi keeps a file's URL when it is replaced, so `_ipx` (named after the source URL) revalidates; `_nuxt` (Vite hash), `_media` (byte hash) and `_t` (the digest of the compiled theme) never change under a name. */
 /** `_islands` files carry a content hash in the name. */
 const IMMUTABLE_PATHS: readonly string[] = ['/_nuxt/*', '/_media/*', '/_t/*', '/_islands/*']
-/** `/pagefind/*` is rebuilt with every generate (`pagefind.js` keeps its name), so it is never immutable. */
-const REVALIDATED_PATHS: readonly string[] = ['/_ipx/*', '/pagefind/*']
+/** `/pagefind/*` is rebuilt with every generate (`pagefind.js` keeps its name), so it is never immutable; neither is the audit file, which names the theme of the build. */
+const REVALIDATED_PATHS: readonly string[] = ['/_ipx/*', '/pagefind/*', STATIC_AUDIT_PATH]
 /** Files copied from Strapi are data, never documents: an SVG opened directly runs nothing and loads nothing. Sent on top of the site policy (repeated policies only tighten). */
 const WORKERS_PATH = '/_islands/workers/*'
 const MEDIA_POLICY = 'default-src \'none\'; style-src \'unsafe-inline\'; img-src \'self\' data:; sandbox'

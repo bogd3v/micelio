@@ -1,16 +1,22 @@
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { writeFile } from 'node:fs/promises'
 import { join, resolve, sep } from 'node:path'
 import { addTypeTemplate, useLogger } from 'nuxt/kit'
+import { STATIC_AUDIT_PATH } from '../../app/constants/site'
+import { isStaticMode, parseSiteMode } from '../../app/helpers/siteMode'
 import { isThemePath } from './context'
 import { coreBuildOf } from './core-build'
 import { buildInstallWorker } from './install/bundle-worker'
 import { loadHooks } from './hooks'
 import { readLayoutCss } from './layout/variants'
-import { BUILT_IN_INDEX, BUILT_IN_STORE_PATH, INSTALL_INPUTS, SERVE_PREFIX, STORE_DIR } from './install/constants'
+import { BUILT_IN_INDEX, BUILT_IN_STORE_PATH, INSTALL_INPUTS, SERVE_PREFIX } from './install/constants'
 import { installTheme } from './install/install'
 import { lockedDigest } from './install/pinned'
 import type { BuiltInIndex } from './install/types'
+import { coreVersion } from './registry/commands'
 import { readLock } from './registry/lock'
+import { adoptResolvedTheme, copyPublishedFiles, resolveStaticTheme } from './static-theme'
+import type { StaticTheme } from './static-theme'
 import { discoverThemes } from './themes'
 import type { ThemeContext } from './types'
 
@@ -26,7 +32,7 @@ const STALE_STORE_MS = 60 * 60 * 1000
  * and were validated by `createContext`. Each is compiled for this build (`coreBuild` is a hash of the compiler's sources and of the layout variants' CSS, which each entry carries, so the same sources give the same URLs), code themes included,
  * since their slots are compiled into the same build. The store lives under `node_modules/.cache/micelio/built-in-store/<build id>/`, is rebuilt on every
  * start, folders older than an hour are removed, and a production build copies it to `.output/server/micelio/store`. The server finds it by `#micelio/built-in-store` in
- * development and next to its entry in production. A static build also publishes the build theme's files at `/_t/<digest>/`, and
+ * development and next to its entry in production. A static build also resolves the theme the site settings name and publishes its files at `/_t/<digest>/` (the build's theme when they name none), and
  * development installs a theme again when its folder changes.
  */
 export async function setupBuiltInStore(ctx: ThemeContext): Promise<void> {
@@ -69,7 +75,11 @@ export async function setupBuiltInStore(ctx: ThemeContext): Promise<void> {
   writeFileSync(join(dir, BUILT_IN_INDEX), JSON.stringify(index))
   writeInputs()
 
-  if (nuxt.options.nitro.static) exposeStatically(nuxt, dir, index.themes[ctx.id]!.digest)
+  if (nuxt.options.nitro.static) {
+    const theme = await resolveForStaticBuild(ctx, dir, index)
+    exposeStatically(nuxt, dir, theme?.identity.digest ?? index.themes[ctx.id]!.digest)
+    if (theme) auditResolvedTheme(nuxt, theme)
+  }
   if (nuxt.options.dev) {
     // The dev server reads the cache folder itself, which is the one an edit updates; a copy next to its entry would shadow it
     reloadOnEdit(ctx, install, () => writeFileSync(join(dir, BUILT_IN_INDEX), JSON.stringify(index)), async () => {
@@ -94,12 +104,52 @@ export async function setupBuiltInStore(ctx: ThemeContext): Promise<void> {
 }
 
 /**
- * A static site has no server to answer `/_t/<digest>/…`, so the files of the build's theme are published as plain assets at that URL.
- * The precompressed copies, the manifest and `runtime.json` stay out: the host and Nitro's own compression do the first, the others are for the server, and a static page has no script to read them.
+ * A static or landing build takes the theme the site settings name, from the image or the registry (ADR 0009, section 7, #315).
+ *
+ * @remarks
+ * The settings are read with the build token and resolved by the server's theme switch (`resolveStaticTheme`), so the pin, the tier, the signed
+ * index, the digest and the attestation are checked as they are for a running server. A theme the image lacks is installed into `dir`, added to
+ * the index, and made the default of the prerender (`NUXT_PUBLIC_THEME`), which loads it like any built-in theme. A theme that is refused fails
+ * the build, and the entrypoint of the builder image then leaves the published site as it was. When the settings name no theme, the default theme applies.
+ */
+async function resolveForStaticBuild(ctx: ThemeContext, dir: string, index: BuiltInIndex): Promise<StaticTheme | undefined> {
+  const { nuxt } = ctx
+  if (!isStaticMode(parseSiteMode(nuxt.options.runtimeConfig.public.siteMode))) return undefined
+  const logger = useLogger('micelio-theme')
+  const theme = await resolveStaticTheme({
+    builtInDir: dir,
+    configured: ctx.id,
+    env: process.env,
+    // Runtime overrides (NUXT_*) are not applied to the config at build setup
+    strapi: {
+      strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || String(nuxt.options.runtimeConfig.public.strapiUrl || ''),
+      strapiApiToken: process.env.NUXT_STRAPI_API_TOKEN || String(nuxt.options.runtimeConfig.strapiApiToken || ''),
+    },
+    core: coreVersion(nuxt.options.rootDir),
+    warn: (event, message, cause) => logger.warn(`${event}: ${message}${cause ? ` (${cause})` : ''}`),
+  })
+  const { identity } = theme
+  adoptResolvedTheme(dir, index, theme)
+  logger.info(`Theme of the site: ${identity.id}${identity.version ? `@${identity.version}` : ''} (${theme.source}), published at /_t/${identity.digest}/`)
+  return theme
+}
+
+/** Writes what the build resolved to `/_micelio.json` once the pages are generated. */
+function auditResolvedTheme(nuxt: ThemeContext['nuxt'], { identity, source }: StaticTheme): void {
+  nuxt.hook('nitro:init', (nitro) => {
+    nitro.hooks.hook('prerender:done', async () => {
+      const theme = { id: identity.id, version: identity.version ?? null, digest: identity.digest, packageDigest: identity.packageDigest, source }
+      await writeFile(join(nitro.options.output.publicDir, STATIC_AUDIT_PATH), `${JSON.stringify({ theme })}\n`)
+    })
+  })
+}
+
+/**
+ * A static site has no server to answer `/_t/<digest>/…`, so the files of the theme the build rendered with are published as plain assets at that URL
+ * (`copyPublishedFiles` says which).
  */
 function exposeStatically(nuxt: ThemeContext['nuxt'], dir: string, digest: string): void {
-  const files = join(dir, 'published', digest)
-  cpSync(join(dir, STORE_DIR, 'entries', digest), files, { recursive: true, filter: source => !/(\.(gz|br)|manifest\.json|runtime\.json)$/.test(source) })
+  const files = copyPublishedFiles(dir, digest)
   ;(nuxt.options.nitro.publicAssets ||= []).push({ dir: files, baseURL: `${SERVE_PREFIX}/${digest}`, maxAge: 60 * 60 * 24 * 365 })
 }
 

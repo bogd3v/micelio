@@ -30,6 +30,13 @@ export interface StartOptions {
   warn: SwitchDeps['warn']
   /** Development reads a theme from the store again on each use, since the build installs an edited one under the same id. */
   reread?: boolean
+  /**
+   * The version of the core, so the registry client still offers a version the index marks `incompatible` only for newer cores (#314).
+   * The server leaves it out, which refuses every such version; a static build passes its own, as `theme:pull` does.
+   */
+  core?: string
+  /** The package digest of the theme the site is live on, which a yanked version may still install (`SwitchDeps.live`). A static build reads it from the site it published. */
+  live?: string
 }
 
 /** The switch of this process and the boot work that must finish before the first request. */
@@ -56,7 +63,7 @@ function installOf(options: StartOptions): SwitchInstall | null {
     enabled: config.installEnabled,
     tiers: readTiers(options.env.MICELIO_THEME_TIERS),
     options: { storeDir: config.storeDir, hooks: inputs.hooks, coreBuild: inputs.coreBuild, layoutCss: inputs.layoutCss },
-    registry: signal => createRegistry({ registry: address, identity, timeoutMs: DOWNLOAD_TIMEOUT_MS, fetch: createGuardedFetch({ registryHost, signal }) }),
+    registry: signal => createRegistry({ registry: address, identity, timeoutMs: DOWNLOAD_TIMEOUT_MS, fetch: createGuardedFetch({ registryHost, signal }), ...(options.core && { core: options.core }) }),
     run: (source, installOptions) => installIsolated(source, installOptions, existsSync(worker) ? { worker } : {}),
   }
 }
@@ -90,6 +97,7 @@ export function startThemeSwitch(options: StartOptions): StartedSwitch {
     builtIn,
     builtInList: () => (options.reread ? listBuiltInThemes(options.builtInDir) : (listed ??= listBuiltInThemes(options.builtInDir))),
     install,
+    live: options.live,
     persist: install ? pins => writePins(install.storeDir, pins) : undefined,
     onSwitch: options.onSwitch,
     warn: options.warn,

@@ -90,6 +90,11 @@ The `Dockerfile` runs `npm run theme:pull -- --frozen` before `npm run build`. A
 
 What the server does with the pin, in order: it checks its grammar; uses a theme built into the image or already in the store; and otherwise, if `MICELIO_THEME_INSTALL` is on, downloads it from `MICELIO_THEME_REGISTRY` and checks the index, the tier (`MICELIO_THEME_TIERS`, default `official,verified`), the attestation and the digest, unpacks it with the safe unpack, validates the contract and the contrast and budget checks, and compiles it in a child process. A code theme (one with `slots/` or `templates/`) activates only on an image built with that exact package. At most 6 installs an hour; a pin that failed waits a minute, then two, up to an hour; the store holds at most 50 entries and 256 MiB.
 
+**Static and landing sites** have no server to switch.
+They read the same settings when they are generated, resolve them with the same checks
+and fail the build, leaving the published site as it was, when the theme cannot be used:
+[The theme of the site](static-site.md#the-theme-of-the-site).
+
 **Seeing why it did not change.** `GET /api/theme/status` (public, from memory) answers the active theme, the requested pin, the last good theme, the last error (one line: the rule and the reason) and what the image can activate. A failure never changes the site: the current theme stays. A registry that is down changes nothing already installed, and the server tries the same request again after a minute.
 
 **Replicas.** Either mount one store for all replicas (a volume where creating a file exclusively works; the first replica to see a new pin installs it and the others find it installed) or give each replica its own volume and let each install (the limits then apply to each). A platform that installs centrally sets `MICELIO_THEME_INSTALL=false` and mounts the store read-only: a missing theme is then reported on the status, never downloaded.

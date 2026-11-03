@@ -10,3 +10,6 @@ export const FOOTER_SOCIALS: Readonly<Partial<Record<SocialNetwork, { label: str
   bluesky: { label: 'Bluesky', abbr: 'bs' },
   website: { label: 'Website', abbr: 'www' },
 }
+
+/** Where a static or landing build writes what it resolved (the theme: id, version, digests), so what is live can be audited. It changes with every build, so hosts revalidate it. */
+export const STATIC_AUDIT_PATH = '/_micelio.json'

@@ -181,6 +181,10 @@ jobs:
         env:
           STATIC_SKIP_GENERATE: 1
           STATIC_BROWSERS: chromium,firefox,webkit
+      # The builder's generate command with the theme named by the site settings: a switch, and a refusal that keeps the last site (#315).
+      # Last, because it generates into .output/public, which the two steps above test as the one site they generated
+      - name: Resolve the theme from the site settings
+        run: npm run test:static-theme
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

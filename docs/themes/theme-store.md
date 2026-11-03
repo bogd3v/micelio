@@ -29,7 +29,19 @@ At boot `server/plugins/builtInTheme.ts` loads the build's theme from it, verifi
 
 ### Static builds and development
 
-A static site has no server to answer `/_t/<digest>/…`, so a static build (`NUXT_PUBLIC_SITE_MODE=static` or `landing`) publishes the build theme's `theme.css`, `sections.css`, fonts and images as plain assets at that URL (not `runtime.json`, the manifest or the precompressed copies: a static page has no script to read the first two, and the host compresses). `_headers` gives `/_t/*` the immutable cache and the same sandbox policy the server sends, and the speculation rules and the script-reachability check skip the folder.
+A static site has no server to answer `/_t/<digest>/…`.
+A static build (`NUXT_PUBLIC_SITE_MODE=static` or `landing`) therefore publishes
+the files of the theme it rendered with, `theme.css`, `sections.css`, fonts and images,
+as plain assets at that URL.
+That theme is the one the site settings name, resolved before the pages are rendered
+(`modules/theme/static-theme.ts`,
+[Hosting a static site](../operate/static-site.md#the-theme-of-the-site)),
+or the default theme when they name none.
+`runtime.json`, the manifest and the precompressed copies stay out:
+a static page has no script to read the first two, and the host compresses.
+`_headers` gives `/_t/*` the immutable cache and the same sandbox policy the server sends,
+and the speculation rules and the script-reachability check skip the folder.
+The build also writes `/_micelio.json` with the id, version and digests of that theme.
 
 In development the server reads the cache folder directly. When a file of a theme's folder is saved, the build installs that theme again, rewrites `index.json`, reloads the page, and the server loads the new entry on its next request (the digest changes with the content). A theme that does not validate yet is reported and the last good entry stays.
 

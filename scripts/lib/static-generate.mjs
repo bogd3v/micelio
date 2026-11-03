@@ -1,4 +1,4 @@
-// Generates the static site against the mock Strapi (shared by scripts/test-static.mjs and scripts/perf/measure.mjs).
+// Generates the static site against the mock Strapi (shared by scripts/test-static.mjs, test-static-theme.mjs and scripts/perf/measure.mjs).
 import { spawn, spawnSync } from 'node:child_process'
 
 function sleep(ms) {
@@ -14,6 +14,18 @@ export async function waitFor(url, attempts = 50) {
       if (left <= 0) throw new Error(`${url} did not answer`)
       await sleep(200)
     }
+  }
+}
+
+/** The environment of a static build against the mock Strapi on `mockPort`; `siteUrl` is the site's origin. */
+export function staticEnv({ mockPort, siteUrl = 'https://example.com' }) {
+  return {
+    NUXT_PUBLIC_STRAPI_URL: `http://127.0.0.1:${mockPort}`,
+    // Any value: the mock does not check it, the module only requires it
+    NUXT_STRAPI_API_TOKEN: 'e2e-build-token',
+    NUXT_PUBLIC_SITE_URL: siteUrl,
+    NUXT_MEDIA_URL: 'https://resources.example.com',
+    NUXT_PUBLIC_FEDIVERSE_HANDLE: '@blog@cms.example.com',
   }
 }
 
@@ -34,17 +46,7 @@ export async function generateStatic({ mockPort, appPort, mode = 'static', extra
     if (early) throw early
     const result = spawnSync('npm', ['run', 'generate'], {
       stdio: 'inherit',
-      env: {
-        ...process.env,
-        ...extraEnv,
-        NUXT_PUBLIC_SITE_MODE: mode,
-        NUXT_PUBLIC_STRAPI_URL: `http://127.0.0.1:${mockPort}`,
-        // Any value: the mock does not check it, the module only requires it
-        NUXT_STRAPI_API_TOKEN: 'e2e-build-token',
-        NUXT_PUBLIC_SITE_URL: siteUrl,
-        NUXT_MEDIA_URL: 'https://resources.example.com',
-        NUXT_PUBLIC_FEDIVERSE_HANDLE: '@blog@cms.example.com',
-      },
+      env: { ...process.env, ...extraEnv, ...staticEnv({ mockPort, siteUrl }), NUXT_PUBLIC_SITE_MODE: mode },
     })
     return result.status ?? 1
   } finally {
