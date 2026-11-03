@@ -3,6 +3,9 @@
 **Status:** Accepted
 **Date:** 2026-10-21
 **Deciders:** Micelio maintainer
+**Amended:** 2026-11-03: the presentation options vocabulary
+and the ordering rule of sections 1 and 2
+(bogd3v/micelio-plugin-core#48, bogd3v/micelio#803)
 
 ## Context
 
@@ -25,13 +28,45 @@ A builder on top of that makes every block change a surprise for themes, for sto
 | --- | --- |
 | `id` | Stable, kebab-case, unique in the catalogue (`hero`, `feature-grid`). It never changes: not at the cut-over of [ADR-0017](0017-distribution-plugins-multisite-editorial.md), not when the Strapi UID does. Stored content and themes refer to a block by this id |
 | `schema` | The Strapi component that stores its content (today `section.hero`), with its nested components. Content fields only: text, media, links, relations, counts |
-| `options` | A closed set of presentation values, each taken from the theme contract: `variant` (the section variants, the `data-variant` values of a public hook, [ADR-0005](0005-theme-contract.md) section 11), and, when the theme contract adds them, `density`, `alignment` and `tone`. Each option lists its allowed values and its default; the editor picks among them, the core styles every value and a theme may restyle it |
+| `options` | A closed set of presentation values: `variant` (the section variants, the `data-variant` values of a public hook, [ADR-0005](0005-theme-contract.md) section 11), and the eight names of the vocabulary below, each a hook of the theme contract once it renders it (the ordering rule below). Each option lists its allowed values and its default; the editor picks among them, the core styles every value and a theme may restyle it |
 | `cost` | The bytes the block adds to a page (gzip of its CSS and JS, and the JS of its island once used), and whether it is an island. An island names its entry in the heavy island registry and its budget in `scripts/perf/budgets.json` |
 | `static` | What the block renders with no JavaScript (before hydration in dynamic mode, always in static and landing builds): a required, complete alternative, never an empty box. For a block that needs no JS it is the block itself |
 
 A block's content and its presentation are separate. `schema` never holds a presentation field; `options` never holds content. Today `variant` sits inside the component; the catalogue declares it as an option and the plugin keeps storing it where it is until a migration moves it (section 2).
 
-The presentation options are the theme contract's, not the block's. `density`, `alignment` and `tone` do not exist in the theme contract yet: each one enters it as an optional addition with a core default (a minor of the theme contract, [ADR-0008](0008-theme-registry.md) decision 2), and only then may a block offer it. A block never invents an option that is not a hook themes can select.
+The presentation options are a closed vocabulary of eight names.
+Their values are stored as Strapi enumerations, and a block offers only some of the names:
+
+| Name | Values | Default | Meaning |
+| --- | --- | --- | --- |
+| `layout` | `centered`, `split`, `stacked` | `centered` | How the block arranges its parts; maps to the theme's layout variants ([ADR-0005](0005-theme-contract.md)) |
+| `width` | `prose`, `wide`, `full` | `prose` | How wide the block is; `full` is refused on article pages |
+| `columns` | `2`, `3`, `4`, `6` | `3` | Columns of its grid, collapsing to one at phone width; `6` is only for `logo-cloud` |
+| `density` | `comfortable`, `compact` | `comfortable` | Theme spacing steps, never pixels |
+| `align` | `start`, `center` | `start` | Where its text sits; there is no `end`, which would mean right or left by language |
+| `tone` | `default`, `raised`, `accent` | `default` | The theme surface it sits on: `surface`, `surface-raised` or `accent-soft` |
+| `ratio` | `16:9`, `4:3`, `1:1`, `auto` | `16:9` | The aspect ratio of its media; `auto` reserves no space |
+| `height` | `s`, `m`, `l`, `full` | `m` | How tall it is; `full` is one viewport, and an island keeps its static alternative at that height |
+
+The vocabulary is `contract/options.ts` of `micelio-plugin-core`
+(bogd3v/micelio-plugin-core#48), and `contract/blocks.ts` says which block offers which name.
+The per-block lists live there and in the generated reference, not in this record.
+`variant` stays a section's own option, as above.
+Adding a name or a value is a MINOR of the block contract, removing or renaming one a MAJOR.
+
+The names are the block contract's, and a value is a hook the theme contract renders:
+
+- **The block contract may declare an option before the theme contract has it.**
+  The theme contract adds each one as an optional addition with a core default
+  (a minor of the theme contract, [ADR-0008](0008-theme-registry.md) decision 2).
+- **The builder offers an option to editors only once the theme contract renders it**
+  (bogd3v/micelio#731).
+  Until then a theme has no hook for it and the builder does not show it to an editor.
+- **A theme that does not style a value gets the core's look,** because the core styles every value.
+  No fallback to the first value of the list is built: that reading of the Options vocabulary
+  artboard is superseded (the maintainer's decision on bogd3v/micelio#731).
+
+A block never invents an option outside the vocabulary: a new name is an amendment of this record.
 
 ### 2. Versioning
 
@@ -46,7 +81,13 @@ The catalogue is part of the plugin core's public interface (standard, sections 
 | Removing a block, an option or an option value | MAJOR |
 | A higher declared `cost` | PATCH, with the reason and the numbers in `docs/performance.md` |
 
-Content migrations are boot migrations: idempotent, self-contained and tested ([engineering standard](../engineering-standard.md), section 6). Before 1.0.0 a MAJOR raises `y` (section 7). An option value is also a hook value of the theme contract: adding one is a minor of the theme contract in the same release (the core styles it, so existing themes keep validating), removing one a major.
+Content migrations are boot migrations: idempotent, self-contained and tested
+([engineering standard](../engineering-standard.md), section 6).
+Before 1.0.0 a MAJOR raises `y` (section 7).
+An option value becomes a hook value of the theme contract when the theme contract renders it.
+That is a minor of the theme contract, which may come after the block contract's (section 1);
+the core styles it, so existing themes keep validating.
+Removing one is a major.
 
 ### 3. Generated, checked for drift
 
@@ -58,7 +99,8 @@ A theme may ship a block under the same contract: an id in its own namespace (`<
 
 ### 5. What a block may not be
 
-- **Free positioning.** No coordinates, grid placement or overlap set by the editor. A block's layout comes from its variant; the page's from the order of its blocks.
+- **Free positioning.** No coordinates, grid placement or overlap set by the editor.
+  A block's layout comes from its variant and its options; the page's from the order of its blocks.
 - **Per-element CSS.** No class names, selectors or custom properties entered in content. Presentation is the closed set of options.
 - **Inline styles.** No `style` value in content, color pickers or spacing fields. Colors and space are roles of the theme ([ADR-0005](0005-theme-contract.md) section 1).
 - **Raw HTML.** No block whose content is HTML. Markdown is rendered and sanitized on the server (standard, section 9), and embeds enter as a block with a declared origin.
@@ -125,7 +167,11 @@ The `about.*` components (`profile`, `statement`, `topics`, `projects`, `princip
 - **Keep blocks as plain Strapi components.** No new surface, and every change stays a surprise for themes, stored content and budgets; the builder could not tell an editor what a block costs. Rejected.
 - **The catalogue in Strapi's component JSON, with custom keys.** One file per block, but no types for the frontend and themes, no zod validation, and the JSON is Strapi's format, which the plugin SDK may rewrite. Rejected: the JSON is checked against the catalogue instead.
 - **Presentation as free fields (classes, colors, spacing) in each block.** The flexibility of a page builder, and content that only one theme renders well, a contrast matrix that cannot be checked and CSS outside the CSP's reach. Rejected (section 5).
-- **Options per block, outside the theme contract.** Each block could grow its own `tone` or `size`; every theme would have to discover and style each one. Rejected: options come from the theme contract, where each value is a hook the core styles and `theme:check` validates.
+- **Options per block, outside the theme contract.**
+  Each block could grow its own `tone` or `size`;
+  every theme would have to discover and style each one.
+  Rejected: options come from one vocabulary,
+  and each value becomes a hook the core styles and `theme:check` validates.
 - **Themes contribute blocks now.** Wanted, and blocked on the catalogue, the registration path and the theme-change question. Deferred to theme contract 3 (section 4).
 - **Declare cost only for islands.** Simpler, but the non-island blocks carry CSS and, for a few, hydrated JS that editors and budgets should see. Rejected: every block declares it; for most it is small and measured once.
 
@@ -133,7 +179,10 @@ The `about.*` components (`profile`, `statement`, `topics`, `projects`, `princip
 
 - One more contract to version, and a generator and two drift checks to keep, in a repository that does not exist yet (bogd3v/micelio-plugin-core#2).
 - The closed set of options limits what an editor can do on purpose. A design the options cannot express becomes a new variant or a new block by pull request, as [ADR-0005](0005-theme-contract.md) amendment #276 already requires for variants.
-- `density`, `alignment` and `tone` are named here and do not exist: each costs a minor of the theme contract and work in every installed theme before a block can offer it.
+- The vocabulary is declared before the theme contract renders it.
+  Rendering it costs a minor of the theme contract and core CSS for every value
+  before the builder offers it (bogd3v/micelio#731);
+  a theme restyles a value only if it chooses to.
 - Declared costs drift from real ones unless measured; the per-block measurement is new work in `scripts/perf/`.
 - Until the cut-over the catalogue describes components that `micelio-cms` owns, so a change to a block touches two repositories (standard, section 6: CMS first).
 
@@ -141,6 +190,7 @@ The `about.*` components (`profile`, `statement`, `topics`, `projects`, `princip
 
 - bogd3v/micelio-plugin-core#4 writes `contract/blocks.ts` from section 6, generates the JSON Schema and the reference, and adds the drift lint. Its entries are the blocks of section 6; parts and fields enter as the `schema` of their block, not as entries of their own, and `cost` is measured as section 1 defines it. It copies no content type from `micelio-cms` (epic bogd3v/micelio-plugin-core#1).
 - The frontend's block interfaces, response schemas and specimen fixtures are checked against the generated JSON Schema once it is published; nothing in `app/` changes before then.
-- Adding `density`, `alignment` or `tone` is a theme contract minor with its own issue and a section in `docs/themes/contract-changelog.md`.
+- Rendering the vocabulary is a theme contract minor with its own issue (bogd3v/micelio#731)
+  and a section in `docs/themes/contract-changelog.md`.
 - Theme-contributed blocks (theme contract 3) get their own issue and amend [ADR-0005](0005-theme-contract.md) section 11 when they ship.
 - The visual editing protocol (ADR-0019, bogd3v/micelio#651) addresses blocks by the `id` of section 1.
