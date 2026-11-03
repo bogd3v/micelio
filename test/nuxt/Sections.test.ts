@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, provide } from 'vue'
 import { TRUSTED_MEDIA_PREFIX } from '~/constants/media'
+import { blockMarkers } from '~/helpers/previewBlocks'
 import SectionRenderer from '~/components/section/SectionRenderer.vue'
 import type { PageLink, PageMedia, PageSection, PostListItem } from '~/interfaces'
 
@@ -169,6 +170,17 @@ describe('SectionRenderer', () => {
     expect(heroed.find('[data-section="title"]').exists()).toBe(false)
     const plain = await mountSuspended(SectionRenderer, { props: { sections: [sections.cta('banner')] } })
     expect(plain.find('h1').exists()).toBe(false)
+  })
+
+  it('marks the root of each rendered section only when asked, and counts only the ones it renders', async () => {
+    const list = [sections.hero('centered'), { __component: 'section.carousel' } as unknown as PageSection, sections.cta('banner')]
+    const marked = await mountSuspended(SectionRenderer, { props: { sections: list, markers: [blockMarkers('section.hero', 0), blockMarkers('section.cta', 1)] } })
+    expect(marked.findAll('section.myc-section').map(node => [node.attributes('data-myc-block'), node.attributes('data-myc-index')])).toEqual([['hero', '0'], ['cta', '1']])
+    // The public pages never carry the markers (ADR 0019, section 5)
+    for (const props of [{ sections: list }, { sections: list, markers: undefined }]) {
+      const plain = await mountSuspended(SectionRenderer, { props })
+      expect(plain.html()).not.toContain('data-myc-')
+    }
   })
 
   it('labels each section with its heading', async () => {

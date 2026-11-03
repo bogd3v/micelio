@@ -164,3 +164,91 @@ No run was in Safari. Playwright's WebKit is the Linux build of the engine: it h
 - **Why not the others.** *Storage Access API:* R3 shows no cookie after a granted request in WebKit, the plugin's sandbox would need `allow-storage-access-by-user-activation`, and `/_preview` spends the token before the frame could ask, so it would also need a click-through page ahead of every exchange. Not worth building on a result that does not hold in the engine it is for. *A grant without a cookie* (R4 shows it can be done): the grant would live where page script reads it, which gives up the `HttpOnly` of section 3 for every theme script and island of a draft page, and a server-rendered draft page cannot take a header, so the draft route would have to take a `POST` and a reload would repeat it. That is a new way to a draft and a new place for the credential, to fix a cookie, in one engine.
 - **Not verified.** Safari itself, on macOS and iOS; whether its prompt, its prior-interaction rule or its handling of partitioned cookies changes R3; the popup blocker of Safari for R5 (the pattern is the usual one, but Playwright has none to test it against); and a same-site frame in CI, which needs names under a real suffix and `https` that the e2e harness does not have (R1 and R2 were measured, not pinned by a test).
 - **Follow-ups.** `micelio-plugin-core`: the pane's notice and **Open in a new tab**, with its tests, its texts in `en` and `es`, and its operator page (it says "Not in WebKit yet"). `micelio`: a test that pins the draft as a top-level page on the three engines, and the operator page of this repository, which this amendment already updates. The tasks are opened after the decision.
+
+**Amendment (2026-11-02, [bogd3v/micelio#732](https://github.com/bogd3v/micelio/issues/732)):
+the page reports geometry and the admin draws.**
+Section 4 gave the frame the outlines and the drop marker,
+drawn by a preview script and stylesheet of the frontend.
+The Block states artboard of the builder (phase 2) puts them in the admin, over the iframe,
+and the issue asks the page for geometry and identity only.
+This amendment follows the issue where it differs from the table of section 4,
+and changes no rule of sections 1 to 3 or 5 except the one named under "Section 2".
+
+- **Messages.** The envelope is the same, `{ v: 1, type, payload }`,
+  with the same origin and `source` checks.
+  The `type` of phase 2 carries a namespace, because the issue names it so:
+  the six `type` rows of phase 2 in section 4 are replaced by the following.
+  A block is addressed as in section 4: `{ zone, index, block, version }`,
+  by position and catalogue id, never by Strapi's component id.
+  A message whose `version` is not the current one is dropped.
+  So is a value that is not an envelope (not an object, no `type`, no numeric `v` on a known `type`)
+  and a `load-draft` that fails its schema:
+  the frame counts each of them in the console in development only.
+  An unknown `type`, and another envelope version, are ignored as section 4 says.
+
+| `type` | From → to | `payload` |
+| --- | --- | --- |
+| `micelio:select` | admin → frame | `address` or `null`, optional `item` (a position among the block's items), optional `reveal`: bring it into view without animation. The frame answers `micelio:selected` |
+| `micelio:hover` | admin → frame | `address` or `null`, optional `item`. The frame answers `micelio:hovered` |
+| `micelio:insertGap` | admin → frame | `version`, `zone`, `after` (the position of a block, or `null` for the top) and `height` in pixels, at most 2000; 0 closes the gap |
+| `micelio:patch` | admin → frame | `address`, `content` (field name to text or `null`) and `items` (a position and a `content` each) |
+| `micelio:blocks` | frame → admin | `version`, `scroll`, `viewport` and, per block, its `address`, its `box` and the `box` of each item, in document coordinates. On `ready`, on every reflow (`ResizeObserver`) and on scroll, at most once every 100 ms |
+| `micelio:selected` | frame → admin | `address`, `item` and `box` (`null` when there is no address): the answer to `micelio:select` and a click on a block or an item |
+| `micelio:hovered` | frame → admin | The same, for the answer to `micelio:hover` and for the pointer moving over a block or an item, or leaving the page |
+
+- **No `scroll-to-block`, `drag` or `drop-target`.**
+  The admin knows every box from `micelio:blocks`,
+  so it draws the gap and the ghost of a dragged block itself,
+  and `micelio:insertGap` opens the room for it.
+  They return to the table if a later phase needs the frame to track a drag.
+- **Markers.** Section 5 stands, except for the `theme:check` rule it names (see "Not done here"):
+  `data-myc-zone` on the zone and `data-myc-block` and `data-myc-index` on the root of each section,
+  on a response with a grant only.
+  The items of a block are not marked:
+  they are the `.myc-section-item` elements the sections already carry, in order,
+  apart from those inside an `aria-hidden` copy.
+- **The patch, and section 2.**
+  Section 2 says the frontend never renders content it receives by message.
+  A patch is not rendering: it replaces text in the page's data,
+  and the same Vue components show it through their own escaping.
+  One rule decides what it may write:
+  a field is writable when `app/interfaces/page.ts` types it as free text
+  whose only server check is that it is not empty
+  (`PREVIEW_PATCH_TEXT_FIELDS`, by block, for the section and for its items),
+  and it is written with a string or `null`, nothing else.
+  A field the server requires (a title of a hero or of a CTA, the name of a plan…)
+  takes a string that is not blank and never `null`,
+  because a save of a blank value drops the block or the item,
+  and the preview must not show what a save removes.
+  Links, media, URLs, MIME types, variants, counts, slugs, flags and lists are never writable,
+  and neither are `html` (the sanitized Markdown that only the server makes),
+  an id and the component name.
+  The server validated those, and a patch must not go around it.
+  A field the contract does not list, or a block it does not list, refuses the whole patch.
+  The Markdown of a section therefore shows after a save and `load-draft`, as section 2 says.
+  The frame never saves.
+  Section 4 says a message never carries content:
+  `micelio:patch` does, from the admin to the frame only,
+  and what it carries is the unsaved text of the form.
+  No message from the frame carries content, a token or a grant.
+- **The gap** is an `aria-hidden` element between two blocks.
+  Its height is set through the CSS object model, which the page's Content Security Policy allows,
+  so no markup with an inline `style` attribute is sent and no hash or CSP source is added.
+  The page animates nothing for the protocol:
+  a reveal scrolls with `behavior: 'instant'`, because `'auto'` would follow the site's own
+  `scroll-behavior: smooth`.
+- **A click** inside a block selects it and does not follow the link or submit the form it hit,
+  so the editor cannot leave the draft by selecting a block.
+- **Not done here.**
+  The `theme:check` rule of section 5, which refuses a theme selector that names the markers,
+  does not exist.
+  Until it does, a theme that selects `[data-myc-block]`
+  can make the preview differ from the public page.
+  The follow-up is the issue for `theme:check`, to be opened by the maintainer.
+  A patch has no `options`: no section has an options object yet, and the key is ignored.
+  `Esc` goes up a level in the artboard:
+  the key reaches the frame when it has focus, and no message carries it yet.
+  Articles have no markers, so a draft article reports no blocks.
+  The message schemas are not in `contract/preview.ts` of the plugin yet;
+  the frontend checks them by hand (`readBlockMessage`) until they are,
+  and `app/preview/preview.schema.json` is unchanged.
