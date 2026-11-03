@@ -29,7 +29,8 @@ Settings, Secrets and variables, Actions.
 | `NUXT_PUBLIC_STRAPI_URL` | variable | yes | Strapi URL reachable from the runner |
 | `NUXT_PUBLIC_SITE_URL` | variable | yes | Public URL of the site (canonical links, feed, sitemap) |
 | `NUXT_MEDIA_URL` | variable | if media is on another origin | Media origin, as in `.env.example` |
-| `NUXT_PUBLIC_THEME` | variable | no | Theme id (default `bogota`, which the workflow installs from `themes.lock.json` with `theme:pull`) |
+| `NUXT_PUBLIC_THEME` | variable | no | The theme when the site settings name none (default `bogota`, which the workflow installs from `themes.lock.json` with `theme:pull`). The theme they name wins ([The theme of the site](#the-theme-of-the-site)) |
+| `MICELIO_THEME_INSTALL`, `MICELIO_THEME_REGISTRY`, `MICELIO_THEME_REGISTRY_IDENTITY`, `MICELIO_THEME_TIERS` | variable | no | Where the generation installs a theme the site settings name and this checkout lacks, whose signature it must carry, which tiers and whether anything is installed. The workflow has no volume holding the last site, so a yanked version is never installed for it (see below). See [Configure](configure.md) |
 | `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION` | variable | no | Provider form endpoint (`https:`); the newsletter is off when empty or invalid. See [Newsletter](#newsletter) |
 | `NUXT_PUBLIC_NEWSLETTER_FORM_FIELD` | variable | no | The provider's name for the email field (default `email`) |
 | `CLOUDFLARE_PAGES_PROJECT` | variable | yes | Pages project name |
@@ -125,13 +126,87 @@ npx wrangler pages deploy .output/public --project-name=<project> --branch=main
 
 Trigger it from the CMS host with a cron job or a small receiver of the same hook.
 
+## The theme of the site
+
+A static or landing build uses the theme the site settings of the CMS name,
+not the one the image was built with.
+Changing the theme in the admin and rebuilding is enough: no new image and no change to the runtime.
+`npm run generate` reads `site-setting.theme`
+(`themeId`, `themeVersion` and `themeDigest`, in the default language)
+with the same `build` token as the rest of the build, before it renders a page.
+What it does with them is what a running server does when it switches
+([Switch the theme from the CMS](themes.md#switch-the-theme-from-the-cms)),
+with the code of the server's theme switch, so the checks are the same:
+
+1. The fields name no theme: the build uses `NUXT_PUBLIC_THEME`
+   (the default `bogota`, installed from `themes.lock.json`).
+   Nothing is downloaded.
+2. Only `themeId`: a theme built into the image, or the build fails.
+3. `themeId`, the exact `themeVersion` and the `themeDigest` of its package:
+   a theme built into the image at that digest is used as it is.
+   Otherwise the build downloads it from `MICELIO_THEME_REGISTRY`
+   and checks the signed index, the tier (`MICELIO_THEME_TIERS`, default `official,verified`),
+   the digest and the attestation of the package.
+   It then unpacks the package with the safe unpack, validates it,
+   and compiles it in a child process (`installTheme()`).
+   `MICELIO_THEME_INSTALL=false` turns the download off.
+4. A theme that ships code (`slots/` or `templates/`) is used
+   only when the image was built with that exact package.
+   The builder image holds the themes of `themes.lock.json` and `themes/`;
+   another code theme needs another image.
+
+The theme's files are published at `/_t/<digest>/` in the output (immutable in `_headers`),
+and the build writes `/_micelio.json` next to the pages so that what is live can be audited:
+
+```json
+{"theme":{"id":"bogota","version":"1.0.1","digest":"9cf6…","packageDigest":"sha256:9a94…","source":"built-in"}}
+```
+
+`digest` is the one in `/_t/<digest>/`, and `packageDigest` is the `themeDigest` the settings pin.
+`source` says where the theme came from: `default`, `built-in` or `installed`.
+Hosts revalidate the file (`Cache-Control: public, max-age=0, must-revalidate`).
+
+**When the theme cannot be used, the generation fails and the last good site stays published.**
+The build stops before it renders a page, with a line that starts with `Static theme:`.
+The line names the rule that refused the theme
+(`pin`, `unknown`, `registry`, `tier`, `code`, `off`, `install` or `integrity`) and the reason.
+The `generate` command of the builder image then adds a line
+that says the volume keeps the site it held, and exits with 1.
+The same happens when Strapi cannot be read,
+so a Strapi outage never publishes the default theme over the chosen one.
+The output is in the log of whatever ran the generation
+(the builder container, or the workflow run).
+The CMS rebuild hook only starts the generation and never sees its result,
+so the admin sees no message in the CMS until micelio-cms reports the failure
+(ADR 0009, amendment of #315).
+A site with no site settings yet (Strapi answers 404) names no theme.
+
+A version the registry has marked **incompatible** with this core (#314) is refused,
+and the message says so.
+The builder tells the registry client its own version, as `npm run theme:pull` does:
+a version marked incompatible only from a later core is still installed,
+and one marked from this core on is refused.
+
+A version the registry has **yanked** stops new installs,
+as it does for a running server (ADR 0009, section 3(a)).
+A pin in the site settings is not a lock, so a site that names a yanked version is refused too,
+**unless it is the theme the site is live on**:
+the builder image reads `/_micelio.json` of the volume (`OUT_DIR`)
+and, when its `packageDigest` is the one the settings pin,
+installs that version again and logs a warning that names it.
+Content rebuilds then keep working while the editor picks another version.
+The file is trusted as much as the volume: whoever can write there can already replace the site,
+but a `/_micelio.json` edited to name a yanked version's digest does let that version install.
+A yanked version is never installed for a site that is not live on it, and the GitHub workflow,
+which has no volume holding the last site, never installs one.
+
 ## Builder image
 
 `ghcr.io/bogd3v/micelio-builder` (the `static` target of the `Dockerfile`, published by CI next to `micelio`: `:<short sha>`, `:edge` for `main` and `:X.Y.Z`, `:X.Y` and `:latest` for each release, for `linux/amd64` and `linux/arm64`, so it runs natively on Apple Silicon and arm servers) holds the source and the `npm ci` dependencies (the build tooling and Pagefind's Linux binary), runs as the non-root `node` user (uid 1000) and has two commands. Use it to generate and serve a static site from a Docker Compose (the demo instance) without Node on the host. Its build tooling makes it large (about 1.3 GB), so it is not for a runtime host that only serves.
 
 | Command | What it does |
 | --- | --- |
-| `generate` (default) | Runs `npm run generate` with the variables below, then replaces the content of `/out` with `.output/public`. Fails with a message when `NUXT_PUBLIC_SITE_MODE` is `dynamic`, or when the Strapi URL or token is missing |
+| `generate` (default) | Runs `npm run generate` with the variables below, then replaces the content of `/out` with `.output/public`. Fails with a message when `NUXT_PUBLIC_SITE_MODE` is `dynamic`, or when the Strapi URL or token is missing. When the generation fails, including when the theme the site settings name cannot be used ([The theme of the site](#the-theme-of-the-site)), it exits with 1 and leaves `/out` as it was |
 | `serve` | Serves `/out` on port 8080 with `scripts/static-serve.mjs`: the `_headers` rules (CSP and the rest), `404.html`, and brotli or gzip for the precompressed files, as a CDN does. `PORT`, `HOST` (default `0.0.0.0`) and `COMPRESS` (default `1`) can be overridden |
 
 Nothing is baked in: the site is generated when the container runs, so every setting is an environment variable (compatible with `docker run --env-file`).
@@ -143,7 +218,8 @@ Nothing is baked in: the site is generated when the container runs, so every set
 | `NUXT_PUBLIC_SITE_MODE` | no | `static` (default) or `landing` |
 | `NUXT_PUBLIC_SITE_URL` | yes for real sites | Public URL (canonical links, feed, sitemap) |
 | `NUXT_MEDIA_URL` | if media is on another origin | Media origin |
-| `NUXT_PUBLIC_THEME` | no | Theme id (default `bogota`, which the builder image installs from `themes.lock.json`) |
+| `NUXT_PUBLIC_THEME` | no | The theme when the site settings name none (default `bogota`, which the builder image installs from `themes.lock.json`). The theme they name wins, so changing it in the CMS needs a rebuild and no new image |
+| `MICELIO_THEME_REGISTRY`, `MICELIO_THEME_REGISTRY_IDENTITY`, `MICELIO_THEME_TIERS`, `MICELIO_THEME_INSTALL` | no | Where a theme the image lacks is installed from, whose signature it must carry, which tiers are installed and whether anything is installed at all. See [The theme of the site](#the-theme-of-the-site) and [Configure](configure.md) |
 | `NUXT_PUBLIC_NEWSLETTER_FORM_ACTION`, `NUXT_PUBLIC_NEWSLETTER_FORM_FIELD` | no | See [Newsletter](#newsletter) |
 
 `/out` is a volume owned by uid 1000. Images are downloaded from Strapi during generation, so the generated site needs no CMS at runtime. Nuxt writes `.nuxt`, `.output` and `node_modules/.cache` inside the container, which uid 1000 owns, so the image works with `--read-only` only if those are tmpfs mounts; there is no need for that normally.

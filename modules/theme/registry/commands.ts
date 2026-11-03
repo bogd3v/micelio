@@ -37,7 +37,7 @@ export interface PulledTheme extends ThemePin {
 }
 
 /** The version of the core at `root`, from its `package.json`; `undefined` when it cannot be read, which makes every `incompatible` version skipped. */
-function coreVersion(root: string): string | undefined {
+export function coreVersion(root: string): string | undefined {
   try {
     const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { version?: unknown }
     return typeof version === 'string' ? version : undefined

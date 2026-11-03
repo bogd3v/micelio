@@ -28,6 +28,11 @@ jobs:
       NUXT_PUBLIC_SITE_URL: ${{ vars.NUXT_PUBLIC_SITE_URL }}
       NUXT_MEDIA_URL: ${{ vars.NUXT_MEDIA_URL }}
       NUXT_PUBLIC_THEME: ${{ vars.NUXT_PUBLIC_THEME }}
+      # Where the generation installs the theme the site settings name when this checkout lacks it; all four are optional (docs/operate/themes.md)
+      MICELIO_THEME_INSTALL: ${{ vars.MICELIO_THEME_INSTALL }}
+      MICELIO_THEME_REGISTRY: ${{ vars.MICELIO_THEME_REGISTRY }}
+      MICELIO_THEME_REGISTRY_IDENTITY: ${{ vars.MICELIO_THEME_REGISTRY_IDENTITY }}
+      MICELIO_THEME_TIERS: ${{ vars.MICELIO_THEME_TIERS }}
       NUXT_PUBLIC_NEWSLETTER_FORM_ACTION: ${{ vars.NUXT_PUBLIC_NEWSLETTER_FORM_ACTION }}
     steps:
       - name: Summarize the trigger

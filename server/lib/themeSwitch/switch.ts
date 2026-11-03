@@ -11,7 +11,7 @@ import type { BuiltInTheme } from '../types'
 import { DOWNLOAD_TIMEOUT_MS, MAX_REASON_LENGTH, PREVIOUS_SERVED, PREVIOUS_SERVED_MS } from './constants'
 import { createInstallLimiter, storeFull } from './limits'
 import type { InstallLimiter } from './limits'
-import type { RequestedTheme, ThemeIdentity, ThemeStatus, ThemeSwitchFailure, ThemeSwitchRule } from '~/interfaces/theme'
+import type { RequestedTheme, ThemeIdentity, ThemeStatus, ThemeSwitchFailure, ThemeSwitchRule } from '../../../app/interfaces/theme'
 import type { PersistedPins, SwitchDeps, ThemeSwitch } from './types'
 
 // The active theme of the server: one state every reader uses, switched atomically and only to a theme that is already verified and in memory (ADR 0009, sections 3 to 6).
@@ -180,7 +180,10 @@ export function createThemeSwitch(deps: SwitchDeps, limiter: InstallLimiter = cr
       if (!install.tiers.has(listed.tier)) throw new SwitchError('tier', `the tier "${listed.tier}" of this theme is not installed here; this instance installs: ${[...install.tiers].join(', ')} (MICELIO_THEME_TIERS)`)
       if (listed.code) throw new SwitchError('code', 'the theme ships code, which only an image built with it can run')
       if (listed.distribution !== 'public') throw new SwitchError('registry', 'only public themes are installed by a server')
-      const fetched = await registry.fetch(pin, { locked: samePin(activePin, pin) || samePin(lastGoodPin, pin) })
+      // Only a yank is let through for the theme the site is live on; a version marked incompatible with this core stays refused
+      const live = listed.status === 'yanked' && deps.live === pin.digest
+      if (live) deps.warn('theme.switch', `The theme the site is live on, ${pin.id}@${pin.version}, was yanked from the registry; it is installed again so content can still be published; pick another version when you can`)
+      const fetched = await registry.fetch(pin, { locked: samePin(activePin, pin) || samePin(lastGoodPin, pin) || live })
       clearTimeout(timer)
       const result = await install.run({ kind: 'package', data: fetched.data, pin, attestation: fetched.bundle }, install.options)
       const entry = await loadEntry(install.storeDir, result.digest)
@@ -255,7 +258,7 @@ export function createThemeSwitch(deps: SwitchDeps, limiter: InstallLimiter = cr
       seen = key
       requested = requestedOf(target)
       if (target.kind === 'invalid') {
-        fail('pin', `the pin in the site settings is not valid and is ignored: ${target.reason}`)
+        fail('pin', `the pin in the site settings is not valid: ${target.reason}`)
         return
       }
       queued = target

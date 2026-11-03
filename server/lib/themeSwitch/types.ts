@@ -1,5 +1,5 @@
 import type { BuiltInTheme } from '../types'
-import type { ThemeStatus } from '~/interfaces/theme'
+import type { ThemeStatus } from '../../../app/interfaces/theme'
 import type { ThemePin, ThemeRegistry } from '../../../modules/theme/registry/types'
 import type { InstallOptions, InstallResult, InstallSource } from '../../../modules/theme/install/types'
 
@@ -33,6 +33,11 @@ export interface SwitchDeps {
   builtIn: (id: string) => BuiltInTheme | undefined
   builtInList: () => Array<{ id: string, version: string, code: boolean }>
   install: SwitchInstall | null
+  /**
+   * The package digest of a theme this site is already live on, when the process did not run it itself (a static build reads it from the site it published last).
+   * The index may have yanked that version since: it installs anyway, with a warning, as the active and last good themes do (ADR 0009, section 3(a)).
+   */
+  live?: string | undefined
   /** Called after a switch with the pins to remember; a failure is logged by the caller. */
   persist?: (pins: PersistedPins) => Promise<void>
   /** Called once per successful switch, before any request can see the new theme (the page cache and the site cache are dropped here). */

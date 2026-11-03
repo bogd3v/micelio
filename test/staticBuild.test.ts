@@ -238,6 +238,8 @@ describe('static headers', () => {
       '/_islands/*\n  Cache-Control: public, max-age=31536000, immutable',
       '/_ipx/*\n  Cache-Control: public, max-age=0, must-revalidate',
       '/pagefind/*\n  Cache-Control: public, max-age=0, must-revalidate',
+      // What the build resolved (its theme) changes with every build
+      '/_micelio.json\n  Cache-Control: public, max-age=0, must-revalidate',
     ])
   })
 

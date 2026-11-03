@@ -23,7 +23,12 @@ case "${1:-}" in
       echo "micelio-builder: $OUT is not writable by uid $(id -u); mount a volume that uid owns (docs/operate/static-site.md)." >&2
       exit 2
     fi
-    NUXT_PUBLIC_SITE_MODE="$mode" npm run generate
+    # The theme the site settings name is resolved first (modules/theme/static-theme.ts); a theme that cannot be used fails the generation here,
+    # and nothing below runs, so the volume keeps the site generated last time
+    if ! NUXT_PUBLIC_SITE_MODE="$mode" npm run generate; then
+      echo "micelio-builder: the generation failed; $OUT keeps the site it held before. The reason is the first error above (\"Static theme: ...\" when the theme the site settings name cannot be used)." >&2
+      exit 1
+    fi
     # Empty the volume first so pages removed in the CMS do not linger
     find "$OUT" -mindepth 1 -delete
     cp -a .output/public/. "$OUT"/

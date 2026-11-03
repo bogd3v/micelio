@@ -28,6 +28,33 @@ The container runs as root, so the run leaves root-owned `coverage/`, `.micelio/
 
 The suites that drive a browser (`test:e2e:*`, `test:theme`) need Playwright's browsers, which `node:22.23-slim` lacks. CI runs them in the image `scripts/ci/playwright-image.sh` resolves, which has Node 24 (the job installs Node 22 over it). For the same Node as `check`, build an image `FROM node:22.23-slim` that runs `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright npx -y playwright@<the version of @playwright/test> install --with-deps chromium firefox webkit`, and in it run `npm ci && npm run build && E2E_BUILD=1 npm run test:e2e:<group>` over the same bind mount (`:z`); say in the pull request which image ran. `npm run perf` runs in that same image after `npm run build` (`npm ci && npm run build && npm run perf -- --check`; `--mode static --theme <id>` for one static budget). The default theme, `bogota`, is pulled, not in the repository: after `npm ci`, anything that builds or serves the site (`build`, `generate`, `test:*` other than the unit tests, `perf`) needs `npm run theme:pull -- --frozen` (an anonymous registry read, as CI does) or `NUXT_PUBLIC_THEME=starter`; `npm run check` needs neither. Do not delete `.nuxt` after `npm ci`: `postinstall` runs `nuxt prepare` once, and without it the next build fails (rerun `npx nuxt prepare` if you did). `test:e2e:preview` serves the site and the admin page over https with a certificate that `e2e/preview/tls.ts` makes per run with `openssl` (Playwright's Linux WebKit stores no `Secure` cookie from an `http` page); the image needs the `openssl` command (the CI image has it; `node:22.23-slim` does not, so `apt-get install openssl` in the image built from it).
 
+## Run the builder image's `generate` command
+
+For a change to what a static or landing build writes, or to how the builder's `generate` command
+ends.
+Neither needs the plugin's compose: the mock Strapi of `e2e/` stands in for the CMS.
+
+```bash
+docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/h -v "$COPY":/app:z -w /app node:22.23-slim \
+  sh -c 'mkdir -p $HOME && npm ci && npm run theme:pull -- --frozen && npm run test:static-theme'
+```
+
+`test:static-theme` runs the entrypoint (`scripts/docker/builder-entrypoint.sh generate`)
+over one volume three times:
+the theme the site settings name by its locked pin,
+a theme that does not exist (the volume keeps the last site byte for byte), and the starter.
+
+To run the image itself, build it with `docker build --target static -t micelio-builder:test .`
+and start `MOCK_THEME_SWITCH=1 node e2e/mock-strapi.mjs` with `--network host`.
+Name a theme with `POST /__mock/theme`,
+then run the image with `--network host -v <volume>:/out` and the variables of
+[the builder image](../operate/static-site.md#builder-image).
+
+A theme the registry must serve needs a registry that signs.
+The real one holds only `bogota`,
+so a registry install stays a unit test (`test/staticTheme.test.ts`)
+and the maintainer's demo stack.
+
 ## Run this branch's image against the plugin's compose
 
 You need Docker with Compose v2, Node 22, Git and free ports 1337 and 3000 on `127.0.0.1` (the compose publishes them with fixed numbers).

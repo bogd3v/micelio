@@ -275,6 +275,77 @@ The amended records are not rewritten; each gets a pointer amendment.
 - **The lock's digest.** A built-in theme carries the lock's package digest (`pinned`) only when its folder is the pulled one (`.micelio/themes/`). A local `themes/<id>` that shadows it outside CI is other bytes and carries none, so a pin in the site settings cannot activate it.
 - **Cleanup.** `npm run theme:prune -- --store <dir>` is the command of open question 3.
 
+**Amendment (2026-11-02, #315): how a static build resolves its theme.** Section 7 is implemented
+with these details, and with two departures that the bullets "Yanked and incompatible" and
+"Where the failure shows" give.
+
+- **Where.** The read and the resolution happen in `setupBuiltInStore`
+  (`modules/theme/built-in-store.ts`), when `nuxt generate` sets up a `static` or `landing` build,
+  before any page is compiled or rendered.
+  They are not a separate step of the builder's entrypoint,
+  so `npm run generate` anywhere (the CI workflow of `static-site.yml` included) behaves as the
+  builder image does.
+  The entrypoint only reports a failed generation and leaves the volume alone.
+- **The same checks, not a copy.** `resolveStaticTheme` (`modules/theme/static-theme.ts`) starts
+  the server's theme switch (`startThemeSwitch`, #403) over the build's store and asks it once.
+  The grammar of the pin, the tier, the signed index, the digest and attestation of the package,
+  the safe unpack, the validation and the isolated compile are those of a running server,
+  and so are `MICELIO_THEME_REGISTRY`, its identity,
+  `MICELIO_THEME_TIERS` and `MICELIO_THEME_INSTALL`.
+  The build's own store, the built-in store of this build, is also the deployment store:
+  an installed theme is added to the index under its id, with the pin's digest as `pinned`,
+  so the prerender's server loads it as any built-in theme.
+  `NUXT_PUBLIC_THEME` is set to its id for the prerender (the switch never runs there).
+  A data-only theme with the id of a built-in one replaces it for this build.
+- **A refusal fails the build.** The switch records why it kept the default theme;
+  here that is an error that starts with `Static theme:`,
+  since publishing another theme than the one chosen is the wrong outcome.
+  So is a Strapi that cannot be read, or a field of the theme component that is not a string.
+  A site with no settings yet (Strapi answers 404) names no theme.
+  The failed generation never reaches the copy to `/out`.
+- **Yanked and incompatible (#314).** A pin in the site settings is not a lock, so the builder
+  does not pass `locked` for it: a yanked version, and one marked incompatible from this core on,
+  are refused, and a yank stops new installs as section 3(a) says.
+  Section 3(a) also lets a yanked version install when its digest is the site's active theme.
+  A static site has no running server that keeps it, so the builder reads that digest from the
+  `/_micelio.json` of the volume it publishes to (`OUT_DIR`, written by the previous build) and
+  installs the yanked version again, with a warning in the log, only when its `packageDigest`
+  is the pinned digest.
+  Without this a yank would freeze the content rebuilds of the site that is live on the version.
+  That file is an input of the build, trusted as much as the volume it is in. Whoever can write
+  there can already replace the site, so an edited `/_micelio.json` is no new power over the site,
+  but it does let a yanked version install: it is not a check, and the yank is the only kill
+  switch of an operator who does not control the volume. The registry's signed index and the
+  attestation still decide that the package is the one the digest names.
+  A version marked incompatible is never let through this way, and the GitHub workflow,
+  which has no such volume, never installs a yanked version.
+  The builder passes its version as `core`, as `theme:pull` does,
+  so a version marked incompatible only from a later core is installed.
+  The server's registry client is built without `core` and refuses every incompatible version;
+  aligning it is a separate decision.
+- **Where the failure shows.** Section 7 says the rebuild webhook shows the failure to the admin.
+  The webhook of micelio-cms only starts the build and logs the status of its own request,
+  and the builder runs as a separate service, so the reason reaches the log of the builder
+  (or of the workflow run) and nothing in the CMS.
+  Surfacing it in the CMS is a change in micelio-cms and is not part of this record's
+  implementation; #315 stays open for it.
+- **A changed meaning.** `NUXT_PUBLIC_THEME` is the theme of a static build only when the site
+  settings name none, which changes what a site that sets both gets.
+  A site whose settings name a theme the image lacks and the registry does not serve used to
+  publish and now fails each rebuild until the field is changed.
+  This is the "changed meaning" of section 9: the change is breaking (`!`), with upgrade notes.
+- **What is published.** The files of the resolved theme go to `/_t/<digest>/`
+  (the paths, the immutable cache and the sandbox of section 7 were already in `_headers`).
+  `/_micelio.json` holds the `theme` object: `id`, `version`, `digest`, `packageDigest`
+  and `source`, one of `default`, `built-in` and `installed`.
+  It is revalidated, since it changes with every build.
+- **Tests.** `npm run test:static-theme` runs the builder's `generate` command against the mock
+  Strapi: a theme chosen by its locked pin,
+  a theme that does not exist (the volume keeps the first site, byte for byte),
+  and a switch to the starter, on one checkout.
+  The download of a package signed by Sigstore, against a real registry and the demo instance,
+  is outside what a mock proves (the real registry holds only the code theme `bogota`).
+
 ## Open questions
 
 Each has a recommendation; the pull request that implements it records the answer as an amendment here.

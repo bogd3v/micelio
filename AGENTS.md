@@ -13,6 +13,9 @@ Work reaches `main` through the gates of [`docs/factory.md`](https://github.com/
 **Docker.** Run the steps of [`docs/architecture/testing-a-branch.md`](docs/architecture/testing-a-branch.md): `npm run check` in `node:22.23-slim` over a clean copy of the worktree, the browser suites, and the maintainer's test, by stack. The default theme, `bogota`, is pulled, not in the repository: after `npm ci`, anything that builds or serves the site (`build`, `generate`, `test:*` other than the unit tests, `perf`) needs `npm run theme:pull -- --frozen` (an anonymous registry read, as CI does) or `NUXT_PUBLIC_THEME=starter`; `npm run check` needs neither:
 
 - `compose.dev.yml` of `micelio-plugin-core` (`npm run dev:docker`, `FRONTEND_IMAGE` set to this branch's image) for the plugin and every feature that talks to it (preview, weight report, cost meter).
+- The builder image, for what changes what a static build writes or how `generate` ends:
+  `npm run test:static-theme` runs its entrypoint over the mock Strapi, and
+  `docker build --target static` builds the image (`docs/architecture/testing-a-branch.md`).
 - `compose.demo.yml` of `micelio-cms` only for what the distribution adds (bootstrap, migrations, content schemas, multisite, upgrade from the last release), and for one end-to-end pass with the released plugin before a release.
 
 ## Pre-1.0
@@ -56,6 +59,7 @@ npm run test:coverage     # Same tests with coverage of app/ and themes/; fails 
 npm run test:integration  # Run API-route integration tests (test/integration/, needs a Nuxt build)
 npm run test:contract     # Run the server routes against the demo image of micelio-cms with Postgres, which the script starts and removes (needs Docker and a build; docs/architecture/contract-tests.md)
 npm run test:static       # Generate a static site against the mock Strapi and run e2e/static/
+npm run test:static-theme # Run the builder image's generate command against the mock Strapi for a theme the site settings name: success, a refused theme that keeps the last site, a switch (needs theme:pull)
 npm run test:landing      # Generate a landing (home page, no articles) against the mock Strapi and run e2e/landing/ (the default theme, then starter)
 npm run test:e2e          # Playwright e2e (e2e/; mock Strapi + dev server, or `.output` with `E2E_BUILD=1` after `npm run build`, as CI does, with `MICELIO_SPECIMEN=1 MICELIO_THEME_DIRS=test/fixtures/themes/alternates`). A spec that reads built CSS or the production CSP fails on the dev server. CI runs test:e2e:main, :site, :playground (per engine: `-- --project=chromium|firefox|webkit`), :scene-ui and :preview (the admin's iframe on a second origin, against the build) as parallel jobs
 npm run test:theme        # Theme visual regression and axe (e2e/theme/, needs a build with MICELIO_SPECIMEN=1; docs/theme-testing.md)
