@@ -22,6 +22,10 @@ on:
         description: The repository the themes are published from; a provenance that names another repository is not a source
         type: string
         default: bogd3v/micelio-themes
+      source-folder:
+        description: The folder of the source repository that holds one folder per theme (`<source-folder>/<id>`), without a trailing slash; the themes repository keeps them in `themes/` since #313
+        type: string
+        default: themes
       core-repository:
         description: The core repository to check against
         type: string
@@ -111,7 +115,7 @@ jobs:
     with:
       theme-source-repository: ${{ inputs.source-repository }}
       theme-source-ref: ${{ matrix.commit }}
-      theme-dirs: ${{ matrix.id }}
+      theme-dirs: ${{ inputs.source-folder }}/${{ matrix.id }}
       themes: ${{ format('["{0}"]', matrix.id) }}
       core-repository: ${{ inputs.core-repository }}
       core-ref: ${{ inputs.core-ref }}

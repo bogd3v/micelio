@@ -414,7 +414,10 @@ describe('the workflows', () => {
     expect(compat).toMatch(/uses: \.\/\.github\/workflows\/theme-admission\.yml\n/)
     expect(compat).toContain('theme-source-repository: ${{ inputs.source-repository }}')
     expect(compat).toContain('theme-source-ref: ${{ matrix.commit }}')
-    expect(compat).toContain('theme-dirs: ${{ matrix.id }}')
+    // The themes repository keeps each theme in `themes/<id>/` (#313): the folder is an input, never the bare id
+    expect(compat).toContain('theme-dirs: ${{ inputs.source-folder }}/${{ matrix.id }}')
+    expect(compat).not.toMatch(/theme-dirs: \$\{\{ matrix\.id \}\}/)
+    expect(compat).toMatch(/source-folder:\n {8}description: [^\n]*\n {8}type: string\n {8}default: themes\n/)
     expect(compat).toContain('fail-on-errors: false')
     for (const text of [compat, runs]) {
       expect(text).not.toMatch(/secrets\.|pull_request_target|id-token|attest-build-provenance|packages: write|contents: write/)
