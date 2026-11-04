@@ -94,7 +94,7 @@ function select(id: TopicFilter['id']): void {
         <span class="myc-latest-archive-title myc-wide">{{ t('home.latest.archiveTitle') }} <span class="myc-card-arrow" aria-hidden="true">→</span></span>
         <span class="myc-meta myc-home-eyebrow">{{ t('home.latest.archiveMeta') }}</span>
       </NuxtLink>
-      <ThemeEmptyState v-if="!posts.length" class="myc-latest-empty" :style="{ '--empty-accent': emptyColor }">
+      <ThemeEmptyState v-if="!posts.length" class="myc-empty-list" :style="{ '--empty-accent': emptyColor }">
         <h3 class="myc-latest-empty-title">{{ emptyTitle }}</h3>
         <p class="myc-meta myc-home-eyebrow myc-latest-empty-note">{{ themeMessage('latest.emptyNote', 'home.latest.emptyNote') }}</p>
         <button v-if="selected" type="button" class="myc-chip" @click="select('all')">

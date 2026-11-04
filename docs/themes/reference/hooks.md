@@ -186,7 +186,7 @@ These appear in every layout variant.
 | `myc-card-excerpt` | Excerpt of a card. |  |
 | `myc-card-foot` | Footer of a card. |  |
 | `myc-card-arrow` | Arrow that marks a link to more. |  |
-| `myc-latest-empty` | Empty state of an article list. |  |
+| `myc-empty-list` | Empty state of an article list. |  |
 | `myc-toc` | Table of contents. |  |
 | `myc-toc-title` | Title of the table of contents. |  |
 | `myc-toc-link` | A link of the table of contents. | `[aria-current]` |

@@ -119,7 +119,7 @@
     "myc-card-excerpt": "Excerpt of a card.",
     "myc-card-foot": "Footer of a card.",
     "myc-card-arrow": "Arrow that marks a link to more.",
-    "myc-latest-empty": "Empty state of an article list.",
+    "myc-empty-list": "Empty state of an article list.",
 
     "myc-article-page": { "describes": "An article page.", "layouts": { "article": ["aside", "centered"] } },
     "myc-article-head": { "describes": "Title block of an article.", "layouts": { "article": ["aside", "centered"] } },

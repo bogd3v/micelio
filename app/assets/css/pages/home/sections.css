@@ -105,7 +105,7 @@
     font-weight: 300;
 }
 
-.myc-latest-empty {
+.myc-empty-list {
     grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
@@ -183,7 +183,7 @@
         display: flex;
     }
 
-    .myc-latest-empty {
+    .myc-empty-list {
         min-height: 420px;
         justify-content: center;
         gap: 20px;
@@ -218,7 +218,7 @@
         min-height: 420px;
     }
 
-    .myc-latest-empty {
+    .myc-empty-list {
         grid-column: span 3;
     }
 

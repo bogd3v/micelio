@@ -24,7 +24,7 @@ const { t } = useI18n()
 
     <div>
       <h3 class="myc-specimen-label">{{ t('specimen.states.empty') }}</h3>
-      <ThemeEmptyState class="myc-latest-empty">
+      <ThemeEmptyState class="myc-empty-list">
         <h3 class="myc-latest-empty-title">{{ t('specimen.states.emptyTitle') }}</h3>
         <p class="myc-meta myc-home-eyebrow myc-latest-empty-note">{{ t('specimen.states.emptyNote') }}</p>
         <button type="button" class="myc-chip">{{ t('specimen.states.showAll') }} <span aria-hidden="true">→</span></button>

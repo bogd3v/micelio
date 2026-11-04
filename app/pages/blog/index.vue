@@ -229,7 +229,7 @@ useSeoMeta({
       <div id="posts" class="myc-blog-main" :aria-busy="status === 'pending'">
         <RegionPostList v-if="posts.length" :posts="posts" :view="view" :federated="federated" :highlight="filters.search" />
 
-        <ThemeEmptyState v-else class="myc-latest-empty myc-blog-empty">
+        <ThemeEmptyState v-else class="myc-empty-list myc-blog-empty">
           <h2 class="myc-latest-empty-title">{{ t("blog.noPosts") }}</h2>
           <p class="myc-meta myc-home-eyebrow myc-latest-empty-note">
             {{ filtered ? t("blog.tryAdjustingFilters") : t("blog.noArticlesYet") }}
