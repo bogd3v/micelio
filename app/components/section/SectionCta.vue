@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { CtaSection } from '~/interfaces'
 
 defineProps<{ section: CtaSection }>()
@@ -7,7 +8,7 @@ const titleId = useId()
 </script>
 
 <template>
-  <section class="myc-section" data-section="cta" :data-variant="section.variant" :aria-labelledby="titleId">
+  <section class="myc-section" data-section="cta" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="titleId">
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :text="section.text" :title-id="titleId" />
       <div v-if="section.primaryLink || section.secondaryLink" class="myc-section-actions">

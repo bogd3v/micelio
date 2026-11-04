@@ -28,6 +28,7 @@ import type {
   TestimonialsSection,
 } from '~/interfaces/page'
 import type { PostTranslation } from '~/interfaces/strapi-post'
+import { optionResponseShape } from './blockOptions'
 import { postListItemSchema } from './posts'
 import { responseSchema } from './response'
 
@@ -74,6 +75,7 @@ export const pageTranslationSchema = responseSchema<PostTranslation>()(
 const heroSchema = responseSchema<HeroSection>()(
   z.strictObject({
     __component: z.literal('section.hero'),
+    ...optionResponseShape('section.hero'),
     variant: z.enum(['centered', 'split', 'full-bleed']),
     title: z.string(),
     text: z.string().optional(),
@@ -90,6 +92,7 @@ const featureItemSchema = responseSchema<FeatureItem>()(
 const featureGridSchema = responseSchema<FeatureGridSection>()(
   z.strictObject({
     __component: z.literal('section.feature-grid'),
+    ...optionResponseShape('section.feature-grid'),
     variant: z.enum(['grid', 'list', 'bento']),
     title: z.string().optional(),
     text: z.string().optional(),
@@ -100,6 +103,7 @@ const featureGridSchema = responseSchema<FeatureGridSection>()(
 const mediaShowcaseSchema = responseSchema<MediaShowcaseSection>()(
   z.strictObject({
     __component: z.literal('section.media-showcase'),
+    ...optionResponseShape('section.media-showcase'),
     variant: z.enum(['left', 'right', 'stacked']),
     title: z.string().optional(),
     html: z.string().optional().meta({ description: 'Sanitized HTML of the Markdown text.' }),
@@ -115,6 +119,7 @@ const statItemSchema = responseSchema<StatItem>()(
 const statsSchema = responseSchema<StatsSection>()(
   z.strictObject({
     __component: z.literal('section.stats'),
+    ...optionResponseShape('section.stats'),
     variant: z.enum(['row', 'cards']),
     title: z.string().optional(),
     items: z.array(statItemSchema),
@@ -128,6 +133,7 @@ const logoItemSchema = responseSchema<LogoItem>()(
 const logoCloudSchema = responseSchema<LogoCloudSection>()(
   z.strictObject({
     __component: z.literal('section.logo-cloud'),
+    ...optionResponseShape('section.logo-cloud'),
     variant: z.enum(['row', 'marquee']),
     title: z.string().optional(),
     logos: z.array(logoItemSchema),
@@ -141,6 +147,7 @@ const testimonialItemSchema = responseSchema<TestimonialItem>()(
 const testimonialsSchema = responseSchema<TestimonialsSection>()(
   z.strictObject({
     __component: z.literal('section.testimonials'),
+    ...optionResponseShape('section.testimonials'),
     variant: z.enum(['single', 'grid']),
     title: z.string().optional(),
     items: z.array(testimonialItemSchema),
@@ -161,6 +168,7 @@ const pricingPlanSchema = responseSchema<PricingPlan>()(
 const pricingSchema = responseSchema<PricingSection>()(
   z.strictObject({
     __component: z.literal('section.pricing'),
+    ...optionResponseShape('section.pricing'),
     variant: z.enum(['cards', 'table']),
     title: z.string().optional(),
     text: z.string().optional(),
@@ -175,6 +183,7 @@ const faqItemSchema = responseSchema<FaqItem>()(
 const faqSchema = responseSchema<FaqSection>()(
   z.strictObject({
     __component: z.literal('section.faq'),
+    ...optionResponseShape('section.faq'),
     variant: z.enum(['list', 'two-columns']),
     title: z.string().optional(),
     items: z.array(faqItemSchema),
@@ -184,6 +193,7 @@ const faqSchema = responseSchema<FaqSection>()(
 const ctaSchema = responseSchema<CtaSection>()(
   z.strictObject({
     __component: z.literal('section.cta'),
+    ...optionResponseShape('section.cta'),
     variant: z.enum(['banner', 'card']),
     title: z.string(),
     text: z.string().optional(),
@@ -195,6 +205,7 @@ const ctaSchema = responseSchema<CtaSection>()(
 const postListSchema = responseSchema<PostListSection>()(
   z.strictObject({
     __component: z.literal('section.post-list'),
+    ...optionResponseShape('section.post-list'),
     variant: z.enum(['cards', 'list']),
     title: z.string().optional(),
     category: z.string().optional().meta({ description: 'Category slug the list is filtered by; never sent together with `tag`.' }),
@@ -207,6 +218,7 @@ const postListSchema = responseSchema<PostListSection>()(
 const newsletterSchema = responseSchema<NewsletterSection>()(
   z.strictObject({
     __component: z.literal('section.newsletter'),
+    ...optionResponseShape('section.newsletter'),
     variant: z.enum(['inline', 'card']),
     title: z.string().optional(),
     text: z.string().optional(),
@@ -217,6 +229,7 @@ const newsletterSchema = responseSchema<NewsletterSection>()(
 const richTextSchema = responseSchema<RichTextSection>()(
   z.strictObject({
     __component: z.literal('section.rich-text'),
+    ...optionResponseShape('section.rich-text'),
     html: z.string().meta({ description: 'Sanitized HTML of the Markdown body.' }),
   }).meta({ id: 'RichTextSection', description: 'A text block written in Markdown.' }),
 )
@@ -224,6 +237,7 @@ const richTextSchema = responseSchema<RichTextSection>()(
 const gallerySchema = responseSchema<GallerySection>()(
   z.strictObject({
     __component: z.literal('section.gallery'),
+    ...optionResponseShape('section.gallery'),
     variant: z.enum(['grid', 'masonry']),
     title: z.string().optional(),
     images: z.array(pageMediaSchema),
@@ -233,6 +247,7 @@ const gallerySchema = responseSchema<GallerySection>()(
 const sceneSchema = responseSchema<SceneSection>()(
   z.strictObject({
     __component: z.literal('section.scene'),
+    ...optionResponseShape('section.scene'),
     variant: z.enum(['background', 'inline']),
     model: pageMediaSchema.meta({ description: 'A binary glTF file (`.glb`); with any other file the server drops the section.' }),
     poster: pageMediaSchema,

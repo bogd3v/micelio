@@ -40,6 +40,21 @@ Conventions:
 
 **Page route and reserved slugs.** `app/pages/[slug].vue` renders a page at `/<slug>` and `/es/<slug>` (the slug differs per locale: `/showcase` and `/es/muestra`), calling `/api/pages/:slug?locale=`. A 404 or a 400 (a slug that is not a valid uid, like `/Showcase`; `/About` is the about page, the router ignores case) answers the normal 404 page; a slug that is not a uid is rejected by the route before any call; any other error keeps its status, and a failure without one (network) is a 500. Static routes win over the catch-all, so these slugs never reach a page and a CMS page with one of them is unreachable: `about`, `blog`, `privacy`, `confirm`, `account`, `drafts`, `newsletter` and `_theme` (plus `api` and the files served by `server/routes`: `feed.xml`, `sitemap.xml`, `robots.txt`). SEO comes from `seo` (title falls back to the page title, `metaRobots` becomes the robots meta, `canonicalURL` replaces the page URL as canonical); hreflang comes from `translations`, so the locale switcher goes to the translated slug. `metaSocial` and `structuredData` are not rendered. The page is server-rendered on each request (no ISR rule, ADR 0001); the API behind it is cached. The h1 is the title of the first section when it is a hero; otherwise it is the page title.
 
+
+**Block options.** A block may carry the presentation options of the block contract
+(`layout`, `width`, `columns`, `density`, `align`, `tone`, `ratio` and `height`;
+`BLOCK_OPTIONS` and `BLOCK_EXPOSES` in `app/interfaces/block-options.ts`, the copy of
+`contract/options.ts` of micelio-plugin-core).
+They are fields of the block's component, as `variant` is.
+`/api/pages/:slug` sends, on each section, the options that section exposes and whose value
+it offers, as strings (`columns: 3` and `"3"` are the same),
+and leaves out an absent, `null` or unknown one, so a section never fails because of an option.
+The article and About routes keep the same on `shared.quote`, `shared.media`, `shared.slider` and
+`shared.playground`, through the allow-list and `keepValidOptions` (`server/lib/publicShapes.ts`).
+`width: full` is not offered to the article blocks, and `columns: 6` only to `logo-cloud`.
+The frontend writes each option as a `data-*` attribute on the block's root
+(`docs/themes/reference/hooks.md`, "Block options").
+
 **Articles without a slug.** The CMS `uid` is optional, but every route and link keys on the slug, so each read of the published articles (`/api/posts`, the reading path, the feeds, the sitemap and the `post-list` sections) sends `filters[slug][$notNull]=true` (`ARTICLE_HAS_SLUG`, `server/lib/constants.ts`) and never lists one. `RawStrapiArticle.slug` stays a `string`.
 
 **Fields returned.** `/api/posts`, `/api/posts/:slug`, `/api/drafts/:documentId` and `/api/about` rebuild the CMS answer from an allow-list (`server/lib/publicShapes.ts`), and so do the cards of the `post-list` sections of `/api/pages/:slug`: a card carries `RawStrapiArticle`'s `id`, `documentId`, `title`, `slug`, `locale`, `description`, `publishedAt`, `readTime`, `tags`, `cover`, `category`, `author`, `seo` and `snippet`; a full article adds `updatedAt` (the draft strip reads it), `coverCredit`, `blocks`, `references` and `localizations`. Files carry `url`, `alternativeText`, `caption`, `width`, `height` and their ids; `seo` leaves out `metaSocial` and `metaViewport`; a block with an unknown `__component` is dropped. `createdAt` and every other field the CMS stores are not returned; so is `content`, the legacy Markdown body that `blocks` replaced (the CMS article schema has no such field). A new CMS field reaches the browser only when the allow-list names it. A change to an allow-list must update the response schema in `app/schemas/`; `test/responseAllowList.test.ts` fails when a key is in one and not the other. The Strapi queries follow the same lists: the article and About populates (`ARTICLE_POPULATE`, `ABOUT_POPULATE` in `server/lib/constants.ts`) name each nested component and the image fields instead of `populate: '*'`.

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { StrapiMedia } from '~/interfaces'
 import { formatFigureNumber, mediaCaption } from '~/helpers/figures'
 
@@ -15,7 +16,7 @@ const caption = computed<string>(() => mediaCaption(props.block))
 </script>
 
 <template>
-  <figure v-if="block.file" class="myc-fig">
+  <figure v-if="block.file" class="myc-fig" v-bind="optionAttributes(block)">
     <div class="myc-fig-media">
       <NuxtImg
         :src="src"

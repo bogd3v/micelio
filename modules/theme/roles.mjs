@@ -37,7 +37,7 @@ export const ROLE_PURPOSES = {
   'ink-muted': 'Secondary text: excerpts, metadata, dates, help.',
   'on-ink': 'Text on an `ink` fill.',
   'accent': 'Brand accent: the accent button, active states, brand marks.',
-  'accent-soft': 'Tinted background behind accent text.',
+  'accent-soft': 'Tinted background behind accent text, and the surface of a section with tone accent.',
   'accent-hover': 'The accent on hover.',
   'on-accent': 'Text and icons on the accent.',
   'link': 'Links in running text.',

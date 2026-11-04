@@ -1,3 +1,4 @@
+import type { BlockOptions } from './block-options'
 import type { Locale } from './locale'
 import type { PostListItem, PostTranslation } from './strapi-post'
 
@@ -76,7 +77,7 @@ interface SectionBase<K extends PageSectionKind> {
  *
  * @public
  */
-export interface HeroSection extends SectionBase<'hero'> {
+export interface HeroSection extends SectionBase<'hero'>, BlockOptions<'section.hero'> {
   variant: 'centered' | 'split' | 'full-bleed'
   title: string
   text?: string
@@ -101,7 +102,7 @@ export interface FeatureItem {
  *
  * @public
  */
-export interface FeatureGridSection extends SectionBase<'feature-grid'> {
+export interface FeatureGridSection extends SectionBase<'feature-grid'>, BlockOptions<'section.feature-grid'> {
   variant: 'grid' | 'list' | 'bento'
   title?: string
   text?: string
@@ -113,7 +114,7 @@ export interface FeatureGridSection extends SectionBase<'feature-grid'> {
  *
  * @public
  */
-export interface MediaShowcaseSection extends SectionBase<'media-showcase'> {
+export interface MediaShowcaseSection extends SectionBase<'media-showcase'>, BlockOptions<'section.media-showcase'> {
   variant: 'left' | 'right' | 'stacked'
   title?: string
   /** Sanitized HTML of the Markdown text */
@@ -138,7 +139,7 @@ export interface StatItem {
  *
  * @public
  */
-export interface StatsSection extends SectionBase<'stats'> {
+export interface StatsSection extends SectionBase<'stats'>, BlockOptions<'section.stats'> {
   variant: 'row' | 'cards'
   title?: string
   items: StatItem[]
@@ -161,7 +162,7 @@ export interface LogoItem {
  *
  * @public
  */
-export interface LogoCloudSection extends SectionBase<'logo-cloud'> {
+export interface LogoCloudSection extends SectionBase<'logo-cloud'>, BlockOptions<'section.logo-cloud'> {
   variant: 'row' | 'marquee'
   title?: string
   logos: LogoItem[]
@@ -185,7 +186,7 @@ export interface TestimonialItem {
  *
  * @public
  */
-export interface TestimonialsSection extends SectionBase<'testimonials'> {
+export interface TestimonialsSection extends SectionBase<'testimonials'>, BlockOptions<'section.testimonials'> {
   variant: 'single' | 'grid'
   title?: string
   items: TestimonialItem[]
@@ -211,7 +212,7 @@ export interface PricingPlan {
  *
  * @public
  */
-export interface PricingSection extends SectionBase<'pricing'> {
+export interface PricingSection extends SectionBase<'pricing'>, BlockOptions<'section.pricing'> {
   variant: 'cards' | 'table'
   title?: string
   text?: string
@@ -234,7 +235,7 @@ export interface FaqItem {
  *
  * @public
  */
-export interface FaqSection extends SectionBase<'faq'> {
+export interface FaqSection extends SectionBase<'faq'>, BlockOptions<'section.faq'> {
   variant: 'list' | 'two-columns'
   title?: string
   items: FaqItem[]
@@ -245,7 +246,7 @@ export interface FaqSection extends SectionBase<'faq'> {
  *
  * @public
  */
-export interface CtaSection extends SectionBase<'cta'> {
+export interface CtaSection extends SectionBase<'cta'>, BlockOptions<'section.cta'> {
   variant: 'banner' | 'card'
   title: string
   text?: string
@@ -261,7 +262,7 @@ export interface CtaSection extends SectionBase<'cta'> {
  *
  * @public
  */
-export interface PostListSection extends SectionBase<'post-list'> {
+export interface PostListSection extends SectionBase<'post-list'>, BlockOptions<'section.post-list'> {
   variant: 'cards' | 'list'
   title?: string
   /** Category or tag slug the list is filtered by; never both */
@@ -278,7 +279,7 @@ export interface PostListSection extends SectionBase<'post-list'> {
  *
  * @public
  */
-export interface NewsletterSection extends SectionBase<'newsletter'> {
+export interface NewsletterSection extends SectionBase<'newsletter'>, BlockOptions<'section.newsletter'> {
   variant: 'inline' | 'card'
   title?: string
   text?: string
@@ -290,7 +291,7 @@ export interface NewsletterSection extends SectionBase<'newsletter'> {
  *
  * @public
  */
-export interface RichTextSection extends SectionBase<'rich-text'> {
+export interface RichTextSection extends SectionBase<'rich-text'>, BlockOptions<'section.rich-text'> {
   /** Sanitized HTML of the Markdown body */
   html: string
 }
@@ -300,7 +301,7 @@ export interface RichTextSection extends SectionBase<'rich-text'> {
  *
  * @public
  */
-export interface GallerySection extends SectionBase<'gallery'> {
+export interface GallerySection extends SectionBase<'gallery'>, BlockOptions<'section.gallery'> {
   variant: 'grid' | 'masonry'
   title?: string
   images: PageMedia[]
@@ -311,7 +312,7 @@ export interface GallerySection extends SectionBase<'gallery'> {
  *
  * @public
  */
-export interface SceneSection extends SectionBase<'scene'> {
+export interface SceneSection extends SectionBase<'scene'>, BlockOptions<'section.scene'> {
   variant: 'background' | 'inline'
   /** A binary glTF file (`.glb`); with any other file the server drops the section. */
   model: PageMedia

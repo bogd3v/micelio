@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { StrapiPlayground } from '~/interfaces'
 import downloads from '#build/micelio/island-downloads'
 import { isRunnable, playgroundLanguage, playgroundText } from '~/helpers/playground'
@@ -48,6 +49,7 @@ const labels = computed<Record<string, string | undefined>>(() => runnable.value
   <component :is="runnable ? 'micelio-playground' : 'div'" v-bind="labels">
     <figure
       class="myc-playground not-prose"
+      v-bind="optionAttributes(block)"
       :data-runtime="runnable ? block.runtime : undefined"
       :aria-label="t('myc.playground.label', { language })"
       :aria-describedby="caption ? `${id}-caption` : undefined"

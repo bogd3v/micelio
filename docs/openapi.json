@@ -6886,6 +6886,29 @@
             "type": "string",
             "const": "section.cta"
           },
+          "layout": {
+            "type": "string",
+            "enum": [
+              "centered",
+              "split",
+              "stacked"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -7132,6 +7155,13 @@
             "type": "string",
             "const": "section.faq"
           },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -7163,6 +7193,21 @@
           "__component": {
             "type": "string",
             "const": "section.feature-grid"
+          },
+          "columns": {
+            "type": "string",
+            "enum": [
+              "2",
+              "3",
+              "4"
+            ]
+          },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
           },
           "variant": {
             "type": "string",
@@ -7240,6 +7285,21 @@
             "type": "string",
             "const": "section.gallery"
           },
+          "width": {
+            "type": "string",
+            "enum": [
+              "prose",
+              "wide",
+              "full"
+            ]
+          },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -7271,6 +7331,31 @@
           "__component": {
             "type": "string",
             "const": "section.hero"
+          },
+          "layout": {
+            "type": "string",
+            "enum": [
+              "centered",
+              "split",
+              "stacked"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "height": {
+            "type": "string",
+            "enum": [
+              "s",
+              "m",
+              "l",
+              "full"
+            ]
           },
           "variant": {
             "type": "string",
@@ -7310,6 +7395,22 @@
           "__component": {
             "type": "string",
             "const": "section.logo-cloud"
+          },
+          "columns": {
+            "type": "string",
+            "enum": [
+              "2",
+              "3",
+              "4",
+              "6"
+            ]
+          },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
           },
           "variant": {
             "type": "string",
@@ -7369,6 +7470,22 @@
             "type": "string",
             "const": "shared.media"
           },
+          "width": {
+            "type": "string",
+            "enum": [
+              "prose",
+              "wide"
+            ]
+          },
+          "ratio": {
+            "type": "string",
+            "enum": [
+              "16:9",
+              "4:3",
+              "1:1",
+              "auto"
+            ]
+          },
           "file": {
             "anyOf": [
               {
@@ -7411,6 +7528,15 @@
             "type": "string",
             "const": "section.media-showcase"
           },
+          "ratio": {
+            "type": "string",
+            "enum": [
+              "16:9",
+              "4:3",
+              "1:1",
+              "auto"
+            ]
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -7447,6 +7573,21 @@
           "__component": {
             "type": "string",
             "const": "section.newsletter"
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
           },
           "variant": {
             "type": "string",
@@ -7720,6 +7861,15 @@
             "type": "string",
             "const": "shared.playground"
           },
+          "height": {
+            "type": "string",
+            "enum": [
+              "s",
+              "m",
+              "l",
+              "full"
+            ]
+          },
           "runtime": {
             "type": "string"
           },
@@ -7873,6 +8023,13 @@
             "type": "string",
             "const": "section.post-list"
           },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -7953,6 +8110,14 @@
           "__component": {
             "type": "string",
             "const": "section.pricing"
+          },
+          "columns": {
+            "type": "string",
+            "enum": [
+              "2",
+              "3",
+              "4"
+            ]
           },
           "variant": {
             "type": "string",
@@ -8093,6 +8258,20 @@
           "__component": {
             "type": "string",
             "const": "shared.quote"
+          },
+          "width": {
+            "type": "string",
+            "enum": [
+              "prose",
+              "wide"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
           },
           "body": {
             "type": [
@@ -8386,6 +8565,14 @@
             "type": "string",
             "const": "section.rich-text"
           },
+          "width": {
+            "type": "string",
+            "enum": [
+              "prose",
+              "wide",
+              "full"
+            ]
+          },
           "html": {
             "type": "string",
             "description": "Sanitized HTML of the Markdown body."
@@ -8404,6 +8591,15 @@
           "__component": {
             "type": "string",
             "const": "section.scene"
+          },
+          "height": {
+            "type": "string",
+            "enum": [
+              "s",
+              "m",
+              "l",
+              "full"
+            ]
           },
           "variant": {
             "type": "string",
@@ -8770,6 +8966,15 @@
             "type": "string",
             "const": "shared.slider"
           },
+          "ratio": {
+            "type": "string",
+            "enum": [
+              "16:9",
+              "4:3",
+              "1:1",
+              "auto"
+            ]
+          },
           "items": {
             "anyOf": [
               {
@@ -8855,6 +9060,29 @@
           "__component": {
             "type": "string",
             "const": "section.stats"
+          },
+          "columns": {
+            "type": "string",
+            "enum": [
+              "2",
+              "3",
+              "4"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
           },
           "variant": {
             "type": "string",
@@ -9912,6 +10140,21 @@
           "__component": {
             "type": "string",
             "const": "section.testimonials"
+          },
+          "layout": {
+            "type": "string",
+            "enum": [
+              "centered",
+              "split",
+              "stacked"
+            ]
+          },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
           },
           "variant": {
             "type": "string",

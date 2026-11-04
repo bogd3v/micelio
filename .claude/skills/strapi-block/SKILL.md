@@ -9,12 +9,24 @@ A block travels through five places. Missing one gives an empty block, a 400 fro
 
 1. **Backend first.** The component lives in `~/Git/micelio-cms/src/components/<category>/<name>.json`. Read its attributes there; do not guess field names.
 2. **Populate.** Add the component to the dynamic-zone `populate.on` map: `ARTICLE_POPULATE` in `server/lib/constants.ts` for articles, `server/api/about.get.ts` for About. Media and relations need explicit `populate: { file: true, … }`; an unknown key makes Strapi answer 400.
-3. **Type.** Add an interface to `app/interfaces/strapi-blocks.ts` with `__component: '<category>.<name>'` and add it to the `StrapiBlock` union.
+3. **Type.** Add an interface to `app/interfaces/strapi-blocks/`
+   (`text.ts`, `media.ts`, `sections.ts`) with `__component: '<category>.<name>'`,
+   and add it to the `StrapiBlock` union.
 4. **Renderer.** Create `app/components/strapi/<Name>Block.vue` (follow the **ui-component** skill) and register it in `componentMap` in `BlocksRenderer.vue`. Blocks missing from the map are skipped silently.
 5. **Content safety.**
    - Markdown or rich text goes through `renderMarkdown` / `renderInlineMarkdown` (`useMarkdownRenderer.ts`), which sanitizes with `sanitize-html`. Never bind Strapi text to `v-html` without it.
    - Images come from Strapi or `resources.bogdev.com.co`; another host must be added to `img-src` in `contentSecurityPolicy()`.
    - Embeds are limited to YouTube and Vimeo in both the sanitizer and `frame-src`; change both together.
+
+6. **Presentation options.** If the block exposes options of the block contract
+   (`layout`, `width`, `columns`…), list them in `BLOCK_EXPOSES`
+   (`app/interfaces/block-options.ts`),
+   extend the interface with `BlockOptions<'<uid>'>` (`StoredBlockOptions` for an article block),
+   add `...optionInputShape('<uid>')` to the section's schema in `server/schemas/page.ts` and
+   `...optionResponseShape` or `...optionStoredShape` to the one in `app/schemas/`,
+   name the fields in `server/lib/publicShapes.ts` for an article block, and bind
+   `v-bind="optionAttributes(section)"` on the component's root.
+   A new name or value is a minor of the theme contract (`docs/themes/contract-changelog.md`).
 
 If the block feeds the table of contents, citations or figure numbering, update `app/helpers/toc.ts`, `citations.ts` or `figures.ts` and their tests.
 

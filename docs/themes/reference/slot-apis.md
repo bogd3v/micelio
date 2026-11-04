@@ -160,6 +160,18 @@ export interface StrapiAuthUser {
 }
 ```
 
+### `~/interfaces/block-options`
+
+| Name | Kind | Summary |
+| --- | --- | --- |
+| `BLOCK_OPTIONS` | const | The vocabulary of presentation options: each name, its values in the order a theme and the editor list them, and its default. |
+| `BlockOptionName` | type | The name of a presentation option of the vocabulary. |
+| `BLOCK_OPTION_NAMES` | const | The names of the vocabulary, in its order, as the `data-<name>` hooks. |
+| `BLOCK_EXPOSES` | const | The options each block exposes, by component UID (the `docs/blocks.md` reference of micelio-plugin-core). |
+| `OptionBlockUid` | type | The component UID of a block that exposes presentation options. |
+| `BlockOptionValue` | type | The value of an option, as the vocabulary writes it: `'3'`, `'centered'`. |
+| `BlockOptions` | type | The presentation options a block exposes, optional as the server sends them: an absent one is the block's own look. |
+
 ### `~/interfaces/blog`
 
 | Name | Kind | Summary |
@@ -780,7 +792,7 @@ export interface PageSeo {
 A media file with a text beside it, `section.media-showcase`.
 
 ```ts
-export interface MediaShowcaseSection extends SectionBase<'media-showcase'> {
+export interface MediaShowcaseSection extends SectionBase<'media-showcase'>, BlockOptions<'section.media-showcase'> {
   variant: 'left' | 'right' | 'stacked'
   title?: string
   /** Sanitized HTML of the Markdown text */
@@ -862,7 +874,7 @@ export interface FaqItem {
 A list of the newest published posts, optionally filtered by a category or a tag, `section.post-list`.
 
 ```ts
-export interface PostListSection extends SectionBase<'post-list'> {
+export interface PostListSection extends SectionBase<'post-list'>, BlockOptions<'section.post-list'> {
   variant: 'cards' | 'list'
   title?: string
   /** Category or tag slug the list is filtered by; never both */
@@ -880,7 +892,7 @@ export interface PostListSection extends SectionBase<'post-list'> {
 A text block written in Markdown, `section.rich-text`.
 
 ```ts
-export interface RichTextSection extends SectionBase<'rich-text'> {
+export interface RichTextSection extends SectionBase<'rich-text'>, BlockOptions<'section.rich-text'> {
   /** Sanitized HTML of the Markdown body */
   html: string
 }
@@ -891,7 +903,7 @@ export interface RichTextSection extends SectionBase<'rich-text'> {
 A 3D model with a poster image, `section.scene`, shown as a background or inline.
 
 ```ts
-export interface SceneSection extends SectionBase<'scene'> {
+export interface SceneSection extends SectionBase<'scene'>, BlockOptions<'section.scene'> {
   variant: 'background' | 'inline'
   /** A binary glTF file (`.glb`); with any other file the server drops the section. */
   model: PageMedia
@@ -1186,7 +1198,7 @@ export interface StrapiImageCredit {
 An image block of an article, `shared.media`.
 
 ```ts
-export interface StrapiMedia {
+export interface StrapiMedia extends BlockOptions<'shared.media'> {
   id: number
   __component: 'shared.media'
   /** `null` when no file is attached. */
@@ -1202,7 +1214,7 @@ export interface StrapiMedia {
 A slider block of an article, `shared.slider`.
 
 ```ts
-export interface StrapiSlider {
+export interface StrapiSlider extends BlockOptions<'shared.slider'> {
   id: number
   __component: 'shared.slider'
   /** The slides, each with its own caption and credit. */
@@ -1453,7 +1465,7 @@ export interface StrapiRichText {
 A quote block of an article, `shared.quote`, rendered as inline Markdown.
 
 ```ts
-export interface StrapiQuote {
+export interface StrapiQuote extends BlockOptions<'shared.quote'> {
   id: number
   __component: 'shared.quote'
   /** The quoted text in Markdown, as the CMS stores it. */
@@ -1470,7 +1482,7 @@ export interface StrapiQuote {
 A block of code with its expected output, `shared.playground`.
 
 ```ts
-export interface StrapiPlayground {
+export interface StrapiPlayground extends BlockOptions<'shared.playground'> {
   id: number
   __component: 'shared.playground'
   /** The language of `code`; the block can run only for the runtimes the frontend knows. */

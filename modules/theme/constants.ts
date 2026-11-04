@@ -9,18 +9,26 @@ import type { ContractAddition, ContractVersion, LayoutRegion } from './types'
  * change to roles, modes, variants, hooks, slots or the package layout is the next major, with a migration note. The version is also
  * printed in the generated theme reference. Contract 2 removed the five built-in categories from the slot APIs (ADR 0016).
  */
-export const CONTRACT_VERSION: ContractVersion = { major: 2, minor: 0 }
+export const CONTRACT_VERSION: ContractVersion = { major: 2, minor: 1 }
 
 /**
  * What each minor above `.0` of the current major added, so the validator can compute the minimum minor a theme uses.
  *
  * @remarks
- * Empty while the core implements 2.0. Adding to the contract appends a row here with the new minor, raises `CONTRACT_VERSION.minor`
+ * 2.1 added the presentation options of the blocks as hooks (`docs/themes/contract-changelog.md`). Adding to the contract appends a row here with the new minor, raises `CONTRACT_VERSION.minor`
  * and adds the section to `docs/themes/contract-changelog.md`. Names: a slot as in `SLOT_NAMES`, a layout variant as `region:variant`,
  * a role as in the contract, a hook as its class (`myc-…`) or attribute (`data-…`). Limits: a hook counts only when a selector of the
  * theme's CSS uses it (not slot-template markup), and a type-scale role cannot be an addition yet.
  */
-export const CONTRACT_ADDITIONS: readonly ContractAddition[] = []
+export const CONTRACT_ADDITIONS: readonly ContractAddition[] = [
+  { minor: 1, kind: 'hook', name: 'data-width' },
+  { minor: 1, kind: 'hook', name: 'data-columns' },
+  { minor: 1, kind: 'hook', name: 'data-density' },
+  { minor: 1, kind: 'hook', name: 'data-align' },
+  { minor: 1, kind: 'hook', name: 'data-tone' },
+  { minor: 1, kind: 'hook', name: 'data-ratio' },
+  { minor: 1, kind: 'hook', name: 'data-height' },
+]
 
 /** The regions of the page whose layout variant a theme can choose (ADR 0005). */
 export const LAYOUT_REGIONS = ['header', 'home', 'postList', 'article', 'footer'] as const

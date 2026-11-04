@@ -6,6 +6,7 @@ import { checkCss, checkThemeCss, cssUrls } from '../modules/theme/css-rules'
 import { transform } from 'lightningcss'
 import { loadHooks, parseHooks } from '../modules/theme/hooks'
 import { REGION_VARIANTS } from '../modules/theme/layout/variants'
+import { BLOCK_OPTIONS } from '../app/interfaces/block-options'
 
 const hooks = loadHooks(join(process.cwd(), 'app'))
 
@@ -201,7 +202,7 @@ describe('hooks.json', () => {
     expect(problems('.myc-section[data-section="hero"][data-variant="split"] .myc-section-title { top: 0 }')).toEqual([])
   })
 
-  it('names only variants the core implements in every layouts entry and in data-layout', () => {
+  it('names only variants the core implements in every layouts entry and in data-layout (the values of the layout option included)', () => {
     const raw = JSON.parse(readFileSync(join(process.cwd(), 'app/theme/hooks.json'), 'utf8')) as {
       attributes: Record<string, { values?: string[] }>
       classes: Record<string, string | { layouts?: Record<string, string[]> }>
@@ -215,7 +216,8 @@ describe('hooks.json', () => {
       }
     }
     expect(unknown).toEqual([])
-    const implemented = Object.values(REGION_VARIANTS).flatMap(entry => entry.variants)
+    // The layout option of a block (contract 2.1) shares the attribute: its values are the region variants and the vocabulary's
+    const implemented = [...Object.values(REGION_VARIANTS).flatMap(entry => entry.variants), ...BLOCK_OPTIONS.layout.values]
     expect([...raw.attributes['data-layout']!.values!].sort()).toEqual([...new Set(implemented)].sort())
   })
 })

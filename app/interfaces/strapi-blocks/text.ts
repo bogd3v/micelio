@@ -1,3 +1,4 @@
+import type { BlockOptions } from '../block-options'
 /**
  * A text block of an article written in Markdown, `shared.rich-text`.
  *
@@ -17,7 +18,7 @@ export interface StrapiRichText {
  *
  * @public
  */
-export interface StrapiQuote {
+export interface StrapiQuote extends BlockOptions<'shared.quote'> {
   id: number
   __component: 'shared.quote'
   /** The quoted text in Markdown, as the CMS stores it. */
@@ -40,7 +41,7 @@ export type StrapiPlaygroundRuntime = 'python' | 'sql' | 'javascript'
  *
  * @public
  */
-export interface StrapiPlayground {
+export interface StrapiPlayground extends BlockOptions<'shared.playground'> {
   id: number
   __component: 'shared.playground'
   /** The language of `code`; the block can run only for the runtimes the frontend knows. */

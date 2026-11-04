@@ -1,3 +1,4 @@
+import type { BlockOptions } from '../block-options'
 /**
  * A Strapi upload, as an image block, a slide or a file of a slider carries it.
  *
@@ -69,7 +70,7 @@ export interface StrapiImageCredit {
  *
  * @public
  */
-export interface StrapiMedia {
+export interface StrapiMedia extends BlockOptions<'shared.media'> {
   id: number
   __component: 'shared.media'
   /** `null` when no file is attached. */
@@ -96,7 +97,7 @@ export interface StrapiSlide {
  *
  * @public
  */
-export interface StrapiSlider {
+export interface StrapiSlider extends BlockOptions<'shared.slider'> {
   id: number
   __component: 'shared.slider'
   /** The slides, each with its own caption and credit. */

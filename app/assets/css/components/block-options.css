@@ -1,0 +1,46 @@
+/* Presentation options of the article blocks (#731): data-width, data-align, data-ratio and data-height on the root of a quote, an
+   image, a slider and a playground. An absent attribute is the block's own look, and so is the default value (prose, start, 16:9, m):
+   Strapi stores it on a new entry, so it has no rule. `ratio: auto` leaves the shape to the file; a slider stacks its slides, so it keeps its own 16:10. The sections have theirs in
+   section-options.css. An article inlines this file in its HTML, which a budget counts: keep it small. */
+@media (min-width: 900px) {
+    :is(.myc-quote, .myc-fig)[data-width="wide"] {
+        margin-inline: calc(-1 * var(--space-8));
+    }
+}
+
+blockquote.myc-quote[data-align="center"] {
+    padding: var(--space-3) 0 0;
+    border: 0;
+    border-top: 4px solid var(--link);
+    text-align: center;
+}
+
+.myc-fig[data-ratio="4:3"] {
+    --myc-ratio: 4 / 3;
+}
+
+.myc-fig[data-ratio="1:1"] {
+    --myc-ratio: 1;
+}
+
+.myc-fig:is([data-ratio="4:3"], [data-ratio="1:1"], [data-ratio="auto"]):not(.myc-slider) .myc-fig-media {
+    aspect-ratio: var(--myc-ratio, auto);
+}
+
+/* (0,3,1): out-ranks `.myc-prose .myc-fig-media img { height: auto }` of figure.css, which a static article loads after this file */
+.myc-fig:is([data-ratio="4:3"], [data-ratio="1:1"], [data-ratio="auto"]) .myc-fig-media img {
+    height: 100%;
+    object-fit: cover;
+}
+
+.myc-slider:is([data-ratio="4:3"], [data-ratio="1:1"]) .myc-slider-frame {
+    aspect-ratio: var(--myc-ratio, 16 / 10);
+}
+
+.myc-playground[data-height="l"] {
+    min-height: 40rem;
+}
+
+.myc-playground[data-height="full"] {
+    min-height: 100svh;
+}

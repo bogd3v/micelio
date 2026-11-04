@@ -57,7 +57,7 @@ describe.each(['starter'])('packing %s', (id) => {
 
   it('writes a manifest with the files, their sha256 and the check summary', () => {
     const { manifest } = buildPackage(theme, hooks)
-    expect(manifest).toMatchObject({ id, name: theme.manifest.name, version: '0.1.0', contract: { declared: '2.0', used: '2.0' }, check: { errors: 0 } })
+    expect(manifest).toMatchObject({ id, name: theme.manifest.name, version: '0.1.0', contract: { declared: '2.1', used: '2.1' }, check: { errors: 0 } })
     expect(manifest.license).toBe(theme.manifest.license)
     expect(manifest.size).toBe(manifest.files.reduce((sum, file) => sum + file.size, 0))
     for (const file of manifest.files) expect(file.sha256).toBe(createHash('sha256').update(readFileSync(join(theme.dir, file.path))).digest('hex'))

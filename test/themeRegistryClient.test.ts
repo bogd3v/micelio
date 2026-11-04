@@ -80,7 +80,7 @@ describe('resolving a theme', () => {
             '1.1.0': entry(digest('b')),
             '1.2.0': entry(digest('c'), { status: 'yanked' }),
             '1.3.0': entry(digest('d'), { status: 'incompatible' }),
-            '1.4.0': entry(digest('e'), { contract: '2.1' }),
+            '1.4.0': entry(digest('e'), { contract: '2.2' }),
             '1.5.0': entry(digest('f'), { contract: '3.0' }),
             '1.6.0-rc.1': entry(digest('g')),
             '2.0.0': entry(digest('h'), { tier: 'verified', code: true }),

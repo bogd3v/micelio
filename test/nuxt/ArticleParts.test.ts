@@ -6,6 +6,9 @@ import BlogCopyLinkButton from '~/components/blog/CopyLinkButton.vue'
 import BlogCommentSection from '~/components/blog/CommentSection.vue'
 import StrapiRichTextBlock from '~/components/strapi/RichTextBlock.vue'
 import StrapiQuoteBlock from '~/components/strapi/QuoteBlock.vue'
+import StrapiMediaBlock from '~/components/strapi/MediaBlock.vue'
+import StrapiSliderBlock from '~/components/strapi/SliderBlock.vue'
+import StrapiPlaygroundBlock from '~/components/strapi/PlaygroundBlock.vue'
 import BlogReferences from '~/components/blog/References.vue'
 import { numberReferences } from '~/helpers/citations'
 import type { StrapiBlock, StrapiQuote, StrapiReference, StrapiRichText } from '~/interfaces'
@@ -122,5 +125,24 @@ describe('BlogReferences', () => {
   it('renders nothing without references', async () => {
     const wrapper = await mountSuspended(BlogReferences, { props: { entries: [] } })
     expect(wrapper.find('section').exists()).toBe(false)
+  })
+})
+
+describe('presentation options of the article blocks', () => {
+  it('writes them as data attributes on the root of a quote, an image, a slider and a playground', async () => {
+    const quote = await mountSuspended(StrapiQuoteBlock, { props: { block: { id: 1, __component: 'shared.quote', body: 'Q', html: 'Q', width: 'wide', align: 'center' } } })
+    expect(quote.get('blockquote.myc-quote').attributes()).toMatchObject({ 'data-width': 'wide', 'data-align': 'center' })
+    const media = await mountSuspended(StrapiMediaBlock, { props: { block: { id: 2, __component: 'shared.media', file: { url: '/a.jpg' }, ratio: '4:3' } } })
+    expect(media.get('figure.myc-fig').attributes('data-ratio')).toBe('4:3')
+    const slider = await mountSuspended(StrapiSliderBlock, { props: { block: { id: 3, __component: 'shared.slider', files: [{ url: '/a.jpg' }, { url: '/b.jpg' }], ratio: '1:1' } } })
+    expect(slider.get('figure.myc-slider').attributes('data-ratio')).toBe('1:1')
+    const playground = await mountSuspended(StrapiPlaygroundBlock, { props: { block: { id: 4, __component: 'shared.playground', runtime: 'text', code: 'x', height: 'l' } } })
+    expect(playground.get('figure.myc-playground').attributes('data-height')).toBe('l')
+  })
+
+  it('writes nothing for an option the server left out', async () => {
+    const media = await mountSuspended(StrapiMediaBlock, { props: { block: { id: 2, __component: 'shared.media', file: { url: '/a.jpg' } } } })
+    const names = media.get('figure.myc-fig').element.getAttributeNames()
+    expect(names.filter(name => /^data-(layout|width|columns|density|align|tone|ratio|height)$/.test(name))).toEqual([])
   })
 })

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { FeatureGridSection } from '~/interfaces'
 
 const props = defineProps<{ section: FeatureGridSection }>()
@@ -9,7 +10,7 @@ const itemLevel = computed<string>(() => props.section.title ? 'h3' : 'h2')
 </script>
 
 <template>
-  <section class="myc-section" data-section="feature-grid" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section class="myc-section" data-section="feature-grid" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :text="section.text" :title-id="titleId" />
       <ul class="myc-section-items">

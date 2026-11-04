@@ -1,6 +1,7 @@
 import { composite, contrastRatio, nearestPassing, parseColor, resolveRefs, toHex } from './color'
 import type { Rgb } from './color'
 import { OPTIONAL_ROLES } from './roles.mjs'
+import { parseContractVersion } from './version'
 import type { ContrastRule, ThemeManifest } from './types'
 
 // Contrast rules of ADR 0005, section 1 (WCAG 2 AA) and its 2026-10-06 amendment, evaluated per mode.
@@ -14,6 +15,8 @@ export const TEXT_MIN = 4.5
 const CONTROL_MIN = 3
 
 const SURFACES = ['surface', 'surface-raised', 'surface-sunken']
+/** The surface the `tone: accent` option of a section puts under its text (#731). */
+const TONE_SURFACES = ['accent-soft']
 const STATES = ['success', 'warning', 'danger', 'info']
 const CATEGORY_ROLES = [1, 2, 3, 4, 5].map(n => `category-${n}`)
 
@@ -26,6 +29,8 @@ const SOFT_TEXT = ['accent', 'link', ...STATES, ...CATEGORY_ROLES]
  * @remarks
  * Text meets `TEXT_MIN` (4.5:1): `ink` and `ink-muted` on the three surfaces; the `code-*` roles on `surface-sunken`; `on-ink` on `ink`; `on-accent` on `accent`
  * and `accent-hover`; `accent`, `link`, the states and the categories on the three surfaces and on their own `-soft` role.
+ * From contract 2.1, `ink`, `ink-muted` and `link` are also held on `accent-soft`, which `tone: accent` makes the surface of a section (#731);
+ * a theme that declares an older contract is not (`ContrastRule.since`).
  * `line-strong` and `focus` meet 3:1 on the surfaces. An optional role the theme omits is checked with its core default. `contrastProblems`
  * adds the `contrast` assertions that a theme declares on its tokens.
  */
@@ -36,6 +41,8 @@ export const CONTRAST_RULES: ContrastRule[] = [
   { role: 'on-accent', surfaces: ['accent', 'accent-hover'], min: TEXT_MIN },
   ...['line-strong', 'focus'].map(role => ({ role, surfaces: SURFACES, min: CONTROL_MIN })),
   ...['code-ink', 'code-muted', 'code-keyword', 'code-string', 'code-number', 'code-function'].map(role => ({ role, surfaces: ['surface-sunken'], min: TEXT_MIN })),
+  // Contract 2.1 (#731): a theme that declares an older contract keeps validating
+  ...['ink', 'ink-muted', 'link'].map(role => ({ role, surfaces: TONE_SURFACES, min: TEXT_MIN, since: '2.1' })),
 ]
 
 interface ContrastProblem {
@@ -106,8 +113,13 @@ function problem(theme: string, mode: string, role: string, surface: string, min
 
 /** The rule table plus the `contrast` the tokens declare. Optional roles count with the core default when omitted. */
 function rulesFor(manifest: ThemeManifest): ContrastRule[] {
+  const contract = parseContractVersion(manifest.contract)
+  const applies = (rule: ContrastRule): boolean => {
+    const since = parseContractVersion(rule.since ?? '0.0')!
+    return !!contract && (contract.major > since.major || (contract.major === since.major && contract.minor >= since.minor))
+  }
   const declared = manifest.color.tokens.flatMap(token => (token.contrast ?? []).map(extra => ({ role: token.name, surfaces: [extra.on], min: extra.min })))
-  return [...CONTRAST_RULES, ...declared]
+  return [...CONTRAST_RULES.filter(applies), ...declared]
 }
 
 /** Every contrast failure of a theme with a valid contract, in every mode. */

@@ -76,5 +76,5 @@ export function buildPalette(manifest: ThemeManifest): ThemePalette {
       linkSoftIsDefault: !manifest.color.tokens.some(token => token.name === 'link-soft'),
     }
   }
-  return { modes, rules: CONTRAST_RULES.filter(rule => PALETTE_RULE_ROLES.includes(rule.role)), skipped }
+  return { modes, rules: CONTRAST_RULES.filter(rule => PALETTE_RULE_ROLES.includes(rule.role) && !rule.since), skipped }
 }

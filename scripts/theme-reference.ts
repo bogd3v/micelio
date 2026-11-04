@@ -11,6 +11,8 @@ import { REGION_VARIANTS, VARIANT_DESCRIPTIONS } from '../modules/theme/layout/v
 import { OPTIONAL_ROLES, REQUIRED_ROLES, ROLE_PURPOSES, TYPE_FAMILIES, TYPE_STEPS } from '../modules/theme/roles.mjs'
 import type { RoleGroup } from '../modules/theme/roles.mjs'
 import hooks from '../app/theme/hooks.json'
+import { BLOCK_EXPOSES, BLOCK_OPTIONS } from '../app/interfaces/block-options'
+import { optionValues } from '../app/helpers/blockOptions'
 import { slotApiSections } from './theme-reference/slot-apis'
 
 const DIR = fileURLToPath(new URL('../docs/themes/reference/', import.meta.url))
@@ -62,7 +64,7 @@ function rulesOf(role: string): { foreground: ContrastRule[], background: Contra
 }
 
 function ratio(rule: ContrastRule): string {
-  return `≥ ${rule.min}:1`
+  return `≥ ${rule.min}:1${rule.since ? ` (from ${rule.since})` : ''}`
 }
 
 function textOn(role: string): string {
@@ -72,7 +74,11 @@ function textOn(role: string): string {
 
 function backgroundFor(role: string): string {
   const { background } = rulesOf(role)
-  const parts = [...new Set(background.map(rule => rule.min))].map(min => `${code(background.filter(rule => rule.min === min).map(rule => rule.role))} ≥ ${min}:1`)
+  const keys = [...new Set(background.map(rule => `${rule.min}|${rule.since ?? ''}`))]
+  const parts = keys.map((key) => {
+    const [min, since] = key.split('|')
+    return `${code(background.filter(rule => `${rule.min}|${rule.since ?? ''}` === key).map(rule => rule.role))} ≥ ${min}:1${since ? ` (from ${since})` : ''}`
+  })
   return parts.length ? parts.join('; ') : 'none'
 }
 
@@ -137,6 +143,27 @@ function layout(): string {
   )
 }
 
+function blockOptions(): string {
+  const rows = (Object.keys(BLOCK_OPTIONS) as Array<keyof typeof BLOCK_OPTIONS>).map((name) => {
+    const blocks = Object.entries(BLOCK_EXPOSES).filter(([, exposed]) => (exposed as readonly string[]).includes(name))
+    const offered = blocks.map(([uid]) => {
+      const values = optionValues(uid, name)
+      return `\`${uid}\`${values.length < BLOCK_OPTIONS[name].values.length ? ` (${code([...values])})` : ''}`
+    })
+    return [`\`data-${name}\``, BLOCK_OPTIONS[name].values.map(value => value === BLOCK_OPTIONS[name].default ? `**\`${value}\`**` : `\`${value}\``).join(', '), offered.join(', ')]
+  })
+  const intro = [
+    'The presentation options of the blocks (contract 2.1; ADR-0018, section 1).',
+    'A block writes an option as the attribute on its root, next to `data-section` or its own class',
+    '(`myc-quote`, `myc-fig`, `myc-slider`, `myc-playground`),',
+    'only when its content sets a value the block offers.',
+    'The default (in bold) is what the block renders with no attribute; the core has no rule for it,',
+    'so a stored default looks like an absent one.',
+    'A block lists the values it offers when they are fewer than the option\'s.',
+  ].join('\n')
+  return `## Block options\n\n${intro}\n\n${table(['Attribute', 'Values', 'Blocks (component)'], rows)}`
+}
+
 function hooksPage(): string {
   const attributes = Object.entries(HOOK_ATTRIBUTES).map(([name, { describes, values }]) => [
     `\`${name}\``,
@@ -153,7 +180,7 @@ function hooksPage(): string {
     }
     return row
   })
-  const body = [`## Attributes\n\n${table(['Attribute', 'Describes', 'Values'], attributes)}`]
+  const body = [`## Attributes\n\n${table(['Attribute', 'Describes', 'Values'], attributes)}`, blockOptions()]
   for (const region of LAYOUT_REGIONS) {
     const list = names.filter(name => region in (hook(name).layouts ?? {}))
     if (list.length) body.push(`## Classes of \`${region}\`\n\n${table(['Class', 'Describes', 'States', 'Variants'], classRows(list, region))}`)

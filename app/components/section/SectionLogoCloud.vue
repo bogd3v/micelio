@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { LogoCloudSection } from '~/interfaces'
 import { resolveSectionLink } from '~/helpers/links'
 
@@ -16,7 +17,7 @@ function logoHref(url: string | undefined): string | undefined {
 </script>
 
 <template>
-  <section class="myc-section" data-section="logo-cloud" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section class="myc-section" data-section="logo-cloud" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :title-id="titleId" />
       <div class="myc-section-logo-track" :data-variant="section.variant">

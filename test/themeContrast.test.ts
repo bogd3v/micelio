@@ -30,13 +30,19 @@ describe('contrast matrix of the installed themes', () => {
 })
 
 describe('rule table', () => {
-  const rule = (role: string): { surfaces: string[], min: number } => CONTRAST_RULES.find(candidate => candidate.role === role)!
+  const rule = (role: string): { surfaces: string[], min: number, since?: string } => CONTRAST_RULES.find(candidate => candidate.role === role)!
 
   it('holds text to 4.5 and controls to 3', () => {
     expect(rule('ink-muted').min).toBe(4.5)
     expect(rule('on-accent').surfaces).toEqual(['accent', 'accent-hover'])
     expect(rule('code-keyword').surfaces).toEqual(['surface-sunken'])
     expect(rule('link').surfaces).toContain('link-soft')
+    // `tone: accent` (#731) makes `accent-soft` the surface of a section's text, for the themes that declare 2.1
+    for (const role of ['ink', 'ink-muted', 'link']) {
+      const tone = CONTRAST_RULES.find(candidate => candidate.role === role && candidate.surfaces.includes('accent-soft'))
+      expect(tone, role).toMatchObject({ min: 4.5, since: '2.1' })
+      expect(rule(role).since, role).toBeUndefined()
+    }
     expect(rule('line-strong').min).toBe(3)
     expect(rule('focus').min).toBe(3)
     expect(CONTRAST_RULES.filter(candidate => candidate.min === 3).map(candidate => candidate.role).sort()).toEqual(['focus', 'line-strong'])
@@ -71,9 +77,23 @@ describe('a theme that fails contrast', () => {
   it('is an error in the report, with the same fields in --json', () => {
     const report = checkTheme(theme, hooks)
     expect(report.theme).toBe('low-contrast')
+    // The fixture declares contract 2: the rows for `accent-soft` (2.1) do not apply to it
     expect(report.errors).toHaveLength(4)
+    expect(report.errors.filter(error => error.kind === 'contrast' && error.surface === 'accent-soft')).toEqual([])
     expect(report.errors[0]).toMatchObject({ kind: 'contrast', mode: 'day', role: 'ink-muted', surface: 'surface', ratio: 1.9, min: 4.5, suggestion: '#766759' })
     expect(Object.keys(report.errors[0]!).sort()).toEqual(['kind', 'message', 'min', 'mode', 'ratio', 'role', 'suggestion', 'surface'])
+  })
+
+  it('holds ink, ink-muted and link on accent-soft only from contract 2.1 (#731)', () => {
+    const onTone = (contract: string | number): string[] => {
+      const manifest = structuredClone(theme.manifest)
+      manifest.contract = contract
+      return contrastProblems(manifest).filter(problem => problem.surface === 'accent-soft').map(problem => problem.role)
+    }
+    expect(onTone(2)).toEqual([])
+    expect(onTone('2.0')).toEqual([])
+    expect(onTone('2.1')).toEqual(['ink-muted'])
+    expect(onTone('2.2')).toEqual(['ink-muted'])
   })
 
   it('reports an unknown "on" instead of passing', () => {
@@ -86,7 +106,7 @@ describe('a theme that fails contrast', () => {
 describe('checkTheme', () => {
   it('passes the minimal fixture and warns about nothing', () => {
     const [minimal] = discoverThemes([`${fixtures}/minimal`])
-    expect(checkTheme(minimal!, hooks)).toEqual({ theme: 'minimal', contract: { declared: '2.0', used: '2.0', core: '2.0' }, errors: [], warnings: [] })
+    expect(checkTheme(minimal!, hooks)).toEqual({ theme: 'minimal', contract: { declared: '2.0', used: '2.0', core: '2.1' }, errors: [], warnings: [] })
   })
 
   it('has no font warning for the starter (fonts under the 100 KB target)', () => {

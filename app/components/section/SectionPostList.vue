@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { PostListSection } from '~/interfaces'
 import { formatDotDate } from '~/helpers/formatDate'
 
@@ -16,7 +17,7 @@ const posts = computed(() => props.section.posts ?? [])
 </script>
 
 <template>
-  <section v-if="posts.length" class="myc-section" data-section="post-list" :data-pagefind-ignore="isStatic ? '' : undefined" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section v-if="posts.length" class="myc-section" data-section="post-list" v-bind="optionAttributes(section)" :data-pagefind-ignore="isStatic ? '' : undefined" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :title-id="titleId" />
       <ul v-if="section.variant === 'list'" class="myc-section-items">

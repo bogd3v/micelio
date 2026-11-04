@@ -229,8 +229,156 @@ const sceneHero = {
   localizations: [],
 }
 
+// One section for each value of each option on each block that exposes it, and a plain twin of each block, for the table of
+// e2e/theme/block-values.spec.ts: the title of a section is its key, "<block> <option>=<value>", and the twin's "<block> plain"
+const items = names => names.map((title, index) => ({ id: index + 1, icon: null, title, text: `Item ${title}` }))
+const logos = [1, 2, 3, 4, 5, 6].map(id => ({ id, image: media(105 + id, 'logo-circle.svg', { mime: 'image/svg+xml', width: 120, height: 40 }), name: `Logo ${id}`, url: null }))
+const valueBlocks = {
+  'hero-split': (title, o) => ({ __component: 'section.hero', variant: 'split', title, text: 'Text of the hero, longer than its title so that the head is as wide as the text.', primaryLink: link('Go', '/'), secondaryLink: null, media: media(301, 'hero.png'), ...o }),
+  'hero-centered': (title, o) => ({ __component: 'section.hero', variant: 'centered', title, text: 'Text of the hero, longer than its title so that the head is as wide as the text.', primaryLink: link('Go', '/'), secondaryLink: null, media: media(301, 'hero.png'), ...o }),
+  'feature-grid': (title, o) => ({ __component: 'section.feature-grid', variant: 'grid', title, text: null, items: items(['A', 'B', 'C', 'D', 'E', 'F']), ...o }),
+  'showcase': (title, o) => ({ __component: 'section.media-showcase', variant: 'stacked', title, text: null, media: media(300, 'balcony.png'), link: null, ...o }),
+  'stats': (title, o) => ({ __component: 'section.stats', variant: 'row', title, items: ['A', 'B', 'C', 'D', 'E', 'F'].map((label, index) => ({ id: index + 1, value: String(index + 1), label })), ...o }),
+  'logo-cloud': (title, o) => ({ __component: 'section.logo-cloud', variant: 'row', title, logos, ...o }),
+  'testimonials': (title, o) => ({ __component: 'section.testimonials', variant: 'grid', title, items: ['A', 'B', 'C'].map((author, index) => ({ id: index + 1, quote: `Quote ${author}`, author, role: null, avatar: null })), ...o }),
+  'pricing': (title, o) => ({ __component: 'section.pricing', variant: 'cards', title, text: null, plans: ['A', 'B', 'C', 'D'].map((name, index) => ({ id: index + 1, name, price: '$5', period: null, features: 'One\nTwo', recommended: false, link: null })), ...o }),
+  'faq': (title, o) => ({ __component: 'section.faq', variant: 'list', title, items: [{ id: 1, question: 'Why?', answer: 'Because.' }], ...o }),
+  'cta-card': (title, o) => ({ __component: 'section.cta', variant: 'card', title, text: 'Text of the call.', primaryLink: link('Go', '/'), secondaryLink: null, ...o }),
+  'cta-banner': (title, o) => ({ __component: 'section.cta', variant: 'banner', title, text: 'Text of the call.', primaryLink: link('Go', '/'), secondaryLink: null, ...o }),
+  'post-list': (title, o) => ({ __component: 'section.post-list', variant: 'cards', title, category: { id: 21, documentId: 'cat-software', slug: 'software' }, tag: null, count: 2, ...o }),
+  'newsletter': (title, o) => ({ __component: 'section.newsletter', variant: 'card', title, text: 'Text of the form.', buttonLabel: 'Subscribe', ...o }),
+  'newsletter-inline': (title, o) => ({ __component: 'section.newsletter', variant: 'inline', title, text: 'Text of the form.', buttonLabel: 'Subscribe', ...o }),
+  'rich-text': (title, o) => ({ __component: 'section.rich-text', body: `## ${title}\n\nA paragraph of text.`, ...o }),
+  'gallery': (title, o) => ({ __component: 'section.gallery', variant: 'grid', title, images: [media(104, 'balcony.png'), media(108, 'summer.png')], ...o }),
+  'scene-inline': (title, o) => ({ __component: 'section.scene', variant: 'inline', title, text: null, model: media(210, 'triangle.glb', { mime: 'model/gltf-binary', width: null, height: null }), poster: media(211, 'triangle-poster.png', { width: 1600, height: 900 }), alt: 'A green triangle', ...o }),
+  'scene-background': (title, o) => ({ __component: 'section.scene', variant: 'background', title, text: 'Drawn behind this text.', model: media(210, 'triangle.glb', { mime: 'model/gltf-binary', width: null, height: null }), poster: media(211, 'triangle-poster.png', { width: 1600, height: 900 }), alt: 'A green triangle', ...o }),
+}
+/** The cases of the table: the block, and the options it takes (none is the plain twin). Every value of every option of every block appears once. */
+export const blockValueCases = [
+  ['hero-split', {}], ['hero-split', { layout: 'stacked' }], ['hero-split', { layout: 'split' }], ['hero-split', { tone: 'raised' }], ['hero-split', { tone: 'accent' }],
+  ['hero-split', { height: 's' }], ['hero-split', { height: 'l' }], ['hero-split', { height: 'full' }],
+  ['hero-centered', {}], ['hero-centered', { layout: 'stacked' }], ['hero-centered', { layout: 'split' }],
+  ['feature-grid', {}], ['feature-grid', { columns: '2' }], ['feature-grid', { columns: '4' }], ['feature-grid', { density: 'compact' }],
+  ['showcase', {}], ['showcase', { ratio: '4:3' }], ['showcase', { ratio: '1:1' }], ['showcase', { ratio: 'auto' }],
+  ['stats', {}], ['stats', { columns: '2' }], ['stats', { columns: '4' }], ['stats', { align: 'center' }], ['stats', { tone: 'raised' }], ['stats', { tone: 'accent' }],
+  ['logo-cloud', {}], ['logo-cloud', { columns: '2' }], ['logo-cloud', { columns: '4' }], ['logo-cloud', { columns: '6' }], ['logo-cloud', { density: 'compact' }],
+  ['testimonials', {}], ['testimonials', { layout: 'stacked' }], ['testimonials', { layout: 'split' }], ['testimonials', { density: 'compact' }],
+  ['pricing', {}], ['pricing', { columns: '2' }], ['pricing', { columns: '4' }],
+  ['faq', {}], ['faq', { density: 'compact' }],
+  ['cta-card', {}], ['cta-card', { layout: 'stacked' }], ['cta-card', { layout: 'split' }], ['cta-card', { align: 'center' }], ['cta-card', { tone: 'raised' }], ['cta-card', { tone: 'accent' }],
+  ['cta-banner', {}], ['cta-banner', { align: 'center' }], ['cta-banner', { tone: 'raised' }], ['cta-banner', { tone: 'accent' }],
+  ['post-list', {}], ['post-list', { density: 'compact' }],
+  ['newsletter-inline', {}], ['newsletter-inline', { align: 'center' }],
+  ['newsletter', {}], ['newsletter', { align: 'center' }], ['newsletter', { tone: 'raised' }], ['newsletter', { tone: 'accent' }],
+  ['rich-text', {}], ['rich-text', { width: 'wide' }], ['rich-text', { width: 'full' }],
+  ['gallery', {}], ['gallery', { width: 'wide' }], ['gallery', { width: 'full' }], ['gallery', { density: 'compact' }],
+  ['scene-inline', {}], ['scene-inline', { height: 's' }], ['scene-inline', { height: 'l' }], ['scene-inline', { height: 'full' }],
+  ['scene-background', {}], ['scene-background', { height: 's' }], ['scene-background', { height: 'l' }], ['scene-background', { height: 'full' }],
+  // The default value of each option, stored as Strapi stores it: it must look like the plain twin
+  ['hero-split', { layout: 'centered', tone: 'default', height: 'm' }, true], ['feature-grid', { columns: '3', density: 'comfortable' }, true], ['showcase', { ratio: '16:9' }, true],
+  ['stats', { columns: '3', align: 'start', tone: 'default' }, true], ['logo-cloud', { columns: '3', density: 'comfortable' }, true], ['testimonials', { layout: 'centered', density: 'comfortable' }, true],
+  ['pricing', { columns: '3' }, true], ['faq', { density: 'comfortable' }, true], ['cta-card', { layout: 'centered', align: 'start', tone: 'default' }, true],
+  ['post-list', { density: 'comfortable' }, true], ['newsletter', { align: 'start', tone: 'default' }, true], ['rich-text', { width: 'prose' }, true], ['gallery', { width: 'prose', density: 'comfortable' }, true],
+  ['scene-inline', { height: 'm' }, true], ['scene-background', { height: 'm' }, true],
+]
+
+/** The key of a case, the section's title: "<block> <option>=<value>", "<block> plain" for the twin and "<block> saved" for the default values stored (as long as "plain"). */
+export function blockValueKey(block, options, saved = false) {
+  if (saved) return `${block} saved`
+  const pairs = Object.entries(options).map(([name, value]) => `${name}=${value}`)
+  return `${block} ${pairs.length ? pairs.join(' ') : 'plain'}`
+}
+
+const valueSections = blockValueCases.map(([block, options, saved], index) => ({ id: 100 + index, ...valueBlocks[block](blockValueKey(block, options, saved), options) }))
+
+// The presentation options of the blocks (#731): a centered hero laid out as a split, grids of two and four columns, a compact one, a centered stats row on the accent
+// tone, a card on the raised tone and a square showcase (e2e/theme/block-options.spec.ts); then one section for every value of every option (block-values.spec.ts)
+const blockOptions = {
+  id: 6,
+  documentId: 'page-block-options',
+  title: 'Block options',
+  slug: 'block-options',
+  locale: 'en',
+  seo: null,
+  sections: [
+    {
+      id: 7,
+      __component: 'section.hero',
+      variant: 'centered',
+      title: 'Split hero',
+      text: 'The layout option wins over the variant.',
+      primaryLink: null,
+      secondaryLink: null,
+      media: media(301, 'hero.png'),
+      layout: 'split',
+    },
+    {
+      id: 1,
+      __component: 'section.feature-grid',
+      variant: 'grid',
+      title: 'Two columns',
+      text: null,
+      columns: '2',
+      items: ['One', 'Two', 'Three', 'Four'].map((title, index) => ({ id: index + 1, icon: null, title, text: `Item ${title}` })),
+    },
+    {
+      id: 2,
+      __component: 'section.feature-grid',
+      variant: 'grid',
+      title: 'Four columns, compact',
+      text: null,
+      columns: '4',
+      density: 'compact',
+      items: ['Five', 'Six', 'Seven', 'Eight'].map((title, index) => ({ id: index + 1, icon: null, title, text: `Item ${title}` })),
+    },
+    { id: 3, __component: 'section.feature-grid', variant: 'grid', title: 'No options', text: null, items: ['Nine', 'Ten'].map((title, index) => ({ id: index + 1, icon: null, title, text: null })) },
+    {
+      id: 4,
+      __component: 'section.stats',
+      variant: 'row',
+      title: 'Accent and centered',
+      align: 'center',
+      tone: 'accent',
+      columns: '3',
+      items: [{ id: 1, value: '4 h', label: 'of sun' }, { id: 2, value: '12', label: 'pots' }, { id: 3, value: '3', label: 'seasons' }],
+    },
+    { id: 5, __component: 'section.cta', variant: 'card', title: 'Raised card', text: null, primaryLink: null, secondaryLink: null, tone: 'raised', layout: 'stacked' },
+    {
+      id: 6,
+      __component: 'section.media-showcase',
+      variant: 'stacked',
+      title: 'Square media',
+      text: null,
+      media: media(300, 'balcony.png', { width: 1200, height: 630 }),
+      link: null,
+      ratio: '1:1',
+    },
+    // A stored default must look like the block with no option (the plugin fills the default in on a new entry): each stored block has a twin with none
+    { id: 8, __component: 'section.hero', variant: 'split', title: 'Stored hero', text: 'Same text.', primaryLink: null, secondaryLink: null, media: null, layout: 'centered', height: 'm' },
+    { id: 9, __component: 'section.hero', variant: 'split', title: 'Plain hero', text: 'Same text.', primaryLink: null, secondaryLink: null, media: null },
+    { id: 10, __component: 'section.hero', variant: 'split', title: 'Tall hero', text: 'Same text.', primaryLink: null, secondaryLink: null, media: null, height: 'l' },
+    { id: 11, __component: 'section.gallery', variant: 'grid', title: 'Stored gallery', images: [media(104, 'balcony.png'), media(108, 'summer.png')], width: 'prose', density: 'comfortable' },
+    { id: 12, __component: 'section.gallery', variant: 'grid', title: 'Plain gallery', images: [media(104, 'balcony.png'), media(108, 'summer.png')] },
+    { id: 13, __component: 'section.gallery', variant: 'grid', title: 'Full gallery', images: [media(104, 'balcony.png'), media(108, 'summer.png')], width: 'full' },
+    { id: 14, __component: 'section.feature-grid', variant: 'grid', title: 'Stored grid', text: null, columns: '3', items: ['A', 'B'].map((title, index) => ({ id: index + 1, icon: null, title, text: `Item ${title}` })) },
+    { id: 15, __component: 'section.feature-grid', variant: 'grid', title: 'Plain grid', text: null, items: ['A', 'B'].map((title, index) => ({ id: index + 1, icon: null, title, text: `Item ${title}` })) },
+    { id: 16, __component: 'section.media-showcase', variant: 'stacked', title: 'Stored showcase', text: null, media: media(300, 'balcony.png', { width: 1200, height: 630 }), link: null, ratio: '16:9' },
+    { id: 17, __component: 'section.media-showcase', variant: 'stacked', title: 'Plain showcase', text: null, media: media(300, 'balcony.png', { width: 1200, height: 630 }), link: null },
+    {
+      id: 18,
+      __component: 'section.logo-cloud',
+      variant: 'row',
+      title: 'Six logos',
+      columns: '6',
+      logos: [1, 2, 3, 4, 5, 6].map(id => ({ id, image: media(105 + id, 'logo-circle.svg', { mime: 'image/svg+xml', width: 120, height: 40 }), name: `Logo ${id}`, url: null })),
+    },
+    ...valueSections,
+  ],
+  localizations: [],
+}
+
 /** Mutable: a test may publish a page after a first miss. */
-export const pageFixtures = [showcase(false), showcase(true), partial, manyLists, sceneHero]
+export const pageFixtures = [showcase(false), showcase(true), partial, manyLists, sceneHero, blockOptions]
 
 // What replaces the showcase pages when there are no articles
 const landingShowcases = [showcase(false, true), showcase(true, true)]

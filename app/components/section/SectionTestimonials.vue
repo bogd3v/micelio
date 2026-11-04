@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { TestimonialsSection } from '~/interfaces'
 
 const props = defineProps<{ section: TestimonialsSection }>()
@@ -9,7 +10,7 @@ const items = computed(() => props.section.variant === 'single' ? props.section.
 </script>
 
 <template>
-  <section class="myc-section" data-section="testimonials" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section class="myc-section" data-section="testimonials" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :title-id="titleId" />
       <ul class="myc-section-items">

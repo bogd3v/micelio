@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { StatsSection } from '~/interfaces'
 
 defineProps<{ section: StatsSection }>()
@@ -7,7 +8,7 @@ const titleId = useId()
 </script>
 
 <template>
-  <section class="myc-section" data-section="stats" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section class="myc-section" data-section="stats" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :title-id="titleId" />
       <dl class="myc-section-items">

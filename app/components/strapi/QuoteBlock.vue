@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { StrapiQuote } from '~/interfaces'
 
 defineProps<{
@@ -7,7 +8,7 @@ defineProps<{
 </script>
 
 <template>
-  <blockquote class="myc-quote">
+  <blockquote class="myc-quote" v-bind="optionAttributes(block)">
     <!-- eslint-disable-next-line vue/no-v-html -- sanitized on the server (app/helpers/markdown.ts) -->
     <p class="myc-quote-text" v-html="block.html ?? ''" />
     <cite v-if="block.title" class="myc-quote-cite">

@@ -52,7 +52,8 @@ const posterSrc = computed<string | undefined>(() => props.poster && isUsable(pr
 const alt = computed<string>(() => props.decorative ? '' : (props.media?.alternativeText || props.fallbackAlt))
 const width = computed<number | undefined>(() => props.media?.width || undefined)
 const height = computed<number | undefined>(() => props.media?.height || undefined)
-const ratio = computed<string | undefined>(() => width.value && height.value ? `${width.value} / ${height.value}` : undefined)
+// The file's own shape, unless the section sets `--myc-ratio` (its ratio option, section-options.css): an inline style would beat the stylesheet
+const ratio = computed<string | undefined>(() => width.value && height.value ? `var(--myc-ratio, ${width.value} / ${height.value})` : undefined)
 </script>
 
 <template>
