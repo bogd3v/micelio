@@ -9,6 +9,14 @@ This applies to everything below and to any third-party material added later, li
 npm packages (`package.json`, `package-lock.json`) are distributed under their own licenses, which each package carries. `npm run lint:licenses` (`scripts/check-licenses.mjs`) fails when a production dependency has a license that is not on the allowlist of `@micelio/eslint-config` (the licenses that can be combined with AGPL-3.0); the exceptions and their reasons are in `scripts/licenses-allow.json`.
 
 - `elkjs` (EPL-2.0), a dependency of `mermaid`, used unmodified and only on articles with diagrams, where it is sent to the browser as a separate file. EPL-2.0 is not on the compatible list; that file stays under the EPL-2.0, and its source is available at https://github.com/kieler/elkjs (version in `package-lock.json`).
+- `sharp` (Apache-2.0) and `wawoff2` (MIT), which draw the social card of a draft on the server
+  (`server/lib/socialCard.ts`), used unmodified and never sent to a browser.
+  `sharp` brings its own libvips as `@img/sharp-libvips-*` (LGPL-3.0-or-later), as the image
+  pipeline of `@nuxt/image` already did.
+  `wawoff2` is Google's WOFF2 decoder compiled to WebAssembly, which unpacks the theme's font file
+  in memory.
+  Both licenses are on the compatible list; the texts ship with the packages, and the versions are
+  in `package-lock.json`.
 - `quickjs-emscripten-core` and `@jitl/quickjs-wasmfile-release-sync` (MIT), the JavaScript engine of the playground (QuickJS compiled to WebAssembly), used unmodified. The glue code and the `.wasm` file are sent to the browser as separate files under `/_islands/runtimes/`, only when a reader runs a JavaScript block. MIT is on the compatible list; the license text ships with each package, and QuickJS itself is MIT too (https://github.com/justjake/quickjs-emscripten, versions in `package-lock.json`).
 - `pyodide` (MPL-2.0), CPython compiled to WebAssembly with its standard library, used unmodified and only when a reader presses Run on a Python block, where its files (`pyodide.mjs`, `pyodide.asm.mjs`, `pyodide.asm.wasm`, `python_stdlib.zip`, and a lock file that lists no packages) are sent to the browser from `/_islands/runtimes/`. They stay under the MPL-2.0 (and the licenses of Python and of the libraries Pyodide bundles); the source is https://github.com/pyodide/pyodide, tag 314.0.7 (the npm package `pyodide@314.0.7`).
 - `three` (MIT, https://github.com/mrdoob/three.js), used unmodified by the `scene` section: only `WebGLRenderer`, `GLTFLoader`, the lights and the objects of a turntable are bundled, as a separate file under `/_islands/chunks/` that a browser downloads when a scene near the viewport starts (not under reduced motion, Save-Data or without WebGL2). The license text ships with the package (`node_modules/three/LICENSE`); the version is in `package-lock.json`.

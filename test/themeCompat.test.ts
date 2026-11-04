@@ -424,6 +424,17 @@ describe('the workflows', () => {
     expect(compat).toContain('npm ci --ignore-scripts')
   })
 
+  it('let the compat run skip the social card baseline of a published theme, and nothing else does', () => {
+    // The compat call is the one that passes `false`, inside the `with:` of its call of theme-admission.yml
+    const call = compat.match(/uses: \.\/\.github\/workflows\/theme-admission\.yml\n {4}with:\n((?: {6}[^\n]*\n)+)/)?.[1] ?? ''
+    expect(call).toMatch(/^ {6}card-baseline-required: false$/m)
+    // Anyone else gets the baseline required: the input is a boolean that defaults to true
+    expect(admission).toMatch(/card-baseline-required:\n {8}description: [^\n]*\n {8}type: boolean\n {8}default: true\n/)
+    // The input reaches the check as `THEME_CARD_BASELINE`, which e2e/theme/card.spec.ts reads
+    expect(admission).toContain('THEME_CARD_BASELINE: ${{ inputs.card-baseline-required && \'required\' || \'optional\' }}')
+    expect(read('e2e/theme/card.spec.ts')).toContain('process.env.THEME_CARD_BASELINE !== \'optional\'')
+  })
+
   it('fail the run on an official theme only, unless the caller reads the result itself', () => {
     expect(compat).toMatch(/if: inputs\.fail-on-blocked && steps\.decide\.outputs\.blocked == 'true'/)
     expect(compat).toMatch(/fail-on-blocked:\n {8}description: [^\n]*\n {8}type: boolean\n {8}default: true/)

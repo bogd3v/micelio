@@ -20,6 +20,8 @@ process.env.NUXT_STRAPI_API_TOKEN = 'test-api-token'
 process.env.NUXT_SITE_CACHE_SECONDS = '0'
 process.env.MICELIO_THEME_DIRS = 'test/fixtures/themes'
 process.env.NUXT_PUBLIC_THEME = 'minimal'
+const ADMIN_ORIGIN = 'https://cms.minimal.test'
+process.env.NUXT_PREVIEW_ADMIN_ORIGIN = ADMIN_ORIGIN
 
 await setup({
   server: true,
@@ -30,6 +32,17 @@ await setup({
 })
 
 describe('a build with the minimal fixture theme', () => {
+  // The theme declares no font file, so there is nothing to draw a social card with (bogd3v/micelio#734): the documented 500, not a card in another font
+  it('answers the social card of a draft with a 500 problem detail and no PNG', async () => {
+    const opened = await fetch(`/_preview?token=${mock.preview.issue({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', adminOrigin: ADMIN_ORIGIN })}`, { redirect: 'manual', headers: { 'x-forwarded-for': '2001:db8:734:7::1' } })
+    const cookie = opened.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_preview='))!.split(';')[0]!
+    const response = await fetch('/api/preview/api%3A%3Apage.page/doc-page-draft/card', { headers: { cookie, 'x-forwarded-for': '2001:db8:734:7::1' } })
+    expect(response.status).toBe(500)
+    expect(response.headers.get('content-type')).toContain('application/problem+json')
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(await response.json()).toMatchObject({ status: 500, code: 'internalError' })
+  })
+
   it('writes the theme\'s only mode and its scheme on <html>', async () => {
     const html = await (await fetch('/')).text()
     expect(html).toMatch(/<html[^>]* data-theme="day" data-scheme="light"/)

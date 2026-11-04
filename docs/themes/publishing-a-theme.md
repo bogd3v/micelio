@@ -114,7 +114,13 @@ jobs:
       core-ref: v0.5.5
 ```
 
-It takes `theme-dirs`, `themes`, `core-repository`, `core-ref`, `snapshot-root` and `artifact-prefix`, as admission does. A failed admission run also uploads the baselines as they render now, under the same name. Review the images, unzip them into `__screenshots__/<id>/` and commit; never commit images rendered on your machine (`docs/theme-testing.md`).
+It takes `theme-dirs`, `themes`, `core-repository`, `core-ref`,
+`snapshot-root` and `artifact-prefix`, as admission does.
+A failed admission run also uploads the baselines as they render now, under the same name.
+The artifact holds `card.png` too, the social card of a draft,
+in the first mode's `desktop` folder (a theme with no font file has none).
+Review the images, unzip them into `__screenshots__/<id>/` and commit;
+never commit images rendered on your machine (`docs/theme-testing.md`).
 
 ## 7. Locally
 
@@ -207,6 +213,7 @@ on the commit about to be released (#314).
 | File | Does |
 | --- | --- |
 | `theme-compat.yml` | Reusable. Reads the signed index and, for each theme, the commit its verified provenance says it was built from (`npm run theme:compat -- plan`); calls `theme-admission.yml` once per theme with that commit of `bogd3v/micelio-themes` as the source (`theme-source-repository`, `theme-source-ref`) on the core ref; decides from the reports (`theme:compat -- decide`). No secret, a read-only token; writes nothing |
+| `theme-admission.yml` input `card-baseline-required` | `theme-compat.yml` passes `false`: a published version that has no `card.png` (the social card of a draft; the version was built before the core had it) passes the card spec, which still checks the response and compares a `card.png` the theme has. Admission of a new version keeps it `true`: a theme that declares a font file needs the baseline |
 | `release.yml` | Runs it before the release job, on `github.sha`, in a dry run too. The release job stops (a warning in a dry run) when an official theme fails, and the table is added to the release notes |
 | `theme-compat-runs.yml` | Runs it every week against `main`, and for a pull request of this repository labeled `contract` (roles, hooks, slots or layout variants) against its head |
 

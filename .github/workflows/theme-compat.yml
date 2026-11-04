@@ -116,6 +116,8 @@ jobs:
       core-repository: ${{ inputs.core-repository }}
       core-ref: ${{ inputs.core-ref }}
       fail-on-errors: false
+      # A published version was built before the social card (e2e/theme/card.spec.ts) existed and cannot hold its baseline; one it holds is compared
+      card-baseline-required: false
       artifact-prefix: ${{ inputs.artifact-prefix }}-${{ matrix.n }}
     permissions:
       contents: read

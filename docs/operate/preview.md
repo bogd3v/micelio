@@ -18,7 +18,26 @@ The preview is **off** until you set one variable.
 - A draft shown to a valid grant is the only response that allows framing: `frame-ancestors <NUXT_PREVIEW_ADMIN_ORIGIN>` and no `X-Frame-Options`. Every other response, the draft route without a grant and its errors included, keeps `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
 - Every preview answer is `private, no-store` and `X-Robots-Tag: noindex, nofollow`. The routes are in no sitemap, feed or search index, and public pages do not change.
 - `GET /api/preview/<content type>/<documentId>/weight` answers what the draft weighs (HTML, scripts, styles, fonts, images, and the script of its islands apart), per block, for the cost meter of the plugin. It takes the same grant cookie as the draft routes, and the system grant the CMS mints for itself to measure a draft at publish, in the `X-Micelio-Preview-Grant` header (bogd3v/micelio-plugin-core#46): that grant is used once, lives at most 60 seconds, names one version of one draft, frames nothing and works with the preview off. No other credential opens it (`docs/api.md`, `docs/performance.md`).
-- The admin page reads that report from the browser with the editor's grant: a `fetch` with `credentials: 'include'` to the weight route. The route answers `Access-Control-Allow-Origin: <NUXT_PREVIEW_ADMIN_ORIGIN>`, `Access-Control-Allow-Credentials: true` and `Vary: Origin` when the request's `Origin` is exactly that origin, and no `Access-Control-*` header to any other origin or with the preview off. It is the only route that does. A `GET` with the cookie is a simple request, so there is no preflight, and the admin must not add a header to it. In WebKit the cookie does not reach a cross-site `fetch` either (see below), so the answer is the `404` the page can read.
+- The admin page reads that report from the browser with the editor's grant:
+  a `fetch` with `credentials: 'include'` to the weight route.
+  The route answers `Access-Control-Allow-Origin: <NUXT_PREVIEW_ADMIN_ORIGIN>`,
+  `Access-Control-Allow-Credentials: true` and `Vary: Origin`
+  when the request's `Origin` is exactly that origin,
+  and no `Access-Control-*` header to any other origin or with the preview off.
+  The card route does the same (below); no other route does.
+  A `GET` with the cookie is a simple request, so there is no preflight,
+  and the admin must not add a header to it.
+  In WebKit the cookie does not reach a cross-site `fetch` either (see below),
+  so the answer is the `404` the page can read.
+- `GET /api/preview/<content type>/<documentId>/card` answers the social card of a draft: a PNG of
+  1200 by 630 pixels with its title and the site name, in the theme's display font and colours,
+  for a page that has no hero image.
+  It is drawn on the server from the theme's own files, with no request to another host.
+  It takes the grant cookie only, not the system grant.
+  The admin page reads it with the same credentialed `fetch` as the report and stores it as
+  media: the route sends the same CORS headers, to the admin origin only.
+  Preview only: it is not the `og:image` of a published page (`docs/api.md`, "Social card of a
+  draft").
 - A static or landing site has no preview (the drafts module is off in those modes).
 
 ## The cookie in a cross-site frame

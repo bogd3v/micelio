@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { brotliDecompressSync, gunzipSync } from 'node:zlib'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { request as httpRequest } from 'node:http'
 import { join } from 'node:path'
@@ -28,6 +28,7 @@ import { inlineScripts } from '~/helpers/securityHeaders'
 import { declaredAssets, fontsOf, kb as weightKb } from '~/helpers/weight'
 import type { WeightReport } from '~/interfaces/preview'
 import { weightReportResponseSchema } from '~/schemas/preview'
+import { renderSocialCard } from '../../server/lib/socialCard'
 
 const SITE_URL = 'https://bogdev.test'
 
@@ -3248,6 +3249,271 @@ describe('the weight of a draft (bogd3v/micelio#730)', () => {
   })
 })
 
+describe('the social card of a draft (bogd3v/micelio#734)', () => {
+  const PAGE = 'api%3A%3Apage.page/doc-page-draft'
+  const SYSTEM_HEADER = 'x-micelio-preview-grant'
+
+  // Each call comes from an address of its own, so the rate limit of one test does not reach the next
+  let visitors = 0
+  const visitor = (): Record<string, string> => ({ 'x-forwarded-for': `2001:db8:734:${++visitors}::1` })
+
+  /** Opens `/_preview` with a fresh token and returns the editor's grant cookie. */
+  async function editorGrant(binding: { kind: 'article' | 'page', documentId: string, locale?: string } = { kind: 'page', documentId: 'doc-page-draft' }): Promise<string> {
+    const response = await fetch(`/_preview?token=${mock.preview.issue({ locale: 'en', ...binding, adminOrigin: ADMIN_ORIGIN })}`, { redirect: 'manual', headers: visitor() })
+    return response.headers.getSetCookie().find(value => value.startsWith('__Host-micelio_preview='))!.split(';')[0]!
+  }
+
+  /** The width and height a PNG declares in its header, and its signature. */
+  function pngSize(bytes: Buffer): { signature: string, width: number, height: number } {
+    return { signature: bytes.subarray(1, 4).toString('latin1'), width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) }
+  }
+
+  const cardOf = (headers: Record<string, string>, path = PAGE, query = '') => fetch(`/api/preview/${path}/card${query}`, { headers: { ...visitor(), ...headers } })
+
+  it('answers a PNG of 1200 by 630 for the seeded page, asking the CMS once with the grant and setting no cookie', async () => {
+    const cookie = await editorGrant()
+    mock.preview.calls.length = 0
+    const response = await cardOf({ cookie })
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('image/png')
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow')
+    expect(response.headers.get('referrer-policy')).toBe('no-referrer')
+    expect(response.headers.get('set-cookie')).toBeNull()
+    const bytes = Buffer.from(await response.arrayBuffer())
+    expect(pngSize(bytes)).toEqual({ signature: 'PNG', width: 1200, height: 630 })
+    expect(response.headers.get('content-length')).toBe(String(bytes.length))
+    expect(mock.preview.calls).toMatchObject([{ kind: 'draft', authorization: 'Bearer test-api-token', grant: cookie.split('=')[1] }])
+    // The title and the version are fields of the document: no relation is asked for
+    expect(mock.preview.calls[0]!.query).toEqual({ documentId: 'doc-page-draft' })
+    expect(bytes.includes(Buffer.from(cookie.split('=')[1]!))).toBe(false)
+  })
+
+  type Runtime = { modes: Array<{ id: string }>, palette: { modes: Record<string, { surface: string, ink: string, accent: string }> }, display: { family: string, file?: string }, fonts: Array<{ file: string, family: string, url: string }> }
+
+  /** What the server's theme publishes, which is all the card may draw from: its palette and the font file at its public URL. */
+  async function themeInputs(): Promise<{ runtime: Runtime, fontFile: Uint8Array, siteName: string }> {
+    const { digest } = themeDigests()
+    const runtime = await (await fetch(`/_t/${digest}/runtime.json`)).json() as Runtime
+    const face = runtime.fonts.find(font => font.file === runtime.display.file) ?? runtime.fonts[0]!
+    const fontFile = new Uint8Array(await (await fetch(face.url, { headers: { 'accept-encoding': 'identity' } })).arrayBuffer())
+    const site = await (await fetch('/api/site?locale=en')).json() as { name: string }
+    return { runtime, fontFile, siteName: site.name }
+  }
+
+  const cardBytes = async (response: Response): Promise<Buffer> => Buffer.from(await response.arrayBuffer())
+
+  it('draws the draft\'s title and the site name in the theme\'s colours and display font, from what the theme serves and nothing else', async () => {
+    const { runtime, fontFile, siteName } = await themeInputs()
+    const mode = runtime.palette.modes[runtime.modes[0]!.id]!
+    const cookie = await editorGrant()
+    mock.requests.length = 0
+    const served = await cardBytes(await cardOf({ cookie }))
+    // Only the CMS was asked, and for the draft and the site settings: no font, no image, no other host
+    expect(mock.requests.map(request => request.path).filter(path => !path.startsWith('/api/micelio/preview/draft') && !path.startsWith('/api/site-setting'))).toEqual([])
+    const style = { title: draftPage.title, siteName, surface: mode.surface, ink: mode.ink, accent: mode.accent, fontFile }
+    // The same card, drawn here from the theme's public files: the route used the theme's font and colours
+    expect(Buffer.compare(served, await renderSocialCard(style))).toBe(0)
+    // Control: a different font, or a different title, is a different card
+    const other = new Uint8Array(readFileSync(join(process.cwd(), 'app/assets/fonts/display/archivo-latin-wght.woff2')))
+    expect(Buffer.compare(served, await renderSocialCard({ ...style, fontFile: other }))).not.toBe(0)
+    expect(Buffer.compare(served, await renderSocialCard({ ...style, title: 'Another title' }))).not.toBe(0)
+  })
+
+  describe('with the theme settings of the site', () => {
+    const saved = mock.theme.value
+    afterEach(() => {
+      mock.theme.value = saved
+    })
+
+    it('draws the mode the settings name and the accent they override for it, as /api/site resolves it', async () => {
+      const { runtime, fontFile, siteName } = await themeInputs()
+      const [first, named] = [runtime.modes[0]!.id, Object.keys(runtime.palette.modes).find(id => id !== runtime.modes[0]!.id)!]
+      const cookie = await editorGrant()
+      const byDefault = await cardBytes(await cardOf({ cookie }))
+      mock.theme.value = { id: 1, themeId: 'bogota', defaultMode: named, displayFont: null, accentOverrides: [{ id: 1, mode: named, color: '#FFFF00' }] }
+      const site = await $fetch<{ theme?: { accents: Record<string, { accent: string }> } }>('/api/site')
+      const accent = site.theme!.accents[named]!.accent
+      const served = await cardBytes(await cardOf({ cookie }))
+      const mode = runtime.palette.modes[named]!
+      expect(Buffer.compare(served, await renderSocialCard({ title: draftPage.title, siteName, surface: mode.surface, ink: mode.ink, accent, fontFile }))).toBe(0)
+      // Control: neither the first mode's card nor the theme's own accent in the named mode
+      expect(first).not.toBe(named)
+      expect(Buffer.compare(served, byDefault)).not.toBe(0)
+      expect(Buffer.compare(served, await renderSocialCard({ title: draftPage.title, siteName, surface: mode.surface, ink: mode.ink, accent: mode.accent, fontFile }))).not.toBe(0)
+    })
+
+    it('never serves a card kept for another title or another look', async () => {
+      const cookie = await editorGrant()
+      const savedTitle = draftPage.title
+      const savedVersion = draftPage.updatedAt
+      try {
+        const first = await cardBytes(await cardOf({ cookie }))
+        expect(Buffer.compare(await cardBytes(await cardOf({ cookie })), first)).toBe(0)
+        // The draft was saved: a new version and a new title
+        draftPage.title = 'Edited after a save'
+        draftPage.updatedAt = '2026-10-24T09:45:00.000Z'
+        const edited = await cardBytes(await cardOf({ cookie }))
+        expect(Buffer.compare(edited, first)).not.toBe(0)
+        // The site settings change the accent at the same version: drawn again
+        const { runtime } = await themeInputs()
+        mock.theme.value = { id: 1, themeId: 'bogota', defaultMode: null, displayFont: null, accentOverrides: [{ id: 1, mode: runtime.modes[0]!.id, color: '#FFFF00' }] }
+        const restyled = await cardBytes(await cardOf({ cookie }))
+        expect(Buffer.compare(restyled, edited)).not.toBe(0)
+        // Both back as they were: the first card again
+        mock.theme.value = saved
+        draftPage.title = savedTitle
+        draftPage.updatedAt = savedVersion
+        expect(Buffer.compare(await cardBytes(await cardOf({ cookie })), first)).toBe(0)
+      } finally {
+        draftPage.title = savedTitle
+        draftPage.updatedAt = savedVersion
+      }
+    })
+  })
+
+  it('draws the card of an article from its own title', async () => {
+    const page = Buffer.from(await (await cardOf({ cookie: await editorGrant() })).arrayBuffer())
+    const cookie = await editorGrant({ kind: 'article', documentId: 'doc-linux' })
+    const article = Buffer.from(await (await cardOf({ cookie }, 'api::article.article/doc-linux')).arrayBuffer())
+    expect(pngSize(article)).toEqual({ signature: 'PNG', width: 1200, height: 630 })
+    expect(Buffer.compare(page, article)).not.toBe(0)
+  })
+
+  it('answers 404, `no-store` and no PNG to a wrong token, whatever is wrong with it', async () => {
+    const editor = await editorGrant()
+    const system = mock.preview.issueSystem({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', version: draftPage.updatedAt })
+    const refusals: Array<[string, Record<string, string>, string?]> = [
+      ['no grant', {}],
+      ['a made up cookie', { cookie: '__Host-micelio_preview=made-up-grant' }],
+      // The system grant of the amendment of 2026-10-25 belongs to the weight route: not in its header, and not in the cookie, where the CMS says it acts for `system`
+      ['a system grant in its header', { [SYSTEM_HEADER]: system }],
+      ['a system grant in the cookie', { cookie: `__Host-micelio_preview=${mock.preview.issueSystem({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', version: draftPage.updatedAt })}` }],
+      ['the editor\'s grant in the system header', { [SYSTEM_HEADER]: editor.split('=')[1]! }],
+      ['an editor session', { cookie: '__Host-micelio_session=made-up' }],
+      ['a content type that is not an article or a page', { cookie: editor }, 'api::tag.tag/doc-page-draft'],
+      ['a document id outside the alphabet', { cookie: editor }, 'api%3A%3Apage.page/a%20b'],
+      ['another document than the grant names', { cookie: editor }, 'api%3A%3Apage.page/doc-other'],
+    ]
+    for (const [name, headers, path] of refusals) {
+      const response = await cardOf(headers, path)
+      expect(response.status, name).toBe(404)
+      expect(response.headers.get('cache-control'), name).toBe('private, no-store')
+      expect(response.headers.get('content-type'), name).not.toContain('image/png')
+    }
+    mock.preview.expireGrants()
+    expect((await cardOf({ cookie: editor })).status, 'an ended grant').toBe(404)
+  })
+
+  it('refuses without asking the CMS when the request cannot be a card request', async () => {
+    const editor = await editorGrant()
+    mock.preview.calls.length = 0
+    for (const path of ['api::tag.tag/doc-page-draft', 'toString/doc-page-draft', 'api%3A%3Apage.page/a%20b']) expect((await cardOf({ cookie: editor }, path)).status, path).toBe(404)
+    expect((await cardOf({})).status).toBe(404)
+    expect((await cardOf({ [SYSTEM_HEADER]: 'any-grant' })).status).toBe(404)
+    expect(mock.preview.calls).toEqual([])
+  })
+
+  it('answers 404 for a draft with no title, and the card again once it has one', async () => {
+    const cookie = await editorGrant()
+    const saved = draftPage.title
+    try {
+      // Nothing to draw: blank, control characters and zero-width characters are no title
+      for (const title of ['  ', '\u0001\u0002', '\u200B\u200D\uFEFF', '\u200E', '\u00AD', '\u202A\u202C']) {
+        draftPage.title = title
+        expect((await cardOf({ cookie })).status, JSON.stringify(title)).toBe(404)
+      }
+    } finally {
+      draftPage.title = saved
+    }
+    expect((await cardOf({ cookie })).status).toBe(200)
+  })
+
+  it('reads the site name in the language of the draft the grant names, and no query changes it', async () => {
+    const lastSiteLocale = (): unknown => mock.siteRequests.at(-1)?.query.locale
+    const spanish = await editorGrant({ kind: 'article', documentId: 'doc-draft-pihole', locale: 'es' })
+    const { runtime, fontFile, siteName } = await themeInputs()
+    const mode = runtime.palette.modes[runtime.modes[0]!.id]!
+    const card = await cardBytes(await cardOf({ cookie: spanish }, 'api::article.article/doc-draft-pihole'))
+    expect(lastSiteLocale()).toBe('es')
+    expect(Buffer.compare(card, await renderSocialCard({ title: 'Pi-hole en una Raspberry Pi', siteName, surface: mode.surface, ink: mode.ink, accent: mode.accent, fontFile }))).toBe(0)
+    // A query for another language, or an unsupported one, is not read: the grant's language decides
+    for (const query of ['?locale=en', '?locale=fr']) {
+      const response = await cardOf({ cookie: spanish }, 'api::article.article/doc-draft-pihole', query)
+      expect(response.status, query).toBe(200)
+      expect(lastSiteLocale(), query).toBe('es')
+    }
+    const english = await editorGrant()
+    expect((await cardOf({ cookie: english }, PAGE, '?locale=es')).status).toBe(200)
+    expect(lastSiteLocale()).toBe('en')
+  })
+
+  it('rate limits the cards by address bucket', async () => {
+    const cookie = await editorGrant()
+    const from = (address: string) => fetch(`/api/preview/${PAGE}/card`, { headers: { cookie, 'x-forwarded-for': address } })
+    for (let index = 0; index < 30; index++) expect((await from(`2001:db8:734:ff:${index + 1}::1`)).status).toBe(200)
+    const limited = await from('2001:db8:734:ff:ffff::1')
+    expect(limited.status).toBe(429)
+    expect(limited.headers.get('retry-after')).toBeTruthy()
+  })
+
+  // The admin page reads the card with the editor's grant in a credentialed `fetch` and stores it as media: the headers of the weight route (bogd3v/micelio#766)
+  describe('for the admin page of another origin', () => {
+    const CORS = ['access-control-allow-origin', 'access-control-allow-credentials']
+
+    it('sends the headers to the admin origin only, with the same card', async () => {
+      const cookie = await editorGrant()
+      const asAdmin = await cardOf({ cookie, origin: ADMIN_ORIGIN })
+      expect(asAdmin.status).toBe(200)
+      expect(asAdmin.headers.get('access-control-allow-origin')).toBe(ADMIN_ORIGIN)
+      expect(asAdmin.headers.get('access-control-allow-credentials')).toBe('true')
+      expect(asAdmin.headers.get('vary')).toContain('Origin')
+      const plain = await cardOf({ cookie })
+      for (const name of CORS) expect(plain.headers.get(name), name).toBeNull()
+      expect(Buffer.compare(await cardBytes(asAdmin), await cardBytes(plain))).toBe(0)
+    })
+
+    it('sends no Access-Control header to another origin, a lookalike or a missing one, and reflects none', async () => {
+      const cookie = await editorGrant()
+      for (const origin of ['https://evil.test', `${ADMIN_ORIGIN}.evil.test`, `${ADMIN_ORIGIN}/`, 'http://cms.bogdev.test', `${ADMIN_ORIGIN}:8443`, ADMIN_ORIGIN.toUpperCase(), 'null', SITE_URL, '*']) {
+        const response = await cardOf({ cookie, origin })
+        expect(response.status, origin).toBe(200)
+        for (const name of CORS) expect(response.headers.get(name), `${origin} ${name}`).toBeNull()
+        expect(response.headers.get('vary') ?? '', origin).not.toContain('Origin')
+      }
+    })
+
+    it('sends the headers on a refusal to the admin origin, still the same 404, and none to a stranger', async () => {
+      const cookie = await editorGrant()
+      const noGrant = await cardOf({ origin: ADMIN_ORIGIN })
+      expect(noGrant.status).toBe(404)
+      expect(noGrant.headers.get('access-control-allow-origin')).toBe(ADMIN_ORIGIN)
+      expect(noGrant.headers.get('cache-control')).toBe('private, no-store')
+      mock.preview.expireGrants()
+      const ended = await cardOf({ cookie, origin: ADMIN_ORIGIN })
+      expect(ended.status).toBe(404)
+      expect(ended.headers.get('access-control-allow-origin')).toBe(ADMIN_ORIGIN)
+      const stranger = await cardOf({ cookie, origin: 'https://evil.test' })
+      expect(stranger.status).toBe(404)
+      expect(stranger.headers.get('access-control-allow-origin')).toBeNull()
+    })
+
+    it('still refuses the system grant, whatever the origin', async () => {
+      const system = mock.preview.issueSystem({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', version: draftPage.updatedAt })
+      const response = await cardOf({ [SYSTEM_HEADER]: system, origin: ADMIN_ORIGIN })
+      expect(response.status).toBe(404)
+      expect(response.headers.get('content-type')).not.toContain('image/png')
+    })
+  })
+})
+
+/** The digest of the theme the server renders and of another one in the store: the production build copies the store next to the server entry, and these are what the server loaded at boot. */
+function themeDigests(): { digest: string, other: string } {
+  const output = useTestContext().nuxt!.options.nitro.output!.dir!
+  const index = JSON.parse(readFileSync(join(output, 'server/micelio/store/index.json'), 'utf8')) as { buildTheme: string, themes: Record<string, { digest: string }> }
+  return { digest: index.themes[index.buildTheme]!.digest, other: Object.entries(index.themes).find(([id]) => id !== index.buildTheme)![1].digest }
+}
+
 async function ignoreError(task: Promise<unknown>): Promise<void> {
   try {
     await task
@@ -3945,12 +4211,7 @@ describe('problem details', () => {
 })
 
 describe('the built-in theme store under /_t/', () => {
-  // The production build copies the store next to the server entry; the digests are what the server loaded at boot
-  function digests(): { digest: string, other: string } {
-    const output = useTestContext().nuxt!.options.nitro.output!.dir!
-    const index = JSON.parse(readFileSync(join(output, 'server/micelio/store/index.json'), 'utf8')) as { buildTheme: string, themes: Record<string, { digest: string }> }
-    return { digest: index.themes[index.buildTheme]!.digest, other: Object.entries(index.themes).find(([id]) => id !== index.buildTheme)![1].digest }
-  }
+  const digests = themeDigests
 
   it('serves the stylesheet of the active theme, immutable and sandboxed, with its URLs under its own digest', async () => {
     const { digest } = digests()

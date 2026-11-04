@@ -22,7 +22,7 @@ export function previewAdminOrigin(): string {
  * Lets the admin page read this response with the editor's grant: sends `Access-Control-Allow-Origin`, `Access-Control-Allow-Credentials: true` and `Vary: Origin` when the request's `Origin` is exactly the configured admin origin, and nothing otherwise.
  *
  * @remarks
- * No wildcard and no other origin is reflected, and with the preview off (`previewAdminOrigin()` is `''`) no request matches. It decides who may read the answer, never who gets it: the grant check is the route's own. Only the weight route calls it (ADR 0019, amendment of 2026-10-25). A `GET` with the cookie is a simple request, so no preflight is answered.
+ * No wildcard and no other origin is reflected, and with the preview off (`previewAdminOrigin()` is `''`) no request matches. It decides who may read the answer, never who gets it: the grant check is the route's own. Called by the routes the admin page reads with the editor's grant: the weight route and the card route (bogd3v/micelio#766, #734). A `GET` with the cookie is a simple request, so no preflight is answered.
  */
 export function allowPreviewAdminOrigin(event: H3Event): void {
   const adminOrigin = previewAdminOrigin()
