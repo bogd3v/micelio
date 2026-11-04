@@ -1,6 +1,6 @@
 {
   "name": "micelio",
-  "version": "0.5.5",
+  "version": "0.6.0",
   "type": "module",
   "private": true,
   "license": "AGPL-3.0-only",
