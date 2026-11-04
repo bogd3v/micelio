@@ -3,7 +3,14 @@ import { defineComponent, nextTick } from 'vue'
 import type { PropType } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { PREVIEW_REPORT_INTERVAL_MS } from '~/constants/preview'
-import type { PreviewFrame } from '~/interfaces'
+import type { PageSection, PreviewFrame } from '~/interfaces'
+
+/** Mounts the component and waits for the bridge `usePreviewFrame` loads with `import()` once mounted. */
+async function mountLoaded(...args: Parameters<typeof mountSuspended>): Promise<Awaited<ReturnType<typeof mountSuspended>>> {
+  const wrapper = await mountSuspended(...args)
+  await vi.dynamicImportSettled()
+  return wrapper
+}
 
 const ADMIN = 'https://cms.example.com'
 const frame: PreviewFrame = { adminOrigin: ADMIN, documentId: 'doc-1', locale: 'en', version: '2026-10-24T09:30:00.000Z' }
@@ -16,6 +23,11 @@ const Frame = defineComponent({
     return () => null
   },
 })
+
+// A few turns for the promises the bridge awaits after the page answers
+async function flush(): Promise<void> {
+  for (let turn = 0; turn < 4; turn++) await nextTick()
+}
 
 describe('usePreviewFrame', () => {
   const posted: Array<{ message: unknown, origin: string }> = []
@@ -41,20 +53,20 @@ describe('usePreviewFrame', () => {
   }
 
   it('says ready to the admin origin, never to any origin', async () => {
-    const wrapper = await mountSuspended(Frame)
+    const wrapper = await mountLoaded(Frame)
     expect(posted).toEqual([{ origin: ADMIN, message: { v: 1, type: 'ready', payload: { v: [1], documentId: 'doc-1', locale: 'en', version: frame.version } } }])
     wrapper.unmount()
   })
 
   it('loads the draft again on a load-draft for its own document and locale', async () => {
-    const wrapper = await mountSuspended(Frame)
+    const wrapper = await mountLoaded(Frame)
     send(loadDraft)
     expect(reload).toHaveBeenCalledTimes(1)
     wrapper.unmount()
   })
 
   it('drops a message from another origin or another window', async () => {
-    const wrapper = await mountSuspended(Frame)
+    const wrapper = await mountLoaded(Frame)
     send(loadDraft, { origin: 'https://evil.example.com' })
     send(loadDraft, { origin: 'http://cms.example.com' })
     send(loadDraft, { source: window })
@@ -64,7 +76,7 @@ describe('usePreviewFrame', () => {
   })
 
   it('drops a message that fails the schema, another document or locale, ready, and an unknown type', async () => {
-    const wrapper = await mountSuspended(Frame)
+    const wrapper = await mountLoaded(Frame)
     send({ ...loadDraft, v: 2 })
     send({ v: 1, type: 'load-draft', payload: { documentId: 'doc-1' } })
     send({ ...loadDraft, payload: { documentId: 'doc-2', locale: 'en' } })
@@ -79,7 +91,7 @@ describe('usePreviewFrame', () => {
   })
 
   it('reads the load-draft of a draft that is not localised by its null locale, and says null in ready', async () => {
-    const wrapper = await mountSuspended(Frame, { props: { locale: null } })
+    const wrapper = await mountLoaded(Frame, { props: { locale: null } })
     expect(posted[0]?.message).toMatchObject({ payload: { documentId: 'doc-1', locale: null } })
     send({ ...loadDraft, payload: { documentId: 'doc-1', locale: 'en' } })
     expect(reload).not.toHaveBeenCalled()
@@ -89,7 +101,7 @@ describe('usePreviewFrame', () => {
   })
 
   it('stops listening once the page is gone', async () => {
-    const wrapper = await mountSuspended(Frame)
+    const wrapper = await mountLoaded(Frame)
     wrapper.unmount()
     send(loadDraft)
     expect(reload).not.toHaveBeenCalled()
@@ -97,11 +109,72 @@ describe('usePreviewFrame', () => {
 
   it('does nothing outside a frame', async () => {
     Object.defineProperty(window, 'parent', { value: window, configurable: true })
-    const wrapper = await mountSuspended(Frame)
+    const wrapper = await mountLoaded(Frame)
     send(loadDraft, { source: window })
     expect(posted).toEqual([])
     expect(reload).not.toHaveBeenCalled()
     wrapper.unmount()
+  })
+
+  it('hands the page the markers of the sections it shows, by position, and says ready after the page has bound them', async () => {
+    const mark = vi.fn(async (_markers: Array<Record<string, string>>): Promise<void> => {
+      await nextTick()
+    })
+    const Marked = defineComponent({
+      setup() {
+        usePreviewFrame(frame, { mark, sections: () => [{ __component: 'section.hero' }, { __component: 'section.cta' }] as never, apply: async () => {} })
+        return () => null
+      },
+    })
+    const wrapper = await mountSuspended(Marked)
+    await vi.dynamicImportSettled()
+    await nextTick()
+    expect(mark).toHaveBeenCalledWith([{ 'data-myc-block': 'hero', 'data-myc-index': '0' }, { 'data-myc-block': 'cta', 'data-myc-index': '1' }])
+    expect(posted.map(({ message }) => (message as { type: string }).type)).toEqual(['ready'])
+    wrapper.unmount()
+  })
+
+  // A page whose `mark` answers when the test says so: the bridge must wait for it before it says `ready`
+  const Held = (mark: () => Promise<void>) => defineComponent({
+    setup() {
+      usePreviewFrame(frame, { mark, sections: () => [{ __component: 'section.hero' }] as never, apply: async () => {} })
+      return () => null
+    },
+  })
+
+  it('says ready only after the page has bound the markers', async () => {
+    const bound = Promise.withResolvers<undefined>()
+    const wrapper = await mountSuspended(Held(() => bound.promise))
+    await vi.dynamicImportSettled()
+    await nextTick()
+    expect(posted).toEqual([])
+    bound.resolve(undefined)
+    await flush()
+    expect(posted.map(({ message }) => (message as { type: string }).type)).toEqual(['ready'])
+    wrapper.unmount()
+  })
+
+  it('starts nothing when the page goes while it is binding the markers', async () => {
+    const listen = vi.spyOn(window, 'addEventListener')
+    const bound = Promise.withResolvers<undefined>()
+    const wrapper = await mountSuspended(Held(() => bound.promise))
+    await vi.dynamicImportSettled()
+    wrapper.unmount()
+    bound.resolve(undefined)
+    await flush()
+    expect(posted).toEqual([])
+    expect(listen.mock.calls.filter(([type]) => type === 'message')).toEqual([])
+    listen.mockRestore()
+  })
+
+  it('starts nothing when the page goes before the bridge has loaded', async () => {
+    const listen = vi.spyOn(window, 'addEventListener')
+    const wrapper = await mountSuspended(Frame)
+    wrapper.unmount()
+    await vi.dynamicImportSettled()
+    expect(posted).toEqual([])
+    expect(listen.mock.calls.filter(([type]) => type === 'message')).toEqual([])
+    listen.mockRestore()
   })
 })
 
@@ -110,8 +183,15 @@ describe('usePreviewFrame with blocks', () => {
   const posted: Array<{ message: { type: string, payload: Record<string, unknown> }, origin: string }> = []
   const parent = { postMessage: (message: never, origin: string): number => posted.push({ message, origin }) } as unknown as Window
   const version = frame.version
+  // The page's `apply` answers when Vue has rendered; the bridge reports after that, a few microtasks after the message
+  const rendered = flush
+
   const address = (index: number, block: string) => ({ zone: 'sections', index, block, version })
-  const patch = vi.fn<(patch: unknown) => boolean>()
+  const oldHero = { __component: 'section.hero', id: 1, title: 'Old' } as unknown as PageSection
+  const sections = vi.fn<() => PageSection[] | undefined>()
+  const apply = vi.fn(async (_sections: PageSection[]): Promise<void> => {
+    await nextTick()
+  })
   let original: PropertyDescriptor | undefined
   let observers: Array<{ callback: () => void, targets: Element[] }>
   let warn: ReturnType<typeof vi.spyOn>
@@ -119,7 +199,7 @@ describe('usePreviewFrame with blocks', () => {
 
   const Blocks = defineComponent({
     setup() {
-      usePreviewFrame(frame, { patch })
+      usePreviewFrame(frame, { sections, apply })
       return () => null
     },
   })
@@ -131,7 +211,8 @@ describe('usePreviewFrame with blocks', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] })
     posted.length = 0
-    patch.mockReset().mockReturnValue(true)
+    sections.mockReset().mockReturnValue([oldHero])
+    apply.mockReset()
     observers = []
     disconnect.mockReset()
     vi.stubGlobal('ResizeObserver', class {
@@ -180,7 +261,7 @@ describe('usePreviewFrame with blocks', () => {
   const last = (type: string) => posted.filter(entry => entry.message.type === type).at(-1)?.message.payload as Record<string, unknown>
 
   it('says ready, then reports every block and the items inside the grid, to the admin origin only', async () => {
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     expect(types()).toEqual(['ready', 'micelio:blocks'])
     expect(posted.every(entry => entry.origin === ADMIN)).toBe(true)
     const report = last('micelio:blocks') as { version: string, blocks: Array<{ address: unknown, box: unknown, items: unknown[] }> }
@@ -192,7 +273,7 @@ describe('usePreviewFrame with blocks', () => {
   })
 
   it('reports again when the page reflows, no more than once an interval, and ends with the last state', async () => {
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     posted.length = 0
     const callback = observers.at(-1)!.callback
     for (let tick = 0; tick < 20; tick++) callback()
@@ -205,7 +286,7 @@ describe('usePreviewFrame with blocks', () => {
   })
 
   it('selects the block or item the admin names and answers with its box', async () => {
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     const scrollIntoView = vi.fn()
     const grid = document.querySelector<HTMLElement>('[data-myc-index="1"]')!
     grid.scrollIntoView = scrollIntoView
@@ -221,7 +302,7 @@ describe('usePreviewFrame with blocks', () => {
   })
 
   it('answers a hover of the admin with the box, and reports the pointer of the page', async () => {
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     send({ v: 1, type: 'micelio:hover', payload: { address: address(0, 'hero') } })
     expect(last('micelio:hovered')).toMatchObject({ address: address(0, 'hero'), box: { height: 300 } })
     posted.length = 0
@@ -238,7 +319,7 @@ describe('usePreviewFrame with blocks', () => {
   })
 
   it('selects on a click inside a block and does not follow its link; a click outside does nothing', async () => {
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     posted.length = 0
     const click = new MouseEvent('click', { bubbles: true, cancelable: true })
     document.querySelector('a')!.dispatchEvent(click)
@@ -252,7 +333,7 @@ describe('usePreviewFrame with blocks', () => {
   })
 
   it('opens a gap after a block on insertGap and reports the reflow', async () => {
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     posted.length = 0
     send({ v: 1, type: 'micelio:insertGap', payload: { version, zone: 'sections', after: 0, height: 64 } })
     const gap = document.querySelector<HTMLElement>('[data-myc-gap]')!
@@ -264,25 +345,27 @@ describe('usePreviewFrame with blocks', () => {
   })
 
   it('hands a patch to the page and reports once Vue has rendered it; a patch the page refuses is dropped', async () => {
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     posted.length = 0
     const message = { v: 1, type: 'micelio:patch', payload: { address: address(0, 'hero'), content: { title: 'New' }, items: [] } }
     send(message)
-    expect(patch).toHaveBeenCalledWith({ address: address(0, 'hero'), content: { title: 'New' }, items: [] })
-    await nextTick()
+    expect(apply).toHaveBeenCalledWith([{ ...oldHero, title: 'New' }])
+    await rendered()
     vi.advanceTimersByTime(PREVIEW_REPORT_INTERVAL_MS)
     expect(types()).toContain('micelio:blocks')
     posted.length = 0
-    patch.mockReturnValue(false)
+    apply.mockClear()
+    sections.mockReturnValue(undefined)
     send(message)
-    await nextTick()
+    expect(apply).not.toHaveBeenCalled()
+    await rendered()
     vi.advanceTimersByTime(PREVIEW_REPORT_INTERVAL_MS * 2)
     expect(types()).toEqual([])
     wrapper.unmount()
   })
 
   it('drops what it should not hear, and writes nothing to the console outside development', async () => {
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     posted.length = 0
     const select = { v: 1, type: 'micelio:select', payload: { address: address(1, 'feature-grid') } }
     send(select, { origin: 'https://evil.example.com' })
@@ -303,7 +386,7 @@ describe('usePreviewFrame with blocks', () => {
     send({ v: 1, type: 'micelio:patch', payload: { address: address(0, 'hero'), content: { html: '<img src=x onerror=alert(1)>' } } })
     send({ v: 1, type: 'micelio:insertGap', payload: { version, zone: 'sections', after: 0, height: 99_999 } })
     expect(types()).toEqual([])
-    expect(patch).not.toHaveBeenCalled()
+    expect(apply).not.toHaveBeenCalled()
     expect(document.querySelector('[data-myc-gap]')).toBeNull()
     // `import.meta.dev` is false here, as in a production build: nothing is written to the console
     expect(warn).not.toHaveBeenCalled()
@@ -312,7 +395,7 @@ describe('usePreviewFrame with blocks', () => {
 
   it('does not touch the page when it marks no zone: a draft article', async () => {
     document.body.innerHTML = '<article></article>'
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     expect(types()).toEqual(['ready'])
     send({ v: 1, type: 'micelio:select', payload: { address: address(0, 'hero') } })
     expect(types()).toEqual(['ready'])
@@ -321,7 +404,7 @@ describe('usePreviewFrame with blocks', () => {
   })
 
   it('reports a scroll of the page with its new offset, no more than once an interval', async () => {
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     posted.length = 0
     Object.defineProperty(window, 'scrollY', { value: 240, configurable: true })
     window.dispatchEvent(new Event('scroll'))
@@ -335,7 +418,7 @@ describe('usePreviewFrame with blocks', () => {
     const targets = [window, document, document.documentElement] as EventTarget[]
     const add = targets.map(target => vi.spyOn(target, 'addEventListener'))
     const remove = targets.map(target => vi.spyOn(target, 'removeEventListener'))
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     const added = add.flatMap(spy => spy.mock.calls).filter(([type]) => ['message', 'scroll', 'pointermove', 'pointerleave', 'click'].includes(type))
     // a reflow held back by the interval when the page goes away
     const callback = observers.at(-1)!.callback
@@ -356,14 +439,14 @@ describe('usePreviewFrame with blocks', () => {
   it('does not load the draft again on a load-draft after the page is gone', async () => {
     const reload = vi.fn()
     Object.defineProperty(window.location, 'reload', { value: reload, configurable: true })
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     wrapper.unmount()
     send({ v: 1, type: 'load-draft', payload: { documentId: 'doc-1', locale: 'en' } })
     expect(reload).not.toHaveBeenCalled()
   })
 
   it('stops reporting once the page is gone', async () => {
-    const wrapper = await mountSuspended(Blocks)
+    const wrapper = await mountLoaded(Blocks)
     wrapper.unmount()
     posted.length = 0
     send({ v: 1, type: 'micelio:hover', payload: { address: address(0, 'hero') } })
@@ -371,13 +454,29 @@ describe('usePreviewFrame with blocks', () => {
     expect(types()).toEqual([])
   })
 
-  it('does not report a patch it took when the page goes before Vue has rendered it', async () => {
-    const wrapper = await mountSuspended(Blocks)
+  it('reports a patch only after the page says Vue has rendered it', async () => {
+    const wrapper = await mountLoaded(Blocks)
+    posted.length = 0
+    const vueDone = Promise.withResolvers<undefined>()
+    apply.mockImplementationOnce(() => vueDone.promise)
     send({ v: 1, type: 'micelio:patch', payload: { address: address(0, 'hero'), content: { title: 'New' }, items: [] } })
-    expect(patch).toHaveBeenCalledTimes(1)
+    await rendered()
+    vi.advanceTimersByTime(PREVIEW_REPORT_INTERVAL_MS * 3)
+    expect(types()).toEqual([])
+    vueDone.resolve(undefined)
+    await rendered()
+    vi.advanceTimersByTime(PREVIEW_REPORT_INTERVAL_MS)
+    expect(types()).toContain('micelio:blocks')
+    wrapper.unmount()
+  })
+
+  it('does not report a patch it took when the page goes before Vue has rendered it', async () => {
+    const wrapper = await mountLoaded(Blocks)
+    send({ v: 1, type: 'micelio:patch', payload: { address: address(0, 'hero'), content: { title: 'New' }, items: [] } })
+    expect(apply).toHaveBeenCalledTimes(1)
     wrapper.unmount()
     posted.length = 0
-    await nextTick()
+    await rendered()
     vi.advanceTimersByTime(PREVIEW_REPORT_INTERVAL_MS * 3)
     expect(types()).toEqual([])
   })

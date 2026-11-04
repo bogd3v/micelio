@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent } from 'vue'
+import { defineComponent, nextTick } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import type { PreviewFrame } from '~/interfaces'
+import type { PageSection, PreviewFrame } from '~/interfaces'
+
+/** Mounts the component and waits for the bridge `usePreviewFrame` loads with `import()` once mounted. */
+async function mountLoaded(...args: Parameters<typeof mountSuspended>): Promise<Awaited<ReturnType<typeof mountSuspended>>> {
+  const wrapper = await mountSuspended(...args)
+  await vi.dynamicImportSettled()
+  return wrapper
+}
 
 // The count of the messages the frame ignores is the development aid the issue asks for: this file pins that the frame calls it
 const { count } = vi.hoisted(() => ({ count: vi.fn<() => number>() }))
@@ -14,11 +21,15 @@ vi.mock('~/helpers/previewBlocks', async (importOriginal) => {
 const ADMIN = 'https://cms.example.com'
 const frame: PreviewFrame = { adminOrigin: ADMIN, documentId: 'doc-1', locale: 'en', version: '2026-10-24T09:30:00.000Z' }
 const grid = { zone: 'sections', index: 0, block: 'hero', version: frame.version }
-const patch = vi.fn<(patch: unknown) => boolean>()
+const hero = { __component: 'section.hero', id: 1, title: 'Old' } as unknown as PageSection
+const sections = vi.fn<() => PageSection[] | undefined>()
+const apply = vi.fn(async (_sections: PageSection[]): Promise<void> => {
+  await nextTick()
+})
 
 const Frame = defineComponent({
   setup() {
-    usePreviewFrame(frame, { patch })
+    usePreviewFrame(frame, { sections, apply })
     return () => null
   },
 })
@@ -30,7 +41,8 @@ describe('usePreviewFrame counts what it ignores', () => {
 
   beforeEach(() => {
     count.mockReset()
-    patch.mockReset().mockReturnValue(true)
+    sections.mockReset().mockReturnValue([hero])
+    apply.mockReset()
     original = Object.getOwnPropertyDescriptor(window, 'parent')
     Object.defineProperty(window, 'parent', { value: parent, configurable: true })
     vi.stubGlobal('ResizeObserver', class {
@@ -56,14 +68,14 @@ describe('usePreviewFrame counts what it ignores', () => {
   const envelope = (type: string, payload: unknown, v = 1): unknown => ({ v, type, payload })
 
   it('counts a load-draft that fails its schema, once', async () => {
-    const wrapper = await mountSuspended(Frame)
+    const wrapper = await mountLoaded(Frame)
     send(envelope('load-draft', { documentId: 'doc-1' }))
     expect(count).toHaveBeenCalledTimes(1)
     wrapper.unmount()
   })
 
   it('counts a value that is not an envelope, and a stale version, once each', async () => {
-    const wrapper = await mountSuspended(Frame)
+    const wrapper = await mountLoaded(Frame)
     send('micelio:select')
     expect(count).toHaveBeenCalledTimes(1)
     send(envelope('micelio:select', { address: { ...grid, version: 'older' } }))
@@ -72,18 +84,18 @@ describe('usePreviewFrame counts what it ignores', () => {
   })
 
   it('counts a patch the page refuses, once, and a patch it takes not at all', async () => {
-    const wrapper = await mountSuspended(Frame)
+    const wrapper = await mountLoaded(Frame)
     send(envelope('micelio:patch', { address: grid, content: { title: 'x' }, items: [] }))
-    expect(patch).toHaveBeenCalledTimes(1)
+    expect(apply).toHaveBeenCalledTimes(1)
     expect(count).not.toHaveBeenCalled()
-    patch.mockReturnValue(false)
+    sections.mockReturnValue(undefined)
     send(envelope('micelio:patch', { address: grid, content: { title: 'x' }, items: [] }))
     expect(count).toHaveBeenCalledTimes(1)
     wrapper.unmount()
   })
 
   it('counts nothing for what is well formed but not for it, or does not come from the admin', async () => {
-    const wrapper = await mountSuspended(Frame)
+    const wrapper = await mountLoaded(Frame)
     send(envelope('block-select', {}))
     send(envelope('micelio:select', { address: null }, 2))
     send(envelope('load-draft', { documentId: 'doc-1', locale: 'en' }, 2))

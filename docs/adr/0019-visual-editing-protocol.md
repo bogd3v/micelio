@@ -201,9 +201,22 @@ and changes no rule of sections 1 to 3 or 5 except the one named under "Section 
   so it draws the gap and the ghost of a dragged block itself,
   and `micelio:insertGap` opens the room for it.
   They return to the table if a later phase needs the frame to track a drag.
-- **Markers.** Section 5 stands, except for the `theme:check` rule it names (see "Not done here"):
+- **Markers.** Section 5 changes twice: the `theme:check` rule it names is not done here
+  (see "Not done here"), and the page writes the attributes in the browser instead of rendering them:
   `data-myc-zone` on the zone and `data-myc-block` and `data-myc-index` on the root of each section,
-  on a response with a grant only.
+  on a page shown in the admin's frame only.
+  The preview code gives the page the attributes once the frame has loaded it,
+  and the page's renderer binds them to the root of each section by the position it renders it at,
+  so a section that renders nothing cannot shift the others;
+  they are not in the server's HTML: the draft route sends the markup of a published page,
+  so the weight report of a draft counts what `npm run perf` measures (bogd3v/micelio#730).
+  The preview code is one `import()` away from the page, and a draft route declares none of it.
+  `SectionRenderer` keeps an optional `markers` prop for this, which adds 85 bytes raw
+  (48 brotli on its own chunk, 24 on the scripts the home page loads) to what public pages load,
+  within every budget; the HTML, the CSP and the script count of a public page do not change.
+  The bridge (`app/helpers/previewBridge.ts`) imports nothing from `vue` (the page gives it the wait for Vue as a promise):
+  a lazily loaded module that does makes the build split the shared Vue runtime chunk,
+  which adds a `modulepreload` and about 0.7 KB of script to every public page.
   The items of a block are not marked:
   they are the `.myc-section-item` elements the sections already carry, in order,
   apart from those inside an `aria-hidden` copy.

@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import type { BlockPatch, DraftPageResponse, Locale } from '~/interfaces'
+import type { DraftPageResponse, Locale, PageSection } from '~/interfaces'
 import { isLocale } from '~/helpers/locale'
 import { withoutIndex } from '~/helpers/preview'
-import { knownSections } from '~/helpers/pages'
-import { blockMarkers, patchSections } from '~/helpers/previewBlocks'
 import { pageTitle } from '~/helpers/site'
 
 definePageMeta({ middleware: 'editor', previewGrant: true })
@@ -35,25 +33,26 @@ useSeoMeta({
   robots: 'noindex, nofollow',
 })
 
+// The bridge gives the markers in the browser, so the server sends the markup of a published page; `SectionRenderer` binds them by position
+const markers = ref<Array<Record<string, string>>>()
+async function markBlocks(marked: Array<Record<string, string>>): Promise<void> {
+  markers.value = marked
+  await nextTick()
+}
+
 const { preview, updatedAt } = data.value
 // The locale of the draft as the CMS holds it: null for a type that is not localised, which is what the admin asks for in `load-draft`
-if (preview && updatedAt) usePreviewFrame({ adminOrigin: preview.adminOrigin, documentId, locale: data.value.page.locale ?? null, version: updatedAt }, { patch: patchBlock })
-
-// The markers follow the sections the renderer shows, so a patch in the browser finds a block by the position it was rendered at
-const markers = computed(() => preview && data.value ? knownSections(data.value.page.sections).map((section, index) => blockMarkers(section.__component, index)) : undefined)
+if (preview && updatedAt) usePreviewFrame({ adminOrigin: preview.adminOrigin, documentId, locale: data.value.page.locale ?? null, version: updatedAt }, { mark: markBlocks, sections: () => data.value?.page.sections, apply: applyPatch })
 
 // Shows the admin's unsaved text in the real components, without a reload; the saved draft comes back with `load-draft` (ADR 0019, amendment of 2026-11-02)
-function patchBlock(patch: BlockPatch): boolean {
-  const current = data.value
-  const sections = current ? patchSections(current.page.sections, patch) : undefined
-  if (!current || !sections) return false
-  data.value = { ...current, page: { ...current.page, sections } }
-  return true
+async function applyPatch(sections: PageSection[]): Promise<void> {
+  if (data.value) data.value = { ...data.value, page: { ...data.value.page, sections } }
+  await nextTick()
 }
 </script>
 
 <template>
-  <div v-if="data" :data-myc-zone="preview ? 'sections' : undefined">
+  <div v-if="data" :data-myc-zone="markers ? 'sections' : undefined">
     <SectionRenderer :sections="data.page.sections" :page-title="data.page.title" :markers="markers" />
   </div>
 </template>

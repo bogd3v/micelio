@@ -209,8 +209,9 @@ A request body is read within 64 KB (`readLimitedBody` in `server/utils/validati
   A patch writes only the text fields of `PREVIEW_PATCH_TEXT_FIELDS`, with a string or `null`, never `html`, an id,
   the component name or an object, and the components show it through Vue's escaping:
   nothing is parsed as Markdown or HTML in the browser.
-  A draft page marks its blocks with `data-myc-*` attributes only on a response with a grant,
-  and public pages carry none (`e2e/preview/preview.spec.ts`).
+  A draft page marks its blocks with `data-myc-*` attributes in the browser,
+  only on a page with a grant shown in the admin's frame, never in a response;
+  public pages carry none (`e2e/preview/preview.spec.ts`).
   Tokens and grants are in no log, problem detail or message.
 - **Content Security Policy** on every page, built in `server/plugins/contentSecurityPolicy.ts` from the rendered HTML: each inline script is allowed by its SHA-256, so `script-src` has no `'unsafe-inline'`; `object-src` and `base-uri` are `'none'` (the site sends no `<base>`). Every other response (API, feeds, files) carries `frame-ancestors 'none'`, set on `request`, and the Worker scripts and the theme assets carry it in their own policies. Images: the site, Strapi and `NUXT_MEDIA_URL`; frames: YouTube and Vimeo only. To allow a new image or embed domain, add it to `contentSecurityPolicy()` and to the `sanitize-html` options in `app/helpers/markdown.ts` together.
 - **Speculation Rules** (static and landing, #245, ADR 0004 amendment): one inline `<script type="speculationrules">`, identical on every page, hashed into `script-src` like the other inline scripts (the browser applies `script-src` to it); the `Speculation-Rules` header is not used. The rules exclude `/api/*`, `/account*`, `/drafts*`, `/newsletter/*`, `/confirm*`, `/_theme`, `/pagefind/*`, `/_islands/*`, `/_media/*`, `*.xml`, `robots.txt` and links marked `[download]`, `[rel~=nofollow]` or `[data-no-speculate]`, so a prerender never loads a page with a side effect. They are built from constants, with no user input. Analytics must be added through the build (`NUXT_PUBLIC_UMAMI_WEBSITE_ID`) and the site rebuilt: if a host injects Umami by itself, the pages are still prerendered and may count pageviews nobody saw.
