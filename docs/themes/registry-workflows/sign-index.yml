@@ -4,7 +4,7 @@
 # which is DEFAULT_SIGNER.index in modules/theme/registry/constants.ts, apart from publish.yml, so a compromised publish workflow cannot
 # also vouch for the index. publish.yml calls it with `uses: ./.github/workflows/sign-index.yml` (action add); a maintainer starts it
 # directly to yank, or to list a version a failed run left pushed and attested. Create the environment `theme-index` in this repository with the maintainers as required reviewers: its approval stands
-# between a request and a signature. The signing job and the write run only in bogd3v/micelio-themes (`github.repository`), not in a repository that calls this file. Replace v0.5.5 and core-ref together. `action: incompatible` and the `core` input need the first release of the core that carries #314 (theme-index-prepare.yml of v0.5.5 has neither): move both pins to it before copying this file.
+# between a request and a signature. The signing job and the write run only in bogd3v/micelio-themes (`github.repository`), not in a repository that calls this file. Replace v0.6.0 and core-ref together. `action: incompatible` and the `core` input need a core release that carries #314, the first being v0.6.0 (theme-index-prepare.yml of v0.5.5 has neither): do not pin an older one.
 name: Sign index
 
 on:
@@ -59,7 +59,7 @@ concurrency:
 
 jobs:
   prepare:
-    uses: bogd3v/micelio/.github/workflows/theme-index-prepare.yml@v0.5.5
+    uses: bogd3v/micelio/.github/workflows/theme-index-prepare.yml@v0.6.0
     with:
       action: ${{ inputs.action }}
       theme: ${{ inputs.theme }}
@@ -68,7 +68,7 @@ jobs:
       report-digest: ${{ inputs.report-digest }}
       reason: ${{ inputs.reason }}
       core: ${{ inputs.core }}
-      core-ref: v0.5.5
+      core-ref: v0.6.0
     permissions:
       contents: read
       packages: read
@@ -110,13 +110,13 @@ jobs:
   write:
     needs: [prepare, attest]
     if: github.repository == 'bogd3v/micelio-themes'
-    uses: bogd3v/micelio/.github/workflows/theme-push-bundle.yml@v0.5.5
+    uses: bogd3v/micelio/.github/workflows/theme-push-bundle.yml@v0.6.0
     with:
       kind: index
       digest: ${{ needs.prepare.outputs.digest }}
       bundle-artifact: theme-index-bundle-${{ needs.prepare.outputs.index-artifact }}
       index-artifact: ${{ needs.prepare.outputs.index-artifact }}
-      core-ref: v0.5.5
+      core-ref: v0.6.0
     permissions:
       contents: read
       packages: write

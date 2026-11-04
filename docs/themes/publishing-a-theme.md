@@ -29,10 +29,10 @@ permissions:
   contents: read
 jobs:
   admission:
-    uses: bogd3v/micelio/.github/workflows/theme-admission.yml@v0.5.5
+    uses: bogd3v/micelio/.github/workflows/theme-admission.yml@v0.6.0
     with:
       theme-dirs: my-theme
-      core-ref: v0.5.5
+      core-ref: v0.6.0
 ```
 
 A theme of `theme-dirs` wins over a theme of the core with the same id: an older core ref may still ship a theme that your repository now owns (the core shipped `bogota` until 0.5.5), and from the first release that carries this change (`v0.5.2` does not) the run leaves the core's out and prints `using <id> from <path>, not the core's` once per step. The workflows set `MICELIO_ADMISSION=true` for this; the core's own build, `nuxt dev`, `deploy.yml` and the image do not, and two folders of `theme-dirs` with the same id are still an error (`Theme "<id>" is installed twice`).
@@ -108,10 +108,10 @@ permissions:
   contents: read
 jobs:
   snapshots:
-    uses: bogd3v/micelio/.github/workflows/theme-snapshots.yml@v0.5.5
+    uses: bogd3v/micelio/.github/workflows/theme-snapshots.yml@v0.6.0
     with:
       theme-dirs: my-theme
-      core-ref: v0.5.5
+      core-ref: v0.6.0
 ```
 
 It takes `theme-dirs`, `themes`, `core-repository`, `core-ref`,
@@ -148,7 +148,14 @@ Publishing is split between the core's reusable workflows, which decide and writ
 | `theme-index-listed.yml` | core | Last job of `publish.yml`: reads the signed index and fails, naming the re-run, if it does not list the version the run pushed. Writes nothing |
 | `sign-index.yml`, job `attest` | `micelio-themes` | Signs the index, in the environment `theme-index` and the concurrency group `theme-registry-index`; calls the two core workflows around it |
 
-**What to create in `micelio-themes`:** copy `docs/themes/registry-workflows/publish.yml` and `sign-index.yml` of the core release you pin to `.github/workflows/` under those names (the templates are checked by the core's tests: the pinned identities, one signing job each, one release). Replace `v0.5.5` and `core-ref` together when you move to another release. A maintainer starts `Publish` with the theme id; `Sign index` with `action: yank` is the yank (section 9). Do not rename the files, move the signing jobs or run them from another branch than `main`: every client would refuse what they sign, and `theme-push-bundle.yml` refuses the bundle first (`npm run theme:publish -- verify`).
+**What to create in `micelio-themes`:** copy `docs/themes/registry-workflows/publish.yml` and
+`sign-index.yml` of the core release you pin to `.github/workflows/` under those names (the
+templates are checked by the core's tests: the pinned identities, one signing job each, one
+release). Replace `v0.6.0` and `core-ref` together when you move to another release. A maintainer
+starts `Publish` with the theme id; `Sign index` with `action: yank` is the yank (section 9). Do not
+rename the files, move the signing jobs or run them from another branch than `main`: every client
+would refuse what they sign, and `theme-push-bundle.yml` refuses the bundle first (`npm run
+theme:publish -- verify`).
 
 `theme-publish.yml` (decisions are `npm run theme:publish -- gate` of the core ref):
 
