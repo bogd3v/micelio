@@ -241,16 +241,180 @@ test.describe('the modes of the draft route', () => {
     await expect.poll(() => islands.length).toBeGreaterThan(0)
     // The scene is in the HTML before the page hydrates and says ready: a `ready` still to come when the next admin page begins to load reaches that page in
     // Firefox (as a message whose source is not its frame), and its count is then 2. Wait for the first one, so the page below hears only its own frame
-    await expect.poll(async () => (await received(page)).length).toBe(1)
+    await expect.poll(async () => (await received(page)).filter(message => message.data.type === 'ready').length).toBe(1)
 
     islands.length = 0
     const staticMode = await openAdmin(page, request, { kind: 'page', documentId: 'doc-page-draft', locale: 'en' }, '&mode=static')
     await expect(staticMode.locator('micelio-scene').first()).toBeAttached()
-    await expect.poll(async () => (await received(page)).length).toBe(1)
+    await expect.poll(async () => (await received(page)).filter(message => message.data.type === 'ready').length).toBe(1)
     await settled(staticMode)
-    expect((await received(page)).map(message => [message.data.type, message.fromFrame])).toEqual([['ready', true]])
+    // A page draft also reports its blocks (phase 2); `ready` is the only message of phase 1 and it comes once
+    expect((await received(page)).filter(message => message.data.type === 'ready').map(message => message.fromFrame)).toEqual([true])
     expect(islands).toEqual([])
     expect(staticMode.url()).toBe(`${APP}/drafts/pages/doc-page-draft?locale=en&mode=static`)
+  })
+})
+
+// Phase 2 (ADR 0019, amendment of 2026-11-02, bogd3v/micelio#732): the page reports where its blocks are and obeys the admin's selection, gap and patch. The admin
+// draws every outline, so the tests read boxes and the document, never a style the page would have to carry
+test.describe('the blocks of a page draft in the admin\'s frame', () => {
+  test.skip(({ browserName }) => !SENDS_PARTITIONED_COOKIE[browserName], 'This engine refuses the grant cookie in a frame of another site: the cookie test pins it; the fallback is in \'the draft as a top-level page\' (amendment of 2026-10-26)')
+
+  const VERSION = '2026-10-24T09:30:00.000Z'
+  const GRID = { zone: 'sections', index: 1, block: 'feature-grid', version: VERSION }
+  interface Box { x: number, y: number, width: number, height: number }
+  interface Report { blocks: Array<{ address: typeof GRID, box: Box, items: Array<{ index: number, box: Box }> }>, scroll: { x: number, y: number } }
+  const sent = (page: Page, type: string, payload: unknown): Promise<void> => page.evaluate(([data, origin]) => (window as unknown as { send: (data: unknown, origin: string) => void }).send(data, origin), [{ v: 1, type, payload }, APP] as const)
+  const messages = async (page: Page, type: string): Promise<Array<{ origin: string, fromFrame: boolean, payload: Record<string, unknown> }>> =>
+    (await received(page)).filter(message => message.data.type === type).map(message => ({ origin: message.origin, fromFrame: message.fromFrame, payload: message.data.payload as unknown as Record<string, unknown> }))
+  const lastReport = async (page: Page): Promise<Report> => (await messages(page, 'micelio:blocks')).at(-1)!.payload as unknown as Report
+
+  // Every exchange with `/_preview` counts against `previewPerIp` (30 a minute for one address, `server/utils/rateLimit.ts`), and the suite above already makes 26.
+  // These tests come from an address of their own each, the way the weight tests below do, so they neither wait for the others nor make them wait
+  let opened = 0
+
+  async function openPage(page: Page, request: APIRequestContext): Promise<Frame> {
+    await page.setExtraHTTPHeaders({ 'x-forwarded-for': `2001:db8:732:${test.info().parallelIndex}:${++opened}::1` })
+    const frame = await openAdmin(page, request, { kind: 'page', documentId: 'doc-page-draft', locale: 'en' })
+    await expect(frame.getByRole('heading', { level: 1 }).first()).toBeVisible()
+    await expect.poll(async () => (await messages(page, 'micelio:blocks')).length).toBeGreaterThan(0)
+    return frame
+  }
+
+  test('marks every section and reports the blocks of the zone, the items of a feature grid with their parent', async ({ page, request }) => {
+    const frame = await openPage(page, request)
+    const [first] = await messages(page, 'micelio:blocks')
+    expect(first).toMatchObject({ origin: APP, fromFrame: true })
+    const marked = await frame.locator('[data-myc-zone="sections"] > [data-myc-block]').evaluateAll(nodes => nodes.map(node => [node.getAttribute('data-myc-block'), node.getAttribute('data-myc-index')]))
+    expect(marked.slice(0, 3)).toEqual([['hero', '0'], ['feature-grid', '1'], ['media-showcase', '2']])
+    expect(marked.map(entry => entry[1])).toEqual(marked.map((_, index) => String(index)))
+
+    // The report is settled once the images have their size: the last one is the one to compare
+    await settled(frame)
+    const report = await lastReport(page)
+    expect(report.blocks.map(block => [block.address.block, block.address.index])).toEqual(marked.map(entry => [entry[0], Number(entry[1])]))
+    expect(report.blocks.every(block => block.address.version === VERSION && block.box.height > 0)).toBe(true)
+    const grid = report.blocks[1]!
+    expect(grid.items.map(item => item.index)).toEqual([0, 1, 2])
+    const inside = grid.items.every(item => item.box.y >= grid.box.y && item.box.y + item.box.height <= grid.box.y + grid.box.height + 1)
+    expect(inside).toBe(true)
+    const domItems = await frame.locator('[data-myc-block="feature-grid"] .myc-section-item').evaluateAll(nodes => nodes.map((node) => {
+      const rect = node.getBoundingClientRect()
+      return { x: Math.round(rect.left + window.scrollX), width: Math.round(rect.width) }
+    }))
+    expect(grid.items.map(item => ({ x: Math.round(item.box.x), width: Math.round(item.box.width) }))).toEqual(domItems)
+  })
+
+  test('selects a block or an item on the admin\'s word and on a click, and answers with the box to draw', async ({ page, request }) => {
+    const frame = await openPage(page, request)
+    await sent(page, 'micelio:select', { address: GRID, item: 1 })
+    await expect.poll(async () => (await messages(page, 'micelio:selected')).length).toBe(1)
+    const [answer] = await messages(page, 'micelio:selected')
+    const item = frame.locator('[data-myc-block="feature-grid"] .myc-section-item').nth(1)
+    const rect = await item.evaluate((node) => {
+      const box = node.getBoundingClientRect()
+      return { x: Math.round(box.left + window.scrollX), y: Math.round(box.top + window.scrollY), width: Math.round(box.width), height: Math.round(box.height) }
+    })
+    const box = answer!.payload.box as Box
+    expect({ x: Math.round(box.x), y: Math.round(box.y), width: Math.round(box.width), height: Math.round(box.height) }).toEqual(rect)
+    expect(answer!.payload).toMatchObject({ address: GRID, item: 1 })
+
+    // A click selects and does not follow the link of the hero
+    const hero = frame.locator('[data-myc-block="hero"] a').first()
+    await hero.click()
+    await expect.poll(async () => (await messages(page, 'micelio:selected')).length).toBe(2)
+    expect((await messages(page, 'micelio:selected'))[1]!.payload).toMatchObject({ address: { index: 0, block: 'hero' }, item: null })
+    expect(frame.url()).toBe(`${APP}/drafts/pages/doc-page-draft?locale=en`)
+  })
+
+  test('reveals a far block at once, without the smooth scroll the site asks for, and reports the scroll', async ({ page, request }) => {
+    const frame = await openPage(page, request)
+    await settled(frame)
+    const last = (await lastReport(page)).blocks.at(-1)!
+    expect(last.box.y).toBeGreaterThan(await frame.evaluate(() => window.innerHeight))
+    // The site sets `scroll-behavior: smooth` (base.css): a reveal that followed it would still be at the top when the answer arrives
+    expect(await frame.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe('smooth')
+    await sent(page, 'micelio:select', { address: last.address, item: null, reveal: true })
+    await expect.poll(async () => (await messages(page, 'micelio:selected')).length).toBe(1)
+    const seen = await frame.locator('[data-myc-zone] > [data-myc-block]').last().evaluate((node) => {
+      const box = node.getBoundingClientRect()
+      return { top: box.top, bottom: box.bottom, height: window.innerHeight, scrollY: window.scrollY }
+    })
+    expect(seen.scrollY).toBeGreaterThan(0)
+    expect(seen.top < seen.height && seen.bottom > 0).toBe(true)
+    // A scroll is reported with its offset
+    await expect.poll(async () => (await lastReport(page)).scroll.y).toBeGreaterThan(0)
+    await frame.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+    await expect.poll(async () => (await lastReport(page)).scroll.y).toBe(0)
+  })
+
+  test('shows the text of a patch without a navigation, as text', async ({ page, request }) => {
+    const frame = await openPage(page, request)
+    await frame.evaluate(() => {
+      (window as unknown as { probe: string }).probe = 'same document'
+    })
+    const loads = (await received(page)).filter(message => message.data.type === 'ready').length
+    const hostile = '<img src=x onerror="window.pwned=1">'
+    await sent(page, 'micelio:patch', { address: GRID, content: { title: 'Everything you need' }, items: [{ index: 0, content: { title: hostile } }] })
+    await expect(frame.getByRole('heading', { name: 'Everything you need' })).toBeVisible()
+    await expect(frame.locator('[data-myc-block="feature-grid"] .myc-section-item').first().getByRole('heading')).toHaveText(hostile)
+    expect(await frame.locator('[data-myc-block="feature-grid"] img[src="x"]').count()).toBe(0)
+    expect(await frame.evaluate(() => (window as unknown as { pwned?: number }).pwned)).toBeUndefined()
+    // The same document: no navigation, no new `ready`
+    expect(await frame.evaluate(() => (window as unknown as { probe: string }).probe)).toBe('same document')
+    expect((await received(page)).filter(message => message.data.type === 'ready')).toHaveLength(loads)
+
+    // The Markdown of a section is rendered by the server alone: a patch that names `html` is dropped whole
+    const before = await frame.locator('[data-myc-block="rich-text"]').innerHTML()
+    await sent(page, 'micelio:patch', { address: { ...GRID, index: 11, block: 'rich-text' }, content: { html: '<p id="injected">x</p>' } })
+    await settled(frame)
+    expect(await frame.locator('#injected').count()).toBe(0)
+    expect(await frame.locator('[data-myc-block="rich-text"]').innerHTML()).toBe(before)
+  })
+
+  test('shifts the blocks after a gap by its height, and gives the place back when it closes', async ({ page, request }) => {
+    const frame = await openPage(page, request)
+    await settled(frame)
+    const tops = (): Promise<number[]> => frame.locator('[data-myc-zone] > [data-myc-block]').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().top + window.scrollY))
+    const before = await tops()
+    const steps = (list: number[]): number[] => list.slice(1).map((top, index) => top - list[index]!)
+    await sent(page, 'micelio:insertGap', { version: VERSION, zone: 'sections', after: 1, height: 120 })
+    await expect.poll(async () => (await tops())[2]! - (await tops())[1]!).toBeGreaterThan(before[2]! - before[1]! + 100)
+    // Only the step across the gap grows, and by its height (a pixel of rounding in the images below is allowed); the blocks before it do not move
+    const during = await tops()
+    expect(during.slice(0, 2)).toEqual(before.slice(0, 2))
+    steps(during).forEach((step, index) => expect(step).toBeCloseTo(steps(before)[index]! + (index === 1 ? 120 : 0), -0.5))
+
+    // The report follows, and the admin hears no block for the gap
+    await expect.poll(async () => (await lastReport(page)).blocks[2]!.box.y - (await lastReport(page)).blocks[1]!.box.y).toBeCloseTo(steps(before)[1]! + 120, -0.5)
+    expect((await lastReport(page)).blocks).toHaveLength(before.length)
+
+    await sent(page, 'micelio:insertGap', { version: VERSION, zone: 'sections', after: 1, height: 0 })
+    await expect.poll(async () => (await tops())[2]! - (await tops())[1]!).toBeCloseTo(steps(before)[1]!, -0.5)
+  })
+
+  test('drops a message of a stale version or a shape it does not know', async ({ page, request }) => {
+    const frame = await openPage(page, request)
+    await settled(frame)
+    const before = await frame.locator('[data-myc-zone] > [data-myc-block]').nth(2).evaluate(node => node.getBoundingClientRect().top)
+    const answers = (await messages(page, 'micelio:selected')).length
+    await sent(page, 'micelio:insertGap', { version: 'an older save', zone: 'sections', after: 1, height: 120 })
+    await sent(page, 'micelio:insertGap', { version: VERSION, zone: 'sections', after: 1, height: 100_000 })
+    await sent(page, 'micelio:select', { address: { ...GRID, version: 'an older save' } })
+    await sent(page, 'micelio:patch', { address: GRID, content: { title: { nested: true } } })
+    // a link over a section that has none, and a field the server validates
+    await sent(page, 'micelio:patch', { address: { ...GRID, index: 0, block: 'hero' }, content: { primaryLink: 'x', variant: 'full-bleed' } })
+    await sent(page, 'micelio:patch', { address: { ...GRID, index: 2, block: 'media-showcase' }, content: { mime: 'text/html' } })
+    await settled(frame)
+    expect(await frame.locator('[data-myc-zone] > [data-myc-block]').nth(2).evaluate(node => node.getBoundingClientRect().top)).toBe(before)
+    expect((await messages(page, 'micelio:selected')).length).toBe(answers)
+    await expect(frame.getByRole('heading', { name: 'What you need' })).toBeVisible()
+  })
+
+  test('does not mark the markup of the public page', async ({ request }) => {
+    const response = await request.get(`${APP}/showcase`)
+    expect(response.status()).toBe(200)
+    expect(await response.text()).not.toContain('data-myc-')
   })
 })
 

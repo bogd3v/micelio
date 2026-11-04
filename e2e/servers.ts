@@ -1,5 +1,8 @@
 import type { PlaywrightTestConfig } from '@playwright/test'
 
+/** The admin origin of a server started with `previewCards`: a reserved name, so no request to it can leave the machine. */
+export const CARD_ADMIN_ORIGIN = 'https://admin.example.test'
+
 interface Servers {
   mockPort: number
   appPort: number
@@ -28,14 +31,19 @@ interface Servers {
    * The site and the admin page are served over https with the certificate in `tlsDir` (`e2e/preview/tls.ts`): the grant cookie is `Secure`, and Playwright's Linux WebKit stores none from an http page.
    */
   preview?: { adminPort: number, tlsDir: string }
+  /**
+   * Turn the preview of drafts on with an admin origin that nothing serves, and let the mock Strapi make preview tokens, for a spec that asks the site for a draft's card with a grant it sets by hand (e2e/theme/card.spec.ts).
+   * The site stays on http: the spec sends the cookie itself.
+   */
+  previewCards?: boolean
 }
 
 /** The mock Strapi and the Nuxt server (dev, or the build with E2E_BUILD=1) pointed at it, with BogDev's site values (neutral ones with `emptySite`). */
-export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false, privacyJurisdiction = '', categoryArticles = false, emptySite = false, siteUrl = emptySite ? 'https://example.com' : 'https://bogdev.com.co', theme, themeDirs, themeSwitch = false, preview }: Servers): PlaywrightTestConfig['webServer'] {
+export function webServers({ mockPort, appPort, modulesOff = false, themeOverrides = false, homePage = false, privacyJurisdiction = '', categoryArticles = false, emptySite = false, siteUrl = emptySite ? 'https://example.com' : 'https://bogdev.com.co', theme, themeDirs, themeSwitch = false, preview, previewCards = false }: Servers): PlaywrightTestConfig['webServer'] {
   const scheme = preview ? 'https' : 'http'
   return [
     {
-      command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=${scheme}://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''}${themeSwitch ? ' MOCK_THEME_SWITCH=1' : ''}${homePage ? ' MOCK_HOME_PAGE=1' : ''}${privacyJurisdiction ? ` MOCK_PRIVACY_JURISDICTION=${privacyJurisdiction}` : ''}${categoryArticles ? ' MOCK_CATEGORY_ARTICLES=1' : ''}${emptySite ? ' MOCK_EMPTY_SITE=1' : ''}${preview ? ' MOCK_PREVIEW=1' : ''} node e2e/mock-strapi.mjs`,
+      command: `MOCK_PORT=${mockPort} MOCK_FRONTEND_URL=${scheme}://127.0.0.1:${appPort}${modulesOff ? ' MOCK_MODULES_OFF=1' : ''}${themeOverrides ? ' MOCK_THEME=1' : ''}${themeSwitch ? ' MOCK_THEME_SWITCH=1' : ''}${homePage ? ' MOCK_HOME_PAGE=1' : ''}${privacyJurisdiction ? ` MOCK_PRIVACY_JURISDICTION=${privacyJurisdiction}` : ''}${categoryArticles ? ' MOCK_CATEGORY_ARTICLES=1' : ''}${emptySite ? ' MOCK_EMPTY_SITE=1' : ''}${preview || previewCards ? ' MOCK_PREVIEW=1' : ''} node e2e/mock-strapi.mjs`,
       port: mockPort,
       reuseExistingServer: !process.env.CI,
       timeout: 15_000,
@@ -60,6 +68,7 @@ export function webServers({ mockPort, appPort, modulesOff = false, themeOverrid
               `NITRO_SSL_CERT="$(cat "${preview.tlsDir}/cert.pem")" NITRO_SSL_KEY="$(cat "${preview.tlsDir}/key.pem")"`,
             ]
           : []),
+        ...(previewCards ? [`NUXT_PREVIEW_ADMIN_ORIGIN=${CARD_ADMIN_ORIGIN}`] : []),
         ...(emptySite
           ? [
               'NUXT_MEDIA_URL=https://resources.example.com',

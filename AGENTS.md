@@ -4,7 +4,7 @@ This file contains instructions and guidelines for agentic coding agents working
 
 ## Engineering standard
 
-The rules shared by every Micelio repository live in [`docs/engineering-standard.md`](docs/engineering-standard.md). This repository follows standard version 1.5 (`standard: 1.5`, the line `npm run lint:standard` checks; the Micelio bot opens the pull request that syncs a new version). This file adds what is specific to this repository (stack, commands, folders, naming) and may tighten the standard, never relax it. When the two disagree, the standard wins.
+The rules shared by every Micelio repository live in [`docs/engineering-standard.md`](docs/engineering-standard.md). This repository follows standard version 1.6 (`standard: 1.6`, the line `npm run lint:standard` checks; the Micelio bot opens the pull request that syncs a new version). This file adds what is specific to this repository (stack, commands, folders, naming) and may tighten the standard, never relax it. When the two disagree, the standard wins.
 
 ## The factory
 
@@ -61,7 +61,17 @@ npm run test:contract     # Run the server routes against the demo image of mice
 npm run test:static       # Generate a static site against the mock Strapi and run e2e/static/
 npm run test:static-theme # Run the builder image's generate command against the mock Strapi for a theme the site settings name: success, a refused theme that keeps the last site, a switch (needs theme:pull)
 npm run test:landing      # Generate a landing (home page, no articles) against the mock Strapi and run e2e/landing/ (the default theme, then starter)
-npm run test:e2e          # Playwright e2e (e2e/; mock Strapi + dev server, or `.output` with `E2E_BUILD=1` after `npm run build`, as CI does, with `MICELIO_SPECIMEN=1 MICELIO_THEME_DIRS=test/fixtures/themes/alternates`). A spec that reads built CSS or the production CSP fails on the dev server. CI runs test:e2e:main, :site, :playground (per engine: `-- --project=chromium|firefox|webkit`), :scene-ui and :preview (the admin's iframe on a second origin, against the build) as parallel jobs
+npm run test:e2e          # Playwright e2e (e2e/): the mock Strapi and the dev server, or `.output`
+                          # with `E2E_BUILD=1` after `npm run build`, as CI does.
+                          # Set `MICELIO_SPECIMEN=1` and
+                          # `MICELIO_THEME_DIRS=test/fixtures/themes/alternates`
+                          # on the build and on the run: a build without them fails the theme specs.
+                          # A spec that reads built CSS or the production CSP
+                          # fails on the dev server.
+                          # CI runs test:e2e:main, :site, :playground (per engine:
+                          # `-- --project=chromium|firefox|webkit`), :scene-ui and :preview
+                          # (the admin's iframe on a second origin, against the build)
+                          # as parallel jobs
 npm run test:theme        # Theme visual regression and axe (e2e/theme/, needs a build with MICELIO_SPECIMEN=1; docs/theme-testing.md)
 npm run test:theme:update # Same with --update-snapshots=changed (baselines are committed from the CI artifact, not made locally)
 npm run perf              # Performance budgets on a production build (run npm run build first; see docs/performance.md)

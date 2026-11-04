@@ -3,6 +3,8 @@ import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { defineComponent, h, provide } from 'vue'
 import { TRUSTED_MEDIA_PREFIX } from '~/constants/media'
 import SectionRenderer from '~/components/section/SectionRenderer.vue'
+import { knownSections } from '~/helpers/pages'
+import { blockMarkers } from '~/helpers/previewBlocks'
 import type { PageLink, PageMedia, PageSection, PostListItem } from '~/interfaces'
 
 function image(name: string, extra: Partial<PageMedia> = {}): PageMedia {
@@ -169,6 +171,18 @@ describe('SectionRenderer', () => {
     expect(heroed.find('[data-section="title"]').exists()).toBe(false)
     const plain = await mountSuspended(SectionRenderer, { props: { sections: [sections.cta('banner')] } })
     expect(plain.find('h1').exists()).toBe(false)
+  })
+
+  it('marks the root of each rendered section by position only when asked, and a section that renders nothing shifts none', async () => {
+    const empty = sections.postList('cards', [])
+    const list = [empty, sections.postList('cards'), { __component: 'section.carousel' } as unknown as PageSection, sections.cta('banner')]
+    const markers = knownSections(list).map((section, index) => blockMarkers(section.__component, index))
+    const marked = await mountSuspended(SectionRenderer, { props: { sections: list, markers } })
+    // The empty list has no root; the filled one is block 1 and the call to action block 2, as the admin's addresses count them
+    expect(marked.findAll('section.myc-section').map(node => [node.attributes('data-myc-block'), node.attributes('data-myc-index')])).toEqual([['post-list', '1'], ['cta', '2']])
+    // The public pages never carry the markers (ADR 0019, section 5)
+    const plain = await mountSuspended(SectionRenderer, { props: { sections: list } })
+    expect(plain.html()).not.toContain('data-myc-')
   })
 
   it('labels each section with its heading', async () => {

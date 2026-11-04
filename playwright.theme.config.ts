@@ -26,7 +26,7 @@ const MOTION = '**/motion/**'
 
 const projects: Project[] = manifest.modes.flatMap(mode => VIEWPORTS.map(viewport => ({
   name: `${mode.id}-${viewport.name}`,
-  testIgnore: process.env.THEME_SKIP_VISUAL === '1' ? [MOTION, '**/visual.spec.ts'] : MOTION,
+  testIgnore: process.env.THEME_SKIP_VISUAL === '1' ? [MOTION, '**/visual.spec.ts', '**/card.spec.ts'] : MOTION,
   metadata: { theme, mode: mode.id, viewport: viewport.name },
   // First visit lands in the mode: the init script reads it before the first paint
   use: {
@@ -65,6 +65,8 @@ export default defineConfig({
     timeout: 10_000,
     // 0.1% of the pixels: the same Docker image rasterizes text identically; this only absorbs sub-pixel noise between CPUs
     toHaveScreenshot: { animations: 'disabled', caret: 'hide', scale: 'css', maxDiffPixelRatio: 0.001 },
+    // The social card (e2e/theme/card.spec.ts) is a PNG the server draws, compared the same way
+    toMatchSnapshot: { maxDiffPixelRatio: 0.001 },
   },
   // A missing baseline fails (also in CI): create them with npm run test:theme:update
   updateSnapshots: 'none',
@@ -77,5 +79,5 @@ export default defineConfig({
   // the frame before the hero photo is back (docs/theme-testing.md). The Firefox project sets its own launchOptions
   use: { baseURL, reducedMotion: 'reduce', launchOptions: { args: ['--disable-checker-imaging'] } },
   projects: [...projects, ...motionProjects],
-  webServer: webServers({ mockPort, appPort }),
+  webServer: webServers({ mockPort, appPort, previewCards: true }),
 })

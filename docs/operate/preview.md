@@ -16,9 +16,43 @@ The preview is **off** until you set one variable.
 - `/_preview?token=…` is the route the admin's frame opens. It trades the one-use token for a grant with the CMS, keeps the grant in the `__Host-micelio_preview` cookie and redirects to the draft route without the token. A token that is used, expired or altered, a grant for another admin origin and a site with the preview off all answer the same `404`.
 - The draft routes are `/drafts/<documentId>` for an article and `/drafts/pages/<documentId>` for a page (`/es/…` in Spanish). With the cookie they show the one document the grant names; with an editor session they work as before. Add `?mode=static` to show every island on its static alternative.
 - A draft shown to a valid grant is the only response that allows framing: `frame-ancestors <NUXT_PREVIEW_ADMIN_ORIGIN>` and no `X-Frame-Options`. Every other response, the draft route without a grant and its errors included, keeps `frame-ancestors 'none'` and `X-Frame-Options: DENY`.
+- A page draft shown in the admin's frame also reports where its blocks are
+  and obeys the builder (ADR 0019,
+  amendment of 2026-11-02):
+  the page posts the box of every block and of the items inside it (`micelio:blocks`),
+  the block under the pointer or clicked (`micelio:hovered`, `micelio:selected`),
+  and the admin sends a selection, a hover,
+  a gap between two blocks and unsaved text (`micelio:select`, `micelio:hover`, `micelio:insertGap`,
+  `micelio:patch`).
+  The admin draws the outlines; the page changes nothing of the site's styles
+  and scrolls to a selected block without animation.
+  A click inside a block selects it and does not follow its link.
+  A patch changes the free text fields of a block (titles, texts, names, labels) and nothing else:
+  links, images, addresses and the Markdown of a section are not patched,
+  so they show after a save.
+  An article draft reports no blocks yet.
 - Every preview answer is `private, no-store` and `X-Robots-Tag: noindex, nofollow`. The routes are in no sitemap, feed or search index, and public pages do not change.
 - `GET /api/preview/<content type>/<documentId>/weight` answers what the draft weighs (HTML, scripts, styles, fonts, images, and the script of its islands apart), per block, for the cost meter of the plugin. It takes the same grant cookie as the draft routes, and the system grant the CMS mints for itself to measure a draft at publish, in the `X-Micelio-Preview-Grant` header (bogd3v/micelio-plugin-core#46): that grant is used once, lives at most 60 seconds, names one version of one draft, frames nothing and works with the preview off. No other credential opens it (`docs/api.md`, `docs/performance.md`).
-- The admin page reads that report from the browser with the editor's grant: a `fetch` with `credentials: 'include'` to the weight route. The route answers `Access-Control-Allow-Origin: <NUXT_PREVIEW_ADMIN_ORIGIN>`, `Access-Control-Allow-Credentials: true` and `Vary: Origin` when the request's `Origin` is exactly that origin, and no `Access-Control-*` header to any other origin or with the preview off. It is the only route that does. A `GET` with the cookie is a simple request, so there is no preflight, and the admin must not add a header to it. In WebKit the cookie does not reach a cross-site `fetch` either (see below), so the answer is the `404` the page can read.
+- The admin page reads that report from the browser with the editor's grant:
+  a `fetch` with `credentials: 'include'` to the weight route.
+  The route answers `Access-Control-Allow-Origin: <NUXT_PREVIEW_ADMIN_ORIGIN>`,
+  `Access-Control-Allow-Credentials: true` and `Vary: Origin`
+  when the request's `Origin` is exactly that origin,
+  and no `Access-Control-*` header to any other origin or with the preview off.
+  The card route does the same (below); no other route does.
+  A `GET` with the cookie is a simple request, so there is no preflight,
+  and the admin must not add a header to it.
+  In WebKit the cookie does not reach a cross-site `fetch` either (see below),
+  so the answer is the `404` the page can read.
+- `GET /api/preview/<content type>/<documentId>/card` answers the social card of a draft: a PNG of
+  1200 by 630 pixels with its title and the site name, in the theme's display font and colours,
+  for a page that has no hero image.
+  It is drawn on the server from the theme's own files, with no request to another host.
+  It takes the grant cookie only, not the system grant.
+  The admin page reads it with the same credentialed `fetch` as the report and stores it as
+  media: the route sends the same CORS headers, to the admin origin only.
+  Preview only: it is not the `og:image` of a published page (`docs/api.md`, "Social card of a
+  draft").
 - A static or landing site has no preview (the drafts module is off in those modes).
 
 ## The cookie in a cross-site frame

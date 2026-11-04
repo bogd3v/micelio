@@ -24,6 +24,11 @@ const props = defineProps<{
   leadHeading?: boolean
   /** A whole page: names it with this title as the h1 unless a hero opens it (then `leadHeading` is derived) */
   pageTitle?: string
+  /**
+   * The attributes of each rendered section's root, by position, for the admin's preview (ADR 0019, section 5); only the draft route gives them.
+   * They come ready-made so this component, which every public page loads, imports nothing for them.
+   */
+  markers?: Array<Record<string, string>>
 }>()
 
 const componentMap: Readonly<Record<PageSection['__component'], Component>> = {
@@ -57,6 +62,12 @@ const knownSections = computed<PageSection[]>(() => filterKnown(props.sections))
 const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLanding
   ? new Map(sectionAnchors(knownSections.value, { newsletterOn: newsletterOn?.value ?? false, blogEnabled }).map(anchor => [anchor.index, anchor.id]))
   : new Map())
+
+// The props of the first section and, on the draft route, the markers of every root; a public page binds nothing more than before
+function bindingsOf(section: PageSection, index: number): Record<string, unknown> {
+  const own = index === 0 && section.__component === 'section.hero' && heroLeads.value ? { headingLevel: 1 } : index === 0 && section.__component === 'section.scene' ? { eager: true } : {}
+  return props.markers ? { ...own, ...props.markers[index] } : own
+}
 </script>
 
 <template>
@@ -71,7 +82,7 @@ const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLand
     :id="anchorIds.get(index)"
     :key="`${section.__component}-${index}`"
     :section="section"
-    v-bind="index === 0 && section.__component === 'section.hero' && heroLeads ? { headingLevel: 1 } : index === 0 && section.__component === 'section.scene' ? { eager: true } : {}"
+    v-bind="bindingsOf(section, index)"
   />
 </template>
 

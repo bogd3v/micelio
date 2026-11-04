@@ -24,6 +24,11 @@ description: Review and apply dependency updates in the Micelio frontend - Depen
 ## Upgrading
 
 - Same version for paired packages: `vitest` and `@vitest/coverage-v8`; `nuxt` and `@nuxtjs/i18n` that matches its `unhead` major.
+- Run `npm install` with npm 11 (`npx -y npm@11 install --save-exact <package>` in the Docker run),
+  not with the npm 10 of `node:22.23-slim`:
+  npm 10 rewrites the lock (it drops the `libc` fields of the platform packages),
+  about 200 lines of churn in a PR that adds one package.
+  `git diff package-lock.json` must show only the new entries.
 - After `npm install`, compare the lock's key versions with `main` to see what really moved (a Nuxt minor brought unhead 2 → 3 and Vite 7 → 8).
 - Known breakages to look for:
   - **unhead 3**: head getters run eagerly on the client (a getter reading state declared later breaks hydration), and `useHead` types are stricter (`rel` literals, script attributes as a `type` alias).

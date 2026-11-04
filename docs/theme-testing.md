@@ -5,6 +5,18 @@
 - `visual.spec.ts`: home, blog, an article, about (full page) and each `.myc-specimen-group[data-section]` group of `/_theme` (the page sections of #244 are one group per section, `page-<kind>`, with every variant) (one image per group; the `regions` group also holds the variants of every region the theme does not use, which only the specimen build registers). Dates (`time`) and the footer year are masked; images from outside the server are replaced by a fixed pixel; animations and motion are off; the run waits for fonts and the Mermaid diagrams. `maxDiffPixelRatio` is 0.001: text renders identically in the same Docker image, the margin only absorbs sub-pixel noise between CPUs. No retries: a screenshot that needs one is a bug.
 - `a11y.spec.ts`: axe (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa` and `wcag22aa`, which adds `target-size`) on the same pages, modes and viewports. Violations fail; nothing is excluded. Axe finds only part of the problems, so admission also needs the manual check of [`docs/themes/accessibility-checklist.md`](themes/accessibility-checklist.md), which says when it is repeated and where its result is recorded.
 - `notice-room.spec.ts`: with the privacy notice shown (first visit), scrolled to the end at 800 and 1280 px, no text, link or control of any `footer` sits under the notice, because `body` and `html` reserve `--myc-notice-h` (set only while the notice shows) at every width; dismissed, `body` `padding-bottom` and `html` `scroll-padding-bottom` are `0px` on desktop. Home, blog, an article and about, every mode, desktop projects only (the phone layout is in `e2e/mobile-nav.spec.ts`).
+- `card.spec.ts`: the social card the server draws for a draft (`/api/preview/<type>/<id>/card`,
+  [`api.md`](api.md), "Social card of a draft"), compared with one baseline per theme, `card.png` in
+  the first mode's `desktop` folder, since the card has no viewport and shows only the theme's
+  default mode.
+  The site runs with the preview on (`previewCards` in `e2e/servers.ts`, an admin origin nothing
+  serves) and the spec sets the grant cookie itself.
+  It needs no browser, only the build and the mock Strapi; the PNG is drawn by libvips from the
+  theme's own font file, and `toMatchSnapshot` allows 0.1% of the pixels, as the screenshots do.
+  A theme that declares no font file cannot draw a card: the spec then expects the `500`
+  (`internalError`) and takes no baseline.
+  The render step of admission and `theme-snapshots.yml` run it next to `visual.spec.ts`, so the
+  baselines of a theme come from the same artifact.
 
 `a11y.spec.ts` also asserts that every id of `/_theme` is unique. The variants the theme does not use repeat the ids of the active ones (`latest-title`, `references`, heading ids), so `SpecimenRegions.vue` renames them in the browser (`-copy<N>`, plus `for`, `form`, `headers`, `aria-labelledby`, `aria-describedby`, `aria-controls`, `aria-owns`, `aria-activedescendant`, `aria-details`, `aria-errormessage` and `href="#…"` inside the same frame). It runs after hydration, so the server HTML still has the duplicates, and a subtree that remounts later gets its original ids back; production pages are unaffected.
 
@@ -56,7 +68,13 @@ To reproduce a flake like this, run the Playwright image of the CI with `--cpus=
 The reusable workflow `.github/workflows/theme-admission.yml` runs the same specs for a theme from its own repository ([`docs/themes/publishing-a-theme.md`](themes/publishing-a-theme.md)). Three variables of `playwright.theme.config.ts` serve it, and work locally too:
 
 - `THEME_SNAPSHOT_DIR`: the folder of the theme's baselines (`<mode>/<viewport>/<name>.png` inside it); default `e2e/theme/__screenshots__/<theme>`.
-- `THEME_SKIP_VISUAL=1`: every project except `visual.spec.ts`, for a run without baselines.
+- `THEME_SKIP_VISUAL=1`: every spec except `visual.spec.ts` and `card.spec.ts`,
+  which compare with baselines, for a run without them.
+- `THEME_CARD_BASELINE=optional`: `card.spec.ts` compares with `card.png` only when the baseline
+  exists, and still checks the status, the type and the size.
+  Only the compat run of a core release sets it (`card-baseline-required: false`),
+  because a published theme version was built before the card existed.
+  A theme that has the baseline is compared, and admission of a new version still requires it.
 - `THEME_REPORT_JSON`: also write Playwright's JSON report to this file; the admission report reads it. A `--reporter` on the command line replaces the configured reporters, this one included.
 
 A data-only theme runs on a build it was not made with: the core is built with `MICELIO_SPECIMEN=1` and `test/fixtures/themes/minimal`, the theme is installed into its store (`npm run theme:admit -- install`), and the server picks it with `NUXT_PUBLIC_THEME` at runtime.

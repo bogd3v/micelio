@@ -45,6 +45,10 @@ on:
         description: Include visual regression in the quality run; the baselines are read from <snapshot-root>/<theme id>/
         type: boolean
         default: true
+      card-baseline-required:
+        description: A theme that declares a font file must have its social card baseline (card.png, next to the others). false, which only theme-compat.yml sets, lets a published version without one pass, since it was built before the card existed; a baseline that exists is still compared
+        type: boolean
+        default: true
       snapshot-root:
         description: Folder of the visual baselines in the caller's repository, one subfolder per theme id (outside the theme folder, which the package must not include); the core passes e2e/theme/__screenshots__
         type: string
@@ -363,6 +367,7 @@ jobs:
       THEME: ${{ matrix.theme }}
       THEME_SNAPSHOT_DIR: ${{ matrix.snapshots }}
       THEME_SKIP_VISUAL: ${{ !inputs.visual && !inputs.update-snapshots && '1' || '' }}
+      THEME_CARD_BASELINE: ${{ inputs.card-baseline-required && 'required' || 'optional' }}
       THEME_REPORT_JSON: admission/${{ matrix.theme }}/quality.json
     steps:
       - name: Checkout the core
@@ -429,7 +434,7 @@ jobs:
       - name: Render the baselines
         id: render
         if: ${{ !cancelled() && (inputs.update-snapshots || (inputs.visual && steps.test.outcome == 'failure')) }}
-        run: npm run test:theme:update -- e2e/theme/visual.spec.ts
+        run: npm run test:theme:update -- e2e/theme/visual.spec.ts e2e/theme/card.spec.ts
       - name: Upload the baselines
         if: ${{ !cancelled() && steps.render.outcome != 'skipped' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
