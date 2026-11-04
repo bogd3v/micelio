@@ -22,7 +22,7 @@ jobs:
   admission:
     uses: bogd3v/micelio/.github/workflows/theme-admission.yml@v0.5.5
     with:
-      theme-dirs: ${{ inputs.theme }}
+      theme-dirs: themes/${{ inputs.theme }}
       themes: '["${{ inputs.theme }}"]'
       core-ref: v0.5.5
     permissions:

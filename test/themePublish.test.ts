@@ -545,6 +545,10 @@ describe('the workflows', () => {
     expect(templateSign).toMatch(/concurrency:\n\s+group: theme-registry-index\n\s+cancel-in-progress: false/)
   })
 
+  it('call admission with the themes/<id> folder micelio-themes keeps its themes in (#313, #314)', () => {
+    expect(templatePublish).toContain('theme-dirs: themes/${{ inputs.theme }}\n')
+  })
+
   it('name no artifact after a digest: upload-artifact refuses a colon', () => {
     for (const text of [publish, prepare, push, templatePublish, templateSign]) {
       for (const match of text.matchAll(/(?:^|\n)\s*(?:name|bundle-artifact|index-artifact|package-artifact): ([^\n]*)/g)) {
