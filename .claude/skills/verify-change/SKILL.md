@@ -20,6 +20,8 @@ npm run test:contract     # server routes against a real CMS; needs Docker and `
 
 Run `test:contract` when the change touches `server/`, `app/interfaces/`, `e2e/mock-strapi.mjs` or the contract suite (CI runs it on those paths and on `main`). Run all of the others; report the counts (e.g. 383 / 121 / 117), not "tests pass". For lockfile or Docker changes also run `npm run build`.
 
+Run `npm run perf -- --check` (after `npm run build`; `--mode static` for the static budgets) when the change moves an import of `app/components/`, `app/composables/` or `app/helpers/` that public pages load, or adds a dynamic `import()` or a lazy chunk: it can fail on a few bytes or one extra `modulepreload` while `check` and the integration suite pass (#732: a lazily loaded module that imported `vue` made the build split the shared runtime chunk, 0.7 KB more script on every page). Compare the HTML of a public page with `main` (`compare-html.mjs`, below) as well.
+
 ## 2. A failing e2e
 
 The dev server is sometimes slow on the first spec or under load, so a navigation timeout is not proof of a regression, and not proof of a flake either:
