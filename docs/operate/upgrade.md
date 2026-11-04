@@ -40,6 +40,23 @@ Pull and start the new frontend image, with the same environment. The frontend h
 
 - **Old browser preferences are not carried over.** A visitor whose browser still holds `bd-theme`, `devbog-theme` or `devbog-color-mode` (or `bd-read-articles` or `bd-privacy-notice`) and has not visited since 0.1.0 starts with the default mode, an empty read history and the privacy notice shown again. Nothing on the server changes.
 - **The session cookie is `__Host-micelio_session`.** It was `micelio_session` before, and `bd_session` before that. The frontend no longer reads the older names (the fallback lasted one release line), so anyone still holding an old cookie signs in again. If you filter or log cookies by name (a reverse proxy, a WAF rule, an analytics exclusion), use the new name. The `__Host-` prefix needs the site to be served over HTTPS, as the cookie already did.
+- **A static or landing build takes its theme from the site settings (0.6.0).**
+  `npm run generate`, the builder image and `static-site.yml`
+  read `themeId`, `themeVersion` and `themeDigest` before they render a page.
+  `NUXT_PUBLIC_THEME` applies only when the settings name no theme,
+  so a site that sets both changes its look.
+  A theme that cannot be used (a code theme the image lacks, a tier the build does not install,
+  a yanked version) fails every rebuild with a line that starts `Static theme:`,
+  and the last published site stays.
+  The rules are in [The theme of the site](static-site.md#the-theme-of-the-site).
+- **Bogotá is no longer in the repository (0.6.0).**
+  It is served from the registry as `bogota@1.0.1`, pinned in `themes.lock.json`,
+  and the images install it when they are built, so those who pull them do nothing.
+  Building from source needs `npm run theme:pull -- --frozen` after `npm ci`,
+  or `NUXT_PUBLIC_THEME=starter` to build offline.
+  A site whose `themes.lock.json` does not pin `bogota` and relies on the default theme
+  runs `npm run theme:add -- bogota` or names another theme.
+  See [The default theme](themes.md#the-default-theme).
 
 ## Image tags
 
