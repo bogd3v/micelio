@@ -1,4 +1,7 @@
 import { allow, each, fields, variants } from '~/helpers/allowList'
+import { exposedOptions, parseOption } from '~/helpers/blockOptions'
+import { BLOCK_OPTION_NAMES } from '~/interfaces/block-options'
+import type { OptionBlockUid } from '~/interfaces/block-options'
 import type { Shape } from '~/helpers/allowList'
 import { toPublicComments } from '~/helpers/comments'
 import type { CommentsResponse } from '~/interfaces/comment'
@@ -18,11 +21,16 @@ const seo = fields({ id: true, metaTitle: true, metaDescription: true, metaImage
 const reference = fields({ id: true, key: true, type: true, authors: true, year: true, title: true, container: true, volume: true, issue: true, pages: true, venueLabel: true, doi: true, url: true, accessedAt: true })
 const localization = fields({ id: true, documentId: true, slug: true, locale: true, publishedAt: true })
 
+/** The allow-list entries of a block's presentation options. */
+function optionFields(uid: OptionBlockUid): Record<string, true> {
+  return Object.fromEntries(exposedOptions(uid).map(name => [name, true as const]))
+}
+
 const sharedBlocks = {
   'shared.rich-text': fields({ id: true, __component: true, body: true, html: true }),
-  'shared.quote': fields({ id: true, __component: true, body: true, html: true, title: true }),
-  'shared.media': fields({ id: true, __component: true, file: media, caption: true, credit }),
-  'shared.slider': fields({ id: true, __component: true, items: each(fields({ id: true, file: media, caption: true, credit })), files: each(media) }),
+  'shared.quote': fields({ id: true, __component: true, body: true, html: true, title: true, ...optionFields('shared.quote') }),
+  'shared.media': fields({ id: true, __component: true, file: media, caption: true, credit, ...optionFields('shared.media') }),
+  'shared.slider': fields({ id: true, __component: true, items: each(fields({ id: true, file: media, caption: true, credit })), files: each(media), ...optionFields('shared.slider') }),
 }
 
 const fact = fields({ id: true, label: true, value: true, mono: true })
@@ -85,7 +93,7 @@ export const articleShape: Shape = fields({
   // The draft strip shows when the draft was last edited
   updatedAt: true,
   coverCredit: credit,
-  blocks: each(variants('__component', { ...sharedBlocks, 'shared.playground': fields({ id: true, __component: true, runtime: true, code: true, expectedOutput: true, setup: true, caption: true }) })),
+  blocks: each(variants('__component', { ...sharedBlocks, 'shared.playground': fields({ id: true, __component: true, runtime: true, code: true, expectedOutput: true, setup: true, caption: true, ...optionFields('shared.playground') }) })),
   references: each(reference),
   localizations: each(localization),
 })
@@ -102,9 +110,25 @@ export const cardShape: Shape = fields(cardFields)
  */
 export const aboutShape: Shape = fields({ id: true, documentId: true, title: true, locale: true, seo, blocks: each(variants('__component', { ...sharedBlocks, ...aboutBlocks })) })
 
+/**
+ * Keeps in each block the presentation options it exposes and whose value it offers, as strings, and drops the rest (`null` included).
+ * Every other field passes as it is.
+ */
+function keepValidOptions<B extends { __component: string }>(blocks: B[] | null | undefined): B[] | null | undefined {
+  return blocks?.map((block) => {
+    const kept = Object.fromEntries(Object.entries(block).filter(([key]) => !(BLOCK_OPTION_NAMES as readonly string[]).includes(key)))
+    for (const name of exposedOptions(block.__component)) {
+      const value = parseOption(block.__component, name, (block as Record<string, unknown>)[name])
+      if (value !== undefined) kept[name] = value
+    }
+    return kept as unknown as B
+  })
+}
+
 /** A full article as the CMS sent it, reduced to the fields the article page reads. */
 export function publicArticle(article: RawStrapiArticle): RawStrapiArticle {
-  return allow(article, articleShape) as RawStrapiArticle
+  const result = allow(article, articleShape) as RawStrapiArticle
+  return result?.blocks ? { ...result, blocks: keepValidOptions(result.blocks) as RawStrapiArticle['blocks'] } : result
 }
 
 /** An article of a list, reduced to the fields a card reads. */
@@ -114,7 +138,8 @@ export function publicPostCard(article: RawStrapiArticle): PostListItem {
 
 /** The About page as the CMS sent it, reduced to the fields its blocks render. */
 export function publicAbout(about: StrapiAbout): StrapiAbout {
-  return allow(about, aboutShape) as StrapiAbout
+  const result = allow(about, aboutShape) as StrapiAbout
+  return result?.blocks ? { ...result, blocks: keepValidOptions(result.blocks) as StrapiAbout['blocks'] } : result
 }
 
 /**

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { PricingSection } from '~/interfaces'
 
 const props = defineProps<{ section: PricingSection }>()
@@ -12,7 +13,7 @@ const hasActions = computed<boolean>(() => props.section.plans.some(plan => plan
 </script>
 
 <template>
-  <section class="myc-section" data-section="pricing" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section class="myc-section" data-section="pricing" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :text="section.text" :title-id="titleId" />
 

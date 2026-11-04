@@ -55,3 +55,8 @@ function extraProps(block: StrapiBlock): { figureNumber?: number } {
     v-bind="extraProps(block)"
   />
 </template>
+
+<style>
+@layer myc.reset, myc.settings, myc.base, myc.components, myc.layout, myc.pages, myc.theme, myc.animations, myc.utilities;
+@import "~/assets/css/components/block-options.css" layer(myc.components);
+</style>

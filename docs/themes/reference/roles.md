@@ -2,7 +2,7 @@
 
 # Roles
 
-Roles of contract v2.0, by `theme.json` group. Contrast (the last two columns: the role as foreground on those surfaces, and the foregrounds checked on the role) is checked per mode by `npm run theme:check` (WCAG 2 AA; text 4.5:1, controls and focus 3:1); an optional role a theme omits is checked with its core default. Guide: [../creating-a-theme.md](../creating-a-theme.md).
+Roles of contract v2.1, by `theme.json` group. Contrast (the last two columns: the role as foreground on those surfaces, and the foregrounds checked on the role) is checked per mode by `npm run theme:check` (WCAG 2 AA; text 4.5:1, controls and focus 3:1); an optional role a theme omits is checked with its core default. Guide: [../creating-a-theme.md](../creating-a-theme.md).
 
 ## `color`
 
@@ -15,14 +15,14 @@ Color roles. A `value` is one string or one value per mode id; contrast is check
 | `surface-sunken` | required | Code blocks and inset areas such as figures and card covers. | none | `ink`, `ink-muted`, `accent`, `link`, `success`, `warning`, `danger`, `info`, `category-1`, `category-2`, `category-3`, `category-4`, `category-5`, `code-ink`, `code-muted`, `code-keyword`, `code-string`, `code-number`, `code-function` ≥ 4.5:1; `line-strong`, `focus` ≥ 3:1 |
 | `line` | required | Decorative hairlines: separators and card borders. | none | none |
 | `line-strong` | required | Control borders (inputs, secondary button). | `surface`, `surface-raised`, `surface-sunken` ≥ 3:1 | none |
-| `ink` | required | Main text and the fill of the primary button. | `surface`, `surface-raised`, `surface-sunken` ≥ 4.5:1 | `on-ink` ≥ 4.5:1 |
-| `ink-muted` | required | Secondary text: excerpts, metadata, dates, help. | `surface`, `surface-raised`, `surface-sunken` ≥ 4.5:1 | none |
+| `ink` | required | Main text and the fill of the primary button. | `surface`, `surface-raised`, `surface-sunken` ≥ 4.5:1; `accent-soft` ≥ 4.5:1 (from 2.1) | `on-ink` ≥ 4.5:1 |
+| `ink-muted` | required | Secondary text: excerpts, metadata, dates, help. | `surface`, `surface-raised`, `surface-sunken` ≥ 4.5:1; `accent-soft` ≥ 4.5:1 (from 2.1) | none |
 | `on-ink` | required | Text on an `ink` fill. | `ink` ≥ 4.5:1 | none |
 | `accent` | required | Brand accent: the accent button, active states, brand marks. | `surface`, `surface-raised`, `surface-sunken`, `accent-soft` ≥ 4.5:1 | `on-accent` ≥ 4.5:1 |
-| `accent-soft` | required | Tinted background behind accent text. | none | `accent` ≥ 4.5:1 |
+| `accent-soft` | required | Tinted background behind accent text, and the surface of a section with tone accent. | none | `accent` ≥ 4.5:1; `ink`, `ink-muted`, `link` ≥ 4.5:1 (from 2.1) |
 | `accent-hover` | required | The accent on hover. | none | `on-accent` ≥ 4.5:1 |
 | `on-accent` | required | Text and icons on the accent. | `accent`, `accent-hover` ≥ 4.5:1 | none |
-| `link` | required | Links in running text. | `surface`, `surface-raised`, `surface-sunken`, `link-soft` ≥ 4.5:1 | none |
+| `link` | required | Links in running text. | `surface`, `surface-raised`, `surface-sunken`, `link-soft` ≥ 4.5:1; `accent-soft` ≥ 4.5:1 (from 2.1) | none |
 | `focus` | required | Focus ring. | `surface`, `surface-raised`, `surface-sunken` ≥ 3:1 | none |
 | `success` | required | Success state. | `surface`, `surface-raised`, `surface-sunken`, `success-soft` ≥ 4.5:1 | none |
 | `success-soft` | required | Background of a success message. | none | `success` ≥ 4.5:1 |

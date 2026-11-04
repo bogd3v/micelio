@@ -16,6 +16,11 @@
     background: var(--accent-soft);
 }
 
+/* A block with the accent tone (a block option, contract 2.1) gets rules above and below, on top of the core's accent-soft surface */
+[data-section][data-tone="accent"] {
+    border-block: 1px solid var(--line);
+}
+
 /* The index home opens with the site name set as a calm serif title */
 .myc-home-lede-title {
     font-weight: 400;

@@ -217,6 +217,44 @@ Hooks are validated by the build and by `theme:check`. `npm run lint` does not c
 
 Optional. The style of the page sections (the `myc-section-*` hooks and `data-section` / `data-variant`, [reference/hooks.md](reference/hooks.md)) goes here, not in `theme.css`: `theme.css` loads on every page, `sections.css` only on pages that render sections, in the same chunk as the core section CSS and after it, in the layer `myc.theme`. Same rules as `theme.css`, and its gzipped size counts toward the same 25 KB budget. Without it the sections still render, styled from your roles by the core. Every theme styles every section and variant (ADR 0005, section 11), and `/_theme` shows them.
 
+### Block options
+
+From contract 2.1 a block that exposes a presentation option writes it as a `data-*` attribute
+on its root: `data-layout`, `data-width`, `data-columns`, `data-density`, `data-align`,
+`data-tone`, `data-ratio` and `data-height`.
+[reference/hooks.md](reference/hooks.md#block-options) lists the values and the blocks.
+The core styles the values that change a block's look in the layer `myc.components`,
+so a theme that does nothing renders them (the exceptions are the last bullet).
+To restyle one, select it with `data-section` (or the block's class) in `sections.css`,
+in the layer `myc.theme`:
+
+```css
+[data-section="stats"][data-tone="accent"] {
+    border-block: 1px solid var(--line);
+}
+```
+
+- A theme that selects one of the seven new attributes declares `"contract": "2.1"`.
+  Selecting `data-layout` on a section does not raise the version, because the name is older,
+  so declare `2.1` yourself, and always together with `data-section`:
+  `[data-layout="centered"]` alone also matches the header.
+- An attribute is written only when the content sets a value the block offers.
+  The default value of an option (the bold one in the reference) and the absence of the attribute look the same,
+  because the core has no rule for the default: style the default on the block, not on the attribute.
+- A rule of yours that sets the same property as the option wins over it, because the theme
+  layer comes after the core's: a `background` on `[data-section="hero"]` hides `data-tone`,
+  a `max-width` on the text of a rich-text hides `data-width`,
+  and `grid-template-columns` on `.myc-section-items` hides `data-columns`.
+  Leave those properties alone where you want the option to work.
+- `columns` does nothing on the bento and list feature grids, the table pricing and the marquee logo cloud,
+  which set their own columns.
+- Some values have no core look and render the block's own: `layout: stacked`, `height` on a hero
+  or a scene (the attribute is written, so a theme can style them), `width: wide` on a section
+  (the container the default has), `height: s` on a playground and `ratio: auto` on a slider.
+- A value you do not style renders the core's look. There is no fallback to the first value of the list,
+  and the first value is not the default (`columns` lists `2` first and defaults to `3`; `height` lists `s`
+  and defaults to `m`).
+
 ## 5. Messages
 
 `i18n/<locale>.json` files (the file name is the locale code, and must be one of the site's locales, `en` or `es`; a file for another code is compiled and never used, because a theme no longer adds locales to the site) are compiled when the theme is installed and added to the site's messages for each request under the `theme.*` namespace; the file may hold nothing else. User-facing text of a theme lives here, never in the core's locale files. The core reads these keys when present (ADR 0005, section 4): `theme.hud.{city,coords,altitude,madeIn}`, `theme.guide.*`, `theme.latest.emptyNote`, `theme.hero.subtitle` (the home subtitle), `theme.author.bio` (the line in the author card), `theme.palette.names` and `theme.profile.alt`. Without them the place line renders nothing and the others fall back to a neutral text or nothing. Your slots may add their own keys under `theme.*`.

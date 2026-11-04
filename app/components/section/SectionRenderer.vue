@@ -82,5 +82,6 @@ const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLand
 @import "~/assets/css/components/section-logos.css" layer(myc.components);
 @import "~/assets/css/components/section-pricing.css" layer(myc.components);
 @import "~/assets/css/components/section-faq.css" layer(myc.components);
+@import "~/assets/css/components/section-options.css" layer(myc.components);
 @import "~/assets/css/animations/section-marquee.css" layer(myc.animations);
 </style>

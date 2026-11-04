@@ -44,6 +44,42 @@ These did not move the version, because they add no role, slot, variant or hook 
 - Added: the optional `version` (semver without build metadata) and `license` (an SPDX id or `LicenseRef-<name>`) of `theme.json`; both are required to pack a theme.
 - Tightened: `id` is 1 to 64 characters of lowercase letters and digits in groups separated by single hyphens (ADR 0009, section 2). `--x`, `x-`, `-x` and ids over 64 characters no longer validate; `bogota`, `starter` and every id with single hyphens do.
 
+## 2.1
+
+Adds the presentation options of the blocks (ADR-0018, section 1; #731) as public hooks.
+A block that exposes an option writes it as a `data-*` attribute on its root,
+and the core gives most values that change a block's look one in the `myc.components` layer
+(the default value has none: it is the block's own look).
+`layout: stacked` and `height` on a hero or a scene write the attribute and keep the block's own look for now
+(a follow-up of #731); `width: wide` on a section and `ratio: auto` on a slider change nothing either.
+Nothing is removed or renamed, so a theme that declares `2.0` keeps validating and rendering.
+
+- Added hooks: `data-width`, `data-columns`, `data-density`, `data-align`, `data-tone`,
+  `data-ratio` and `data-height`.
+  A theme that selects one declares `"contract": "2.1"`.
+- Extended: `data-layout` also carries the `layout` option of a block, with the values
+  `centered` (shared with the header and the home), `split` and `stacked`.
+  The name existed in 2.0, so the validator cannot ask for 2.1 when a theme selects it:
+  select it together with `data-section` (`[data-section="hero"][data-layout="split"]`),
+  and never alone, because `[data-layout="centered"]` also matches the header.
+- Added to the slot APIs: `BLOCK_OPTIONS`, `BLOCK_EXPOSES` and their types, and the optional
+  option fields of the section and block interfaces (`reference/slot-apis.md`).
+- Contrast (opt-in): the matrix also holds `ink`, `ink-muted` and `link` on `accent-soft`,
+  the surface of `tone: accent`, but only for a theme that declares `2.1`.
+  A theme that declares `2.0` is not checked on it, so it keeps validating and installing;
+  `starter` and `bogota` would pass anyway (the lowest, `link` on `accent-soft`, is 5.26:1 on
+  `bogota` `dia`).
+- Which block exposes which option, and the values it offers, are in
+  [reference/hooks.md](reference/hooks.md#block-options).
+- An absent attribute is the block's own look; the core writes an attribute only for a value
+  the content sets and the block offers.
+  The default value of each option has no rule, so a stored default looks like an absent attribute.
+  A theme that does not style a value renders the core's look, not the first value of the list.
+- The rules sit in the `myc.components` layer and a theme's sit in `myc.theme`, so a theme
+  overrides a value with the same specificity.
+  A theme that already sets the property an option sets (a `background` on the hero for `tone`,
+  `grid-template-columns` on the items for `columns`) keeps winning over the option.
+
 ## 2.0
 
 Breaking, from [ADR 0016](../adr/0016-categories-from-the-cms.md): the core knows no category, so the slot APIs are data. A theme migrates with the [upgrade notes](creating-a-theme.md#contract-1-to-2-the-core-knows-no-category-adr-0016).

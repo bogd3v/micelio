@@ -197,7 +197,7 @@ describe('hero', () => {
     expect(img.attributes('alt')).toBe('hero.png')
     expect(img.attributes('width')).toBe('1200')
     expect(img.attributes('height')).toBe('630')
-    expect(wrapper.get('.myc-section-media').attributes('style')).toContain('aspect-ratio: 1200 / 630')
+    expect(wrapper.get('.myc-section-media').attributes('style')).toContain('aspect-ratio: var(--myc-ratio, 1200 / 630)')
     const types = wrapper.findAll('picture source').map(source => source.attributes('type'))
     expect(types).toContain('image/avif')
     expect(types).toContain('image/webp')
@@ -567,5 +567,40 @@ describe('trusted media prefix', () => {
     })
     const wrapper = await mountSuspended(Host)
     expect(wrapper.find('img').attributes('src')).toBe('/_theme/media/hero.svg')
+  })
+})
+
+describe('presentation options', () => {
+  const optioned = (section: PageSection, options: Record<string, string>): PageSection => ({ ...section, ...options }) as PageSection
+
+  it('writes the options a section exposes as data attributes on its root', async () => {
+    const wrapper = await render(optioned(sections.featureGrid('grid'), { columns: '2', density: 'compact' }))
+    expect(root(wrapper).attributes()).toMatchObject({ 'data-section': 'feature-grid', 'data-variant': 'grid', 'data-columns': '2', 'data-density': 'compact' })
+  })
+
+  it('writes nothing for a section with no options set', async () => {
+    const plain = await render(sections.featureGrid('grid'))
+    expect(Object.keys(root(plain).attributes()).filter(name => /^data-(layout|width|columns|density|align|tone|ratio|height)$/.test(name))).toEqual([])
+  })
+
+  it.each([
+    ['hero', sections.hero('split'), { layout: 'stacked', tone: 'raised', height: 'full' }],
+    ['media-showcase', sections.mediaShowcase('left'), { ratio: '1:1' }],
+    ['stats', sections.stats('row'), { columns: '4', align: 'center', tone: 'accent' }],
+    ['logo-cloud', sections.logoCloud('row'), { columns: '6', density: 'compact' }],
+    ['testimonials', sections.testimonials('grid'), { layout: 'split', density: 'compact' }],
+    ['pricing', sections.pricing('cards'), { columns: '2' }],
+    ['faq', sections.faq('list'), { density: 'compact' }],
+    ['post-list', sections.postList('cards'), { density: 'compact' }],
+    ['cta', sections.cta('card'), { layout: 'split', align: 'center', tone: 'raised' }],
+    ['newsletter', sections.newsletter('card'), { align: 'center', tone: 'accent' }],
+    ['rich-text', sections.richText(), { width: 'full' }],
+    ['gallery', sections.gallery('grid'), { width: 'wide', density: 'compact' }],
+    ['scene', sections.scene('inline'), { height: 's' }],
+  ] as const)('writes the options of %s', async (name, section, options) => {
+    const wrapper = await render(optioned(section, options), '/')
+    const attributes = root(wrapper).attributes()
+    expect(attributes['data-section']).toBe(name)
+    for (const [option, value] of Object.entries(options)) expect(attributes[`data-${option}`]).toBe(value)
   })
 })

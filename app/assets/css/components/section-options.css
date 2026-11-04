@@ -1,0 +1,132 @@
+/* Presentation options of the sections (#731): data-layout, data-width, data-columns, data-density, data-align, data-tone, data-ratio and
+   data-height on the root of a section (stacked and height have no rule yet). An absent attribute is the section's own look, and so is the default value of each option
+   (centered, prose, 3, comfortable, start, default, 16:9, m): Strapi stores the default on a new entry, and that block must look as it
+   does today, so a default value has no rule here. The rules below come last in the layer, so an option wins over the variant.
+   A theme restyles any value in its own layer (docs/themes/reference/hooks.md). */
+
+/* Layout: split; centered is the default and has no rule. stacked has none yet: it renders the block's own look (follow-up of #731) */
+@media (min-width: 900px) {
+    [data-section][data-layout="split"] .myc-section-inner {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas: none;
+        grid-template-rows: none;
+        align-items: center;
+        justify-items: stretch;
+        column-gap: var(--space-12);
+        text-align: start;
+    }
+
+    [data-section][data-layout="split"] .myc-section-inner > :is(.myc-section-head, .myc-section-actions) {
+        grid-area: auto;
+        grid-column: 1;
+    }
+
+    [data-section][data-layout="split"] .myc-section-inner > :not(.myc-section-head, .myc-section-actions) {
+        grid-area: 1 / 2 / span 2;
+    }
+
+    [data-section="cta"][data-layout="split"] .myc-section-inner > .myc-section-actions {
+        grid-area: 1 / 2;
+        justify-content: end;
+    }
+}
+
+/* Width: full is nearly the whole viewport; prose is the default and wide is the same container, so neither has a rule */
+[data-section][data-width="full"] .myc-section-inner {
+    padding-inline: var(--space-4);
+}
+
+/* Columns: one at phone width, then two or three, and the full count from 900px. 3 is the default (the grid's own auto-fit) and has no rule */
+:is([data-columns="2"], [data-columns="4"], [data-columns="6"]) {
+    --myc-columns: 1;
+}
+
+@media (min-width: 640px) {
+    [data-columns="2"],
+    [data-columns="4"] {
+        --myc-columns: 2;
+    }
+
+    [data-columns="6"] {
+        --myc-columns: 3;
+    }
+}
+
+@media (min-width: 900px) {
+    [data-columns="4"] {
+        --myc-columns: 4;
+    }
+
+    [data-columns="6"] {
+        --myc-columns: 6;
+    }
+}
+
+/* The list and bento feature grids, the pricing table and the marquee set their own columns */
+:is([data-section="feature-grid"][data-variant="grid"], [data-section="stats"], [data-section="pricing"][data-variant="cards"]):not([data-columns="3"])[data-columns] .myc-section-items,
+[data-section="logo-cloud"]:not([data-columns="3"])[data-columns] .myc-section-logo-track:not([data-variant="marquee"]) > .myc-section-items {
+    display: grid;
+    grid-template-columns: repeat(var(--myc-columns), minmax(0, 1fr));
+}
+
+/* The logo track is a flex row: without this the list shrinks to its content */
+[data-section="logo-cloud"]:not([data-columns="3"])[data-columns] .myc-section-logo-track > .myc-section-items {
+    flex: 1 1 100%;
+}
+
+/* Density: the section's spacing steps, which the shared rules read */
+[data-section][data-density="compact"] {
+    --myc-section-pad: var(--space-8);
+    --myc-inner-gap: var(--space-4);
+    --myc-items-gap: var(--space-4);
+    --myc-item-pad: var(--space-4);
+}
+
+/* Align */
+[data-section][data-align="center"] .myc-section-inner {
+    text-align: center;
+}
+
+[data-section][data-align="center"] .myc-section-head {
+    margin-inline: auto;
+    justify-items: center;
+}
+
+[data-section][data-align="center"] .myc-section-actions {
+    justify-content: center;
+}
+
+[data-section="cta"][data-align="center"] .myc-section-inner {
+    justify-items: center;
+}
+
+[data-section][data-align="center"] .myc-news {
+    width: 100%;
+    margin-inline: auto;
+}
+
+/* Tone: the surface the section sits on */
+[data-section][data-tone="raised"] {
+    background: var(--surface-raised);
+}
+
+[data-section][data-tone="accent"] {
+    background: var(--accent-soft);
+}
+
+/* Ratio: 16:9 is the default and has no rule; the box reserves its shape before the file loads, and the file covers it. SectionMedia reads --myc-ratio */
+[data-section][data-ratio="4:3"] {
+    --myc-ratio: 4 / 3;
+}
+
+[data-section][data-ratio="1:1"] {
+    --myc-ratio: 1 / 1;
+}
+
+[data-section][data-ratio="auto"] {
+    --myc-ratio: auto;
+}
+
+[data-section][data-ratio]:not([data-ratio="16:9"]) .myc-section-media :is(picture, img, video) {
+    height: 100%;
+}

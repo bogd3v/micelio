@@ -95,7 +95,7 @@ describe('installing a theme folder', () => {
     const store = scratch()
     const result = await installTheme({ kind: 'folder', dir: join(ROOT, 'themes/starter') }, options(store, { allowCode: true }))
     const runtime = JSON.parse((await loadEntry(store, result.digest))!.files.get('runtime.json')!.toString()) as { images: Record<string, string>, fonts: Array<{ url: string }>, layout: Record<string, string>, display: { family: string }, palette: { modes: object }, messages: object } & Record<string, unknown>
-    expect(runtime).toMatchObject({ id: 'starter', version: '0.1.0', digest: result.digest, packageDigest: result.packageDigest, contract: '2.0', code: true })
+    expect(runtime).toMatchObject({ id: 'starter', version: '0.1.0', digest: result.digest, packageDigest: result.packageDigest, contract: '2.1', code: true })
     expect(runtime.images.favicon).toBe(`/_t/${result.digest}/images/favicon.svg`)
     expect(runtime.fonts[0]?.url).toBe(`/_t/${result.digest}/fonts/fraunces-latin-var.woff2`)
     expect(runtime.layout.header).toBe('centered')

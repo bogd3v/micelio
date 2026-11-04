@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { StrapiSlide, StrapiSlider } from '~/interfaces'
 import { formatFigureNumber, slidesOf } from '~/helpers/figures'
 
@@ -137,6 +138,7 @@ onUnmounted(stopAutoplay)
 <template>
   <figure
     class="myc-fig myc-slider"
+    v-bind="optionAttributes(block)"
     tabindex="0"
     role="region"
     aria-roledescription="carousel"

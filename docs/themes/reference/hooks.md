@@ -2,7 +2,7 @@
 
 # Hooks
 
-Public styling hooks of contract v2.0, from `app/theme/hooks.json`. A theme's `theme.css` and slot CSS may select only these `myc-*` classes and core `data-*` attributes; every other one is internal and can change in any release. Adding a hook raises the minor of contract v2 (a row in [the contract changelog](../contract-changelog.md)); removing or renaming one is a new major. A state is a class or attribute the hook takes.
+Public styling hooks of contract v2.1, from `app/theme/hooks.json`. A theme's `theme.css` and slot CSS may select only these `myc-*` classes and core `data-*` attributes; every other one is internal and can change in any release. Adding a hook raises the minor of contract v2 (a row in [the contract changelog](../contract-changelog.md)); removing or renaming one is a new major. A state is a class or attribute the hook takes.
 
 ## Attributes
 
@@ -10,11 +10,39 @@ Public styling hooks of contract v2.0, from `app/theme/hooks.json`. A theme's `t
 | --- | --- | --- |
 | `data-theme` | `<html>`: id of the active mode (the micelio-theme value). | the ids of the theme's modes |
 | `data-scheme` | `<html>`: lightness of the active mode. | `dark`, `light` |
-| `data-layout` | The root element of a layout region: the variant it renders. | `bar`, `centered`, `showcase`, `index`, `grid`, `list`, `aside`, `columns`, `minimal` |
+| `data-layout` | The root element of a layout region: the variant it renders. From contract 2.1 also the root of a block that exposes the layout option (hero, cta, testimonials), always read together with data-section: .myc-section[data-section="hero"][data-layout="split"]. The core styles `split`; `stacked` is written and renders the block's own look. | `bar`, `centered`, `showcase`, `index`, `grid`, `list`, `aside`, `columns`, `minimal`, `split`, `stacked` |
 | `data-mode` | A button of the mode switch: the mode it selects (.myc-seg). | the ids of the theme's modes |
 | `data-level` | Password strength meter: how many bars are lit (.myc-meter). | `1`, `2`, `3`, `4` |
 | `data-section` | The root of a page section: the section it renders (.myc-section). | `hero`, `feature-grid`, `media-showcase`, `stats`, `logo-cloud`, `testimonials`, `pricing`, `faq`, `cta`, `post-list`, `newsletter`, `rich-text`, `gallery`, `scene` |
 | `data-variant` | The root of a page section: the variant it renders, always read together with data-section (ADR 0005, section 11). rich-text has none. | `hero: centered, split, full-bleed`, `feature-grid: grid, list, bento`, `media-showcase: left, right, stacked`, `stats: row, cards`, `logo-cloud: row, marquee`, `testimonials: single, grid`, `pricing: cards, table`, `faq: list, two-columns`, `cta: banner, card`, `post-list: cards, list`, `newsletter: inline, card`, `gallery: grid, masonry`, `scene: background, inline` |
+| `data-width` | Contract 2.1. The root of a block that exposes the width option (rich-text, gallery, quote, media): how wide it is. On a section `prose` and `wide` are the same container (`wide` changes nothing) and `full` leaves it nearly the whole viewport; on a quote or an image `wide` breaks out of the text column from 900px. `full` is never set on a quote or an image. A `max-width` of a theme on the text of a rich-text hides it. | `prose`, `wide`, `full` |
+| `data-columns` | Contract 2.1. The root of a block that exposes the columns option (feature-grid, stats, pricing, logo-cloud): the columns of its grid at desktop width; the core collapses them to one at phone width. `3`, the default, keeps the grid's own columns. Ignored by the bento and list feature grids, the table pricing and the marquee logo cloud, which set their own. `6` only on logo-cloud. | `2`, `3`, `4`, `6` |
+| `data-density` | Contract 2.1. The root of a block that exposes the density option (feature-grid, logo-cloud, testimonials, faq, post-list, gallery): the spacing steps between its parts. | `comfortable`, `compact` |
+| `data-align` | Contract 2.1. The root of a block that exposes the align option (stats, cta, newsletter, quote): where its text sits. There is no `end`: it would mean right or left depending on the language. | `start`, `center` |
+| `data-tone` | Contract 2.1. The root of a block that exposes the tone option (hero, stats, cta, newsletter): the surface it sits on, `surface`, `surface-raised` or `accent-soft`. | `default`, `raised`, `accent` |
+| `data-ratio` | Contract 2.1. The root of a block that exposes the ratio option (media-showcase, media, slider): the aspect ratio of its media, as `width:height`; `auto` reserves no space and leaves the shape to the file. A slider keeps its own 16:10 for `16:9` and `auto`, because its slides are stacked. | `16:9`, `4:3`, `1:1`, `auto` |
+| `data-height` | Contract 2.1. The root of a block that exposes the height option (hero, scene, playground): how tall it is. Only a playground has a core look for it: `l` is 40rem at least and `full` one viewport, and `s` is as tall as its code, like `m`. On a hero and a scene the attribute is written and the core renders the block's own look, whatever the value. | `s`, `m`, `l`, `full` |
+
+## Block options
+
+The presentation options of the blocks (contract 2.1; ADR-0018, section 1).
+A block writes an option as the attribute on its root, next to `data-section` or its own class
+(`myc-quote`, `myc-fig`, `myc-slider`, `myc-playground`),
+only when its content sets a value the block offers.
+The default (in bold) is what the block renders with no attribute; the core has no rule for it,
+so a stored default looks like an absent one.
+A block lists the values it offers when they are fewer than the option's.
+
+| Attribute | Values | Blocks (component) |
+| --- | --- | --- |
+| `data-layout` | **`centered`**, `split`, `stacked` | `section.hero`, `section.testimonials`, `section.cta` |
+| `data-width` | **`prose`**, `wide`, `full` | `section.rich-text`, `section.gallery`, `shared.quote` (`prose`, `wide`), `shared.media` (`prose`, `wide`) |
+| `data-columns` | `2`, **`3`**, `4`, `6` | `section.feature-grid` (`2`, `3`, `4`), `section.stats` (`2`, `3`, `4`), `section.logo-cloud`, `section.pricing` (`2`, `3`, `4`) |
+| `data-density` | **`comfortable`**, `compact` | `section.feature-grid`, `section.logo-cloud`, `section.testimonials`, `section.faq`, `section.post-list`, `section.gallery` |
+| `data-align` | **`start`**, `center` | `section.stats`, `section.cta`, `section.newsletter`, `shared.quote` |
+| `data-tone` | **`default`**, `raised`, `accent` | `section.hero`, `section.stats`, `section.cta`, `section.newsletter` |
+| `data-ratio` | **`16:9`**, `4:3`, `1:1`, `auto` | `section.media-showcase`, `shared.media`, `shared.slider` |
+| `data-height` | `s`, **`m`**, `l`, `full` | `section.hero`, `section.scene`, `shared.playground` |
 
 ## Classes of `header`
 

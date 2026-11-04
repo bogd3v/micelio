@@ -28,6 +28,7 @@ import type {
 import type { StrapiAbout } from '~/interfaces/strapi-about'
 import type { StrapiMediaRef } from '~/interfaces/strapi-post'
 import type { StrapiMetaSocial, StrapiSEO } from '~/interfaces/strapi-seo'
+import { optionResponseShape } from './blockOptions'
 import { responseSchema } from './response'
 
 // Everything an article carries besides its own fields: images, SEO and the dynamic-zone blocks, with the About sections the block union includes.
@@ -251,19 +252,19 @@ const richTextSchema = responseSchema<StrapiRichText>()(
 
 /** A quote block (`shared.quote`). */
 const quoteSchema = responseSchema<StrapiQuote>()(
-  z.strictObject({ id: z.int(), __component: z.literal('shared.quote'), body: z.string().nullable(), html: z.string().optional(), title: z.string().nullish() }).meta({ id: 'QuoteBlock', description: 'A quote in Markdown, its inline HTML and the attribution.' }),
+  z.strictObject({ id: z.int(), __component: z.literal('shared.quote'), ...optionResponseShape('shared.quote'), body: z.string().nullable(), html: z.string().optional(), title: z.string().nullish() }).meta({ id: 'QuoteBlock', description: 'A quote in Markdown, its inline HTML and the attribution.' }),
 )
 
 /** An image block (`shared.media`). */
 const mediaBlockSchema = responseSchema<StrapiMedia>()(
-  z.strictObject({ id: z.int(), __component: z.literal('shared.media'), file: mediaFileSchema.nullable(), caption: z.string().nullish(), credit: imageCreditSchema.nullish() }).meta({ id: 'MediaBlock', description: 'An image with its caption and credit.' }),
+  z.strictObject({ id: z.int(), __component: z.literal('shared.media'), ...optionResponseShape('shared.media'), file: mediaFileSchema.nullable(), caption: z.string().nullish(), credit: imageCreditSchema.nullish() }).meta({ id: 'MediaBlock', description: 'An image with its caption and credit.' }),
 )
 
 /** A playground block (`shared.playground`). */
 const playgroundSchema = responseSchema<StrapiPlayground>()(
   z.strictObject({
     id: z.int(),
-    __component: z.literal('shared.playground'),
+    __component: z.literal('shared.playground'), ...optionResponseShape('shared.playground'),
     runtime: z.string(),
     code: z.string(),
     expectedOutput: z.string().nullish(),
@@ -279,7 +280,7 @@ const slideSchema = responseSchema<StrapiSlide>()(
 
 /** A slider block (`shared.slider`). */
 const sliderSchema = responseSchema<StrapiSlider>()(
-  z.strictObject({ id: z.int(), __component: z.literal('shared.slider'), items: z.array(slideSchema).nullish(), files: z.array(mediaFileSchema).nullish() }).meta({ id: 'SliderBlock', description: 'Slides, or plain uploads when there are none.' }),
+  z.strictObject({ id: z.int(), __component: z.literal('shared.slider'), ...optionResponseShape('shared.slider'), items: z.array(slideSchema).nullish(), files: z.array(mediaFileSchema).nullish() }).meta({ id: 'SliderBlock', description: 'Slides, or plain uploads when there are none.' }),
 )
 
 /**

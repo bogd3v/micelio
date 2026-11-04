@@ -219,7 +219,7 @@ describe('the starter\'s theme.json', () => {
   })
 
   it('declares its modes and contract', () => {
-    expect(data).toMatchObject({ contract: '2.0', id: 'starter' })
+    expect(data).toMatchObject({ contract: '2.1', id: 'starter' })
     expect(data.modes.map(mode => [mode.id, mode.scheme])).toEqual([['light', 'light'], ['dark', 'dark']])
   })
 })

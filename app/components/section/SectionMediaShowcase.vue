@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { MediaShowcaseSection } from '~/interfaces'
 
 defineProps<{ section: MediaShowcaseSection }>()
@@ -7,7 +8,7 @@ const titleId = useId()
 </script>
 
 <template>
-  <section class="myc-section" data-section="media-showcase" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section class="myc-section" data-section="media-showcase" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
     <div class="myc-section-inner">
       <SectionMedia :media="section.media" :sizes="section.variant === 'stacked' ? '100vw xl:1100px' : '100vw lg:50vw'" />
       <div class="myc-section-head">

@@ -65,6 +65,8 @@ export interface ContrastRule {
   surfaces: string[]
   /** The minimum WCAG contrast ratio. */
   min: number
+  /** The contract minor (`major.minor`) from which the rule applies: a theme that declares an older one is not held to it. */
+  since?: string
 }
 
 /** A piece of generated CSS, evaluated each time its template is rebuilt. */

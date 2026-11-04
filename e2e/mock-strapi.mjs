@@ -146,11 +146,15 @@ const figuresVueEs = [
     file: { id: 21, url: '/uploads/sumapaz.png', alternativeText: 'Laguna del Páramo de Sumapaz', width: 1372, height: 772 },
     caption: 'Una laguna del Páramo de Sumapaz: el agua está ahí, pero alguien tiene que ir a buscarla.',
     credit: creditSumapaz,
+    // Presentation options (#731): a wide image with the file's own shape cut to a square
+    width: 'wide',
+    ratio: '1:1',
   },
   {
     id: 5,
     __component: 'shared.slider',
     files: [],
+    ratio: '16:9',
     items: [
       { id: 1, file: { id: 22, url: '/uploads/frailejon.png', alternativeText: 'Frailejones de noche', width: 1372, height: 772 }, caption: 'Cada frailejón atrapa el agua de la niebla.', credit: creditOwnWork },
       { id: 2, file: { id: 23, url: '/uploads/laguna.png', alternativeText: 'Laguna al amanecer', width: 1372, height: 772 }, caption: 'La misma laguna al amanecer.', credit: creditSumapaz },
@@ -159,7 +163,24 @@ const figuresVueEs = [
 ]
 
 // A quote block, so verify-change and e2e cover QuoteBlock
-figuresVueEs.push({ id: 6, __component: 'shared.quote', body: 'El agua está ahí, pero alguien tiene que ir a buscarla.', title: 'Guía del páramo' })
+figuresVueEs.push({ id: 6, __component: 'shared.quote', body: 'El agua está ahí, pero alguien tiene que ir a buscarla.', title: 'Guía del páramo', width: 'wide', align: 'center' })
+
+// One block for each value of the ratio option that the blocks above do not use, and the plain twins (e2e/theme/block-options.spec.ts)
+const sumapaz = { id: 21, url: '/uploads/sumapaz.png', alternativeText: 'Laguna del Páramo de Sumapaz', width: 1372, height: 772 }
+const sliderItems = [{ id: 1, file: { id: 22, url: '/uploads/frailejon.png', alternativeText: 'Frailejones de noche', width: 1372, height: 772 }, caption: 'Frailejones.', credit: creditOwnWork }, { id: 2, file: { id: 23, url: '/uploads/laguna.png', alternativeText: 'Laguna al amanecer', width: 1372, height: 772 }, caption: 'Laguna.', credit: creditSumapaz }]
+figuresVueEs.push(
+  { id: 51, __component: 'shared.media', file: sumapaz, caption: 'Una imagen sin opciones.', credit: creditSumapaz },
+  { id: 52, __component: 'shared.media', file: sumapaz, caption: 'Una imagen en 4:3.', credit: creditSumapaz, ratio: '4:3' },
+  { id: 53, __component: 'shared.media', file: sumapaz, caption: 'Una imagen con la forma de su archivo.', credit: creditSumapaz, ratio: 'auto' },
+  { id: 54, __component: 'shared.slider', files: [], items: sliderItems },
+  { id: 55, __component: 'shared.slider', files: [], items: sliderItems, ratio: '4:3' },
+  { id: 56, __component: 'shared.slider', files: [], items: sliderItems, ratio: '1:1' },
+  { id: 57, __component: 'shared.slider', files: [], items: sliderItems, ratio: 'auto' },
+  { id: 58, __component: 'shared.quote', body: 'Una cita sin opciones.', title: 'Anónimo' },
+  // The defaults, stored as Strapi stores them on a new entry: they must look like the twins above (ids 51 and 58)
+  { id: 59, __component: 'shared.media', file: sumapaz, caption: 'Una imagen con los valores por defecto.', credit: creditSumapaz, width: 'prose', ratio: '16:9' },
+  { id: 60, __component: 'shared.quote', body: 'Una cita sin opciones.', title: 'Anónimo', width: 'prose', align: 'start' },
+)
 
 // Runnable SQL blocks, then Python (e2e/playground.spec.ts, the `playground` island budget): a query over hidden setup, a loop that never ends and a result over the 64 KB cap
 const playgroundsVueEs = [
@@ -171,6 +192,7 @@ const playgroundsVueEs = [
     code: 'SELECT name, kind FROM tools ORDER BY name;',
     expectedOutput: 'name   | kind\n-------+---------\nsqlite | database\nvite   | bundler',
     caption: 'Una consulta sobre una tabla creada en memoria.',
+    height: 'l',
   },
   {
     id: 8,
@@ -178,6 +200,7 @@ const playgroundsVueEs = [
     runtime: 'sql',
     code: 'WITH RECURSIVE forever(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM forever)\nSELECT count(*) FROM forever;',
     caption: 'Un bucle sin fin: se detiene a los 5 segundos.',
+    height: 'm',
   },
   {
     id: 9,
@@ -230,6 +253,9 @@ const playgroundsVueEs = [
     expectedOutput: 'name | kind\n-----+-----\n\ntotal\n-----\n2',
     caption: 'Una consulta sin filas y un conteo.',
   },
+  // The heights the playgrounds above do not use (e2e/theme/block-options.spec.ts)
+  { id: 41, __component: 'shared.playground', runtime: 'sql', code: 'SELECT 1;', caption: 'Una consulta pequeña.', height: 's' },
+  { id: 42, __component: 'shared.playground', runtime: 'sql', code: 'SELECT 2;', caption: 'Una consulta a pantalla completa.', height: 'full' },
 ]
 
 const referencesVueEs = [
@@ -846,6 +872,12 @@ const server = createServer(async (req, res) => {
       // fetch() from the site's origin needs CORS (a plain <img> does not)
       res.writeHead(200, { 'Content-Type': 'model/gltf-binary', 'Access-Control-Allow-Origin': '*' })
       res.end(url.pathname.endsWith('/textured.glb') ? texturedGlb() : triangleGlb())
+      return
+    }
+    if (url.pathname.endsWith('/sumapaz.png')) {
+      // A file that is not square (16:9), which the ratio option of an image has to cut (e2e/theme/block-options.spec.ts)
+      res.writeHead(200, { 'Content-Type': 'image/png' })
+      res.end(noisePng(160, 90))
       return
     }
     if (url.pathname.endsWith('/triangle-poster.png')) {

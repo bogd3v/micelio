@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { optionAttributes } from '~/helpers/blockOptions'
 import type { PageMedia, SceneSection } from '~/interfaces'
 
 import { isTrustedMedia } from '~/helpers/trustedMedia'
@@ -24,7 +25,7 @@ const modelUrl = computed<string>(() => isTrustedMedia(props.section.model.url, 
 </script>
 
 <template>
-  <section class="myc-section" data-section="scene" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section class="myc-section" data-section="scene" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
     <div class="myc-section-inner">
       <micelio-scene :data-model="modelUrl">
         <SectionMedia :media="poster" sizes="100vw xl:1100px" :eager="eager" />

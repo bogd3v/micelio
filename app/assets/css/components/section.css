@@ -1,7 +1,7 @@
 /* Page sections (#244): the shared parts. Items, hero, logos, pricing and faq have their own files. */
 .myc-section {
     position: relative;
-    padding-block: var(--space-section);
+    padding-block: var(--myc-section-pad, var(--space-section));
     color: var(--ink);
     overflow-x: clip;
 }
@@ -9,7 +9,7 @@
 /* space-inline is the side margin and centers the container on wide screens */
 .myc-section-inner {
     display: grid;
-    gap: var(--space-8);
+    gap: var(--myc-inner-gap, var(--space-8));
     min-width: 0;
     padding-inline: var(--space-inline);
 }
@@ -87,7 +87,7 @@
 .myc-section-items {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-    gap: var(--space-gutter);
+    gap: var(--myc-items-gap, var(--space-gutter));
     margin: 0;
     padding: 0;
     list-style: none;
@@ -114,7 +114,7 @@
 [data-section="testimonials"][data-variant="grid"] .myc-section-item,
 [data-section="pricing"][data-variant="cards"] .myc-section-item,
 [data-section="stats"][data-variant="cards"] .myc-section-item {
-    padding: var(--space-6);
+    padding: var(--myc-item-pad, var(--space-6));
     background: var(--surface-raised);
     border: 1px solid var(--line);
     border-radius: var(--radius-card);
