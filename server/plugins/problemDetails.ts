@@ -21,8 +21,10 @@ export default defineNitroPlugin((nitroApp) => {
     if (!event.path.startsWith('/api/') || event.handled) return original?.(error, event)
     nitroApp.captureError(error, { event, tags: ['request'] })
     const body = problemFromError(error)
-    // A 5xx is never stored, whatever the route set; otherwise Nitro's rule: keep the route's header, but never cache a 404
-    const noCache = body.status >= 500 ? 'no-store' : (body.status === 404 || !event.node.res.hasHeader('cache-control')) ? 'no-cache' : undefined
+    // A 5xx is never stored, whatever the route set; otherwise Nitro's rule: keep the route's header, but never cache a 404. A route that already said `no-store` keeps it: it is stricter than `no-cache`
+    const stored = event.node.res.getHeader('cache-control')
+    const refusesStorage = typeof stored === 'string' && /(?:^|,\s*)no-store\b/i.test(stored)
+    const noCache = body.status >= 500 ? 'no-store' : ((body.status === 404 && !refusesStorage) || !stored) ? 'no-cache' : undefined
     // A non-root `app.baseURL` is not handled here: the path check and Nitro's baseURL redirect assume the root
     setResponseHeaders(event, { ...PROBLEM_HEADERS, ...(noCache ? { 'cache-control': noCache } : {}) })
     setResponseStatus(event, body.status, body.statusMessage)

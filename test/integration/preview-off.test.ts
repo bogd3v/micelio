@@ -42,6 +42,18 @@ describe('a server with the preview off', () => {
     expect(mock.preview.calls).toEqual([])
   })
 
+  it('answers the card route with 404 and never calls the CMS, whatever the grant', async () => {
+    const cookie = '__Host-micelio_preview=preview-grant-1-yyyyyyyyyyyyyyyyyyyyyyyy'
+    for (const path of ['/api/preview/api%3A%3Apage.page/doc-page-draft/card', '/api/preview/api%3A%3Aarticle.article/doc-linux/card?locale=en']) {
+      const response = await fetch(path, { headers: { cookie, origin: 'https://cms.off.test' } })
+      expect(response.status, path).toBe(404)
+      expect(response.headers.get('cache-control'), path).toBe('private, no-store')
+      // With the preview off no origin is the admin's: no Access-Control header to anyone
+      for (const name of ['access-control-allow-origin', 'access-control-allow-credentials']) expect(response.headers.get(name), `${path} ${name}`).toBeNull()
+    }
+    expect(mock.preview.calls).toEqual([])
+  })
+
   it('answers the weight route with 404 and never calls the CMS, whatever the grant', async () => {
     const cookie = '__Host-micelio_preview=preview-grant-1-yyyyyyyyyyyyyyyyyyyyyyyy'
     for (const path of ['/api/preview/api%3A%3Apage.page/doc-page-draft/weight', '/api/preview/api%3A%3Aarticle.article/doc-linux/weight?mode=static']) {

@@ -22,6 +22,8 @@ const RATE_LIMITS = {
   previewWeightSystemPerIp: { limit: 120, windowMs: 60 * 1000 },
   // Counted only once the CMS confirmed a `system` grant: two modes of one publish and a few retries, so a `documentId` alone cannot use up the publish of its document
   previewWeightPerDocument: { limit: 8, windowMs: 60 * 1000 },
+  // A card is one raster of 1200 by 630 pixels, far cheaper than a report, and the admin asks for it when an editor generates one
+  previewCardPerIp: { limit: 30, windowMs: 60 * 1000 },
   webfingerPerIp: { limit: 30, windowMs: 60 * 1000 },
   // The CMS counts every forwarded lookup against the frontend's own address, with the site settings and feeds: half of its default `api` rule (600 a minute) stays for them
   webfingerGlobal: { limit: 300, windowMs: 60 * 1000 },

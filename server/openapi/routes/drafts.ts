@@ -75,4 +75,19 @@ export const DRAFT_ROUTES: RouteEntry[] = [
     response: { status: 200, schema: weightReportResponseSchema, description: 'The weight report of the draft in the requested mode.' },
     errors: ['invalidRequest', 'notFound', 'tooManyRequests', 'upstreamUnavailable'],
   },
+  {
+    file: 'server/api/preview/[uid]/[documentId]/card.get.ts',
+    method: 'get',
+    path: '/api/preview/{uid}/{documentId}/card',
+    summary: 'Get the social card of a draft',
+    description: 'A 1200×630 PNG of the draft\'s title and the site name, on the surface and in the accent of the theme the server renders, in the theme\'s display font, drawn on this server from files it holds: no request to another host. For a page without a hero image, which still needs one to be shared. The title is the draft\'s, cut at 140 characters, and the site name is read in the draft\'s language, which the grant names (no `locale` query); a theme that ships no font file cannot draw one. Authorised by the editor\'s preview grant of ADR 0019, in the `__Host-micelio_preview` cookie, which shows only the document it names, and only when `NUXT_PREVIEW_ADMIN_ORIGIN` is set; the system grant is not accepted. The admin page may read it from the browser with that grant: the route sends the CORS headers of the weight report to the configured admin origin, and to no other. Anyone else gets `notFound`, as does a content type that is not an article or a page and a draft with no title. Preview only: it is not the `og:image` of a published page. Kept 5 minutes per version of the draft. Answers `private, no-store`.',
+    tag: 'Drafts',
+    parameters: [
+      { name: 'uid', in: 'path', description: 'The content type of the document: `api::article.article` or `api::page.page`, URL-encoded as the client sees fit.', schema: { type: 'string', enum: ['api::article.article', 'api::page.page'] } },
+      { name: 'documentId', in: 'path', description: 'The document id the grant names.' },
+    ],
+    response: { status: 200, contentType: 'image/png', description: 'The card, a PNG of 1200 by 630 pixels.' },
+    errors: ['notFound', 'tooManyRequests', 'upstreamUnavailable', 'internalError'],
+    errorDetails: { upstreamUnavailable: 'The CMS failed while it checked the grant or read the draft.', internalError: 'The theme ships no font file, or the card could not be drawn.' },
+  },
 ]

@@ -147,10 +147,59 @@ Every `code` an `/api/*` error can carry, from `PROBLEM_CODES` in `server/utils/
 | `GET /api/drafts/:documentId` | The draft and, when there is one, its published version. |
 | `GET /api/drafts/pages/:documentId` | The draft of a page (`DraftPageResponse`: the `Page` as `/api/pages/:slug` shapes it, validated, with its `post-list` sections filled, and the `updatedAt` of the draft). |
 | `GET /api/preview/:uid/:documentId/weight` | The weight of the draft a preview grant names (`WeightReportResponse`), `uid` being `api::article.article` or `api::page.page`. `?locale=en\|es` (default `en`) and `?mode=dynamic\|static` (default `dynamic`) choose the rendering; see "Weight of a draft" below. |
+| `GET /api/preview/:uid/:documentId/card` | The social card of the draft a preview grant names: a PNG of 1200 by 630 pixels with its title and the site name, in the theme's display font and colours (`image/png`), in the language of the draft; see "Social card of a draft" below. |
 
 They use the editor's own JWT, never the API token, and answer `private, no-store`. The two single-document routes also accept a **preview grant** (the `__Host-micelio_preview` cookie, only when `NUXT_PREVIEW_ADMIN_ORIGIN` is set; ADR 0019): the draft is then read from `GET /api/micelio/preview/draft` of the CMS, with the API token and the grant in the header `X-Micelio-Preview-Grant`, and only the document the grant names is served. The answer carries `preview: { adminOrigin }`, an article has no `published` version (`null`), and the CMS's refusal (an ended grant, another document), a missing permission of the API token, an empty answer and an answer whose `meta.actor` is not `admin` (a `system` grant, or a plugin too old to say) are the same 404 as a missing session. A grant wins over a session when both come. A request the weight route makes in process (below) reads the draft the route kept in its `event.context` instead of asking the CMS; a request from the network cannot set it. The page draft is read by `fetchAsEditor` from `/api/pages/:documentId?status=draft` with the editor's JWT, so the Editor role needs `findOne` on Page in the CMS. The draft article goes through the article allow-list (`publicArticle`); the rows of the list are filtered to the known states and rebuilt by `publicDraftRow` with the nine keys of `DraftListItem`.
 
 **Weight of a draft.** `GET /api/preview/:uid/:documentId/weight` answers `{ data: { mode, htmlKb, cssKb, jsKb, fontKb, imagesKb, totalKb, onDemandKb, blocks: [{ id, kb, onDemandKb }] } }`: what the draft weighs, measured on its rendering and never estimated; `jsKb` and `totalKb` take their scripts from the public route of the document where it is published (how, and what differs from `npm run perf`: [`performance.md`](performance.md), "Weight of a draft"). It needs a preview grant and nothing else, of either of two kinds: the editor's, in the `__Host-micelio_preview` cookie (only when `NUXT_PREVIEW_ADMIN_ORIGIN` is set), or the **system grant** the CMS mints for itself to measure a draft at publish, in the `X-Micelio-Preview-Grant` header (ADR 0019, amendment of 2026-10-25; the header takes only that kind: an editor's grant sent there is the same `404`), which works whatever `NUXT_PREVIEW_ADMIN_ORIGIN` says because it frames nothing. An editor session, no grant, a grant that names another document, a system grant already used, minted for another version of the draft or ended, a made-up grant, a header longer than 256 characters, a content type that is not an article or a page and a cookie on a site with `NUXT_PREVIEW_ADMIN_ORIGIN` unset are all the same `404`, and none of them reaches the CMS beyond the grant check. The route asks the CMS for the draft **once**, with the grant (which gives the version, `updatedAt`, the blocks and, in `meta.actor`, whether the grant is `admin` or `system`; an answer without it is the `404`), and keeps the copy in its own `event.context` for the length of the report. It then renders the draft route in process, once whole and once per block: each render is a request made with `event.$fetch`, whose page (through the `editor` route middleware) and draft API route read that copy, so no cookie, header or grant travels and one single-use grant covers the whole report. Only the key of that copy is carried, by `server/middleware/00-preview-draft.ts`, from the in-process parent; no header, cookie, query or body of a request from the network can set it, and the draft routes still refuse a system grant from outside. The public route of the document is rendered too, when the document is published there, to take its scripts. That request is made as an anonymous visitor would make it: no cookie, grant or session, and none of the caller's headers (`x-forwarded-for` included). The draft route is rendered once whole and once for each block with `?without=<position>` on the draft route, which only a grant may use to leave a block out. `blocks` has one entry per block of the zone (`sections` of a page, `blocks` of an article), in order, with its `id` the component name without the namespace. A report is kept 5 minutes per document, locale, mode and `updatedAt`, so saving the draft measures it again; requests for a report in progress share it. Errors are the problem details of the other routes: `400` for an unsupported `locale`, `404` as above, `429` (an editor's grant: 12 a minute per visitor, `previewWeightPerIp`; each report is a render per block. A request with the system header is first limited per address, 120 a minute, `previewWeightSystemPerIp`, and once the CMS confirmed a system grant, 8 a minute per document, `previewWeightPerDocument`, so a refused grant never uses up the publish of a document; both answer `Retry-After`) and `502` when a render or a file it declares fails. Headers: `private, no-store`, `X-Robots-Tag: noindex, nofollow`, `Referrer-Policy: no-referrer`, as `/_preview`. The route alone also sends the CORS headers the admin page needs to read the report with the editor's grant in a credentialed `fetch`: `Access-Control-Allow-Origin: <NUXT_PREVIEW_ADMIN_ORIGIN>`, `Access-Control-Allow-Credentials: true` and `Vary: Origin`, on any answer (the `404` included) to a request whose `Origin` is exactly that origin, and never a wildcard or another origin; with `NUXT_PREVIEW_ADMIN_ORIGIN` unset none. They decide who may read the answer and change none of the checks above, and no `OPTIONS` is answered (a `GET` with the cookie is not preflighted).
+
+**Social card of a draft.** `GET /api/preview/:uid/:documentId/card` answers a PNG of 1200 by 630
+pixels (`image/png`) for a page without a hero image, which still needs one to be shared
+(bogd3v/micelio#734).
+It shows the draft's `title` (cut at 140 characters, at the largest size that fits above the site
+name), the site name at the foot and a bar on the left edge, on the `surface` of the theme the
+server renders, in its `ink` and `accent` and in its display font.
+The mode is the site's default mode, or the theme's first one, and the accent is the site's
+override when it has one.
+The site name is read in the language of the draft, which the grant names (`locale` of the draft the
+CMS answers, `en` when it names none we serve), so it agrees with the title; the route reads no
+`locale` query.
+The font is the file the theme ships for its display family, or its first declared font when the
+theme names no display family; the site's own curated display font (`displayFont` of the site
+settings) is not used, since the card is the theme's.
+Each font file is registered with the renderer under a family of its own, derived from its bytes,
+so the card is drawn in that file whatever the manifest declares, and a font of another theme that
+the process drew before, even one with the same family name, is never taken for it.
+The server reads the file from the
+verified bytes of the theme it already holds and unpacks in memory: no font, image or other request
+leaves the process, and the draft's own images are not used.
+A variable font is drawn at its default weight.
+A theme that ships no font file cannot draw a card: the route answers `500` (`internalError`) and
+logs `render.card`.
+Preview only: the card is not the `og:image` of a published page.
+
+It takes the editor's preview grant, in the `__Host-micelio_preview` cookie that `/_preview` sets,
+and nothing else: the system grant of ADR 0019 (amendment of 2026-10-25) is accepted by the weight
+route only, so the header `X-Micelio-Preview-Grant` is ignored here.
+No grant, a made-up, ended or system grant, a grant that names another document, a content type
+that is not an article or a page, a draft with no title (nothing but blanks, control or
+invisible format characters counts as none) and a site with `NUXT_PREVIEW_ADMIN_ORIGIN` unset are
+all the same `404`.
+The route asks the CMS for the draft once, with the grant, and for no relation of it: the title and
+the version are fields of the document.
+It answers `429` after 30 requests a minute per visitor (`previewCardPerIp`), with `Retry-After`.
+A card is kept 5 minutes per document version (`updatedAt`), locale and look (the words, the
+colours and the font file), so changing the site name, the accent or the theme draws it again.
+Requests for a card in progress share it, and a card that failed to draw is not kept.
+Headers: `private, no-store`, `X-Robots-Tag: noindex, nofollow` and `Referrer-Policy: no-referrer`,
+on the `404` too: the problem-details handler keeps a `no-store` a route set, where it would send
+`no-cache` for any other `404`.
+The admin page reads the card with the editor's grant in a credentialed `fetch` and stores it as
+media, so the route sends the CORS headers of the weight route (bogd3v/micelio#766), as it does:
+`Access-Control-Allow-Origin: <NUXT_PREVIEW_ADMIN_ORIGIN>`, `Access-Control-Allow-Credentials: true`
+and `Vary: Origin`, on any answer (the `404` included) to a request whose `Origin` is exactly that
+origin, never a wildcard or another origin, and none with `NUXT_PREVIEW_ADMIN_ORIGIN` unset.
+They decide who may read the answer and change none of the checks above; no `OPTIONS` is answered.
 
 ## Routes outside `/api`
 
