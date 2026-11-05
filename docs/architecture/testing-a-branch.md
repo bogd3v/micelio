@@ -19,10 +19,14 @@ A branch that changes none of these runs `npm run check` only.
 On a clean copy of the worktree, `$COPY`, in `node:22.23-slim`. The `Dockerfile` image cannot run it: `.dockerignore` drops `AGENTS.md` and `docs/`.
 
 ```bash
-docker run --rm -v "$COPY":/app -w /app node:22.23-slim sh -c 'npm ci && npm run check'
+docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/h -v "$COPY":/app:z -w /app \
+  node:22.23-slim sh -c 'mkdir -p $HOME && npm ci && npm run check'
 ```
 
-The container runs as root, so the run leaves root-owned `coverage/`, `.micelio/` and report folders in `$COPY` that make the next `rsync --delete` fail. Add `--user "$(id -u):$(id -g)" -e HOME=/tmp/h` (and `mkdir -p $HOME` in the `sh -c`) to run as yourself, or remove those folders with a root container before you sync again.
+Run as yourself, so the run leaves no root-owned `coverage/`, `.micelio/` or report folder in
+`$COPY` (they make the next `rsync --delete` fail). `:z` relabels the folder it mounts so that
+SELinux lets the container read it: `$COPY` is a folder of its own, never a parent such as
+`~/.cache` or `~`, and never `:Z`, which makes the folder private to one container.
 
 ## Run the suites that drive a browser
 
