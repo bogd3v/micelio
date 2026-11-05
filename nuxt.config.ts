@@ -70,7 +70,7 @@ const BLOG_FILTER_ROUTES: { name: string, path: string }[] = [
 
 export default defineNuxtConfig({
   // The theme goes first: @nuxt/image reads image.dirs when it is set up (modules/theme/assets.ts)
-  modules: ['./modules/theme', './modules/site-mode', './modules/islands', './modules/static-routes', './modules/static-search', '@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
+  modules: ['./modules/theme', './modules/site-mode', './modules/stable-keys', './modules/islands', './modules/static-routes', './modules/static-search', '@nuxt/image', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
   ssr: true,
   devtools: { enabled: false },
   app: {
