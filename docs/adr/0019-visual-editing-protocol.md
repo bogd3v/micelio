@@ -273,3 +273,54 @@ and changes no rule of sections 1 to 3 or 5 except the one named under "Section 
   The message schemas are not in `contract/preview.ts` of the plugin yet;
   the frontend checks them by hand (`readBlockMessage`) until they are,
   and `app/preview/preview.schema.json` is unchanged.
+
+**Amendment (2026-11-04, [bogd3v/micelio#837](https://github.com/bogd3v/micelio/issues/837)):
+a message of its own for the render mode of a block.**
+The preview's island label toggles one block between its dynamic render and its static
+alternative ([ADR-0018](0018-blocks-as-a-contract.md)),
+as bogd3v/micelio-plugin-core#56 and bogd3v/micelio#735 ask.
+Both issues said the toggle travels on `micelio:patch`.
+That message carries `address`, `content` and `items`,
+the 2026-11-02 amendment says a patch is not rendering,
+and the frame refuses a patch with a field the contract does not list.
+A mode is not text of the form, so the maintainer chose a message of its own on 2026-11-04.
+`micelio:patch` keeps its text and gains no field.
+This amendment adds one message and changes no rule of sections 1 to 3 or 5.
+
+| `type` | From → to | `payload` |
+| --- | --- | --- |
+| `micelio:renderMode` | admin → frame | `address` (a block, as in section 4) and `mode`: `dynamic` or `static` |
+
+- **What the frame does.** It shows the block at `address` in `mode`,
+  `dynamic` is the block as the page renders it, `static` is its static alternative
+  (ADR-0018, section 1). How each kind of block does it is bogd3v/micelio#735.
+  The frame answers nothing.
+- **What the frame drops.** The same checks as for every message of the admin:
+  the admin's origin and `source`, the envelope,
+  a `version` in the address that is not the current one,
+  and a payload whose `mode` is not `dynamic` or `static`.
+  An address that names no block drops it.
+  A field of the payload that is not listed is ignored, as in the other messages,
+  so a later optional field is a MINOR (section 4)
+  and an older frontend still reads the message.
+  An unknown `type`, and another envelope version, are ignored as section 4 says.
+- **The mode is not saved.** It is state of the frame, not of the draft: the admin never writes it
+  through the content API, and the frame never saves.
+  A reload of the frame, which `load-draft` causes too,
+  shows every block in the mode it has on load,
+  and the admin sends `micelio:renderMode` again for each block it wants in the other mode,
+  after the next `ready`.
+  The page's HTML does not change: the draft route sends the markup of a published page.
+- **The envelope version does not move.** `PREVIEW_PROTOCOL_VERSION` in `contract/preview.ts`
+  of `micelio-plugin-core` stays `1`.
+  Section 4 says a breaking change to a message raises `v`
+  and that a new message type is a MINOR of the plugin core:
+  this adds a `type` and changes no existing message,
+  so a frontend that does not know it ignores it and `ready` needs no new `v`.
+  The record's own rule for a newer admin with an older frontend holds:
+  the toggle does nothing there, and the admin cannot tell it apart.
+- **Not done here.** The message in `contract/preview.ts`
+  (bogd3v/micelio-plugin-core#56), the toggle in the admin
+  and the frame's handling (bogd3v/micelio#735).
+  Until `contract/preview.ts` lists the message, the frontend checks it by hand,
+  as it does the other messages of phase 2 (2026-11-02 amendment).
