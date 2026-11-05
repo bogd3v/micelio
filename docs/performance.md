@@ -366,8 +366,35 @@ Heavy islands (ADR 0006, section 6; Mermaid first) are built by `modules/islands
 | 2026-11-03 | Static article `htmlKb` limit of `bogota` 14.2 → 14.4 (#731, block presentation options): the CSS of the article blocks is inlined in the static article's HTML | Local `npm run perf -- --check --mode static --theme bogota`, article `htmlKb` 14.1 on `main` (`4b53cbc`, and `439de62` twice), 14.3 with #731 (six runs of an earlier state of its tree, four of the state of 2026-11-03). The brotli body of the measured article (`linux-server-hardening-guide`) and 2000 random theme digests: on `main` plus this change 14,486 B, 14,422 to 14,497 B (a spread of 75 B); on #731's tree at the state of 2026-11-03 14,673 B, 14,659 to 14,677 B (18 B; 14,677 B and 14,663 to 14,679 B at an earlier state). `htmlKb` rounds to a tenth, so 14.3 passes up to 14,694 B, only 17 B above the top of #731's sample, while 14.4 passes up to 14,796 B, 119 B above it, the 0.1 KB of margin over the measured 14.3 that the other limits keep. Only `themes.bogota` changes; every theme's 14.1 stays (starter measures 5.8). No other limit moves |
 | 2026-11-03 | Presentation options of the blocks (#731, contract 2.1): `section-options.css` joins the sections' stylesheet (loaded only on a page with sections) and `block-options.css` the renderer of the article and About blocks, which an article inlines in its HTML. Local `npm run perf` on production builds against the mock, bogota, in an image of `node:22.23-slim` plus the Playwright browsers, `main` at `0b310b4` and the branch on it: static: `main` twice and the branch four times; dynamic: `main` once and the branch five times, with the same numbers | Sections' CSS, `lightningcss`-minified, the files of the renderer's style in import order: 11,570 B (2,332 gzip, 2,034 brotli) → 13,998 B (2,759 gzip, 2,404 brotli). `block-options.css` alone: 766 B (346 gzip, 279 brotli). Dynamic `jsKb` home 150.3 → 150.2, blog 142.9 → 142.9, article 163.3 → 163.4 (its limit), about 145.5 → 145.6, privacy 131.5 → 131.5; `cssKb` 22.4 on every page, unchanged; `htmlKb` article 81.9 → 82.8. Static `htmlKb` article 14.1 → 14.3 (at that state of the branch, the brotli body of the measured article, `linux-server-hardening-guide`, was 14,670 B, and 2000 random theme digests gave 14,658 to 14,675 B; its limit of 14.4 is the row above), about 15.7 → 16.0, home 14.4 → 14.4; the other pages are unchanged. No limit changes here |
 | 2026-11-03 | Dynamic article `htmlKb` limit 83.1 → 84.1, for every theme (#731, block presentation options): the dynamic article page inlines `block-options.css` (the presentation options of the blocks), and the run with the heaviest display font, which has the largest article, was at its limit | Local, Bogotá, dynamic mode, `node scripts/perf/measure.mjs --serve --check --mode dynamic --display-font heaviest`, over clean copies in the Playwright image (`FROM node:22.23-slim`). `main` (`34cbbb3`): article `htmlKb` 83.1 (85,074 B, 2 perf runs). The tree of #731 (`efbeae1`): 84.0 (85,999 B, 7 perf runs and 2 builds), 925 B more, and exit 1 with `htmlKb 84 exceeds the budget of 83.1`. 100 requests per server start (2 starts per build, 2 builds) gave one size every time, so there is no range to size from. With the default font the article measures 82.8 (84,819 B) on the tree of #731 and passes at 83.1, which is why only the heaviest-font job failed. The 925 B are the one `<style>` element that the article now has in its HTML, the 1,632 B `block-options.css` as the build minifies it and wraps it in its layer: the element measures 925 B in the served page, tag included. 84.0 plus 0.1 KB, the margin of the 2026-10-23 row, gives 84.1, which passes up to 86,169 B, 170 B above the page; the other dynamic `htmlKb` limits keep 1.5 to 7.7 KB (home 7.7, blog 3.0, about 2.0, privacy 1.5) and this one kept 0 on `main`. Only this number changes: the other pages of the heaviest-font run stay inside their limits (home 106.2 of 113.9, blog 77.4 of 80.4, about 93.3 of 95.3, privacy 69.6 of 71.1) and so do the JS limits | HTML +0.9 KB on the dynamic article (the 925 B `<style>` of `block-options.css`), with either font; with the default font the run keeps 0.3 KB of room |
+| 2026-11-05 | Data-call keys independent of the build path (#314) | See "One commit, two paths" |
 
 The HTML is rendered per request, so Nitro does not compress it (108.5 KB on the home page here). In production Traefik compresses it, together with Strapi's JSON (bogd3v/bogdev-infra#10): the home page HTML goes from 141.8 KB to 27.7 KB with brotli. This measurement serves the Nitro build directly, so it still reports the uncompressed HTML.
+
+### One commit, two paths (#314)
+
+The same core commit `8b1a73f` (v0.6.0) measured the dynamic article at 163.4 KB in the release's
+compatibility check and at 163.5 KB in the admission runs of `micelio-themes` (PR #5), against
+a limit of 163.4. The two builds differ in where the repository sits: `/__w/micelio/micelio`
+against `/__w/micelio-themes/micelio-themes`. The theme, its folder and the other inputs
+are the same, and a rebuild at one path is byte-identical.
+
+Nuxt appends an auto key to each call of a keyed composable (`useFetch`, `useAsyncData`,
+`useState`...) that has none, and derives it from a hash of the module's absolute path
+(`'$<10 characters>'`). Another path gives
+other characters, which brotli cannot shorten, and the chunks that hold them get other
+content hashes, so their names change in every chunk that imports them. Built in Docker at the
+two paths (`node:22.23-slim`, Bogotá from `micelio-themes` at `a0dcecc`), the scripts the article
+declares are 167 303 B at the first path and 167 380 B at the second, 77 B apart. `jsKb` is
+the bytes over 1024 rounded to 0.1, so the edge between 163.4 and 163.5 is 167 372 B: the first
+path was 69 B under it and the second 8 B over. Four chunks carry the difference (the article page
+and the chunks that import it); the other 75 are the same bytes under other names.
+
+`modules/stable-keys.ts` derives each key again from the module's path relative to the project root
+and the call's position, in a `post` transform that runs after Nuxt's. The same two builds then
+send 167 252 B and 167 267 B, 15 B apart: what is left is `@nuxtjs/i18n`, which hashes the absolute
+path of the locale files into `locale_en_46json_<hash>` and `locale_es_46json_<hash>` (two
+8-digit hex strings in the same chunk). It is not changed here. The limit of 163.4 stays: the
+article is at 163.3, 105 B from the edge at either path.
 
 ## Targets
 

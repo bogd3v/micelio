@@ -31,7 +31,7 @@ Not secrets, and so not in this table: the CSP hashes, the unsubscribe and confi
 | Use | Algorithm | Where |
 | --- | --- | --- |
 | Content Security Policy hashes of inline scripts | SHA-256 (base64) | `server/plugins/contentSecurityPolicy.ts`, `modules/static-routes.ts` |
-| File names and cache keys of build output (islands, display fonts, Pyodide assets, media) | SHA-256, truncated where it is only a name | `modules/islands.ts`, `modules/theme/display-fonts.ts`, `modules/lib/pyodide-assets.ts`, `modules/static-routes.ts` |
+| File names and cache keys of build output (islands, display fonts, Pyodide assets, media) | SHA-256, truncated where it is only a name | `modules/islands.ts`, `modules/theme/display-fonts.ts`, `modules/lib/pyodide-assets.ts`, `modules/static-routes.ts`, `modules/stable-keys.ts` |
 | Visitor hash in logs | HMAC-SHA-256 with a per-process random key, truncated to 12 hex characters | `server/lib/log.ts` |
 | Newsletter confirmation and unsubscribe tokens, SSR nonce, log key | 32 bytes from `randomBytes` (CSPRNG) | `server/utils/subscribers.ts`, `server/utils/rateLimit.ts`, `server/utils/log.ts` |
 | Request ids, guest comment ids | UUID v4 (`randomUUID`), identifiers only, never a credential | `server/utils/log.ts`, `server/api/comments/index.post.ts` |
