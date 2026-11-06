@@ -305,7 +305,8 @@
 }
 
 /* Scene: the poster, and over it the canvas of the 3D island (#246). The island draws in the element's shadow root */
-micelio-scene {
+micelio-scene,
+[data-scene-static] {
     display: block;
     position: relative;
     min-width: 0;
@@ -326,15 +327,15 @@ micelio-scene {
     min-height: clamp(22rem, 65vh, 40rem);
 }
 
-[data-section="scene"][data-variant="background"] micelio-scene {
+[data-section="scene"][data-variant="background"] :is(micelio-scene, [data-scene-static]) {
     position: absolute;
     inset: 0;
     z-index: -1;
     border-radius: 0;
 }
 
-[data-section="scene"][data-variant="background"] micelio-scene .myc-section-media,
-[data-section="scene"][data-variant="background"] micelio-scene :is(picture, img) {
+[data-section="scene"][data-variant="background"] :is(micelio-scene, [data-scene-static]) .myc-section-media,
+[data-section="scene"][data-variant="background"] :is(micelio-scene, [data-scene-static]) :is(picture, img) {
     width: 100%;
     height: 100%;
     border-radius: 0;

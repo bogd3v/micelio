@@ -29,6 +29,8 @@ const props = defineProps<{
    * They come ready-made so this component, which every public page loads, imports nothing for them.
    */
   markers?: Array<Record<string, string>>
+  /** The positions of the blocks to show as their static alternative, which the draft route sets when the admin asks (ADR 0019, amendment of 2026-11-04); a scene is the only section with an island */
+  staticBlocks?: ReadonlySet<number>
 }>()
 
 const componentMap: Readonly<Record<PageSection['__component'], Component>> = {
@@ -66,7 +68,8 @@ const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLand
 // The props of the first section and, on the draft route, the markers of every root; a public page binds nothing more than before
 function bindingsOf(section: PageSection, index: number): Record<string, unknown> {
   const own = index === 0 && section.__component === 'section.hero' && heroLeads.value ? { headingLevel: 1 } : index === 0 && section.__component === 'section.scene' ? { eager: true } : {}
-  return props.markers ? { ...own, ...props.markers[index] } : own
+  const mode = section.__component === 'section.scene' && props.staticBlocks?.has(index) ? { renderStatic: true } : {}
+  return props.markers ? { ...own, ...mode, ...props.markers[index] } : { ...own, ...mode }
 }
 </script>
 
@@ -80,7 +83,7 @@ function bindingsOf(section: PageSection, index: number): Record<string, unknown
     :is="componentMap[section.__component]"
     v-for="(section, index) in knownSections"
     :id="anchorIds.get(index)"
-    :key="`${section.__component}-${index}`"
+    :key="`${section.__component}-${index}${staticBlocks?.has(index) ? '-static' : ''}`"
     :section="section"
     v-bind="bindingsOf(section, index)"
   />

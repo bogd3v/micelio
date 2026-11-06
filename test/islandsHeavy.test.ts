@@ -59,3 +59,40 @@ describe('heavy island registry', () => {
     expect(validateHeavyIslands([{ ...valid, csp: { workerSrc: 'blob:' as never } }])[0]).toContain('must be an array')
   })
 })
+
+// The island declaration of the blocks of the catalogue, copied from `contract/blocks.ts` and `contract/islands.ts` of micelio-plugin-core at
+// 7f9536d (the package is not published yet, as test/preview.test.ts does with the preview schema). `loadKb` is the weight of the default runtime only.
+const ON_CLICK_ABOVE_KB = 1024
+const CATALOGUE_ISLANDS: Record<string, { kind: '3d' | 'runtime' | 'media' | 'diagram' | 'data', loadKb: number }> = {
+  scene: { kind: '3d', loadKb: 151.3 },
+  playground: { kind: 'runtime', loadKb: 406.7 },
+}
+// Not a catalogue block: the diagram lives inside the `prose` block, so the catalogue has no `loadKb` for it (docs/architecture/islands.md)
+const NOT_A_BLOCK: Record<string, HeavyIsland['trigger']> = { mermaid: 'visible' }
+
+/** The load rule of docs/architecture/islands.md: a runtime runs when the visitor asks, and a heavy island loads on a click. */
+function expectedTrigger(island: { kind: string, loadKb: number }): HeavyIsland['trigger'] {
+  return island.kind === 'runtime' || island.loadKb > ON_CLICK_ABOVE_KB ? 'interaction' : 'visible'
+}
+
+describe('heavy island registry and the catalogue', () => {
+  it('a runtime island or one above 1 MB in the catalogue loads on interaction, any other in view', () => {
+    for (const [id, declared] of Object.entries(CATALOGUE_ISLANDS)) {
+      expect(HEAVY_ISLANDS.find(island => island.id === id)?.trigger, id).toBe(expectedTrigger(declared))
+    }
+    // The rule itself, on the four cases it distinguishes
+    expect(expectedTrigger({ kind: 'runtime', loadKb: 406.7 })).toBe('interaction')
+    expect(expectedTrigger({ kind: '3d', loadKb: 1025 })).toBe('interaction')
+    expect(expectedTrigger({ kind: '3d', loadKb: 1024 })).toBe('visible')
+    expect(expectedTrigger({ kind: '3d', loadKb: 151.3 })).toBe('visible')
+    // An interaction island has the control that loads it
+    for (const island of HEAVY_ISLANDS.filter(item => item.id in CATALOGUE_ISLANDS && item.trigger === 'interaction')) expect(island.control, island.id).toBeTruthy()
+  })
+
+  it('every registry island is a catalogue block except mermaid, which lives inside prose', () => {
+    const ids = HEAVY_ISLANDS.map(island => island.id)
+    expect(ids.filter(id => !(id in CATALOGUE_ISLANDS) && !(id in NOT_A_BLOCK))).toEqual([])
+    expect(Object.keys(CATALOGUE_ISLANDS).filter(id => !ids.includes(id))).toEqual([])
+    for (const [id, trigger] of Object.entries(NOT_A_BLOCK)) expect(HEAVY_ISLANDS.find(island => island.id === id)?.trigger, id).toBe(trigger)
+  })
+})

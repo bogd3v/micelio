@@ -24,6 +24,20 @@ test('nothing of Python loads until Run is pressed, then it runs the code and sh
   expect(loaded.some(path => /sqlite3|\/sql-/.test(path))).toBe(false)
 })
 
+// The load rule (docs/architecture/islands.md): a runtime island loads when the visitor asks, whatever its declared weight, because Pyodide is about 6 MB
+test('Pyodide loads only after the click', async ({ page }) => {
+  const loaded = trackRuntimeRequests(page)
+  await openPlayground(page)
+  await playground(page, PYTHON).scrollIntoViewIfNeeded()
+  await page.waitForLoadState('networkidle')
+  // In view, and not a byte of Python
+  await expect(runButton(page, PYTHON)).toBeVisible()
+  expect(loaded.filter(isPyodide)).toEqual([])
+  await runButton(page, PYTHON).click()
+  await expect(resultOf(page, PYTHON)).toHaveAttribute('data-state', 'done', { timeout: 90_000 })
+  expect(loaded.filter(isPyodide).map(path => path.split('/').pop())).toContain('pyodide.asm.wasm')
+})
+
 test('the runtime downloads once for every Python playground, and SQL keeps its own', async ({ page }) => {
   const loaded = trackRuntimeRequests(page)
   await openPlayground(page)

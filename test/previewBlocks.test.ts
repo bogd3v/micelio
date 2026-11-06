@@ -39,6 +39,21 @@ describe('readBlockMessage', () => {
     }
   })
 
+  it('reads a renderMode of a block, dynamic or static', () => {
+    for (const mode of ['dynamic', 'static']) {
+      expect(readBlockMessage(envelope('micelio:renderMode', { address: grid, mode }), VERSION)).toEqual({ kind: 'renderMode', request: { address: grid, mode } })
+    }
+    // A field that is not listed is ignored, so a later optional field is a MINOR (ADR 0019, section 4)
+    expect(readBlockMessage(envelope('micelio:renderMode', { address: grid, mode: 'static', later: 1 }), VERSION)).toEqual({ kind: 'renderMode', request: { address: grid, mode: 'static' } })
+  })
+
+  it('calls a renderMode with another mode, no address or a stale one malformed', () => {
+    const other = { ...grid, version: '2026-10-25T00:00:00.000Z' }
+    for (const payload of [{ address: grid }, { address: grid, mode: 'Static' }, { address: grid, mode: 1 }, { mode: 'static' }, { address: null, mode: 'static' }, { address: other, mode: 'static' }]) {
+      expect(readBlockMessage(envelope('micelio:renderMode', payload), VERSION), JSON.stringify(payload)).toEqual({ kind: 'malformed' })
+    }
+  })
+
   it('ignores what is well formed but not for it: another envelope version, other types', () => {
     for (const data of [envelope('micelio:select', { address: grid }, 2), envelope('load-draft', {}), envelope('block-select', {}), envelope('toString', {}), envelope('micelio:unknown', {}), { type: 'micelio:unknown' }]) {
       expect(readBlockMessage(data, VERSION), JSON.stringify(data)).toBeUndefined()

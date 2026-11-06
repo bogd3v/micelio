@@ -51,6 +51,16 @@ test('nothing of Mermaid loads until a block is near, and then the diagrams are 
   await expect(page.locator('.myc-mermaid-diagram').nth(1)).toHaveAttribute('aria-label', 'Diagram')
 })
 
+// The load rule (docs/architecture/islands.md): Mermaid is not a catalogue block (it lives inside prose), so it has no declared weight and loads in view
+test('Mermaid loads in view, with no click', async ({ page }) => {
+  const paths = trackRequests(page)
+  await page.goto(ARTICLE, { waitUntil: 'networkidle' })
+  expect(paths.filter(path => /^\/_islands\/mermaid-[\w-]+\.js$/.test(path))).toEqual([])
+  // Scrolling is all the page gets: the diagrams are drawn without a press
+  await drawDiagrams(page)
+  expect(paths.filter(path => /^\/_islands\/mermaid-[\w-]+\.js$/.test(path))).toHaveLength(1)
+})
+
 test('a diagram that cannot be parsed keeps its source', async ({ page }) => {
   await page.goto(ARTICLE, { waitUntil: 'networkidle' })
   await drawDiagrams(page)

@@ -203,13 +203,15 @@ A request body is read within 64 KB (`readLimitedBody` in `server/utils/validati
   `test/integration/api.test.ts` pins both cases, and public pages are unchanged.
   The frame posts only to that origin and reads messages only from it and from its parent window:
   `load-draft`, checked against the plugin's JSON Schema (`app/preview/preview.schema.json`),
-  and the four messages of the builder's phase 2 (`micelio:select`, `micelio:hover`,
-  `micelio:insertGap`, `micelio:patch`),
+  and the five messages of the builder's phase 2 (`micelio:select`, `micelio:hover`,
+  `micelio:insertGap`, `micelio:patch`, `micelio:renderMode`),
   checked by `readBlockMessage` (`app/helpers/previewBlocks.ts`) for shape,
   size and the `updatedAt` of the draft.
   A patch writes only the text fields of `PREVIEW_PATCH_TEXT_FIELDS`, with a string or `null`, never `html`, an id,
   the component name or an object, and the components show it through Vue's escaping:
   nothing is parsed as Markdown or HTML in the browser.
+  `micelio:renderMode` carries an address and `dynamic` or `static`, and only chooses
+  which markup the components render: it holds no text and the frame saves nothing.
   A draft page marks its blocks with `data-myc-*` attributes in the browser,
   only on a page with a grant shown in the admin's frame, never in a response;
   public pages carry none (`e2e/preview/preview.spec.ts`).

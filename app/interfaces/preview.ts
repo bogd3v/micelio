@@ -127,6 +127,15 @@ export interface InsertGap {
   height: number
 }
 
+/** How the frame shows a block with an island: `dynamic` as the page renders it, `static` as its static alternative (ADR 0019, amendment of 2026-11-04). */
+export type RenderMode = 'dynamic' | 'static'
+
+/** Admin → frame: show one block in a render mode. It is state of the frame, never saved. */
+export interface RenderModeRequest {
+  address: BlockAddress
+  mode: RenderMode
+}
+
 /** Admin → frame: outline this block, or an item of it, or nothing (`address: null`). */
 export interface SelectRequest {
   address: BlockAddress | null
