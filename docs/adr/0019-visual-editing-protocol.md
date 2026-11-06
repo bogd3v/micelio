@@ -324,3 +324,87 @@ This amendment adds one message and changes no rule of sections 1 to 3 or 5.
   and the frame's handling (bogd3v/micelio#735).
   Until `contract/preview.ts` lists the message, the frontend checks it by hand,
   as it does the other messages of phase 2 (2026-11-02 amendment).
+
+**Amendment (2026-11-06, [bogd3v/micelio#851](https://github.com/bogd3v/micelio/issues/851)):
+the frame runs a Playground block and sends the output back.**
+A Playground block (a code island: Python, SQL or JavaScript) needs an expected output
+that the editor fills before review (bogd3v/micelio-plugin-core#56, #62).
+The admin has no runtime for these languages (Pyodide and sql.js weigh megabytes each),
+and running an editor's code in the admin page would need a Content Security Policy
+that Strapi's admin does not have.
+The maintainer decided on 2026-11-05 that the preview frame, which already has the runtimes,
+runs the code and answers with the output.
+This amendment adds two messages and changes no rule of sections 1 to 3 or 5.
+The records above are not rewritten.
+
+| `type` | From → to | `payload` |
+| --- | --- | --- |
+| `micelio:run` | admin → frame | `requestId` (a string) and `address` (a block, as in section 4) |
+| `micelio:runResult` | frame → admin | `requestId`, `address`, `ok`, and the answer below |
+
+- **The answer.** `ok: true` carries `output` and `truncated`; `ok: false` carries `reason`
+  (and `output` for `codeError`, below).
+- **What the admin sends.** The address of one block and an id, never the code, the language
+  or a setup. The frame never runs code that arrives in a message.
+  `requestId` is unique among the requests the admin has open for that frame,
+  and the answer carries the same `requestId` and `address`, so the admin matches an answer
+  to its request and drops one it does not know (a late or repeated answer).
+  The admin never runs the code and never loads a runtime.
+- **What the frame may run.** Only the code (and the hidden setup) of the `playground` block
+  at `address`, as the draft it shows has it: the saved draft the frame loaded
+  (section 2), found by its zone, position and catalogue id in the draft's data, since articles
+  carry no markers (amendment of 2026-11-02). The editor's unsaved text is not run:
+  the admin saves first, and `version` in the address refuses a run that crosses a save.
+  The frame runs it in the sandbox of the reader's Run button, with nothing added:
+  the dedicated Worker under `workerPolicy()` ([ADR-0004](0004-hash-based-csp.md), amendment of
+  2026-10-07), with no network, no DOM and no cookies. Runs of one runtime queue behind each other,
+  as they do for readers. The frame does not write the output into the page, does not save it
+  and does not touch the draft.
+- **Limits.** They are the reader's own, from `app/islands/runtimes/constants.ts`, so a run in the
+  preview is the run a reader gets: the code may execute for 5 seconds
+  (`RUN_TIMEOUT_MS`; the clock starts when the runtime is loaded, not when the message arrives),
+  the runtime may take 60 seconds to load (`LOAD_TIMEOUT_MS`), and the output is cut at
+  64 KB of UTF-8 (`MAX_OUTPUT_BYTES`), with `truncated: true` when it was cut.
+  A message that carries the output is therefore at most 64 KB plus the envelope.
+  No field of the request changes a limit.
+- **Failures.** A message the frame accepts always gets an answer. A failure is `ok: false`
+  with a `reason` from a closed list, and never a stack trace, a path or a URL:
+  `codeError` (the code failed; `output` holds the message the reader would see, as plain text),
+  `timeout` (the 5 seconds passed), `runtimeUnavailable` (the runtime failed to load or took
+  longer than 60 seconds, or the browser has no Worker or WebAssembly), `notRunnable` (the address
+  names no block of this draft, names a block that is not a `playground`, or names a language
+  the frame has no runtime for).
+  A run that fails the checks of every message of the admin (origin, `source`, envelope, schema,
+  a `version` that is not the current one) is dropped without an answer, as section 4 says;
+  the admin finds out through its own limit, below.
+  An `ok: true` answer is the output of a run that ended well. The admin may offer it to the
+  editor as the expected output; the frame has not saved it.
+- **When the frame reloads or goes away.** A reload (`load-draft`, a navigation, the editor
+  closing the pane) ends the Worker and the run with it, and no answer is sent.
+  The frame says `ready` again, and the admin treats every request still open for the earlier
+  load as failed with `runtimeUnavailable` and does not send it again by itself.
+  The admin also gives up on a request that no answer reaches within 70 seconds
+  (the 60 and the 5 above, and a margin), which covers a frame that dropped the message
+  and an older frontend that does not know it. The admin cannot tell those apart.
+  A late answer to a request the admin gave up on is dropped by its `requestId`.
+- **When the runtime fails to load.** The frame answers `runtimeUnavailable` once
+  and keeps no state, so the next `micelio:run` tries again, as the Run button of a reader does.
+  The preview page itself still shows the block's static alternative (ADR-0018, section 1).
+- **The mode is not involved.** `micelio:renderMode` (amendment of 2026-11-04) changes how the
+  frame shows a block and is not read by this message: a run uses the block's code whatever
+  the mode.
+- **The envelope version does not move.** `PREVIEW_PROTOCOL_VERSION` in `contract/preview.ts`
+  of `micelio-plugin-core` stays `1`. This adds two `type` values and changes no existing message,
+  so section 4 makes it a MINOR of the plugin core, an older frontend ignores `micelio:run`,
+  and `ready` needs no new `v`. A newer admin with an older frontend gets no answer
+  and its limit of 70 seconds ends the wait.
+- **Security.** No token, grant or credential travels in either message. The answer carries
+  output the reader's Run button would show, which the admin shows with `textContent`
+  and never as HTML. The frame answers only the admin's origin, bound in the grant (section 4).
+  What the editor's code can do is what a reader's code can do:
+  nothing outside the Worker.
+- **Not done here.** The messages in `contract/preview.ts` and the button in the admin
+  (bogd3v/micelio-plugin-core#56), and the frame's handling of them in the frontend
+  (a later issue of this repository). Until `contract/preview.ts` lists the messages,
+  the frontend checks them by hand, as it does the other messages of phase 2
+  (amendment of 2026-11-02).
