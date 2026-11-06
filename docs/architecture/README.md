@@ -8,6 +8,8 @@ Documents:
 - [Heavy islands](islands.md): the registry, the triggers, the load rule and the alternatives.
 - [Releasing](releasing.md): how the maintainer cuts a release.
 - [Contract tests against a real CMS](contract-tests.md): what the suite covers and how to run it.
+- [The preview contract and its pin](preview-contract.md): how the frame's reader is held to the
+  plugin's schemas and how to move the pin.
 - [Testing a branch in Docker](testing-a-branch.md): `npm run check`, the browser suites and the plugin's and the distribution's stacks.
 - [Sustainability](sustainability.md): the Web Sustainability Guidelines that apply to the engine, and how each is met or checked.
 

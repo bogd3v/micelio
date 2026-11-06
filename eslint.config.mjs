@@ -51,6 +51,7 @@ export default withNuxt(
     },
   },
   {
-    ignores: ['docs/**', '.claude/worktrees/**'],
+    // test/fixtures/plugin-contract/ is a verbatim copy of the plugin's contract (docs/architecture/preview-contract.md): its format is the plugin's
+    ignores: ['docs/**', '.claude/worktrees/**', 'test/fixtures/plugin-contract/**'],
   },
 ).prepend(...micelio)
