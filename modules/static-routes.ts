@@ -10,11 +10,13 @@ import { formActionOrigin } from '../app/helpers/newsletterForm'
 import { contentSecurityPolicy, inlineScripts, islandPolicyOptions, workerPolicy } from '../app/helpers/securityHeaders'
 import { validSecurityContact } from '../app/helpers/securityTxt'
 import { isStaticMode } from '../app/helpers/siteMode'
+import { redirectsFile, resolveRedirects } from '../app/helpers/redirects'
 import { speculationRules } from '../app/helpers/speculation'
 import type { SiteMode } from '../app/interfaces/site'
 import { ABOUT_ROUTES, articleRoute, BLOG_ROUTES, categoryRoute, categorySlugsByLocale, failsBuild, headersFile, initialRoutes, injectCspMeta, injectSpeculationRules, isCopyableMedia, landingHomeCheck, mediaFileName, mediaUrlsIn, missingRoutes, noScriptsViolations, rewriteMediaUrls, scriptHashDisagreements, sectionPageRoute, staticFileRoutes, stripImageErrorHandlers, unreachableScripts } from '../app/helpers/staticBuild'
 import { HEAVY_ISLANDS } from '../app/islands/lib/constants'
 import { MAX_CATEGORIES } from '../server/lib/constants'
+import { fetchRedirects } from '../server/lib/redirects'
 import { strapiRequest } from '../server/lib/strapiRequest'
 import type { StrapiRequestConfig } from '../server/lib/types'
 
@@ -209,6 +211,35 @@ export default defineNuxtModule({
         logger.info(`Wrote _headers (${hashes.length} script hash(es), ${scriptHashes.size} pages)`)
       }
 
+      // The 301 redirects of the plugin (a published slug that changed), in the host's own format (docs/operate/static-site.md)
+      async function writeRedirects(): Promise<void> {
+        const site = process.env.NUXT_MICELIO_SITE || String(nuxt.options.runtimeConfig.micelioSite || '')
+        let answer
+        try {
+          // Not the page timeout: a build waits for the list, since a site without its redirects loses its old addresses
+          answer = await fetchRedirects(config, site, null, 30_000)
+        } catch (error) {
+          throw new Error(`Site mode "${mode}": could not read the redirects from ${config.strapiUrl} (${error instanceof Error ? error.message : String(error)}).`, { cause: error })
+        }
+        if (answer.status === 'forbidden') {
+          // A build token from before the redirects has no grant for the route: the build goes on without them, as it did
+          logger.warn('The token cannot read the redirects (it needs plugin::micelio.redirects.find, docs/security.md): no _redirects file is written')
+          return
+        }
+        if (answer.status === 'unknownSite') {
+          throw new Error(`Site mode "${mode}": the plugin does not know the site "${site}" (NUXT_MICELIO_SITE) or has no default site, so its redirects cannot be read.`)
+        }
+        if (answer.status !== 'changed') {
+          logger.info('No redirects: the CMS has no redirects route, so no _redirects file is written')
+          return
+        }
+        const { paths, dropped } = resolveRedirects(answer.rows)
+        for (const line of dropped) logger.warn(`Redirect dropped: ${line}`)
+        if (!paths.size) return
+        await writeFile(join(nitro.options.output.publicDir, '_redirects'), redirectsFile(paths))
+        logger.info(`Wrote _redirects (${paths.size} redirect(s))`)
+      }
+
       const violations = new Map<string, string[]>()
       const failed: string[] = []
 
@@ -283,7 +314,10 @@ export default defineNuxtModule({
       nitro.hooks.hook('prerender:done', async ({ prerenderedRoutes }) => {
         failed.push(...missingRoutes([...listed].filter(route => !isPublicFile(route)), prerenderedRoutes.map(({ route }) => route)).map(route => `${route} (not prerendered)`))
         if (failed.length) throw new Error(`Site mode "${mode}": ${failed.length} route(s) failed or are missing:\n  ${failed.slice(0, 10).join('\n  ')}`)
-        if (!violations.size) await writeHeaders()
+        if (!violations.size) {
+          await writeRedirects()
+          await writeHeaders()
+        }
         if (!violations.size) return
         const list = [...violations].slice(0, 10).map(([route, found]) => `  ${route}: ${found.join(', ')}`).join('\n')
         throw new Error(`Site mode "${mode}": ${violations.size} generated page(s) still load Nuxt's client (noScripts did not apply). See "Plan B" in docs/adr/0006-site-modes.md, section 3.\n${list}`)

@@ -67,4 +67,23 @@ describe('static-serve', () => {
     expect(after.csp).toContain('sha256-second')
     expect(after.csp).not.toContain('sha256-first')
   })
+
+  it('answers the redirects of _redirects, with the query, and reads them again when the file changes', async () => {
+    const ask = (path: string): Promise<Response> => fetch(`http://127.0.0.1:${PORT}${path}`, { redirect: 'manual' })
+    expect((await ask('/old')).status).toBe(404)
+
+    await writeFile(join(dir, '_redirects'), '# a comment\n/old /new 301\n/temporary /elsewhere 302\n')
+    const moved = await ask('/old?utm=feed')
+    expect(moved.status).toBe(301)
+    expect(moved.headers.get('location')).toBe('/new?utm=feed')
+    const temporary = await ask('/temporary')
+    expect([temporary.status, temporary.headers.get('location')]).toEqual([302, '/elsewhere'])
+    // A redirect wins over a file at the same path, as on the hosts
+    await writeFile(join(dir, 'old.html'), page('old'))
+    expect((await ask('/old')).status).toBe(301)
+
+    await writeFile(join(dir, '_redirects'), '/old /newer 301\n')
+    expect((await ask('/old')).headers.get('location')).toBe('/newer')
+    expect((await ask('/temporary')).status).toBe(404)
+  })
 })

@@ -48,7 +48,7 @@ describe('the known differences', () => {
   it('each has a reason and a message of the shape check', () => {
     for (const difference of KNOWN_DIFFERENCES) {
       expect(difference.reason.length, difference.issue).toBeGreaterThan(10)
-      expect(difference.issue).toMatch(/^\$/)
+      expect(difference.issue).toMatch(/^(\$|status:)/)
     }
   })
 

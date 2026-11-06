@@ -104,6 +104,8 @@ export default defineNuxtConfig({
     umamiUrl: '',
     umamiCollectPath: '/api/bd',
     siteCacheSeconds: 60,
+    // The slug of the plugin's site whose redirects this frontend answers (`GET /api/micelio/redirects?site=`); empty lets the plugin pick by host or the default site
+    micelioSite: '',
     public: {
       strapiUrl: '',
       siteUrl: '',
