@@ -5,6 +5,7 @@ This folder explains how a subsystem of Micelio works, for the contributors who 
 Documents:
 
 - [The CI and deploy pipeline](ci-pipeline.md): what runs on every push to `main` and how the images are produced.
+- [Heavy islands](islands.md): the registry, the triggers, the load rule and the alternatives.
 - [Releasing](releasing.md): how the maintainer cuts a release.
 - [Contract tests against a real CMS](contract-tests.md): what the suite covers and how to run it.
 - [Testing a branch in Docker](testing-a-branch.md): `npm run check`, the browser suites and the plugin's and the distribution's stacks.

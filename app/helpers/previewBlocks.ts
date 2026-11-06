@@ -16,6 +16,7 @@ import type {
   PatchContent,
   PatchScalar,
   PreviewBox,
+  RenderModeRequest,
   SelectRequest,
 } from '../interfaces/preview'
 import { knownSections } from './pages'
@@ -27,6 +28,7 @@ export type BlockMessage
     | { kind: 'hover', request: HoverRequest }
     | { kind: 'insertGap', request: InsertGap }
     | { kind: 'patch', request: BlockPatch }
+    | { kind: 'renderMode', request: RenderModeRequest }
     | { kind: 'malformed' }
 
 /** The `type` of each message of phase 2 and the `kind` it is read as (ADR 0019, amendment of 2026-11-02). */
@@ -35,6 +37,7 @@ const KINDS = {
   'micelio:hover': 'hover',
   'micelio:insertGap': 'insertGap',
   'micelio:patch': 'patch',
+  'micelio:renderMode': 'renderMode',
 } as const
 
 /** The keys of a section that hold its repeatable items, in the order a block uses them. */
@@ -135,6 +138,11 @@ export function readBlockMessage(data: unknown, version: string): BlockMessage |
   if (kind === 'insertGap') {
     const request = readGap(payload)
     return request && request.version === version ? { kind, request } : { kind: 'malformed' }
+  }
+  if (kind === 'renderMode') {
+    const address = readAddress(payload.address)
+    const mode = payload.mode
+    return address && address.version === version && (mode === 'dynamic' || mode === 'static') ? { kind, request: { address, mode } } : { kind: 'malformed' }
   }
   const pointer = readPointer(payload)
   if (!pointer || (pointer.address && pointer.address.version !== version)) return { kind: 'malformed' }

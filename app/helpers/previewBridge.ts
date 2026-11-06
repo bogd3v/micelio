@@ -16,7 +16,7 @@ import {
 } from './previewBlocks'
 import type { BlockMessage } from './previewBlocks'
 import type { PageSection } from '../interfaces/page'
-import type { BlocksReport, PointedBlock, PreviewFrame } from '../interfaces/preview'
+import type { BlocksReport, PointedBlock, PreviewFrame, RenderMode } from '../interfaces/preview'
 
 /** What the page gives the bridge so the admin can edit the blocks it shows. */
 export interface PreviewBridgeOptions {
@@ -35,6 +35,13 @@ export interface PreviewBridgeOptions {
    * The page waits for Vue, not the bridge: a module that imports `vue` makes the build split the shared runtime chunk that every public page loads (bogd3v/micelio#732, `npm run perf -- --check`).
    */
   apply: (sections: PageSection[]) => Promise<void>
+  /**
+   * Shows the block at `index` in `mode`, and answers once Vue has rendered it (the page's `nextTick`). The mode is state of the page, never saved (ADR 0019, amendment of 2026-11-04).
+   *
+   * @remarks
+   * The page decides what a block's static alternative is: a block with no island looks the same in both modes.
+   */
+  render?: (index: number, mode: RenderMode) => Promise<void>
 }
 
 const ZONE_SELECTOR = '[data-myc-zone="sections"]'
@@ -103,6 +110,12 @@ export async function startPreviewBridge(frame: PreviewFrame, options?: PreviewB
       if (!options || !sections) return drop()
       // The components render the new values when `apply` answers; the observers report the reflow, this reports a change that keeps the size
       void reportAfter(options.apply(sections))
+      return
+    }
+    if (message.kind === 'renderMode') {
+      const { address, mode } = message.request
+      if (!options?.render || !findBlock(zone, address)) return drop()
+      void reportAfter(options.render(address.index, mode))
       return
     }
     const { address, item } = message.request

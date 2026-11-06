@@ -9,12 +9,14 @@ const props = defineProps<{
   section: SceneSection
   /** The poster paints first: eager and high priority (the section opens the page) */
   eager?: boolean
+  /** The admin's preview asked for the static alternative: the poster, with no element for the island to take over (ADR 0019, amendment of 2026-11-04) */
+  renderStatic?: boolean
 }>()
 
 const { getMediaUrl } = useStrapi()
 const trustedPrefix = inject(TRUSTED_MEDIA_PREFIX, undefined)
 // Three.js and the model load once the scene is visible, after load; the poster is what the server renders (ADR 0006, section 6)
-useHeavyIsland('scene')
+if (!props.renderStatic) useHeavyIsland('scene')
 const titleId = useId()
 
 // The static fallback: the poster, described by the scene's alt text
@@ -27,9 +29,9 @@ const modelUrl = computed<string>(() => isTrustedMedia(props.section.model.url, 
 <template>
   <section class="myc-section" data-section="scene" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
     <div class="myc-section-inner">
-      <micelio-scene :data-model="modelUrl">
+      <component :is="renderStatic ? 'div' : 'micelio-scene'" :data-model="renderStatic ? undefined : modelUrl" :data-scene-static="renderStatic ? '' : undefined">
         <SectionMedia :media="poster" sizes="100vw xl:1100px" :eager="eager" />
-      </micelio-scene>
+      </component>
       <SectionHead :title="section.title" :text="section.text" :title-id="titleId" />
     </div>
   </section>
