@@ -81,6 +81,11 @@ export const KNOWN_DIFFERENCES: KnownDifference[] = [
     issue: '$: the mock has object, the CMS has array',
     reason: 'The mock answers the flat shape (`data`, `pagination`) for the tree route; the CMS answers the tree as an array',
   },
+  {
+    route: '/api/micelio/redirects',
+    issue: 'status: the mock answers 200, the CMS 404',
+    reason: 'No released micelio-plugin-core has the redirects route (micelio-cms latest pins plugin 0.2.0) and its frontend token lacks `plugin::micelio.redirects.find`; remove this entry with the micelio-cms bump and grant, when the spec reports it as stale',
+  },
 ]
 
 /** The route of a recorded CMS request, with the ids of a comment relation made generic: `/api/comments/:relation/flat` */
