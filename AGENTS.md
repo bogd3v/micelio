@@ -4,7 +4,7 @@ This file contains instructions and guidelines for agentic coding agents working
 
 ## Engineering standard
 
-The rules shared by every Micelio repository live in [`docs/engineering-standard.md`](docs/engineering-standard.md). This repository follows standard version 1.7 (`standard: 1.7`, the line `npm run lint:standard` checks; the Micelio bot opens the pull request that syncs a new version). This file adds what is specific to this repository (stack, commands, folders, naming) and may tighten the standard, never relax it. When the two disagree, the standard wins.
+The rules shared by every Micelio repository live in [`docs/engineering-standard.md`](docs/engineering-standard.md). This repository follows standard version 1.8 (`standard: 1.8`, the line `npm run lint:standard` checks; the Micelio bot opens the pull request that syncs a new version). This file adds what is specific to this repository (stack, commands, folders, naming) and may tighten the standard, never relax it. When the two disagree, the standard wins.
 
 ## The factory
 
