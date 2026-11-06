@@ -100,6 +100,10 @@ Try it with `npm run test:landing`: it generates a landing against the mock Stra
 
 If the CMS site settings have a security contact, the build writes `.output/public/.well-known/security.txt`; without one it writes nothing and the host answers 404. The file's `Expires` is the build date plus 180 days: rebuild before then or it is served expired (see [configure](configure.md#security-contact)). Check that your host serves dotfolders (`.well-known/`); Cloudflare Pages and Netlify do.
 
+## Redirects
+
+A page whose slug changed in the CMS keeps its old address: the build writes `.output/public/_redirects`, one `/old-path /new-path 301` line per redirect of the micelio plugin (a chain resolved to its end, a cycle dropped with a warning; [docs/api.md](../api.md#redirects)). Cloudflare Pages and Netlify read the file. Another host needs the same list in its own format. The build token needs `plugin::micelio.redirects.find` ([docs/security.md](../security.md)); without it, or with a CMS that has no such route, the site is built with no `_redirects`. Set `NUXT_MICELIO_SITE` when the CMS holds several sites.
+
 ## Headers, 404 and analytics
 
 - Security headers and CSP come from the `_headers` file the build writes into `.output/public`. Cloudflare Pages and Netlify read it. A host without `_headers` support gets the CSP from the `<meta>` fallback only (no framing, HSTS or other header-only protections); configure the same headers at the host.
@@ -207,7 +211,7 @@ which has no volume holding the last site, never installs one.
 | Command | What it does |
 | --- | --- |
 | `generate` (default) | Runs `npm run generate` with the variables below, then replaces the content of `/out` with `.output/public`. Fails with a message when `NUXT_PUBLIC_SITE_MODE` is `dynamic`, or when the Strapi URL or token is missing. When the generation fails, including when the theme the site settings name cannot be used ([The theme of the site](#the-theme-of-the-site)), it exits with 1 and leaves `/out` as it was |
-| `serve` | Serves `/out` on port 8080 with `scripts/static-serve.mjs`: the `_headers` rules (CSP and the rest), `404.html`, and brotli or gzip for the precompressed files, as a CDN does. `PORT`, `HOST` (default `0.0.0.0`) and `COMPRESS` (default `1`) can be overridden |
+| `serve` | Serves `/out` on port 8080 with `scripts/static-serve.mjs`: the `_headers` rules (CSP and the rest), the `_redirects` rules (exact paths, with the query kept), `404.html`, and brotli or gzip for the precompressed files, as a CDN does. `PORT`, `HOST` (default `0.0.0.0`) and `COMPRESS` (default `1`) can be overridden |
 
 Nothing is baked in: the site is generated when the container runs, so every setting is an environment variable (compatible with `docker run --env-file`).
 

@@ -5,6 +5,7 @@ import { aboutBlocks } from './fixtures/about.mjs'
 import { createAuthMock } from './fixtures/auth.mjs'
 import { createDraftsMock } from './fixtures/drafts.mjs'
 import { createPreviewMock } from './fixtures/preview.mjs'
+import { createRedirectsMock } from './fixtures/redirects.mjs'
 import { noisePng, texturedGlb, triangleGlb } from './fixtures/glb.mjs'
 import { findPages } from './fixtures/pages.mjs'
 
@@ -503,6 +504,17 @@ let switchedTheme = null
 // The preview routes of the plugin, and a test-only route that makes a token (e2e/preview); off unless MOCK_PREVIEW=1
 const previewMock = process.env.MOCK_PREVIEW === '1' ? createPreviewMock({ apiToken: 'e2e-api-token' }) : null
 
+// The redirects route of the plugin, with what the static build writes into `_redirects` (e2e/static/redirects.spec.ts): a slug that changed, a chain, a cycle and a Spanish page
+const redirectsMock = createRedirectsMock({
+  rows: [
+    { from: '/old-showcase', to: '/showcase', locale: 'en' },
+    { from: '/older-showcase', to: '/old-showcase', locale: 'en' },
+    { from: '/vieja-muestra', to: '/muestra', locale: 'es' },
+    { from: '/loop-a', to: '/loop-b', locale: 'en' },
+    { from: '/loop-b', to: '/loop-a', locale: 'en' },
+  ],
+})
+
 const server = createServer(async (req, res) => {
   const method = req.method || 'GET'
   const url = new URL(req.url || '/', 'http://127.0.0.1')
@@ -517,6 +529,13 @@ const server = createServer(async (req, res) => {
     } else {
       sendJson(res, auth.status, auth.body)
     }
+    return
+  }
+
+  const redirected = redirectsMock.handle(method, url.pathname, query, req.headers)
+  if (redirected) {
+    res.writeHead(redirected.status, { 'Content-Type': 'application/json', ...redirected.headers })
+    res.end(redirected.body ? JSON.stringify(redirected.body) : undefined)
     return
   }
 

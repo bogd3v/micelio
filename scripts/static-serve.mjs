@@ -49,6 +49,20 @@ async function readRules() {
   return rules
 }
 
+// `_redirects`: `/from /to [status]` per line (the generator writes plain paths and 301); `#` starts a comment
+async function readRedirects() {
+  const redirects = new Map()
+  try {
+    for (const line of (await readFile(join(root, '_redirects'), 'utf8')).split('\n')) {
+      const [from, to, status] = line.replace(/#.*/, '').trim().split(/\s+/)
+      if (from && to) redirects.set(from, { to, status: Number(status) || 301 })
+    }
+  } catch {
+    // No _redirects: no redirects
+  }
+  return redirects
+}
+
 function headersFor(rules, pathname) {
   const headers = {}
   for (const { path, headers: own } of rules) {
@@ -62,6 +76,8 @@ function headersFor(rules, pathname) {
 // Re-read when the site is regenerated in place (the builder image's `serve` keeps running across `generate` runs)
 let rules = await readRules()
 let rulesVersion = await fileVersion(join(root, '_headers'))
+let redirects = await readRedirects()
+let redirectsVersion = await fileVersion(join(root, '_redirects'))
 
 async function fileVersion(path) {
   try {
@@ -79,6 +95,15 @@ async function currentRules() {
     rulesVersion = version
   }
   return rules
+}
+
+async function currentRedirects() {
+  const version = await fileVersion(join(root, '_redirects'))
+  if (version !== redirectsVersion) {
+    redirects = await readRedirects()
+    redirectsVersion = version
+  }
+  return redirects
 }
 
 async function isFile(path) {
@@ -101,6 +126,13 @@ async function find(pathname) {
 
 const server = createServer(async (req, res) => {
   const pathname = new URL(req.url ?? '/', 'http://localhost').pathname
+  // A redirect wins over a file at the same path, as it does on Cloudflare Pages and Netlify
+  const redirect = (await currentRedirects()).get(pathname)
+  if (redirect) {
+    res.writeHead(redirect.status, { Location: redirect.to + new URL(req.url ?? '/', 'http://localhost').search })
+    res.end()
+    return
+  }
   let file
   try {
     file = await find(pathname)

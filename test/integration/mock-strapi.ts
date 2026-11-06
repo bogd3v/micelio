@@ -7,6 +7,7 @@ import type { StrapiRichText } from '~/interfaces/strapi-blocks'
 import { createAuthMock } from '../../e2e/fixtures/auth.mjs'
 import { createDraftsMock } from '../../e2e/fixtures/drafts.mjs'
 import { createPreviewMock } from '../../e2e/fixtures/preview.mjs'
+import { createRedirectsMock } from '../../e2e/fixtures/redirects.mjs'
 import { triangleGlb } from '../../e2e/fixtures/glb.mjs'
 import { findPages } from '../../e2e/fixtures/pages.mjs'
 
@@ -74,6 +75,8 @@ interface MockStrapiResult {
   fediverseUsername: { value: string | null }
   /** The preview routes of the plugin: `issue` makes a one-use token, `calls` records what the frontend sent, `issueSystem` makes the system grant the plugin mints for itself, `state.permission` false makes both routes answer 403, `state.omitActor` makes the draft answer without `meta.actor` */
   preview: ReturnType<typeof createPreviewMock>
+  /** The redirects route of the plugin: `state.rows` is the list it serves, `state.failing` a status it answers instead (0: none), `calls` what the frontend asked with. Its requests are not in `requests` */
+  redirects: ReturnType<typeof createRedirectsMock>
   users: Array<{ id: number, username: string, email: string, password: string, confirmed: boolean, role: string }>
   /** Extra keys the CMS answers carry, to prove they do not reach the client; a test that sets one clears it */
   leaks: { commentsEnvelope: Record<string, unknown>, draftRow: Record<string, unknown> }
@@ -555,12 +558,21 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
   const authMock = createAuthMock({ frontendUrl: 'https://bogdev.test' })
   const draftsMock = createDraftsMock({ userFromAuth: authMock.userFromAuth, publishedArticles: articles })
   const preview = createPreviewMock({ apiToken: 'test-api-token' })
+  const redirects = createRedirectsMock({ apiToken: 'test-api-token' })
 
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     const method = req.method || 'GET'
     const url = new URL(req.url || '/', 'http://127.0.0.1')
     const query = qs.parse(url.searchParams.toString(), { depth: 20 })
     const body = ['POST', 'PUT', 'DELETE'].includes(method) ? await readJsonBody(req) : undefined
+
+    // The redirects are read before every page, so they have their own list too (`redirects.calls`)
+    const listed = redirects.handle(method, url.pathname, query, req.headers)
+    if (listed) {
+      res.writeHead(listed.status, { 'Content-Type': 'application/json', ...listed.headers })
+      res.end(listed.body ? JSON.stringify(listed.body) : undefined)
+      return
+    }
 
     // site-setting is read before every module route, so it goes to its own list
     const log = url.pathname === '/api/site-setting' ? siteRequests : requests
@@ -1035,7 +1047,7 @@ export async function startMockStrapi(): Promise<MockStrapiResult> {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address()
       const port = typeof address === 'object' && address !== null ? address.port : 0
-      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, securityContact, webfingerHeaders, fediverseUsername, users: authMock.users, leaks, articles, preview })
+      resolve({ server, url: `http://127.0.0.1:${port}`, requests, siteRequests, failures, modules, theme, homePage, securityContact, webfingerHeaders, fediverseUsername, users: authMock.users, leaks, articles, preview, redirects })
     })
   })
 }
