@@ -383,7 +383,7 @@ describe('usePreviewFrame with blocks', () => {
     send({ ...select, payload: { address: address(1, 'hero') } })
     send({ ...select, payload: { address: { ...address(1, 'feature-grid'), version: 'stale' } } })
     send({ ...select, payload: { address: address(1, 'feature-grid'), item: -2 } })
-    send({ v: 1, type: 'micelio:patch', payload: { address: address(0, 'hero'), content: { html: '<img src=x onerror=alert(1)>' } } })
+    send({ v: 1, type: 'micelio:patch', payload: { address: address(0, 'hero'), content: { html: '<img src=x onerror=alert(1)>' }, items: [] } })
     send({ v: 1, type: 'micelio:insertGap', payload: { version, zone: 'sections', after: 0, height: 99_999 } })
     expect(types()).toEqual([])
     expect(apply).not.toHaveBeenCalled()

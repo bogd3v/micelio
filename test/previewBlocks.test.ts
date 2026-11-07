@@ -30,12 +30,13 @@ describe('readBlockMessage', () => {
   it('reads a patch of text and items', () => {
     const patch = { address: grid, content: { title: 'New' }, items: [{ index: 0, content: { text: 'Item' } }] }
     expect(readBlockMessage(envelope('micelio:patch', patch), VERSION)).toEqual({ kind: 'patch', request: patch })
-    expect(readBlockMessage(envelope('micelio:patch', { address: grid, content: { title: null } }), VERSION)).toMatchObject({ kind: 'patch', request: { items: [] } })
+    expect(readBlockMessage(envelope('micelio:patch', { address: grid, content: { title: null }, items: [] }), VERSION)).toMatchObject({ kind: 'patch', request: { items: [] } })
+    expect(readBlockMessage(envelope('micelio:patch', { address: grid, content: { title: null } }), VERSION)).toEqual({ kind: 'malformed' })
   })
 
   it('calls a patch with a number or a boolean malformed: a patch carries text or null', () => {
     for (const content of [{ columns: 2 }, { wide: true }, { title: ['x'] }]) {
-      expect(readBlockMessage(envelope('micelio:patch', { address: grid, content }), VERSION)).toEqual({ kind: 'malformed' })
+      expect(readBlockMessage(envelope('micelio:patch', { address: grid, content, items: [] }), VERSION)).toEqual({ kind: 'malformed' })
     }
   })
 
@@ -68,7 +69,7 @@ describe('readBlockMessage', () => {
 
   it('calls a known type that fails its shape malformed', () => {
     const gap = { version: VERSION, zone: 'sections', after: 0, height: 48 }
-    const patch = { address: grid, content: {} }
+    const patch = { address: grid, content: {}, items: [] }
     const cases: unknown[] = [
       envelope('micelio:select', null),
       envelope('micelio:select', {}),
@@ -90,7 +91,7 @@ describe('readBlockMessage', () => {
       envelope('micelio:insertGap', { ...gap, height: 2001 }),
       envelope('micelio:insertGap', { ...gap, height: Number.NaN }),
       envelope('micelio:insertGap', { ...gap, height: '48' }),
-      envelope('micelio:patch', { content: {} }),
+      envelope('micelio:patch', { content: {}, items: [] }),
       envelope('micelio:patch', { ...patch, content: null }),
       envelope('micelio:patch', { ...patch, content: { html: '<p>x</p>' } }),
       envelope('micelio:patch', { ...patch, content: { id: 9 } }),
@@ -113,7 +114,7 @@ describe('readBlockMessage', () => {
     const other = { ...grid, version: '2026-10-25T00:00:00.000Z' }
     expect(readBlockMessage(envelope('micelio:select', { address: other }), VERSION)).toEqual({ kind: 'malformed' })
     expect(readBlockMessage(envelope('micelio:hover', { address: other }), VERSION)).toEqual({ kind: 'malformed' })
-    expect(readBlockMessage(envelope('micelio:patch', { address: other, content: {} }), VERSION)).toEqual({ kind: 'malformed' })
+    expect(readBlockMessage(envelope('micelio:patch', { address: other, content: {}, items: [] }), VERSION)).toEqual({ kind: 'malformed' })
     expect(readBlockMessage(envelope('micelio:insertGap', { version: other.version, zone: 'sections', after: null, height: 1 }), VERSION)).toEqual({ kind: 'malformed' })
   })
 })

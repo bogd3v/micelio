@@ -84,7 +84,7 @@ function readContent(value: unknown): PatchContent | undefined {
 function readPatch(payload: Record<string, unknown>): BlockPatch | undefined {
   const address = readAddress(payload.address)
   const content = readContent(payload.content)
-  const rawItems = payload.items ?? []
+  const rawItems = payload.items
   if (!address || !content || !Array.isArray(rawItems) || rawItems.length > PREVIEW_PATCH_MAX_ITEMS) return undefined
   const items: BlockPatch['items'] = []
   for (const raw of rawItems) {
@@ -117,7 +117,7 @@ function readGap(payload: Record<string, unknown>): InsertGap | undefined {
  * Reads a `postMessage` payload as a message of phase 2 for the frame (ADR 0019, amendment of 2026-11-02).
  *
  * @remarks
- * An address or a `version` that is not `version` makes a stale message, which is `malformed` like one that fails its shape, so a reorder that crosses a reload cannot move the wrong block. A patch never names a field of `PREVIEW_PATCH_FORBIDDEN_FIELDS` or an object.
+ * An address or a `version` that is not `version` makes a stale message, which is `malformed` like one that fails its shape, so a reorder that crosses a reload cannot move the wrong block. A patch never names a field of `PREVIEW_PATCH_FORBIDDEN_FIELDS` or an object, and always carries `items` as an array (empty for none); a `reveal` that is present is a boolean, as in the plugin's contract.
  *
  * @param data - The `data` of the event.
  * @param version - The `updatedAt` of the draft the frame shows.
@@ -146,6 +146,7 @@ export function readBlockMessage(data: unknown, version: string): BlockMessage |
   }
   const pointer = readPointer(payload)
   if (!pointer || (pointer.address && pointer.address.version !== version)) return { kind: 'malformed' }
+  if (kind === 'select' && payload.reveal !== undefined && typeof payload.reveal !== 'boolean') return { kind: 'malformed' }
   return kind === 'select'
     ? { kind, request: { ...pointer, reveal: payload.reveal === true } }
     : { kind, request: pointer }
