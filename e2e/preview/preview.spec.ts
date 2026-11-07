@@ -366,7 +366,7 @@ test.describe('the blocks of a page draft in the admin\'s frame', () => {
 
     // The Markdown of a section is rendered by the server alone: a patch that names `html` is dropped whole
     const before = await frame.locator('[data-myc-block="rich-text"]').innerHTML()
-    await sent(page, 'micelio:patch', { address: { ...GRID, index: 11, block: 'rich-text' }, content: { html: '<p id="injected">x</p>' } })
+    await sent(page, 'micelio:patch', { address: { ...GRID, index: 11, block: 'rich-text' }, content: { html: '<p id="injected">x</p>' }, items: [] })
     await settled(frame)
     expect(await frame.locator('#injected').count()).toBe(0)
     expect(await frame.locator('[data-myc-block="rich-text"]').innerHTML()).toBe(before)
@@ -401,10 +401,10 @@ test.describe('the blocks of a page draft in the admin\'s frame', () => {
     await sent(page, 'micelio:insertGap', { version: 'an older save', zone: 'sections', after: 1, height: 120 })
     await sent(page, 'micelio:insertGap', { version: VERSION, zone: 'sections', after: 1, height: 100_000 })
     await sent(page, 'micelio:select', { address: { ...GRID, version: 'an older save' } })
-    await sent(page, 'micelio:patch', { address: GRID, content: { title: { nested: true } } })
+    await sent(page, 'micelio:patch', { address: GRID, content: { title: { nested: true } }, items: [] })
     // a link over a section that has none, and a field the server validates
-    await sent(page, 'micelio:patch', { address: { ...GRID, index: 0, block: 'hero' }, content: { primaryLink: 'x', variant: 'full-bleed' } })
-    await sent(page, 'micelio:patch', { address: { ...GRID, index: 2, block: 'media-showcase' }, content: { mime: 'text/html' } })
+    await sent(page, 'micelio:patch', { address: { ...GRID, index: 0, block: 'hero' }, content: { primaryLink: 'x', variant: 'full-bleed' }, items: [] })
+    await sent(page, 'micelio:patch', { address: { ...GRID, index: 2, block: 'media-showcase' }, content: { mime: 'text/html' }, items: [] })
     await settled(frame)
     expect(await frame.locator('[data-myc-zone] > [data-myc-block]').nth(2).evaluate(node => node.getBoundingClientRect().top)).toBe(before)
     expect((await messages(page, 'micelio:selected')).length).toBe(answers)

@@ -63,6 +63,9 @@ const MESSAGES: Record<string, { valid: Payload[], broken: Array<[string, Payloa
       ['version renamed', { address: rename(address, 'version', 'updatedAt') }],
       ['version a number', { address: { ...address, version: 1 } }],
       ['version empty', { address: { ...address, version: '' } }],
+      ['reveal a string', { address, reveal: 'yes' }],
+      ['reveal null', { address, reveal: null }],
+      ['reveal a number', { address, reveal: 1 }],
       ['item a string', { address, item: '1' }],
       ['item negative', { address, item: -1 }],
       ['item fractional', { address, item: 0.5 }],
@@ -127,6 +130,9 @@ const MESSAGES: Record<string, { valid: Payload[], broken: Array<[string, Payloa
       ['content value a number', { address, content: { title: 4 }, items: [] }],
       ['content value a boolean', { address, content: { title: true }, items: [] }],
       ['content value an object', { address, content: { title: { text: 'a' } }, items: [] }],
+      ['items missing', { address, content: { title: 'New' } }],
+      ['items renamed', { address, content: {}, list: [] }],
+      ['items null', { address, content: {}, items: null }],
       ['items an object', { address, content: {}, items: {} }],
       ['item index missing', { address, content: {}, items: [{ content: {} }] }],
       ['item index renamed', { address, content: {}, items: [{ position: 0, content: {} }] }],
@@ -177,38 +183,9 @@ const ENVELOPES: Case[] = [
 ]
 
 /**
- * Messages where the frame is stricter than the contract, or the two differ, and the reason. They are not in the sets above: the test reports them as differences, so a change on either side shows.
+ * Messages where the frame is stricter than the contract, or the two differ, and the reason. They are not in the sets above: the test reports them as differences, so a change on either side shows. None today.
  */
-const KNOWN_DIFFERENCES: Array<{ name: string, message: unknown, contract: boolean, frame: boolean, why: string }> = [
-  {
-    name: 'a patch with no items',
-    message: envelope('micelio:patch', { address, content: { title: 'New' } }),
-    contract: false,
-    frame: true,
-    why: 'the contract requires `items`; the frame reads a missing one as none',
-  },
-  {
-    name: 'a patch whose items field is renamed',
-    message: envelope('micelio:patch', { address, content: {}, list: [] }),
-    contract: false,
-    frame: true,
-    why: 'the same: a renamed `items` is a missing one to the frame',
-  },
-  {
-    name: 'a patch whose items is null',
-    message: envelope('micelio:patch', { address, content: {}, items: null }),
-    contract: false,
-    frame: true,
-    why: 'the same: the frame reads `null` as none',
-  },
-  {
-    name: 'a select whose reveal is not a boolean',
-    message: envelope('micelio:select', { address, reveal: 'yes' }),
-    contract: false,
-    frame: true,
-    why: 'the contract requires a boolean `reveal`; the frame reads anything but `true` as false',
-  },
-]
+const KNOWN_DIFFERENCES: Array<{ name: string, message: unknown, contract: boolean, frame: boolean, why: string }> = []
 
 function accepted(type: string, payload: Payload): Case {
   return { name: `${type} ${JSON.stringify(payload)}`, message: envelope(type, payload) }
