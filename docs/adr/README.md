@@ -23,7 +23,8 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0017](0017-distribution-plugins-multisite-editorial.md) | Micelio as Strapi plugins with `micelio-cms` as the reference distribution, several sites per CMS, and an editorial workflow of its own | Accepted | 2026-10-20 |
 | [0018](0018-blocks-as-a-contract.md) | Blocks as a contract: `{ id, schema, options, cost, static }`, a closed vocabulary of options, a generated catalogue checked for drift, and no free positioning, per-element CSS, inline styles or raw HTML | Accepted | 2026-10-21 |
 | [0019](0019-visual-editing-protocol.md) | Visual editing: the frontend is the only renderer, its draft route in an admin iframe behind a single-use token exchanged for a short-lived grant, versioned `postMessage` envelopes, blocks addressed by catalogue id and position, and `frame-ancestors` relaxed only for a granted preview | Accepted | 2026-10-23 |
+| [0020](0020-strapi-contingency.md) | Stay on Strapi, keep the way out priced and open, and act on three named triggers: a licence change of the community edition, six months without a release, an acquisition that changes the terms | Proposed | 2026-11-09 |
 
 ## Writing a new record
 
-Copy the structure of an existing record into `NNNN-short-title.md` with the next number: Context, Decision, Options considered, Trade-offs, Consequences. Add it to the table above. Status is `Proposed` until it is merged, then `Accepted`; when it is replaced, mark it `Superseded by NNNN`.
+Copy [`docs/adr-template.md`](https://github.com/bogd3v/micelio-engineering/blob/main/docs/adr-template.md) of `micelio-engineering` into `NNNN-short-title.md` with the next number; its sections are Context, Decision, Options considered, Trade-offs and Consequences. Add it to the table above. Status is `Proposed` until it is merged, then `Accepted`; when it is replaced, mark it `Superseded by NNNN`.
