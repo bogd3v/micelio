@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "core": "main at a2523c6",
+  "date": "2026-11-09",
+  "by": "An agent of the factory (#845), supervised by the maintainer",
+  "method": "Playwright 1.63 (Chromium, Firefox) in the official image over a production build with the specimen page: npm run test:theme, every mode at 1280 and 390 px. No screen reader and no person ran the keyboard lines",
+  "lines": {
+    "keyboard.operable": { "result": "pass", "note": "Carried from the script run of 2026-10-19 (docs/themes/accessibility-checklist.md, Results); not repeated by a person" },
+    "keyboard.order": { "result": "not-verified", "note": "The run of 2026-10-19 did not verify the keyboard order of the privacy notice, and no person repeated it" },
+    "keyboard.focus-visible": { "result": "pass", "note": "e2e/theme/focus-visible.spec.ts: card link and blog search field, every mode" },
+    "keyboard.focus-not-hidden": { "result": "pass", "note": "e2e/theme/focus-not-obscured.spec.ts at 390 px, tab bar included (bogd3v/micelio#615, closed)" },
+    "keyboard.skip-link": { "result": "pass", "note": "Carried from the script run of 2026-10-19; not repeated by a person" },
+    "keyboard.overlays": { "result": "not-verified", "note": "Only the apis-off motion specs open the menu, the search palette and the account menu with the keyboard; nobody checked that focus returns to the trigger" },
+    "screen-reader.landmarks": { "result": "pass", "note": "Axe landmark rules and the specimen heading spec; no screen reader" },
+    "screen-reader.headings": { "result": "pass", "note": "Axe heading rules and e2e/theme/core-a11y.spec.ts (one h1 on the specimen); no screen reader" },
+    "screen-reader.names": { "result": "not-verified", "note": "No screen reader (Orca, NVDA or VoiceOver) was used; axe checks only that a name exists" },
+    "screen-reader.announcements": { "result": "not-verified", "note": "No screen reader was used" },
+    "screen-reader.language": { "result": "not-verified", "note": "No screen reader was used; the language of the page and of its parts was not checked beyond axe" },
+    "zoom.200": { "result": "pass", "note": "Carried from the script run of 2026-10-19; not repeated by a person" },
+    "zoom.reflow-320": { "result": "pass", "note": "e2e/theme/reflow.spec.ts: no horizontal scrolling at 320 px, every page and mode" },
+    "zoom.text-spacing": { "result": "not-verified", "note": "No text spacing bookmarklet or test yet" },
+    "motion.reduced": { "result": "pass", "note": "The <mode>-reduced projects of npm run test:theme" },
+    "motion.forced-colors": { "result": "not-verified", "note": "Only the focus indicator is tested in forced colors (e2e/theme/core-a11y.spec.ts); text, borders and icons were not" },
+    "pointer.target-size": { "result": "pass", "note": "Axe target-size (wcag22aa) on every page; the slider, dots and table of contents by hand on 2026-10-19" },
+    "pointer.dragging": { "result": "not-verified", "note": "The mock has no slider, so no page tested opened one; the run of 2026-10-19 did not verify it on a rendered page" }
+  }
+}

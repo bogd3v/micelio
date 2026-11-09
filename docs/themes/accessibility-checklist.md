@@ -33,6 +33,8 @@ Each run is recorded as a JSON file in the theme's repository, `<accessibility-r
 - `version` is the theme version that was checked. Admission only warns about a record of another version, a missing record and a failed line, because it also runs for themes that have no record yet. Publishing (`docs/themes/publishing-a-theme.md`, section 8) refuses a missing record, a record of another version and a line that failed because of the theme (not one with `cause: "core"`); lines not verified do not block and are published with the report.
 - `by` names whoever ran the checklist, as they want to be named. Record nothing else about them.
 
+The core keeps the record of `starter` in `accessibility/starter.json`, in this format. `npm run a11y:report` turns it and the axe run of `npm run test:theme` into the conformance report that each release attaches ([`docs/operate/accessibility-report.md`](../operate/accessibility-report.md)): a failed or unverified line keeps the report from saying that the core conforms, so repeat the checklist and update the record when a version changes CSS, markup or slots.
+
 A failing line gets its own issue, linked from the record. Until a theme's repository runs admission, record the run in the Progress section of the issue that admits it, as the results below were. A theme that has no record yet gets a `missing` warning from its admission; a record for it comes when a person repeats lines 1 and 2, as the last results say.
 
 ## How to run it

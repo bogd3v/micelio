@@ -96,6 +96,8 @@ jobs:
       contents: write
       packages: write
       actions: read
+    outputs:
+      tag: ${{ steps.plan.outputs.tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -274,3 +276,84 @@ jobs:
           if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
           gh release create "$TAG" --repo "$REPO" --target "$GITHUB_SHA" --title "$TAG" --notes-file release-notes.md "${flags[@]}"
           echo "Released $TAG at $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+  # The accessibility conformance report of the core with the starter theme (#845): the axe specs of `npm run test:theme` and the record
+  # accessibility/starter.json (docs/operate/accessibility-report.md). It runs third-party code (npm ci, the build, Playwright), so it has a
+  # read-only token that is not persisted and no secret; the next job attaches the file. Axe finds only part of the problems and runs on
+  # Chromium here, not in the image of the visual baselines, so the visual specs are not run. A failing spec does not stop the release: the
+  # report says "does not claim conformance". It runs in a dry run too, to warn
+  a11y-report:
+    name: Accessibility report
+    needs: version
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with the specimen page
+        run: npm run build
+        env:
+          NUXT_PUBLIC_THEME: starter
+          MICELIO_SPECIMEN: 1
+          MICELIO_THEME_DIRS: test/fixtures/themes/alternates
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run the axe specs
+        continue-on-error: true
+        run: npm run test:theme -- e2e/theme/a11y.spec.ts e2e/theme/core-a11y.spec.ts
+        env:
+          NUXT_PUBLIC_THEME: starter
+          MICELIO_SPECIMEN: 1
+          MICELIO_THEME_DIRS: test/fixtures/themes/alternates
+          E2E_BUILD: 1
+          THEME_REPORT_JSON: .micelio/a11y/quality.json
+
+      - name: Write the accessibility report
+        run: npm run a11y:report
+
+      - name: Upload the report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: a11y-conformance
+          path: .micelio/a11y/conformance.md
+          if-no-files-found: error
+          retention-days: 7
+
+  # Attaches the report to the release the Release job published. It checks out and runs nothing from the repository
+  a11y-attach:
+    name: Attach the accessibility report
+    needs: [release, a11y-report]
+    if: ${{ !cancelled() && !inputs.dry_run && needs.release.result == 'success' && needs.a11y-report.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download the report
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: a11y-conformance
+          path: a11y-report
+
+      - name: Attach it to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ needs.release.outputs.tag }}
+        run: |
+          cp a11y-report/conformance.md "accessibility-conformance-$TAG.md"
+          gh release upload "$TAG" "accessibility-conformance-$TAG.md" --repo "$REPO"

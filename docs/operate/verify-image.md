@@ -38,3 +38,4 @@ The output wraps an SPDX JSON document under an `SPDX` key (one per platform for
 - Verify the tag you deploy. `latest` and `edge` move; the digest in the output is what was checked.
 - A registry listing shows extra `unknown/unknown` entries next to the image. Those are the attestation manifests, not other platforms.
 - Release tags (`X.Y.Z`, `X.Y`, `latest`) are copies of the commit image by manifest, so they share its digest and its attestations.
+- Each release also attaches an accessibility conformance report (WCAG 2.2 AA): where it is and how to read it is in [accessibility-report.md](accessibility-report.md).
