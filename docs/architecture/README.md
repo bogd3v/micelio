@@ -11,6 +11,7 @@ Documents:
 - [The preview contract and its pin](preview-contract.md): how the frame's reader is held to the
   plugin's schemas and how to move the pin.
 - [Testing a branch in Docker](testing-a-branch.md): `npm run check`, the browser suites and the plugin's and the distribution's stacks.
+- [The Strapi surface](strapi-surface.md): the Strapi APIs `micelio-cms`, `micelio-plugin-core` and the fediverse plugin use, with the command that reads each list (ADR-0020).
 - [Sustainability](sustainability.md): the Web Sustainability Guidelines that apply to the engine, and how each is met or checked.
 
 Decisions that are expensive to undo are recorded in [`docs/adr/`](../adr/README.md), not here. A document here points to the ADR that decided its behaviour.
