@@ -1,5 +1,6 @@
 import { brotliCompressSync } from 'node:zlib'
 import { describe, expect, it } from 'vitest'
+import { swdMilligramsPerView } from '../app/helpers/carbon'
 import { declaredAssets, eagerImages, fontsOf, islandBytes, islandEntries, islandReferences, kb, measurePage, totalBytes, weightReport } from '../app/helpers/weight'
 import type { FetchSentFile, PageBytes, SentFile } from '../app/helpers/weight'
 
@@ -174,7 +175,7 @@ describe('weightReport', () => {
 
   it('gives the totals in KB, with the on-demand script apart from the total', () => {
     const report = weightReport('dynamic', whole, [], [])
-    expect(report).toEqual({ mode: 'dynamic', htmlKb: 3.9, cssKb: 7.8, jsKb: 50.8, fontKb: 34.2, imagesKb: 29.3, totalKb: 126, onDemandKb: 127, blocks: [] })
+    expect(report).toEqual({ mode: 'dynamic', htmlKb: 3.9, cssKb: 7.8, jsKb: 50.8, fontKb: 34.2, imagesKb: 29.3, totalKb: 126, onDemandKb: 127, co2Mg: 14.43, blocks: [] })
     expect(kb(totalBytes(whole))).toBe(report.totalKb)
   })
 
@@ -200,6 +201,16 @@ describe('weightReport', () => {
     expect(report.totalKb).toBe(kb(totalBytes(page)))
     // Taken from `page` the share would include the 12 KB of script the draft route does not have
     expect(report.blocks).toEqual([{ id: 'hero', kb: kb(30_500), onDemandKb: 0 }])
+  })
+
+  it('the report carries co2Mg computed from the bytes of totalKb', () => {
+    // 129 000 bytes x 111.891 g per GB a view (test/perfCarbon.test.ts) = 14.434 mg; the 130 000 bytes on demand are not in it
+    const report = weightReport('dynamic', whole, [], [])
+    expect(report.co2Mg).toBe(14.43)
+    expect(report.co2Mg).toBe(swdMilligramsPerView(totalBytes(whole)))
+    expect(weightReport('dynamic', { ...whole, onDemand: 0 }, [], []).co2Mg).toBe(report.co2Mg)
+    expect(weightReport('dynamic', { ...whole, images: whole.images + 1_000_000 }, [], []).co2Mg).toBe(swdMilligramsPerView(totalBytes(whole) + 1_000_000))
+    expect(weightReport('dynamic', { html: 0, css: 0, js: 0, fonts: 0, images: 0, onDemand: 0 }, [], []).co2Mg).toBe(0)
   })
 
   it('never reports a negative share', () => {

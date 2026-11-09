@@ -24,6 +24,7 @@ export const weightReportSchema = responseSchema<WeightReport>()(
     imagesKb: kilobytes.meta({ description: 'The images the page loads without scrolling: those not marked `loading="lazy"`.' }),
     totalKb: kilobytes.meta({ description: 'HTML, CSS, JS, fonts and images; never `onDemandKb`.' }),
     onDemandKb: kilobytes.meta({ description: 'The script the islands of the page load only once one is used, apart from `totalKb`.' }),
+    co2Mg: z.number().min(0).meta({ description: 'Milligrams of CO2e of one view of the page: the Sustainable Web Design v4 estimate of `npm run perf`, from the bytes of `totalKb`, rounded to 0.01. An estimate, never a measurement.' }),
     blocks: z.array(weightBlockSchema).meta({ description: 'One entry per block of the draft\'s zone, in order.' }),
   }).meta({ id: 'WeightReport', description: 'The weight of a draft as a visitor would download it, measured on the rendered page.' }),
 )
