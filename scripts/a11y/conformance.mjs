@@ -125,7 +125,7 @@ const LABEL = { 'pass': 'Supports', 'fail': 'Does not support', 'not-verified': 
 
 /** @param {string} text @returns {string} the text safe inside a table cell */
 function cell(text) {
-  return String(text).replace(/\|/g, '\\|').replace(/\s*\n\s*/g, ' ')
+  return String(text).replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\s*\n\s*/g, ' ')
 }
 
 /**
