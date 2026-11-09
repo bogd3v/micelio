@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 
 test('renders the article with content and TOC', async ({ page }) => {
   await page.goto('/blog/understanding-vue-composables')
@@ -119,6 +119,21 @@ test('leaves the fediverse block out of non-federated articles', async ({ page }
   await expect(page.locator('.myc-fedi-bar')).toHaveCount(0)
 })
 
+/** Wait until the smooth scroll of an anchor jump (`html { scroll-behavior: smooth }`) has stopped: `scrollY` unchanged for 10 frames. */
+async function scrollSettled(page: Page): Promise<void> {
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    let last = Number.NaN
+    let still = 0
+    function frame(): void {
+      still = window.scrollY === last ? still + 1 : 0
+      last = window.scrollY
+      if (still >= 10) resolve()
+      else requestAnimationFrame(frame)
+    }
+    requestAnimationFrame(frame)
+  }))
+}
+
 test('jumps from a citation to its reference and back without hiding under the header', async ({ page }) => {
   await page.goto('/es/blog/guia-vue-composables', { waitUntil: 'networkidle' })
   const cites = page.locator('.myc-prose a.myc-cite')
@@ -133,12 +148,14 @@ test('jumps from a citation to its reference and back without hiding under the h
   await page.keyboard.press('Enter')
   await expect(page).toHaveURL(/#ref-2$/)
   const reference = page.locator('#ref-2')
+  await scrollSettled(page)
   const headerBottom = await page.locator('header').first().evaluate(header => header.getBoundingClientRect().bottom)
   expect((await reference.boundingBox())!.y).toBeGreaterThanOrEqual(headerBottom)
 
   await reference.getByRole('link', { name: 'Volver al texto, cita 2' }).focus()
   await page.keyboard.press('Enter')
   await expect(page).toHaveURL(/#cite-2$/)
+  await scrollSettled(page)
   expect((await page.locator('#cite-2').boundingBox())!.y).toBeGreaterThanOrEqual(headerBottom)
 })
 
