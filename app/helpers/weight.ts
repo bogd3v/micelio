@@ -1,4 +1,5 @@
 import type { PreviewMode, WeightBlock, WeightReport } from '../interfaces/preview'
+import { swdMilligramsPerView } from './carbon'
 import { parseHeavyDeclaration } from './islands'
 
 /** A file as a server sent it: the bytes on the wire (compressed when the server compressed it) and, for text, its content. */
@@ -180,7 +181,7 @@ export function totalBytes(bytes: PageBytes): number {
  * @param rendered - The page as the draft route renders it, which the `without` renders are taken from; `whole` itself when omitted.
  *
  * @remarks
- * A block's share is the difference between `rendered` and the page without it, so a stylesheet or script every page loads is in no block's share. Differences are taken on bytes and rounded once; a block cannot weigh less than 0.
+ * A block's share is the difference between `rendered` and the page without it, so a stylesheet or script every page loads is in no block's share. Differences are taken on bytes and rounded once; a block cannot weigh less than 0. `co2Mg` is the Sustainable Web Design estimate of `npm run perf` (`swdMilligramsPerView`), from the bytes `totalKb` counts.
  */
 export function weightReport(mode: PreviewMode, whole: PageBytes, blocks: string[], without: PageBytes[], rendered: PageBytes = whole): WeightReport {
   const shares: WeightBlock[] = blocks.map((id, index) => {
@@ -196,6 +197,7 @@ export function weightReport(mode: PreviewMode, whole: PageBytes, blocks: string
     imagesKb: kb(whole.images),
     totalKb: kb(totalBytes(whole)),
     onDemandKb: kb(whole.onDemand),
+    co2Mg: swdMilligramsPerView(totalBytes(whole)),
     blocks: shares,
   }
 }

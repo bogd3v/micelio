@@ -55,6 +55,8 @@ export interface WeightReport {
   totalKb: number
   /** The script the islands of the page load only once one is used, apart from `totalKb`. */
   onDemandKb: number
+  /** Milligrams of CO2e of one view of the page, the Sustainable Web Design estimate of `npm run perf` from the bytes of `totalKb`; an estimate, never a measurement. */
+  co2Mg: number
   /** One entry per block of the draft's zone, in order. */
   blocks: WeightBlock[]
 }
