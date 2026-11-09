@@ -52,6 +52,7 @@ npm run theme:add -- <id>[@range]|./x.tgz # Pin a theme in themes.lock.json; `th
 npm run theme:prune -- --store <dir> # Remove from a deployment theme store the entries of other core builds and the packages nothing uses (docs/operate/themes.md)
 npm run theme:new -- <id> # New theme: copies themes/starter/ to themes/<id>/ and renames it ([--name "Name"])
 npm run theme:check  # Contract, hooks, contrast matrix and static budgets of the installed themes ([id] and --json)
+npm run a11y:report     # Markdown conformance report (WCAG 2.2 AA) per success criterion from the axe run of test:theme (THEME_REPORT_JSON) and accessibility/<theme>.json; the release attaches it (docs/operate/accessibility-report.md)
 npm run lint:fix     # Run ESLint with --fix
 npm run tokens       # Print the role CSS the build generates from a theme.json (default themes/starter/theme.json)
 npm run test         # Run unit tests with Vitest (test/*.test.ts)
