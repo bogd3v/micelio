@@ -54,7 +54,7 @@ const cmsArticle = {
     { id: 5, __component: 'shared.slider', items: [{ id: 1, file: { url: '/uploads/b.png' }, caption: null, credit: null }], files: [] },
     { id: 6, __component: 'about.statement', statement: 'Not for an article, but one union' },
   ],
-  references: [{ id: 1, key: 'ji-2023', type: 'journal', authors: 'Ji', year: '2023', title: 'Survey', container: 'ACM', doi: '10.1145/3571730', url: null, accessedAt: null }],
+  references: [{ id: 1, key: 'ji-2023', type: 'journal', authors: 'Ji', year: '2023', title: 'Survey', language: 'en', container: 'ACM', doi: '10.1145/3571730', url: null, accessedAt: null }],
   localizations: [{ id: 2, documentId: 'doc-vue', slug: 'vue-es', locale: 'es', publishedAt: '2026-01-01T00:00:00.000Z' }],
 }
 
@@ -63,6 +63,12 @@ describe('articleSchema', () => {
     const article = publicArticle(cmsArticle as unknown as RawStrapiArticle)
     expect(articleSchema.parse(article)).toEqual(article)
     expect(article).not.toHaveProperty('createdAt')
+  })
+
+  it('keeps the language of a reference', () => {
+    const article = publicArticle(cmsArticle as unknown as RawStrapiArticle)
+    expect(article.references?.[0]?.language).toBe('en')
+    expect(articleSchema.parse(article).references?.[0]?.language).toBe('en')
   })
 
   it('accepts a card after the allow-list of GET /api/posts, with its snippet and no blocks', () => {

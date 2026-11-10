@@ -18,7 +18,7 @@ const tag = fields({ id: true, documentId: true, name: true, slug: true })
 const author = fields({ id: true, documentId: true, name: true, avatar: media })
 const seoImage = fields({ url: true, alternativeText: true, data: fields({ attributes: fields({ url: true, alternativeText: true, width: true, height: true }) }) })
 const seo = fields({ id: true, metaTitle: true, metaDescription: true, metaImage: seoImage, keywords: true, metaRobots: true, structuredData: true, canonicalURL: true })
-const reference = fields({ id: true, key: true, type: true, authors: true, year: true, title: true, container: true, volume: true, issue: true, pages: true, venueLabel: true, doi: true, url: true, accessedAt: true })
+const reference = fields({ id: true, key: true, type: true, authors: true, year: true, title: true, language: true, container: true, volume: true, issue: true, pages: true, venueLabel: true, doi: true, url: true, accessedAt: true })
 const localization = fields({ id: true, documentId: true, slug: true, locale: true, publishedAt: true })
 
 /** The allow-list entries of a block's presentation options. */

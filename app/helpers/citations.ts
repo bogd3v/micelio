@@ -173,6 +173,19 @@ export function formatApa(reference: StrapiReference): ApaSegment[] {
   return segments
 }
 
+/**
+ * The `lang` a reference's title takes: its `language` when it is set and differs from the article's locale, otherwise undefined.
+ *
+ * @remarks
+ * The tags are compared case-insensitively, so `ES` and `es` are the same language; a region (`en-GB`) differs from `en` only by the primary subtag.
+ */
+export function referenceLang(reference: StrapiReference, locale: string): string | undefined {
+  const language = reference.language?.trim()
+  if (!language) return undefined
+  const primary = (tag: string): string => tag.toLowerCase().split('-')[0]!
+  return primary(language) === primary(locale) ? undefined : language
+}
+
 /** The plain text of the APA citation of a reference, without links or emphasis. */
 export function apaText(reference: StrapiReference): string {
   return formatApa(reference).map(segment => segment.text).join('')

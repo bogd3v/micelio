@@ -159,6 +159,26 @@ test('jumps from a citation to its reference and back without hiding under the h
   expect((await page.locator('#cite-2').boundingBox())!.y).toBeGreaterThanOrEqual(headerBottom)
 })
 
+test('a reference in another language marks its title with that lang', async ({ page }) => {
+  await page.goto('/es/blog/guia-vue-composables')
+  const title = page.getByRole('region', { name: 'Referencias' }).getByRole('link', { name: 'Survey of Hallucination in Natural Language Generation' })
+  await expect(title).toHaveAttribute('lang', 'en')
+})
+
+test('a reference in another language without a link marks its title with that lang', async ({ page }) => {
+  await page.goto('/es/blog/guia-vue-composables')
+  const title = page.getByRole('region', { name: 'Referencias' }).locator('span[lang]', { hasText: 'Dense Passage Retrieval for Open-Domain Question Answering' })
+  await expect(title).toHaveAttribute('lang', 'en')
+  await expect(title.locator('a')).toHaveCount(0)
+})
+
+test('a reference without a language has no lang on its title', async ({ page }) => {
+  await page.goto('/es/blog/guia-vue-composables')
+  const title = page.getByRole('region', { name: 'Referencias' }).getByRole('link', { name: 'Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks' })
+  await expect(title).toBeVisible()
+  await expect(title).not.toHaveAttribute('lang', /.*/)
+})
+
 test('leaves articles without references unchanged', async ({ page }) => {
   await page.goto('/blog/understanding-vue-composables')
   await expect(page.locator('h1')).toHaveText('Understanding Vue Composables')

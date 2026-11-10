@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import type { NumberedReference } from '~/interfaces'
-import { formatAccessDate, formatApa, latestAccessedAt, referenceIdentifier, referenceVenue } from '~/helpers/citations'
+import { formatAccessDate, formatApa, latestAccessedAt, referenceIdentifier, referenceLang, referenceVenue } from '~/helpers/citations'
 
 const props = defineProps<{
   entries: NumberedReference[]
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const items = computed(() => props.entries.map(entry => ({
   ...entry,
   venue: referenceVenue(entry.reference),
   segments: formatApa(entry.reference),
   identifier: referenceIdentifier(entry.reference),
+  lang: referenceLang(entry.reference, locale.value),
 })))
 
 const note = computed<string>(() => {
@@ -35,7 +36,8 @@ const note = computed<string>(() => {
           <span v-if="item.venue" class="myc-eyebrow myc-ref-venue">{{ item.venue }}</span>
           <p class="myc-ref-text">
             <template v-for="(segment, index) in item.segments" :key="index">
-              <a v-if="segment.kind === 'title' && segment.href" :href="segment.href" target="_blank" rel="noopener noreferrer">{{ segment.text }}</a>
+              <a v-if="segment.kind === 'title' && segment.href" :href="segment.href" :lang="item.lang" target="_blank" rel="noopener noreferrer">{{ segment.text }}</a>
+              <span v-else-if="segment.kind === 'title' && item.lang" :lang="item.lang">{{ segment.text }}</span>
               <em v-else-if="segment.kind === 'container'">{{ segment.text }}</em>
               <template v-else>{{ segment.text }}</template>
             </template>
