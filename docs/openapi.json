@@ -3,7 +3,7 @@
   "info": {
     "title": "Micelio site API",
     "version": "0.6.1",
-    "description": "The HTTP routes every Micelio site serves: 41 paths and 43 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
+    "description": "The HTTP routes every Micelio site serves: 42 paths and 44 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
     "license": {
       "name": "AGPL-3.0-only",
       "identifier": "AGPL-3.0-only"
@@ -220,6 +220,52 @@
                         "code": {
                           "enum": [
                             "upstreamUnavailable"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "The version of the frontend",
+        "description": "Answers `{ \"version\": \"<version of package.json>\" }` and nothing else, read at build time. It calls neither the CMS nor any upstream, so it answers while the CMS is down. `GET` and `HEAD` only: any other method answers 405 with `Allow: GET, HEAD`. Answers `no-store`.",
+        "tags": [
+          "Site files"
+        ],
+        "responses": {
+          "200": {
+            "description": "The version of the running frontend. Cache-Control: `no-store`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "An object."
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed. The `code` is one of:\n- `methodNotAllowed`: The route does not accept this HTTP method.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "methodNotAllowed"
                           ]
                         }
                       }

@@ -27,9 +27,24 @@ const PREVIEW_ROUTES: RouteEntry[] = [
   },
 ]
 
+/** The frontend's version, for the host check of the CMS plugin and the container's `HEALTHCHECK`. */
+const HEALTH_ROUTES: RouteEntry[] = [
+  {
+    file: 'server/routes/_health.ts',
+    method: 'get',
+    path: '/_health',
+    summary: 'The version of the frontend',
+    description: 'Answers `{ "version": "<version of package.json>" }` and nothing else, read at build time. It calls neither the CMS nor any upstream, so it answers while the CMS is down. `GET` and `HEAD` only: any other method answers 405 with `Allow: GET, HEAD`. Answers `no-store`.',
+    tag: 'Site files',
+    response: { status: 200, contentType: 'application/json', description: 'The version of the running frontend.', cache: 'no-store' },
+    errors: ['methodNotAllowed'],
+  },
+]
+
 /** Operations outside `/api`: the RSS feeds, the sitemap, `robots.txt`, `security.txt` and WebFinger. They answer text or a JRD, not problem details. */
 export const SITE_FILE_ROUTES: RouteEntry[] = [
   ...PREVIEW_ROUTES,
+  ...HEALTH_ROUTES,
   {
     file: 'server/routes/feed.xml.ts',
     method: 'get',
