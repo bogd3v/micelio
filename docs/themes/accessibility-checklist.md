@@ -48,7 +48,7 @@ Put the mouse away.
 - [ ] `keyboard.operable` Every control can be reached with Tab and operated with Enter, Space or the arrow keys.
 - [ ] `keyboard.order` The order of focus follows the reading order.
 - [ ] `keyboard.focus-visible` The focus is visible on every stop (an outline or equivalent of at least 3:1 against its surroundings), including card links and form fields.
-- [ ] `keyboard.focus-not-hidden` A focused element is never fully hidden behind the header, the mobile tab bar or the privacy notice (WCAG 2.4.11).
+- [ ] `keyboard.focus-not-hidden` A focused element is never fully hidden behind the header, the mobile tab bar, the privacy notice or the Back to top button (WCAG 2.4.11).
 - [ ] `keyboard.skip-link` The skip link is the first stop and moves the focus to the content.
 - [ ] `keyboard.overlays` Menus, the search palette and the sheet open and close with the keyboard, trap nothing and return the focus to their trigger.
 

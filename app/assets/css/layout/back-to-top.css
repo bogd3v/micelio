@@ -22,6 +22,12 @@
     }
 }
 
+/* The button sits over the page at the bottom right: while the keyboard focus is on anything else it folds away, so it never covers a focused element
+   (WCAG 2.4.11). It stays in the tab order and shows when focus reaches it. `scale`, not `opacity` or `visibility`, which the static link's animation sets */
+body:has(:focus-visible:not(.myc-back-to-top)) .myc-back-to-top {
+    scale: 0;
+}
+
 /* Static builds have no JS: the link is hidden, and only a scroll timeline shows it past 200px */
 .myc-back-to-top[data-static] {
     opacity: 0;

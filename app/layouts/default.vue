@@ -27,7 +27,6 @@ onMounted(() => {
 <template>
   <div class="myc-app">
     <LayoutSkipLinks />
-    <LayoutBackToTop />
 
     <RegionHeader
       :active="active"
@@ -55,6 +54,9 @@ onMounted(() => {
     <RegionFooter />
 
     <MycPrivacyNotice />
+
+    <!-- Shown bottom right, above the notice: it is read after the page, before the tab bar -->
+    <LayoutBackToTop />
 
     <MycTabBar
       :active="active"
