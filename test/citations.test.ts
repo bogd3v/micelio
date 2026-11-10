@@ -9,6 +9,7 @@ import {
   latestAccessedAt,
   numberReferences,
   referenceIdentifier,
+  referenceLang,
   referenceVenue,
 } from '../app/helpers/citations'
 import type { StrapiBlock } from '../app/interfaces/strapi-blocks'
@@ -156,5 +157,22 @@ describe('access date', () => {
     expect(formatAccessDate(latest!)).toBe('11.09.2026')
     expect(formatAccessDate('2026-01-01')).toBe('01.01.2026')
     expect(latestAccessedAt([docs])).toBeNull()
+  })
+})
+
+describe('referenceLang', () => {
+  const base: StrapiReference = { key: 'k', type: 'web', authors: 'A', year: '2024', title: 'T' }
+
+  it('returns the language when it differs from the locale', () => {
+    expect(referenceLang({ ...base, language: 'en' }, 'es')).toBe('en')
+    expect(referenceLang({ ...base, language: 'en-GB' }, 'es')).toBe('en-GB')
+  })
+
+  it('returns undefined when it is absent, empty or the locale itself', () => {
+    expect(referenceLang(base, 'es')).toBeUndefined()
+    expect(referenceLang({ ...base, language: null }, 'es')).toBeUndefined()
+    expect(referenceLang({ ...base, language: ' ' }, 'es')).toBeUndefined()
+    expect(referenceLang({ ...base, language: 'ES' }, 'es')).toBeUndefined()
+    expect(referenceLang({ ...base, language: 'es-CO' }, 'es')).toBeUndefined()
   })
 })

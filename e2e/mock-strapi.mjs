@@ -260,10 +260,10 @@ const playgroundsVueEs = [
 ]
 
 const referencesVueEs = [
-  { id: 1, key: 'ji-2023', type: 'journal', authors: 'Ji, Z., Lee, N., Frieske, R., Yu, T., Su, D., Xu, Y., et al.', year: '2023', title: 'Survey of Hallucination in Natural Language Generation', container: 'ACM Computing Surveys', volume: '55', issue: '12', pages: null, venueLabel: null, doi: '10.1145/3571730', url: null, accessedAt: '2026-09-11' },
+  { id: 1, key: 'ji-2023', type: 'journal', authors: 'Ji, Z., Lee, N., Frieske, R., Yu, T., Su, D., Xu, Y., et al.', year: '2023', title: 'Survey of Hallucination in Natural Language Generation', language: 'en', container: 'ACM Computing Surveys', volume: '55', issue: '12', pages: null, venueLabel: null, doi: '10.1145/3571730', url: null, accessedAt: '2026-09-11' },
   { id: 2, key: 'lewis-2020', type: 'conference', authors: 'Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., et al.', year: '2020', title: 'Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks', container: 'Advances in Neural Information Processing Systems', volume: '33', issue: null, pages: null, venueLabel: 'NeurIPS 2020', doi: null, url: 'https://arxiv.org/abs/2005.11401', accessedAt: '2026-09-11' },
   { id: 3, key: 'vue-docs', type: 'docs', authors: 'Vue.js', year: 's. f.', title: 'Composables', container: 'Vue.js Guide', volume: null, issue: null, pages: null, venueLabel: 'Documentación', doi: null, url: 'https://vuejs.org/guide/reusability/composables.html', accessedAt: '2026-09-02' },
-  { id: 4, key: 'karpukhin-2020', type: 'conference', authors: 'Karpukhin, V., Oğuz, B., Min, S., Lewis, P., Wu, L., Edunov, S., Chen, D. y Yih, W.', year: '2020', title: 'Dense Passage Retrieval for Open-Domain Question Answering', container: 'Proceedings of EMNLP 2020', volume: null, issue: null, pages: '6769–6781', venueLabel: 'EMNLP 2020', doi: null, url: 'https://arxiv.org/abs/2004.04906', accessedAt: '2026-09-10' },
+  { id: 4, key: 'karpukhin-2020', type: 'conference', authors: 'Karpukhin, V., Oğuz, B., Min, S., Lewis, P., Wu, L., Edunov, S., Chen, D. y Yih, W.', year: '2020', title: 'Dense Passage Retrieval for Open-Domain Question Answering', language: 'en', container: 'Proceedings of EMNLP 2020', volume: null, issue: null, pages: '6769–6781', venueLabel: 'EMNLP 2020', doi: null, url: null, accessedAt: '2026-09-10' },
 ]
 
 const englishComments = [

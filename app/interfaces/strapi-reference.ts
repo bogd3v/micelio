@@ -31,6 +31,8 @@ export interface StrapiReference {
   /** The year as text. */
   year: string
   title: string
+  /** The BCP 47 tag of the title's language, such as `en`; empty or absent means the language of the page. The title carries `lang` when it differs from the article's locale. */
+  language?: string | null
   container?: string | null
   volume?: string | null
   issue?: string | null

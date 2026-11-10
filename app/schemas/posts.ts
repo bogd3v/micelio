@@ -57,6 +57,7 @@ const referenceSchema = responseSchema<StrapiReference>()(
     authors: z.string(),
     year: z.string(),
     title: z.string(),
+    language: z.string().nullish(),
     container: z.string().nullish(),
     volume: z.string().nullish(),
     issue: z.string().nullish(),
