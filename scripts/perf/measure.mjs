@@ -15,6 +15,7 @@ import { SWD_MODEL, swdMilligramsPerView } from './carbon.mjs'
 import { checkFouc } from './fouc.mjs'
 import { collectSamples } from './lighthouse-samples.mjs'
 import { budgetKeysOf, ISLANDS_PREFIX, islandBudgetErrors, islandElement, islandMetrics, islandProblems, isStrayRequest } from './islands.mjs'
+import { budgetProblems, HIGHER_IS_BETTER, pageLimits } from './limits.mjs'
 import { storeLayouts, variantAllowance, variantBudgetErrors } from './variants.mjs'
 import { displayFamilyOf, installedManifest } from './theme-manifest.mjs'
 
@@ -356,24 +357,10 @@ async function measureLighthouse(url) {
   })).lhr, runs)
 }
 
-const HIGHER_IS_BETTER = new Set(['performance', 'accessibility'])
-
-/** The limits of a page and level; a recorded exception for the theme overrides single metrics */
+/** The limits of a page and level: the mode's, a recorded exception of the theme, and the display font and variant allowances */
 function limitsFor(page, level) {
-  const global = modeBudgets.limits[page]?.[level] ?? {}
-  const limits = { ...global, ...(exception?.limits?.[page]?.[level] ?? {}) }
-  if (level === 'error' && extraFontKb && limits.fontKb !== undefined) limits.fontKb = Math.round((limits.fontKb + extraFontKb) * 10) / 10
-  const variants = variantAllowance(layouts, page, budgets.variants.jsKb)
-  if (level === 'error' && variants.kb && limits.jsKb !== undefined) limits.jsKb = Math.round((limits.jsKb + variants.kb) * 10) / 10
-  return limits
-}
-
-function compare(page, metrics, limits, level) {
-  return Object.entries(limits ?? {}).flatMap(([metric, limit]) => {
-    const value = metrics[metric]
-    const over = HIGHER_IS_BETTER.has(metric) ? value < limit : value > limit
-    return over ? [{ level, page, metric, value, limit }] : []
-  })
+  const variantKb = variantAllowance(layouts, page, budgets.variants.jsKb).kb
+  return pageLimits({ modeLimits: modeBudgets.limits, exceptionLimits: exception?.limits, page, level, extraFontKb, variantKb })
 }
 
 function summaryTable(report) {
@@ -413,11 +400,11 @@ try {
     const { html, stylesheets, declaredScripts, sentBytes, ...weight } = await measureWeight(url)
     const lighthouseMetrics = await measureLighthouse(url)
     const metrics = { ...weight, ...(await observeLoad(browser, url, declaredScripts)), ...lighthouseMetrics }
-    // Reported only, never budgeted (docs/performance.md): the weight columns plus the images the browser loads without scrolling (eager images, and lazy ones near the viewport)
+    // The weight columns plus the images the browser loads without scrolling (eager images, and lazy ones near the viewport); budgeted (docs/performance.md, "Carbon estimate")
     metrics.co2Mg = swdMilligramsPerView(sentBytes + metrics.imageBytes)
     delete metrics.imageBytes
     if (!lighthouseMetrics) problems.push({ level: 'error', page: name, noPrefix: true, message: `Lighthouse returned no data for ${url} after ${runs * 2} attempts; this is a measurement failure, not a budget breach` })
-    problems.push(...compare(name, metrics, limitsFor(name, 'error'), 'error'), ...compare(name, metrics, limitsFor(name, 'warn'), 'warn'))
+    problems.push(...budgetProblems(name, metrics, limitsFor(name, 'error'), 'error'), ...budgetProblems(name, metrics, limitsFor(name, 'warn'), 'warn'))
     for (const message of checkFouc(html, url, stylesheets)) problems.push({ level: 'error', page: name, message })
     // The run proves nothing if the font never reached the page (a theme using it itself emits nothing)
     if (displayFont && themeDisplayFamily !== displayFont.replace(/-/g, ' ') && !html.includes(`/fonts/display/${displayFont}-latin-wght.woff2`)) {
@@ -427,7 +414,8 @@ try {
     if (!isStatic) delete metrics.initialJsGzKb
     const { thirdPartyUrls, strayUrls, ...printable } = metrics
     console.log(`${name.padEnd(10)} ${JSON.stringify(printable)}`)
-    console.log(`           ${SWD_MODEL}: ${metrics.co2Mg} mg CO2e per page view, estimate, reported only [${label}]`)
+    const co2Limit = limitsFor(name, 'error').co2Mg
+    console.log(`           ${SWD_MODEL}: ${metrics.co2Mg} mg CO2e per page view, estimate, ${co2Limit === undefined ? 'not budgeted in this mode' : `limit ${co2Limit}`} [${label}]`)
     if (thirdPartyUrls.length) console.log(`           third party: ${thirdPartyUrls.join(', ')}`)
     if (strayUrls?.length) console.log(`           not in the initial load: ${strayUrls.join(', ')}`)
     // The search island, once, on the first page: the same palette is on every page (e2e/static/search.spec.ts checks that)
@@ -463,7 +451,7 @@ try {
   if (args.out) writeFileSync(args.out, JSON.stringify({ theme, mode, ...(displayFont && { displayFont }), pages: report, ...(Object.keys(islands).length && { islands }), problems: problems.map((p, i) => ({ level: p.level, metric: p.metric, message: lines[i] })) }, null, 2) + '\n')
   if (lines.length) console.log('\n' + lines.join('\n'))
   if (process.env.GITHUB_STEP_SUMMARY) {
-    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Performance (${label})\n\n${exception ? `Recorded exception: ${exception.reason}\n\n` : ''}${summaryTable(report)}\n\n_co2Mg: milligrams of CO2e per page view, ${SWD_MODEL} estimate from the bytes sent (HTML, scripts the HTML declares, stylesheets, fonts counted as fontKb counts them: every font a stylesheet references, not what is downloaded; images the browser loads without scrolling: eager images, and lazy ones near the viewport). Left out: scripts the HTML does not declare and chunks loaded by dynamic import, _payload.json and fetch/XHR, island files loaded after load, API and media calls made later. For comparing runs and themes, not an absolute figure; not budgeted._\n\n${Object.entries(islands).map(([id, value]) => `Island ${id}: \`${JSON.stringify(value)}\`\n\n`).join('')}${lines.map(l => `- ${l}`).join('\n')}\n`)
+    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Performance (${label})\n\n${exception ? `Recorded exception: ${exception.reason}\n\n` : ''}${summaryTable(report)}\n\n_co2Mg: milligrams of CO2e per page view, ${SWD_MODEL} estimate from the bytes sent (HTML, scripts the HTML declares, stylesheets, fonts counted as fontKb counts them: every font a stylesheet references, not what is downloaded; images the browser loads without scrolling: eager images, and lazy ones near the viewport). Left out: scripts the HTML does not declare and chunks loaded by dynamic import, _payload.json and fetch/XHR, island files loaded after load, API and media calls made later. For comparing runs and themes, not an absolute figure; budgeted per page as an error limit in the modes CI measures (docs/performance.md, Carbon estimate)._\n\n${Object.entries(islands).map(([id, value]) => `Island ${id}: \`${JSON.stringify(value)}\`\n\n`).join('')}${lines.map(l => `- ${l}`).join('\n')}\n`)
   }
   if (args.check && problems.some(p => p.level === 'error')) process.exitCode = 1
 } finally {

@@ -106,8 +106,9 @@ export interface ContractVersion {
 export interface ContractAddition {
   /** The minor of the current major that added it. */
   minor: number
-  kind: 'slot' | 'layout variant' | 'role' | 'hook'
-  /** A slot name, `region:variant`, a role name, or a hook class or attribute. */
+  /** A `budget` is a limit of `scripts/perf/budgets.json` that a theme can fail; it binds every theme and no theme declares it. */
+  kind: 'slot' | 'layout variant' | 'role' | 'hook' | 'budget'
+  /** A slot name, `region:variant`, a role name, a hook class or attribute, or a budget metric. */
   name: string
 }
 

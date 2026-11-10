@@ -106,7 +106,7 @@ describe('a theme that fails contrast', () => {
 describe('checkTheme', () => {
   it('passes the minimal fixture and warns about nothing', () => {
     const [minimal] = discoverThemes([`${fixtures}/minimal`])
-    expect(checkTheme(minimal!, hooks)).toEqual({ theme: 'minimal', contract: { declared: '2.0', used: '2.0', core: '2.1' }, errors: [], warnings: [] })
+    expect(checkTheme(minimal!, hooks)).toEqual({ theme: 'minimal', contract: { declared: '2.0', used: '2.0', core: '2.2' }, errors: [], warnings: [] })
   })
 
   it('has no font warning for the starter (fonts under the 100 KB target)', () => {
