@@ -7,18 +7,20 @@ import type { ContractAddition, ContractVersion, LayoutRegion } from './types'
  * Adding an optional role, layout variant, hook or slot with a core default keeps the major and raises the minor, with a row in
  * `CONTRACT_ADDITIONS` and a section in `docs/themes/contract-changelog.md` (ADR 0005, section 6; ADR 0008, decision 2). A breaking
  * change to roles, modes, variants, hooks, slots or the package layout is the next major, with a migration note. The version is also
- * printed in the generated theme reference. Contract 2 removed the five built-in categories from the slot APIs (ADR 0016).
+ * printed in the generated theme reference. Contract 2 removed the five built-in categories from the slot APIs (ADR 0016). A new
+ * performance budget a theme can fail raises the minor too (ADR 0005, section 9).
  */
-export const CONTRACT_VERSION: ContractVersion = { major: 2, minor: 1 }
+export const CONTRACT_VERSION: ContractVersion = { major: 2, minor: 2 }
 
 /**
  * What each minor above `.0` of the current major added, so the validator can compute the minimum minor a theme uses.
  *
  * @remarks
- * 2.1 added the presentation options of the blocks as hooks (`docs/themes/contract-changelog.md`). Adding to the contract appends a row here with the new minor, raises `CONTRACT_VERSION.minor`
+ * 2.1 added the presentation options of the blocks as hooks, 2.2 the carbon budget (`docs/themes/contract-changelog.md`). Adding to the contract appends a row here with the new minor, raises `CONTRACT_VERSION.minor`
  * and adds the section to `docs/themes/contract-changelog.md`. Names: a slot as in `SLOT_NAMES`, a layout variant as `region:variant`,
- * a role as in the contract, a hook as its class (`myc-…`) or attribute (`data-…`). Limits: a hook counts only when a selector of the
- * theme's CSS uses it (not slot-template markup), and a type-scale role cannot be an addition yet.
+ * a role as in the contract, a hook as its class (`myc-…`) or attribute (`data-…`), a budget as its metric in `scripts/perf/budgets.json`.
+ * Limits: a hook counts only when a selector of the theme's CSS uses it (not slot-template markup), and a type-scale role cannot be an
+ * addition yet. A budget binds every theme and no theme uses it, so it never raises the minor a theme must declare.
  */
 export const CONTRACT_ADDITIONS: readonly ContractAddition[] = [
   { minor: 1, kind: 'hook', name: 'data-width' },
@@ -28,6 +30,7 @@ export const CONTRACT_ADDITIONS: readonly ContractAddition[] = [
   { minor: 1, kind: 'hook', name: 'data-tone' },
   { minor: 1, kind: 'hook', name: 'data-ratio' },
   { minor: 1, kind: 'hook', name: 'data-height' },
+  { minor: 2, kind: 'budget', name: 'co2Mg' },
 ]
 
 /** The regions of the page whose layout variant a theme can choose (ADR 0005). */

@@ -100,7 +100,7 @@ describe('theme:add', () => {
   it('refuses a package that is not the theme the index says, or declares a newer contract', async () => {
     const other = await setup({ '1.0.0': theme('other', '1.0.0') })
     expect((await failure(() => addTheme(other.context, 'sample'))).failure).toBe('identity')
-    const newer = await setup({ '1.0.0': theme('sample', '1.0.0', { contract: '2.2' }) })
+    const newer = await setup({ '1.0.0': theme('sample', '1.0.0', { contract: '2.3' }) })
     expect((await failure(() => addTheme(newer.context, 'sample'))).failure).toBe('contract')
   })
 

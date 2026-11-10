@@ -36,7 +36,8 @@ function usedNames(theme: InstalledTheme, hooks: ReadonlySet<string>): Record<Co
   }
   const roles = new Set<string>()
   for (const group of ROLE_GROUPS) for (const token of manifest[group]?.tokens ?? []) roles.add(token.name)
-  return { 'slot': slots, 'layout variant': variants, 'role': roles, 'hook': new Set(hooks) }
+  // A budget binds every theme and none uses it, so it never raises the minor a theme must declare
+  return { 'slot': slots, 'layout variant': variants, 'role': roles, 'hook': new Set(hooks), 'budget': new Set() }
 }
 
 /** The public hooks a theme's stylesheets select; parsed only when some minor added a hook. */

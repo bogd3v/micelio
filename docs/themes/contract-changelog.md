@@ -5,7 +5,7 @@ What each version of the theme contract added or broke. This is a reference for 
 ## How versions work
 
 - `contract` in `theme.json` is `N` (meaning `N.0`) or `"N.M"`: `N` is the **major**, `M` the **minor**. Both `2` and `"2.0"` mean the same.
-- A **minor** only adds something optional with a core default (a role, a slot, a layout variant, a hook). A theme declares the lowest minor that covers what it uses.
+- A **minor** only adds something optional with a core default (a role, a slot, a layout variant, a hook), or a performance budget that every published theme meets (ADR 0005, section 9). A theme declares the lowest minor that covers what it uses; a budget binds every theme and is never something a theme uses, so it raises no theme's declared minor.
 - A **major** breaks themes (a removed or renamed role, slot, variant or hook, a changed slot API) and comes with a migration note in [Upgrade notes](creating-a-theme.md#upgrade-notes).
 - The build fails when a theme declares another major, when it needs a minor the core does not implement (`needs contract 2.5; this core implements 2.4`), and when it declares less than it uses (`declares contract 2.0 but uses 2.1`). `npm run theme:check -- --json` reports `contract.declared`, `contract.used` and `contract.core` for each theme.
 - **Adding to the contract bumps the minor.** In the same change: raise `CONTRACT_VERSION.minor` and add the new rows to `CONTRACT_ADDITIONS` in `modules/theme/constants.ts` (kind and name of each addition, so the validator knows what needs the minor), add a section to this file, and run `npm run theme:schema` and `npm run theme:reference`.
@@ -43,6 +43,24 @@ These did not move the version, because they add no role, slot, variant or hook 
 
 - Added: the optional `version` (semver without build metadata) and `license` (an SPDX id or `LicenseRef-<name>`) of `theme.json`; both are required to pack a theme.
 - Tightened: `id` is 1 to 64 characters of lowercase letters and digits in groups separated by single hyphens (ADR 0009, section 2). `--x`, `x-`, `-x` and ids over 64 characters no longer validate; `bogota`, `starter` and every id with single hyphens do.
+
+## 2.2
+
+Adds a performance budget: the carbon estimate of a page view, `co2Mg` (#847; [performance.md](../performance.md#carbon-budget)).
+`npm run perf -- --check`, and so theme admission and the compatibility run, fail a page whose estimate is over its limit.
+
+- Added budget: `co2Mg`, an `error` limit on every page of the `dynamic` and `static` modes of `scripts/perf/budgets.json`,
+  the highest value CI measured on `main` for `bogota` plus 5 %. `landing` has none: CI does not measure it.
+- The limit grows, like `fontKb` and `jsKb`, with the run of the heaviest display font (6.87 mg for its 60 KB) and with
+  a theme's own layout variants on another theme's image (the estimate of their `jsKb` allowance).
+- A theme does not declare `2.2` for it: a theme that declares `2.0` or `2.1` keeps validating, installing and rendering.
+  What changes is that the core refuses a theme whose pages weigh more than the limit; every published theme is under it
+  (`bogota@1.0.1`: 38.07 mg on the dynamic home, limit 40).
+- A theme that cannot meet a limit gets a recorded exception in `budgets.json`, as for any other limit.
+- **Why a minor.** A new limit adds a refusal, which the engineering standard (section 7) counts as breaking by its effect.
+  The maintainer decided on 2026-11-09 (#847) that this one ships as a minor of the contract, with no `!`:
+  no published theme is refused (`bogota@1.0.1` passes every limit in dynamic, with the heaviest display font, and in static),
+  and a theme that declares an earlier minor keeps validating. A later limit that refused a published theme would be a major.
 
 ## 2.1
 

@@ -217,7 +217,7 @@ describe('installing an unpacked theme', () => {
   it.each([
     ['another id', { id: 'other' }, 'identity'],
     ['another version', { version: '1.0.1' }, 'identity'],
-    ['a newer minor', { contract: '2.2' }, 'contract'],
+    ['a newer minor', { contract: '2.3' }, 'contract'],
     ['another major', { contract: 3 }, 'contract'],
     ['no contract', { contract: undefined }, 'contract'],
   ])('refuses a package with %s', (_name, fields, expected) => {

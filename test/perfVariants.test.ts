@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { budgetProblems, pageLimits } from '../scripts/perf/limits.mjs'
 import { storeLayouts, variantAllowance, variantBudgetErrors } from '../scripts/perf/variants.mjs'
 import { REGION_VARIANTS } from '../modules/theme/layout/variants'
 
@@ -60,5 +61,37 @@ describe('storeLayouts', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
+  })
+})
+
+// The carbon budget (#847; docs/performance.md, "Carbon estimate"): an error limit of the modes CI measures, grown by the bytes the other allowances add
+describe('the carbon budget', () => {
+  const dynamic = BUDGETS.modes.dynamic.limits
+  const errorsOf = (metrics: Record<string, number>, limits: Record<string, number>) => budgetProblems('home', metrics, limits, 'error')
+
+  it('--check fails a page over its carbon budget', () => {
+    const limits = pageLimits({ modeLimits: dynamic, page: 'home', level: 'error' })
+    expect(limits.co2Mg).toBe(40)
+    expect(errorsOf({ co2Mg: 40.01 }, limits).filter(problem => problem.metric === 'co2Mg')).toEqual([{ level: 'error', page: 'home', metric: 'co2Mg', value: 40.01, limit: 40 }])
+    expect(errorsOf({ co2Mg: 40 }, limits).filter(problem => problem.metric === 'co2Mg')).toEqual([])
+  })
+
+  it('limits every page of the modes CI measures, and none of the landing, which has no CI baseline', () => {
+    for (const mode of ['dynamic', 'static']) {
+      for (const { name } of BUDGETS.modes[mode].pages) expect(BUDGETS.modes[mode].limits[name].error.co2Mg, `${mode} ${name}`).toBeGreaterThan(0)
+    }
+    for (const { name } of BUDGETS.modes.landing.pages) expect(BUDGETS.modes.landing.limits[name].error.co2Mg, name).toBeUndefined()
+  })
+
+  it('grows by the estimate of the display font and variant allowances, and only at the error level', () => {
+    // 60 KB of font: 61 440 bytes x 111.891 g per GB a view = 6.87 mg; 3.6 KB of variants (home, BOGOTA to SECOND): 0.41 mg
+    const variantKb = variantAllowance({ build: BOGOTA, active: SECOND }, 'home', ALLOWANCES).kb
+    expect(pageLimits({ modeLimits: dynamic, page: 'home', level: 'error', extraFontKb: 60 })).toMatchObject({ fontKb: 210.8, co2Mg: 46.87 })
+    expect(pageLimits({ modeLimits: dynamic, page: 'home', level: 'error', variantKb })).toMatchObject({ jsKb: 153.9, co2Mg: 40.41 })
+    expect(pageLimits({ modeLimits: dynamic, page: 'home', level: 'warn', extraFontKb: 60 }).co2Mg).toBeUndefined()
+  })
+
+  it('lets a theme exception replace the carbon limit of a page', () => {
+    expect(pageLimits({ modeLimits: dynamic, exceptionLimits: { home: { error: { co2Mg: 50 } } }, page: 'home', level: 'error' }).co2Mg).toBe(50)
   })
 })

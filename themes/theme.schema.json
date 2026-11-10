@@ -887,5 +887,5 @@
   ],
   "additionalProperties": false,
   "$id": "https://github.com/bogd3v/micelio/blob/main/themes/theme.schema.json",
-  "title": "Micelio theme.json (contract v2.1)"
+  "title": "Micelio theme.json (contract v2.2)"
 }

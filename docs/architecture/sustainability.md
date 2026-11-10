@@ -24,7 +24,7 @@ The guidelines are grouped in five sections: 2 User Experience Design, 3 Web Dev
 
 | Guideline | Status | How Micelio meets it, or what checks it |
 | --- | --- | --- |
-| 2.1 Identify, assess, disclose, review, and mitigate sustainability impacts | Partly | The carbon estimate per page (`co2Mg`) is reported on every run, and the weight budgets are checked. An impact analysis of a particular site is the owner's |
+| 2.1 Identify, assess, disclose, review, and mitigate sustainability impacts | Partly | The carbon estimate per page (`co2Mg`) is reported on every run and has a limit per page in the modes CI measures, and the weight budgets are checked. An impact analysis of a particular site is the owner's |
 | 2.2 Understand user requirements or constraints | Owner | The users of a site are the owner's |
 | 2.3 Integrate sustainability into every stage of the ideation process | Owner | Process of the project; the engine documents it in `AGENTS.md` and the standard |
 | 2.4 Design efficient and streamlined user journeys | Owner | The journey is the theme's and the site's. The engine's pages are plain reading pages with a few links |
@@ -46,7 +46,7 @@ The guidelines are grouped in five sections: 2 User Experience Design, 3 Web Dev
 
 | Guideline | Status | How Micelio meets it, or what checks it |
 | --- | --- | --- |
-| 3.1 Set goals based on performance and energy impact | Met | Budgets per page, theme and site mode (`npm run perf -- --check`, `scripts/perf/budgets.json`), and the carbon estimate beside the weight |
+| 3.1 Set goals based on performance and energy impact | Met | Budgets per page, theme and site mode (`npm run perf -- --check`, `scripts/perf/budgets.json`), and a carbon limit per page beside the weight (dynamic and static) |
 | 3.2 Minify and remove unused code | Met | Production builds are minified. Static output drops the client scripts no page names (`modules/static-routes.ts`, 14.72 MB to 5.94 MB on the mock) |
 | 3.3 Modularize bandwidth-heavy components | Met | Heavy islands (Mermaid, the playground, the scene) load their code only when used, from `/_islands/` (ADR 0006). Checked by the `islands` budgets |
 | 3.4 Avoid redundancy and duplication in code | Not checked | No duplication check runs in CI |
@@ -86,7 +86,7 @@ The guidelines are grouped in five sections: 2 User Experience Design, 3 Web Dev
 | --- | --- | --- |
 | 5.1 Have an ethical and sustainable product strategy | Partly | The engineering standard and `AGENTS.md`; the licence is AGPL-3.0 (ADR 0007). A site's own policies are the owner's |
 | 5.2 Assign a sustainability advocate | Owner | A role of the project or the site |
-| 5.5 Calculate the environmental impact | Partly | An estimate of CO2e per page view, reported and not budgeted. It is not the footprint of an organisation |
+| 5.5 Calculate the environmental impact | Partly | An estimate of CO2e per page view, reported and limited per page in the modes CI measures. It is not the footprint of an organisation |
 | 5.10 Follow a product management and maintenance strategy | Met | Semantic versions and a release line; only the latest line receives fixes (standard, section 7) |
 | 5.11 Implement continuous improvement procedures | Met | Budgets with their history in `docs/performance.md`; a change that moves a budget records the number and the reason |
 | 5.12 Document updates and evolutions | Met | Release notes from the pull request titles (standard, section 7); `docs/` changed with the code |
@@ -95,7 +95,7 @@ The guidelines are grouped in five sections: 2 User Experience Design, 3 Web Dev
 | 5.18 Promote responsible data practices | Partly | Minimal personal data, first-party analytics, personal data kept out of logs (standard, sections 4 and 9) |
 | 5.19 Establish responsible practices around AI and emerging or disruptive technologies | Not applicable | The engine has no AI feature |
 | 5.22 Plan for a digital product or service's care and end-of-life | Partly | The release policy and the upgrade notes. The engine is pre-1.0 and says so (standard, section 7) |
-| 5.24 Define performance, environmental, and human budgets | Partly | Performance budgets are enforced in CI. The environmental budget is the carbon estimate, reported and not yet budgeted. No human budget is defined; the accessibility score limit is the nearest thing |
+| 5.24 Define performance, environmental, and human budgets | Partly | Performance budgets are enforced in CI. The environmental budget is the carbon estimate, an error limit per page in dynamic and static mode since #847 (none for landing, which CI does not measure). No human budget is defined; the accessibility score limit is the nearest thing |
 | 5.25 Use and contribute to open source | Met | AGPL-3.0 with a theme exception (ADR 0007); third-party material is listed in `THIRD-PARTY.md` |
 | 5.26 Create a business continuity and disaster recovery plan | Owner | The operator's plan. `docs/operate/backup.md` gives the backup paths |
 
@@ -106,7 +106,7 @@ The other guidelines of section 5 (5.3, 5.4, 5.6 to 5.9, 5.14, 5.15, 5.17, 5.20,
 - **Not met:** offline access (4.2); a written list of the supported devices and browsers (2.17).
 - **Left to the operator:** compression of the rendered HTML in production (4.3). The budgets of dynamic mode measure it uncompressed.
 - **Not checked by any command:** duplication in code (3.4), the structured data (3.8), the necessity of automated jobs (4.6), broken links (4.4), the latest versions (3.15).
-- **An estimate, not a measurement:** `co2Mg` (2.1, 5.5, 5.24). It is reported per page, with the model and its assumptions in [`performance.md`](../performance.md#carbon-estimate). It becomes a budget after a CI baseline, as the standard asks.
+- **An estimate, not a measurement:** `co2Mg` (2.1, 5.5, 5.24). It is reported per page, with the model and its assumptions in [`performance.md`](../performance.md#carbon-estimate). Its limits come from the CI baseline on `main`, as the standard asks; they bound the estimate, not real emissions.
 - **Outside the engine:** hosting, the CDN, the grid and the visitor's device. The estimate does not cover them.
 
 ## Related
