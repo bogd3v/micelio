@@ -337,6 +337,78 @@ Every page loads one script (the 3.2 KB search island) and the 0.3 KB inline the
 
 Heavy islands (ADR 0006, section 6; Mermaid first) are built by `modules/islands.ts` into `/_islands/`, with their own chunks in `/_islands/chunks/`, so they do not depend on `/_nuxt/` and the pruning does not touch them. A script of `/_nuxt/` that an island or a page starts to load by name is kept by the same rule; the build logs how many it pruned.
 
+## Field baseline (2026-11-11)
+
+The first node in production, <https://bogdev.com.co>, measured by the maintainer on 2026-11-11. The perf run used a checkout of Micelio 0.5.5, the release the node ran (the maintainer does not know the date of its deployment, about two weeks earlier). The theme is `bogota`, in dynamic mode. The pages are the landing page (`/`, `home`) and `/about`. Three measurements, each with how it was taken; nothing was added to the pages to take them (no script, no beacon).
+
+### Lab run: `npm run perf`
+
+```bash
+npm run perf -- --base https://bogdev.com.co --pages home,about
+```
+
+Sizes are as sent, in KB; `jsGzipKb`, `cssGzipKb` and `htmlGzipKb` are the gzip sizes. The run is the one of "Measuring a real site": the script measures the node's pages with its own browser on the maintainer's machine.
+
+| Metric | `home` | `about` |
+| --- | ---: | ---: |
+| `jsKb` | 152.4 | 147.7 |
+| `jsGzipKb` | 169.3 | 164.2 |
+| `cssKb` | 22.4 | 22.4 |
+| `cssGzipKb` | 26.2 | 26.2 |
+| `htmlKb` | 24.3 | 21.9 |
+| `htmlGzipKb` | 29.6 | 28.0 |
+| `fontKb` | 35.5 | 35.5 |
+| `imageKb` | 574.8 | 53.1 |
+| `thirdPartyRequests` | 3 | 1 |
+| `strayRequests` | 0 | 0 |
+| `lcpMs` | 4794 | 2783 |
+| `tbtMs` | 253 | 164 |
+| `cls` | 0 | 0 |
+| `performance` | 76 | 92 |
+| `accessibility` | 100 | 100 |
+| `co2Mg` (Sustainable Web Design v4, estimate) | 92.74 | 32.15 |
+
+How to read it:
+
+- The script prints its errors against the budgets of the mock site (`scripts/perf/budgets.json`), which do not describe this node: `jsKb` 152.4 and 147.7 are above the mock's 150.3 and 145.6, and `thirdPartyRequests` is above 0. The third-party requests are the node's images, served from its media origin `resources.bogdev.com.co` (three on `home`, the logo on `about`); the script counts every other origin as third party. It also reports the islands of the mock's fixture pages, which the node does not serve. Later releases also print the carbon limit of the mock. None of these is a finding about the node, and no budget changes.
+- `htmlKb` is as the node sent it, compressed by its proxy; the `gzip` columns are what the script gets by gzipping the body.
+- A repetition compares the weights (`jsKb`, `cssKb`, `htmlKb`, `fontKb`, `imageKb`, `thirdPartyRequests`, and the gzip columns) and `co2Mg` within ±5 %, as long as the node runs the same release. The times (`lcpMs`, `tbtMs`) and the `performance` score are recorded but not compared: the times of one run of a real node vary too much (a repeat of the run moved `tbtMs` of `about` from 164 to 330 with the weights unchanged).
+
+### Accessibility: axe
+
+Run by the maintainer on 2026-11-11 at 20:52 UTC with axe-core 4.13.0 (the version of the maintainer's install, which is not the 4.14.0 that the lockfile of 0.5.5 pins) and the rule sets of `e2e/theme/a11y.spec.ts`, the spec `npm run test:theme` runs. It is not that spec: `npm run test:theme` runs on the mock site, per mode and viewport, and there is no command that points it at a node. The run used this script, saved outside the repository and run with Node from a checkout after `npm ci` (`node axe-field.mjs https://bogdev.com.co home=/ about=/about`): one browser context per page, at 412 × 823, loaded until the network is idle:
+
+```js
+import { createRequire } from 'node:module'
+const require = createRequire(`${process.cwd()}/package.json`)
+const { chromium } = require('playwright')
+const AxeBuilder = require('@axe-core/playwright').default ?? require('@axe-core/playwright')
+const [base, ...pages] = process.argv.slice(2)
+const browser = await chromium.launch()
+for (const spec of pages) {
+  const [name, path] = spec.split('=')
+  const context = await browser.newContext({ viewport: { width: 412, height: 823 } })
+  const page = await context.newPage()
+  await page.goto(new URL(path, base).href, { waitUntil: 'networkidle' })
+  const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
+  console.log(`${name} ${r.url} axe ${r.testEngine.version}: violations ${r.violations.length}, passes ${r.passes.length}, incomplete ${r.incomplete.length}`)
+  for (const v of r.violations) console.log(`  ${v.id} (${v.impact}): ${v.nodes.map(n => n.target.join(' ')).join(' | ')}`)
+  await context.close()
+}
+await browser.close()
+```
+
+| Page | Violations | Passes | Incomplete |
+| --- | ---: | ---: | ---: |
+| `home` (`/`) | 0 | 34 | 1 |
+| `about` (`/about`) | 0 | 31 | 1 |
+
+An incomplete check is one axe could not decide; it needs the manual check of `docs/themes/accessibility-checklist.md`. Axe finds only part of the problems.
+
+### Chrome UX Report
+
+The answer for the origin `https://bogdev.com.co` was read on the PageSpeed Insights website (<https://pagespeed.web.dev/>), Mobile tab, on 2026-11-11: its field section, "Discover what your real users are experiencing", said "No Data". No API command was run, so there is no request to repeat; the lab numbers of PageSpeed Insights are not recorded here. The Chrome UX Report has no field data of real visitors for the origin to compare with the lab run.
+
 ## History
 
 | Date | Change | Effect on the home page |
