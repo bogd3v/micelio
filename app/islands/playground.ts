@@ -5,15 +5,32 @@
 import { MAX_OUTPUT_BYTES, RUN_TIMEOUT_MS } from './runtimes/constants'
 import type { RunResult } from './types'
 import { fillLabel, formatDownload } from '../helpers/playgroundRunner'
+import { isRunnable } from '../helpers/playground'
 import { WorkerPool } from './lib/workerRunner'
 import type { RunHandle } from './lib/workerRunner'
 
 // One pool for the page: a runtime downloads once however many playgrounds use it
 let pool: WorkerPool | undefined
 
-function workers(): WorkerPool {
+/**
+ * The page's pool of Workers: the Run button and the preview frame's `micelio:run` share it.
+ *
+ * @remarks
+ * The frame imports this very file (`usePreviewFrame`), so the preview adds no entry, chunk or byte to what a reader loads.
+ */
+export function workers(): WorkerPool {
   pool ??= new WorkerPool(runtime => new Worker(new URL('./workers/playground.ts', import.meta.url), { type: 'module', name: `micelio-${runtime}` }))
   return pool
+}
+
+/** Whether the playground has a runtime for `runtime`: the languages the reader's Run button runs. */
+export function canRun(runtime: string): boolean {
+  return isRunnable({ runtime })
+}
+
+/** Terminates every Worker of the page; a run under one never settles. */
+export function disposeWorkers(): void {
+  pool?.dispose()
 }
 
 type State = 'queued' | 'loading' | 'running' | 'done' | 'error' | 'stopped'

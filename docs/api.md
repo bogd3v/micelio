@@ -168,8 +168,8 @@ Every `code` an `/api/*` error can carry, from `PROBLEM_CODES` in `server/utils/
 | Route | Notes |
 | --- | --- |
 | `GET /api/drafts` | Served to the editor's own session only. |
-| `GET /api/drafts/:documentId` | The draft and, when there is one, its published version. |
-| `GET /api/drafts/pages/:documentId` | The draft of a page (`DraftPageResponse`: the `Page` as `/api/pages/:slug` shapes it, validated, with its `post-list` sections filled, and the `updatedAt` of the draft). |
+| `GET /api/drafts/:documentId` | The draft and, when there is one, its published version; `playgroundPositions` gives the place of each Playground block of `article.blocks` among the blocks the CMS sent (the `index` of `micelio:run`), which the public article route never sends. |
+| `GET /api/drafts/pages/:documentId` | The draft of a page (`DraftPageResponse`: the `Page` as `/api/pages/:slug` shapes it, validated, with its `post-list` sections filled, the `shared.playground` blocks of its `sections` that name a language and code, kept only so the preview can run them with `micelio:run` and never rendered, and the `updatedAt` of the draft). |
 | `GET /api/preview/:uid/:documentId/weight` | The weight of the draft a preview grant names (`WeightReportResponse`), `uid` being `api::article.article` or `api::page.page`. `?locale=en\|es` (default `en`) and `?mode=dynamic\|static` (default `dynamic`) choose the rendering; see "Weight of a draft" below. |
 | `GET /api/preview/:uid/:documentId/card` | The social card of the draft a preview grant names: a PNG of 1200 by 630 pixels with its title and the site name, in the theme's display font and colours (`image/png`), in the language of the draft; see "Social card of a draft" below. |
 

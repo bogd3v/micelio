@@ -1,4 +1,4 @@
-import type { Page } from './page'
+import type { Page, PageSection } from './page'
 import type { DraftPreview } from './preview'
 import type { RawStrapiArticle } from './strapi-post'
 
@@ -76,9 +76,46 @@ export interface DraftArticleResponse {
   preview?: DraftPreview
 }
 
+/**
+ * The article draft as its route answers: `DraftArticleResponse` and where each Playground block was among the CMS's blocks.
+ *
+ * @remarks
+ * Not a slot API: `playgroundPositions` is for the preview's `micelio:run` (ADR 0019, section 4) and no theme reads it.
+ */
+export interface DraftArticleRunResponse extends DraftArticleResponse {
+  /** The place of each Playground block of `article.blocks`, in their order, among the blocks the CMS sent, counting those the route dropped: the `index` of `micelio:run`. */
+  playgroundPositions?: number[]
+}
+
+/**
+ * A Playground block among the sections of a page draft (`shared.playground`), with what the preview runs and nothing else.
+ *
+ * @remarks
+ * Only the draft route keeps it: `SectionRenderer` does not render it (it is not in `PAGE_SECTION_COMPONENTS`) and the public page route drops it. It is there so `micelio:run` finds the block by its position (ADR 0019, amendment of 2026-11-06).
+ */
+export interface DraftPlaygroundSection {
+  __component: 'shared.playground'
+  /** The language of `code`: `python`, `sql` or `javascript` can run. */
+  runtime: string
+  /** Plain text, as saved. */
+  code: string
+  /** Hidden code that runs before `code`; absent when there is none. */
+  setup?: string
+  /** The block's place in the zone as the CMS sent it, counting the sections the route dropped, which is the `index` of `micelio:run` (ADR 0019, section 4). */
+  position: number
+}
+
+/** A section of a page draft: one the page renders, or a Playground block the preview can run. */
+export type DraftPageSection = PageSection | DraftPlaygroundSection
+
+/** A page as its draft route returns it: the page's sections and the Playground blocks among them, in the CMS's order. */
+export interface DraftPage extends Omit<Page, 'sections'> {
+  sections: DraftPageSection[]
+}
+
 /** A page draft for the preview page. */
 export interface DraftPageResponse {
-  page: Page
+  page: DraftPage
   /** The `updatedAt` of the draft, which names the version the preview frame shows; null when the CMS sent none. */
   updatedAt: string | null
   /** Present when the request came with a preview grant, which is what lets the admin frame the draft. */

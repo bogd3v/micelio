@@ -72,3 +72,39 @@ The page keeps the positions in a set that `SectionRenderer` reads (`staticBlock
 
 The mode is state of the frame, not of the draft: a reload shows every block as it loads, and the
 admin sends the message again. The frame answers nothing.
+
+## Running a Playground block for the admin
+
+The admin's **Run here and fill expected output** asks the frame to run a Playground block with
+`micelio:run` and fills the answer, `micelio:runResult`
+([ADR 0019](../adr/0019-visual-editing-protocol.md), amendment of 2026-11-06). The frame does it with
+the reader's Worker, and nothing else is added to the sandbox:
+
+- The frame reads the message in `readBlockMessage` (`app/helpers/previewBlocks.ts`), by hand until
+  the pin moves ([the preview contract](preview-contract.md)): `requestId` and an `address` (`zone`
+  `sections` or `blocks`, `index`, `block`, `version`). A message that fails the checks of section 4
+  of the ADR (origin, `source`, envelope, shape, a `version` that is not the draft's) is dropped with
+  no answer. A `code`, `runtime` or `setup` in the payload is never read.
+- `answerRun` (`app/helpers/previewRun.ts`) finds the block in the data of the draft the page
+  loaded, by zone, position and catalogue id, never by the markers: the draft route of a page keeps
+  its `shared.playground` sections (`parseDraftPage`; `SectionRenderer` does not render them and the
+  public page route drops them) and the article draft has them in `blocks`. What runs is the saved
+  `code`, with the hidden `setup`, for the saved `runtime`.
+- The Worker is the reader's: `usePreviewFrame` imports `app/islands/playground.ts`, the file a
+  reader's page imports when Run is pressed, with `import()` on the first run once the page is
+  inside a frame, and `runForPreview` uses its pool (`workers()`). The draft route declares none of
+  it, the preview adds no entry, chunk or byte to a public page or to the playground's budget, and
+  the page's CSP does not change. Runs of one runtime queue behind each other, as for readers, and
+  the limits are `RUN_TIMEOUT_MS`, `LOAD_TIMEOUT_MS` and `MAX_OUTPUT_BYTES`.
+- The answer goes to `frame.adminOrigin` only: `ok: true` with `output` and `truncated`, or
+  `ok: false` with `codeError` (the message of the code, as plain text), `timeout`,
+  `runtimeUnavailable` (the runtime failed or did not load, or the Worker could not start) or
+  `notRunnable` (no Playground block at the address, or a language with no runtime). Nothing is
+  written into the page, saved or sent to the draft.
+- A reload ends the Worker and sends no answer. After `runtimeUnavailable` the frame keeps no state:
+  the next `micelio:run` imports and loads again.
+- The position is the block's place in the draft's zone as the CMS sent it (the one the weight report
+  uses, ADR 0019 section 4), not among the sections the page renders. The page draft route sets it
+  on each Playground section (`position`) and the article draft route lists it in
+  `playgroundPositions`, both before an invalid or unknown block is dropped, so a block dropped
+  earlier in the zone does not shift it. No public type, route or schema carries it.

@@ -25,6 +25,9 @@ The contract is a checked-in copy, `test/fixtures/plugin-contract/preview.ts`, a
 repository, so the test is the same on a laptop, in CI and in the Docker run of
 [testing a branch](testing-a-branch.md). It is a test fixture only: the app never imports it.
 
+`micelio:run` is not in that set yet: the pinned contract does not list it (bogd3v/micelio-plugin-core#134 adds it), so `readBlockMessage` reads it by hand and
+`test/previewRun.test.ts` checks it. When the pin moves to a commit that lists `micelio:run` and `micelio:runResult`, add them to the set of `test/previewContract.test.ts`.
+
 ## Moving the pin
 
 Do this when the plugin's contract changes (a message, a field or a limit).

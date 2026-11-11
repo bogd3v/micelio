@@ -1,6 +1,10 @@
 // The preview routes of micelio-plugin-core (bogd3v/micelio-plugin-core#44, docs/api.md "Preview"), as both mocks answer them.
 // Checked against the real plugin by the steps under Tests of the pull request that added it, not by a test: a mock only copies the answers.
-import { draftArticles, draftPage } from './drafts.mjs'
+import { draftArticles, draftPage, runDraftArticle, runDraftPage } from './drafts.mjs'
+
+// The drafts of the preview: the ones the drafts mock lists, and the ones micelio:run runs (e2e/preview/run.spec.ts)
+const pages = [draftPage, runDraftPage]
+const articles = [...draftArticles, runDraftArticle]
 
 const CONTENT_TYPES = { article: 'api::article.article', page: 'api::page.page' }
 
@@ -39,7 +43,7 @@ export function createPreviewMock({ apiToken } = {}) {
   }
 
   function currentVersion(kind, documentId, locale) {
-    return kind === 'page' ? draftPage.updatedAt : draftArticles.find(article => article.documentId === documentId && article.locale === locale)?.updatedAt
+    return kind === 'page' ? pages.find(page => page.documentId === documentId)?.updatedAt : articles.find(article => article.documentId === documentId && article.locale === locale)?.updatedAt
   }
 
   /**
@@ -87,8 +91,8 @@ export function createPreviewMock({ apiToken } = {}) {
       system.used = true
     }
     const entry = grant.contentType === CONTENT_TYPES.page
-      ? [draftPage].find(page => page.documentId === grant.documentId)
-      : draftArticles.find(article => article.documentId === grant.documentId && article.locale === grant.locale)
+      ? pages.find(page => page.documentId === grant.documentId)
+      : articles.find(article => article.documentId === grant.documentId && article.locale === grant.locale)
     if (system && entry?.updatedAt !== system.version) return refusal(404, 'previewRefused')
     return entry ? { status: 200, body: { data: entry, meta: state.omitActor ? {} : { actor: system ? 'system' : 'admin' } } } : refusal(404, 'previewRefused')
   }

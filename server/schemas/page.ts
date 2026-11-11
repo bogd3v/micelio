@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { Locale } from '~/interfaces/locale'
-import type { Page, PageSection, PageSeo, PostListSection } from '~/interfaces'
+import type { DraftPage, DraftPageSection, DraftPlaygroundSection, Page, PageSection, PageSeo, PostListSection } from '~/interfaces'
 
 import { PAGE_SLUG_PATTERN } from '~/constants/pages'
 import { isGlbUrl } from '~/helpers/scene'
@@ -236,7 +236,7 @@ export function parseSection(raw: unknown, context: PageContext): PageSection | 
   return parseWith(raw, sectionSchemas(context, sharedSchemas(context)))
 }
 
-function parseWith(raw: unknown, schemas: Record<string, z.ZodType<PageSection>>): PageSection | null {
+function parseWith<T>(raw: unknown, schemas: Record<string, z.ZodType<T>>): T | null {
   const component = raw && typeof raw === 'object' ? (raw as { __component?: unknown }).__component : undefined
   if (typeof component !== 'string') return null
   const schema = Object.hasOwn(schemas, component) ? schemas[component] : undefined
@@ -262,26 +262,49 @@ function pageHeader(seo: ReturnType<typeof sharedSchemas>['seo']) {
   })
 }
 
-/**
- * Strapi's page, validated: an invalid or unknown section is dropped alone, never the page.
- * Null when the page itself has no title or slug.
- */
-export function parsePage(data: unknown, context: PageContext): Page | null {
+/** The Playground block of a page draft: its language and its saved code, which `micelio:run` runs. The block's other fields stay in the CMS. */
+const draftPlayground = z.object({
+  __component: z.literal('shared.playground'),
+  runtime: text,
+  code: z.string().min(1),
+  setup: optional(z.string()),
+}).transform(({ setup, ...rest }): DraftPlaygroundSection => ({ ...rest, position: 0, ...(setup && { setup }) }))
+
+function parsePageWith<T extends DraftPageSection>(data: unknown, context: PageContext, extra: Record<string, z.ZodType<T>>, place?: (section: T, position: number) => T): (Omit<Page, 'sections'> & { sections: T[] }) | null {
   const shared = sharedSchemas(context)
   const header = pageHeader(shared.seo).safeParse(data)
   if (!header.success) return null
   const { sections, localizations, seo: pageSeo, ...rest } = header.data
-  const schemas = sectionSchemas(context, shared)
+  const schemas = { ...sectionSchemas(context, shared), ...extra } as Record<string, z.ZodType<T>>
   return {
     ...rest,
     ...(pageSeo && { seo: pageSeo as PageSeo }),
-    sections: (sections ?? []).flatMap((section) => {
+    sections: (sections ?? []).flatMap((section, position) => {
       const parsed = parseWith(section, schemas)
-      return parsed ? [parsed] : []
+      return parsed ? [place ? place(parsed, position) : parsed] : []
     }),
     translations: (localizations ?? []).flatMap((entry) => {
       const parsed = translation.safeParse(entry)
       return parsed.success ? [parsed.data] : []
     }),
   }
+}
+
+/**
+ * Strapi's page, validated: an invalid or unknown section is dropped alone, never the page.
+ * Null when the page itself has no title or slug.
+ */
+export function parsePage(data: unknown, context: PageContext): Page | null {
+  return parsePageWith<PageSection>(data, context, {})
+}
+
+/**
+ * Strapi's page draft, validated as `parsePage` does, and keeping the Playground blocks (`shared.playground`) that have a language and code, which `micelio:run` runs.
+ *
+ * @remarks
+ * Only the draft route calls it: the public page never carries a Playground block.
+ */
+export function parseDraftPage(data: unknown, context: PageContext): DraftPage | null {
+  // A Playground block keeps its place in the CMS's list, which a section dropped before it does not shift (`micelio:run` addresses it so)
+  return parsePageWith<DraftPageSection>(data, context, { 'shared.playground': draftPlayground }, (section, position) => section.__component === 'shared.playground' ? { ...section, position } : section)
 }

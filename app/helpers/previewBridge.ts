@@ -16,12 +16,13 @@ import {
 } from './previewBlocks'
 import type { BlockMessage } from './previewBlocks'
 import type { PageSection } from '../interfaces/page'
-import type { BlocksReport, PointedBlock, PreviewFrame, RenderMode } from '../interfaces/preview'
+import type { BlocksReport, PointedBlock, PreviewFrame, PreviewRunOptions, RenderMode, RunRequest } from '../interfaces/preview'
+import { answerRun } from './previewRun'
 
 /** What the page gives the bridge so the admin can edit the blocks it shows. */
 export interface PreviewBridgeOptions {
-  /** The sections the page renders now, which a patch applies to. */
-  sections: () => PageSection[] | null | undefined
+  /** The sections the page renders now, which a patch applies to. An article draft has none. */
+  sections?: () => PageSection[] | null | undefined
   /**
    * Gives the page the attributes of each rendered section's root, by position, and marks the zone.
    * The page hands them to `SectionRenderer`, which binds them by the position it renders each section at,
@@ -34,7 +35,7 @@ export interface PreviewBridgeOptions {
    * @remarks
    * The page waits for Vue, not the bridge: a module that imports `vue` makes the build split the shared runtime chunk that every public page loads (bogd3v/micelio#732, `npm run perf -- --check`).
    */
-  apply: (sections: PageSection[]) => Promise<void>
+  apply?: (sections: PageSection[]) => Promise<void>
   /**
    * Shows the block at `index` in `mode`, and answers once Vue has rendered it (the page's `nextTick`). The mode is state of the page, never saved (ADR 0019, amendment of 2026-11-04).
    *
@@ -42,6 +43,13 @@ export interface PreviewBridgeOptions {
    * The page decides what a block's static alternative is: a block with no island looks the same in both modes.
    */
   render?: (index: number, mode: RenderMode) => Promise<void>
+  /**
+   * The blocks of the draft the page loaded and the way to load the Worker, so `micelio:run` runs the saved block at an address (ADR 0019, amendment of 2026-11-06).
+   *
+   * @remarks
+   * Without it the frame does not know the message and drops it. The page lists the blocks of its zone as the route sent them; `load` imports the playground island's entry on a run, so this module imports none of its code.
+   */
+  run?: PreviewRunOptions
 }
 
 const ZONE_SELECTOR = '[data-myc-zone="sections"]'
@@ -55,7 +63,7 @@ const ZONE_SELECTOR = '[data-myc-zone="sections"]'
 export async function startPreviewBridge(frame: PreviewFrame, options?: PreviewBridgeOptions, isAlive: () => boolean = () => true): Promise<() => void> {
   if (options?.mark) {
     // The renderer binds the attributes when Vue renders; the geometry reads them from the DOM
-    await options.mark(knownSections(options.sections()).map((section, index) => blockMarkers(section.__component, index)))
+    await options.mark(knownSections(options.sections?.()).map((section, index) => blockMarkers(section.__component, index)))
     if (!isAlive()) return () => {}
   }
 
@@ -99,15 +107,40 @@ export async function startPreviewBridge(frame: PreviewFrame, options?: PreviewB
     reportSoon()
   }
 
+  // The frame going away ends the Worker, and a run that was waiting sends nothing
+  let ended = false
+  let ran = false
+
+  async function runBlock(request: RunRequest, run: PreviewRunOptions): Promise<void> {
+    ran = true
+    const answer = await answerRun(request, run)
+    if (answer && !ended) post('micelio:runResult', answer)
+  }
+
+  async function endRuns(run: PreviewRunOptions): Promise<void> {
+    try {
+      (await run.load()).disposeWorkers()
+    } catch {
+      // The module did not load, so no Worker of ours is running
+    }
+  }
+
   function handleBlockMessage(message: BlockMessage): void {
-    if (message.kind === 'malformed' || !zone) return drop()
+    if (message.kind === 'malformed') return drop()
+    if (message.kind === 'run') {
+      // An article has no zone and a page's markers are not read: the draft's data is
+      if (!options?.run) return drop()
+      void runBlock(message.request, options.run)
+      return
+    }
+    if (!zone) return drop()
     if (message.kind === 'insertGap') {
       placeGap(zone, message.request.after, message.request.height)
       return reportSoon()
     }
     if (message.kind === 'patch') {
-      const sections = options ? patchSections(options.sections(), message.request) : undefined
-      if (!options || !sections) return drop()
+      const sections = options?.sections && options.apply ? patchSections(options.sections(), message.request) : undefined
+      if (!options?.apply || !sections) return drop()
       // The components render the new values when `apply` answers; the observers report the reflow, this reports a change that keeps the size
       void reportAfter(options.apply(sections))
       return
@@ -198,7 +231,10 @@ export async function startPreviewBridge(frame: PreviewFrame, options?: PreviewB
   }
 
   return () => {
+    ended = true
     window.removeEventListener('message', onMessage)
     stop?.()
+    // The entry is loaded already when a run started: ending its Workers ends the runs, which send nothing
+    if (ran && options?.run) void endRuns(options.run)
   }
 }

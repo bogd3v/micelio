@@ -56,6 +56,39 @@ export const draftPage = {
   publishedAt: null,
 }
 
+// The drafts micelio:run runs (e2e/preview/run.spec.ts), served by the preview mock only so the drafts above, which other specs count, stay as they are.
+// The English article draft has a block that prints, one that throws, a JavaScript loop that QuickJS interrupts and a SQL loop that only the Worker's timeout ends.
+export const runDraftArticle = {
+  ...draftArticles[1],
+  id: 903,
+  documentId: 'doc-run',
+  title: 'Run the code of a draft',
+  slug: 'run-the-code-of-a-draft',
+  updatedAt: '2026-11-06T10:00:00.000Z',
+  blocks: [
+    { id: 9031, __component: 'shared.rich-text', body: '## Run it\n\nThe blocks below run in the preview.' },
+    { id: 9032, __component: 'shared.playground', runtime: 'javascript', code: 'console.log(`article ${6 * 7}`)', setup: null, expectedOutput: null, caption: null },
+    { id: 9033, __component: 'shared.playground', runtime: 'javascript', code: 'throw new Error(\'the saved code fails\')', setup: null, expectedOutput: null, caption: null },
+    { id: 9034, __component: 'shared.playground', runtime: 'javascript', code: 'while (true) {}', setup: null, expectedOutput: null, caption: null },
+    { id: 9035, __component: 'shared.playground', runtime: 'sql', code: 'WITH RECURSIVE forever(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM forever)\nSELECT count(*) FROM forever;', setup: null, expectedOutput: null, caption: null },
+  ],
+}
+
+// The showcase page with a Playground block after the sections the page renders, as the seeded page "Islands without their alternative" has one:
+// the draft route keeps it and does not render it. Its position among the sections is `runDraftPagePlaygroundIndex`.
+export const runDraftPage = {
+  ...draftPage,
+  id: 802,
+  documentId: 'doc-page-run',
+  title: 'Field Notes, run',
+  slug: 'field-notes-run',
+  updatedAt: '2026-11-06T11:00:00.000Z',
+  sections: [...pageFixtures[0].sections, { id: 9801, __component: 'shared.playground', runtime: 'javascript', code: 'console.log(six * 7)', setup: 'const six = 6', expectedOutput: null, caption: null }],
+}
+
+/** The position of the Playground block among the sections of `runDraftPage`. */
+export const runDraftPagePlaygroundIndex = pageFixtures[0].sections.length
+
 function strapiError(status, name, message) {
   return { status, body: { data: null, error: { status, name, message, details: {} } } }
 }
