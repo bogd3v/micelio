@@ -18,7 +18,7 @@
     width: 8rem;
     height: 8rem;
     margin: 0 auto 2rem;
-    border-radius: calc(infinity * 1px);
+    border-radius: 9999px;
     background: linear-gradient(
         135deg,
         color-mix(in srgb, var(--link) 5%, transparent) 0%,

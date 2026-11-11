@@ -3,12 +3,11 @@
     right: 1.5rem;
     bottom: calc(var(--myc-tabbar-h) + 1.5rem);
     z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     width: 3rem;
     height: 3rem;
-    border-radius: calc(infinity * 1px);
+    border-radius: 9999px;
     color: var(--on-ink);
     background-color: var(--link);
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
