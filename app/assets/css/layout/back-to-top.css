@@ -3,12 +3,11 @@
     right: 1.5rem;
     bottom: calc(var(--myc-tabbar-h) + 1.5rem);
     z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     width: 3rem;
     height: 3rem;
-    border-radius: calc(infinity * 1px);
+    border-radius: 9999px;
     color: var(--on-ink);
     background-color: var(--link);
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -20,6 +19,12 @@
     .myc-back-to-top {
         bottom: calc(var(--myc-tabbar-h) + var(--myc-notice-h, 0px) + 1.5rem);
     }
+}
+
+/* The button sits over the page at the bottom right: while the keyboard focus is on anything else it folds away, so it never covers a focused element
+   (WCAG 2.4.11). It stays in the tab order and shows when focus reaches it. `scale`, not `opacity` or `visibility`, which the static link's animation sets */
+body:has(:focus-visible:not(.myc-back-to-top)) .myc-back-to-top {
+    scale: 0;
 }
 
 /* Static builds have no JS: the link is hidden, and only a scroll timeline shows it past 200px */

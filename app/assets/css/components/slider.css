@@ -61,7 +61,7 @@
     justify-content: center;
     width: 2.75rem;
     height: 2.75rem;
-    border-radius: calc(infinity * 1px);
+    border-radius: 9999px;
     color: var(--myc-slider-dark);
     background-color: color-mix(in oklab, var(--myc-slider-white) 90%, transparent);
     box-shadow: var(--shadow-overlay);
@@ -137,7 +137,7 @@
     width: 1.5rem;
     height: 0.25rem;
     overflow: hidden;
-    border-radius: calc(infinity * 1px);
+    border-radius: 9999px;
     transition: all 0.3s var(--ease-emphasized);
 }
 
@@ -160,7 +160,7 @@
 .myc-slider-dot-fill {
     position: absolute;
     inset: 0;
-    border-radius: calc(infinity * 1px);
+    border-radius: 9999px;
 }
 
 .myc-slider-dot-track {
@@ -202,7 +202,7 @@
 
 .myc-slider-count-text {
     padding: 0.25rem 0.625rem;
-    border-radius: calc(infinity * 1px);
+    border-radius: 9999px;
     color: color-mix(in oklab, var(--myc-slider-white) 90%, transparent);
     background-color: color-mix(in oklab, var(--myc-slider-black) 40%, transparent);
     font-family: var(--font-mono);
