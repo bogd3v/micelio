@@ -46,12 +46,12 @@ window.readWeight = async (url) => {
 frame.src = params.get('src')
 `
 
-// A page that posts a load-draft to the draft frame of the page that holds it, as another window would
+// A page that posts a message to the draft frame of the page that holds it, as another window would: a load-draft, or the JSON of \`message\` when the query has it
 const SIBLING_PAGE = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>Sibling</title></head>
 <body><script>
 const params = new URLSearchParams(location.search)
-const message = { v: 1, type: 'load-draft', payload: { documentId: params.get('documentId'), locale: params.get('locale') || null } }
+const message = params.has('message') ? JSON.parse(params.get('message')) : { v: 1, type: 'load-draft', payload: { documentId: params.get('documentId'), locale: params.get('locale') || null } }
 parent.frames[0].postMessage(message, params.get('target'))
 </script></body></html>`
 

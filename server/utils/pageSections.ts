@@ -2,7 +2,7 @@ import qs from 'qs'
 import { parsePage } from '../schemas/page'
 import { ARTICLE_HAS_SLUG, PAGE_POPULATE, POST_CARD_POPULATE } from '../lib/constants'
 import { publicPostCard } from '../lib/publicShapes'
-import type { Page, PageSection, PostListItem, PostListSection, RawStrapiArticle, StrapiPaginatedResponse } from '~/interfaces'
+import type { Page, PostListItem, PostListSection, RawStrapiArticle, StrapiPaginatedResponse } from '~/interfaces'
 
 /** The newest published posts of a `post-list` section; none (or a Strapi failure) gives an empty list. */
 async function postsOf(section: PostListSection, locale: string | undefined): Promise<PostListItem[]> {
@@ -30,12 +30,13 @@ async function postsOf(section: PostListSection, locale: string | undefined): Pr
 const MAX_POST_LISTS = 4
 
 /** Fills the posts of the first `MAX_POST_LISTS` `post-list` sections, in parallel. */
-export function resolvePostLists(sections: PageSection[], locale: string | undefined): Promise<PageSection[]> {
+export function resolvePostLists<T extends { __component: string }>(sections: T[], locale: string | undefined): Promise<Array<T | PostListSection>> {
   let lists = 0
   return Promise.all(sections.map(async (section) => {
     if (section.__component !== 'section.post-list') return section
+    const list = section as unknown as PostListSection
     lists += 1
-    return lists > MAX_POST_LISTS ? section : { ...section, posts: await postsOf(section, locale) }
+    return lists > MAX_POST_LISTS ? section : { ...list, posts: await postsOf(list, locale) }
   }))
 }
 

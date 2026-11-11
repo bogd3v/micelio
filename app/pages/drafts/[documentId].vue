@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DraftArticleResponse, DraftViewState, Locale, StrapiPost } from '~/interfaces'
+import type { DraftArticleRunResponse, DraftViewState, Locale, StrapiPost } from '~/interfaces'
 import { draftViewState } from '~/helpers/drafts'
 import { isLocale } from '~/helpers/locale'
 import { toStrapiPost } from '~/helpers/post'
@@ -20,9 +20,9 @@ const { setAlternates } = useLocaleAlternates()
 const documentId = route.params.documentId as string
 const draftLocale: Locale = isLocale(route.query.locale) ? route.query.locale : locale.value as Locale
 
-const { data, error } = await useAsyncData<DraftArticleResponse>(
+const { data, error } = await useAsyncData<DraftArticleRunResponse>(
   `draft-${documentId}-${draftLocale}`,
-  () => requestFetch<DraftArticleResponse>(`/api/drafts/${encodeURIComponent(documentId)}`, { query: { locale: draftLocale, without: withoutIndex(route.query.without) } }),
+  () => requestFetch<DraftArticleRunResponse>(`/api/drafts/${encodeURIComponent(documentId)}`, { query: { locale: draftLocale, without: withoutIndex(route.query.without) } }),
 )
 
 if (error.value || !data.value) {
@@ -44,7 +44,7 @@ useStaticPreview()
 const preview = data.value.preview
 const version = data.value.article.updatedAt
 // The locale of the draft as the CMS holds it: null for a type that is not localised, which is what the admin asks for in `load-draft`
-if (preview && version) usePreviewFrame({ adminOrigin: preview.adminOrigin, documentId, locale: data.value.article.locale ?? null, version })
+if (preview && version) usePreviewFrame({ adminOrigin: preview.adminOrigin, documentId, locale: data.value.article.locale ?? null, version }, { run: { zone: 'blocks', blocks: () => data.value?.article.blocks, positions: () => data.value?.playgroundPositions } })
 
 useSeoMeta({
   title: () => pageTitle(t('drafts.meta.article', { title: post.value?.title ?? '' }), site.value.name),

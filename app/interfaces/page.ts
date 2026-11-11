@@ -6,7 +6,7 @@ import type { PostListItem, PostTranslation } from './strapi-post'
  * The section components a page can render, by their name without the `section.` prefix.
  *
  * @remarks
- * Sections of any other component are left out by the server.
+ * Sections of any other component are left out by the server. A page draft also keeps its Playground blocks, which no page renders (`DraftPlaygroundSection`).
  *
  * @public
  */

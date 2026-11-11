@@ -17,6 +17,8 @@ import type {
   PatchScalar,
   PreviewBox,
   RenderModeRequest,
+  RunAddress,
+  RunRequest,
   SelectRequest,
 } from '../interfaces/preview'
 import { knownSections } from './pages'
@@ -29,6 +31,7 @@ export type BlockMessage
     | { kind: 'insertGap', request: InsertGap }
     | { kind: 'patch', request: BlockPatch }
     | { kind: 'renderMode', request: RenderModeRequest }
+    | { kind: 'run', request: RunRequest }
     | { kind: 'malformed' }
 
 /** The `type` of each message of phase 2 and the `kind` it is read as (ADR 0019, amendment of 2026-11-02). */
@@ -38,6 +41,7 @@ const KINDS = {
   'micelio:insertGap': 'insertGap',
   'micelio:patch': 'patch',
   'micelio:renderMode': 'renderMode',
+  'micelio:run': 'run',
 } as const
 
 /** The keys of a section that hold its repeatable items, in the order a block uses them. */
@@ -46,6 +50,7 @@ const ITEM_KEYS = ['items', 'plans', 'logos', 'images'] as const
 const UNSAFE_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constructor', 'prototype'])
 const BLOCK_ID = /^[a-z0-9-]{1,64}$/
 const MAX_INDEX = 10_000
+const MAX_REQUEST_ID = 256
 const ITEM_SELECTOR = '.myc-section-item'
 const BLOCK_SELECTOR = '[data-myc-block]'
 
@@ -62,6 +67,13 @@ function readAddress(value: unknown): BlockAddress | undefined {
   if (typeof value.block !== 'string' || !BLOCK_ID.test(value.block)) return undefined
   if (typeof value.version !== 'string' || value.version.length === 0 || value.version.length > 64) return undefined
   return { zone: 'sections', index: value.index, block: value.block, version: value.version }
+}
+
+function readRunAddress(value: unknown): RunAddress | undefined {
+  if (!isRecord(value) || (value.zone !== 'sections' && value.zone !== 'blocks') || !isIndex(value.index)) return undefined
+  if (typeof value.block !== 'string' || !BLOCK_ID.test(value.block)) return undefined
+  if (typeof value.version !== 'string' || value.version.length === 0 || value.version.length > 64) return undefined
+  return { zone: value.zone, index: value.index, block: value.block, version: value.version }
 }
 
 function readScalar(value: unknown): PatchScalar | undefined {
@@ -131,6 +143,14 @@ export function readBlockMessage(data: unknown, version: string): BlockMessage |
   const kind = KINDS[data.type as keyof typeof KINDS]
   const payload = data.payload
   if (!isRecord(payload)) return { kind: 'malformed' }
+  if (kind === 'run') {
+    // Only a position and an id: a `code`, `runtime` or `setup` in the payload is ignored, never read
+    const { requestId } = payload
+    const address = readRunAddress(payload.address)
+    return typeof requestId === 'string' && requestId.length > 0 && requestId.length <= MAX_REQUEST_ID && address && address.version === version
+      ? { kind, request: { requestId, address } }
+      : { kind: 'malformed' }
+  }
   if (kind === 'patch') {
     const request = readPatch(payload)
     return request && request.address.version === version ? { kind, request } : { kind: 'malformed' }

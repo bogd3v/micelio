@@ -17,9 +17,9 @@ export function warnOnce(key: string, message: string): void {
   console.warn(message)
 }
 
-/** The sections the frontend can render, in order. */
-export function knownSections(sections: PageSection[] | null | undefined): PageSection[] {
-  return (sections ?? []).filter(section => KNOWN_COMPONENTS.has(section.__component))
+/** The sections the frontend can render, in order; a page draft's Playground blocks, which it does not render, are left out. */
+export function knownSections(sections: ReadonlyArray<{ __component: string }> | null | undefined): PageSection[] {
+  return (sections ?? []).filter(section => KNOWN_COMPONENTS.has(section.__component)) as PageSection[]
 }
 
 /** A page opened by a hero takes its h1 from the hero; any other page shows its own title. */

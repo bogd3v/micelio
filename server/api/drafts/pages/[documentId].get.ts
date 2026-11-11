@@ -1,8 +1,8 @@
 import qs from 'qs'
-import type { DraftPageResponse, Page } from '~/interfaces'
+import type { DraftPage, DraftPageResponse } from '~/interfaces'
 import { withoutIndex } from '~/helpers/preview'
-import { PAGE_POPULATE } from '../../../lib/constants'
-import { parsePage } from '../../../schemas/page'
+import { DRAFT_PAGE_POPULATE } from '../../../lib/constants'
+import { parseDraftPage } from '../../../schemas/page'
 
 export default defineEventHandler(async (event): Promise<DraftPageResponse> => {
   preventCaching(event)
@@ -15,21 +15,21 @@ export default defineEventHandler(async (event): Promise<DraftPageResponse> => {
   const grant = inherited ? null : previewAdminOrigin() ? previewGrantOf(event) : null
   let raw: unknown
   if (inherited || grant) {
-    raw = inherited ?? (await fetchPreviewDraft<unknown>(event, grant!, documentId, { populate: PAGE_POPULATE })).data
+    raw = inherited ?? (await fetchPreviewDraft<unknown>(event, grant!, documentId, { populate: DRAFT_PAGE_POPULATE })).data
     // The weight report renders the draft once per block without it (`withoutIndex`); only a grant may ask
     const without = withoutIndex(getQuery(event).without)
     const sections = (raw as { sections?: unknown } | null)?.sections
     if (without !== undefined && Array.isArray(sections)) raw = { ...raw as object, sections: sections.filter((_, index) => index !== without) }
   } else {
     const jwt = editorSession(event)
-    const query = qs.stringify({ status: 'draft', locale, populate: PAGE_POPULATE }, { skipNulls: true })
+    const query = qs.stringify({ status: 'draft', locale, populate: DRAFT_PAGE_POPULATE }, { skipNulls: true })
     raw = (await fetchAsEditor<{ data?: unknown }>(event, jwt, `/api/pages/${encodeURIComponent(documentId)}`, query)).data
   }
 
   const config = useRuntimeConfig()
-  const parsed = parsePage(raw, { render: markdownRenderer(locale).renderMarkdown, siteUrl: config.public.siteUrl, mediaOrigins: [config.public.strapiUrl, config.mediaUrl] })
+  const parsed = parseDraftPage(raw, { render: markdownRenderer(locale).renderMarkdown, siteUrl: config.public.siteUrl, mediaOrigins: [config.public.strapiUrl, config.mediaUrl] })
   if (!parsed) throw draftNotFound()
-  const page: Page = { ...parsed, sections: await resolvePostLists(parsed.sections, locale) }
+  const page: DraftPage = { ...parsed, sections: await resolvePostLists(parsed.sections, locale) }
   const updatedAt = (raw as { updatedAt?: unknown }).updatedAt
   return { page, updatedAt: typeof updatedAt === 'string' ? updatedAt : null, ...(grant && { preview: draftPreview() }) }
 })

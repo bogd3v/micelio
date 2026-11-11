@@ -130,7 +130,7 @@ The components of `micelio-cms` at `v0.4.0` under `src/components/section` and `
 | `gallery` | `section.gallery` | | `grid`, `masonry` | No | Itself |
 | `scene` | `section.scene` | | `background`, `inline` | Yes, `scene` | The required poster with its alt text |
 
-**Article and About blocks** (`article.blocks`, and the shared part of `about.blocks`; `playground` is in articles only):
+**Article and About blocks** (`article.blocks`, and the shared part of `about.blocks`; `playground` is in articles; a page draft also keeps a `shared.playground` that the CMS holds in its `sections`, only so the preview can run it with `micelio:run`: the page route drops it and no page renders it, bogd3v/micelio#880):
 
 | id | `schema` | Nested | `variant` | Island | `static` |
 | --- | --- | --- | --- | --- | --- |

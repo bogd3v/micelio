@@ -213,6 +213,13 @@ A request body is read within 64 KB (`readLimitedBody` in `server/utils/validati
   nothing is parsed as Markdown or HTML in the browser.
   `micelio:renderMode` carries an address and `dynamic` or `static`, and only chooses
   which markup the components render: it holds no text and the frame saves nothing.
+  `micelio:run` carries a `requestId` and an address, never code, a language or a setup
+  (a field it carries besides is not read): the frame runs only the saved `code` and hidden `setup`
+  of the `playground` block it finds at that address in the draft's data, in the reader's Worker
+  (`workerPolicy()`, no network, no DOM, no cookies) with the reader's limits (5 s, 60 s to load,
+  64 KB of output), and answers `micelio:runResult` to the admin's origin only.
+  The answer holds the output or one of four reasons, never a stack, a path or a URL,
+  and the frame writes it nowhere in the page and saves nothing.
   A draft page marks its blocks with `data-myc-*` attributes in the browser,
   only on a page with a grant shown in the admin's frame, never in a response;
   public pages carry none (`e2e/preview/preview.spec.ts`).

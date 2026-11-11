@@ -1,10 +1,10 @@
 import qs from 'qs'
 import type { H3Event } from 'h3'
-import type { DraftArticleResponse, Locale, PublishedVersion, RawStrapiArticle } from '~/interfaces'
+import type { DraftArticleRunResponse, Locale, PublishedVersion, RawStrapiArticle } from '~/interfaces'
 import { renderArticleBlocks } from '~/helpers/markdown'
 import { withoutIndex } from '~/helpers/preview'
 import { ARTICLE_POPULATE } from '../../lib/constants'
-import { publicArticle } from '../../lib/publicShapes'
+import { playgroundPositions, publicArticle } from '../../lib/publicShapes'
 
 async function fetchPublishedVersion(event: H3Event, jwt: string, path: string, locale: Locale | undefined): Promise<PublishedVersion | null> {
   const query = qs.stringify({ status: 'published', locale, fields: ['slug', 'updatedAt', 'publishedAt'] }, { skipNulls: true })
@@ -18,11 +18,12 @@ async function fetchPublishedVersion(event: H3Event, jwt: string, path: string, 
   }
 }
 
-function draftArticle(raw: RawStrapiArticle, locale: Locale | undefined): RawStrapiArticle {
-  return publicArticle({ ...raw, blocks: renderArticleBlocks(raw.blocks, raw.references, markdownRenderer(locale)) })
+function draftArticle(raw: RawStrapiArticle, locale: Locale | undefined): Pick<DraftArticleRunResponse, 'article' | 'playgroundPositions'> {
+  // The allow-list drops a block with an unknown component, which shifts the ones after it: a Playground block keeps its place in the CMS's zone, the `index` of `micelio:run`
+  return { article: publicArticle({ ...raw, blocks: renderArticleBlocks(raw.blocks, raw.references, markdownRenderer(locale)) }), playgroundPositions: playgroundPositions(raw.blocks) }
 }
 
-export default defineEventHandler(async (event): Promise<DraftArticleResponse> => {
+export default defineEventHandler(async (event): Promise<DraftArticleRunResponse> => {
   preventCaching(event)
   const documentId = getRouterParam(event, 'documentId')
   if (!documentId) throw draftNotFound()
@@ -36,7 +37,7 @@ export default defineEventHandler(async (event): Promise<DraftArticleResponse> =
     // The weight report renders the draft once per block without it (`withoutIndex`); only a grant may ask
     const without = withoutIndex(getQuery(event).without)
     const blocks = without === undefined ? raw.blocks : raw.blocks?.filter((_, index) => index !== without)
-    return { article: draftArticle({ ...raw, blocks }, locale), published: null, ...(grant && { preview: draftPreview() }) }
+    return { ...draftArticle({ ...raw, blocks }, locale), published: null, ...(grant && { preview: draftPreview() }) }
   }
 
   const jwt = editorSession(event)
@@ -49,5 +50,5 @@ export default defineEventHandler(async (event): Promise<DraftArticleResponse> =
   ])
   if (!draft.data) throw draftNotFound()
 
-  return { article: draftArticle(draft.data, locale), published }
+  return { ...draftArticle(draft.data, locale), published }
 })

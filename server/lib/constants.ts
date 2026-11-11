@@ -48,6 +48,14 @@ export const PAGE_POPULATE = {
 }
 
 /**
+ * The Strapi populate of a page draft: that of a page, and the fields of a Playground block, which only the draft route keeps (`micelio:run`, ADR 0019, amendment of 2026-11-06).
+ */
+export const DRAFT_PAGE_POPULATE = {
+  ...PAGE_POPULATE,
+  sections: { on: { ...PAGE_POPULATE.sections.on, 'shared.playground': { fields: ['runtime', 'code', 'setup'] } } },
+}
+
+/**
  * The Strapi populate of the site identity: one entry per relation or component `parseSiteSettings` reads.
  *
  * @remarks

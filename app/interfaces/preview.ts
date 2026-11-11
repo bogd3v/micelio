@@ -166,3 +166,72 @@ export interface BlocksReport {
   viewport: { width: number, height: number }
   blocks: BlockBox[]
 }
+
+/** The dynamic zones a block can be run in: the sections of a page draft and the blocks of an article draft (ADR 0019, amendment of 2026-11-06). */
+export type RunZone = 'sections' | 'blocks'
+
+/** Where the block to run is: a `BlockAddress` that also names the zone of an article. */
+export interface RunAddress {
+  zone: RunZone
+  index: number
+  /** The block's catalogue id: `playground` for the only block that runs. */
+  block: string
+  version: string
+}
+
+/** Admin → frame: run the saved Playground block at `address` and answer its output. Never carries code, a language or a setup. */
+export interface RunRequest {
+  /** Unique among the requests the admin has open; the answer carries it back. */
+  requestId: string
+  address: RunAddress
+}
+
+/** Why a run did not end well: the closed list of `micelio:runResult` (ADR 0019, amendment of 2026-11-06). */
+export type RunFailure = 'codeError' | 'timeout' | 'runtimeUnavailable' | 'notRunnable'
+
+/** Frame → admin: how the run ended. `output` holds the message of a `codeError`, as plain text. */
+export type RunResultPayload
+  = | { requestId: string, address: RunAddress, ok: true, output: string, truncated: boolean }
+    | { requestId: string, address: RunAddress, ok: false, reason: RunFailure, output?: string }
+
+/** What the frame runs for a request: the saved language, code and hidden setup of the block it found. */
+export interface RunnableBlock {
+  runtime: string
+  code: string
+  setup: string
+}
+
+/** How a run of the Worker ended: `started` says the runtime had loaded when it did. */
+export interface PreviewRunOutcome {
+  status: 'done' | 'error' | 'timeout' | 'stopped'
+  output: string
+  truncated: boolean
+  started: boolean
+}
+
+/**
+ * What the frame uses of the playground island's entry (`app/islands/playground.ts`), the file a reader's page imports when Run is pressed: the page's pool of Workers.
+ *
+ * @remarks
+ * The frame imports the same file and no other, so the preview adds no chunk, request or byte to what a reader loads.
+ */
+export interface PlaygroundEntry {
+  workers: () => {
+    run: (options: { runtime: string, code: string, setup: string, onStarted?: () => void }) => { result: Promise<{ status: PreviewRunOutcome['status'], output: string, truncated: boolean }> }
+  }
+  /** Whether the playground has a runtime for a language. */
+  canRun: (runtime: string) => boolean
+  disposeWorkers: () => void
+}
+
+/** What the bridge needs to answer `micelio:run`. */
+export interface PreviewRunOptions {
+  /** The zone of the draft that `blocks` lists. */
+  zone: RunZone
+  /** The blocks of the draft the page loaded, in the CMS's order, as the route sent them. */
+  blocks: () => ReadonlyArray<unknown> | null | undefined
+  /** The CMS place of each Playground block of `blocks`, in order, for a draft whose route does not set it on the blocks (an article's: `playgroundPositions`). */
+  positions?: () => ReadonlyArray<number> | undefined
+  /** Imports the playground island's entry; called on each run, so a failed import is tried again. */
+  load: () => Promise<PlaygroundEntry>
+}

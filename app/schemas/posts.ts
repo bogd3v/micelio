@@ -2,7 +2,7 @@ import { z } from 'zod'
 import type { CategoryEntry } from '~/interfaces/design'
 import type { ReadingPath, ReadingPathStep } from '~/interfaces/blog'
 import type { PaginationMeta, StrapiPaginatedResponse } from '~/interfaces/strapi-response'
-import type { DraftArticleResponse, PublishedVersion } from '~/interfaces/draft'
+import type { DraftArticleRunResponse, PublishedVersion } from '~/interfaces/draft'
 import type { DraftPreview } from '~/interfaces/preview'
 import type { PostListItem, RawStrapiArticle, SearchPostResult, StrapiAuthorRef, StrapiCategoryRef, StrapiLocalization, StrapiTagRef, TagCount } from '~/interfaces/strapi-post'
 import type { StrapiReference } from '~/interfaces/strapi-reference'
@@ -176,10 +176,11 @@ export const draftPreviewSchema = responseSchema<DraftPreview>()(
 )
 
 /** A draft and its published version (`GET /api/drafts/{documentId}`). */
-export const draftArticleResponseSchema = responseSchema<DraftArticleResponse>()(
+export const draftArticleResponseSchema = responseSchema<DraftArticleRunResponse>()(
   z.strictObject({
     article: articleSchema,
     published: publishedVersionSchema.nullable().meta({ description: 'Null when the article has no published version, and always null when the request came with a preview grant.' }),
+    playgroundPositions: z.array(z.int().min(0)).optional().meta({ description: 'The place of each Playground block of `article.blocks`, in their order, among the blocks the CMS sent, which the preview reads for `micelio:run`.' }),
     preview: draftPreviewSchema.optional().meta({ description: 'Present when the request came with a preview grant.' }),
   }).meta({ id: 'DraftArticleResponse', description: 'A draft for the preview page, with its published version when it has one.' }),
 )

@@ -7000,6 +7000,15 @@
             ],
             "description": "Null when the article has no published version, and always null when the request came with a preview grant."
           },
+          "playgroundPositions": {
+            "description": "The place of each Playground block of `article.blocks`, in their order, among the blocks the CMS sent, which the preview reads for `micelio:run`.",
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
           "preview": {
             "description": "Present when the request came with a preview grant.",
             "$ref": "#/components/schemas/DraftPreview"
@@ -7137,11 +7146,65 @@
         "additionalProperties": false,
         "description": "The drafts, most recently updated first, with their count."
       },
+      "DraftPage": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "Strapi's document id."
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ]
+          },
+          "seo": {
+            "$ref": "#/components/schemas/PageSeo"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PageSection"
+                },
+                {
+                  "$ref": "#/components/schemas/DraftPlaygroundSection"
+                }
+              ]
+            },
+            "description": "The sections that passed validation, in order, and the Playground blocks with a language and code; an invalid or unknown one is left out."
+          },
+          "translations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageTranslation"
+            }
+          }
+        },
+        "required": [
+          "documentId",
+          "title",
+          "slug",
+          "sections",
+          "translations"
+        ],
+        "additionalProperties": false,
+        "description": "A page as its draft route returns it after validation."
+      },
       "DraftPageResponse": {
         "type": "object",
         "properties": {
           "page": {
-            "$ref": "#/components/schemas/Page"
+            "$ref": "#/components/schemas/DraftPage"
           },
           "updatedAt": {
             "description": "The `updatedAt` of the draft, which names the version the preview frame shows; null when the CMS sent none.",
@@ -7161,6 +7224,37 @@
         ],
         "additionalProperties": false,
         "description": "A page draft for the preview page."
+      },
+      "DraftPlaygroundSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "shared.playground"
+          },
+          "runtime": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "setup": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "__component",
+          "runtime",
+          "code",
+          "position"
+        ],
+        "additionalProperties": false,
+        "description": "A Playground block among the sections of a page draft. The preview runs its saved code on `micelio:run`; the page does not render it."
       },
       "DraftPreview": {
         "type": "object",

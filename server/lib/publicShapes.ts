@@ -125,6 +125,16 @@ function keepValidOptions<B extends { __component: string }>(blocks: B[] | null 
   })
 }
 
+/**
+ * The place of each Playground block among the CMS's blocks, in the order of the blocks `publicArticle` keeps, taken before it drops a block with an unknown component and shifts the ones after it.
+ *
+ * @remarks
+ * Only the draft route calls it: `micelio:run` addresses a block by that place (ADR 0019, section 4). Every Playground block is a known variant, so the list lines up with the Playground blocks of the article it answers.
+ */
+export function playgroundPositions(blocks: RawStrapiArticle['blocks']): number[] {
+  return (blocks ?? []).flatMap((block, position) => block?.__component === 'shared.playground' ? [position] : [])
+}
+
 /** A full article as the CMS sent it, reduced to the fields the article page reads. */
 export function publicArticle(article: RawStrapiArticle): RawStrapiArticle {
   const result = allow(article, articleShape) as RawStrapiArticle
