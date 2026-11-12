@@ -1,6 +1,6 @@
 # ADR-0022: Page composition: reusable blocks and groups
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-11-11
 **Deciders:** Micelio maintainer
 

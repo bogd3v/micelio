@@ -1,6 +1,6 @@
 # ADR-0021: Icons as part of the block contract
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-11-11
 **Deciders:** Micelio maintainer
 
