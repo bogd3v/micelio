@@ -5,7 +5,18 @@
 **Deciders:** Micelio maintainer
 **Amended:** 2026-11-03: the presentation options vocabulary
 and the ordering rule of sections 1 and 2
-(bogd3v/micelio-plugin-core#48, bogd3v/micelio#803)
+(bogd3v/micelio-plugin-core#48, bogd3v/micelio#803);
+2026-11-12: the block catalogue plan (bogd3v/micelio#871)
+
+**Amendment (2026-11-12, bogd3v/micelio#871): the block catalogue plan.** The maintainer approved the amendments to this record that `docs/architecture/block-catalogue-plan.md` proposes, in the section "Amendments to ADR-0018 for the maintainer to approve". Each takes effect when the issue that makes it ships (the numbers are lines of the plan's issue list) and binds nothing before; this note changes no sentence of the record. The seven are:
+
+- A1: the options vocabulary gains two names, `iconPosition` (`start`, `end`, `only`; default `start`) and `treatment` (`original`, `monochrome`; default `original`), made by lines 18 and 22.
+- A2: `iconStyle`, already decided by ADR-0021, is recorded in the vocabulary, made by line 9.
+- A3: the instance fields `blockId` and `itemId` join the catalogue `id`, with their migration, made by line 1.
+- A4: `none`, `css` and `island` are the plan's shorthand for the `cost` field (bytes plus the island flag); the bytes stay the contract. It is a convention of the plan and no issue makes it, so this note records it.
+- A5: the changes to the entries of section 6 (blocks that leave, enter or change fields), made by the issue of each block.
+- A6: the changes to "Parts and fields" of section 6 (`shared.badge` replaces `shared.tech-item`; `feature-item` gains `link` and `badges`; `plan` gains `features`), made by lines 17, 41 and 42.
+- A7: addressing a block by `blockId` is a decision for ADR-0019, not made here; no issue makes it.
 
 ## Context
 
