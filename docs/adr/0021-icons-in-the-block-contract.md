@@ -3,6 +3,8 @@
 **Status:** Accepted
 **Date:** 2026-11-11
 **Deciders:** Micelio maintainer
+**Amended:** 2026-11-12: the Spanish labels of the index, section 2
+(bogd3v/micelio-plugin-core#194)
 
 Decided with the maintainer on 2026-11-07 and 2026-11-09 (bogd3v/micelio#869, epic bogd3v/micelio#872). The record follows the structure of [ADR-0018](0018-blocks-as-a-contract.md).
 
@@ -36,6 +38,8 @@ The core ships every glyph of the pinned Tabler version as normalised SVG in `@m
 A theme may ship its own drawing of any name under `icons/<name>.svg` in the theme package. The resolver that builds a page's sprite looks up each used name **in the active theme first, then in the core**. A theme never has to cover every name and can never leave a name without a glyph; a theme that ships no `icons/` renders the core's set. The names a theme may draw are exactly the core's: a file under `icons/` whose name is not in the catalogue fails `theme:check`, with the closest name suggested. So a page keeps its meaning across a theme change (the content stores `leaf`), and only the drawing changes.
 
 A theme does **not** add names of its own. That would make an icon depend on the theme and would break the guarantee of ADR-0005 section 11 that content survives a theme change; it is the icon equivalent of the raw-HTML block ADR-0018 section 5 refuses.
+
+**Amendment (2026-11-12, bogd3v/micelio-plugin-core#194): the Spanish labels of the index.** Tabler ships English names, tags and categories only, so several thousand Spanish labels have no source. By the maintainer's decision of 2026-11-12, the index carries Spanish labels for every category and for the names the core uses (its defaults and the names the four step-1 fields suggest first: `feature-item`, `link`, `stat`, `plan.features`); every other name has its English label as the fallback, answered in Spanish, and the search matches a query against both labels. This note changes no sentence of the record.
 
 ### The licence of the set
 
