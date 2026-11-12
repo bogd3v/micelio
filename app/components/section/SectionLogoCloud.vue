@@ -22,7 +22,7 @@ function logoHref(url: string | undefined): string | undefined {
       <SectionHead :title="section.title" :title-id="titleId" />
       <div class="myc-section-logo-track" :data-variant="section.variant">
         <ul class="myc-section-items">
-          <li v-for="(logo, index) in section.logos" :key="index" class="myc-section-item">
+          <li v-for="(logo, index) in section.logos" :key="logo.itemId ?? index" class="myc-section-item">
             <a v-if="logoHref(logo.url)" :href="logoHref(logo.url)" rel="noopener">
               <SectionMedia :media="logo.image" sizes="160px" :fallback-alt="logo.name" />
             </a>
@@ -31,7 +31,7 @@ function logoHref(url: string | undefined): string | undefined {
         </ul>
         <!-- Marquee loop: the same logos again, out of the accessibility tree and of the focus order; CSS shows it only while animating -->
         <ul v-if="isMarquee" class="myc-section-items" aria-hidden="true" inert>
-          <li v-for="(logo, index) in section.logos" :key="index" class="myc-section-item">
+          <li v-for="(logo, index) in section.logos" :key="logo.itemId ?? index" class="myc-section-item">
             <SectionMedia :media="logo.image" sizes="160px" decorative />
           </li>
         </ul>

@@ -70,6 +70,8 @@ export interface PageSeo {
 
 interface SectionBase<K extends PageSectionKind> {
   __component: `section.${K}`
+  /** The stable id of this block instance, opaque and unique in its page; absent in content stored before the CMS generated ids. Renderers key by it and fall back to the position. */
+  blockId?: string
 }
 
 /**
@@ -92,6 +94,8 @@ export interface HeroSection extends SectionBase<'hero'>, BlockOptions<'section.
  * @public
  */
 export interface FeatureItem {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
   icon?: PageMedia
   title: string
   text?: string
@@ -129,6 +133,8 @@ export interface MediaShowcaseSection extends SectionBase<'media-showcase'>, Blo
  * @public
  */
 export interface StatItem {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
   /** Shown as written; a string, so `12k` or `99%` need no conversion. */
   value: string
   label: string
@@ -151,6 +157,8 @@ export interface StatsSection extends SectionBase<'stats'>, BlockOptions<'sectio
  * @public
  */
 export interface LogoItem {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
   image: PageMedia
   name: string
   /** http(s) only */
@@ -174,6 +182,8 @@ export interface LogoCloudSection extends SectionBase<'logo-cloud'>, BlockOption
  * @public
  */
 export interface TestimonialItem {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
   /** Plain text, not Markdown. */
   quote: string
   author: string
@@ -198,6 +208,8 @@ export interface TestimonialsSection extends SectionBase<'testimonials'>, BlockO
  * @public
  */
 export interface PricingPlan {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
   name: string
   price: string
   period?: string
@@ -225,6 +237,8 @@ export interface PricingSection extends SectionBase<'pricing'>, BlockOptions<'se
  * @public
  */
 export interface FaqItem {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
   question: string
   /** Sanitized HTML of the Markdown answer */
   html: string

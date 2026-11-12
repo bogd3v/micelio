@@ -107,6 +107,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.hero': z.object({
       __component: z.literal('section.hero'),
       ...optionInputShape('section.hero'),
+      blockId: optional(text),
       variant: variant(['centered', 'split', 'full-bleed']),
       title: text,
       text: optional(text),
@@ -117,14 +118,16 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.feature-grid': z.object({
       __component: z.literal('section.feature-grid'),
       ...optionInputShape('section.feature-grid'),
+      blockId: optional(text),
       variant: variant(['grid', 'list', 'bento']),
       title: optional(text),
       text: optional(text),
-      items: list(z.object({ icon: optional(media), title: text, text: optional(text) })),
+      items: list(z.object({ itemId: optional(text), icon: optional(media), title: text, text: optional(text) })),
     }),
     'section.media-showcase': z.object({
       __component: z.literal('section.media-showcase'),
       ...optionInputShape('section.media-showcase'),
+      blockId: optional(text),
       variant: variant(['left', 'right', 'stacked']),
       title: optional(text),
       text: optional(markdown),
@@ -134,31 +137,36 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.stats': z.object({
       __component: z.literal('section.stats'),
       ...optionInputShape('section.stats'),
+      blockId: optional(text),
       variant: variant(['row', 'cards']),
       title: optional(text),
-      items: list(z.object({ value: text, label: text })),
+      items: list(z.object({ itemId: optional(text), value: text, label: text })),
     }),
     'section.logo-cloud': z.object({
       __component: z.literal('section.logo-cloud'),
       ...optionInputShape('section.logo-cloud'),
+      blockId: optional(text),
       variant: variant(['row', 'marquee']),
       title: optional(text),
-      logos: list(z.object({ image: media, name: text, url: optional(httpUrl) })),
+      logos: list(z.object({ itemId: optional(text), image: media, name: text, url: optional(httpUrl) })),
     }),
     'section.testimonials': z.object({
       __component: z.literal('section.testimonials'),
       ...optionInputShape('section.testimonials'),
+      blockId: optional(text),
       variant: variant(['single', 'grid']),
       title: optional(text),
-      items: list(z.object({ quote: text, author: text, role: optional(text), avatar: optional(media) })),
+      items: list(z.object({ itemId: optional(text), quote: text, author: text, role: optional(text), avatar: optional(media) })),
     }),
     'section.pricing': z.object({
       __component: z.literal('section.pricing'),
       ...optionInputShape('section.pricing'),
+      blockId: optional(text),
       variant: variant(['cards', 'table']),
       title: optional(text),
       text: optional(text),
       plans: list(z.object({
+        itemId: optional(text),
         name: text,
         price: text,
         period: optional(text),
@@ -170,13 +178,15 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.faq': z.object({
       __component: z.literal('section.faq'),
       ...optionInputShape('section.faq'),
+      blockId: optional(text),
       variant: variant(['list', 'two-columns']),
       title: optional(text),
-      items: list(z.object({ question: text, answer: markdown }).transform(({ question, answer }) => ({ question, html: answer }))),
+      items: list(z.object({ itemId: optional(text), question: text, answer: markdown }).transform(({ answer, ...rest }) => ({ ...rest, html: answer }))),
     }),
     'section.cta': z.object({
       __component: z.literal('section.cta'),
       ...optionInputShape('section.cta'),
+      blockId: optional(text),
       variant: variant(['banner', 'card']),
       title: text,
       text: optional(text),
@@ -186,6 +196,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.post-list': z.object({
       __component: z.literal('section.post-list'),
       ...optionInputShape('section.post-list'),
+      blockId: optional(text),
       variant: variant(['cards', 'list']),
       title: optional(text),
       category: slugRelation,
@@ -199,6 +210,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.newsletter': z.object({
       __component: z.literal('section.newsletter'),
       ...optionInputShape('section.newsletter'),
+      blockId: optional(text),
       variant: variant(['inline', 'card']),
       title: optional(text),
       text: optional(text),
@@ -207,11 +219,13 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.rich-text': z.object({
       __component: z.literal('section.rich-text'),
       ...optionInputShape('section.rich-text'),
+      blockId: optional(text),
       body: markdown,
     }).transform(({ body, ...rest }) => ({ ...rest, html: body })),
     'section.gallery': z.object({
       __component: z.literal('section.gallery'),
       ...optionInputShape('section.gallery'),
+      blockId: optional(text),
       variant: variant(['grid', 'masonry']),
       title: optional(text),
       images: list(media),
@@ -219,6 +233,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.scene': z.object({
       __component: z.literal('section.scene'),
       ...optionInputShape('section.scene'),
+      blockId: optional(text),
       variant: variant(['background', 'inline']),
       // Binary glTF only: a .gltf names external buffers the island would not fetch (ADR 0006, amendment of #246)
       model: media.refine(file => isGlbUrl(file.url), 'Not a .glb file'),

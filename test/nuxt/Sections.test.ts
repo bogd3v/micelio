@@ -185,6 +185,40 @@ describe('SectionRenderer', () => {
     expect(plain.html()).not.toContain('data-myc-')
   })
 
+  it('keys blocks by blockId and items by itemId, and keeps the order after a reorder', async () => {
+    const cta = (blockId: string | undefined, title: string): PageSection => ({ ...sections.cta('banner'), title, blockId } as PageSection)
+    const grid = (blockId: string | undefined, ids: Array<string | undefined>): PageSection => ({
+      __component: 'section.feature-grid',
+      variant: 'grid',
+      blockId,
+      items: ids.map((itemId, at) => ({ itemId, title: `Item ${at}${itemId ?? ''}` })),
+    })
+    const [one, two, three] = [cta('b-one', 'First'), cta('b-two', 'Second'), cta('b-three', 'Third')]
+    const wrapper = await mountSuspended(SectionRenderer, { props: { sections: [one, two, three] } })
+    const rootOf = (title: string) => wrapper.findAll('section.myc-section').find(node => node.text().includes(title))!.element
+    const [first, second] = [rootOf('First'), rootOf('Second')]
+    await wrapper.setProps({ sections: [three, two, one] })
+    // The nodes of a block follow its blockId: they moved, none was rebuilt in place with another block's text
+    expect(wrapper.findAll('section.myc-section').map(node => node.get('h2').text())).toEqual(['Third', 'Second', 'First'])
+    expect(rootOf('First')).toBe(first)
+    expect(rootOf('Second')).toBe(second)
+
+    const items = await mountSuspended(SectionRenderer, { props: { sections: [grid('g', ['i-a', 'i-b', 'i-c'])] } })
+    const [a, b] = items.findAll('li.myc-section-item').map(node => node.element)
+    await items.setProps({ sections: [grid('g', ['i-c', 'i-b', 'i-a'])] })
+    const reordered = items.findAll('li.myc-section-item')
+    expect(reordered.map(node => node.text())).toEqual(['Item 0i-c', 'Item 1i-b', 'Item 2i-a'])
+    expect(reordered[2]!.element).toBe(a)
+    expect(reordered[1]!.element).toBe(b)
+
+    // A block with no id keeps the position: the second node stays the second, whatever it holds now
+    const plain = await mountSuspended(SectionRenderer, { props: { sections: [cta(undefined, 'First'), cta(undefined, 'Second')] } })
+    const [before] = plain.findAll('section.myc-section').map(node => node.element)
+    await plain.setProps({ sections: [cta(undefined, 'Second'), cta(undefined, 'First')] })
+    expect(plain.findAll('section.myc-section')[0]!.element).toBe(before)
+    expect(plain.findAll('section.myc-section').map(node => node.get('h2').text())).toEqual(['Second', 'First'])
+  })
+
   it('labels each section with its heading', async () => {
     const wrapper = await render(sections.cta('banner'))
     const heading = wrapper.get('h2.myc-section-title')

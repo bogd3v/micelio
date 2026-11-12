@@ -14,7 +14,7 @@ const itemLevel = computed<string>(() => props.section.title ? 'h3' : 'h2')
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :text="section.text" :title-id="titleId" />
       <ul class="myc-section-items">
-        <li v-for="(item, index) in section.items" :key="index" class="myc-section-item">
+        <li v-for="(item, index) in section.items" :key="item.itemId ?? index" class="myc-section-item">
           <SectionMedia v-if="item.icon" :media="item.icon" root-class="myc-section-icon" sizes="64px" decorative />
           <component :is="itemLevel" class="myc-section-item-title">{{ item.title }}</component>
           <p v-if="item.text" class="myc-section-item-text">{{ item.text }}</p>

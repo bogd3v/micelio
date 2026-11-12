@@ -1,3 +1,4 @@
+import { withIds } from './ids.mjs'
 import { pageFixtures } from './pages.mjs'
 
 const draftAuthor = { id: 31, documentId: 'author-1', name: 'Alejandro Ramirez', avatar: null }
@@ -19,7 +20,7 @@ export const draftArticles = [
     cover: null,
     category: { id: 23, documentId: 'cat-privacidad', name: 'Privacidad', slug: 'privacidad' },
     author: draftAuthor,
-    blocks: [{ id: 901, __component: 'shared.rich-text', body: '## Qué es Pi-hole\n\nUn servidor DNS que bloquea rastreadores.' }],
+    blocks: withIds([{ id: 901, __component: 'shared.rich-text', body: '## Qué es Pi-hole\n\nUn servidor DNS que bloquea rastreadores.' }], 'draft-pihole'),
     references: [],
     localizations: [],
   },
@@ -39,7 +40,7 @@ export const draftArticles = [
     cover: null,
     category: { id: 22, documentId: 'cat-linux', name: 'Linux y código abierto', slug: 'linux' },
     author: draftAuthor,
-    blocks: [{ id: 902, __component: 'shared.rich-text', body: '## Basics\n\nStart with SSH keys and a firewall.' }],
+    blocks: withIds([{ id: 902, __component: 'shared.rich-text', body: '## Basics\n\nStart with SSH keys and a firewall.' }], 'draft-linux'),
     references: [],
     localizations: [],
   },
@@ -65,13 +66,13 @@ export const runDraftArticle = {
   title: 'Run the code of a draft',
   slug: 'run-the-code-of-a-draft',
   updatedAt: '2026-11-06T10:00:00.000Z',
-  blocks: [
+  blocks: withIds([
     { id: 9031, __component: 'shared.rich-text', body: '## Run it\n\nThe blocks below run in the preview.' },
     { id: 9032, __component: 'shared.playground', runtime: 'javascript', code: 'console.log(`article ${6 * 7}`)', setup: null, expectedOutput: null, caption: null },
     { id: 9033, __component: 'shared.playground', runtime: 'javascript', code: 'throw new Error(\'the saved code fails\')', setup: null, expectedOutput: null, caption: null },
     { id: 9034, __component: 'shared.playground', runtime: 'javascript', code: 'while (true) {}', setup: null, expectedOutput: null, caption: null },
     { id: 9035, __component: 'shared.playground', runtime: 'sql', code: 'WITH RECURSIVE forever(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM forever)\nSELECT count(*) FROM forever;', setup: null, expectedOutput: null, caption: null },
-  ],
+  ], 'draft-run'),
 }
 
 // The showcase page with a Playground block after the sections the page renders, as the seeded page "Islands without their alternative" has one:
@@ -83,7 +84,7 @@ export const runDraftPage = {
   title: 'Field Notes, run',
   slug: 'field-notes-run',
   updatedAt: '2026-11-06T11:00:00.000Z',
-  sections: [...pageFixtures[0].sections, { id: 9801, __component: 'shared.playground', runtime: 'javascript', code: 'console.log(six * 7)', setup: 'const six = 6', expectedOutput: null, caption: null }],
+  sections: withIds([...pageFixtures[0].sections, { id: 9801, __component: 'shared.playground', runtime: 'javascript', code: 'console.log(six * 7)', setup: 'const six = 6', expectedOutput: null, caption: null }], 'draft-page-run'),
 }
 
 /** The position of the Playground block among the sections of `runDraftPage`. */

@@ -230,6 +230,27 @@ describe('parsePage', () => {
   })
 })
 
+describe('the instance ids of a page', () => {
+  const page = (sections: unknown[]): unknown => ({ documentId: 'd', title: 'T', slug: 't', sections })
+
+  it('keeps the blockId of every block and the itemId of every repeatable item, and drops an empty or null one', () => {
+    const parsed = parsePage(page([
+      { __component: 'section.feature-grid', blockId: 'b-1', variant: 'grid', items: [{ itemId: 'i-1', title: 'One' }, { itemId: null, title: 'Two' }] },
+      { __component: 'section.stats', blockId: 'b-2', items: [{ itemId: 'i-2', value: '4', label: 'x' }] },
+      { __component: 'section.logo-cloud', blockId: 'b-3', logos: [{ itemId: 'i-3', image, name: 'Seeds' }] },
+      { __component: 'section.testimonials', blockId: 'b-4', items: [{ itemId: 'i-4', quote: 'q', author: 'Sam' }] },
+      { __component: 'section.pricing', blockId: 'b-5', plans: [{ itemId: 'i-5', name: 'A', price: '$1' }] },
+      { __component: 'section.faq', blockId: 'b-6', items: [{ itemId: 'i-6', question: 'Q?', answer: 'A.' }] },
+      { __component: 'section.cta', blockId: '', title: 'Go' },
+      { __component: 'section.newsletter', blockId: null },
+    ]), context)
+    const sections = parsed?.sections as unknown as Array<{ blockId?: string, items?: Array<{ itemId?: string }>, logos?: Array<{ itemId?: string }>, plans?: Array<{ itemId?: string }> }>
+    expect(sections.map(section => section.blockId)).toEqual(['b-1', 'b-2', 'b-3', 'b-4', 'b-5', 'b-6', undefined, undefined])
+    expect(sections[0]!.items!.map(item => item.itemId)).toEqual(['i-1', undefined])
+    expect([sections[1]!.items![0]!.itemId, sections[2]!.logos![0]!.itemId, sections[3]!.items![0]!.itemId, sections[4]!.plans![0]!.itemId, sections[5]!.items![0]!.itemId]).toEqual(['i-2', 'i-3', 'i-4', 'i-5', 'i-6'])
+  })
+})
+
 describe('pageParamsSchema', () => {
   it('accepts uid-shaped slugs only', () => {
     for (const slug of ['showcase', 'muestra', 'a', 'my-page_2', 'v1.0']) expect(pageParamsSchema.safeParse({ slug }).success).toBe(true)

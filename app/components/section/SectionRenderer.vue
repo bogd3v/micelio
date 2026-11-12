@@ -83,7 +83,7 @@ function bindingsOf(section: PageSection, index: number): Record<string, unknown
     :is="componentMap[section.__component]"
     v-for="(section, index) in knownSections"
     :id="anchorIds.get(index)"
-    :key="`${section.__component}-${index}${staticBlocks?.has(index) ? '-static' : ''}`"
+    :key="`${section.blockId ?? `${section.__component}-${index}`}${staticBlocks?.has(index) ? '-static' : ''}`"
     :section="section"
     v-bind="bindingsOf(section, index)"
   />

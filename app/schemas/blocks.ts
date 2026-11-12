@@ -247,24 +247,26 @@ const contactSchema = responseSchema<StrapiContact>()(
 
 /** A Markdown text block (`shared.rich-text`). */
 const richTextSchema = responseSchema<StrapiRichText>()(
-  z.strictObject({ id: z.int(), __component: z.literal('shared.rich-text'), body: z.string().nullable(), html: z.string().optional() }).meta({ id: 'RichTextBlock', description: 'Markdown as stored, and its sanitized HTML.' }),
+  z.strictObject({ id: z.int(), __component: z.literal('shared.rich-text'), blockId: z.string().nullish(), body: z.string().nullable(), html: z.string().optional() }).meta({ id: 'RichTextBlock', description: 'Markdown as stored, and its sanitized HTML.' }),
 )
 
 /** A quote block (`shared.quote`). */
 const quoteSchema = responseSchema<StrapiQuote>()(
-  z.strictObject({ id: z.int(), __component: z.literal('shared.quote'), ...optionResponseShape('shared.quote'), body: z.string().nullable(), html: z.string().optional(), title: z.string().nullish() }).meta({ id: 'QuoteBlock', description: 'A quote in Markdown, its inline HTML and the attribution.' }),
+  z.strictObject({ id: z.int(), __component: z.literal('shared.quote'), blockId: z.string().nullish(), ...optionResponseShape('shared.quote'), body: z.string().nullable(), html: z.string().optional(), title: z.string().nullish() }).meta({ id: 'QuoteBlock', description: 'A quote in Markdown, its inline HTML and the attribution.' }),
 )
 
 /** An image block (`shared.media`). */
 const mediaBlockSchema = responseSchema<StrapiMedia>()(
-  z.strictObject({ id: z.int(), __component: z.literal('shared.media'), ...optionResponseShape('shared.media'), file: mediaFileSchema.nullable(), caption: z.string().nullish(), credit: imageCreditSchema.nullish() }).meta({ id: 'MediaBlock', description: 'An image with its caption and credit.' }),
+  z.strictObject({ id: z.int(), __component: z.literal('shared.media'), blockId: z.string().nullish(), ...optionResponseShape('shared.media'), file: mediaFileSchema.nullable(), caption: z.string().nullish(), credit: imageCreditSchema.nullish() }).meta({ id: 'MediaBlock', description: 'An image with its caption and credit.' }),
 )
 
 /** A playground block (`shared.playground`). */
 const playgroundSchema = responseSchema<StrapiPlayground>()(
   z.strictObject({
     id: z.int(),
-    __component: z.literal('shared.playground'), ...optionResponseShape('shared.playground'),
+    __component: z.literal('shared.playground'),
+    blockId: z.string().nullish(),
+    ...optionResponseShape('shared.playground'),
     runtime: z.string(),
     code: z.string(),
     expectedOutput: z.string().nullish(),
@@ -275,12 +277,12 @@ const playgroundSchema = responseSchema<StrapiPlayground>()(
 
 /** One slide of a slider. */
 const slideSchema = responseSchema<StrapiSlide>()(
-  z.strictObject({ id: z.int().optional(), file: mediaFileSchema, caption: z.string().nullish(), credit: imageCreditSchema.nullish() }).meta({ id: 'StrapiSlide', description: 'A slide with its own caption and credit.' }),
+  z.strictObject({ id: z.int().optional(), itemId: z.string().nullish(), file: mediaFileSchema, caption: z.string().nullish(), credit: imageCreditSchema.nullish() }).meta({ id: 'StrapiSlide', description: 'A slide with its own caption and credit.' }),
 )
 
 /** A slider block (`shared.slider`). */
 const sliderSchema = responseSchema<StrapiSlider>()(
-  z.strictObject({ id: z.int(), __component: z.literal('shared.slider'), ...optionResponseShape('shared.slider'), items: z.array(slideSchema).nullish(), files: z.array(mediaFileSchema).nullish() }).meta({ id: 'SliderBlock', description: 'Slides, or plain uploads when there are none.' }),
+  z.strictObject({ id: z.int(), __component: z.literal('shared.slider'), blockId: z.string().nullish(), ...optionResponseShape('shared.slider'), items: z.array(slideSchema).nullish(), files: z.array(mediaFileSchema).nullish() }).meta({ id: 'SliderBlock', description: 'Slides, or plain uploads when there are none.' }),
 )
 
 /**

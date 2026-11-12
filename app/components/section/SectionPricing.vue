@@ -28,7 +28,7 @@ const hasActions = computed<boolean>(() => props.section.plans.some(plan => plan
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(plan, index) in section.plans" :key="index" :class="['myc-section-item', 'myc-section-plan', { 'myc-section-plan-recommended': plan.recommended }]">
+          <tr v-for="(plan, index) in section.plans" :key="plan.itemId ?? index" :class="['myc-section-item', 'myc-section-plan', { 'myc-section-plan-recommended': plan.recommended }]">
             <th scope="row" class="myc-section-item-title">
               {{ plan.name }}
               <span v-if="plan.recommended" class="myc-meta">{{ t('sections.recommended') }}</span>
@@ -50,7 +50,7 @@ const hasActions = computed<boolean>(() => props.section.plans.some(plan => plan
       </table>
 
       <ul v-else class="myc-section-items">
-        <li v-for="(plan, index) in section.plans" :key="index" :class="['myc-section-item', 'myc-section-plan', { 'myc-section-plan-recommended': plan.recommended }]">
+        <li v-for="(plan, index) in section.plans" :key="plan.itemId ?? index" :class="['myc-section-item', 'myc-section-plan', { 'myc-section-plan-recommended': plan.recommended }]">
           <p v-if="plan.recommended" class="myc-eyebrow">{{ t('sections.recommended') }}</p>
           <component :is="itemLevel" class="myc-section-item-title">{{ plan.name }}</component>
           <p class="myc-section-plan-price">

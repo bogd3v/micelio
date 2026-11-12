@@ -6955,6 +6955,9 @@
               "accent"
             ]
           },
+          "blockId": {
+            "type": "string"
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -7273,6 +7276,9 @@
       "FaqItem": {
         "type": "object",
         "properties": {
+          "itemId": {
+            "type": "string"
+          },
           "question": {
             "type": "string"
           },
@@ -7301,6 +7307,9 @@
               "comfortable",
               "compact"
             ]
+          },
+          "blockId": {
+            "type": "string"
           },
           "variant": {
             "type": "string",
@@ -7349,6 +7358,9 @@
               "compact"
             ]
           },
+          "blockId": {
+            "type": "string"
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -7381,6 +7393,9 @@
       "FeatureItem": {
         "type": "object",
         "properties": {
+          "itemId": {
+            "type": "string"
+          },
           "icon": {
             "$ref": "#/components/schemas/PageMedia"
           },
@@ -7440,6 +7455,9 @@
               "compact"
             ]
           },
+          "blockId": {
+            "type": "string"
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -7497,6 +7515,9 @@
               "full"
             ]
           },
+          "blockId": {
+            "type": "string"
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -7552,6 +7573,9 @@
               "compact"
             ]
           },
+          "blockId": {
+            "type": "string"
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -7580,6 +7604,9 @@
       "LogoItem": {
         "type": "object",
         "properties": {
+          "itemId": {
+            "type": "string"
+          },
           "image": {
             "$ref": "#/components/schemas/PageMedia"
           },
@@ -7609,6 +7636,12 @@
           "__component": {
             "type": "string",
             "const": "shared.media"
+          },
+          "blockId": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "width": {
             "type": "string",
@@ -7677,6 +7710,9 @@
               "auto"
             ]
           },
+          "blockId": {
+            "type": "string"
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -7728,6 +7764,9 @@
               "raised",
               "accent"
             ]
+          },
+          "blockId": {
+            "type": "string"
           },
           "variant": {
             "type": "string",
@@ -8001,6 +8040,12 @@
             "type": "string",
             "const": "shared.playground"
           },
+          "blockId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "height": {
             "type": "string",
             "enum": [
@@ -8170,6 +8215,9 @@
               "compact"
             ]
           },
+          "blockId": {
+            "type": "string"
+          },
           "variant": {
             "type": "string",
             "enum": [
@@ -8212,6 +8260,9 @@
       "PricingPlan": {
         "type": "object",
         "properties": {
+          "itemId": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
@@ -8258,6 +8309,9 @@
               "3",
               "4"
             ]
+          },
+          "blockId": {
+            "type": "string"
           },
           "variant": {
             "type": "string",
@@ -8398,6 +8452,12 @@
           "__component": {
             "type": "string",
             "const": "shared.quote"
+          },
+          "blockId": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "width": {
             "type": "string",
@@ -8680,6 +8740,12 @@
             "type": "string",
             "const": "shared.rich-text"
           },
+          "blockId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "body": {
             "type": [
               "string",
@@ -8713,6 +8779,9 @@
               "full"
             ]
           },
+          "blockId": {
+            "type": "string"
+          },
           "html": {
             "type": "string",
             "description": "Sanitized HTML of the Markdown body."
@@ -8740,6 +8809,9 @@
               "l",
               "full"
             ]
+          },
+          "blockId": {
+            "type": "string"
           },
           "variant": {
             "type": "string",
@@ -9106,6 +9178,12 @@
             "type": "string",
             "const": "shared.slider"
           },
+          "blockId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "ratio": {
             "type": "string",
             "enum": [
@@ -9179,6 +9257,9 @@
       "StatItem": {
         "type": "object",
         "properties": {
+          "itemId": {
+            "type": "string"
+          },
           "value": {
             "type": "string",
             "description": "Shown as written, so `12k` or `99%` need no conversion."
@@ -9223,6 +9304,9 @@
               "raised",
               "accent"
             ]
+          },
+          "blockId": {
+            "type": "string"
           },
           "variant": {
             "type": "string",
@@ -10116,6 +10200,12 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "itemId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "file": {
             "$ref": "#/components/schemas/StrapiMediaFile"
           },
@@ -10259,6 +10349,9 @@
       "TestimonialItem": {
         "type": "object",
         "properties": {
+          "itemId": {
+            "type": "string"
+          },
           "quote": {
             "type": "string",
             "description": "Plain text, not Markdown."
@@ -10301,6 +10394,9 @@
               "comfortable",
               "compact"
             ]
+          },
+          "blockId": {
+            "type": "string"
           },
           "variant": {
             "type": "string",

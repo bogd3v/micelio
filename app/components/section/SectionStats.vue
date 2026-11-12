@@ -12,7 +12,7 @@ const titleId = useId()
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :title-id="titleId" />
       <dl class="myc-section-items">
-        <div v-for="(item, index) in section.items" :key="index" class="myc-section-item">
+        <div v-for="(item, index) in section.items" :key="item.itemId ?? index" class="myc-section-item">
           <dt class="myc-section-stat-value">{{ item.value }}</dt>
           <dd class="myc-section-stat-label">{{ item.label }}</dd>
         </div>

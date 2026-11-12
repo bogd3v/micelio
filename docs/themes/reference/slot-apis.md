@@ -787,6 +787,20 @@ export interface PageSeo {
 }
 ```
 
+#### `FeatureItem`
+
+One feature of a `FeatureGridSection`, `section.feature-item`.
+
+```ts
+export interface FeatureItem {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
+  icon?: PageMedia
+  title: string
+  text?: string
+}
+```
+
 #### `MediaShowcaseSection`
 
 A media file with a text beside it, `section.media-showcase`.
@@ -808,6 +822,8 @@ One figure of a `StatsSection`, `section.stat`.
 
 ```ts
 export interface StatItem {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
   /** Shown as written; a string, so `12k` or `99%` need no conversion. */
   value: string
   label: string
@@ -820,6 +836,8 @@ One logo of a `LogoCloudSection`, `section.logo`.
 
 ```ts
 export interface LogoItem {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
   image: PageMedia
   name: string
   /** http(s) only */
@@ -833,6 +851,8 @@ One quote of a `TestimonialsSection`, `section.testimonial`.
 
 ```ts
 export interface TestimonialItem {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
   /** Plain text, not Markdown. */
   quote: string
   author: string
@@ -847,6 +867,8 @@ One plan of a `PricingSection`, `section.plan`.
 
 ```ts
 export interface PricingPlan {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
   name: string
   price: string
   period?: string
@@ -863,6 +885,8 @@ One question of a `FaqSection`, `section.faq-item`.
 
 ```ts
 export interface FaqItem {
+  /** The stable id of this item, opaque and unique in its block; absent in content stored before the CMS generated ids. */
+  itemId?: string
   question: string
   /** Sanitized HTML of the Markdown answer */
   html: string
@@ -1201,9 +1225,26 @@ An image block of an article, `shared.media`.
 export interface StrapiMedia extends BlockOptions<'shared.media'> {
   id: number
   __component: 'shared.media'
+  /** The stable id of this block instance, opaque and unique in its zone; `null` or absent in content stored before the CMS generated ids. Renderers key by it and fall back to the position. */
+  blockId?: string | null
   /** `null` when no file is attached. */
   file: StrapiMediaFile | null
   /** The caption under the image; the file's own caption is the fallback. */
+  caption?: string | null
+  credit?: StrapiImageCredit | null
+}
+```
+
+#### `StrapiSlide`
+
+One slide of a `StrapiSlider`, `shared.slide`.
+
+```ts
+export interface StrapiSlide {
+  id?: number
+  /** The stable id of this slide, opaque and unique in its slider; `null` or absent in content stored before the CMS generated ids. */
+  itemId?: string | null
+  file: StrapiMediaFile
   caption?: string | null
   credit?: StrapiImageCredit | null
 }
@@ -1217,6 +1258,8 @@ A slider block of an article, `shared.slider`.
 export interface StrapiSlider extends BlockOptions<'shared.slider'> {
   id: number
   __component: 'shared.slider'
+  /** The stable id of this block instance, opaque and unique in its zone; `null` or absent in content stored before the CMS generated ids. Renderers key by it and fall back to the position. */
+  blockId?: string | null
   /** The slides, each with its own caption and credit. */
   items?: StrapiSlide[] | null
   /** Plain uploads, used when `items` is empty; their captions come from the files. */
@@ -1453,6 +1496,8 @@ A text block of an article written in Markdown, `shared.rich-text`.
 export interface StrapiRichText {
   id: number
   __component: 'shared.rich-text'
+  /** The stable id of this block instance, opaque and unique in its zone; `null` or absent in content stored before the CMS generated ids. Renderers key by it and fall back to the position. */
+  blockId?: string | null
   /** The Markdown as the CMS stores it, before rendering. */
   body: string | null
   /** The sanitized HTML of `body`; set on the server. */
@@ -1468,6 +1513,8 @@ A quote block of an article, `shared.quote`, rendered as inline Markdown.
 export interface StrapiQuote extends BlockOptions<'shared.quote'> {
   id: number
   __component: 'shared.quote'
+  /** The stable id of this block instance, opaque and unique in its zone; `null` or absent in content stored before the CMS generated ids. Renderers key by it and fall back to the position. */
+  blockId?: string | null
   /** The quoted text in Markdown, as the CMS stores it. */
   body: string | null
   /** The sanitized HTML of `body`, rendered inline; set on the server. */
@@ -1485,6 +1532,8 @@ A block of code with its expected output, `shared.playground`.
 export interface StrapiPlayground extends BlockOptions<'shared.playground'> {
   id: number
   __component: 'shared.playground'
+  /** The stable id of this block instance, opaque and unique in its zone; `null` or absent in content stored before the CMS generated ids. Renderers key by it and fall back to the position. */
+  blockId?: string | null
   /** The language of `code`; the block can run only for the runtimes the frontend knows. */
   runtime: StrapiPlaygroundRuntime | string
   /** Plain text, not Markdown. */

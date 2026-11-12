@@ -147,6 +147,23 @@ describe('the article and About routes', () => {
   })
 })
 
+describe('the instance ids of the article and About blocks', () => {
+  const blocks = [
+    { id: 1, __component: 'shared.rich-text', blockId: 'b-1', body: 'x' },
+    { id: 2, __component: 'shared.quote', blockId: 'b-2', body: 'q' },
+    { id: 3, __component: 'shared.media', blockId: 'b-3', file: null },
+    { id: 4, __component: 'shared.slider', blockId: 'b-4', items: [{ id: 1, itemId: 'i-1', file: { url: '/uploads/a.png' }, secret: 'x' }] },
+    { id: 5, __component: 'shared.playground', blockId: null, runtime: 'sql', code: 'select 1' },
+  ]
+
+  it('lets through the blockId of a block and the itemId of a slide', () => {
+    const kept = publicArticle({ id: 1, blocks } as unknown as RawStrapiArticle).blocks as unknown as Array<Record<string, unknown>>
+    expect(kept.map(block => block.blockId)).toEqual(['b-1', 'b-2', 'b-3', 'b-4', null])
+    expect((kept[3]!.items as Array<Record<string, unknown>>)[0]).toEqual({ id: 1, itemId: 'i-1', file: { url: '/uploads/a.png' } })
+    expect((publicAbout({ id: 1, blocks: blocks.slice(0, 2) } as unknown as StrapiAbout).blocks as unknown as Array<Record<string, unknown>>).map(block => block.blockId)).toEqual(['b-1', 'b-2'])
+  })
+})
+
 describe('the theme contract', () => {
   const attributes = hooks.attributes as unknown as Record<string, { values: string[] }>
 

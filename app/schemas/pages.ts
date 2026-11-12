@@ -76,6 +76,7 @@ const heroSchema = responseSchema<HeroSection>()(
   z.strictObject({
     __component: z.literal('section.hero'),
     ...optionResponseShape('section.hero'),
+    blockId: z.string().optional(),
     variant: z.enum(['centered', 'split', 'full-bleed']),
     title: z.string(),
     text: z.string().optional(),
@@ -86,13 +87,14 @@ const heroSchema = responseSchema<HeroSection>()(
 )
 
 const featureItemSchema = responseSchema<FeatureItem>()(
-  z.strictObject({ icon: pageMediaSchema.optional(), title: z.string(), text: z.string().optional() }).meta({ id: 'FeatureItem', description: 'One feature of a feature grid.' }),
+  z.strictObject({ itemId: z.string().optional(), icon: pageMediaSchema.optional(), title: z.string(), text: z.string().optional() }).meta({ id: 'FeatureItem', description: 'One feature of a feature grid.' }),
 )
 
 const featureGridSchema = responseSchema<FeatureGridSection>()(
   z.strictObject({
     __component: z.literal('section.feature-grid'),
     ...optionResponseShape('section.feature-grid'),
+    blockId: z.string().optional(),
     variant: z.enum(['grid', 'list', 'bento']),
     title: z.string().optional(),
     text: z.string().optional(),
@@ -104,6 +106,7 @@ const mediaShowcaseSchema = responseSchema<MediaShowcaseSection>()(
   z.strictObject({
     __component: z.literal('section.media-showcase'),
     ...optionResponseShape('section.media-showcase'),
+    blockId: z.string().optional(),
     variant: z.enum(['left', 'right', 'stacked']),
     title: z.string().optional(),
     html: z.string().optional().meta({ description: 'Sanitized HTML of the Markdown text.' }),
@@ -113,13 +116,14 @@ const mediaShowcaseSchema = responseSchema<MediaShowcaseSection>()(
 )
 
 const statItemSchema = responseSchema<StatItem>()(
-  z.strictObject({ value: z.string().meta({ description: 'Shown as written, so `12k` or `99%` need no conversion.' }), label: z.string() }).meta({ id: 'StatItem', description: 'One figure of a stats section.' }),
+  z.strictObject({ itemId: z.string().optional(), value: z.string().meta({ description: 'Shown as written, so `12k` or `99%` need no conversion.' }), label: z.string() }).meta({ id: 'StatItem', description: 'One figure of a stats section.' }),
 )
 
 const statsSchema = responseSchema<StatsSection>()(
   z.strictObject({
     __component: z.literal('section.stats'),
     ...optionResponseShape('section.stats'),
+    blockId: z.string().optional(),
     variant: z.enum(['row', 'cards']),
     title: z.string().optional(),
     items: z.array(statItemSchema),
@@ -127,13 +131,14 @@ const statsSchema = responseSchema<StatsSection>()(
 )
 
 const logoItemSchema = responseSchema<LogoItem>()(
-  z.strictObject({ image: pageMediaSchema, name: z.string(), url: z.string().optional().meta({ description: 'http(s) only.' }) }).meta({ id: 'LogoItem', description: 'One logo of a logo cloud.' }),
+  z.strictObject({ itemId: z.string().optional(), image: pageMediaSchema, name: z.string(), url: z.string().optional().meta({ description: 'http(s) only.' }) }).meta({ id: 'LogoItem', description: 'One logo of a logo cloud.' }),
 )
 
 const logoCloudSchema = responseSchema<LogoCloudSection>()(
   z.strictObject({
     __component: z.literal('section.logo-cloud'),
     ...optionResponseShape('section.logo-cloud'),
+    blockId: z.string().optional(),
     variant: z.enum(['row', 'marquee']),
     title: z.string().optional(),
     logos: z.array(logoItemSchema),
@@ -141,13 +146,14 @@ const logoCloudSchema = responseSchema<LogoCloudSection>()(
 )
 
 const testimonialItemSchema = responseSchema<TestimonialItem>()(
-  z.strictObject({ quote: z.string().meta({ description: 'Plain text, not Markdown.' }), author: z.string(), role: z.string().optional(), avatar: pageMediaSchema.optional() }).meta({ id: 'TestimonialItem', description: 'One quote of a testimonials section.' }),
+  z.strictObject({ itemId: z.string().optional(), quote: z.string().meta({ description: 'Plain text, not Markdown.' }), author: z.string(), role: z.string().optional(), avatar: pageMediaSchema.optional() }).meta({ id: 'TestimonialItem', description: 'One quote of a testimonials section.' }),
 )
 
 const testimonialsSchema = responseSchema<TestimonialsSection>()(
   z.strictObject({
     __component: z.literal('section.testimonials'),
     ...optionResponseShape('section.testimonials'),
+    blockId: z.string().optional(),
     variant: z.enum(['single', 'grid']),
     title: z.string().optional(),
     items: z.array(testimonialItemSchema),
@@ -156,6 +162,7 @@ const testimonialsSchema = responseSchema<TestimonialsSection>()(
 
 const pricingPlanSchema = responseSchema<PricingPlan>()(
   z.strictObject({
+    itemId: z.string().optional(),
     name: z.string(),
     price: z.string(),
     period: z.string().optional(),
@@ -169,6 +176,7 @@ const pricingSchema = responseSchema<PricingSection>()(
   z.strictObject({
     __component: z.literal('section.pricing'),
     ...optionResponseShape('section.pricing'),
+    blockId: z.string().optional(),
     variant: z.enum(['cards', 'table']),
     title: z.string().optional(),
     text: z.string().optional(),
@@ -177,13 +185,14 @@ const pricingSchema = responseSchema<PricingSection>()(
 )
 
 const faqItemSchema = responseSchema<FaqItem>()(
-  z.strictObject({ question: z.string(), html: z.string().meta({ description: 'Sanitized HTML of the Markdown answer.' }) }).meta({ id: 'FaqItem', description: 'One question of a FAQ section.' }),
+  z.strictObject({ itemId: z.string().optional(), question: z.string(), html: z.string().meta({ description: 'Sanitized HTML of the Markdown answer.' }) }).meta({ id: 'FaqItem', description: 'One question of a FAQ section.' }),
 )
 
 const faqSchema = responseSchema<FaqSection>()(
   z.strictObject({
     __component: z.literal('section.faq'),
     ...optionResponseShape('section.faq'),
+    blockId: z.string().optional(),
     variant: z.enum(['list', 'two-columns']),
     title: z.string().optional(),
     items: z.array(faqItemSchema),
@@ -194,6 +203,7 @@ const ctaSchema = responseSchema<CtaSection>()(
   z.strictObject({
     __component: z.literal('section.cta'),
     ...optionResponseShape('section.cta'),
+    blockId: z.string().optional(),
     variant: z.enum(['banner', 'card']),
     title: z.string(),
     text: z.string().optional(),
@@ -206,6 +216,7 @@ const postListSchema = responseSchema<PostListSection>()(
   z.strictObject({
     __component: z.literal('section.post-list'),
     ...optionResponseShape('section.post-list'),
+    blockId: z.string().optional(),
     variant: z.enum(['cards', 'list']),
     title: z.string().optional(),
     category: z.string().optional().meta({ description: 'Category slug the list is filtered by; never sent together with `tag`.' }),
@@ -219,6 +230,7 @@ const newsletterSchema = responseSchema<NewsletterSection>()(
   z.strictObject({
     __component: z.literal('section.newsletter'),
     ...optionResponseShape('section.newsletter'),
+    blockId: z.string().optional(),
     variant: z.enum(['inline', 'card']),
     title: z.string().optional(),
     text: z.string().optional(),
@@ -230,6 +242,7 @@ const richTextSchema = responseSchema<RichTextSection>()(
   z.strictObject({
     __component: z.literal('section.rich-text'),
     ...optionResponseShape('section.rich-text'),
+    blockId: z.string().optional(),
     html: z.string().meta({ description: 'Sanitized HTML of the Markdown body.' }),
   }).meta({ id: 'RichTextSection', description: 'A text block written in Markdown.' }),
 )
@@ -238,6 +251,7 @@ const gallerySchema = responseSchema<GallerySection>()(
   z.strictObject({
     __component: z.literal('section.gallery'),
     ...optionResponseShape('section.gallery'),
+    blockId: z.string().optional(),
     variant: z.enum(['grid', 'masonry']),
     title: z.string().optional(),
     images: z.array(pageMediaSchema),
@@ -248,6 +262,7 @@ const sceneSchema = responseSchema<SceneSection>()(
   z.strictObject({
     __component: z.literal('section.scene'),
     ...optionResponseShape('section.scene'),
+    blockId: z.string().optional(),
     variant: z.enum(['background', 'inline']),
     model: pageMediaSchema.meta({ description: 'A binary glTF file (`.glb`); with any other file the server drops the section.' }),
     poster: pageMediaSchema,

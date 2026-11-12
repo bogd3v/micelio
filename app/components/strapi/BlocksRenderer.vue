@@ -40,6 +40,11 @@ const knownBlocks = computed<StrapiBlock[]>(() =>
 
 const numbers = computed<Record<string, number>>(() => figureNumbers(knownBlocks.value))
 
+// The About blocks have no blockId: they and a block stored before the ids key by their component and row id
+function keyOf(block: StrapiBlock): string {
+  return ('blockId' in block && block.blockId) || `${block.__component}-${block.id}`
+}
+
 function extraProps(block: StrapiBlock): { figureNumber?: number } {
   const figureNumber = numbers.value[figureBlockKey(block)]
   return figureNumber ? { figureNumber } : {}
@@ -50,7 +55,7 @@ function extraProps(block: StrapiBlock): { figureNumber?: number } {
   <component
     :is="componentMap[block.__component]"
     v-for="block in knownBlocks"
-    :key="`${block.__component}-${block.id}`"
+    :key="keyOf(block)"
     :block="block"
     v-bind="extraProps(block)"
   />

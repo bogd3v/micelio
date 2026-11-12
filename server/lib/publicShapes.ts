@@ -27,10 +27,10 @@ function optionFields(uid: OptionBlockUid): Record<string, true> {
 }
 
 const sharedBlocks = {
-  'shared.rich-text': fields({ id: true, __component: true, body: true, html: true }),
-  'shared.quote': fields({ id: true, __component: true, body: true, html: true, title: true, ...optionFields('shared.quote') }),
-  'shared.media': fields({ id: true, __component: true, file: media, caption: true, credit, ...optionFields('shared.media') }),
-  'shared.slider': fields({ id: true, __component: true, items: each(fields({ id: true, file: media, caption: true, credit })), files: each(media), ...optionFields('shared.slider') }),
+  'shared.rich-text': fields({ id: true, __component: true, blockId: true, body: true, html: true }),
+  'shared.quote': fields({ id: true, __component: true, blockId: true, body: true, html: true, title: true, ...optionFields('shared.quote') }),
+  'shared.media': fields({ id: true, __component: true, blockId: true, file: media, caption: true, credit, ...optionFields('shared.media') }),
+  'shared.slider': fields({ id: true, __component: true, blockId: true, items: each(fields({ id: true, itemId: true, file: media, caption: true, credit })), files: each(media), ...optionFields('shared.slider') }),
 }
 
 const fact = fields({ id: true, label: true, value: true, mono: true })
@@ -93,7 +93,7 @@ export const articleShape: Shape = fields({
   // The draft strip shows when the draft was last edited
   updatedAt: true,
   coverCredit: credit,
-  blocks: each(variants('__component', { ...sharedBlocks, 'shared.playground': fields({ id: true, __component: true, runtime: true, code: true, expectedOutput: true, setup: true, caption: true, ...optionFields('shared.playground') }) })),
+  blocks: each(variants('__component', { ...sharedBlocks, 'shared.playground': fields({ id: true, __component: true, blockId: true, runtime: true, code: true, expectedOutput: true, setup: true, caption: true, ...optionFields('shared.playground') }) })),
   references: each(reference),
   localizations: each(localization),
 })
