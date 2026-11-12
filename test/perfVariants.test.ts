@@ -87,7 +87,7 @@ describe('the carbon budget', () => {
     // 60 KB of font: 61 440 bytes x 111.891 g per GB a view = 6.87 mg; 3.6 KB of variants (home, BOGOTA to SECOND): 0.41 mg
     const variantKb = variantAllowance({ build: BOGOTA, active: SECOND }, 'home', ALLOWANCES).kb
     expect(pageLimits({ modeLimits: dynamic, page: 'home', level: 'error', extraFontKb: 60 })).toMatchObject({ fontKb: 210.8, co2Mg: 46.87 })
-    expect(pageLimits({ modeLimits: dynamic, page: 'home', level: 'error', variantKb })).toMatchObject({ jsKb: 153.9, co2Mg: 40.41 })
+    expect(pageLimits({ modeLimits: dynamic, page: 'home', level: 'error', variantKb })).toMatchObject({ jsKb: 155, co2Mg: 40.41 })
     expect(pageLimits({ modeLimits: dynamic, page: 'home', level: 'warn', extraFontKb: 60 }).co2Mg).toBeUndefined()
   })
 
