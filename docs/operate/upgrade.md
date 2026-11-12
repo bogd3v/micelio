@@ -57,6 +57,13 @@ Pull and start the new frontend image, with the same environment. The frontend h
   A site whose `themes.lock.json` does not pin `bogota` and relies on the default theme
   runs `npm run theme:add -- bogota` or names another theme.
   See [The default theme](themes.md#the-default-theme).
+- **The frontend joins release line 0.7 (0.7.0).**
+  No route, field, variable, image or Compose name changes.
+  The frontend answers `GET /_health` with its version, so a site on `@micelio/strapi-plugin-core` `0.2.0`
+  (`micelio-cms` 0.6.x and 0.7.0) sees the optional check `frontend-release-line` of the core report `fail`
+  for this frontend, on the status page and in `npx micelio doctor`.
+  The check never stops a boot; it clears when `micelio-cms` raises the core to the release that declares `"micelio": "0.7"`.
+  Upgrade the CMS first, then the frontend. This frontend runs on `micelio-cms` 0.6 and 0.7.
 
 ## Image tags
 
