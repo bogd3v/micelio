@@ -64,6 +64,14 @@ Pull and start the new frontend image, with the same environment. The frontend h
   for this frontend, on the status page and in `npx micelio doctor`.
   The check never stops a boot; it clears when `micelio-cms` raises the core to the release that declares `"micelio": "0.7"`.
   Upgrade the CMS first, then the frontend. This frontend runs on `micelio-cms` 0.6 and 0.7.
+- **The frontend joins release line 0.8 (0.8.0).**
+  No route, field, variable, image or Compose name changes.
+  Sites on `@micelio/strapi-plugin-core` `0.2.0` (`micelio-cms` 0.7.0) or `0.4.0` (`micelio-cms` 0.8.0)
+  see its optional check `frontend-release-line` report `fail` for this frontend,
+  on the status page and in `npx micelio doctor`, until `micelio-cms` installs a core that declares `"micelio": "0.8"`.
+  The check never stops a boot.
+  Upgrade the CMS first, then the frontend. This frontend also runs on `micelio-cms` 0.7,
+  where the CMS has no redirects route: the frontend logs `cms.redirects` and serves no slug redirects.
 
 ## Image tags
 
