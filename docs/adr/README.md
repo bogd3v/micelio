@@ -24,6 +24,7 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0018](0018-blocks-as-a-contract.md) | Blocks as a contract: `{ id, schema, options, cost, static }`, a closed vocabulary of options, a generated catalogue checked for drift, and no free positioning, per-element CSS, inline styles or raw HTML | Accepted | 2026-10-21 |
 | [0019](0019-visual-editing-protocol.md) | Visual editing: the frontend is the only renderer, its draft route in an admin iframe behind a single-use token exchanged for a short-lived grant, versioned `postMessage` envelopes, blocks addressed by catalogue id and position, and `frame-ancestors` relaxed only for a granted preview | Accepted | 2026-10-23 |
 | [0020](0020-strapi-contingency.md) | Stay on Strapi, keep the way out priced and open, and act on three named triggers: a licence change of the community edition, six months without a release, an acquisition that changes the terms | Proposed | 2026-11-09 |
+| [0021](0021-icons-in-the-block-contract.md) | Icons as part of the block contract: a field stores a Tabler name, the core ships every glyph and a theme may redraw any name but add none, one inline sprite per page, and a custom field in the admin | Proposed | 2026-11-11 |
 
 ## Writing a new record
 
