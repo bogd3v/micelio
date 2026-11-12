@@ -2,7 +2,7 @@
 
 **Status:** Accepted (amended by [ADR-0016](0016-categories-from-the-cms.md))
 **Date:** 2026-10-03
-**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice), 2026-10-06 (#238, #263, #306, #239), 2026-10-07 (#244, #276, #307), 2026-10-08 (#416), 2026-10-15 (#558), 2026-10-18 (#462)
+**Amended:** 2026-10-04 (#262, #237), 2026-10-05 (#237, twice), 2026-10-06 (#238, #263, #306, #239), 2026-10-07 (#244, #276, #307), 2026-10-08 (#416), 2026-10-15 (#558), 2026-10-18 (#462), 2026-11-11 (#870)
 **Deciders:** BogDev maintainer
 
 ## Context
@@ -259,6 +259,8 @@ Every theme styles every section of the `page` collection and every variant (bog
 **Amendment (2026-10-07, #244):** a theme may ship `sections.css` next to `theme.css`. The core's section CSS is a separate chunk that only pages rendering sections load (`SectionRenderer`), so a theme's section rules in `theme.css` would add bytes to every page, the blog and the articles included. The module emits `sections.css` as the template `#build/micelio/sections.css` (empty when the file is missing), `SectionRenderer` imports it with `layer(bd.theme)` after the core section files, and the chunk repeats the layer order statement, so the cascade is the same as for `theme.css`. It is optional, passes the same hook and `url()` rules as `theme.css` (`css-rules.ts`), counts in the 25 KB gzip budget of section 9 together with `theme.css` and the slots, and a theme without it works (the core styles the sections from the roles). Adding an optional file with a core default stays in contract v1 (section 6). Rejected: `@layer`-scoped rules in `theme.css` (still shipped everywhere) and one file per section (more requests, no gain).
 
 **Amendment (2026-10-07, #276):** the sentence "A theme may add CSS-only variants of an existing section (the same markup with its own `data-variant` value, declared in `theme.json`)" is superseded. The `variant` of a section is a core enum: in Strapi it only offers the variants of the core catalog (bogd3v/micelio-cms#75), so an editor cannot pick a variant a theme declares. Themes restyle the core's variants, through `sections.css` and the public hooks; a new selectable variant enters the core by PR, like a new section (the Strapi enum, the section component, `/_theme` and every installed theme). The reserved `sections` key of `theme.json` (`contract.ts`) does not declare variants.
+
+**Amendment (2026-11-11, bogd3v/micelio#870, proposed in [ADR-0022](0022-page-composition.md)): the `myc-group` hook.** While ADR-0022 is `Proposed`, this note adds nothing that binds. Once it is `Accepted`, the renderer wraps consecutive blocks that share a `group` key in an element with the public hook `myc-group` and `data-tone` (`default`, `raised`, `accent`, the values of the `tone` option of [ADR-0018](0018-blocks-as-a-contract.md)), and a member of the group yields its vertical margin to it. A theme may restyle the hook and its three values and may not remove it. It is an optional hook with a core default, so installed themes keep validating: a minor of the theme contract (`CONTRACT_VERSION.minor`, a row in `CONTRACT_ADDITIONS`, a section in `docs/themes/contract-changelog.md`), not a change of the section catalog.
 
 ### 12. Zero JavaScript in themes
 
