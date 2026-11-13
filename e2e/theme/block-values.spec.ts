@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import type { Locator, Page, TestInfo } from '@playwright/test'
-import { blockValueCases, blockValueKey } from '../fixtures/pages.mjs'
+import { blockValueCases, blockValueKey, LISTS_PAGE } from '../fixtures/pages.mjs'
 import { openPage } from './support'
 
 // Every value of every presentation option on every block that exposes it (#731), as a table: the section of the mock page
@@ -112,7 +112,23 @@ const ATTRIBUTE_ONLY = new Set([
   'scene-background height=s', 'scene-background height=l', 'scene-background height=full',
 ])
 
+// `align=center` and `tone` on every page section that offers them (a scene only in its inline variant): the same two rules on each root
+const alignCenter: Check = async (_ctx, root) => {
+  expect(await css(inner(root), 'text-align')).toBe('center')
+}
+
+/** The checks of the two options on a block: the second page of the table (the post list) gets its own. */
+const toneAndAlign = (block: string, align = true): Array<[string, Check]> => [
+  ...(align ? [[`${block} align=center`, alignCenter] as [string, Check]] : []),
+  [`${block} tone=raised`, tone('--surface-raised')],
+  [`${block} tone=accent`, tone('--accent-soft')],
+]
+
 const CHECKS: Record<string, Check> = {
+  ...Object.fromEntries([
+    ...['hero-split', 'feature-grid', 'showcase', 'logo-cloud', 'testimonials', 'pricing', 'faq', 'rich-text', 'gallery', 'scene-inline'].flatMap(block => toneAndAlign(block)),
+    ...toneAndAlign('newsletter-inline', false),
+  ]),
   'hero-split layout=split': splitMedia(),
   'hero-split tone=raised': tone('--surface-raised'),
   'hero-split tone=accent': tone('--accent-soft'),
@@ -203,7 +219,8 @@ function snapshot(root: Locator): Promise<unknown[]> {
 }
 
 // The cases come from the fixture (plain JavaScript): [block, options, stored defaults?]
-const ALL = blockValueCases as unknown as ReadonlyArray<[string, Record<string, string>, boolean?]>
+// The cases of the page /block-options: those with no page of their own (the post list's other values are on LISTS_PAGE, below)
+const ALL = (blockValueCases as unknown as ReadonlyArray<[string, Record<string, string>, boolean?, string?]>).filter(([, , , page]) => page === undefined)
 const BLOCKS = [...new Set(ALL.map(([block]) => block))]
 const CASES = ALL.filter(([, options, saved]) => !saved && Object.keys(options).length > 0)
 const SAVED = ALL.filter(([, , saved]) => saved)
@@ -253,6 +270,38 @@ test.describe('every value of every option, on every block that exposes it', () 
       const saved = page.locator('[data-section]', { has: page.getByRole('heading', { name: `${block} saved`, exact: true }) })
       for (const [name, value] of Object.entries(options)) await expect(saved).toHaveAttribute(`data-${name}`, value)
       expect(await snapshot(saved)).toEqual(await snapshot(ctx.plain(block)))
+    })
+  }
+})
+
+// A page resolves the posts of its first four post lists only (MAX_POST_LISTS of server/utils/pageSections.ts): the post list's cases of `tone` and `align`
+// are on a page of their own, with their own plain twin
+const LISTS = (blockValueCases as unknown as ReadonlyArray<[string, Record<string, string>, boolean?, string?]>).filter(([, , , page]) => page === LISTS_PAGE)
+const LIST_CHECKS = Object.fromEntries(toneAndAlign('post-list'))
+
+test.describe('every value of tone and align on a post list', () => {
+  test.beforeEach(async ({ page }) => {
+    await openPage(page, { name: LISTS_PAGE, path: `/${LISTS_PAGE}` })
+  })
+
+  test('the page has a section for each case and a twin', async ({ page }, testInfo) => {
+    const ctx = context(page, testInfo)
+    for (const [block, options] of LISTS) await expect(ctx.at(block, options), blockValueKey(block, options)).toHaveCount(1)
+  })
+
+  test('the table has a check for each case', () => {
+    const keys = LISTS.filter(([, options]) => Object.keys(options).length > 0).map(([block, options]) => blockValueKey(block, options))
+    expect(keys.filter(key => !(key in LIST_CHECKS))).toEqual([])
+    expect(Object.keys(LIST_CHECKS).filter(key => !keys.includes(key))).toEqual([])
+  })
+
+  for (const [block, options] of LISTS.filter(([, options]) => Object.keys(options).length > 0)) {
+    const key = blockValueKey(block, options)
+    test(`${key}`, async ({ page }, testInfo) => {
+      const ctx = context(page, testInfo)
+      const root = ctx.at(block, options)
+      for (const [name, value] of Object.entries(options)) await expect(root).toHaveAttribute(`data-${name}`, value)
+      await LIST_CHECKS[key]!(ctx, root, ctx.plain(block))
     })
   }
 })

@@ -255,27 +255,32 @@ const valueBlocks = {
   'scene-inline': (title, o) => ({ __component: 'section.scene', variant: 'inline', title, text: null, model: media(210, 'triangle.glb', { mime: 'model/gltf-binary', width: null, height: null }), poster: media(211, 'triangle-poster.png', { width: 1600, height: 900 }), alt: 'A green triangle', ...o }),
   'scene-background': (title, o) => ({ __component: 'section.scene', variant: 'background', title, text: 'Drawn behind this text.', model: media(210, 'triangle.glb', { mime: 'model/gltf-binary', width: null, height: null }), poster: media(211, 'triangle-poster.png', { width: 1600, height: 900 }), alt: 'A green triangle', ...o }),
 }
+/** The slug of the second page of the table; a case with no page is on `block-options`. */
+export const LISTS_PAGE = 'block-options-lists'
+
 /** The cases of the table: the block, and the options it takes (none is the plain twin). Every value of every option of every block appears once. */
 export const blockValueCases = [
   ['hero-split', {}], ['hero-split', { layout: 'stacked' }], ['hero-split', { layout: 'split' }], ['hero-split', { tone: 'raised' }], ['hero-split', { tone: 'accent' }],
-  ['hero-split', { height: 's' }], ['hero-split', { height: 'l' }], ['hero-split', { height: 'full' }],
+  ['hero-split', { height: 's' }], ['hero-split', { height: 'l' }], ['hero-split', { height: 'full' }], ['hero-split', { align: 'center' }],
   ['hero-centered', {}], ['hero-centered', { layout: 'stacked' }], ['hero-centered', { layout: 'split' }],
-  ['feature-grid', {}], ['feature-grid', { columns: '2' }], ['feature-grid', { columns: '4' }], ['feature-grid', { density: 'compact' }],
-  ['showcase', {}], ['showcase', { ratio: '4:3' }], ['showcase', { ratio: '1:1' }], ['showcase', { ratio: 'auto' }],
+  ['feature-grid', {}], ['feature-grid', { columns: '2' }], ['feature-grid', { columns: '4' }], ['feature-grid', { density: 'compact' }], ['feature-grid', { align: 'center' }], ['feature-grid', { tone: 'raised' }], ['feature-grid', { tone: 'accent' }],
+  ['showcase', {}], ['showcase', { ratio: '4:3' }], ['showcase', { ratio: '1:1' }], ['showcase', { ratio: 'auto' }], ['showcase', { align: 'center' }], ['showcase', { tone: 'raised' }], ['showcase', { tone: 'accent' }],
   ['stats', {}], ['stats', { columns: '2' }], ['stats', { columns: '4' }], ['stats', { align: 'center' }], ['stats', { tone: 'raised' }], ['stats', { tone: 'accent' }],
-  ['logo-cloud', {}], ['logo-cloud', { columns: '2' }], ['logo-cloud', { columns: '4' }], ['logo-cloud', { columns: '6' }], ['logo-cloud', { density: 'compact' }],
-  ['testimonials', {}], ['testimonials', { layout: 'stacked' }], ['testimonials', { layout: 'split' }], ['testimonials', { density: 'compact' }],
-  ['pricing', {}], ['pricing', { columns: '2' }], ['pricing', { columns: '4' }],
-  ['faq', {}], ['faq', { density: 'compact' }],
+  ['logo-cloud', {}], ['logo-cloud', { columns: '2' }], ['logo-cloud', { columns: '4' }], ['logo-cloud', { columns: '6' }], ['logo-cloud', { density: 'compact' }], ['logo-cloud', { align: 'center' }], ['logo-cloud', { tone: 'raised' }], ['logo-cloud', { tone: 'accent' }],
+  ['testimonials', {}], ['testimonials', { layout: 'stacked' }], ['testimonials', { layout: 'split' }], ['testimonials', { density: 'compact' }], ['testimonials', { align: 'center' }], ['testimonials', { tone: 'raised' }], ['testimonials', { tone: 'accent' }],
+  ['pricing', {}], ['pricing', { columns: '2' }], ['pricing', { columns: '4' }], ['pricing', { align: 'center' }], ['pricing', { tone: 'raised' }], ['pricing', { tone: 'accent' }],
+  ['faq', {}], ['faq', { density: 'compact' }], ['faq', { align: 'center' }], ['faq', { tone: 'raised' }], ['faq', { tone: 'accent' }],
   ['cta-card', {}], ['cta-card', { layout: 'stacked' }], ['cta-card', { layout: 'split' }], ['cta-card', { align: 'center' }], ['cta-card', { tone: 'raised' }], ['cta-card', { tone: 'accent' }],
   ['cta-banner', {}], ['cta-banner', { align: 'center' }], ['cta-banner', { tone: 'raised' }], ['cta-banner', { tone: 'accent' }],
   ['post-list', {}], ['post-list', { density: 'compact' }],
-  ['newsletter-inline', {}], ['newsletter-inline', { align: 'center' }],
+  ['newsletter-inline', {}], ['newsletter-inline', { align: 'center' }], ['newsletter-inline', { tone: 'raised' }], ['newsletter-inline', { tone: 'accent' }],
   ['newsletter', {}], ['newsletter', { align: 'center' }], ['newsletter', { tone: 'raised' }], ['newsletter', { tone: 'accent' }],
-  ['rich-text', {}], ['rich-text', { width: 'wide' }], ['rich-text', { width: 'full' }],
-  ['gallery', {}], ['gallery', { width: 'wide' }], ['gallery', { width: 'full' }], ['gallery', { density: 'compact' }],
-  ['scene-inline', {}], ['scene-inline', { height: 's' }], ['scene-inline', { height: 'l' }], ['scene-inline', { height: 'full' }],
+  ['rich-text', {}], ['rich-text', { width: 'wide' }], ['rich-text', { width: 'full' }], ['rich-text', { align: 'center' }], ['rich-text', { tone: 'raised' }], ['rich-text', { tone: 'accent' }],
+  ['gallery', {}], ['gallery', { width: 'wide' }], ['gallery', { width: 'full' }], ['gallery', { density: 'compact' }], ['gallery', { align: 'center' }], ['gallery', { tone: 'raised' }], ['gallery', { tone: 'accent' }],
+  ['scene-inline', {}], ['scene-inline', { height: 's' }], ['scene-inline', { height: 'l' }], ['scene-inline', { height: 'full' }], ['scene-inline', { align: 'center' }], ['scene-inline', { tone: 'raised' }], ['scene-inline', { tone: 'accent' }],
   ['scene-background', {}], ['scene-background', { height: 's' }], ['scene-background', { height: 'l' }], ['scene-background', { height: 'full' }],
+  // A page resolves the posts of its first four post lists only (MAX_POST_LISTS of server/utils/pageSections.ts): the rest of the post list's values have a page of their own, with their own plain twin
+  ['post-list', {}, false, LISTS_PAGE], ['post-list', { align: 'center' }, false, LISTS_PAGE], ['post-list', { tone: 'raised' }, false, LISTS_PAGE], ['post-list', { tone: 'accent' }, false, LISTS_PAGE],
   // The default value of each option, stored as Strapi stores it: it must look like the plain twin
   ['hero-split', { layout: 'centered', tone: 'default', height: 'm' }, true], ['feature-grid', { columns: '3', density: 'comfortable' }, true], ['showcase', { ratio: '16:9' }, true],
   ['stats', { columns: '3', align: 'start', tone: 'default' }, true], ['logo-cloud', { columns: '3', density: 'comfortable' }, true], ['testimonials', { layout: 'centered', density: 'comfortable' }, true],
@@ -291,7 +296,10 @@ export function blockValueKey(block, options, saved = false) {
   return `${block} ${pairs.length ? pairs.join(' ') : 'plain'}`
 }
 
-const valueSections = blockValueCases.map(([block, options, saved], index) => ({ id: 100 + index, ...valueBlocks[block](blockValueKey(block, options, saved), options) }))
+const valueSections = (slug = 'block-options') => blockValueCases
+  .map(([block, options, saved = false, page = 'block-options'], index) => ({ block, options, saved, page, index }))
+  .filter(entry => entry.page === slug)
+  .map(({ block, options, saved, index }) => ({ id: 100 + index, ...valueBlocks[block](blockValueKey(block, options, saved), options) }))
 
 // The presentation options of the blocks (#731): a centered hero laid out as a split, grids of two and four columns, a compact one, a centered stats row on the accent
 // tone, a card on the raised tone and a square showcase (e2e/theme/block-options.spec.ts); then one section for every value of every option (block-values.spec.ts)
@@ -374,16 +382,19 @@ const blockOptions = {
       columns: '6',
       logos: [1, 2, 3, 4, 5, 6].map(id => ({ id, image: media(105 + id, 'logo-circle.svg', { mime: 'image/svg+xml', width: 120, height: 40 }), name: `Logo ${id}`, url: null })),
     },
-    ...valueSections,
+    ...valueSections(),
   ],
   localizations: [],
 }
+
+// The post lists of the table, past the four a page resolves
+const blockOptionsLists = { id: 7, documentId: 'page-block-options-lists', title: 'Block options, post lists', slug: LISTS_PAGE, locale: 'en', seo: null, sections: valueSections(LISTS_PAGE), localizations: [] }
 
 // The ids the CMS gives every block and repeatable item (./ids.mjs): the zone of a page is named by its locale and slug
 const withBlockIds = page => ({ ...page, sections: withIds(page.sections, page.slug) })
 
 /** Mutable: a test may publish a page after a first miss. */
-export const pageFixtures = [showcase(false), showcase(true), partial, manyLists, sceneHero, blockOptions].map(withBlockIds)
+export const pageFixtures = [showcase(false), showcase(true), partial, manyLists, sceneHero, blockOptions, blockOptionsLists].map(withBlockIds)
 
 // What replaces the showcase pages when there are no articles
 const landingShowcases = [showcase(false, true), showcase(true, true)].map(withBlockIds)
