@@ -1,5 +1,7 @@
 // Strapi `page` fixtures shared by both mocks; they mirror the CMS seed's showcase page (en `showcase`, es `muestra`)
 
+import { withIds } from './ids.mjs'
+
 function media(id, name, extra = {}) {
   return { id, documentId: `media-${id}`, url: `/uploads/${name}`, alternativeText: name, width: 1200, height: 630, mime: 'image/png', ...extra }
 }
@@ -377,11 +379,14 @@ const blockOptions = {
   localizations: [],
 }
 
+// The ids the CMS gives every block and repeatable item (./ids.mjs): the zone of a page is named by its locale and slug
+const withBlockIds = page => ({ ...page, sections: withIds(page.sections, page.slug) })
+
 /** Mutable: a test may publish a page after a first miss. */
-export const pageFixtures = [showcase(false), showcase(true), partial, manyLists, sceneHero, blockOptions]
+export const pageFixtures = [showcase(false), showcase(true), partial, manyLists, sceneHero, blockOptions].map(withBlockIds)
 
 // What replaces the showcase pages when there are no articles
-const landingShowcases = [showcase(false, true), showcase(true, true)]
+const landingShowcases = [showcase(false, true), showcase(true, true)].map(withBlockIds)
 
 /** Answers GET /api/pages like Strapi: the slug and locale filters, always fully populated. */
 export function findPages(query, getNestedValue) {

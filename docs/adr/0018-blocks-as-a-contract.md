@@ -6,7 +6,8 @@
 **Amended:** 2026-11-03: the presentation options vocabulary
 and the ordering rule of sections 1 and 2
 (bogd3v/micelio-plugin-core#48, bogd3v/micelio#803);
-2026-11-12: the block catalogue plan (bogd3v/micelio#871)
+2026-11-12: the block catalogue plan (bogd3v/micelio#871);
+2026-11-12: the instance fields `blockId` and `itemId` (bogd3v/micelio-cms#440)
 
 **Amendment (2026-11-12, bogd3v/micelio#871): the block catalogue plan.** The maintainer approved the amendments to this record that `docs/architecture/block-catalogue-plan.md` proposes, in the section "Amendments to ADR-0018 for the maintainer to approve". Each takes effect when the issue that makes it ships (the numbers are lines of the plan's issue list) and binds nothing before; this note changes no sentence of the record. The seven are:
 
@@ -44,6 +45,8 @@ A builder on top of that makes every block change a surprise for themes, for sto
 | `static` | What the block renders with no JavaScript (before hydration in dynamic mode, always in static and landing builds): a required, complete alternative, never an empty box. For a block that needs no JS it is the block itself |
 
 A block's content and its presentation are separate. `schema` never holds a presentation field; `options` never holds content. Today `variant` sits inside the component; the catalogue declares it as an option and the plugin keeps storing it where it is until a migration moves it (section 2).
+
+**Amendment (2026-11-12, bogd3v/micelio-cms#440): the instance fields.** The `id` above is the kind of a block, shared by every instance of it. An instance has two more fields in its `schema`, which the catalogue never renders as content: `blockId` on each block of `page.sections` and `article.blocks`, and `itemId` on each repeatable item (`feature-item`, `stat`, `testimonial`, `plan`, `faq-item`, `logo` and `slide`). Each is an opaque string, unique in its zone (a block) or in its parent block (an item), generated on the first save, never edited and never reused; Strapi reserves `id`, which is why the names differ. The renderers key by them and fall back to the position for content that has none yet. `data-myc-block` is unchanged: it still carries the catalogue `id` (ADR-0019). Content stored before the release is filled in by a boot migration of `micelio-cms`.
 
 The presentation options are a closed vocabulary of eight names.
 Their values are stored as Strapi enumerations, and a block offers only some of the names:
@@ -94,6 +97,8 @@ The catalogue is part of the plugin core's public interface (standard, sections 
 
 Content migrations are boot migrations: idempotent, self-contained and tested
 ([engineering standard](../engineering-standard.md), section 6).
+
+**Amendment (2026-11-12, bogd3v/micelio-cms#440): `blockId` and `itemId` are a MINOR.** They are required fields with their migration in the same release (the third row above): `micelio-cms` (the fields and `src/migrations/block-ids.ts`, which fills every stored block and item that lacks one, never rewrites an id it finds and changes nothing on a second run), `micelio-plugin-core` (the generation on save, and the fields in the catalogue) and `micelio` (the renderers). Not a break. Addressing a block by `blockId` stays out (amendment A7).
 Before 1.0.0 a MAJOR raises `y` (section 7).
 An option value becomes a hook value of the theme contract when the theme contract renders it.
 That is a minor of the theme contract, which may come after the block contract's (section 1);

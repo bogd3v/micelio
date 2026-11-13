@@ -14,7 +14,7 @@ const items = computed(() => props.section.variant === 'single' ? props.section.
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :title-id="titleId" />
       <ul class="myc-section-items">
-        <li v-for="(item, index) in items" :key="index" class="myc-section-item">
+        <li v-for="(item, index) in items" :key="item.itemId ?? index" class="myc-section-item">
           <figure>
             <blockquote class="myc-section-quote">
               <p>{{ item.quote }}</p>

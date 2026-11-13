@@ -7,6 +7,7 @@ import { createDraftsMock } from './fixtures/drafts.mjs'
 import { createPreviewMock } from './fixtures/preview.mjs'
 import { createRedirectsMock } from './fixtures/redirects.mjs'
 import { noisePng, texturedGlb, triangleGlb } from './fixtures/glb.mjs'
+import { withIds } from './fixtures/ids.mjs'
 import { findPages } from './fixtures/pages.mjs'
 
 // MOCK_EMPTY_SITE=1 simulates a CMS with no BogDev value: no site identity, no about page, a neutral author (e2e/empty-site.spec.ts)
@@ -345,7 +346,7 @@ const publishedArticles = [
     category: categoryVue,
     author,
     seo: seoVue,
-    blocks: [blockVue],
+    blocks: withIds([blockVue], 'vue'),
     localizations: [{ id: 3, documentId: 'doc-vue', slug: 'guia-vue-composables', locale: 'es', publishedAt: '2026-02-02T10:00:00.000Z' }],
   },
   {
@@ -365,7 +366,7 @@ const publishedArticles = [
     category: categoryLinux,
     author,
     seo: seoLinux,
-    blocks: [blockLinux],
+    blocks: withIds([blockLinux], 'linux'),
   },
   {
     id: 3,
@@ -384,7 +385,7 @@ const publishedArticles = [
     category: categoryVue,
     author,
     seo: null,
-    blocks: [blockVueEs, ...figuresVueEs, ...playgroundsVueEs],
+    blocks: withIds([blockVueEs, ...figuresVueEs, ...playgroundsVueEs], 'vue-es'),
     references: referencesVueEs,
     coverCredit: creditOwnWork,
     localizations: [{ id: 1, documentId: 'doc-vue', slug: 'understanding-vue-composables', locale: 'en', publishedAt: '2026-02-01T10:00:00.000Z' }],

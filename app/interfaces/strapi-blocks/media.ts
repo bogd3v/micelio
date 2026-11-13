@@ -73,6 +73,8 @@ export interface StrapiImageCredit {
 export interface StrapiMedia extends BlockOptions<'shared.media'> {
   id: number
   __component: 'shared.media'
+  /** The stable id of this block instance, opaque and unique in its zone; `null` or absent in content stored before the CMS generated ids. Renderers key by it and fall back to the position. */
+  blockId?: string | null
   /** `null` when no file is attached. */
   file: StrapiMediaFile | null
   /** The caption under the image; the file's own caption is the fallback. */
@@ -87,6 +89,8 @@ export interface StrapiMedia extends BlockOptions<'shared.media'> {
  */
 export interface StrapiSlide {
   id?: number
+  /** The stable id of this slide, opaque and unique in its slider; `null` or absent in content stored before the CMS generated ids. */
+  itemId?: string | null
   file: StrapiMediaFile
   caption?: string | null
   credit?: StrapiImageCredit | null
@@ -100,6 +104,8 @@ export interface StrapiSlide {
 export interface StrapiSlider extends BlockOptions<'shared.slider'> {
   id: number
   __component: 'shared.slider'
+  /** The stable id of this block instance, opaque and unique in its zone; `null` or absent in content stored before the CMS generated ids. Renderers key by it and fall back to the position. */
+  blockId?: string | null
   /** The slides, each with its own caption and credit. */
   items?: StrapiSlide[] | null
   /** Plain uploads, used when `items` is empty; their captions come from the files. */

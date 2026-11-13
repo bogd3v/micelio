@@ -4,7 +4,7 @@ import MycFigureCredit from '~/components/myc/MycFigureCredit.vue'
 import StrapiMediaBlock from '~/components/strapi/MediaBlock.vue'
 import StrapiSliderBlock from '~/components/strapi/SliderBlock.vue'
 import StrapiBlocksRenderer from '~/components/strapi/BlocksRenderer.vue'
-import type { StrapiBlock, StrapiImageCredit, StrapiMedia, StrapiSlider } from '~/interfaces'
+import type { StrapiBlock, StrapiImageCredit, StrapiMedia, StrapiSlide, StrapiSlider } from '~/interfaces'
 
 const photo: StrapiImageCredit = {
   kind: 'photo',
@@ -91,6 +91,17 @@ describe('StrapiSliderBlock', () => {
     expect(wrapper.get('.myc-credit').text()).toBe('Illustration Alejandro Ramírez · BogDev · own work')
   })
 
+  it('keys the slides by itemId, so a reorder moves their nodes', async () => {
+    const slide = (itemId: string | undefined, url: string): StrapiSlide => ({ itemId, file: { url } })
+    const wrapper = await mountSuspended(StrapiSliderBlock, { props: { block: { ...slider, items: [slide('s-a', '/a.jpg'), slide('s-b', '/b.jpg')] } } })
+    const [first, second] = wrapper.findAll('.myc-slider-slide').map(node => node.element)
+    await wrapper.setProps({ block: { ...slider, items: [slide('s-b', '/b.jpg'), slide('s-a', '/a.jpg')] } })
+    const slides = wrapper.findAll('.myc-slider-slide')
+    expect(slides.map(node => node.get('img').attributes('src'))).toEqual([expect.stringContaining('b.jpg'), expect.stringContaining('a.jpg')])
+    expect(slides[0]!.element).toBe(second)
+    expect(slides[1]!.element).toBe(first)
+  })
+
   it('still shows legacy files', async () => {
     const wrapper = await mountSuspended(StrapiSliderBlock, {
       props: { block: { id: 4, __component: 'shared.slider', files: [{ url: '/a.jpg' }, { url: '/b.jpg' }] } },
@@ -110,5 +121,22 @@ describe('StrapiBlocksRenderer', () => {
     const wrapper = await mountSuspended(StrapiBlocksRenderer, { props: { blocks } })
     expect(wrapper.findAll('.myc-fig-n').map(number => number.text())).toEqual(['Fig. 01', 'Fig. 02'])
     expect(wrapper.find('[figure-number]').exists()).toBe(false)
+  })
+
+  it('keys a block by its blockId, which survives a save that recreates the row ids, and by the row id without one', async () => {
+    const rich = (id: number, blockId: string | undefined, body: string): StrapiBlock => ({ id, __component: 'shared.rich-text', blockId, body, html: `<p>${body}</p>` })
+    const wrapper = await mountSuspended(StrapiBlocksRenderer, { props: { blocks: [rich(1, 'b-a', 'Alpha'), rich(2, 'b-b', 'Beta')] } })
+    const [alpha, beta] = wrapper.findAll('p').map(node => node.element)
+    await wrapper.setProps({ blocks: [rich(12, 'b-b', 'Beta'), rich(11, 'b-a', 'Alpha')] })
+    const paragraphs = wrapper.findAll('p')
+    expect(paragraphs.map(node => node.text())).toEqual(['Beta', 'Alpha'])
+    expect(paragraphs[0]!.element).toBe(beta)
+    expect(paragraphs[1]!.element).toBe(alpha)
+
+    // With no blockId, the row id still keys the block
+    const plain = await mountSuspended(StrapiBlocksRenderer, { props: { blocks: [rich(1, undefined, 'Alpha'), rich(2, undefined, 'Beta')] } })
+    const [first, second] = plain.findAll('p').map(node => node.element)
+    await plain.setProps({ blocks: [rich(2, undefined, 'Beta'), rich(1, undefined, 'Alpha')] })
+    expect(plain.findAll('p').map(node => node.element)).toEqual([second, first])
   })
 })

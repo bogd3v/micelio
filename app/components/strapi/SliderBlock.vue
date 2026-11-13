@@ -156,7 +156,7 @@ onUnmounted(stopAutoplay)
       <div class="myc-slider-frame">
         <div
           v-for="(slide, index) in slides"
-          :key="index"
+          :key="slide.itemId ?? index"
           class="myc-slider-slide"
           :class="{ 'myc-slider-slide-active': index === currentIndex }"
           role="group"
