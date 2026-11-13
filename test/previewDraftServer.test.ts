@@ -59,10 +59,19 @@ describe('fetchPreviewDraft', () => {
     await expect(fetchPreviewDraft(event, 'g', 'doc-1', {})).rejects.toMatchObject({ code: 'notFound' })
   })
 
-  it.each([400, 401, 403, 404])('answers the draft 404 when the CMS answers %i', async (status) => {
+  it.each([401, 403, 404])('answers the draft 404 when the CMS answers %i', async (status) => {
     strapiFetch.mockRejectedValue(upstream(status))
     await expect(fetchPreviewDraft(event, 'g', 'doc-1', {})).rejects.toMatchObject({ code: 'notFound' })
     expect(logWarn.mock.calls.map(call => call[0])).toEqual(status === 401 || status === 403 ? ['config.preview-token'] : [])
+  })
+
+  it('logs config.preview-request when the CMS answers 400', async () => {
+    strapiFetch.mockRejectedValue({ response: { status: 400 }, data: { detail: 'populate[sections][on][shared.playground] is not a component of the zone' }, message: 'a value of the request' })
+    await expect(fetchPreviewDraft(event, 'g', 'doc-1', {})).rejects.toMatchObject({ code: 'notFound' })
+    expect(logWarn).toHaveBeenCalledTimes(1)
+    expect(logWarn).toHaveBeenCalledWith('config.preview-request', expect.any(String), { event, cause: 'upstream 400' })
+    expect(JSON.stringify(logWarn.mock.calls)).not.toContain('shared.playground')
+    expect(JSON.stringify(logWarn.mock.calls)).not.toContain('a value of the request')
   })
 
   it('answers a 502 problem when the CMS fails any other way, and logs it', async () => {
@@ -75,6 +84,8 @@ describe('fetchPreviewDraft', () => {
     strapiFetch.mockRejectedValue(upstream(403))
     await expect(fetchPreviewDraft(event, 'secret-grant-value', 'doc-1', {})).rejects.toBeDefined()
     strapiFetch.mockResolvedValue({ data: {} })
+    await expect(fetchPreviewDraft(event, 'secret-grant-value', 'doc-1', {})).rejects.toBeDefined()
+    strapiFetch.mockRejectedValue(upstream(400))
     await expect(fetchPreviewDraft(event, 'secret-grant-value', 'doc-1', {})).rejects.toBeDefined()
     expect(JSON.stringify([logWarn.mock.calls, logError.mock.calls])).not.toContain('secret-grant-value')
   })

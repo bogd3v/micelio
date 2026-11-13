@@ -88,7 +88,9 @@ the reader's Worker, and nothing else is added to the sandbox:
 - `answerRun` (`app/helpers/previewRun.ts`) finds the block in the data of the draft the page
   loaded, by zone, position and catalogue id, never by the markers: the draft route of a page keeps
   its `shared.playground` sections (`parseDraftPage`; `SectionRenderer` does not render them and the
-  public page route drops them) and the article draft has them in `blocks`. What runs is the saved
+  public page route drops them) only if the CMS's `sections` zone has them and the draft populate
+  asks for them (micelio-cms 0.8.0 has none and `DRAFT_PAGE_POPULATE` does not ask for them,
+  bogd3v/micelio#908), and the article draft has them in `blocks`. What runs is the saved
   `code`, with the hidden `setup`, for the saved `runtime`.
 - The Worker is the reader's: `usePreviewFrame` imports `app/islands/playground.ts`, the file a
   reader's page imports when Run is pressed, with `import()` on the first run once the page is

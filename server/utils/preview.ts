@@ -84,7 +84,7 @@ export async function exchangePreviewToken(event: H3Event, token: string): Promi
  * @param options - `allowSystem` accepts a `system` grant too; only the weight route says so, so a route that forgets the check refuses it.
  *
  * @remarks
- * The locale is the grant's, so none is sent. A refusal of the grant (404), of the frontend's API token (401 or 403, also logged as `config.preview-token`), an empty answer, an answer without a known `meta.actor` (logged as `config.preview-actor`: the plugin is older than the system grant) and a `system` actor on a route that does not allow it are the draft 404 of `draftNotFound`; any other failure is a 502, as for the editor session. A `system` grant is single use, so it is spent by this call.
+ * The locale is the grant's, so none is sent. A refusal of the grant (404), of the frontend's API token (401 or 403, also logged as `config.preview-token`), a request the CMS refuses as invalid (400, logged as `config.preview-request` with the status only: the frontend and the CMS disagree on the populate), an empty answer, an answer without a known `meta.actor` (logged as `config.preview-actor`: the plugin is older than the system grant) and a `system` actor on a route that does not allow it are the draft 404 of `draftNotFound`; any other failure is a 502, as for the editor session. A `system` grant is single use, so it is spent by this call.
  */
 export async function fetchPreviewDraft<T>(event: H3Event, grant: string, documentId: string, query: Record<string, unknown>, options: { allowSystem?: boolean } = {}): Promise<{ data: T, actor: PreviewActor }> {
   const path = `/api/micelio/preview/draft?${qs.stringify({ ...query, documentId }, { skipNulls: true })}`
@@ -94,6 +94,7 @@ export async function fetchPreviewDraft<T>(event: H3Event, grant: string, docume
   } catch (error: unknown) {
     const status = asUpstreamError(error).response?.status
     if (status === 401 || status === 403) logWarn('config.preview-token', 'The CMS refused the frontend API token for the preview draft: it needs plugin::micelio.preview.draft', { event, cause: `upstream ${status}` })
+    if (status === 400) logWarn('config.preview-request', 'The CMS refused the preview draft request as invalid: the populate does not match its content type', { event, cause: 'upstream 400' })
     if (status === 400 || status === 401 || status === 403 || status === 404) throw draftNotFound()
     logError('cms.drafts', 'Fetching the preview draft failed', { event, error })
     throw problem('upstreamUnavailable', { statusMessage: 'Failed to fetch drafts' })
