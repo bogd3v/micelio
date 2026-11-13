@@ -587,7 +587,7 @@ describe('the workflows', () => {
     const job = templatePublish.match(/\n {2}listed:\n[^]*$/)![0]
     expect(job).toMatch(/needs: \[publish, index\]/)
     expect(job).toContain('if: ${{ always() && needs.publish.result == \'success\' }}')
-    expect(job).toContain('theme-index-listed.yml@v0.8.0')
+    expect(job).toContain('theme-index-listed.yml@v0.8.1')
     expect(job).not.toMatch(/id-token|attestations: write|packages: write/)
     expect(listedWorkflow).toContain('theme:publish -- listed')
     expect(listedWorkflow).not.toContain('packages: write')
