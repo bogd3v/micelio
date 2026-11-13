@@ -54,6 +54,14 @@ Other variables: `CONTRACT_POSTGRES_IMAGE` (default `postgres:18-alpine`), `CONT
 
 Run it when a change touches what the server routes ask the CMS for (`server/`, `app/interfaces/`), the mock, or the suite, and before releasing. The workflow `.github/workflows/contract.yml` does it on every push to `main` and on every pull request to `main`, with no path filter, because a required check that a filter skips never reports.
 
+## The populate check
+
+`test/cmsPopulate.test.ts` checks the seven populate objects of `server/lib/constants.ts` against a copy of the CMS's schema, with no Docker and no CMS image, so it runs in `npm run check`. The copy is `test/fixtures/cms-schema/` (`contentTypes.d.ts` and `components.d.ts`, the generated types of `micelio-cms`, byte for byte at the commit in `PIN`). The test reads them with the TypeScript compiler API and walks each populate from its content type.
+
+- **What fails:** a key of `populate` that is not a relation, media, component or dynamic zone of its content type or component; a key of `on` that is not in that zone's list (`PAGE_POPULATE.sections.on.shared.playground: not in the zone of api::page.page.sections`, the shape of #908); a name under `fields` that is not an attribute; `'*'` mixed with keyed entries. A new exported name ending `_POPULATE` that the test's table does not list fails too.
+- **What it does not cover:** the running CMS. It reads a copy, so it passes when the copy is behind the CMS, and it does not see a plugin that refuses a populate for a reason the schema does not show. The suite above is the check against the real CMS.
+- **Move the pin:** copy `types/generated/contentTypes.d.ts` and `types/generated/components.d.ts` from a commit of `main` of `micelio-cms` into `test/fixtures/cms-schema/` (`git show <commit>:types/generated/contentTypes.d.ts > test/fixtures/cms-schema/contentTypes.d.ts`, the same for `components.d.ts`), write the commit hash in `PIN`, and run `npx vitest run --project unit test/cmsPopulate.test.ts`. Never edit the copies by hand.
+
 ## In CI
 
 - The workflow starts Postgres from a copy in GHCR (`scripts/ci/mirror-image.sh`), for the reason in [the CI pipeline](ci-pipeline.md#the-node-base-image).
