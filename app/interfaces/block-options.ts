@@ -45,26 +45,27 @@ export const BLOCK_OPTION_NAMES = ['layout', 'width', 'columns', 'density', 'ali
  * The options each block exposes, by component UID (the `docs/blocks.md` reference of micelio-plugin-core).
  *
  * @remarks
- * `shared.rich-text` exposes none. A block offers all of an option's values, less `width: full` on the article blocks and `columns: 6`
+ * `shared.rich-text` exposes none. Every page section offers `align` and `tone`; a `scene` only in its `inline` variant, which `micelio-plugin-core`
+ * enforces (a `background` scene paints its own poster). A block offers all of an option's values, less `width: full` on the article blocks and `columns: 6`
  * on every block but `logo-cloud`.
  *
  * @public
  */
 export const BLOCK_EXPOSES = {
-  'section.hero': ['layout', 'tone', 'height'],
-  'section.feature-grid': ['columns', 'density'],
-  'section.media-showcase': ['ratio'],
+  'section.hero': ['layout', 'align', 'tone', 'height'],
+  'section.feature-grid': ['columns', 'density', 'align', 'tone'],
+  'section.media-showcase': ['align', 'tone', 'ratio'],
   'section.stats': ['columns', 'align', 'tone'],
-  'section.logo-cloud': ['columns', 'density'],
-  'section.testimonials': ['layout', 'density'],
-  'section.pricing': ['columns'],
-  'section.faq': ['density'],
+  'section.logo-cloud': ['columns', 'density', 'align', 'tone'],
+  'section.testimonials': ['layout', 'density', 'align', 'tone'],
+  'section.pricing': ['columns', 'align', 'tone'],
+  'section.faq': ['density', 'align', 'tone'],
   'section.cta': ['layout', 'align', 'tone'],
-  'section.post-list': ['density'],
+  'section.post-list': ['density', 'align', 'tone'],
   'section.newsletter': ['align', 'tone'],
-  'section.rich-text': ['width'],
-  'section.gallery': ['width', 'density'],
-  'section.scene': ['height'],
+  'section.rich-text': ['width', 'align', 'tone'],
+  'section.gallery': ['width', 'density', 'align', 'tone'],
+  'section.scene': ['align', 'tone', 'height'],
   'shared.quote': ['width', 'align'],
   'shared.media': ['width', 'ratio'],
   'shared.slider': ['ratio'],

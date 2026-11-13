@@ -4,7 +4,9 @@ import { defineComponent, h, provide } from 'vue'
 import { TRUSTED_MEDIA_PREFIX } from '~/constants/media'
 import SectionRenderer from '~/components/section/SectionRenderer.vue'
 import { knownSections } from '~/helpers/pages'
+import { parseSection } from '../../server/schemas/page'
 import { blockMarkers } from '~/helpers/previewBlocks'
+import { PAGE_SECTION_COMPONENTS } from '~/interfaces'
 import type { PageLink, PageMedia, PageSection, PostListItem } from '~/interfaces'
 
 function image(name: string, extra: Partial<PageMedia> = {}): PageMedia {
@@ -650,5 +652,44 @@ describe('presentation options', () => {
     const attributes = root(wrapper).attributes()
     expect(attributes['data-section']).toBe(name)
     for (const [option, value] of Object.entries(options)) expect(attributes[`data-${option}`]).toBe(value)
+  })
+
+  // The fourteen page sections, each in a variant that offers both options (a scene only in `inline`), built as the page route builds them:
+  // the raw Strapi section goes through `parseSection`, which keeps only the options the block exposes (`BLOCK_EXPOSES`), and the result is rendered
+  it('every page section renders data-tone and data-align from its options', async () => {
+    const file = { url: '/uploads/a.png', width: 800, height: 600, mime: 'image/png', alternativeText: 'A' }
+    // What Strapi answers for each section, the least each needs
+    const all: Array<[string, Record<string, unknown>]> = [
+      ['hero', { variant: 'centered', title: 'T' }],
+      ['feature-grid', { variant: 'grid', title: 'T', items: [{ title: 'A' }] }],
+      ['media-showcase', { variant: 'left', title: 'T', media: file }],
+      ['stats', { variant: 'row', title: 'T', items: [{ value: '1', label: 'a' }] }],
+      ['logo-cloud', { variant: 'row', title: 'T', logos: [{ image: file, name: 'A' }] }],
+      ['testimonials', { variant: 'grid', title: 'T', items: [{ quote: 'Q', author: 'A' }] }],
+      ['pricing', { variant: 'cards', title: 'T', plans: [{ name: 'A', price: '$1', features: 'One' }] }],
+      ['faq', { variant: 'list', title: 'T', items: [{ question: 'Q', answer: 'A' }] }],
+      ['cta', { variant: 'card', title: 'T' }],
+      ['post-list', { variant: 'cards', title: 'T', count: 1 }],
+      ['newsletter', { variant: 'card', title: 'T' }],
+      ['rich-text', { body: 'Text' }],
+      ['gallery', { variant: 'grid', title: 'T', images: [file] }],
+      ['scene', { variant: 'inline', title: 'T', model: { ...file, url: '/uploads/a.glb', mime: 'model/gltf-binary' }, poster: file, alt: 'A' }],
+    ]
+    expect(all.map(([name]) => `section.${name}`).sort()).toEqual([...PAGE_SECTION_COMPONENTS.map(name => `section.${name}`)].sort())
+    const context = { render: (markdown: string): string => `<p>${markdown}</p>`, siteUrl: 'https://site.test/', mediaOrigins: [] }
+    // The posts of a post list are the route's second step (`resolvePostLists`), not the parse
+    const fromRoute = (name: string, section: Record<string, unknown>, options: Record<string, unknown>): PageSection => {
+      const parsed = parseSection({ __component: `section.${name}`, ...section, ...options }, context)
+      expect(parsed, name).not.toBeNull()
+      return (name === 'post-list' ? { ...parsed, posts: [post] } : parsed) as unknown as PageSection
+    }
+    for (const [name, section] of all) {
+      const attributes = root(await render(fromRoute(name, section, { tone: 'accent', align: 'center' }), '/')).attributes()
+      expect(attributes['data-section'], name).toBe(name)
+      expect([name, attributes['data-tone'], attributes['data-align']]).toEqual([name, 'accent', 'center'])
+      // A section whose options Strapi has never stored answers null for both: the default, so no attribute
+      const stored = Object.keys(root(await render(fromRoute(name, section, { tone: null, align: null }), '/')).attributes())
+      expect(stored.filter(attribute => attribute === 'data-tone' || attribute === 'data-align'), name).toEqual([])
+    }
   })
 })

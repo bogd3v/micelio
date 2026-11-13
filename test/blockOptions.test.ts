@@ -38,6 +38,16 @@ describe('the vocabulary', () => {
     expect(Object.keys(BLOCK_EXPOSES)).toEqual([...PAGE_SECTION_COMPONENTS.map(name => `section.${name}`), ...ARTICLE_BLOCK_UIDS])
   })
 
+  it('offers align and tone on all fourteen page sections', () => {
+    expect(PAGE_SECTION_COMPONENTS).toHaveLength(14)
+    for (const name of PAGE_SECTION_COMPONENTS) expect(exposedOptions(`section.${name}`), name).toEqual(expect.arrayContaining(['align', 'tone']))
+    for (const name of PAGE_SECTION_COMPONENTS) {
+      expect([parseOption(`section.${name}`, 'align', 'center'), parseOption(`section.${name}`, 'tone', 'raised'), parseOption(`section.${name}`, 'tone', 'accent')], name).toEqual(['center', 'raised', 'accent'])
+      // Strapi answers null for an option a stored section never saved: the default, so nothing
+      expect([parseOption(`section.${name}`, 'align', null), parseOption(`section.${name}`, 'tone', null)], name).toEqual([undefined, undefined])
+    }
+  })
+
   it('withholds `width: full` from the article blocks and `columns: 6` from all but logo-cloud', () => {
     expect(optionValues('shared.media', 'width')).toEqual(['prose', 'wide'])
     expect(optionValues('shared.quote', 'width')).toEqual(['prose', 'wide'])
@@ -94,9 +104,9 @@ describe('parseOption', () => {
 
 describe('the page route', () => {
   it('keeps the options a section exposes, as strings, and drops the rest', () => {
-    const parsed = parseSection({ __component: 'section.feature-grid', variant: 'grid', columns: 2, density: 'tight', tone: 'accent', items: [{ title: 'One' }] }, context)
+    const parsed = parseSection({ __component: 'section.feature-grid', variant: 'grid', columns: 2, density: 'tight', ratio: '4:3', items: [{ title: 'One' }] }, context)
     expect(parsed).toMatchObject({ columns: '2' })
-    expect(parsed).not.toHaveProperty('tone')
+    expect(parsed).not.toHaveProperty('ratio')
     expect(parsed).not.toHaveProperty('density', 'tight')
     expect(parseSection({ __component: 'section.feature-grid', variant: 'grid', columns: '6', items: [{ title: 'One' }] }, context)).not.toHaveProperty('columns', '6')
     expect(parseSection({ __component: 'section.logo-cloud', variant: 'row', columns: '6', logos: [{ image, name: 'Seeds' }] }, context)).toMatchObject({ columns: '6' })

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ITEM_FIELDS, withIds } from '../e2e/fixtures/ids.mjs'
-import { pageFixtures } from '../e2e/fixtures/pages.mjs'
+import { blockValueCases, blockValueKey, pageFixtures } from '../e2e/fixtures/pages.mjs'
+import { BLOCK_EXPOSES, BLOCK_OPTIONS } from '../app/interfaces/block-options'
 
 interface Block { __component: string, blockId?: unknown, [field: string]: unknown }
 
@@ -41,5 +42,41 @@ describe('the page fixtures of the mock Strapi', () => {
     expect(kept!.blockId).toBe('mine')
     expect((kept!.items as Array<{ itemId: string }>).map(item => item.itemId)).toEqual(['its', 'mine-i2'])
     expect(given!.blockId).toBe('z-b2')
+  })
+
+  it('blockValueCases has every value of tone and align for each page section that offers them', () => {
+    // The table spans the pages the cases name: a page resolves only four post lists, so the post list's values have a second one
+    const slugs = new Set(blockValueCases.map(([, , , slug]) => (slug as string | undefined) ?? 'block-options'))
+    const sections = pageFixtures.filter(candidate => slugs.has(candidate.slug)).flatMap(candidate => candidate.sections as Block[])
+    const keys = blockValueCases.filter(([, , saved]) => !saved).map(([block, options]) => blockValueKey(block as string, options as Record<string, string>))
+    const titled = (title: string): Block[] => sections.filter(section => section.title === title || (typeof section.body === 'string' && section.body.startsWith(`## ${title}\n`)))
+    // The server resolves the posts of a page's first four post lists (MAX_POST_LISTS of server/utils/pageSections.ts); the rest render nothing
+    for (const candidate of pageFixtures.filter(each => slugs.has(each.slug))) {
+      expect((candidate.sections as Block[]).filter(section => section.__component === 'section.post-list').length, candidate.slug).toBeLessThanOrEqual(4)
+    }
+    const seen = new Map<string, Set<string>>()
+    for (const key of keys) {
+      for (const section of titled(key)) {
+        for (const name of ['tone', 'align'] as const) {
+          if (typeof section[name] === 'string') seen.set(`${section.__component} ${name}`, new Set([...(seen.get(`${section.__component} ${name}`) ?? []), section[name] as string]))
+        }
+      }
+    }
+    // Each section of the page catalogue that offers an option, less the one whose variant offers it only in the other (a background scene)
+    for (const [uid, exposed] of Object.entries(BLOCK_EXPOSES)) {
+      if (!uid.startsWith('section.')) continue
+      for (const name of ['tone', 'align'] as const) {
+        const offered = (exposed as readonly string[]).includes(name)
+        expect(offered, `${uid} offers ${name}`).toBe(true)
+        // The default value is the plain twin's: every other value has its own section
+        const others = BLOCK_OPTIONS[name].values.filter(value => value !== BLOCK_OPTIONS[name].default)
+        expect([...(seen.get(`${uid} ${name}`) ?? [])].sort(), `${uid} ${name}`).toEqual([...others].sort())
+      }
+    }
+    // A background scene has none of either: the plugin refuses them there
+    for (const section of sections.filter(candidate => candidate.__component === 'section.scene' && candidate.variant === 'background')) {
+      expect(section, String(section.title)).not.toHaveProperty('tone')
+      expect(section, String(section.title)).not.toHaveProperty('align')
+    }
   })
 })

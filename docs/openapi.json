@@ -7308,6 +7308,21 @@
               "compact"
             ]
           },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
           "blockId": {
             "type": "string"
           },
@@ -7356,6 +7371,21 @@
             "enum": [
               "comfortable",
               "compact"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
             ]
           },
           "blockId": {
@@ -7455,6 +7485,21 @@
               "compact"
             ]
           },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
           "blockId": {
             "type": "string"
           },
@@ -7496,6 +7541,13 @@
               "centered",
               "split",
               "stacked"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
             ]
           },
           "tone": {
@@ -7571,6 +7623,21 @@
             "enum": [
               "comfortable",
               "compact"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
             ]
           },
           "blockId": {
@@ -7700,6 +7767,21 @@
           "__component": {
             "type": "string",
             "const": "section.media-showcase"
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
           },
           "ratio": {
             "type": "string",
@@ -8215,6 +8297,21 @@
               "compact"
             ]
           },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
           "blockId": {
             "type": "string"
           },
@@ -8308,6 +8405,21 @@
               "2",
               "3",
               "4"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
             ]
           },
           "blockId": {
@@ -8779,6 +8891,21 @@
               "full"
             ]
           },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
           "blockId": {
             "type": "string"
           },
@@ -8800,6 +8927,21 @@
           "__component": {
             "type": "string",
             "const": "section.scene"
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
           },
           "height": {
             "type": "string",
@@ -10393,6 +10535,21 @@
             "enum": [
               "comfortable",
               "compact"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
             ]
           },
           "blockId": {
