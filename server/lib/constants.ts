@@ -48,12 +48,12 @@ export const PAGE_POPULATE = {
 }
 
 /**
- * The Strapi populate of a page draft: that of a page, and the fields of a Playground block, which only the draft route keeps (`micelio:run`, ADR 0019, amendment of 2026-11-06).
+ * The Strapi populate of a page draft: that of a page.
+ *
+ * @remarks
+ * It names only components of the `sections` zone of the page in micelio-cms 0.8.0: the plugin refuses with `400` a fragment populate that names a component the zone lacks. `shared.playground` is not in that zone, so a Playground block of a page is not asked for until the CMS adds it (bogd3v/micelio#908).
  */
-export const DRAFT_PAGE_POPULATE = {
-  ...PAGE_POPULATE,
-  sections: { on: { ...PAGE_POPULATE.sections.on, 'shared.playground': { fields: ['runtime', 'code', 'setup'] } } },
-}
+export const DRAFT_PAGE_POPULATE = PAGE_POPULATE
 
 /**
  * The Strapi populate of the site identity: one entry per relation or component `parseSiteSettings` reads.
