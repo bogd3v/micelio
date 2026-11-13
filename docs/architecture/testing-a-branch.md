@@ -24,7 +24,9 @@ docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/h -v "$COPY":/app:z -w /
 ```
 
 Run as yourself, so the run leaves no root-owned `coverage/`, `.micelio/` or report folder in
-`$COPY` (they make the next `rsync --delete` fail). `:z` relabels the folder it mounts so that
+`$COPY` (they make the next `rsync --delete` fail). On rootless Docker the folder you own appears as `root` inside the container,
+so `--user "$(id -u):$(id -g)"` fails with `EACCES` on the mount: use `--user 0:0` there, which writes
+files as you on the host. `:z` relabels the folder it mounts so that
 SELinux lets the container read it: `$COPY` is a folder of its own, never a parent such as
 `~/.cache` or `~`, and never `:Z`, which makes the folder private to one container.
 

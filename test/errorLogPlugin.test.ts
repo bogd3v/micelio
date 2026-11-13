@@ -47,4 +47,17 @@ describe('error log plugin', () => {
     expect(await run(Object.assign(new Error('x'), { fatal: true }))).toHaveBeenCalledTimes(1)
     expect(await run(createError({ statusCode: 502 }))).not.toHaveBeenCalled()
   })
+
+  it('does not log a fatal error that carries a status below 500', async () => {
+    expect(await run(createError({ statusCode: 404, fatal: true }))).not.toHaveBeenCalled()
+    expect(await run(createError({ statusCode: 403, fatal: true }))).not.toHaveBeenCalled()
+  })
+
+  it('still logs a fatal error of 500 or above, or with no status', async () => {
+    expect(await run(createError({ statusCode: 500, fatal: true }))).toHaveBeenCalledWith('server.unhandled', expect.any(String), { event: 'the-event', cause: 'unknown error' })
+    expect(await run(createError({ statusCode: 503, fatal: true }))).toHaveBeenCalledTimes(1)
+    expect(await run(Object.assign(createError({ message: 'x', fatal: true }), { statusCode: undefined }))).toHaveBeenCalledTimes(1)
+    expect(await run(Object.assign(createError({ statusCode: 404, fatal: true }), { unhandled: true }))).toHaveBeenCalledTimes(1)
+    expect(await run(createError({ statusCode: 404, fatal: true }), { tags: ['uncaughtException'] })).toHaveBeenCalledTimes(1)
+  })
 })

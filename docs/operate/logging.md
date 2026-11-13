@@ -17,7 +17,7 @@ The frontend writes one JSON object per line to the standard error (`server/util
 | `visitor` | The first 12 hex characters of an HMAC-SHA256 of the visitor's address, with a key drawn at random when the process starts. It groups the lines of one visitor, it changes on a restart and it is not shared between instances. Absent outside a request |
 | `cause` | What went wrong, as a fixed word or an error name and code. Never a password, email address, token, address or query |
 
-An error nobody handled, on a page or on an `/api/*` route, is written only as the `server.unhandled` line: Nitro's own free-text `[request error]` report, which held the URL and its query, is silenced.
+`server.unhandled` means a bug, an error raised outside a request or a crash. An error nobody handled, on a page or on an `/api/*` route, is written only as the `server.unhandled` line: Nitro's own free-text `[request error]` report, which held the URL and its query, is silenced.
 
 ## What is logged
 
@@ -29,7 +29,7 @@ An error nobody handled, on a page or on an `/api/*` route, is written only as t
 | Boot checks | `config.*`: a missing or unusable setting (see [configure.md](configure.md)) | `error` or `warn` |
 | Unexpected errors | `server.unhandled` | `error` |
 
-[security.md](../security.md#security-events) lists each security event with the moment it is written and the values `cause` takes. A malformed path parameter, a malformed `relation` or `documentIds` value, a draft the CMS answers 404 and an expired session on `GET /api/auth/me` are not logged on purpose.
+[security.md](../security.md#security-events) lists each security event with the moment it is written and the values `cause` takes. A malformed path parameter, a malformed `relation` or `documentIds` value, a draft the CMS answers 404, a deliberate 404 of a page (a path with no page, or a page the CMS refused, which the page throws as a `fatal` error with a status below 500 to get the site's error page) and an expired session on `GET /api/auth/me` are not logged on purpose.
 
 ## Where the lines go
 
