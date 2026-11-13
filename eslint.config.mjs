@@ -51,7 +51,7 @@ export default withNuxt(
     },
   },
   {
-    // test/fixtures/plugin-contract/ is a verbatim copy of the plugin's contract (docs/architecture/preview-contract.md): its format is the plugin's
-    ignores: ['docs/**', '.claude/worktrees/**', 'test/fixtures/plugin-contract/**'],
+    // test/fixtures/plugin-contract/ is a verbatim copy of the plugin's contract (docs/architecture/preview-contract.md) and test/fixtures/cms-schema/ of the CMS's generated types (docs/architecture/contract-tests.md): their format is the other repository's
+    ignores: ['docs/**', '.claude/worktrees/**', 'test/fixtures/plugin-contract/**', 'test/fixtures/cms-schema/**'],
   },
 ).prepend(...micelio)
