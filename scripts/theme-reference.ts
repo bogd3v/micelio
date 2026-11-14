@@ -11,6 +11,7 @@ import { REGION_VARIANTS, VARIANT_DESCRIPTIONS } from '../modules/theme/layout/v
 import { OPTIONAL_ROLES, REQUIRED_ROLES, ROLE_PURPOSES, TYPE_FAMILIES, TYPE_STEPS } from '../modules/theme/roles.mjs'
 import type { RoleGroup } from '../modules/theme/roles.mjs'
 import hooks from '../app/theme/hooks.json'
+import { UNRENDERED_OPTION_NAMES } from '../app/constants/block-options'
 import { BLOCK_EXPOSES, BLOCK_OPTIONS } from '../app/interfaces/block-options'
 import { optionValues } from '../app/helpers/blockOptions'
 import { slotApiSections } from './theme-reference/slot-apis'
@@ -144,7 +145,7 @@ function layout(): string {
 }
 
 function blockOptions(): string {
-  const rows = (Object.keys(BLOCK_OPTIONS) as Array<keyof typeof BLOCK_OPTIONS>).map((name) => {
+  const rows = (Object.keys(BLOCK_OPTIONS) as Array<keyof typeof BLOCK_OPTIONS>).filter(name => !UNRENDERED_OPTION_NAMES.includes(name)).map((name) => {
     const blocks = Object.entries(BLOCK_EXPOSES).filter(([, exposed]) => (exposed as readonly string[]).includes(name))
     const offered = blocks.map(([uid]) => {
       const values = optionValues(uid, name)

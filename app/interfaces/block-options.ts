@@ -1,4 +1,4 @@
-// The presentation options of the block contract: the eight names a block may expose and the closed set of values of each.
+// The presentation options of the block contract: the nine names a block may expose and the closed set of values of each.
 // The vocabulary is `contract/options.ts` of micelio-plugin-core (ADR-0018, section 1) and `docs/blocks.md` there; this is its
 // copy for the theme contract (ADR-0005, section 11), compared in `test/blockOptions.test.ts` with a literal of the plugin's reference, which is not the plugin's file: a new value there needs this copy changed by hand.
 
@@ -22,6 +22,7 @@ export const BLOCK_OPTIONS = {
   tone: { values: ['default', 'raised', 'accent'], default: 'default' },
   ratio: { values: ['16:9', '4:3', '1:1', 'auto'], default: '16:9' },
   height: { values: ['s', 'm', 'l', 'full'], default: 'm' },
+  iconStyle: { values: ['outline', 'filled'], default: 'outline' },
 } as const
 
 /**
@@ -39,7 +40,7 @@ export type BlockOptionName = keyof typeof BLOCK_OPTIONS
  *
  * @public
  */
-export const BLOCK_OPTION_NAMES = ['layout', 'width', 'columns', 'density', 'align', 'tone', 'ratio', 'height'] as const satisfies readonly BlockOptionName[]
+export const BLOCK_OPTION_NAMES = ['layout', 'width', 'columns', 'density', 'align', 'tone', 'ratio', 'height', 'iconStyle'] as const satisfies readonly BlockOptionName[]
 
 /**
  * The options each block exposes, by component UID (the `docs/blocks.md` reference of micelio-plugin-core).

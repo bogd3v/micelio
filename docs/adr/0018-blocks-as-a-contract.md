@@ -7,7 +7,8 @@
 and the ordering rule of sections 1 and 2
 (bogd3v/micelio-plugin-core#48, bogd3v/micelio#803);
 2026-11-12: the block catalogue plan (bogd3v/micelio#871);
-2026-11-12: the instance fields `blockId` and `itemId` (bogd3v/micelio-cms#440)
+2026-11-12: the instance fields `blockId` and `itemId` (bogd3v/micelio-cms#440);
+2026-11-13: the options vocabulary gains `iconStyle` (bogd3v/micelio-plugin-core#198)
 
 **Amendment (2026-11-12, bogd3v/micelio#871): the block catalogue plan.** The maintainer approved the amendments to this record that `docs/architecture/block-catalogue-plan.md` proposes, in the section "Amendments to ADR-0018 for the maintainer to approve". Each takes effect when the issue that makes it ships (the numbers are lines of the plan's issue list) and binds nothing before; this note changes no sentence of the record. The seven are:
 
@@ -47,6 +48,8 @@ A builder on top of that makes every block change a surprise for themes, for sto
 A block's content and its presentation are separate. `schema` never holds a presentation field; `options` never holds content. Today `variant` sits inside the component; the catalogue declares it as an option and the plugin keeps storing it where it is until a migration moves it (section 2).
 
 **Amendment (2026-11-12, bogd3v/micelio-cms#440): the instance fields.** The `id` above is the kind of a block, shared by every instance of it. An instance has two more fields in its `schema`, which the catalogue never renders as content: `blockId` on each block of `page.sections` and `article.blocks`, and `itemId` on each repeatable item (`feature-item`, `stat`, `testimonial`, `plan`, `faq-item`, `logo` and `slide`). Each is an opaque string, unique in its zone (a block) or in its parent block (an item), generated on the first save, never edited and never reused; Strapi reserves `id`, which is why the names differ. The renderers key by them and fall back to the position for content that has none yet. `data-myc-block` is unchanged: it still carries the catalogue `id` (ADR-0019). Content stored before the release is filled in by a boot migration of `micelio-cms`.
+
+**Amendment (2026-11-13, bogd3v/micelio-plugin-core#198, A2 of the block catalogue plan): `iconStyle`.** The vocabulary below gains a ninth name, `iconStyle` (`outline`, `filled`; default `outline`), as [ADR-0021](0021-icons-in-the-block-contract.md) section 1 decided: it is a MINOR of the block contract (section 2), and `filled` falls back to `outline` for an icon name that has no filled drawing. It is in `contract/options.ts` of `micelio-plugin-core` and in `app/interfaces/block-options.ts` here, and no block offers it yet (the issues of lines 10, 17, 18, 33 and 41 of the plan do), nor does the builder show it to an editor until the theme contract renders it (below). The sentence and the table that follow keep their words, which this note amends.
 
 The presentation options are a closed vocabulary of eight names.
 Their values are stored as Strapi enumerations, and a block offers only some of the names:
