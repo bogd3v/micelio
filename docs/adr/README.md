@@ -26,6 +26,7 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0020](0020-strapi-contingency.md) | Stay on Strapi, keep the way out priced and open, and act on three named triggers: a licence change of the community edition, six months without a release, an acquisition that changes the terms | Proposed | 2026-11-09 |
 | [0021](0021-icons-in-the-block-contract.md) | Icons as part of the block contract: a field stores a Tabler name, the core ships every glyph and a theme may redraw any name but add none, one inline sprite per page, and a custom field in the admin | Accepted | 2026-11-11 |
 | [0022](0022-page-composition.md) | Page composition: reusable blocks as a site-scoped type referenced by a `reusable` block, and groups as a `group` key on each block with the sequence kept flat | Accepted | 2026-11-11 |
+| [0023](0023-assistant.md) | An assistant that writes contract content through an external model: catalogue blocks and options only, a sibling plugin off by default, one OpenAI-compatible adapter configured on the server, what leaves the node stated, nothing trusted either way, and a spending cap of zero by default | Proposed | 2026-11-13 |
 
 ## Writing a new record
 
