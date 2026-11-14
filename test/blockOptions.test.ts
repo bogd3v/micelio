@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { ARTICLE_BLOCK_UIDS } from '../app/constants/block-options'
+import { ARTICLE_BLOCK_UIDS, UNRENDERED_OPTION_NAMES } from '../app/constants/block-options'
 import { BLOCK_EXPOSES, BLOCK_OPTIONS, BLOCK_OPTION_NAMES } from '../app/interfaces/block-options'
 import { exposedOptions, optionAttributes, optionValues, parseOption } from '../app/helpers/blockOptions'
 import { PAGE_SECTION_COMPONENTS } from '../app/interfaces'
@@ -17,7 +17,7 @@ const image = { url: '/uploads/a.png', width: 800, height: 600, mime: 'image/png
 
 describe('the vocabulary', () => {
   // The copy of contract/options.ts of micelio-plugin-core (docs/blocks.md there): names, values, order and defaults
-  it('is the plugin\'s: eight names, their values in order and their defaults', () => {
+  it('is the plugin\'s: nine names, their values in order and their defaults', () => {
     expect(Object.fromEntries(BLOCK_OPTION_NAMES.map(name => [name, [BLOCK_OPTIONS[name].values, BLOCK_OPTIONS[name].default]]))).toEqual({
       layout: [['centered', 'split', 'stacked'], 'centered'],
       width: [['prose', 'wide', 'full'], 'prose'],
@@ -27,6 +27,7 @@ describe('the vocabulary', () => {
       tone: [['default', 'raised', 'accent'], 'default'],
       ratio: [['16:9', '4:3', '1:1', 'auto'], '16:9'],
       height: [['s', 'm', 'l', 'full'], 'm'],
+      iconStyle: [['outline', 'filled'], 'outline'],
     })
   })
 
@@ -54,6 +55,18 @@ describe('the vocabulary', () => {
     expect(optionValues('section.gallery', 'width')).toEqual(['prose', 'wide', 'full'])
     expect(optionValues('section.logo-cloud', 'columns')).toEqual(['2', '3', '4', '6'])
     expect(optionValues('section.feature-grid', 'columns')).toEqual(['2', '3', '4'])
+  })
+})
+
+describe('iconStyle', () => {
+  // ADR-0018 amendment A2, decided by ADR-0021: the name is in the vocabulary, and no block offers it yet
+  it('accepts iconStyle outline and filled and refuses another value', () => {
+    expect(optionValues('section.feature-grid', 'iconStyle')).toEqual(['outline', 'filled'])
+    expect(BLOCK_OPTIONS.iconStyle.default).toBe('outline')
+    expect(optionValues('section.feature-grid', 'iconStyle')).not.toContain('duotone')
+    expect(optionAttributes({ __component: 'section.feature-grid', iconStyle: 'filled' })).toEqual({ 'data-iconStyle': 'filled' })
+    // No block exposes it before the theme contract renders it (ADR-0018, section 1): the server keeps none
+    for (const uid of Object.keys(BLOCK_EXPOSES)) expect(parseOption(uid, 'iconStyle', 'filled'), uid).toBeUndefined()
   })
 })
 
@@ -176,15 +189,17 @@ describe('the instance ids of the article and About blocks', () => {
 
 describe('the theme contract', () => {
   const attributes = hooks.attributes as unknown as Record<string, { values: string[] }>
+  // The names the theme contract does not render yet (`iconStyle`, ADR-0018 section 1) have no hook, no rule and no block
+  const rendered = BLOCK_OPTION_NAMES.filter(name => !UNRENDERED_OPTION_NAMES.includes(name))
 
   it('implements 2.2 and names the seven new hooks as the additions of 2.1', () => {
     expect(CONTRACT_VERSION).toEqual({ major: 2, minor: 2 })
     expect(CONTRACT_ADDITIONS.filter(addition => addition.minor === 1 && addition.kind === 'hook').map(addition => addition.name).sort())
-      .toEqual(BLOCK_OPTION_NAMES.filter(name => name !== 'layout').map(name => `data-${name}`).sort())
+      .toEqual(rendered.filter(name => name !== 'layout').map(name => `data-${name}`).sort())
   })
 
   it('lists every value of every option under its data attribute', () => {
-    for (const name of BLOCK_OPTION_NAMES) {
+    for (const name of rendered) {
       const listed = attributes[`data-${name}`]!.values
       for (const value of BLOCK_OPTIONS[name].values) expect(listed, `data-${name}`).toContain(value)
     }
@@ -200,7 +215,7 @@ describe('the theme contract', () => {
     const NO_RULE: Record<string, string[]> = { layout: ['stacked'], height: ['s'], width: [] }
     // `data-height` has no rule on a section: the only ones are the playground's
     expect(read('app/assets/css/components/section-options.css').replace(/\/\*[\s\S]*?\*\//g, ''), 'data-height in section-options.css').not.toContain('data-height')
-    for (const name of BLOCK_OPTION_NAMES) {
+    for (const name of rendered) {
       for (const value of BLOCK_OPTIONS[name].values) {
         if (value === BLOCK_OPTIONS[name].default) expect(selectors, `[data-${name}="${value}"]`).not.toContain(`[data-${name}="${value}"]`)
         else if (NO_RULE[name]?.includes(value)) expect(selectors, `[data-${name}="${value}"]`).not.toContain(`[data-${name}="${value}"]`)
