@@ -18,6 +18,18 @@ Work reaches `main` through the gates of [`docs/factory.md`](https://github.com/
   `docker build --target static` builds the image (`docs/architecture/testing-a-branch.md`).
 - `compose.demo.yml` of `micelio-cms` only for what the distribution adds (bootstrap, migrations, content schemas, multisite, upgrade from the last release), and for one end-to-end pass with the released plugin before a release.
 
+An issue in the `express` or `normal` lane does not run these steps; the lane is set by the paths it touches, from the `## Lanes` block below ([Lanes](https://github.com/bogd3v/micelio-engineering/blob/main/docs/factory.md#lanes) of `docs/factory.md` of `micelio-engineering`). `docs/architecture/testing-a-branch.md` keeps describing the run for `full`.
+
+## Lanes
+
+The globs `factory-tools lint-lane` reads to set an issue's lane (`docs/factory.md`, "Lanes"). A path that matches `stack:` or `contract:` is `full`; one that matches only `express:` is `express`, unless it is normative (`AGENTS.md`, `CLAUDE.md`, `.claude/`, the standard); every other path is `normal`.
+
+```text
+stack: Dockerfile, .dockerignore, scripts/docker/, scripts/ci/, scripts/test-static-theme.mjs, .github/workflows/deploy.yml, .github/workflows/release.yml, app/preview/, server/api/preview/, server/routes/_preview.get.ts, server/middleware/00-preview-draft.ts, server/utils/preview.ts, playwright.preview.config.ts, e2e/preview/, e2e/fixtures/preview.mjs
+contract: scripts/contract/, e2e/contract/, playwright.contract.config.ts, .github/workflows/contract.yml, scripts/openapi.ts, server/openapi/, docs/openapi.json, docs/api.md, docs/security.md, themes.lock.json, .env.example, modules/theme/contract.ts, app/theme/hooks.json, themes/theme.schema.json, themes/admission-report.schema.json, themes/registry-index.schema.json, docs/themes/reference/, docs/themes/contract-changelog.md, docs/themes/registry-workflows/, docs/operate/, test/fixtures/plugin-contract/
+express: README.md, CONTRIBUTING.md, THIRD-PARTY.md, docs/README.md, docs/performance.md, docs/theme-testing.md, docs/architecture/, docs/guide/, docs/security/, docs/themes/
+```
+
 ## Pre-1.0
 
 While the version is `0.y.z` Micelio is alpha and not stable (section 7 of the standard, "Before 1.0.0"). A breaking change raises `y` and needs no deprecation period and no ADR: only the `!` in the PR title, a `BREAKING CHANGE:` paragraph and upgrade notes. Add no compatibility layers nobody asked for; never call a release stable.
