@@ -10,7 +10,7 @@ The rules shared by every Micelio repository live in [`docs/engineering-standard
 
 Work reaches `main` through the gates of [`docs/factory.md`](https://github.com/bogd3v/micelio-engineering/blob/main/docs/factory.md) of `micelio-engineering`; the role prompts are in `.claude/agents/`.
 
-**Docker.** Run the steps of [`docs/architecture/testing-a-branch.md`](docs/architecture/testing-a-branch.md): `npm run check` in `node:22.23-slim` over a clean copy of the worktree, the browser suites, and the maintainer's test, by stack. The default theme, `bogota`, is pulled, not in the repository: after `npm ci`, anything that builds or serves the site (`build`, `generate`, `test:*` other than the unit tests, `perf`) needs `npm run theme:pull -- --frozen` (an anonymous registry read, as CI does) or `NUXT_PUBLIC_THEME=starter`; `npm run check` needs neither:
+**Docker.** Run the steps of [`docs/architecture/testing-a-branch.md`](docs/architecture/testing-a-branch.md): `npm run check` in `node:22.23-slim` over a clean copy of the worktree (pass the worker limit into the container, `-e VITEST_MAX_WORKERS=<n>` or the value `factory-slot.sh run` of `micelio-engineering` sets, or vitest takes every core and tests time out), the browser suites, and the maintainer's test, by stack. The default theme, `bogota`, is pulled, not in the repository: after `npm ci`, anything that builds or serves the site (`build`, `generate`, `test:*` other than the unit tests, `perf`) needs `npm run theme:pull -- --frozen` (an anonymous registry read, as CI does) or `NUXT_PUBLIC_THEME=starter`; `npm run check` needs neither:
 
 - `compose.dev.yml` of `micelio-plugin-core` (`npm run dev:docker`, `FRONTEND_IMAGE` set to this branch's image) for the plugin and every feature that talks to it (preview, weight report, cost meter).
 - The builder image, for what changes what a static build writes or how `generate` ends:
@@ -22,10 +22,10 @@ An issue in the `express` or `normal` lane does not run these steps; the lane is
 
 ## Lanes
 
-The globs `factory-tools lint-lane` reads to set an issue's lane (`docs/factory.md`, "Lanes"). A path that matches `stack:` or `contract:` is `full`; one that matches only `express:` is `express`, unless it is normative (`AGENTS.md`, `CLAUDE.md`, `.claude/`, the standard); every other path is `normal`.
+The globs `factory-tools lint-lane` reads to set an issue's lane (`docs/factory.md`, "Lanes"). A path that matches `stack:` or `contract:` is `full`; one that matches only `express:` is `express`, unless it is normative (`AGENTS.md`, `CLAUDE.md`, `.claude/`, the standard); every other path is `normal`. `.nvmrc` is in `stack:` because it sets the Node version of the image and of the check.
 
 ```text
-stack: Dockerfile, .dockerignore, scripts/docker/, scripts/ci/, scripts/test-static-theme.mjs, .github/workflows/deploy.yml, .github/workflows/release.yml, app/preview/, server/api/preview/, server/routes/_preview.get.ts, server/middleware/00-preview-draft.ts, server/utils/preview.ts, playwright.preview.config.ts, e2e/preview/, e2e/fixtures/preview.mjs
+stack: Dockerfile, .dockerignore, .nvmrc, scripts/docker/, scripts/ci/, scripts/test-static-theme.mjs, .github/workflows/deploy.yml, .github/workflows/release.yml, app/preview/, server/api/preview/, server/routes/_preview.get.ts, server/middleware/00-preview-draft.ts, server/utils/preview.ts, playwright.preview.config.ts, e2e/preview/, e2e/fixtures/preview.mjs
 contract: scripts/contract/, e2e/contract/, playwright.contract.config.ts, .github/workflows/contract.yml, scripts/openapi.ts, server/openapi/, docs/openapi.json, docs/api.md, docs/security.md, themes.lock.json, .env.example, modules/theme/contract.ts, app/theme/hooks.json, themes/theme.schema.json, themes/admission-report.schema.json, themes/registry-index.schema.json, docs/themes/reference/, docs/themes/contract-changelog.md, docs/themes/registry-workflows/, docs/operate/, test/fixtures/plugin-contract/
 express: README.md, CONTRIBUTING.md, THIRD-PARTY.md, docs/README.md, docs/performance.md, docs/theme-testing.md, docs/architecture/, docs/guide/, docs/security/, docs/themes/
 ```
