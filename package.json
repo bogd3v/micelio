@@ -89,7 +89,7 @@
     "@micelio/eslint-config": "^0.2.8",
     "@micelio/tsconfig": "^0.1.0",
     "@nuxt/eslint": "^1.17.0",
-    "@nuxt/test-utils": "^4.3.4",
+    "@nuxt/test-utils": "^4.4.0",
     "@playwright/test": "1.63.0",
     "@readme/openapi-parser": "^9.1.0",
     "@types/marked": "^6.0.0",
