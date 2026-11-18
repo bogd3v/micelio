@@ -40,6 +40,10 @@ function list<T extends z.ZodType>(schema: T) {
 }
 
 const text = z.string().trim().min(1)
+
+/** A kebab-case slug: lowercase letters and digits in groups joined by single hyphens. */
+const ANCHOR = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
 // One leading slash and no backslash: `//host` and `/\host` both leave the site in a browser
 const SITE_PATH = String.raw`\/(?![\/\\])[^\s\\]*`
 const sitePath = new RegExp(`^${SITE_PATH}$`)
@@ -103,10 +107,14 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
   const markdown = html(context.render)
   const slugRelation = optional(z.object({ slug: text }).transform(relation => relation.slug))
 
+  // An anchor that is not a kebab-case slug is dropped alone: the plugin refuses it on save, but content stored before may hold one
+  const headFields = { eyebrow: optional(text), anchor: optional(text.regex(ANCHOR)) }
+
   const schemas: Record<string, z.ZodType<PageSection>> = {
     'section.hero': z.object({
       __component: z.literal('section.hero'),
       ...optionInputShape('section.hero'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['centered', 'split', 'full-bleed']),
       title: text,
@@ -118,6 +126,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.feature-grid': z.object({
       __component: z.literal('section.feature-grid'),
       ...optionInputShape('section.feature-grid'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['grid', 'list', 'bento']),
       title: optional(text),
@@ -137,6 +146,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.stats': z.object({
       __component: z.literal('section.stats'),
       ...optionInputShape('section.stats'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['row', 'cards']),
       title: optional(text),
@@ -145,6 +155,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.logo-cloud': z.object({
       __component: z.literal('section.logo-cloud'),
       ...optionInputShape('section.logo-cloud'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['row', 'marquee']),
       title: optional(text),
@@ -153,6 +164,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.testimonials': z.object({
       __component: z.literal('section.testimonials'),
       ...optionInputShape('section.testimonials'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['single', 'grid']),
       title: optional(text),
@@ -161,6 +173,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.pricing': z.object({
       __component: z.literal('section.pricing'),
       ...optionInputShape('section.pricing'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['cards', 'table']),
       title: optional(text),
@@ -178,6 +191,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.faq': z.object({
       __component: z.literal('section.faq'),
       ...optionInputShape('section.faq'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['list', 'two-columns']),
       title: optional(text),
@@ -186,6 +200,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.cta': z.object({
       __component: z.literal('section.cta'),
       ...optionInputShape('section.cta'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['banner', 'card']),
       title: text,
@@ -196,6 +211,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.post-list': z.object({
       __component: z.literal('section.post-list'),
       ...optionInputShape('section.post-list'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['cards', 'list']),
       title: optional(text),
@@ -210,6 +226,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.newsletter': z.object({
       __component: z.literal('section.newsletter'),
       ...optionInputShape('section.newsletter'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['inline', 'card']),
       title: optional(text),
@@ -225,6 +242,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.gallery': z.object({
       __component: z.literal('section.gallery'),
       ...optionInputShape('section.gallery'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['grid', 'masonry']),
       title: optional(text),
@@ -233,6 +251,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.scene': z.object({
       __component: z.literal('section.scene'),
       ...optionInputShape('section.scene'),
+      ...headFields,
       blockId: optional(text),
       variant: variant(['background', 'inline']),
       // Binary glTF only: a .gltf names external buffers the island would not fetch (ADR 0006, amendment of #246)

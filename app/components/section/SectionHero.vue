@@ -12,11 +12,11 @@ const titleId = useId()
 </script>
 
 <template>
-  <section class="myc-section" data-section="hero" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="titleId">
+  <section class="myc-section" data-section="hero" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.anchor || titleId">
     <!-- A background cannot hold controls: a video has no place here (it has no poster either), so the text sits on the surface -->
     <SectionMedia v-if="section.variant === 'full-bleed' && !section.media?.mime?.startsWith('video/')" :media="section.media" sizes="100vw" eager />
     <div class="myc-section-inner">
-      <SectionHead :title="section.title" :text="section.text" :title-id="titleId" :level="headingLevel" />
+      <SectionHead :title="section.title" :eyebrow="section.eyebrow" :anchor="section.anchor" :text="section.text" :title-id="titleId" :level="headingLevel" />
       <div v-if="section.primaryLink || section.secondaryLink" class="myc-section-actions">
         <SectionLink :link="section.primaryLink" variant="primary" arrow />
         <SectionLink :link="section.secondaryLink" variant="secondary" />

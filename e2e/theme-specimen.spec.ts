@@ -22,6 +22,20 @@ test('renders every page section through the real components', async ({ page }) 
   await expect(page.locator('.myc-specimen-group[data-section^="page-"] section.myc-section')).toHaveCount(30)
 })
 
+test('a page section shows an eyebrow and an anchored heading with its self-link', async ({ page }) => {
+  await page.goto('/_theme', { waitUntil: 'networkidle' })
+  const section = page.locator('section.myc-section[data-section="feature-grid"]:has(#what-you-need)')
+  await expect(section).toHaveCount(1)
+  await expect(section.locator('.myc-section-head > .myc-eyebrow')).toHaveText('The basics')
+  const heading = section.locator('h2#what-you-need')
+  await expect(heading).toHaveClass(/myc-section-title/)
+  const selfLink = heading.getByRole('link', { name: 'What you need' })
+  await expect(selfLink).toHaveAttribute('href', '#what-you-need')
+  await expect(section).toHaveAttribute('aria-labelledby', 'what-you-need')
+  await selfLink.click()
+  await expect(page).toHaveURL(/#what-you-need$/)
+})
+
 test('is not indexable', async ({ page, request }) => {
   const response = await request.get('/_theme')
   expect(response.status()).toBe(200)

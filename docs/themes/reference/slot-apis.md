@@ -715,6 +715,7 @@ export interface SubscribeRequest {
 | `PageMedia` | interface | An image, a video or a 3D model file of a page section, validated by the server. |
 | `PageLink` | interface | A link of a page section, to another page or to an external address. |
 | `PageSeo` | interface | The search and share metadata of a page, validated by the server. |
+| `SectionHeadFields` | interface | The two optional fields of a section that renders a heading: a short label above the title and an explicit anchor. |
 | `HeroSection` | interface | The opening section of a page, `section.hero`: a title, an optional text, up to two links and a media. |
 | `FeatureItem` | interface | One feature of a `FeatureGridSection`, `section.feature-item`. |
 | `FeatureGridSection` | interface | A grid, a list or a bento layout of features, `section.feature-grid`. |
@@ -784,6 +785,19 @@ export interface PageSeo {
   keywords?: string
   /** An absolute http(s) URL on the site's own origin; any other value is dropped. */
   canonicalURL?: string
+}
+```
+
+#### `SectionHeadFields`
+
+The two optional fields of a section that renders a heading: a short label above the title and an explicit anchor.
+
+```ts
+export interface SectionHeadFields {
+  /** A short label above the title. */
+  eyebrow?: string
+  /** The id of the heading and the target of its self-link. */
+  anchor?: string
 }
 ```
 
@@ -898,7 +912,7 @@ export interface FaqItem {
 A list of the newest published posts, optionally filtered by a category or a tag, `section.post-list`.
 
 ```ts
-export interface PostListSection extends SectionBase<'post-list'>, BlockOptions<'section.post-list'> {
+export interface PostListSection extends SectionBase<'post-list'>, SectionHeadFields, BlockOptions<'section.post-list'> {
   variant: 'cards' | 'list'
   title?: string
   /** Category or tag slug the list is filtered by; never both */
@@ -927,7 +941,7 @@ export interface RichTextSection extends SectionBase<'rich-text'>, BlockOptions<
 A 3D model with a poster image, `section.scene`, shown as a background or inline.
 
 ```ts
-export interface SceneSection extends SectionBase<'scene'>, BlockOptions<'section.scene'> {
+export interface SceneSection extends SectionBase<'scene'>, SectionHeadFields, BlockOptions<'section.scene'> {
   variant: 'background' | 'inline'
   /** A binary glTF file (`.glb`); with any other file the server drops the section. */
   model: PageMedia

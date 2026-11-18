@@ -30,6 +30,8 @@ function showcaseSections(es, landing) {
       id: 2,
       __component: 'section.feature-grid',
       variant: 'grid',
+      eyebrow: t('The basics', 'Lo básico'),
+      anchor: t('what-you-need', 'lo-que-necesitas'),
       title: t('What you need', 'Lo que necesitas'),
       text: null,
       items: [

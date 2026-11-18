@@ -74,10 +74,17 @@ export const pageTranslationSchema = responseSchema<PostTranslation>()(
   z.strictObject({ locale: localeSchema, slug: z.string() }).meta({ id: 'PageTranslation', description: 'The same page in another locale.' }),
 )
 
+/** The optional eyebrow and anchor of a section that renders a heading (`SectionHeadFields`). */
+const sectionHeadShape = {
+  eyebrow: z.string().optional().meta({ description: 'A short label above the title.' }),
+  anchor: z.string().optional().meta({ description: 'The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.' }),
+}
+
 const heroSchema = responseSchema<HeroSection>()(
   z.strictObject({
     __component: z.literal('section.hero'),
     ...optionResponseShape('section.hero'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['centered', 'split', 'full-bleed']),
     title: z.string(),
@@ -96,6 +103,7 @@ const featureGridSchema = responseSchema<FeatureGridSection>()(
   z.strictObject({
     __component: z.literal('section.feature-grid'),
     ...optionResponseShape('section.feature-grid'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['grid', 'list', 'bento']),
     title: z.string().optional(),
@@ -125,6 +133,7 @@ const statsSchema = responseSchema<StatsSection>()(
   z.strictObject({
     __component: z.literal('section.stats'),
     ...optionResponseShape('section.stats'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['row', 'cards']),
     title: z.string().optional(),
@@ -140,6 +149,7 @@ const logoCloudSchema = responseSchema<LogoCloudSection>()(
   z.strictObject({
     __component: z.literal('section.logo-cloud'),
     ...optionResponseShape('section.logo-cloud'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['row', 'marquee']),
     title: z.string().optional(),
@@ -155,6 +165,7 @@ const testimonialsSchema = responseSchema<TestimonialsSection>()(
   z.strictObject({
     __component: z.literal('section.testimonials'),
     ...optionResponseShape('section.testimonials'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['single', 'grid']),
     title: z.string().optional(),
@@ -178,6 +189,7 @@ const pricingSchema = responseSchema<PricingSection>()(
   z.strictObject({
     __component: z.literal('section.pricing'),
     ...optionResponseShape('section.pricing'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['cards', 'table']),
     title: z.string().optional(),
@@ -194,6 +206,7 @@ const faqSchema = responseSchema<FaqSection>()(
   z.strictObject({
     __component: z.literal('section.faq'),
     ...optionResponseShape('section.faq'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['list', 'two-columns']),
     title: z.string().optional(),
@@ -205,6 +218,7 @@ const ctaSchema = responseSchema<CtaSection>()(
   z.strictObject({
     __component: z.literal('section.cta'),
     ...optionResponseShape('section.cta'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['banner', 'card']),
     title: z.string(),
@@ -218,6 +232,7 @@ const postListSchema = responseSchema<PostListSection>()(
   z.strictObject({
     __component: z.literal('section.post-list'),
     ...optionResponseShape('section.post-list'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['cards', 'list']),
     title: z.string().optional(),
@@ -232,6 +247,7 @@ const newsletterSchema = responseSchema<NewsletterSection>()(
   z.strictObject({
     __component: z.literal('section.newsletter'),
     ...optionResponseShape('section.newsletter'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['inline', 'card']),
     title: z.string().optional(),
@@ -253,6 +269,7 @@ const gallerySchema = responseSchema<GallerySection>()(
   z.strictObject({
     __component: z.literal('section.gallery'),
     ...optionResponseShape('section.gallery'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['grid', 'masonry']),
     title: z.string().optional(),
@@ -264,6 +281,7 @@ const sceneSchema = responseSchema<SceneSection>()(
   z.strictObject({
     __component: z.literal('section.scene'),
     ...optionResponseShape('section.scene'),
+    ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['background', 'inline']),
     model: pageMediaSchema.meta({ description: 'A binary glTF file (`.glb`); with any other file the server drops the section.' }),

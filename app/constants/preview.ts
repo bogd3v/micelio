@@ -45,20 +45,20 @@ export interface PreviewPatchFields {
  * The rule is the contract's: a field is here when the block interface (`app/interfaces/page.ts`) types it as free text whose only server check is that it is not empty (`server/schemas/page.ts`) and the component shows it through its own escaping. A field the server requires (`required`) takes text that is not blank; an optional one also takes `null`. Links, media, URLs, MIME types, variants, counts, slugs, flags and lists are never here, and neither is a field of sanitized HTML. A block or a field that is not listed cannot be patched.
  */
 export const PREVIEW_PATCH_TEXT_FIELDS: Readonly<Record<string, PreviewPatchFields>> = {
-  'hero': { section: ['title', 'text'], item: [], required: { section: ['title'] } },
-  'feature-grid': { section: ['title', 'text'], item: ['title', 'text'], required: { item: ['title'] } },
+  'hero': { section: ['eyebrow', 'title', 'text'], item: [], required: { section: ['title'] } },
+  'feature-grid': { section: ['eyebrow', 'title', 'text'], item: ['title', 'text'], required: { item: ['title'] } },
   'media-showcase': { section: ['title'], item: [] },
-  'stats': { section: ['title'], item: ['value', 'label'], required: { item: ['value', 'label'] } },
-  'logo-cloud': { section: ['title'], item: ['name'], required: { item: ['name'] } },
-  'testimonials': { section: ['title'], item: ['quote', 'author', 'role'], required: { item: ['quote', 'author'] } },
-  'pricing': { section: ['title', 'text'], item: ['name', 'price', 'period'], required: { item: ['name', 'price'] } },
-  'faq': { section: ['title'], item: ['question'], required: { item: ['question'] } },
-  'cta': { section: ['title', 'text'], item: [], required: { section: ['title'] } },
-  'post-list': { section: ['title'], item: [] },
-  'newsletter': { section: ['title', 'text', 'buttonLabel'], item: [] },
+  'stats': { section: ['eyebrow', 'title'], item: ['value', 'label'], required: { item: ['value', 'label'] } },
+  'logo-cloud': { section: ['eyebrow', 'title'], item: ['name'], required: { item: ['name'] } },
+  'testimonials': { section: ['eyebrow', 'title'], item: ['quote', 'author', 'role'], required: { item: ['quote', 'author'] } },
+  'pricing': { section: ['eyebrow', 'title', 'text'], item: ['name', 'price', 'period'], required: { item: ['name', 'price'] } },
+  'faq': { section: ['eyebrow', 'title'], item: ['question'], required: { item: ['question'] } },
+  'cta': { section: ['eyebrow', 'title', 'text'], item: [], required: { section: ['title'] } },
+  'post-list': { section: ['eyebrow', 'title'], item: [] },
+  'newsletter': { section: ['eyebrow', 'title', 'text', 'buttonLabel'], item: [] },
   'rich-text': { section: [], item: [] },
-  'gallery': { section: ['title'], item: ['alternativeText'] },
-  'scene': { section: ['title', 'text', 'alt'], item: [], required: { section: ['alt'] } },
+  'gallery': { section: ['eyebrow', 'title'], item: ['alternativeText'] },
+  'scene': { section: ['eyebrow', 'title', 'text', 'alt'], item: [], required: { section: ['alt'] } },
 }
 
 /** The most items of one block a patch names. */

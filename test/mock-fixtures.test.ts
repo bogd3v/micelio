@@ -25,6 +25,15 @@ describe('the page fixtures of the mock Strapi', () => {
     }
   })
 
+  it('a section of e2e/fixtures/pages.mjs has an eyebrow and an anchor', () => {
+    for (const slug of ['showcase', 'muestra']) {
+      const page = pageFixtures.find(candidate => candidate.slug === slug)
+      const heads = (page!.sections as Block[]).filter(section => typeof section.eyebrow === 'string' && typeof section.anchor === 'string')
+      expect(heads.length, slug).toBeGreaterThan(0)
+      for (const section of heads) expect(section.anchor, slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    }
+  })
+
   it('names every repeatable item field of the blocks the pages carry', () => {
     const fields = new Set<string>()
     for (const page of pageFixtures) {

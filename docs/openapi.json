@@ -6955,6 +6955,14 @@
               "accent"
             ]
           },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
           "blockId": {
             "type": "string"
           },
@@ -7323,6 +7331,14 @@
               "accent"
             ]
           },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
           "blockId": {
             "type": "string"
           },
@@ -7387,6 +7403,14 @@
               "raised",
               "accent"
             ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
           },
           "blockId": {
             "type": "string"
@@ -7500,6 +7524,14 @@
               "accent"
             ]
           },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
           "blockId": {
             "type": "string"
           },
@@ -7566,6 +7598,14 @@
               "l",
               "full"
             ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
           },
           "blockId": {
             "type": "string"
@@ -7649,6 +7689,14 @@
               "raised",
               "accent"
             ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
           },
           "blockId": {
             "type": "string"
@@ -7856,6 +7904,14 @@
               "raised",
               "accent"
             ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
           },
           "blockId": {
             "type": "string"
@@ -8325,6 +8381,14 @@
               "accent"
             ]
           },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
           "blockId": {
             "type": "string"
           },
@@ -8434,6 +8498,14 @@
               "raised",
               "accent"
             ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
           },
           "blockId": {
             "type": "string"
@@ -9151,6 +9223,14 @@
               "full"
             ]
           },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
           "blockId": {
             "type": "string"
           },
@@ -9645,6 +9725,14 @@
               "raised",
               "accent"
             ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
           },
           "blockId": {
             "type": "string"
@@ -10753,6 +10841,14 @@
               "raised",
               "accent"
             ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
           },
           "blockId": {
             "type": "string"
