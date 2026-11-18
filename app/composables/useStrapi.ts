@@ -1,8 +1,8 @@
 import { toValue, type MaybeRef } from 'vue'
 import type { AsyncData, NuxtError } from '#app'
 import type {
-  StrapiAbout,
-  RawStrapiArticle,
+  StrapiAbout, StrapiAboutResponse,
+  RawStrapiArticle, RawStrapiArticleResponse,
   PostListItem,
   StrapiPost,
   SearchPostResult, StrapiPaginatedResponse, PaginationMeta,
@@ -100,10 +100,11 @@ export function useStrapi(): StrapiHelpers {
         locale: locale || undefined,
       })
 
-      const response = await requestFetch<RawStrapiArticle | null>(
+      const response = await requestFetch<RawStrapiArticleResponse | null>(
         `/api/posts/${slug}?${query}`,
       )
 
+      await addIconSymbols(response?.iconSymbols)
       return response ? toStrapiPost(response) : null
     })
   }
@@ -150,7 +151,10 @@ export function useStrapi(): StrapiHelpers {
           locale: locale || undefined,
         })
 
-        return requestFetch<StrapiAbout>(`/api/about?${query}`)
+        const { iconSymbols, ...about } = await requestFetch<StrapiAboutResponse>(`/api/about?${query}`)
+        // The symbols go to the sprite, not into the payload, which would carry them a second time
+        await addIconSymbols(iconSymbols)
+        return about
       },
     )
   }

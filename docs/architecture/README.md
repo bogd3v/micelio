@@ -6,6 +6,7 @@ Documents:
 
 - [The block catalogue plan](block-catalogue-plan.md): the foundations, refinements, icons and new blocks by wave, and the issue list the implementation is cut from (a proposal until the maintainer approves it).
 - [The CI and deploy pipeline](ci-pipeline.md): what runs on every push to `main` and how the images are produced.
+- [Icons](icons.md): the sprite of a page, the resolver (theme first, then the core) and a client-side navigation.
 - [Heavy islands](islands.md): the registry, the triggers, the load rule and the alternatives.
 - [Releasing](releasing.md): how the maintainer cuts a release.
 - [Contract tests against a real CMS](contract-tests.md): what the suite covers and how to run it.

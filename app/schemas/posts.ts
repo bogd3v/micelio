@@ -4,9 +4,9 @@ import type { ReadingPath, ReadingPathStep } from '~/interfaces/blog'
 import type { PaginationMeta, StrapiPaginatedResponse } from '~/interfaces/strapi-response'
 import type { DraftArticleRunResponse, PublishedVersion } from '~/interfaces/draft'
 import type { DraftPreview } from '~/interfaces/preview'
-import type { PostListItem, RawStrapiArticle, SearchPostResult, StrapiAuthorRef, StrapiCategoryRef, StrapiLocalization, StrapiTagRef, TagCount } from '~/interfaces/strapi-post'
+import type { PostListItem, RawStrapiArticle, RawStrapiArticleResponse, SearchPostResult, StrapiAuthorRef, StrapiCategoryRef, StrapiLocalization, StrapiTagRef, TagCount } from '~/interfaces/strapi-post'
 import type { StrapiReference } from '~/interfaces/strapi-reference'
-import { imageCreditSchema, mediaRefSchema, seoSchema, strapiBlockSchema } from './blocks'
+import { iconSymbolsSchema, imageCreditSchema, mediaRefSchema, seoSchema, strapiBlockSchema } from './blocks'
 import { responseSchema } from './response'
 
 /** A category with the number of posts in it (`GET /api/categories`). */
@@ -99,6 +99,14 @@ export const articleSchema = responseSchema<RawStrapiArticle>()(
     references: z.array(referenceSchema).nullish(),
     localizations: z.array(localizationSchema).nullish(),
   }).meta({ id: 'RawStrapiArticle', description: 'An article as the route sends it: a card has no blocks, references or localizations, a whole article has no `snippet`.' }),
+)
+
+/** An article as `GET /api/posts/{slug}` sends it: the article, with the symbols of its icons when it has some. */
+export const articleResponseSchema = responseSchema<RawStrapiArticleResponse>()(
+  z.strictObject({
+    ...articleSchema.shape,
+    iconSymbols: iconSymbolsSchema.optional(),
+  }).meta({ id: 'RawStrapiArticleResponse', description: 'An article as the route sends it, with `iconSymbols` when its blocks use icons.' }),
 )
 
 /**

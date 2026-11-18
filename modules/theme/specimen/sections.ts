@@ -2,6 +2,7 @@ import type { Component } from 'vue'
 import SpecimenFoundations from './sections/SpecimenFoundations.vue'
 import SpecimenControls from './sections/SpecimenControls.vue'
 import SpecimenLabels from './sections/SpecimenLabels.vue'
+import SpecimenIcons from './sections/SpecimenIcons.vue'
 import SpecimenCards from './sections/SpecimenCards.vue'
 import SpecimenProse from './sections/SpecimenProse.vue'
 import SpecimenForms from './sections/SpecimenForms.vue'
@@ -30,6 +31,7 @@ export const SPECIMEN_SECTIONS: SpecimenSection[] = [
   { id: 'foundations', title: 'specimen.sections.foundations', component: SpecimenFoundations },
   { id: 'controls', title: 'specimen.sections.controls', component: SpecimenControls },
   { id: 'labels', title: 'specimen.sections.labels', component: SpecimenLabels },
+  { id: 'icons', title: 'specimen.sections.icons', component: SpecimenIcons },
   { id: 'cards', title: 'specimen.sections.cards', component: SpecimenCards },
   { id: 'prose', title: 'specimen.sections.prose', component: SpecimenProse },
   { id: 'forms', title: 'specimen.sections.forms', component: SpecimenForms },

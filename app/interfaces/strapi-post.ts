@@ -1,3 +1,4 @@
+import type { IconSymbolCarrier } from './icons'
 import type { StrapiBlock, StrapiImageCredit } from './strapi-blocks'
 import type { StrapiSEO } from './strapi-seo'
 import type { StrapiReference } from './strapi-reference'
@@ -120,6 +121,9 @@ export interface RawStrapiArticle {
   references?: StrapiReference[] | null
   localizations?: StrapiLocalization[] | null
 }
+
+/** An article as `GET /api/posts/{slug}` sends it: the article, with the symbols of its icons when its blocks use some (ADR 0021). */
+export interface RawStrapiArticleResponse extends RawStrapiArticle, IconSymbolCarrier {}
 
 /**
  * An article as a list card shows it, populated with `POST_CARD_POPULATE`.

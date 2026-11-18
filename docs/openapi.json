@@ -502,7 +502,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StrapiAbout"
+                  "$ref": "#/components/schemas/StrapiAboutResponse"
                 }
               }
             }
@@ -4558,7 +4558,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page"
+                  "$ref": "#/components/schemas/PageResponse"
                 }
               }
             }
@@ -4888,7 +4888,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RawStrapiArticle"
+                  "$ref": "#/components/schemas/RawStrapiArticleResponse"
                 }
               }
             }
@@ -7602,6 +7602,16 @@
         "additionalProperties": false,
         "description": "The opening section of a page: a title, an optional text, up to two links and a media."
       },
+      "IconSymbols": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "The `<symbol>` of each icon the response uses, by symbol id (`myc-i-<name>`), for a client-side navigation to add to the page's sprite. Absent when the response uses no icon."
+      },
       "LogoCloudSection": {
         "type": "object",
         "properties": {
@@ -7888,53 +7898,6 @@
         "additionalProperties": false,
         "description": "The request was accepted."
       },
-      "Page": {
-        "type": "object",
-        "properties": {
-          "documentId": {
-            "type": "string",
-            "description": "Strapi's document id."
-          },
-          "title": {
-            "type": "string"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "locale": {
-            "type": "string",
-            "enum": [
-              "en",
-              "es"
-            ]
-          },
-          "seo": {
-            "$ref": "#/components/schemas/PageSeo"
-          },
-          "sections": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PageSection"
-            },
-            "description": "The sections that passed validation, in order; an invalid or unknown one is left out."
-          },
-          "translations": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PageTranslation"
-            }
-          }
-        },
-        "required": [
-          "documentId",
-          "title",
-          "slug",
-          "sections",
-          "translations"
-        ],
-        "additionalProperties": false,
-        "description": "A page as the server returns it after validation."
-      },
       "PageLink": {
         "type": "object",
         "properties": {
@@ -7978,6 +7941,56 @@
         ],
         "additionalProperties": false,
         "description": "An image, a video or a 3D model file of a page section, validated by the server."
+      },
+      "PageResponse": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "Strapi's document id."
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ]
+          },
+          "seo": {
+            "$ref": "#/components/schemas/PageSeo"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageSection"
+            },
+            "description": "The sections that passed validation, in order; an invalid or unknown one is left out."
+          },
+          "translations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageTranslation"
+            }
+          },
+          "iconSymbols": {
+            "$ref": "#/components/schemas/IconSymbols"
+          }
+        },
+        "required": [
+          "documentId",
+          "title",
+          "slug",
+          "sections",
+          "translations"
+        ],
+        "additionalProperties": false,
+        "description": "A page as the route sends it, with `iconSymbols` when its sections use icons."
       },
       "PageSection": {
         "oneOf": [
@@ -8792,6 +8805,192 @@
         "additionalProperties": false,
         "description": "An article as the route sends it: a card has no blocks, references or localizations, a whole article has no `snippet`."
       },
+      "RawStrapiArticleResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "documentId": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "content": {
+            "description": "Never sent: the legacy Markdown body that `blocks` replaced.",
+            "deprecated": true,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "description": "Never sent: the allow-list leaves it out.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "locale": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "readTime": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StrapiTagRef"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cover": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiMediaRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coverCredit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiImageCredit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiCategoryRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "author": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiAuthorRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StrapiSEO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "snippet": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "blocks": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StrapiBlock"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "references": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StrapiReference"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "localizations": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StrapiLocalization"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "iconSymbols": {
+            "$ref": "#/components/schemas/IconSymbols"
+          }
+        },
+        "required": [
+          "id",
+          "documentId",
+          "title",
+          "slug"
+        ],
+        "additionalProperties": false,
+        "description": "An article as the route sends it, with `iconSymbols` when its blocks use icons."
+      },
       "ReadingPath": {
         "type": "object",
         "properties": {
@@ -9475,7 +9674,7 @@
         "additionalProperties": false,
         "description": "A row or a set of cards of figures."
       },
-      "StrapiAbout": {
+      "StrapiAboutResponse": {
         "type": "object",
         "properties": {
           "id": {
@@ -9510,6 +9709,9 @@
             "items": {
               "$ref": "#/components/schemas/StrapiBlock"
             }
+          },
+          "iconSymbols": {
+            "$ref": "#/components/schemas/IconSymbols"
           }
         },
         "required": [
@@ -9520,7 +9722,7 @@
           "blocks"
         ],
         "additionalProperties": false,
-        "description": "The About page with its blocks, Markdown already rendered to sanitized HTML."
+        "description": "The About page as the route sends it, with `iconSymbols` when its blocks use icons."
       },
       "StrapiAuthorRef": {
         "type": "object",

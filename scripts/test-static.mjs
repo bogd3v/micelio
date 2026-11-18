@@ -36,7 +36,8 @@ if (!process.env.STATIC_SKIP_GENERATE) {
       appPort,
       // The playground's Worker may fetch its runtime only from the site's own origin (ADR 0004)
       siteUrl: `http://127.0.0.1:${appPort}`,
-      extraEnv: { NUXT_PUBLIC_NEWSLETTER_FORM_ACTION: `http://127.0.0.1:${receiverPort}/subscribe` },
+      // The specimen is the one page of the build with icons (e2e/static/icons.spec.ts)
+      extraEnv: { NUXT_PUBLIC_NEWSLETTER_FORM_ACTION: `http://127.0.0.1:${receiverPort}/subscribe`, MICELIO_SPECIMEN: '1' },
     })
   } catch (error) {
     console.error(error.message)

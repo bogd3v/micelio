@@ -1,12 +1,12 @@
 import { z } from 'zod'
 // `~/schemas/*` are the response schemas of `app/schemas/`; `../../schemas/*` are the request schemas of `server/schemas/`
 import { fediverseStatsByIdSchema, fediverseStatsSchema } from '~/schemas/fediverse'
-import { aboutSchema } from '~/schemas/blocks'
+import { aboutResponseSchema } from '~/schemas/blocks'
 import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/schemas/comments'
 import { siteSchema } from '~/schemas/site'
 import { themeStatusSchema } from '~/schemas/theme'
-import { pageSchema } from '~/schemas/pages'
-import { articlePageSchema, articleSchema, categoryCountSchema, readingPathSchema, searchResultSchema, tagCountSchema } from '~/schemas/posts'
+import { pageResponseSchema } from '~/schemas/pages'
+import { articlePageSchema, articleResponseSchema, categoryCountSchema, readingPathSchema, searchResultSchema, tagCountSchema } from '~/schemas/posts'
 import { guestCommentSchema } from '../../schemas/comments'
 import { pageParamsSchema } from '../../schemas/page'
 import { commentsQuerySchema, listLocaleQuerySchema, localeQuerySchema, postParamsSchema, postsQuerySchema, readingPathQuerySchema, searchQuerySchema } from '../../schemas/query'
@@ -60,7 +60,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
       { name: 'slug', in: 'path', description: 'The article slug, in the alphabet and length of a Strapi uid (256 characters at most).' },
       LOCALE_PARAMETER,
     ],
-    response: { status: 200, schema: articleSchema, description: 'The article with its blocks, rendered as sanitized HTML.', cache: READ_CACHE_5_MIN },
+    response: { status: 200, schema: articleResponseSchema, description: 'The article with its blocks, rendered as sanitized HTML.', cache: READ_CACHE_5_MIN },
     errors: ['invalidRequest', 'notFound', 'upstreamUnavailable'],
   },
   {
@@ -124,7 +124,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
     tag: 'Content',
     query: localeQuerySchema,
     parameters: [LOCALE_PARAMETER],
-    response: { status: 200, schema: aboutSchema, description: 'The About page content.', cache: READ_CACHE_5_MIN },
+    response: { status: 200, schema: aboutResponseSchema, description: 'The About page content.', cache: READ_CACHE_5_MIN },
     errors: ['invalidRequest', 'notFound', 'upstreamUnavailable'],
   },
   {
@@ -140,7 +140,7 @@ export const CONTENT_ROUTES: RouteEntry[] = [
       { name: 'slug', in: 'path', description: 'The page slug, a Strapi uid in lowercase.' },
       { ...LOCALE_PARAMETER, description: 'The language: `en` or `es`. The CMS default applies when absent.' },
     ],
-    response: { status: 200, schema: pageSchema, description: 'The page.', cache: READ_CACHE_5_MIN },
+    response: { status: 200, schema: pageResponseSchema, description: 'The page.', cache: READ_CACHE_5_MIN },
     errors: ['invalidRequest', 'notFound', 'upstreamUnavailable'],
   },
   {
