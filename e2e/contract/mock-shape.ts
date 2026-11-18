@@ -76,6 +76,11 @@ export const KNOWN_DIFFERENCES: KnownDifference[] = [
     issue: `$.meta.pagination.${field}: in the mock, not in the CMS`,
     reason: 'With `pagination[limit]` the CMS answers `start`, `limit` and `total`, the mock the page-based keys',
   })),
+  ...['eyebrow', 'anchor'].map(field => ({
+    route: '/api/pages',
+    issue: `$.data[].sections[section.feature-grid].${field}: in the mock, not in the CMS`,
+    reason: 'bogd3v/micelio-cms#485 added the field and is merged but not released, so ghcr.io/bogd3v/micelio-cms:latest (0.8.0) lacks it; delete these two entries when the next micelio-cms release becomes latest (maintainer\'s exception to bogd3v/micelio-cms#441, decision 3)',
+  })),
   {
     route: '/api/comments/:relation',
     issue: '$: the mock has object, the CMS has array',
