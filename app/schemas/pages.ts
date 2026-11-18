@@ -13,6 +13,7 @@ import type {
   MediaShowcaseSection,
   NewsletterSection,
   Page,
+  PageResponse,
   PageLink,
   PageMedia,
   PageSection,
@@ -29,6 +30,7 @@ import type {
 } from '~/interfaces/page'
 import type { PostTranslation } from '~/interfaces/strapi-post'
 import { optionResponseShape } from './blockOptions'
+import { iconSymbolsSchema } from './blocks'
 import { postListItemSchema } from './posts'
 import { responseSchema } from './response'
 
@@ -303,4 +305,12 @@ export const pageSchema = responseSchema<Page>()(
     sections: z.array(pageSectionSchema).meta({ description: 'The sections that passed validation, in order; an invalid or unknown one is left out.' }),
     translations: z.array(pageTranslationSchema),
   }).meta({ id: 'Page', description: 'A page as the server returns it after validation.' }),
+)
+
+/** A page as `GET /api/pages/{slug}` sends it: the page, with the symbols of its icons when its sections use some. */
+export const pageResponseSchema = responseSchema<PageResponse>()(
+  z.strictObject({
+    ...pageSchema.shape,
+    iconSymbols: iconSymbolsSchema.optional(),
+  }).meta({ id: 'PageResponse', description: 'A page as the route sends it, with `iconSymbols` when its sections use icons.' }),
 )

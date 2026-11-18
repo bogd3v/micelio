@@ -1,3 +1,4 @@
+import type { IconSymbolCarrier } from './icons'
 import type { StrapiBlock } from './strapi-blocks'
 import type { StrapiSEO } from './strapi-seo'
 
@@ -22,3 +23,6 @@ export interface StrapiAbout {
   /** The page body, in order; each block is discriminated by `__component`. */
   blocks: StrapiBlock[]
 }
+
+/** The About page as `GET /api/about` sends it: the page, with the symbols of its icons when its blocks use some (ADR 0021). */
+export interface StrapiAboutResponse extends StrapiAbout, IconSymbolCarrier {}

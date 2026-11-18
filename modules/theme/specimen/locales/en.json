@@ -8,6 +8,7 @@
       "foundations": "Typography and colors",
       "controls": "Controls",
       "labels": "Tags, chips and labels",
+      "icons": "Icons",
       "cards": "Cards",
       "prose": "Prose, callouts and code",
       "forms": "Forms",
@@ -46,6 +47,12 @@
         "accent": "Accent",
         "text": "Text"
       }
+    },
+    "icons": {
+      "lead": "Sample names of the core's catalogue, drawn from the page's sprite. The last one has no filled alternate, so it falls back to outline.",
+      "outline": "Outline",
+      "filled": "Filled",
+      "alone": "Favorites"
     },
     "labels": {
       "categories": "Category tags (static and links)",

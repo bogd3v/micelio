@@ -53,8 +53,10 @@ const ISR_RULES = {
 }
 
 // Module routes that are off in static modes (ADR 0006, section 2): not crawled, not generated
+// Where MICELIO_SPECIMEN=1 (tests only) a static build also generates /_theme/icons, the one page of that build with icons (e2e/static/icons.spec.ts)
+const SPECIMEN_ICONS_ROUTE = process.env.MICELIO_SPECIMEN === '1' ? ['/_theme/icons'] : []
 const STATIC_PRERENDER_IGNORE = [
-  /^\/(es\/)?(account|drafts|newsletter|confirm|_theme)(\/|$)/,
+  SPECIMEN_ICONS_ROUTE.length ? /^\/(es\/)?(account|drafts|newsletter|confirm)(\/|$)|^\/(es\/)?_theme(?:\/(?!icons$)|$)/ : /^\/(es\/)?(account|drafts|newsletter|confirm|_theme)(\/|$)/,
   /^\/(api\/(auth|comments|drafts|newsletter|fediverse)|__nuxt_island)(\/|$)/,
 ]
 
@@ -151,7 +153,9 @@ export default defineNuxtConfig({
     '/_preview': { headers: tokenPageHeaders },
     '/api/preview/**': { headers: tokenPageHeaders },
     '/_theme': { headers: privatePageHeaders },
+    '/_theme/icons': { headers: privatePageHeaders },
     '/es/_theme': { headers: privatePageHeaders },
+    '/es/_theme/icons': { headers: privatePageHeaders },
     '/api/auth/**': { headers: { 'cache-control': 'private, no-store' } },
     '/api/newsletter/**': { headers: { 'cache-control': 'private, no-store' } },
     '/api/drafts': { headers: { 'cache-control': 'private, no-store' } },
@@ -180,7 +184,7 @@ export default defineNuxtConfig({
     ...(staticSite && {
       prerender: {
         crawlLinks: true,
-        routes: ['/', '/es', '/blog', '/es/blog'],
+        routes: ['/', '/es', '/blog', '/es/blog', ...SPECIMEN_ICONS_ROUTE],
         ignore: STATIC_PRERENDER_IGNORE,
         // A dead link in the content is logged; routes Strapi lists must render (modules/static-routes.ts)
         failOnError: false,

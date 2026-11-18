@@ -8,6 +8,7 @@
       "foundations": "Tipografía y colores",
       "controls": "Controles",
       "labels": "Etiquetas, chips y marcas",
+      "icons": "Íconos",
       "cards": "Tarjetas",
       "prose": "Prosa, avisos y código",
       "forms": "Formularios",
@@ -46,6 +47,12 @@
         "accent": "Acento",
         "text": "Texto"
       }
+    },
+    "icons": {
+      "lead": "Nombres de muestra del catálogo del núcleo, dibujados desde el sprite de la página. El último no tiene alternativa rellena, así que vuelve al contorno.",
+      "outline": "Contorno",
+      "filled": "Relleno",
+      "alone": "Favoritos"
     },
     "labels": {
       "categories": "Etiquetas de categoría (estáticas y enlaces)",

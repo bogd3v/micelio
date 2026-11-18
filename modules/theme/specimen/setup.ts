@@ -72,5 +72,7 @@ export function setupSpecimen(ctx: ThemeContext): void {
   })
   extendPages((pages) => {
     pages.push({ name: 'theme-specimen', path: '/_theme', file: join(DIR, 'page.vue') })
+    // Only the icons group, a page of its own so a static build can generate it without the whole specimen (e2e/static/icons.spec.ts)
+    pages.push({ name: 'theme-specimen-icons', path: '/_theme/icons', file: join(DIR, 'icons-page.vue') })
   })
 }

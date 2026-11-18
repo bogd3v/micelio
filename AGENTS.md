@@ -72,6 +72,7 @@ npm run test:coverage     # Same tests with coverage of app/ and themes/; fails 
 npm run test:integration  # Run API-route integration tests (test/integration/, needs a Nuxt build)
 npm run test:contract     # Run the server routes against the demo image of micelio-cms with Postgres, which the script starts and removes (needs Docker and a build; docs/architecture/contract-tests.md)
 npm run test:static       # Generate a static site against the mock Strapi and run e2e/static/
+                          # (built with MICELIO_SPECIMEN=1, so it also generates /_theme/icons for e2e/static/icons.spec.ts)
 npm run test:static-theme # Run the builder image's generate command against the mock Strapi for a theme the site settings name: success, a refused theme that keeps the last site, a switch (needs theme:pull)
 npm run test:landing      # Generate a landing (home page, no articles) against the mock Strapi and run e2e/landing/ (the default theme, then starter)
 npm run test:e2e          # Playwright e2e (e2e/): the mock Strapi and the dev server, or `.output`
@@ -197,7 +198,7 @@ function handleClick() {
 
 - Colors, shadows and glows come from the semantic roles of ADR 0005 (`var(--ink)`, `var(--surface)`, `var(--link)`, `var(--accent)`, `var(--danger)`, `var(--category-3)`…), never from the theme's primitives (`--mirla`, `--chillon`…), which live only in `assets/css/settings/` (`scripts/check-primitives.mjs` fails the lint otherwise). A category's color is `useCategories().colorOf(slug)` (ADR 0016 section 3), backed by `categoryColor` in `app/helpers/categories.ts`, a slot API (contract 2). The core names no category: no `Category` enum and no constant of slugs
 - No utility classes in templates: every class is a `myc-*` class in its layer, or one of the core helpers (`font-display`, `font-mono`, `not-prose`). `npm run lint` fails otherwise (`scripts/check-classes.mjs`; ADR 0005, section 3)
-- Icons are inline SVG components in `app/components/icons/` (`<IconsHome />`), sized by the parent's CSS
+- Icons are inline SVG components in `app/components/icons/` (`<IconsHome />`), sized by the parent's CSS. An icon a block or an editor names (a name of the catalogue, ADR 0021) is `<MycIcon name="leaf" />`, drawn from the page's sprite; with a `label` it is the accessible name of an icon that stands alone (`docs/architecture/icons.md`)
 - Cards take their corners from `border-radius: var(--radius-card)`; if they animate, use `var(--duration-*)` and `var(--ease-*)` and transition only the properties that change
 - Use `<MycButton>` (`app/components/myc/`) for buttons and button-styled links; the `Myc*` components mirror the design system shown by the specimen page (`/_theme`) and `docs/themes/reference/`
 - Use `.input-field` for form inputs

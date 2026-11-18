@@ -36,5 +36,5 @@ export default defineEventHandler(async (event) => {
   }
 
   const article = data[0]!
-  return publicArticle({ ...article, blocks: renderArticleBlocks(article.blocks, article.references, markdownRenderer(locale)) })
+  return withIconSymbols(publicArticle({ ...article, blocks: renderArticleBlocks(article.blocks, article.references, markdownRenderer(locale)) }), event)
 })

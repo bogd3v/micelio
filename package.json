@@ -60,6 +60,7 @@
   "dependencies": {
     "@intlify/message-compiler": "^11.4.16",
     "@jitl/quickjs-wasmfile-release-sync": "0.32.0",
+    "@micelio/icons": "0.1.1",
     "@nuxt/image": "^2.2.1",
     "@nuxtjs/i18n": "^10.6.0",
     "@sigstore/bundle": "5.0.0",

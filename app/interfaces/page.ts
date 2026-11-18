@@ -1,3 +1,4 @@
+import type { IconSymbolCarrier } from './icons'
 import type { BlockOptions } from './block-options'
 import type { Locale } from './locale'
 import type { PostListItem, PostTranslation } from './strapi-post'
@@ -366,3 +367,6 @@ export interface Page {
   /** The page in the other locales, for hreflang */
   translations: PostTranslation[]
 }
+
+/** A page as `GET /api/pages/{slug}` sends it: the page, with the symbols of its icons when its sections use some (ADR 0021). */
+export interface PageResponse extends Page, IconSymbolCarrier {}

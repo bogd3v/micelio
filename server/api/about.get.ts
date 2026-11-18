@@ -25,5 +25,5 @@ export default defineEventHandler(async (event) => {
     throw problem('notFound', { message: 'About page not found' })
   }
 
-  return publicAbout({ ...data, blocks: renderBlocks(data.blocks, markdownRenderer(locale)) } as StrapiAbout)
+  return withIconSymbols(publicAbout({ ...data, blocks: renderBlocks(data.blocks, markdownRenderer(locale)) } as StrapiAbout), event)
 })

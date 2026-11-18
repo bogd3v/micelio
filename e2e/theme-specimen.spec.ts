@@ -59,3 +59,19 @@ test('draws the illustrations of the theme, one per slug it ships art for', asyn
   // A theme with no art (the starter) has no row; one with art (bogota) shows each picture
   if (count) await expect(row.locator('svg')).not.toHaveCount(0)
 })
+
+// ADR 0021, section 3: the server inlines one sprite with the names the page uses; no icon file is requested and the CSP is the page's own
+test('draws its icons from one inline sprite, with no icon request', async ({ page }) => {
+  const requested: string[] = []
+  page.on('request', request => requested.push(new URL(request.url()).pathname))
+  const response = await page.goto('/_theme', { waitUntil: 'networkidle' })
+  expect(await page.locator('body > svg#myc-icons').count()).toBe(1)
+  expect(await page.locator('svg#myc-icons > symbol').count()).toBe(16)
+  const icon = page.locator('[data-specimen="icons-outline"] svg.myc-icon').first()
+  const box = await icon.boundingBox()
+  expect(box?.width).toBeGreaterThan(8)
+  // The glyph is drawn: its path is in the symbol the use points at, and the stroke follows the text color
+  await expect(page.locator('#myc-i-leaf path').first()).toHaveAttribute('d', /.+/)
+  expect(requested.filter(path => (/\.svg$/.test(path) && !/\/_?media\//.test(path)) || /\/icons?\//.test(path))).toEqual([])
+  expect(response?.headers()['content-security-policy']).not.toMatch(/icon/i)
+})

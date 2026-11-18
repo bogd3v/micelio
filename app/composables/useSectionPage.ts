@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import type { Locale, LocalePaths, Page, Site } from '~/interfaces'
+import type { Locale, LocalePaths, Page, PageResponse, Site } from '~/interfaces'
 import { homePaths, pagePaths } from '~/helpers/translations'
 import { pageTitle } from '~/helpers/site'
 
@@ -12,9 +12,12 @@ interface SectionPageState {
 /** Fetches /api/pages/<slug> for the current locale. */
 export async function useSectionPage(slug: string): Promise<SectionPageState> {
   const { locale } = useI18n()
-  const { data, error } = await useAsyncData<Page>(`page-${slug}-${locale.value}`, () =>
-    $fetch<Page>(`/api/pages/${encodeURIComponent(slug)}`, { query: { locale: locale.value } }),
-  )
+  const { data, error } = await useAsyncData<Page>(`page-${slug}-${locale.value}`, async () => {
+    const { iconSymbols, ...fetched } = await $fetch<PageResponse>(`/api/pages/${encodeURIComponent(slug)}`, { query: { locale: locale.value } })
+    // The symbols go to the sprite, not into the payload, which would carry them a second time
+    await addIconSymbols(iconSymbols)
+    return fetched
+  })
   const failure = computed<number | undefined>(() => error.value ? (error.value.statusCode ?? 500) : data.value ? undefined : 500)
   return { page: data as Ref<Page | undefined>, failure }
 }

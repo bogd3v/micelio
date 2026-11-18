@@ -25,7 +25,7 @@ import type {
   StrapiTopic,
   StrapiTopics,
 } from '~/interfaces/strapi-blocks'
-import type { StrapiAbout } from '~/interfaces/strapi-about'
+import type { StrapiAbout, StrapiAboutResponse } from '~/interfaces/strapi-about'
 import type { StrapiMediaRef } from '~/interfaces/strapi-post'
 import type { StrapiMetaSocial, StrapiSEO } from '~/interfaces/strapi-seo'
 import { optionResponseShape } from './blockOptions'
@@ -118,6 +118,9 @@ const categorySlugSchema = z.string().regex(SLUG_PATTERN)
 const factSchema = responseSchema<StrapiFact>()(
   z.strictObject({ id: z.int(), label: z.string(), value: z.string(), mono: z.boolean().nullish() }).meta({ id: 'StrapiFact', description: 'A label and value pair, shown as a definition list item.' }),
 )
+
+/** The symbols a response carries for the icons it uses (ADR 0021): symbol id to `<symbol>` markup. */
+export const iconSymbolsSchema = z.record(z.string(), z.string()).meta({ id: 'IconSymbols', description: 'The `<symbol>` of each icon the response uses, by symbol id (`myc-i-<name>`), for a client-side navigation to add to the page\'s sprite. Absent when the response uses no icon.' })
 
 /** A link button of an About section. */
 const linkSchema = responseSchema<StrapiLink>()(
@@ -323,4 +326,12 @@ export const aboutSchema = responseSchema<StrapiAbout>()(
     seo: seoSchema.nullish(),
     blocks: z.array(strapiBlockSchema),
   }).meta({ id: 'StrapiAbout', description: 'The About page with its blocks, Markdown already rendered to sanitized HTML.' }),
+)
+
+/** The About page as `GET /api/about` sends it: the page, with the symbols of its icons when its blocks use some. */
+export const aboutResponseSchema = responseSchema<StrapiAboutResponse>()(
+  z.strictObject({
+    ...aboutSchema.shape,
+    iconSymbols: iconSymbolsSchema.optional(),
+  }).meta({ id: 'StrapiAboutResponse', description: 'The About page as the route sends it, with `iconSymbols` when its blocks use icons.' }),
 )
