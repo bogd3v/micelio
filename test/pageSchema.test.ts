@@ -61,6 +61,22 @@ describe('parseSection', () => {
     expect(parseSection(section(component, invalid[component]), context)).toBeNull()
   })
 
+  it('keeps the eyebrow and a kebab-case anchor of the twelve sections that render a heading, and drops an anchor that is not a slug', () => {
+    const withHead = ['hero', 'feature-grid', 'stats', 'logo-cloud', 'testimonials', 'pricing', 'faq', 'cta', 'post-list', 'newsletter', 'gallery', 'scene'].map(name => `section.${name}`)
+    for (const component of withHead) {
+      const parsed = parseSection(section(component, { eyebrow: 'The basics', anchor: 'what-you-need-2' }), context)
+      expect(parsed, component).toMatchObject({ eyebrow: 'The basics', anchor: 'what-you-need-2' })
+      for (const anchor of ['What you need', 'a_b', '-a', 'a--b', 'a b', '#a']) {
+        const dropped = parseSection(section(component, { eyebrow: 'x', anchor }), context)
+        expect(dropped, `${component} ${anchor}`).not.toBeNull()
+        expect((dropped as { anchor?: string }).anchor, `${component} ${anchor}`).toBeUndefined()
+      }
+      const unset = parseSection(section(component, { eyebrow: null, anchor: null }), context)
+      expect((unset as { eyebrow?: string }).eyebrow).toBeUndefined()
+      expect((unset as { anchor?: string }).anchor).toBeUndefined()
+    }
+  })
+
   it('accepts a .glb model with a query and refuses .gltf, whose buffers live in other files', () => {
     const scene = (url: string): unknown => parseSection(section('section.scene', { model: { ...image, url } }), context)
     expect(scene('/uploads/model.glb?v=2')).not.toBeNull()

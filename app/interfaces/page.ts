@@ -76,11 +76,26 @@ interface SectionBase<K extends PageSectionKind> {
 }
 
 /**
+ * The two optional fields of a section that renders a heading: a short label above the title and an explicit anchor.
+ *
+ * @remarks
+ * The anchor is a kebab-case slug the CMS keeps unique in the page, never derived from the title. With one, the heading carries `id="<anchor>"` and a self-link; without one the section renders as before.
+ *
+ * @public
+ */
+export interface SectionHeadFields {
+  /** A short label above the title. */
+  eyebrow?: string
+  /** The id of the heading and the target of its self-link. */
+  anchor?: string
+}
+
+/**
  * The opening section of a page, `section.hero`: a title, an optional text, up to two links and a media.
  *
  * @public
  */
-export interface HeroSection extends SectionBase<'hero'>, BlockOptions<'section.hero'> {
+export interface HeroSection extends SectionBase<'hero'>, SectionHeadFields, BlockOptions<'section.hero'> {
   variant: 'centered' | 'split' | 'full-bleed'
   title: string
   text?: string
@@ -107,7 +122,7 @@ export interface FeatureItem {
  *
  * @public
  */
-export interface FeatureGridSection extends SectionBase<'feature-grid'>, BlockOptions<'section.feature-grid'> {
+export interface FeatureGridSection extends SectionBase<'feature-grid'>, SectionHeadFields, BlockOptions<'section.feature-grid'> {
   variant: 'grid' | 'list' | 'bento'
   title?: string
   text?: string
@@ -146,7 +161,7 @@ export interface StatItem {
  *
  * @public
  */
-export interface StatsSection extends SectionBase<'stats'>, BlockOptions<'section.stats'> {
+export interface StatsSection extends SectionBase<'stats'>, SectionHeadFields, BlockOptions<'section.stats'> {
   variant: 'row' | 'cards'
   title?: string
   items: StatItem[]
@@ -171,7 +186,7 @@ export interface LogoItem {
  *
  * @public
  */
-export interface LogoCloudSection extends SectionBase<'logo-cloud'>, BlockOptions<'section.logo-cloud'> {
+export interface LogoCloudSection extends SectionBase<'logo-cloud'>, SectionHeadFields, BlockOptions<'section.logo-cloud'> {
   variant: 'row' | 'marquee'
   title?: string
   logos: LogoItem[]
@@ -197,7 +212,7 @@ export interface TestimonialItem {
  *
  * @public
  */
-export interface TestimonialsSection extends SectionBase<'testimonials'>, BlockOptions<'section.testimonials'> {
+export interface TestimonialsSection extends SectionBase<'testimonials'>, SectionHeadFields, BlockOptions<'section.testimonials'> {
   variant: 'single' | 'grid'
   title?: string
   items: TestimonialItem[]
@@ -225,7 +240,7 @@ export interface PricingPlan {
  *
  * @public
  */
-export interface PricingSection extends SectionBase<'pricing'>, BlockOptions<'section.pricing'> {
+export interface PricingSection extends SectionBase<'pricing'>, SectionHeadFields, BlockOptions<'section.pricing'> {
   variant: 'cards' | 'table'
   title?: string
   text?: string
@@ -250,7 +265,7 @@ export interface FaqItem {
  *
  * @public
  */
-export interface FaqSection extends SectionBase<'faq'>, BlockOptions<'section.faq'> {
+export interface FaqSection extends SectionBase<'faq'>, SectionHeadFields, BlockOptions<'section.faq'> {
   variant: 'list' | 'two-columns'
   title?: string
   items: FaqItem[]
@@ -261,7 +276,7 @@ export interface FaqSection extends SectionBase<'faq'>, BlockOptions<'section.fa
  *
  * @public
  */
-export interface CtaSection extends SectionBase<'cta'>, BlockOptions<'section.cta'> {
+export interface CtaSection extends SectionBase<'cta'>, SectionHeadFields, BlockOptions<'section.cta'> {
   variant: 'banner' | 'card'
   title: string
   text?: string
@@ -277,7 +292,7 @@ export interface CtaSection extends SectionBase<'cta'>, BlockOptions<'section.ct
  *
  * @public
  */
-export interface PostListSection extends SectionBase<'post-list'>, BlockOptions<'section.post-list'> {
+export interface PostListSection extends SectionBase<'post-list'>, SectionHeadFields, BlockOptions<'section.post-list'> {
   variant: 'cards' | 'list'
   title?: string
   /** Category or tag slug the list is filtered by; never both */
@@ -294,7 +309,7 @@ export interface PostListSection extends SectionBase<'post-list'>, BlockOptions<
  *
  * @public
  */
-export interface NewsletterSection extends SectionBase<'newsletter'>, BlockOptions<'section.newsletter'> {
+export interface NewsletterSection extends SectionBase<'newsletter'>, SectionHeadFields, BlockOptions<'section.newsletter'> {
   variant: 'inline' | 'card'
   title?: string
   text?: string
@@ -316,7 +331,7 @@ export interface RichTextSection extends SectionBase<'rich-text'>, BlockOptions<
  *
  * @public
  */
-export interface GallerySection extends SectionBase<'gallery'>, BlockOptions<'section.gallery'> {
+export interface GallerySection extends SectionBase<'gallery'>, SectionHeadFields, BlockOptions<'section.gallery'> {
   variant: 'grid' | 'masonry'
   title?: string
   images: PageMedia[]
@@ -327,7 +342,7 @@ export interface GallerySection extends SectionBase<'gallery'>, BlockOptions<'se
  *
  * @public
  */
-export interface SceneSection extends SectionBase<'scene'>, BlockOptions<'section.scene'> {
+export interface SceneSection extends SectionBase<'scene'>, SectionHeadFields, BlockOptions<'section.scene'> {
   variant: 'background' | 'inline'
   /** A binary glTF file (`.glb`); with any other file the server drops the section. */
   model: PageMedia

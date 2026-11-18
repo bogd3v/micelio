@@ -8,9 +8,9 @@ const titleId = useId()
 </script>
 
 <template>
-  <section class="myc-section" data-section="gallery" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section class="myc-section" data-section="gallery" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? (section.anchor || titleId) : undefined">
     <div class="myc-section-inner">
-      <SectionHead :title="section.title" :title-id="titleId" />
+      <SectionHead :title="section.title" :eyebrow="section.eyebrow" :anchor="section.anchor" :title-id="titleId" />
       <ul class="myc-section-items">
         <li v-for="(image, index) in section.images" :key="index" class="myc-section-item">
           <SectionMedia :media="image" sizes="100vw sm:50vw lg:33vw" />

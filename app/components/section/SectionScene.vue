@@ -27,12 +27,12 @@ const modelUrl = computed<string>(() => isTrustedMedia(props.section.model.url, 
 </script>
 
 <template>
-  <section class="myc-section" data-section="scene" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section class="myc-section" data-section="scene" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? (section.anchor || titleId) : undefined">
     <div class="myc-section-inner">
       <component :is="renderStatic ? 'div' : 'micelio-scene'" :data-model="renderStatic ? undefined : modelUrl" :data-scene-static="renderStatic ? '' : undefined">
         <SectionMedia :media="poster" sizes="100vw xl:1100px" :eager="eager" />
       </component>
-      <SectionHead :title="section.title" :text="section.text" :title-id="titleId" />
+      <SectionHead :title="section.title" :eyebrow="section.eyebrow" :anchor="section.anchor" :text="section.text" :title-id="titleId" />
     </div>
   </section>
 </template>

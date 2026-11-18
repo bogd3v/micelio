@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
-import { defineComponent, h, provide } from 'vue'
+import { createSSRApp, defineComponent, h, provide } from 'vue'
+import { renderToString } from 'vue/server-renderer'
+import SectionHead from '~/components/section/SectionHead.vue'
 import { TRUSTED_MEDIA_PREFIX } from '~/constants/media'
 import SectionRenderer from '~/components/section/SectionRenderer.vue'
 import { knownSections } from '~/helpers/pages'
@@ -225,6 +227,61 @@ describe('SectionRenderer', () => {
     const wrapper = await render(sections.cta('banner'))
     const heading = wrapper.get('h2.myc-section-title')
     expect(root(wrapper).attributes('aria-labelledby')).toBe(heading.attributes('id'))
+  })
+})
+
+describe('SectionHead', () => {
+  const featureGrid = (extra: Record<string, unknown> = {}): PageSection => ({ ...sections.featureGrid('grid'), text: 'A lead.', ...extra }) as PageSection
+
+  it('SectionHead renders the eyebrow and an anchored heading with a self-link', async () => {
+    const wrapper = await render(featureGrid({ eyebrow: 'The basics', anchor: 'what-you-need' }))
+    const head = wrapper.get('.myc-section-head')
+    expect(head.element.firstElementChild?.outerHTML).toBe('<p class="myc-eyebrow">The basics</p>')
+    const heading = head.get('h2.myc-section-title')
+    expect(heading.attributes('id')).toBe('what-you-need')
+    expect(heading.findAll('a')).toHaveLength(1)
+    expect(heading.get('a').attributes('href')).toBe('#what-you-need')
+    expect(heading.get('a').text()).toBe('What you need')
+    expect(root(wrapper).attributes('aria-labelledby')).toBe('what-you-need')
+    // The eyebrow comes before the title
+    expect(head.element.children[0]!.tagName).toBe('P')
+    expect(head.element.children[1]!.tagName).toBe('H2')
+  })
+
+  it('SectionHead without eyebrow or anchor renders as before', async () => {
+    const wrapper = await render(featureGrid())
+    const head = wrapper.get('.myc-section-head')
+    const heading = head.get('h2.myc-section-title')
+    expect(heading.html()).toBe(`<h2 id="${heading.attributes('id')}" class="myc-section-title">What you need</h2>`)
+    expect(heading.find('a').exists()).toBe(false)
+    expect(head.find('.myc-eyebrow').exists()).toBe(false)
+    expect(head.findAll(':scope > *').map(node => node.element.tagName)).toEqual(['H2', 'P'])
+    expect(root(wrapper).attributes('aria-labelledby')).toBe(heading.attributes('id'))
+  })
+
+  it('server-renders a head without eyebrow or anchor byte for byte as before: no placeholder, no wrapper around the title', async () => {
+    const html = (props: Record<string, unknown>): Promise<string> => renderToString(createSSRApp({ render: () => h(SectionHead, { titleId: 't', ...props }) }))
+    // The exact HTML of SectionHead.vue on origin/main
+    expect(await html({ title: 'What you need', text: 'A lead.' })).toBe('<div class="myc-section-head"><h2 id="t" class="myc-section-title">What you need</h2><p class="myc-section-text">A lead.</p></div>')
+    expect(await html({ title: 'What you need' })).toBe('<div class="myc-section-head"><h2 id="t" class="myc-section-title">What you need</h2><!--v-if--></div>')
+    expect(await html({ text: 'A lead.' })).toBe('<div class="myc-section-head"><!--v-if--><p class="myc-section-text">A lead.</p></div>')
+    expect(await html({ title: 'T', level: 1, eyebrow: null, anchor: null })).toBe('<div class="myc-section-head"><h1 id="t" class="myc-section-title">T</h1><!--v-if--></div>')
+    expect(await html({})).toBe('<!--v-if-->')
+    // With the fields: the eyebrow first, the anchor on the heading with its self-link
+    expect(await html({ title: 'T', eyebrow: 'E', anchor: 'a' })).toBe('<div class="myc-section-head"><p class="myc-eyebrow">E</p><h2 id="a" class="myc-section-title"><a href="#a">T</a></h2><!--v-if--></div>')
+  })
+
+  it('renders an eyebrow alone, and an anchor without a title adds no id or link', async () => {
+    const eyebrowOnly = await render({ __component: 'section.faq', variant: 'list', eyebrow: 'Help', anchor: 'help', items: [{ question: 'Q?', html: '<p>A.</p>' }] })
+    expect(eyebrowOnly.get('.myc-section-head').html()).toContain('<p class="myc-eyebrow">Help</p>')
+    expect(eyebrowOnly.find('.myc-section-head h2').exists()).toBe(false)
+    expect(eyebrowOnly.find('#help').exists()).toBe(false)
+    expect(root(eyebrowOnly).attributes('aria-labelledby')).toBeUndefined()
+  })
+
+  it('anchors a hero heading', async () => {
+    const wrapper = await render({ ...sections.hero('centered'), anchor: 'top' } as PageSection)
+    expect(wrapper.get('h2#top.myc-section-title > a[href="#top"]').text()).toBe('Grow food where you live')
   })
 })
 

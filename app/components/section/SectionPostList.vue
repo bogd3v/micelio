@@ -17,9 +17,9 @@ const posts = computed(() => props.section.posts ?? [])
 </script>
 
 <template>
-  <section v-if="posts.length" class="myc-section" data-section="post-list" v-bind="optionAttributes(section)" :data-pagefind-ignore="isStatic ? '' : undefined" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section v-if="posts.length" class="myc-section" data-section="post-list" v-bind="optionAttributes(section)" :data-pagefind-ignore="isStatic ? '' : undefined" :data-variant="section.variant" :aria-labelledby="section.title ? (section.anchor || titleId) : undefined">
     <div class="myc-section-inner">
-      <SectionHead :title="section.title" :title-id="titleId" />
+      <SectionHead :title="section.title" :eyebrow="section.eyebrow" :anchor="section.anchor" :title-id="titleId" />
       <ul v-if="section.variant === 'list'" class="myc-section-items">
         <li v-for="post in posts" :key="post.id" class="myc-section-item">
           <time v-if="post.publishedAt" class="myc-meta" :datetime="post.publishedAt">{{ formatDotDate(post.publishedAt, site.timezone) }}</time>

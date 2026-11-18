@@ -10,9 +10,9 @@ const items = computed(() => props.section.variant === 'single' ? props.section.
 </script>
 
 <template>
-  <section class="myc-section" data-section="testimonials" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section class="myc-section" data-section="testimonials" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? (section.anchor || titleId) : undefined">
     <div class="myc-section-inner">
-      <SectionHead :title="section.title" :title-id="titleId" />
+      <SectionHead :title="section.title" :eyebrow="section.eyebrow" :anchor="section.anchor" :title-id="titleId" />
       <ul class="myc-section-items">
         <li v-for="(item, index) in items" :key="item.itemId ?? index" class="myc-section-item">
           <figure>

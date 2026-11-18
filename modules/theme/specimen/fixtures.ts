@@ -211,7 +211,15 @@ const hero = (variant: HeroSection['variant']): HeroSection => ({
   secondaryLink: link('Micelio', 'https://github.com/bogd3v/micelio'),
   media: media('hero.svg', { width: 1600, height: 900 }),
 })
-const featureGrid = (variant: FeatureGridSection['variant']): FeatureGridSection => ({ __component: 'section.feature-grid', variant, title: 'What you need', text: SECTION_LEAD, items: FEATURES })
+const featureGrid = (variant: FeatureGridSection['variant']): FeatureGridSection => ({
+  __component: 'section.feature-grid',
+  variant,
+  // The only section of the specimen with an eyebrow and an anchor: an id is unique in a page, so one variant carries it
+  ...(variant === 'grid' ? { eyebrow: 'The basics', anchor: 'what-you-need' } : {}),
+  title: 'What you need',
+  text: SECTION_LEAD,
+  items: FEATURES,
+})
 const mediaShowcase = (variant: MediaShowcaseSection['variant']): MediaShowcaseSection => ({
   __component: 'section.media-showcase',
   variant,

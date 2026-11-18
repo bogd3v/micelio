@@ -17,9 +17,9 @@ function logoHref(url: string | undefined): string | undefined {
 </script>
 
 <template>
-  <section class="myc-section" data-section="logo-cloud" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? titleId : undefined">
+  <section class="myc-section" data-section="logo-cloud" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? (section.anchor || titleId) : undefined">
     <div class="myc-section-inner">
-      <SectionHead :title="section.title" :title-id="titleId" />
+      <SectionHead :title="section.title" :eyebrow="section.eyebrow" :anchor="section.anchor" :title-id="titleId" />
       <div class="myc-section-logo-track" :data-variant="section.variant">
         <ul class="myc-section-items">
           <li v-for="(logo, index) in section.logos" :key="logo.itemId ?? index" class="myc-section-item">

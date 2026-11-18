@@ -29,6 +29,15 @@
     text-wrap: balance;
 }
 
+.myc-section-title > a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.myc-section-title > a:is(:hover, :focus-visible) {
+    text-decoration: underline;
+}
+
 .myc-section-text {
     margin: 0;
     color: var(--ink-muted);

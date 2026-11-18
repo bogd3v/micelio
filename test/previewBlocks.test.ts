@@ -229,26 +229,33 @@ describe('the text fields of a patch', () => {
     expect(patchSections(stats, patch(0, 'stats', { title: null }, [{ index: 0, content: { value: '4' } }]))).toBeDefined()
   })
 
+  it('patches the eyebrow of a section that renders a heading with text or null, and never its anchor', () => {
+    const cta = [{ __component: 'section.cta', variant: 'banner', title: 'Go', text: 'Now' }] as unknown as PageSection[]
+    expect(patchSections(cta, patch(0, 'cta', { eyebrow: 'Now' }))).toEqual([{ ...cta[0], eyebrow: 'Now' }])
+    expect(patchSections(cta, patch(0, 'cta', { eyebrow: null }))).toEqual([{ ...cta[0], eyebrow: null }])
+    expect(patchSections(cta, patch(0, 'cta', { anchor: 'x' }))).toBeUndefined()
+  })
+
   it('lists every block the page renders, so a new block is a decision about its fields', () => {
     expect(Object.keys(PREVIEW_PATCH_TEXT_FIELDS).sort()).toEqual([...PAGE_SECTION_COMPONENTS].sort())
   })
 
   it('pins the fields of the table, so a link, a count or a flag cannot be added unseen', () => {
     expect(PREVIEW_PATCH_TEXT_FIELDS).toEqual({
-      'hero': { section: ['title', 'text'], item: [], required: { section: ['title'] } },
-      'feature-grid': { section: ['title', 'text'], item: ['title', 'text'], required: { item: ['title'] } },
+      'hero': { section: ['eyebrow', 'title', 'text'], item: [], required: { section: ['title'] } },
+      'feature-grid': { section: ['eyebrow', 'title', 'text'], item: ['title', 'text'], required: { item: ['title'] } },
       'media-showcase': { section: ['title'], item: [] },
-      'stats': { section: ['title'], item: ['value', 'label'], required: { item: ['value', 'label'] } },
-      'logo-cloud': { section: ['title'], item: ['name'], required: { item: ['name'] } },
-      'testimonials': { section: ['title'], item: ['quote', 'author', 'role'], required: { item: ['quote', 'author'] } },
-      'pricing': { section: ['title', 'text'], item: ['name', 'price', 'period'], required: { item: ['name', 'price'] } },
-      'faq': { section: ['title'], item: ['question'], required: { item: ['question'] } },
-      'cta': { section: ['title', 'text'], item: [], required: { section: ['title'] } },
-      'post-list': { section: ['title'], item: [] },
-      'newsletter': { section: ['title', 'text', 'buttonLabel'], item: [] },
+      'stats': { section: ['eyebrow', 'title'], item: ['value', 'label'], required: { item: ['value', 'label'] } },
+      'logo-cloud': { section: ['eyebrow', 'title'], item: ['name'], required: { item: ['name'] } },
+      'testimonials': { section: ['eyebrow', 'title'], item: ['quote', 'author', 'role'], required: { item: ['quote', 'author'] } },
+      'pricing': { section: ['eyebrow', 'title', 'text'], item: ['name', 'price', 'period'], required: { item: ['name', 'price'] } },
+      'faq': { section: ['eyebrow', 'title'], item: ['question'], required: { item: ['question'] } },
+      'cta': { section: ['eyebrow', 'title', 'text'], item: [], required: { section: ['title'] } },
+      'post-list': { section: ['eyebrow', 'title'], item: [] },
+      'newsletter': { section: ['eyebrow', 'title', 'text', 'buttonLabel'], item: [] },
       'rich-text': { section: [], item: [] },
-      'gallery': { section: ['title'], item: ['alternativeText'] },
-      'scene': { section: ['title', 'text', 'alt'], item: [], required: { section: ['alt'] } },
+      'gallery': { section: ['eyebrow', 'title'], item: ['alternativeText'] },
+      'scene': { section: ['eyebrow', 'title', 'text', 'alt'], item: [], required: { section: ['alt'] } },
     })
   })
 })
