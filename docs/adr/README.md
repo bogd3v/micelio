@@ -28,6 +28,7 @@ Decisions that shape the frontend and are expensive to undo. Each record says wh
 | [0022](0022-page-composition.md) | Page composition: reusable blocks as a site-scoped type referenced by a `reusable` block, and groups as a `group` key on each block with the sequence kept flat | Accepted | 2026-11-11 |
 | [0023](0023-assistant.md) | An assistant that writes contract content through an external model: catalogue blocks and options only, a sibling plugin off by default, one OpenAI-compatible adapter configured on the server, what leaves the node stated, nothing trusted either way, and a spending cap of zero by default | Proposed | 2026-11-13 |
 | [0024](0024-site-navigation.md) | Site navigation as content of the site: one JSON document on `site` shaped by the contract, four targets resolved by the server, the default as today, `site.tagline`, theme contract 2.3 hooks for a `<details>` submenu, checks and limits at save | Proposed | 2026-11-13 |
+| [0025](0025-translation-credits.md) | Credit the translators of an article by their fediverse actors: a localised component of actor URLs on the article, FEP-22cd `translations` from a pinned revision, syntax checks with no outbound request, public credits and no `sourceUpdated` yet | Proposed | 2026-11-18 |
 
 ## Writing a new record
 
