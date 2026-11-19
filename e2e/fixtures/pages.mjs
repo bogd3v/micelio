@@ -165,7 +165,6 @@ function showcase(es, landing = false) {
       metaTitle: es ? 'Notas de campo' : 'Field Notes',
       metaDescription: es ? 'Una muestra de todas las secciones que puede usar una página de Micelio.' : 'A demo of every section a Micelio page can use.',
       metaImage: media(112, 'page-og.png'),
-      metaSocial: [],
     },
     sections: showcaseSections(es, landing),
     localizations: [{ id: es ? 1 : 2, documentId: 'page-showcase', slug: es ? 'showcase' : 'muestra', locale: es ? 'en' : 'es' }],
