@@ -13,6 +13,11 @@ export function pinnedImage(ref, digest) {
   return `${name}@${digest}`
 }
 
+/** The image a run names: the reference it was given (its tag) and, when they differ, the image it ran (its digest) */
+export function describedImage(ref, image) {
+  return ref === image ? ref : `${ref} (${image})`
+}
+
 /**
  * A random value of `bytes` bytes written in hex: always `2 * bytes` characters (48 by default), all of them `[0-9a-f]`, so it needs no quoting.
  *

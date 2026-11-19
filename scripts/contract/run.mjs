@@ -6,14 +6,14 @@
 //   CONTRACT_CMS_IMAGE=ghcr.io/bogd3v/micelio-cms:edge npm run test:contract
 //   CONTRACT_CMS_URL=http://127.0.0.1:1337 CONTRACT_STRAPI_TOKEN=... npm run test:contract   (a CMS that is already running)
 //
-// Environment: CONTRACT_CMS_IMAGE (default ghcr.io/bogd3v/micelio-cms:latest, pinned by digest and printed), CONTRACT_POSTGRES_IMAGE
+// Environment: CONTRACT_CMS_IMAGE (default ghcr.io/bogd3v/micelio-cms:edge, pinned by digest and printed), CONTRACT_POSTGRES_IMAGE
 // (default postgres:18-alpine), CONTRACT_CMS_PORT (default 1347), CONTRACT_APP_PORT (default 3270), CONTRACT_KEEP=1 (leave the CMS
 // running to inspect it; the run prints its URL, token and how to remove it).
 import { execFileSync, spawn } from 'node:child_process'
 import { appendFileSync } from 'node:fs'
-import { cmsEnvironment, digestFrom, pinnedImage, secret } from './lib.mjs'
+import { cmsEnvironment, describedImage, digestFrom, pinnedImage, secret } from './lib.mjs'
 
-const CMS_IMAGE = process.env.CONTRACT_CMS_IMAGE ?? 'ghcr.io/bogd3v/micelio-cms:latest'
+const CMS_IMAGE = process.env.CONTRACT_CMS_IMAGE ?? 'ghcr.io/bogd3v/micelio-cms:edge'
 const POSTGRES_IMAGE = process.env.CONTRACT_POSTGRES_IMAGE ?? 'postgres:18-alpine'
 const CMS_PORT = process.env.CONTRACT_CMS_PORT ?? '1347'
 const APP_PORT = process.env.CONTRACT_APP_PORT ?? '3270'
@@ -64,8 +64,8 @@ function teardown() {
 
 async function startCms() {
   const image = resolveCmsImage(CMS_IMAGE)
-  console.log(`contract: CMS image ${image}`)
-  if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `Contract suite ran against the CMS image \`${image}\`\n`)
+  console.log(`contract: CMS image ${describedImage(CMS_IMAGE, image)}`)
+  if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `Contract suite ran against the CMS image \`${describedImage(CMS_IMAGE, image)}\`\n`)
   const databasePassword = secret()
   const frontendToken = secret(48)
   const cmsUrl = `http://127.0.0.1:${CMS_PORT}`

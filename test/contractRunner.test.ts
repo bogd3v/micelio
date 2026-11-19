@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cmsEnvironment, digestFrom, pinnedImage, secret } from '../scripts/contract/lib.mjs'
+import { cmsEnvironment, describedImage, digestFrom, pinnedImage, secret } from '../scripts/contract/lib.mjs'
 
 const DIGEST = `sha256:${'ab'.repeat(32)}`
 
@@ -27,6 +27,17 @@ describe('pinnedImage', () => {
 
   it('keeps a reference that already has a digest', () => {
     expect(pinnedImage(`ghcr.io/example/cms@${DIGEST}`, `sha256:${'ef'.repeat(32)}`)).toBe(`ghcr.io/example/cms@${DIGEST}`)
+  })
+})
+
+describe('describedImage', () => {
+  it('names the tag the run was given and the digest it ran', () => {
+    expect(describedImage('ghcr.io/example/cms:edge', `ghcr.io/example/cms@${DIGEST}`)).toBe(`ghcr.io/example/cms:edge (ghcr.io/example/cms@${DIGEST})`)
+  })
+
+  it('names a reference once when it ran as it is', () => {
+    expect(describedImage('cms:local', 'cms:local')).toBe('cms:local')
+    expect(describedImage(`ghcr.io/example/cms@${DIGEST}`, `ghcr.io/example/cms@${DIGEST}`)).toBe(`ghcr.io/example/cms@${DIGEST}`)
   })
 })
 

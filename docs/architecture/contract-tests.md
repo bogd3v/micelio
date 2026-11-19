@@ -12,7 +12,7 @@ It does not replace the mock suites: those stay the fast path. It adds a few sec
 
 `npm run test:contract` (`scripts/contract/run.mjs`) does this, and removes everything afterwards:
 
-1. Resolves the CMS image (`ghcr.io/bogd3v/micelio-cms:latest`, or `CONTRACT_CMS_IMAGE`) to its digest and prints it, so a run says which CMS it used.
+1. Resolves the CMS image (`ghcr.io/bogd3v/micelio-cms:edge`, the CMS of `main`, or `CONTRACT_CMS_IMAGE`) to its digest and prints both (`contract: CMS image <tag> (<name>@sha256:...)`), so a run says which CMS it used.
 2. Starts Postgres and the CMS on a private Docker network. The CMS is the demo instance (`MICELIO_DEMO=true`): it seeds a neutral bilingual site on boot and creates the frontend's API token from `FRONTEND_API_TOKEN`, with no manual step. The keys and the token are random for each run and never leave the machine.
 3. Runs `playwright.contract.config.ts`, which starts the production build (`npm run build` first) against that CMS, through a recording proxy (`scripts/contract/recording-proxy.mjs`), and the mock Strapi next to it, and runs `e2e/contract/`.
 
@@ -44,8 +44,8 @@ You need Docker, and the production build:
 
 ```bash
 npm run build
-npm run test:contract                      # the latest CMS image, pinned by digest for the run
-CONTRACT_CMS_IMAGE=ghcr.io/bogd3v/micelio-cms:latest npm run test:contract
+npm run test:contract                      # the CMS of main (edge), pinned by digest for the run
+CONTRACT_CMS_IMAGE=ghcr.io/bogd3v/micelio-cms:edge npm run test:contract
 CONTRACT_KEEP=1 npm run test:contract      # leave the CMS running; the run prints its URL, token and how to remove it
 CONTRACT_CMS_URL=http://127.0.0.1:1337 CONTRACT_STRAPI_TOKEN=... npm run test:contract   # a CMS that is already running
 ```
@@ -67,4 +67,6 @@ Run it when a change touches what the server routes ask the CMS for (`server/`, 
 - The workflow starts Postgres from a copy in GHCR (`scripts/ci/mirror-image.sh`), for the reason in [the CI pipeline](ci-pipeline.md#the-node-base-image).
 - It does not gate `deploy`. `Contract Tests` is a required check of `main` (standard, section 15).
 - `micelio-cms` runs the same suite against an image built from one of its pull requests by calling the workflow: `uses: bogd3v/micelio/.github/workflows/contract.yml@<ref>` with `cms_image` set to the image it built. The caller's token needs `packages: write` for the Postgres copy; without it the run pulls Postgres from Docker Hub.
-- The image tag follows `latest` until `micelio-cms` publishes `edge` (cms#114); then the default changes in one line, in `scripts/contract/run.mjs` and the workflow.
+- The default image is `ghcr.io/bogd3v/micelio-cms:edge`, the CMS of `main` (`micelio-cms` publishes it on every merge), not `latest`, the newest release. A pull request is tested against the CMS of `main`, so a CMS change merged first is seen by the frontend change that needs it ("CMS first, frontend second").
+- A release pair is checked against `edge` too: the frontend releases first, so the CMS line it needs (`micelio-cms:<X.Y>`) does not exist yet when its release pull request runs. The release's own evidence is a run against the CMS image of the release commit (`CONTRACT_CMS_IMAGE=<image> npm run test:contract`), as bogd3v/micelio#899 did.
+- The risk this accepts: a regression on `main` of `micelio-cms` fails the pull requests of `micelio` until it is fixed or reverted. That is the signal the suite exists for, and the release evidence still tests the CMS line the frontend is released with.
