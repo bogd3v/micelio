@@ -192,7 +192,7 @@ const PLANS: PricingPlan[] = [
 
 const ANSWERS: FaqItem[] = [
   { question: 'Do I need a garden?', html: '<p>No: a balcony is enough.</p>' },
-  { question: 'Is this site real?', html: '<p>It is a demo of <a href="https://github.com/bogd3v/micelio">Micelio</a>.</p>' },
+  { question: 'Is this site real?', html: '<p>It is a demo of <a href="https://github.com/bogd3v/micelio">Micelio</a>.</p>', defaultOpen: true },
   { question: 'When do I plant?', html: '<p>After the last frost, with <strong>warm soil</strong>.</p>' },
 ]
 

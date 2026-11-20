@@ -163,6 +163,17 @@ describe('parseSection', () => {
     expect(parseSection(section('section.faq'), context)).toMatchObject({ items: [{ question: 'Q?', html: '<p>A.</p>' }] })
   })
 
+  it('keeps defaultOpen of a faq item and reads a stored item with none as closed', () => {
+    const items = [
+      { question: 'Open?', answer: 'Yes.', defaultOpen: true },
+      { question: 'Closed?', answer: 'No.', defaultOpen: false },
+      { question: 'Stored before the field?', answer: 'Null.', defaultOpen: null },
+      { question: 'Missing?', answer: 'Absent.' },
+    ]
+    const parsed = parseSection(section('section.faq', { items }), context)
+    expect(parsed).toMatchObject({ items: [{ defaultOpen: true }, { defaultOpen: false }, { defaultOpen: false }, { defaultOpen: false }] })
+  })
+
   it('splits plan features by line', () => {
     expect(parseSection(section('section.pricing'), context)).toMatchObject({ plans: [{ features: ['A', 'B'], recommended: false }] })
   })

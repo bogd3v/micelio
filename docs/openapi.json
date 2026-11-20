@@ -7293,6 +7293,10 @@
           "html": {
             "type": "string",
             "description": "Sanitized HTML of the Markdown answer."
+          },
+          "defaultOpen": {
+            "description": "The item is open when the page loads. An item the CMS stored before the field existed answers false.",
+            "type": "boolean"
           }
         },
         "required": [

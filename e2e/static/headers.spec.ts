@@ -111,3 +111,19 @@ test('images carry no inline error handler', async ({ request }) => {
   expect(html).toContain('data-nuxt-img')
   expect(html).not.toContain('onerror=')
 })
+
+test('section page: one FAQPage JSON-LD, which the CSP does not need a hash for and the browser does not block', async ({ page, request }) => {
+  const response = await request.get('/showcase')
+  const html = await response.text()
+  const blocks = [...html.matchAll(/<script type="application\/ld\+json">([^]*?)<\/script>/g)].map(match => JSON.parse(match[1]!))
+  const faqs = blocks.filter(block => block['@type'] === 'FAQPage')
+  expect(faqs).toHaveLength(1)
+  expect(faqs[0].mainEntity.map((question: { name: string }) => question.name)).toEqual(['Do I need a garden?', 'Is this site real?'])
+  expect(faqs[0].mainEntity[1].acceptedAnswer.text).toBe('It is a demo of Micelio.')
+  // A JSON-LD block is data, not executed: it is not hashed, so the policy carries only the hashes of executable scripts
+  expect(inlineScripts(html).filter(script => script.includes('FAQPage'))).toEqual([])
+  const violations: string[] = []
+  page.on('console', message => message.text().includes('Content Security Policy') && violations.push(message.text()))
+  await page.goto('/showcase', { waitUntil: 'networkidle' })
+  expect(violations).toEqual([])
+})

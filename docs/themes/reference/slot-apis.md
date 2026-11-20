@@ -904,6 +904,8 @@ export interface FaqItem {
   question: string
   /** Sanitized HTML of the Markdown answer */
   html: string
+  /** The item is open when the page loads (`<details open>`); the server always sends it, a block built by hand may leave it out. */
+  defaultOpen?: boolean
 }
 ```
 

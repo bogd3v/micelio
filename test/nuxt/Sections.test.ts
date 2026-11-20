@@ -557,6 +557,16 @@ describe('faq', () => {
     expect(items[0]!.get('.myc-section-answer').text()).toBe('No: a balcony is enough.')
     expect(items[1]!.get('.myc-section-answer a').attributes('href')).toBe('https://github.com/bogd3v/micelio')
   })
+
+  it('a faq item with defaultOpen renders details open', async () => {
+    const section = sections.faq('list')
+    if (section.__component !== 'section.faq') throw new Error('not a faq block')
+    section.items[1]!.defaultOpen = true
+    section.items[0]!.defaultOpen = false
+    const items = (await render(section)).findAll('details.myc-section-item')
+    expect(items[0]!.attributes('open')).toBeUndefined()
+    expect(items[1]!.attributes('open')).toBeDefined()
+  })
 })
 
 describe('cta', () => {

@@ -53,6 +53,7 @@ Notes on some of them:
 - **Post list** shows the posts of **one** category or **one** tag, or the latest posts when neither is set. Setting both is refused when you save. A page can have at most four post lists that show posts; a fifth one stays empty.
 - **Scene** needs a model file; saving is refused for a file that is neither `.glb` nor `.gltf`. Use a `.glb` file: the CMS also accepts `.gltf`, but the site leaves out a scene whose model is not `.glb`, poster included. The poster is also what visitors see while the model loads, or when their browser or their settings do not show the model.
 - **Rich text** and the answers of the FAQ are written in Markdown.
+- **FAQ**: an item with **Default open** set shows its answer open when the page loads; the others stay closed (an item saved before the field existed is closed). The page also tells search engines its questions and answers (schema.org `FAQPage` data, one for all the FAQ blocks of the page, with each answer as plain text); nothing has to be filled in for that.
 
 ## 3. Make the page the home page (optional)
 
