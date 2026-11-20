@@ -1,7 +1,7 @@
 {
   "bogota": {
-    "version": "1.0.1",
-    "digest": "sha256:9a9436bd68734b20affb8aedf3d01e5d602a87b3abb7ab793dc45b9fc079f3d7",
+    "version": "1.0.2",
+    "digest": "sha256:fe38db3e5bec8c5780c82f58bc5cbb294f4e04573e664a92e58382641d81f934",
     "contract": "2.0",
     "tier": "official",
     "distribution": "public",
