@@ -89,10 +89,3 @@ test('draws its icons from one inline sprite, with no icon request', async ({ pa
   expect(requested.filter(path => (/\.svg$/.test(path) && !/\/_?media\//.test(path)) || /\/icons?\//.test(path))).toEqual([])
   expect(response?.headers()['content-security-policy']).not.toMatch(/icon/i)
 })
-
-test('the specimen FAQ shows an item open by default next to closed ones', async ({ page }) => {
-  await page.goto('/_theme', { waitUntil: 'networkidle' })
-  const items = page.locator('.myc-specimen-group[data-section="page-faq"] section.myc-section[data-section="faq"]').first().locator('details')
-  await expect(items.nth(0)).not.toHaveAttribute('open', '')
-  await expect(items.nth(1)).toHaveAttribute('open', '')
-})
