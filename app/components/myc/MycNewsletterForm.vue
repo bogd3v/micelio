@@ -7,6 +7,10 @@ const props = withDefaults(defineProps<{
   eyebrow?: string
   placeholder?: string
   buttonLabel?: string
+  /** The sentence after a subscription; unset or empty is the core's string */
+  successMessage?: string
+  /** The legal text beside a required checkbox; unset or empty renders neither */
+  consentText?: string
   status?: NewsletterStatus
   message?: string
   id?: string
@@ -18,6 +22,8 @@ const props = withDefaults(defineProps<{
   eyebrow: undefined,
   placeholder: undefined,
   buttonLabel: undefined,
+  successMessage: undefined,
+  consentText: undefined,
   status: 'idle',
   message: undefined,
   id: 'myc-news-email',
@@ -46,18 +52,28 @@ const descriptionText = computed<string>(() => props.description ?? t('myc.newsl
 const eyebrowText = computed<string>(() => props.eyebrow ?? t('myc.newsletter.eyebrow'))
 const placeholderText = computed<string>(() => props.placeholder ?? t('myc.newsletter.placeholder'))
 const buttonText = computed<string>(() => props.buttonLabel ?? t('myc.newsletter.button'))
+const consent = ref(false)
+const consentInvalid = ref(false)
 
 async function handleSubmit(): Promise<void> {
   if (submitting.value) return
+  if (props.consentText && !consent.value) {
+    currentStatus.value = 'error'
+    feedback.value = t('myc.newsletter.consentRequired')
+    consentInvalid.value = true
+    return
+  }
+  consentInvalid.value = false
   submitting.value = true
   const submitted = email.value
   const result = await subscribe(submitted)
   currentStatus.value = result.status
-  feedback.value = result.message
+  feedback.value = result.status === 'success' && props.successMessage ? props.successMessage : result.message
   invalid.value = result.invalid
   submitting.value = false
   if (result.status === 'success') {
     email.value = ''
+    consent.value = false
     emit('subscribed', submitted.trim())
   }
 }
@@ -81,6 +97,7 @@ watch(() => [props.status, props.message] as const, ([status, message]) => {
     :show-description="!hideHeading || Boolean(description)"
     :placeholder="placeholderText"
     :button-label="buttonText"
+    :consent-text="consentText"
   />
   <form v-else class="myc-news" novalidate :aria-busy="submitting" @submit.prevent="handleSubmit">
     <span v-if="!hideHeading" class="myc-eyebrow myc-news-eyebrow">{{ eyebrowText }}</span>
@@ -105,6 +122,18 @@ watch(() => [props.status, props.message] as const, ([status, message]) => {
         {{ buttonText }}
       </MycButton>
     </div>
+    <label v-if="consentText" class="myc-news-consent">
+      <input
+        v-model="consent"
+        type="checkbox"
+        name="consent"
+        required
+        :aria-invalid="consentInvalid ? 'true' : undefined"
+        :aria-describedby="feedback ? messageId : undefined"
+        :disabled="submitting"
+      >
+      <span>{{ consentText }}</span>
+    </label>
     <p
       :id="messageId"
       role="status"

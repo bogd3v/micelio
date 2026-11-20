@@ -232,6 +232,9 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
       title: optional(text),
       text: optional(text),
       buttonLabel: optional(text),
+      consentText: optional(text),
+      successMessage: optional(text),
+      placeholder: optional(text),
     }),
     'section.rich-text': z.object({
       __component: z.literal('section.rich-text'),

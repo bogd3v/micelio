@@ -428,7 +428,8 @@
       "success": "✓ Revisa tu correo para confirmar la suscripción.",
       "invalid": "✕ Ese correo no parece válido.",
       "error": "✕ No pudimos suscribirte. Intenta de nuevo en un momento.",
-      "tooMany": "✕ Demasiados intentos. Intenta más tarde."
+      "tooMany": "✕ Demasiados intentos. Intenta más tarde.",
+      "consentRequired": "✕ Acepta el texto de consentimiento para suscribirte."
     },
     "header": {
       "home": "{site}, inicio",

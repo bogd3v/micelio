@@ -193,7 +193,7 @@ describe('the theme contract', () => {
   const rendered = BLOCK_OPTION_NAMES.filter(name => !UNRENDERED_OPTION_NAMES.includes(name))
 
   it('implements 2.2 and names the seven new hooks as the additions of 2.1', () => {
-    expect(CONTRACT_VERSION).toEqual({ major: 2, minor: 2 })
+    expect(CONTRACT_VERSION).toEqual({ major: 2, minor: 4 })
     expect(CONTRACT_ADDITIONS.filter(addition => addition.minor === 1 && addition.kind === 'hook').map(addition => addition.name).sort())
       .toEqual(rendered.filter(name => name !== 'layout').map(name => `data-${name}`).sort())
   })

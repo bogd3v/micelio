@@ -927,6 +927,25 @@ export interface PostListSection extends SectionBase<'post-list'>, SectionHeadFi
 }
 ```
 
+#### `NewsletterSection`
+
+The newsletter sign-up form, `section.newsletter`.
+
+```ts
+export interface NewsletterSection extends SectionBase<'newsletter'>, SectionHeadFields, BlockOptions<'section.newsletter'> {
+  variant: 'inline' | 'card'
+  title?: string
+  text?: string
+  buttonLabel?: string
+  /** The legal text a visitor accepts beside a required checkbox; empty renders neither the line nor the checkbox. There is no default: it is a node's own wording. */
+  consentText?: string
+  /** The sentence shown after a subscription; empty renders the core's own string. */
+  successMessage?: string
+  /** The hint of the address field; empty renders the core's own string. */
+  placeholder?: string
+}
+```
+
 #### `RichTextSection`
 
 A text block written in Markdown, `section.rich-text`.

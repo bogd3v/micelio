@@ -9,6 +9,8 @@ defineProps<{
   showDescription: boolean
   placeholder: string
   buttonLabel: string
+  /** The legal text beside a required checkbox; unset renders neither */
+  consentText?: string
 }>()
 
 const { t } = useI18n()
@@ -28,6 +30,11 @@ const { newsletterProvider: provider } = useRuntimeConfig().public
       <input v-for="field in provider.hidden" :key="field.name" type="hidden" :name="field.name" :value="field.value">
       <MycButton type="submit" variant="accent" arrow>{{ buttonLabel }}</MycButton>
     </div>
+    <!-- No name: the checkbox gates the post in the browser and is not sent to the provider -->
+    <label v-if="consentText" class="myc-news-consent">
+      <input type="checkbox" required>
+      <span>{{ consentText }}</span>
+    </label>
     <i18n-t keypath="myc.newsletter.external" tag="p" scope="global" class="myc-news-note">
       <template #provider><strong>{{ provider.host }}</strong></template>
       <template #link><NuxtLink :to="localizePath('/privacy')">{{ t('myc.newsletter.privacyLink') }}</NuxtLink></template>

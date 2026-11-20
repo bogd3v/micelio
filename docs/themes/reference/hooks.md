@@ -2,7 +2,7 @@
 
 # Hooks
 
-Public styling hooks of contract v2.2, from `app/theme/hooks.json`. A theme's `theme.css` and slot CSS may select only these `myc-*` classes and core `data-*` attributes; every other one is internal and can change in any release. Adding a hook raises the minor of contract v2 (a row in [the contract changelog](../contract-changelog.md)); removing or renaming one is a new major. A state is a class or attribute the hook takes.
+Public styling hooks of contract v2.4, from `app/theme/hooks.json`. A theme's `theme.css` and slot CSS may select only these `myc-*` classes and core `data-*` attributes; every other one is internal and can change in any release. Adding a hook raises the minor of contract v2 (a row in [the contract changelog](../contract-changelog.md)); removing or renaming one is a new major. A state is a class or attribute the hook takes.
 
 ## Attributes
 
@@ -253,6 +253,7 @@ These appear in every layout variant.
 | `myc-meter` | Password strength meter. | `[data-level]` |
 | `myc-news` | Newsletter form. |  |
 | `myc-news-row` | Input and button row of the newsletter form. |  |
+| `myc-news-consent` | Consent line of the newsletter form: a required checkbox beside the legal text; only when the block has a consent text. |  |
 | `myc-news-msg` | Status message of the newsletter form. | `myc-news-msg-success`, `myc-news-msg-error` |
 | `myc-corner` | Decorative corner mark. |  |
 | `myc-tabbar` | Bottom tab bar on small screens. |  |
