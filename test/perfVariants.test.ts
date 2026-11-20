@@ -94,4 +94,47 @@ describe('the carbon budget', () => {
   it('lets a theme exception replace the carbon limit of a page', () => {
     expect(pageLimits({ modeLimits: dynamic, exceptionLimits: { home: { error: { co2Mg: 50 } } }, page: 'home', level: 'error' }).co2Mg).toBe(50)
   })
+
+  // The static carbon of two themes of micelio-themes, from its Admission run 44628122325 on core 93b9459 (docs/performance.md, "Carbon budget", "Recorded exceptions")
+  const EXCEPTIONS = {
+    cartel: { blog: 10, article: 10.4, privacy: 10 },
+    espora: { 'home': 12.4, 'blog': 12.3, 'article': 12.7, 'privacy': 12.3, 'home-es': 12.4 },
+  } as Record<string, Record<string, number>>
+  const MEASURED = {
+    cartel: { 'home': 9.58, 'blog': 9.47, 'article': 9.86, 'about': 9.75, 'privacy': 9.43, 'home-es': 9.56 },
+    espora: { 'home': 11.78, 'blog': 11.68, 'article': 12.07, 'about': 11.95, 'privacy': 11.64, 'home-es': 11.76 },
+  } as Record<string, Record<string, number>>
+
+  it('records the static carbon exceptions of cartel and espora', () => {
+    for (const [id, pages] of Object.entries(EXCEPTIONS)) {
+      const entry = BUDGETS.themes[id]
+      expect(entry.mode, id).toEqual(['static'])
+      expect(entry.reason, id).toEqual(expect.stringMatching(/\S/))
+      expect(entry.limits, id).toEqual(Object.fromEntries(Object.entries(pages).map(([page, co2Mg]) => [page, { error: { co2Mg } }])))
+    }
+  })
+
+  it('admits the static carbon cartel and espora measured on core 93b9459 only with their exception', () => {
+    const static_ = BUDGETS.modes.static.limits
+    const co2Of = (page: string, value: number, exceptionLimits?: Record<string, unknown>) =>
+      budgetProblems(page, { co2Mg: value }, pageLimits({ modeLimits: static_, exceptionLimits, page, level: 'error' }), 'error').filter(problem => problem.metric === 'co2Mg')
+    for (const [id, measured] of Object.entries(MEASURED)) {
+      for (const [page, value] of Object.entries(measured)) {
+        const excepted = page in (EXCEPTIONS[id] ?? {})
+        const alone = co2Of(page, value)
+        if (excepted) expect(alone, `${id} ${page}`).toEqual([{ level: 'error', page, metric: 'co2Mg', value, limit: static_[page].error.co2Mg }])
+        else expect(alone, `${id} ${page}`).toEqual([])
+        expect(co2Of(page, value, BUDGETS.themes[id].limits), `${id} ${page} with its exception`).toEqual([])
+      }
+    }
+  })
+
+  it('has one exception entry per theme', () => {
+    const text = readFileSync(join(process.cwd(), 'scripts/perf/budgets.json'), 'utf8')
+    const themes = text.slice(text.indexOf('"themes"'), text.indexOf('"modes"'))
+    const keys = [...themes.matchAll(/^ {4}"([^"]+)": \{/gm)].map(match => match[1])
+    expect(keys.length).toBeGreaterThan(0)
+    expect(new Set(keys).size).toBe(keys.length)
+    expect(keys.sort()).toEqual(Object.keys(BUDGETS.themes).sort())
+  })
 })
