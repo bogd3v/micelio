@@ -12,7 +12,7 @@ const titleId = useId()
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :eyebrow="section.eyebrow" :anchor="section.anchor" :title-id="titleId" />
       <div class="myc-section-items">
-        <details v-for="(item, index) in section.items" :key="item.itemId ?? index" class="myc-section-item">
+        <details v-for="(item, index) in section.items" :key="item.itemId ?? index" class="myc-section-item" :open="item.defaultOpen || undefined">
           <summary class="myc-section-question">{{ item.question }}</summary>
           <!-- eslint-disable-next-line vue/no-v-html -- sanitized on the server (app/helpers/markdown.ts) -->
           <div class="myc-section-answer" v-html="item.html" />

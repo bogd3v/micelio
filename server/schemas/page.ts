@@ -195,7 +195,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
       blockId: optional(text),
       variant: variant(['list', 'two-columns']),
       title: optional(text),
-      items: list(z.object({ itemId: optional(text), question: text, answer: markdown }).transform(({ answer, ...rest }) => ({ ...rest, html: answer }))),
+      items: list(z.object({ itemId: optional(text), question: text, answer: markdown, defaultOpen: z.boolean().catch(false) }).transform(({ answer, ...rest }) => ({ ...rest, html: answer }))),
     }),
     'section.cta': z.object({
       __component: z.literal('section.cta'),

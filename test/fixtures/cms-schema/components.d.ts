@@ -361,7 +361,9 @@ export interface SectionCta extends Struct.ComponentSchema {
   }
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
+    eyebrow: Schema.Attribute.String
     primaryLink: Schema.Attribute.Component<'section.link', false>
     secondaryLink: Schema.Attribute.Component<'section.link', false>
     text: Schema.Attribute.Text
@@ -383,7 +385,9 @@ export interface SectionFaq extends Struct.ComponentSchema {
   }
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
+    eyebrow: Schema.Attribute.String
     items: Schema.Attribute.Component<'section.faq-item', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -409,6 +413,7 @@ export interface SectionFaqItem extends Struct.ComponentSchema {
   }
   attributes: {
     answer: Schema.Attribute.RichText & Schema.Attribute.Required
+    defaultOpen: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>
     itemId: Schema.Attribute.String
     question: Schema.Attribute.String & Schema.Attribute.Required
   }
@@ -423,7 +428,9 @@ export interface SectionFeatureGrid extends Struct.ComponentSchema {
   }
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
+    eyebrow: Schema.Attribute.String
     items: Schema.Attribute.Component<'section.feature-item', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -466,7 +473,9 @@ export interface SectionGallery extends Struct.ComponentSchema {
   }
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
+    eyebrow: Schema.Attribute.String
     images: Schema.Attribute.Media<'images', true> & Schema.Attribute.Required
     title: Schema.Attribute.String
     tone: Schema.Attribute.Enumeration<['default', 'raised', 'accent']> &
@@ -486,7 +495,9 @@ export interface SectionHero extends Struct.ComponentSchema {
   }
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
+    eyebrow: Schema.Attribute.String
     media: Schema.Attribute.Media<'images' | 'videos'>
     primaryLink: Schema.Attribute.Component<'section.link', false>
     secondaryLink: Schema.Attribute.Component<'section.link', false>
@@ -537,7 +548,9 @@ export interface SectionLogoCloud extends Struct.ComponentSchema {
   }
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
+    eyebrow: Schema.Attribute.String
     logos: Schema.Attribute.Component<'section.logo', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -585,8 +598,13 @@ export interface SectionNewsletter extends Struct.ComponentSchema {
   }
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     buttonLabel: Schema.Attribute.String
+    consentText: Schema.Attribute.Text
+    eyebrow: Schema.Attribute.String
+    placeholder: Schema.Attribute.String
+    successMessage: Schema.Attribute.String
     text: Schema.Attribute.Text
     title: Schema.Attribute.String
     tone: Schema.Attribute.Enumeration<['default', 'raised', 'accent']> &
@@ -624,6 +642,7 @@ export interface SectionPostList extends Struct.ComponentSchema {
   }
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     category: Schema.Attribute.Relation<'oneToOne', 'plugin::micelio.category'>
     count: Schema.Attribute.Integer &
@@ -636,6 +655,7 @@ export interface SectionPostList extends Struct.ComponentSchema {
         number
       > &
       Schema.Attribute.DefaultTo<3>
+    eyebrow: Schema.Attribute.String
     tag: Schema.Attribute.Relation<'oneToOne', 'plugin::micelio.tag'>
     title: Schema.Attribute.String
     tone: Schema.Attribute.Enumeration<['default', 'raised', 'accent']> &
@@ -655,7 +675,9 @@ export interface SectionPricing extends Struct.ComponentSchema {
   }
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
+    eyebrow: Schema.Attribute.String
     plans: Schema.Attribute.Component<'section.plan', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -699,7 +721,9 @@ export interface SectionScene extends Struct.ComponentSchema {
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
     alt: Schema.Attribute.String & Schema.Attribute.Required
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
+    eyebrow: Schema.Attribute.String
     model: Schema.Attribute.Media<'files'> & Schema.Attribute.Required
     poster: Schema.Attribute.Media<'images'> & Schema.Attribute.Required
     text: Schema.Attribute.Text
@@ -735,7 +759,9 @@ export interface SectionStats extends Struct.ComponentSchema {
   }
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
+    eyebrow: Schema.Attribute.String
     items: Schema.Attribute.Component<'section.stat', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -778,7 +804,9 @@ export interface SectionTestimonials extends Struct.ComponentSchema {
   }
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
+    anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
+    eyebrow: Schema.Attribute.String
     items: Schema.Attribute.Component<'section.testimonial', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -1042,6 +1070,22 @@ export interface SharedTechItem extends Struct.ComponentSchema {
   }
 }
 
+export interface SharedTranslationCredit extends Struct.ComponentSchema {
+  collectionName: 'components_shared_translation_credits'
+  info: {
+    description: 'The fediverse actor of whoever translated a locale of an article'
+    displayName: 'Translation credit'
+    icon: 'globe'
+  }
+  attributes: {
+    actorUrl: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255
+      }>
+  }
+}
+
 export interface SiteAccentOverride extends Struct.ComponentSchema {
   collectionName: 'components_site_accent_overrides'
   info: {
@@ -1215,6 +1259,7 @@ declare module '@strapi/strapi' {
       'shared.slide': SharedSlide
       'shared.slider': SharedSlider
       'shared.tech-item': SharedTechItem
+      'shared.translation-credit': SharedTranslationCredit
       'site.accent-override': SiteAccentOverride
       'site.author': SiteAuthor
       'site.fediverse': SiteFediverse

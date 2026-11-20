@@ -199,7 +199,7 @@ const pricingSchema = responseSchema<PricingSection>()(
 )
 
 const faqItemSchema = responseSchema<FaqItem>()(
-  z.strictObject({ itemId: z.string().optional(), question: z.string(), html: z.string().meta({ description: 'Sanitized HTML of the Markdown answer.' }) }).meta({ id: 'FaqItem', description: 'One question of a FAQ section.' }),
+  z.strictObject({ itemId: z.string().optional(), question: z.string(), html: z.string().meta({ description: 'Sanitized HTML of the Markdown answer.' }), defaultOpen: z.boolean().optional().meta({ description: 'The item is open when the page loads. An item the CMS stored before the field existed answers false.' }) }).meta({ id: 'FaqItem', description: 'One question of a FAQ section.' }),
 )
 
 const faqSchema = responseSchema<FaqSection>()(

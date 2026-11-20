@@ -3,6 +3,7 @@ import type { Component } from 'vue'
 import type { PageSection } from '~/interfaces'
 import { heroLeadsPage, knownSections as filterKnown } from '~/helpers/pages'
 import { sectionAnchors } from '~/helpers/landing'
+import { faqStructuredData, jsonLd } from '~/helpers/faqStructuredData'
 import SectionHero from '~/components/section/SectionHero.vue'
 import SectionFeatureGrid from '~/components/section/SectionFeatureGrid.vue'
 import SectionMediaShowcase from '~/components/section/SectionMediaShowcase.vue'
@@ -60,6 +61,13 @@ const heroLeads = computed<boolean>(() => props.pageTitle !== undefined ? heroLe
 const theme = useThemeData()
 if (theme.sections) useHead({ link: [{ rel: 'stylesheet', href: `/_t/${theme.digest}/sections.css` }] })
 const knownSections = computed<PageSection[]>(() => filterKnown(props.sections))
+// One JSON-LD `FAQPage` with the questions of every faq block of the page; here and not in `usePageSeo`, so its code stays out of the entry bundle every page loads
+useHead({
+  script: () => {
+    const faq = faqStructuredData(knownSections.value)
+    return faq ? [{ type: 'application/ld+json', innerHTML: jsonLd(faq) }] : []
+  },
+})
 // A landing's navigation links to its home page's sections by these ids (docs/operate/static-site.md, "Landing")
 const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLanding
   ? new Map(sectionAnchors(knownSections.value, { newsletterOn: newsletterOn?.value ?? false, blogEnabled }).map(anchor => [anchor.index, anchor.id]))

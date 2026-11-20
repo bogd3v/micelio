@@ -90,6 +90,23 @@ test.describe('without JavaScript', () => {
   })
 })
 
+test('/showcase emits one FAQPage JSON-LD with the questions of its FAQ block, in Spanish too', async ({ request }) => {
+  for (const [path, first] of [['/showcase', 'Do I need a garden?'], ['/es/muestra', '¿Necesito un jardín?']] as const) {
+    const html = await (await request.get(path)).text()
+    const faqs = [...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([^]*?)<\/script>/g)].map(match => JSON.parse(match[1]!)).filter(block => block['@type'] === 'FAQPage')
+    expect(faqs, path).toHaveLength(1)
+    expect(faqs[0].mainEntity).toHaveLength(2)
+    expect(faqs[0].mainEntity[0].name).toBe(first)
+  }
+})
+
+test('the FAQ item the CMS marks defaultOpen is open on load', async ({ page }) => {
+  await page.goto('/showcase')
+  const items = page.locator('[data-section="faq"] details')
+  await expect(items.nth(0)).not.toHaveAttribute('open', '')
+  await expect(items.nth(1)).toHaveAttribute('open', '')
+})
+
 test('/showcase has no axe violations', async ({ page }) => {
   await page.goto('/showcase', { waitUntil: 'networkidle' })
   const results = await new AxeBuilder({ page })

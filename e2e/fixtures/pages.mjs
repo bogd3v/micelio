@@ -97,8 +97,8 @@ function showcaseSections(es, landing) {
       variant: 'list',
       title: t('Questions', 'Preguntas'),
       items: [
-        { id: 1, question: t('Do I need a garden?', '¿Necesito un jardín?'), answer: t('No: a balcony is enough.', 'No: basta un balcón.') },
-        { id: 2, question: t('Is this site real?', '¿Este sitio es real?'), answer: t('It is a demo of [Micelio](https://github.com/bogd3v/micelio).', 'Es una demostración de [Micelio](https://github.com/bogd3v/micelio).') },
+        { id: 1, question: t('Do I need a garden?', '¿Necesito un jardín?'), answer: t('No: a balcony is enough.', 'No: basta un balcón.'), defaultOpen: false },
+        { id: 2, question: t('Is this site real?', '¿Este sitio es real?'), answer: t('It is a demo of [Micelio](https://github.com/bogd3v/micelio).', 'Es una demostración de [Micelio](https://github.com/bogd3v/micelio).'), defaultOpen: true },
       ],
     },
     {
@@ -245,7 +245,7 @@ const valueBlocks = {
   'logo-cloud': (title, o) => ({ __component: 'section.logo-cloud', variant: 'row', title, logos, ...o }),
   'testimonials': (title, o) => ({ __component: 'section.testimonials', variant: 'grid', title, items: ['A', 'B', 'C'].map((author, index) => ({ id: index + 1, quote: `Quote ${author}`, author, role: null, avatar: null })), ...o }),
   'pricing': (title, o) => ({ __component: 'section.pricing', variant: 'cards', title, text: null, plans: ['A', 'B', 'C', 'D'].map((name, index) => ({ id: index + 1, name, price: '$5', period: null, features: 'One\nTwo', recommended: false, link: null })), ...o }),
-  'faq': (title, o) => ({ __component: 'section.faq', variant: 'list', title, items: [{ id: 1, question: 'Why?', answer: 'Because.' }], ...o }),
+  'faq': (title, o) => ({ __component: 'section.faq', variant: 'list', title, items: [{ id: 1, question: 'Why?', answer: 'Because.', defaultOpen: false }], ...o }),
   'cta-card': (title, o) => ({ __component: 'section.cta', variant: 'card', title, text: 'Text of the call.', primaryLink: link('Go', '/'), secondaryLink: null, ...o }),
   'cta-banner': (title, o) => ({ __component: 'section.cta', variant: 'banner', title, text: 'Text of the call.', primaryLink: link('Go', '/'), secondaryLink: null, ...o }),
   'post-list': (title, o) => ({ __component: 'section.post-list', variant: 'cards', title, category: { id: 21, documentId: 'cat-software', slug: 'software' }, tag: null, count: 2, ...o }),
