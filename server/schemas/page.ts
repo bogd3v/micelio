@@ -239,6 +239,11 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
       blockId: optional(text),
       body: markdown,
     }).transform(({ body, ...rest }) => ({ ...rest, html: body })),
+    'shared.rich-text': z.object({
+      __component: z.literal('shared.rich-text'),
+      blockId: optional(text),
+      body: markdown,
+    }).transform(({ body, ...rest }) => ({ ...rest, html: body })),
     'section.gallery': z.object({
       __component: z.literal('section.gallery'),
       ...optionInputShape('section.gallery'),

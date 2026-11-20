@@ -131,6 +131,15 @@ describe('the page route', () => {
     expect(parseSection({ __component: 'section.post-list', variant: 'cards', density: 'compact', count: 3 }, context)).toMatchObject({ density: 'compact' })
   })
 
+  it('parseSection accepts section.rich-text and shared.rich-text in a page', () => {
+    expect(parseSection({ __component: 'section.rich-text', body: 'Old' }, context)).toEqual({ __component: 'section.rich-text', html: '<p>Old</p>' })
+    // The prose block keeps its blockId and its text, and none of the fields of the CMS row nor an option it does not expose
+    expect(parseSection({ id: 7, __component: 'shared.rich-text', blockId: 'b-1', body: 'New', width: 'wide', tone: 'accent' }, context)).toEqual({ __component: 'shared.rich-text', blockId: 'b-1', html: '<p>New</p>' })
+    expect(parseSection({ __component: 'shared.rich-text', blockId: null, body: 'New' }, context)).toEqual({ __component: 'shared.rich-text', html: '<p>New</p>' })
+    expect(parseSection({ __component: 'shared.rich-text', body: '  ' }, context)).toBeNull()
+    expect(pageSectionSchema.safeParse(parseSection({ __component: 'shared.rich-text', blockId: 'b-1', body: 'New' }, context)).success).toBe(true)
+  })
+
   it('treats null, which Strapi sends for an option never set, as absent', () => {
     expect(parseSection({ __component: 'section.cta', variant: 'card', title: 'Go', layout: null, align: null, tone: null }, context)).toMatchObject({ title: 'Go' })
   })

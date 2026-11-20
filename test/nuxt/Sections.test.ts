@@ -5,6 +5,7 @@ import { renderToString } from 'vue/server-renderer'
 import SectionHead from '~/components/section/SectionHead.vue'
 import { TRUSTED_MEDIA_PREFIX } from '~/constants/media'
 import SectionRenderer from '~/components/section/SectionRenderer.vue'
+import RichTextBlock from '~/components/strapi/RichTextBlock.vue'
 import { knownSections } from '~/helpers/pages'
 import { parseSection } from '../../server/schemas/page'
 import { blockMarkers } from '~/helpers/previewBlocks'
@@ -641,6 +642,29 @@ describe('rich text', () => {
     expect(root(wrapper).attributes('data-variant')).toBeUndefined()
     expect(wrapper.get('.myc-section-text h2').text()).toBe('About this page')
     expect(wrapper.get('.myc-section-text p').text()).toBe('Every section appears once.')
+  })
+})
+
+describe('prose', () => {
+  const html = '<h2 id="intro">Intro</h2><p>One <strong>text</strong>.</p><pre class="myc-code" tabindex="0"><code>a</code></pre>'
+
+  it('prose renders the same in a page and in an article', async () => {
+    const page = await render({ __component: 'shared.rich-text', blockId: 'b-1', html })
+    const article = await mountSuspended(RichTextBlock, { props: { block: { id: 1, __component: 'shared.rich-text', body: '', html } } })
+    expect(page.get('.myc-section-text').element.innerHTML).toBe(html)
+    expect(article.get('div').element.innerHTML).toBe(html)
+    // A page wraps it in the section root of the rich-text hook, with no option, and the old component renders the same text
+    expect(root(page).attributes('data-section')).toBe('rich-text')
+    expect(root(page).attributes('data-variant')).toBeUndefined()
+    expect(Object.keys(root(page).attributes()).filter(name => /^data-(layout|width|align|tone)$/.test(name))).toEqual([])
+    const old = await render({ __component: 'section.rich-text', html })
+    expect(old.get('.myc-section-text').element.innerHTML).toBe(html)
+  })
+
+  it('keeps the position of the sections when both components are in a page', async () => {
+    const wrapper = await mountSuspended(SectionRenderer, { props: { sections: [sections.richText(), { __component: 'shared.rich-text', html: '<p>Prose</p>' }, sections.cta('banner')] } })
+    expect(wrapper.findAll('section.myc-section').map(node => node.attributes('data-section'))).toEqual(['rich-text', 'rich-text', 'cta'])
+    expect(wrapper.findAll('[data-section="rich-text"] .myc-section-text').map(node => node.text())).toEqual(['About this pageEvery section appears once.', 'Prose'])
   })
 })
 

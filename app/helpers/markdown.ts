@@ -17,7 +17,7 @@ interface MarkdownLabels {
 
 /** Renders the Markdown of Strapi content to sanitized HTML; created by `createMarkdownRenderer()`. */
 export interface MarkdownRenderer {
-  /** Renders blocks of Markdown; an empty string gives an empty string, and a render error gives the escaped text. */
+  /** Renders blocks of Markdown, with an `id` on every heading (unique in the text); an empty string gives an empty string, and a render error gives the escaped text. */
   renderMarkdown: (text: string, citations?: BlockCitations) => string
   /** Renders Markdown without block elements; the sanitizer keeps only links, emphasis, code and superscript. */
   renderInlineMarkdown: (text: string, citations?: BlockCitations) => string
@@ -62,6 +62,17 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
 interface CitationState {
   citations?: BlockCitations
   emitted: Set<string>
+  /** The heading ids of the body being rendered, so no two share one. */
+  headingIds: Set<string>
+}
+
+/** The `id` of a heading: the slug of its text, `heading` when the text has none, and `-2`, `-3`… when the body already has it. */
+function headingId(state: CitationState, text: string): string {
+  const base = slugify(text) || 'heading'
+  let id = base
+  for (let suffix = 2; state.headingIds.has(id); suffix++) id = `${base}-${suffix}`
+  state.headingIds.add(id)
+  return id
 }
 
 interface CitationToken extends Tokens.Generic {
@@ -107,8 +118,7 @@ function buildMarked(
     renderer: {
       heading(token: Tokens.Heading): string {
         const text = token.text
-        const slug = slugify(text)
-        return `<h${token.depth} id="${slug}">${text}</h${token.depth}>\n`
+        return `<h${token.depth} id="${headingId(state, text)}">${text}</h${token.depth}>\n`
       },
       link(token: Tokens.Link): string {
         const href = token.href
@@ -149,12 +159,13 @@ function buildMarked(
  * is server-only (see the top of this file).
  */
 export function createMarkdownRenderer(labels: MarkdownLabels): MarkdownRenderer {
-  const state: CitationState = { emitted: new Set() }
+  const state: CitationState = { emitted: new Set(), headingIds: new Set() }
   const scopedMarked = buildMarked(labels.callout, labels.cite, state)
 
   function withCitations<T>(citations: BlockCitations | undefined, render: () => T): T {
     state.citations = citations
     state.emitted = new Set()
+    state.headingIds = new Set()
     try {
       return render()
     } finally {

@@ -734,6 +734,7 @@ export interface SubscribeRequest {
 | `PostListSection` | interface | A list of the newest published posts, optionally filtered by a category or a tag, `section.post-list`. |
 | `NewsletterSection` | interface | The newsletter sign-up form, `section.newsletter`. |
 | `RichTextSection` | interface | A text block written in Markdown, `section.rich-text`. |
+| `ProseSection` | interface | The `prose` block in a page, `shared.rich-text`: the same Markdown as an article's, rendered by the same component. |
 | `GallerySection` | interface | A grid or a masonry of images, `section.gallery`. |
 | `SceneSection` | interface | A 3D model with a poster image, `section.scene`, shown as a background or inline. |
 | `PageSection` | type | Any section of a page, discriminated by `__component`. |
@@ -934,6 +935,20 @@ A text block written in Markdown, `section.rich-text`.
 ```ts
 export interface RichTextSection extends SectionBase<'rich-text'>, BlockOptions<'section.rich-text'> {
   /** Sanitized HTML of the Markdown body */
+  html: string
+}
+```
+
+#### `ProseSection`
+
+The `prose` block in a page, `shared.rich-text`: the same Markdown as an article's, rendered by the same component.
+
+```ts
+export interface ProseSection {
+  __component: 'shared.rich-text'
+  /** The stable id of this block instance, as on any section. */
+  blockId?: string
+  /** Sanitized HTML of the Markdown body, with an `id` on every heading */
   html: string
 }
 ```

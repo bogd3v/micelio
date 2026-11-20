@@ -1,7 +1,7 @@
 import type { PageSection } from '~/interfaces'
 import { PAGE_SECTION_COMPONENTS } from '~/interfaces/page'
 
-const KNOWN_COMPONENTS: ReadonlySet<string> = new Set(PAGE_SECTION_COMPONENTS.map(kind => `section.${kind}`))
+const KNOWN_COMPONENTS: ReadonlySet<string> = new Set<string>([...PAGE_SECTION_COMPONENTS.map(kind => `section.${kind}`), 'shared.rich-text'])
 
 const WARN_EVERY_MS = 10 * 60 * 1000
 const WARN_MAX_KEYS = 100

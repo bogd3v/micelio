@@ -172,8 +172,9 @@ export function readBlockMessage(data: unknown, version: string): BlockMessage |
     : { kind, request: pointer }
 }
 
-/** The catalogue id of a section component: its name without the namespace (`section.feature-grid` is `feature-grid`). */
+/** The catalogue id of a section component: its name without the namespace (`section.feature-grid` is `feature-grid`), and `prose` for `shared.rich-text`. */
 export function blockId(component: string): string {
+  if (component === 'shared.rich-text') return 'prose'
   return component.slice(component.indexOf('.') + 1)
 }
 

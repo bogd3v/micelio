@@ -77,6 +77,14 @@ test('a page without a hero names itself with its title as the h1', async ({ pag
   await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
 })
 
+test('the prose block of a page renders next to rich-text, with an id on every heading', async ({ page }) => {
+  await page.goto('/scene-hero', { waitUntil: 'networkidle' })
+  const prose = page.locator('[data-section="rich-text"]').nth(1)
+  await expect(prose.locator('h2')).toHaveText(['Prose in a page', 'Prose in a page'])
+  expect(await prose.locator('h2').evaluateAll(headings => headings.map(heading => heading.id))).toEqual(['prose-in-a-page', 'prose-in-a-page-2'])
+  await expect(prose.locator('p')).toHaveText('The same Markdown as an article.')
+})
+
 test.describe('without JavaScript', () => {
   test.use({ javaScriptEnabled: false })
 

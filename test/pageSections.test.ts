@@ -13,6 +13,11 @@ describe('page sections', () => {
     expect(knownSections(null)).toEqual([])
   })
 
+  it('keeps the prose block of the catalogue among the known sections', () => {
+    const prose = { __component: 'shared.rich-text', html: '<p>x</p>' } as const
+    expect(knownSections([unknown, prose, cta])).toEqual([prose, cta])
+  })
+
   it('lets a hero lead only when it is the first known section', () => {
     expect(heroLeadsPage([hero, cta])).toBe(true)
     expect(heroLeadsPage([unknown, hero])).toBe(true)

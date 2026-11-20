@@ -7,7 +7,7 @@ import type { PostListItem, PostTranslation } from './strapi-post'
  * The section components a page can render, by their name without the `section.` prefix.
  *
  * @remarks
- * Sections of any other component are left out by the server. A page draft also keeps its Playground blocks, which no page renders (`DraftPlaygroundSection`).
+ * The `prose` block of the catalogue, `shared.rich-text`, is rendered by a page too (`ProseSection`) and is not in this list, since its CMS component is not a `section.*` one. Sections of any other component are left out by the server. A page draft also keeps its Playground blocks, which no page renders (`DraftPlaygroundSection`).
  *
  * @public
  */
@@ -329,6 +329,22 @@ export interface RichTextSection extends SectionBase<'rich-text'>, BlockOptions<
 }
 
 /**
+ * The `prose` block in a page, `shared.rich-text`: the same Markdown as an article's, rendered by the same component.
+ *
+ * @remarks
+ * It exposes no presentation option, so it has no `width`, `align` or `tone` (`BLOCK_EXPOSES`).
+ *
+ * @public
+ */
+export interface ProseSection {
+  __component: 'shared.rich-text'
+  /** The stable id of this block instance, as on any section. */
+  blockId?: string
+  /** Sanitized HTML of the Markdown body, with an `id` on every heading */
+  html: string
+}
+
+/**
  * A grid or a masonry of images, `section.gallery`.
  *
  * @public
@@ -364,7 +380,7 @@ export interface SceneSection extends SectionBase<'scene'>, SectionHeadFields, B
 export type PageSection
   = | HeroSection | FeatureGridSection | MediaShowcaseSection | StatsSection | LogoCloudSection
     | TestimonialsSection | PricingSection | FaqSection | CtaSection | PostListSection
-    | NewsletterSection | RichTextSection | GallerySection | SceneSection
+    | NewsletterSection | RichTextSection | ProseSection | GallerySection | SceneSection
 
 /**
  * A page built from sections, as the server returns it after validation.

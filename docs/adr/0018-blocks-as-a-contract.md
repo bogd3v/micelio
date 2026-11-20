@@ -8,7 +8,8 @@ and the ordering rule of sections 1 and 2
 (bogd3v/micelio-plugin-core#48, bogd3v/micelio#803);
 2026-11-12: the block catalogue plan (bogd3v/micelio#871);
 2026-11-12: the instance fields `blockId` and `itemId` (bogd3v/micelio-cms#440);
-2026-11-13: the options vocabulary gains `iconStyle` (bogd3v/micelio-plugin-core#198)
+2026-11-13: the options vocabulary gains `iconStyle` (bogd3v/micelio-plugin-core#198);
+2026-11-19: `rich-text` leaves section 6, merged into `prose` (A5, bogd3v/micelio-cms#445)
 
 **Amendment (2026-11-12, bogd3v/micelio#871): the block catalogue plan.** The maintainer approved the amendments to this record that `docs/architecture/block-catalogue-plan.md` proposes, in the section "Amendments to ADR-0018 for the maintainer to approve". Each takes effect when the issue that makes it ships (the numbers are lines of the plan's issue list) and binds nothing before; this note changes no sentence of the record. The seven are:
 
@@ -159,7 +160,9 @@ The components of `micelio-cms` at `v0.4.0` under `src/components/section` and `
 | `slider` | `shared.slider` | `shared.slide`, `shared.image-credit` | | No (hydrated controls) | The first slide, with its caption and credit |
 | `playground` | `shared.playground` | | | Yes, `playground` | The highlighted code and its expected output |
 
-The ids `prose` and `rich-text` keep the two Markdown blocks apart: they are different components today, and merging them is a schema change under section 2.
+~~The ids `prose` and `rich-text` keep the two Markdown blocks apart: they are different components today, and merging them is a schema change under section 2.~~ Struck by the amendment below.
+
+**Amendment (2026-11-19, bogd3v/micelio-cms#445, A5 of the block catalogue plan, its part for this block): `rich-text` leaves, `prose` is allowed in both zones.** The catalogue has one Markdown block, `prose` (`shared.rich-text`), allowed in `page.sections` and in `article.blocks`; the entry `rich-text` (`section.rich-text`) is merged into it, and the sentence above that kept the two apart no longer holds. The change is made in four pull requests, the frontend never breaking between them: `micelio-cms` allows `shared.rich-text` in a page; the core removes the entry and validates the heading levels of `body`; `micelio` renders both components in a page with one renderer (`app/components/strapi/RichTextBlock.vue`), gives every heading of the rendered Markdown an anchor `id` (`app/helpers/markdown.ts`), and asks the CMS for both (`PAGE_POPULATE`); `micelio-cms` then migrates the stored `section.rich-text` entries and retires the component for one release (its deletion follows when no tested frontend release still names it). A page root of `prose` carries the `data-section="rich-text"` hook as before, so a theme that styles it needs no change.
 
 **Parts and fields** (not blocks):
 
