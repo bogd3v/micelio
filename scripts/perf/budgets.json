@@ -55,6 +55,62 @@
           }
         }
       }
+    },
+    "cartel": {
+      "mode": [
+        "static"
+      ],
+      "reason": "Static carbon (co2Mg) only, decided 2026-11-19 (D-BOG-13, bogd3v/micelio-themes#10) so that the showcase theme is published for 0.9.0 as it is. The estimate counts every font the stylesheet references: cartel's are 51.4 KB, 5.89 mg of each view, against the 35.5 KB (4.07 mg) of bogota, on whose CI runs the global limits were set. Its HTML is lighter, so home, about and home-es pass; blog, article and privacy measure 9.47, 9.86 and 9.43 mg (Admission run 44628122325 of micelio-themes, core 93b9459; the same on core v0.6.1, run 43472670175, where the estimate was reported only: the budget is new, #847, the theme did not change). Each limit is that value plus 5 %, rounded up to 0.1 mg, the margin of the carbon budget. Its dynamic pages pass the global limits with at least 12 % of room, the heaviest display font included.",
+      "limits": {
+        "blog": {
+          "error": {
+            "co2Mg": 10
+          }
+        },
+        "article": {
+          "error": {
+            "co2Mg": 10.4
+          }
+        },
+        "privacy": {
+          "error": {
+            "co2Mg": 10
+          }
+        }
+      }
+    },
+    "espora": {
+      "mode": [
+        "static"
+      ],
+      "reason": "Static carbon (co2Mg) only, decided 2026-11-19 (D-BOG-13, bogd3v/micelio-themes#10) so that the theme is published for 0.9.0 as it is. The estimate counts every font the stylesheet references: espora's are 71.1 KB, 8.15 mg of each view, against the 35.5 KB (4.07 mg) of bogota, on whose CI runs the global limits were set. Home, blog, article, privacy and home-es measure 11.78, 11.68, 12.07, 11.64 and 11.76 mg (Admission run 44628122325 of micelio-themes, core 93b9459; the same on core v0.6.1, run 43472670175, where the estimate was reported only: the budget is new, #847, the theme did not change); about (11.95) passes. Each limit is that value plus 5 %, rounded up to 0.1 mg, the margin of the carbon budget. Its dynamic pages pass the global limits with at least 5.9 % of room, the heaviest display font included.",
+      "limits": {
+        "home": {
+          "error": {
+            "co2Mg": 12.4
+          }
+        },
+        "blog": {
+          "error": {
+            "co2Mg": 12.3
+          }
+        },
+        "article": {
+          "error": {
+            "co2Mg": 12.7
+          }
+        },
+        "privacy": {
+          "error": {
+            "co2Mg": 12.3
+          }
+        },
+        "home-es": {
+          "error": {
+            "co2Mg": 12.4
+          }
+        }
+      }
     }
   },
   "modes": {
