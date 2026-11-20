@@ -428,7 +428,8 @@
       "success": "✓ Check your email to confirm the subscription.",
       "invalid": "✕ That email does not look valid.",
       "error": "✕ We could not subscribe you. Try again in a moment.",
-      "tooMany": "✕ Too many attempts. Try again later."
+      "tooMany": "✕ Too many attempts. Try again later.",
+      "consentRequired": "✕ Accept the consent text to subscribe."
     },
     "header": {
       "home": "{site}, home",

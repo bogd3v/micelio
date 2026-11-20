@@ -253,6 +253,7 @@ const newsletter = (variant: NewsletterSection['variant']): NewsletterSection =>
   title: 'Notes by email',
   text: 'One email per season.',
   buttonLabel: 'Subscribe',
+  consentText: 'I agree to receive one email per season and know I can unsubscribe at any time.',
 })
 const gallery = (variant: GallerySection['variant']): GallerySection => ({
   __component: 'section.gallery',

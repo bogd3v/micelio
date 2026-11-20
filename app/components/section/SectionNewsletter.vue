@@ -13,7 +13,7 @@ const formId = useId()
   <section v-if="enabled" class="myc-section" data-section="newsletter" v-bind="optionAttributes(section)" :data-variant="section.variant" :aria-labelledby="section.title ? (section.anchor || titleId) : undefined">
     <div class="myc-section-inner">
       <SectionHead :title="section.title" :eyebrow="section.eyebrow" :anchor="section.anchor" :title-id="titleId" />
-      <MycNewsletterForm :id="`nl-${formId}`" hide-heading :description="section.text ?? undefined" :button-label="section.buttonLabel ?? undefined" />
+      <MycNewsletterForm :id="`nl-${formId}`" hide-heading :description="section.text ?? undefined" :button-label="section.buttonLabel ?? undefined" :placeholder="section.placeholder || undefined" :success-message="section.successMessage || undefined" :consent-text="section.consentText || undefined" />
     </div>
   </section>
 </template>

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { createSSRApp, defineComponent, h, provide } from 'vue'
 import { renderToString } from 'vue/server-renderer'
@@ -624,6 +625,103 @@ describe('newsletter', () => {
     // One heading: the section's h2, not the form's own eyebrow and h3
     expect(wrapper.findAll('h2, h3')).toHaveLength(1)
     expect(wrapper.find('.myc-news-eyebrow').exists()).toBe(false)
+  })
+
+  describe('consent, placeholder and success message', () => {
+    const staticDefaults = { siteMode: 'dynamic', newsletterProvider: { action: '', field: 'email', host: '', hidden: [] } }
+    const consent = 'I accept that you write to me once a season (Ley 1581).'
+    let subscribed = 0
+
+    registerEndpoint('/api/newsletter/subscribe', {
+      method: 'POST',
+      handler: () => {
+        subscribed += 1
+        return { success: true, message: 'ok' }
+      },
+    })
+
+    afterEach(async () => {
+      Object.assign(useRuntimeConfig().public, staticDefaults)
+      subscribed = 0
+    })
+
+    function asStatic(): void {
+      Object.assign(useRuntimeConfig().public, { siteMode: 'static', newsletterProvider: { action: 'https://lists.example.org/subscribe', field: 'email', host: 'lists.example.org', hidden: [] } })
+    }
+
+    it('a newsletter with consentText renders it beside a required checkbox, dynamic and static', async () => {
+      const dynamic = await render({ ...sections.newsletter('card'), consentText: consent } as PageSection)
+      const line = dynamic.get('label.myc-news-consent')
+      expect(line.text()).toBe(consent)
+      expect(line.get('input[type="checkbox"]').attributes('required')).toBeDefined()
+      // The checkbox gates the subscription: unchecked, nothing is posted
+      await dynamic.get('input[type="email"]').setValue('lector@bogdev.com.co')
+      await dynamic.get('form').trigger('submit')
+      await flushPromises()
+      expect(subscribed).toBe(0)
+      expect(dynamic.get('[role="status"]').text()).toBe('✕ Accept the consent text to subscribe.')
+      expect(line.get('input').attributes('aria-invalid')).toBe('true')
+      await line.get('input').setValue(true)
+      await dynamic.get('form').trigger('submit')
+      await vi.waitFor(() => expect(subscribed).toBe(1))
+
+      asStatic()
+      const plain = await render({ ...sections.newsletter('inline'), consentText: consent } as PageSection)
+      const staticLine = plain.get('form[method="post"] label.myc-news-consent')
+      expect(staticLine.text()).toBe(consent)
+      const box = staticLine.get('input[type="checkbox"]')
+      expect(box.attributes('required')).toBeDefined()
+      // Not sent to the provider
+      expect(box.attributes('name')).toBeUndefined()
+    })
+
+    it('empty placeholder and successMessage render the core\'s strings in en and es', async () => {
+      const empty = { ...sections.newsletter('card'), placeholder: '', successMessage: '' } as PageSection
+      const subscribe = async (wrapper: Awaited<ReturnType<typeof render>>) => {
+        await wrapper.get('input[type="email"]').setValue('lector@bogdev.com.co')
+        await wrapper.get('form').trigger('submit')
+        await vi.waitFor(() => expect(wrapper.get('[role="status"]').text()).not.toBe(''))
+      }
+      const en = await render(empty)
+      expect(en.get('input[type="email"]').attributes('placeholder')).toBe('you@email.com')
+      await subscribe(en)
+      expect(en.get('[role="status"]').text()).toBe('✓ Check your email to confirm the subscription.')
+
+      const es = await render(empty, '/es')
+      expect(es.get('input[type="email"]').attributes('placeholder')).toBe('tu@correo.com')
+      await subscribe(es)
+      expect(es.get('[role="status"]').text()).toBe('✓ Revisa tu correo para confirmar la suscripción.')
+
+      // A filled field replaces the core's string, in the dynamic and the static form
+      const own = { ...sections.newsletter('card'), placeholder: 'your address', successMessage: 'Done, thank you.' } as PageSection
+      const custom = await render(own)
+      expect(custom.get('input[type="email"]').attributes('placeholder')).toBe('your address')
+      await subscribe(custom)
+      expect(custom.get('[role="status"]').text()).toBe('Done, thank you.')
+      asStatic()
+      expect((await render(own)).get('input[type="email"]').attributes('placeholder')).toBe('your address')
+      expect((await render(empty, '/es')).get('input[type="email"]').attributes('placeholder')).toBe('tu@correo.com')
+    })
+
+    it('an empty consentText renders no consent line and no checkbox', async () => {
+      for (const consentText of [undefined, '']) {
+        const dynamic = await render({ ...sections.newsletter('card'), consentText } as PageSection)
+        expect(dynamic.find('.myc-news-consent').exists()).toBe(false)
+        expect(dynamic.find('input[type="checkbox"]').exists()).toBe(false)
+      }
+      // With no consent line, a valid address subscribes as before
+      const bare = await render(sections.newsletter('card'))
+      await bare.get('input[type="email"]').setValue('lector@bogdev.com.co')
+      await bare.get('form').trigger('submit')
+      await vi.waitFor(() => expect(subscribed).toBe(1))
+      asStatic()
+      for (const consentText of [undefined, '']) {
+        const plain = await render({ ...sections.newsletter('inline'), consentText } as PageSection)
+        expect(plain.find('form[method="post"]').exists()).toBe(true)
+        expect(plain.find('.myc-news-consent').exists()).toBe(false)
+        expect(plain.find('input[type="checkbox"]').exists()).toBe(false)
+      }
+    })
   })
 
   it('renders nothing when the newsletter module is off', async () => {
