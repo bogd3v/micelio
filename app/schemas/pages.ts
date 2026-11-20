@@ -21,6 +21,7 @@ import type {
   PostListSection,
   PricingPlan,
   PricingSection,
+  ProseSection,
   RichTextSection,
   SceneSection,
   StatItem,
@@ -265,6 +266,14 @@ const richTextSchema = responseSchema<RichTextSection>()(
   }).meta({ id: 'RichTextSection', description: 'A text block written in Markdown.' }),
 )
 
+const proseSchema = responseSchema<ProseSection>()(
+  z.strictObject({
+    __component: z.literal('shared.rich-text'),
+    blockId: z.string().optional(),
+    html: z.string().meta({ description: 'Sanitized HTML of the Markdown body, with an `id` on every heading.' }),
+  }).meta({ id: 'ProseSection', description: 'The `prose` block in a page: Markdown, the same as in an article.' }),
+)
+
 const gallerySchema = responseSchema<GallerySection>()(
   z.strictObject({
     __component: z.literal('section.gallery'),
@@ -292,7 +301,7 @@ const sceneSchema = responseSchema<SceneSection>()(
   }).meta({ id: 'SceneSection', description: 'A 3D model with a poster image, shown as a background or inline.' }),
 )
 
-/** Any section of a page, by `__component`; one schema per member of `PAGE_SECTION_COMPONENTS`. */
+/** Any section of a page, by `__component`; one schema per member of `PAGE_SECTION_COMPONENTS`, and one for `shared.rich-text` (`prose`). */
 export const pageSectionSchema = responseSchema<PageSection>()(
   z.discriminatedUnion('__component', [
     heroSchema,
@@ -307,6 +316,7 @@ export const pageSectionSchema = responseSchema<PageSection>()(
     postListSchema,
     newsletterSchema,
     richTextSchema,
+    proseSchema,
     gallerySchema,
     sceneSchema,
   ]).meta({ id: 'PageSection', description: 'Any section of a page, discriminated by `__component`.' }),

@@ -228,6 +228,8 @@ const sceneHero = {
       text: 'Drawn behind this text.',
     },
     { id: 2, __component: 'section.rich-text', body: '## After the scene\n\nText below.' },
+    // The `prose` block of the catalogue in a page, next to the `section.rich-text` it replaces (bogd3v/micelio-cms#445)
+    { id: 3, __component: 'shared.rich-text', body: '## Prose in a page\n\nThe same Markdown as an article.\n\n## Prose in a page' },
   ],
   localizations: [],
 }

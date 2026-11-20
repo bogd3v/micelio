@@ -125,6 +125,11 @@ describe('the markers of a block', () => {
     expect(blockId('hero')).toBe('hero')
     expect(blockMarkers('section.hero', 3)).toEqual({ 'data-myc-block': 'hero', 'data-myc-index': '3' })
   })
+
+  it('names `shared.rich-text` as the catalogue\'s prose', () => {
+    expect(blockId('shared.rich-text')).toBe('prose')
+    expect(blockMarkers('shared.rich-text', 0)).toEqual({ 'data-myc-block': 'prose', 'data-myc-index': '0' })
+  })
 })
 
 describe('patchSections', () => {

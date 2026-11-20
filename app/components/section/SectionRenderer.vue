@@ -47,6 +47,7 @@ const componentMap: Readonly<Record<PageSection['__component'], Component>> = {
   'section.post-list': SectionPostList,
   'section.newsletter': SectionNewsletter,
   'section.rich-text': SectionRichText,
+  'shared.rich-text': SectionRichText,
   'section.gallery': SectionGallery,
   'section.scene': SectionScene,
 }

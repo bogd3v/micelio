@@ -23,7 +23,7 @@ const BLOG_PATH = new RegExp(`^${localePrefixSource()}/blog(?:[/?#]|$)`)
 
 /** The title of a section that renders and is worth a navigation entry (the hero opens the page: the brand link goes there). */
 function anchorTitle(section: PageSection, context: LandingContext): string | undefined {
-  if (section.__component === 'section.hero' || section.__component === 'section.rich-text') return undefined
+  if (section.__component === 'section.hero' || section.__component === 'section.rich-text' || section.__component === 'shared.rich-text') return undefined
   if (section.__component === 'section.post-list' && !section.posts?.length) return undefined
   if (section.__component === 'section.newsletter' && !context.newsletterOn) return undefined
   return section.title?.trim() || undefined

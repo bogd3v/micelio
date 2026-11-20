@@ -61,7 +61,7 @@ for (const locale of ['en', 'es'] as const) {
     expect(pageSchema.safeParse(page).error?.issues ?? []).toEqual([])
     expectShape(page, { documentId: 'string', title: 'string', slug: 'string', locale: 'string', sections: 'array' })
     expect(page.sections.length).toBeGreaterThan(0)
-    for (const section of page.sections) expect(section.__component).toMatch(/^section\./)
+    for (const section of page.sections) expect(section.__component).toMatch(/^(section|shared)\./)
     expect(page.sections[0].__component).toBe('section.hero')
   })
 }

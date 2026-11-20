@@ -8091,6 +8091,9 @@
             "$ref": "#/components/schemas/RichTextSection"
           },
           {
+            "$ref": "#/components/schemas/ProseSection"
+          },
+          {
             "$ref": "#/components/schemas/GallerySection"
           },
           {
@@ -8614,6 +8617,28 @@
             "description": "Legacy Nitro member; `data.code` equals `code`."
           }
         }
+      },
+      "ProseSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "shared.rich-text"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "html": {
+            "type": "string",
+            "description": "Sanitized HTML of the Markdown body, with an `id` on every heading."
+          }
+        },
+        "required": [
+          "__component",
+          "html"
+        ],
+        "additionalProperties": false,
+        "description": "The `prose` block in a page: Markdown, the same as in an article."
       },
       "PublishedVersion": {
         "type": "object",

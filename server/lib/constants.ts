@@ -23,6 +23,7 @@ const SITE_IMAGE = { fields: ['url', 'alternativeText', 'width', 'height'] }
  *
  * @remarks
  * Strapi does not mix '*' with keyed entries, so every relation of every section is named. Links and media are listed explicitly, and each media names its fields, so a new CMS field never widens the response.
+ * It names both text components, `section.rich-text` and `shared.rich-text` (`prose`): a fragment populate returns only the components it names, and the CMS keeps `section.rich-text` in the zone for one release.
  */
 export const PAGE_POPULATE = {
   seo: { populate: { metaImage: PAGE_MEDIA } },
@@ -41,6 +42,7 @@ export const PAGE_POPULATE = {
       'section.post-list': { populate: { category: { fields: ['slug'] }, tag: { fields: ['slug'] } } },
       'section.newsletter': { populate: '*' },
       'section.rich-text': { populate: '*' },
+      'shared.rich-text': true,
       'section.gallery': { populate: { images: PAGE_MEDIA } },
       'section.scene': { populate: { model: PAGE_MEDIA, poster: PAGE_MEDIA } },
     },
@@ -51,7 +53,7 @@ export const PAGE_POPULATE = {
  * The Strapi populate of a page draft: that of a page.
  *
  * @remarks
- * It names only components of the `sections` zone of the page in micelio-cms 0.8.0: the plugin refuses with `400` a fragment populate that names a component the zone lacks. `shared.playground` is not in that zone, so a Playground block of a page is not asked for until the CMS adds it (bogd3v/micelio#908).
+ * It names only components of the `sections` zone of the page (`shared.rich-text` since micelio-cms #502): the plugin refuses with `400` a fragment populate that names a component the zone lacks. `shared.playground` is not in that zone, so a Playground block of a page is not asked for until the CMS adds it (bogd3v/micelio#908).
  */
 export const DRAFT_PAGE_POPULATE = PAGE_POPULATE
 

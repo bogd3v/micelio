@@ -31,6 +31,24 @@ describe('renderMarkdown', () => {
     expect(renderer.renderMarkdown('## Qué es RAG')).toContain('<h2 id="que-es-rag">Qué es RAG</h2>')
   })
 
+  it('gives every heading an anchor id and keeps the output sanitized', () => {
+    const levels = renderer.renderMarkdown('## Two\n\n### Three\n\n#### Four\n\n##### Five\n\n###### Six')
+    expect([...levels.matchAll(/<h([2-6]) id="([^"]+)"/g)].map(match => [match[1], match[2]])).toEqual([['2', 'two'], ['3', 'three'], ['4', 'four'], ['5', 'five'], ['6', 'six']])
+    // The same text twice in a body, and a text with nothing a slug keeps: no id is empty or repeated
+    expect([...renderer.renderMarkdown('## Same\n\n## Same\n\n## Same\n\n## ???\n\n## ¿¿').matchAll(/ id="([^"]*)"/g)].map(match => match[1])).toEqual(['same', 'same-2', 'same-3', 'heading', 'heading-2'])
+    // A heading inside a callout is still a heading of the body
+    expect([...renderer.renderMarkdown('## Intro\n\n> [!NOTE]\n> ## Intro').matchAll(/<h2 id="([^"]*)"/g)].map(match => match[1])).toEqual(['intro', 'intro-2'])
+    // Each render starts again: a second body has its own first `same`
+    expect(renderer.renderMarkdown('## Same')).toContain('<h2 id="same">')
+    // What the sanitizer refuses stays refused next to the anchors
+    const html = renderer.renderMarkdown('## Safe\n\n<script>alert(1)</script>\n\n<h2 id="raw" onclick="alert(1)" style="x:y">Raw</h2>\n\n<iframe src="https://evil.test/x"></iframe>')
+    expect(html).toContain('<h2 id="safe">Safe</h2>')
+    expect(html).toContain('<h2 id="raw">Raw</h2>')
+    expect(html).not.toMatch(/<script|onclick|style=|evil\.test/)
+    // A Mermaid fence keeps its source in the block the island reads
+    expect(renderer.renderMarkdown('## Flow\n\n```mermaid\ngraph TD; A-->B\n```')).toMatch(/<h2 id="flow">Flow<\/h2>[\s\S]*<micelio-mermaid class="myc-mermaid not-prose">[\s\S]*A--&gt;B/)
+  })
+
   it('opens external links in a new tab and keeps internal ones', () => {
     const html = renderer.renderMarkdown('[out](https://example.com "Example") and [in](/blog)')
     expect(html).toContain('<a href="https://example.com" title="Example" target="_blank" rel="noopener noreferrer">out</a>')
