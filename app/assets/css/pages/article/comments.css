@@ -235,9 +235,11 @@
     color: var(--ink-muted);
 }
 
+/* The glow is a role a theme may set to none: the outline is what makes the field's focus visible (WCAG 2.4.7) */
 .myc-comment-input:focus {
-    outline: none;
     box-shadow: var(--glow-link);
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
 }
 
 .myc-comment-input[aria-invalid="true"] {
@@ -340,6 +342,5 @@
 @media (forced-colors: active) {
     .myc-comment-input:focus {
         outline: 2px solid Highlight;
-        outline-offset: 2px;
     }
 }
