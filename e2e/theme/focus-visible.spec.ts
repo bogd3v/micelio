@@ -34,3 +34,13 @@ test('the blog search field shows a visible focus indicator', async ({ page }) =
   expect(outline.width).toBeGreaterThanOrEqual(2)
   expect(outline.alpha).toBeGreaterThan(0)
 })
+
+test('a comment field shows a visible focus indicator', async ({ page }) => {
+  await openPage(page, PAGES.find(item => item.name === 'article')!)
+  for (const id of ['#author-name', '#author-email', '#comment-content']) {
+    const outline = await outlineOf(page.locator(id), 'self')
+    expect(outline.style, id).not.toBe('none')
+    expect(outline.width, id).toBeGreaterThanOrEqual(2)
+    expect(outline.alpha, id).toBeGreaterThan(0)
+  }
+})
