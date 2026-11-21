@@ -6,7 +6,7 @@ import { orderDepartures, tabStops } from '../fixtures/focus'
 // privacy notice, the tab bar) come after the page, as the sticky header comes before it
 const SCROLLED = 400
 
-for (const name of ['home', 'specimen']) {
+for (const name of ['home', 'specimen', 'about']) {
   test(`${name}: the Tab order follows the visual order`, async ({ page }) => {
     await openPage(page, PAGES.find(entry => entry.name === name)!)
     // First visit: the privacy notice is shown over the page; scrolled, the Back to top button shows too
