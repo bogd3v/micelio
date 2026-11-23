@@ -126,6 +126,9 @@ function showcaseSections(es, landing) {
       title: t('Notes by email', 'Notas por correo'),
       text: t('One email per season.', 'Un correo por temporada.'),
       buttonLabel: t('Subscribe', 'Suscribirme'),
+      consentText: t('I agree to receive one email per season.', 'Acepto recibir un correo por temporada.'),
+      successMessage: null,
+      placeholder: null,
     },
     {
       id: 12,

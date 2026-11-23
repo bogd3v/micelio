@@ -44,6 +44,14 @@ These did not move the version, because they add no role, slot, variant or hook 
 - Added: the optional `version` (semver without build metadata) and `license` (an SPDX id or `LicenseRef-<name>`) of `theme.json`; both are required to pack a theme.
 - Tightened: `id` is 1 to 64 characters of lowercase letters and digits in groups separated by single hyphens (ADR 0009, section 2). `--x`, `x-`, `-x` and ids over 64 characters no longer validate; `bogota`, `starter` and every id with single hyphens do.
 
+## 2.4
+
+Adds one hook: `myc-news-consent`, the consent line of the newsletter form (a required checkbox beside the legal text of the block's `consentText`; micelio-cms#443).
+
+- Added hook: `myc-news-consent`, a class of the `<label>` of the dynamic and the static newsletter form. It exists only when the block has a `consentText`.
+- A theme declares `2.4` only when its CSS selects it; a theme that declares an earlier minor keeps validating and rendering, and the form keeps the core's own style for the line.
+- **2.3 is not used here.** It stays reserved for the region options (ADR 0005, amendment of 2026-11-13, #918), which land later; the minors do not have to follow the order of the releases.
+
 ## 2.2
 
 Adds a performance budget: the carbon estimate of a page view, `co2Mg` (#847; [performance.md](../performance.md#carbon-budget)).
