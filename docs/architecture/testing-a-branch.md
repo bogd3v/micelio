@@ -1,6 +1,6 @@
-# Testing a branch in Docker
+# Testing a branch on the stack
 
-**Kind:** how-to. Goal: run what a branch changes in Docker, as the worker, the verifier and the maintainer do (gates 2 to 4 of [`docs/factory.md`](https://github.com/bogd3v/micelio-engineering/blob/main/docs/factory.md)).
+**Kind:** how-to. Goal: run what a branch changes on the stack (Docker, or rootless Podman behind the same `docker` CLI, as the factory host has it), as the worker, the verifier and the maintainer do (gates 2 to 4 of [`docs/factory.md`](https://github.com/bogd3v/micelio-engineering/blob/main/docs/factory.md)).
 
 ## Which stack tests what
 
@@ -19,14 +19,13 @@ A branch that changes none of these runs `npm run check` only.
 On a clean copy of the worktree, `$COPY`, in `node:22.23-slim`. The `Dockerfile` image cannot run it: `.dockerignore` drops `AGENTS.md` and `docs/`.
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/h -v "$COPY":/app:z -w /app \
+docker run --rm -e HOME=/tmp/h -v "$COPY":/app:z -w /app \
   node:22.23-slim sh -c 'mkdir -p $HOME && npm ci && npm run check'
 ```
 
-Run as yourself, so the run leaves no root-owned `coverage/`, `.micelio/` or report folder in
-`$COPY` (they make the next `rsync --delete` fail). On rootless Docker the folder you own appears as `root` inside the container,
-so `--user "$(id -u):$(id -g)"` fails with `EACCES` on the mount: use `--user 0:0` there, which writes
-files as you on the host. `:z` relabels the folder it mounts so that
+This is the form for rootless Podman, the factory host's engine (`herdr/master.md` of `micelio-engineering`, "The host's runtime"): the container runs as root, which the rootless engine maps to you, so the files it writes in `$COPY` are yours (`find "$COPY" ! -user "$(id -u)"` prints nothing) and a root-owned `coverage/`, `.micelio/` or report folder never makes the next `rsync --delete` fail. Do not add `--user "$(id -u):$(id -g)"` there: without `--userns=keep-id` the container cannot write to the mount (`EACCES`), and the Docker CLI refuses `--userns=keep-id`. With `podman run` itself, `--userns=keep-id --user "$(id -u):$(id -g)"` runs as you.
+
+On Docker (CI, a developer's machine) run as yourself so the run leaves no root-owned folder in `$COPY`: add `--user "$(id -u):$(id -g)"` to the line above. On rootless Docker the folder you own appears as `root` inside the container, so use `--user 0:0` there, which writes files as you on the host. `:z` relabels the folder it mounts so that
 SELinux lets the container read it: `$COPY` is a folder of its own, never a parent such as
 `~/.cache` or `~`, and never `:Z`, which makes the folder private to one container.
 
@@ -50,7 +49,7 @@ ends.
 Neither needs the plugin's compose: the mock Strapi of `e2e/` stands in for the CMS.
 
 ```bash
-docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp/h -v "$COPY":/app:z -w /app node:22.23-slim \
+docker run --rm -e HOME=/tmp/h -v "$COPY":/app:z -w /app node:22.23-slim \
   sh -c 'mkdir -p $HOME && npm ci && npm run theme:pull -- --frozen && npm run test:static-theme'
 ```
 
@@ -59,7 +58,9 @@ over one volume three times:
 the theme the site settings name by its locked pin,
 a theme that does not exist (the volume keeps the last site byte for byte), and the starter.
 
-To run the image itself, build it with `docker build --target static -t micelio-builder:test .`
+The run is as root, for the reason given under `npm run check` (on Docker add `--user "$(id -u):$(id -g)"`).
+
+To run the image itself, build it with `docker build --load --target static -t micelio-builder:test .` (on Podman see the note under "Run this branch's image", or `podman build --format docker --target static`)
 and start `MOCK_THEME_SWITCH=1 node e2e/mock-strapi.mjs` with `--network host`.
 Name a theme with `POST /__mock/theme`,
 then run the image with `--network host -v <volume>:/out` and the variables of
@@ -72,13 +73,15 @@ and the maintainer's demo stack.
 
 ## Run this branch's image against the plugin's compose
 
-You need Docker with Compose v2, Node 22, Git and free ports 1337 and 3000 on `127.0.0.1` (the compose publishes them with fixed numbers).
+You need Docker with Compose v2, or rootless Podman with `podman.socket` enabled and `DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock` set (`herdr/factory-agent.sh enter` of `micelio-engineering` sets it on the factory host), Node 22, Git and free ports 1337 and 3000 on `127.0.0.1` (the compose publishes them with fixed numbers).
 
 1. Build the image from the branch. The default target of the `Dockerfile` is the site; it takes a few minutes:
 
    ```bash
-   docker build -t micelio:branch ../micelio   # the checkout or worktree of the branch
+   docker build --load -t micelio:branch ../micelio   # the checkout or worktree of the branch
    ```
+
+   On Podman, through the socket, `docker build` runs in the `buildx_buildkit_default` container, which stays after the build: without `--load` the build exits 0 and leaves no image in the store, and a build of the `static` target can fail with `no active session … context deadline exceeded` while it exports the image. An image loaded that way also lost the `HEALTHCHECK` of the `Dockerfile` (`podman image inspect micelio:branch --format '{{json .Config.Healthcheck}}'` printed `null`; `docker inspect` prints `null` for every image on Podman's socket, so it proves nothing there). `podman build --format docker -t micelio:branch ../micelio` builds in the same store and keeps it (`--format docker`: the default OCI format ignores `HEALTHCHECK`); use it when the `HEALTHCHECK` matters, and `--format docker --target static` for the builder image.
 
 2. Get the plugin on its `main`: `git clone https://github.com/bogd3v/micelio-plugin-core.git`, or `git pull` in your clone.
 3. In it, start the stack with the image named in `FRONTEND_IMAGE`:
