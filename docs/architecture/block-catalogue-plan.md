@@ -563,7 +563,7 @@ chooses when approving.
 | 8 | `feat(icons): the micelio.icon custom field of @micelio/strapi-plugin-core` | `micelio-plugin-core` | 1 | 6 |
 | 9 | `feat(blocks): iconStyle in the options vocabulary` | `micelio-plugin-core` | 1 | 6 |
 | 10 | `feat(blocks): the catalogue entries: icon on feature-item, link, stat and plan.features` | `micelio-plugin-core` | 1 | 7, 8, 9 |
-| 11 | `feat(content): the reusable-block type, its republish hooks and its export` | `micelio-plugin-core` | 1 | the content-types cut-over (milestone "Tipos de contenido al core") |
+| 11 | `feat(content): the reusable-block type, its republish hooks and its export` | `micelio-plugin-core` | 1 | none (a page references the type; no content type moves, the maintainer's decision of 2026-11-23) |
 | 12 | `feat(blocks): the reusable block and the group key in the catalogue` | `micelio-plugin-core` | 1 | 1, 11 |
 | 13 | `feat(renderer): render reusable blocks and groups, with the myc-group hook` | `micelio` | 1 | 12 |
 | 14 | `docs(adr): amend ADR-0018 for the catalogue plan` | `micelio` | 1 | the maintainer's approval of "Amendments" |
