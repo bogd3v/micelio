@@ -25,7 +25,7 @@ jobs:
   # Formatting is the stylistic rules inside lint, so there is no format:check; there is no build job either, since every browser job
   # below builds (with the default theme, which themes.lock.json pins and `theme:pull` installs). Its status for the ruleset is `check / Check`.
   check:
-    uses: bogd3v/micelio-engineering/.github/workflows/check.yml@1c8b550ff6389f3dd4f534ba3eda9291fc3b2b07 # main
+    uses: bogd3v/micelio-engineering/.github/workflows/check.yml@d0ebe4c9a0a2d4c2c9408709ec05a8f03d45ce3d # main
     with:
       test-script: test:coverage
       format: false
