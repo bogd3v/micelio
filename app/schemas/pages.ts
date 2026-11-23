@@ -254,6 +254,9 @@ const newsletterSchema = responseSchema<NewsletterSection>()(
     title: z.string().optional(),
     text: z.string().optional(),
     buttonLabel: z.string().optional(),
+    consentText: z.string().optional().meta({ description: 'The legal text beside a required checkbox; with none, the form has no consent line and no checkbox.' }),
+    successMessage: z.string().optional().meta({ description: 'The sentence after a subscription; with none, the core\'s own string.' }),
+    placeholder: z.string().optional().meta({ description: 'The hint of the address field; with none, the core\'s own string.' }),
   }).meta({ id: 'NewsletterSection', description: 'The newsletter sign-up form.' }),
 )
 

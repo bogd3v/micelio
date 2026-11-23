@@ -284,3 +284,20 @@ describe('pageParamsSchema', () => {
     for (const slug of ['', 'Showcase', 'a b', '../x', '-x', 'a/b', 'x'.repeat(65), undefined]) expect(pageParamsSchema.safeParse({ slug }).success).toBe(false)
   })
 })
+
+describe('parseSection of a newsletter', () => {
+  const fields = ['consentText', 'successMessage', 'placeholder'] as const
+
+  it('keeps a filled consentText, successMessage and placeholder', () => {
+    const parsed = parseSection(section('section.newsletter', { consentText: 'I agree (Ley 1581).', successMessage: 'Done.', placeholder: 'your address' }), context)
+    expect(parsed).toMatchObject({ consentText: 'I agree (Ley 1581).', successMessage: 'Done.', placeholder: 'your address' })
+  })
+
+  it('reads a stored null, empty or blank value as unset', () => {
+    for (const value of [null, '', '   ']) {
+      const parsed = parseSection(section('section.newsletter', Object.fromEntries(fields.map(name => [name, value]))), context) as unknown as Record<string, unknown>
+      expect(parsed, String(value)).not.toBeNull()
+      for (const name of fields) expect(parsed[name], `${name} ${JSON.stringify(value)}`).toBeUndefined()
+    }
+  })
+})

@@ -7935,6 +7935,18 @@
           },
           "buttonLabel": {
             "type": "string"
+          },
+          "consentText": {
+            "description": "The legal text beside a required checkbox; with none, the form has no consent line and no checkbox.",
+            "type": "string"
+          },
+          "successMessage": {
+            "description": "The sentence after a subscription; with none, the core's own string.",
+            "type": "string"
+          },
+          "placeholder": {
+            "description": "The hint of the address field; with none, the core's own string.",
+            "type": "string"
           }
         },
         "required": [

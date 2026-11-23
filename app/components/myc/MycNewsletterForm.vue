@@ -7,6 +7,10 @@ const props = withDefaults(defineProps<{
   eyebrow?: string
   placeholder?: string
   buttonLabel?: string
+  /** The sentence after a subscription; unset or empty is the core's string */
+  successMessage?: string
+  /** The legal text beside a required checkbox; unset or empty renders neither */
+  consentText?: string
   status?: NewsletterStatus
   message?: string
   id?: string
@@ -18,6 +22,8 @@ const props = withDefaults(defineProps<{
   eyebrow: undefined,
   placeholder: undefined,
   buttonLabel: undefined,
+  successMessage: undefined,
+  consentText: undefined,
   status: 'idle',
   message: undefined,
   id: 'myc-news-email',
@@ -44,16 +50,22 @@ const messageId = computed<string>(() => `${props.id}-msg`)
 const titleText = computed<string>(() => props.title ?? t('myc.newsletter.title'))
 const descriptionText = computed<string>(() => props.description ?? t('myc.newsletter.description'))
 const eyebrowText = computed<string>(() => props.eyebrow ?? t('myc.newsletter.eyebrow'))
-const placeholderText = computed<string>(() => props.placeholder ?? t('myc.newsletter.placeholder'))
+const placeholderText = computed<string>(() => props.placeholder || t('myc.newsletter.placeholder'))
 const buttonText = computed<string>(() => props.buttonLabel ?? t('myc.newsletter.button'))
 
-async function handleSubmit(): Promise<void> {
+async function handleSubmit(event: Event): Promise<void> {
   if (submitting.value) return
+  // novalidate stops the automatic check; reportValidity makes the browser name the unchecked consent itself
+  const unchecked = (event.currentTarget as HTMLFormElement).querySelector<HTMLInputElement>('input[type=checkbox]:not(:checked)')
+  if (unchecked) {
+    unchecked.reportValidity()
+    return
+  }
   submitting.value = true
   const submitted = email.value
   const result = await subscribe(submitted)
   currentStatus.value = result.status
-  feedback.value = result.message
+  feedback.value = result.status === 'success' && props.successMessage ? props.successMessage : result.message
   invalid.value = result.invalid
   submitting.value = false
   if (result.status === 'success') {
@@ -81,6 +93,7 @@ watch(() => [props.status, props.message] as const, ([status, message]) => {
     :show-description="!hideHeading || Boolean(description)"
     :placeholder="placeholderText"
     :button-label="buttonText"
+    :consent-text="consentText"
   />
   <form v-else class="myc-news" novalidate :aria-busy="submitting" @submit.prevent="handleSubmit">
     <span v-if="!hideHeading" class="myc-eyebrow myc-news-eyebrow">{{ eyebrowText }}</span>
@@ -105,6 +118,10 @@ watch(() => [props.status, props.message] as const, ([status, message]) => {
         {{ buttonText }}
       </MycButton>
     </div>
+    <label v-if="consentText" class="myc-news-consent">
+      <input type="checkbox" required :disabled="submitting">
+      <span>{{ consentText }}</span>
+    </label>
     <p
       :id="messageId"
       role="status"
