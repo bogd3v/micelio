@@ -262,3 +262,88 @@ The amendments of [ADR-0017](0017-distribution-plugins-multisite-editorial.md) (
 and [ADR-0005](0005-theme-contract.md) section 11 (the `myc-group` hook) are noted in those records.
 [ADR-0018](0018-blocks-as-a-contract.md) and [ADR-0019](0019-visual-editing-protocol.md) do not change.
 The maintainer sets this record to `Accepted`.
+
+## Amendments
+
+**Amendment (2026-11-23, [bogd3v/micelio#976](https://github.com/bogd3v/micelio/issues/976)):
+publishing a reusable block measures the pages that show it, and is refused if one would go over its budget.**
+Section 1 ("Republish") has a publish of a reusable block list the pages that show it and nothing more.
+The maintainer approved on 2026-11-12 artboard 14 (`Reusable`), state 3, of the canvas "Micelio plugin admin":
+publishing a reusable block measures each page that shows it again, and the publish is refused,
+naming the page, if one of them would go over its budget.
+On 2026-11-23, at gate 3 of bogd3v/micelio-plugin-core#200, that was moved out of #200,
+which adds `usedOn`, the list of referencing pages this amendment builds on.
+A refusal at publish is a new rule of the editorial workflow (a contract, standard section 6)
+and costs one render per page, so the maintainer decided it on 2026-11-23 before any code.
+The credential it needs is the amendment of the same date of [ADR-0019](0019-visual-editing-protocol.md),
+which also amends the sentences of section 3 and of Consequences above that ADR-0019 is unaffected.
+Every other rule of section 1 holds: a reusable block is site-scoped, holds one block and one level,
+a page renders its published version, and its republish edits no page entry,
+changes no page's editorial state and fires no page hook. The measurement writes nothing to a page either.
+
+- **When.** In the transition that publishes the reusable block (`in_review → published`, `scheduled → published`,
+  `published → published`), before it publishes, as a page is measured today, so the admin route,
+  the `transitions` service and the scheduler all hold it. Not in `afterPublish`, which runs once the publish is done.
+  Unpublishing a reusable block measures nothing, because the pages only get lighter.
+- **What is measured.** Each page's published version, in the locale published,
+  with its reference resolved to the reusable block's draft, which is the version being published:
+  the page as visitors will see it once the block is published.
+  Options rejected by the maintainer:
+  - *The page's draft.* It measures edits that are not published and refuses the block on them.
+  - *Measure after the publish and only warn.* The page goes over its budget with nothing to stop it.
+  - *No refusal, only the list.* State 3 of the artboard loses what it was approved for.
+- **Which pages.** Those that `usedOn` lists for the block in the locale published
+  whose published version, in that locale, references the block,
+  and whose type the budget measures (`budgets.contentTypes`, site-scoped, editorial, with a dynamic zone).
+  A page that has a draft only is measured at its own publish.
+  The "Used on N pages" count of section 1 counts drafts and every locale, so it can be larger than the pages measured.
+- **The grant.** One system grant per page measured, minted by the publish path of the reusable block,
+  bound to the site, the page's type, `documentId` and locale, and the reusable block's `documentId` and version
+  ([ADR-0019](0019-visual-editing-protocol.md), amendment of 2026-11-23).
+  Lifetime, single use, header and route are today's. `GET /api/micelio/preview/draft` answers it
+  with the page's published version and that reference resolved to the block's draft.
+  The weight route accepts it, and every other route refuses it.
+- **The refusal.** `pageOverBudget`, with its members of today for the page measured
+  and one more, `page` (`uid`, `documentId`, `locale`, `title`), for the first page over its budget.
+  A page that cannot be measured gives `previewUnavailable` with `page`.
+  "First" is in the order of the list: the refusal names the earliest page of the list that refused,
+  and once a page refuses no other is started.
+  A scheduled reusable block that is refused stays `scheduled`, as a page does,
+  and is tried again on every run of the scheduler (every minute by default).
+  The block's draft version is checked again right before it is published,
+  and a save since the measurement refuses the publish with `previewUnavailable`, as for a page.
+  The block keeps its state on every refusal.
+- **The cost and its bound.** Pages are measured two at a time, with no cap on their number:
+  one grant, one request to the weight route and one render per page.
+  The rate limits are today's: every request counts in the frontend's per-IP bucket of the system header,
+  shared with every other publish of that CMS, and each page in its own per-document bucket;
+  a `429` is retried as today, each page within its own bound.
+  - *A page's bound* is today's: 4 requests of 30 seconds and 3 waits of 5 seconds,
+    about two and a quarter minutes, when the frontend keeps failing (the operator guide on budgets of `micelio-plugin-core`).
+  - *The worst-case wait* of a publish that reaches N pages is N / 2, rounded up, times that bound,
+    reached only when every page is measured on its last attempt: about 22 and a half minutes for 20 pages.
+    A frontend that keeps failing refuses within one bound, since the first page that fails ends the measurement.
+    At the frontend's target of 3 seconds for a ten-block page, 20 pages wait about 30 seconds.
+  - *A scheduled block* that keeps being refused measures its pages again on every run of the scheduler (every minute by default),
+    until it is edited or moved to another state.
+- **What an operator sees.** The publish request of the admin waits for the measurement;
+  a proxy in front of the admin that cuts the request earlier shows the editor a failed request
+  while the publish still ends as it ends, so the entry is looked at before trying again.
+  The editor's notice names the page. The server's log names the page that could not be measured
+  (its type, `documentId` and locale) and the cause, never a grant.
+  A frontend without the weight route that accepts this grant refuses every publish of a reusable block that a measured page shows.
+- **Trade-offs.** A reusable block shown on many pages publishes slowly, in proportion to them,
+  where section 1 made it cheap. A page and a reusable block it shows that are published at the same moment
+  are each measured against the other's published version, so their sum is not measured until the next publish of either,
+  a window as wide as one measurement, like the one between the last check of a draft and its publish.
+- **Not decided here.** How the refusal is released (its version and its upgrade notes),
+  and the builder's publish dialog ("Publish on 7 pages", bogd3v/micelio-plugin-core#202).
+  A purge of the cache on publish stays out, as section 1 says.
+- **Follow-up tasks,** in this order (CMS first, standard section 6), each depending on bogd3v/micelio#976:
+  1. `micelio-plugin-core`: the grant (mint, bind the block's version, claim) and the draft read that answers it.
+  2. `micelio`: the weight route accepts the grant, renders the page from the answer
+     and keys its report by the block's version.
+     It also waits for the renderer of reusable blocks (bogd3v/micelio#896).
+  3. `micelio-plugin-core`: the refusal at publish of the reusable block,
+     and the admin route that lists its pages (`GET /micelio/reusable-blocks/:documentId/used-on`),
+     which bogd3v/micelio-plugin-core#202 uses.

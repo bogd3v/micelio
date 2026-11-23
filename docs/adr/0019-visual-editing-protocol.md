@@ -408,3 +408,74 @@ The records above are not rewritten.
   (a later issue of this repository). Until `contract/preview.ts` lists the messages,
   the frontend checks them by hand, as it does the other messages of phase 2
   (amendment of 2026-11-02).
+
+**Amendment (2026-11-23, [bogd3v/micelio#976](https://github.com/bogd3v/micelio/issues/976)):
+a system grant to measure the pages of a reusable block when it is published.**
+Publishing a reusable block ([ADR-0022](0022-page-composition.md) section 1) changes what every page that shows it weighs,
+and the maintainer approved on 2026-11-12 a publish that measures those pages again and is refused, naming the page,
+if one of them would go over its budget.
+The amendment of 2026-10-25 gave the plugin no way to measure that:
+its system grant measures one document at its own publish, bound to the `updatedAt` of that document's draft,
+and "a grant for another purpose" is listed there as not added.
+Measuring page P when reusable block R is published measures a document that is not being published,
+against a version that is not P's draft.
+The maintainer decided on 2026-11-23 to add that one purpose.
+The rules of the publish (which pages, the refusal and its cost) are the amendment of the same date of
+[ADR-0022](0022-page-composition.md); this one records the credential and what the frontend renders with it.
+Every rule of the amendment of 2026-10-25 that this one does not name still holds.
+The records above are not rewritten.
+
+- **What is measured.** Each page whose **published** version, in the locale published,
+  references the reusable block, rendered as visitors will see it once the block is published:
+  the page's published version, with that reference resolved to the reusable block's **draft**,
+  which is the version being published.
+  The page's draft is not measured, so an edit of the page that is not published neither counts nor refuses the block's publish.
+- **Which pages.** Only pages of the types the budget measures (`budgets.contentTypes` of `micelio-plugin-core`,
+  site-scoped, editorial, with a dynamic zone). A page that has a draft only has nothing published to measure:
+  it is measured at its own publish. Unpublishing a reusable block measures nothing, because the pages only get lighter.
+- **What the grant is.** A second purpose of the system grant, and the only one added:
+  one grant per page measured, minted by plugin code in the publish path of the reusable block, never by a route.
+  Its actor is `system`, as today.
+- **Bindings.** The site, the page's content type, its `documentId` and locale,
+  and the reusable block's `documentId` and **version**, the `updatedAt` of the block's draft at the moment of minting.
+  The CMS refuses it, with the same 404 `previewRefused` as every refusal, when the block's draft was saved since,
+  when the page no longer references that block in its published version in that locale, or when the page has no published version.
+  The page's own version is not bound: what is measured is what the page publishes at the time of the read.
+- **Lifetime, use, header and route.** Those of the amendment of 2026-10-25, unchanged:
+  random and opaque, hashed at rest, at most 60 seconds, single use, sent by the CMS in `X-Micelio-Preview-Grant`
+  to the weight route of the site's `url` only, with no redirect followed,
+  and never sent to a browser, a URL, a cookie, a log, a problem detail or a message.
+- **What the CMS answers.** On `GET /api/micelio/preview/draft`, as for any grant:
+  for this grant, the page's published version in that locale, with the reference to the reusable block
+  resolved to the block's draft (every other reference stays resolved to its target's published version, section 1 of ADR-0022).
+  The answer still carries `meta.actor: system`, and it also names the reusable block and the version it resolved,
+  so the frontend can tell this measurement from the measurement of the page's own draft.
+- **What the frontend renders.** The weight route accepts the grant as it accepts a system grant today
+  (the per-IP bucket of the system header first, then the page's per-document bucket once the CMS has confirmed the actor),
+  and renders the report from the answer it read, through the in-process path of the amendment of 2026-10-25:
+  the draft page renders the reference as the answer resolved it and asks the CMS for nothing else.
+  The report it keeps for five minutes is keyed also by the reusable block and its version,
+  so a report of the page with another version of the block, or of the page's own draft, is never served for it.
+  Every other route that takes a grant (the draft routes, `/_preview`, the exchange of a token) refuses it, as it refuses a system grant today.
+- **The refusal.** Told by the plugin, in the amendment of ADR-0022:
+  `pageOverBudget` with a `page` member for the first page over its budget,
+  `previewUnavailable` with `page` for a page that could not be measured.
+  The reusable block's draft version is compared once more right before it is published, as for a page today.
+- **The cost and its bound.** One grant, one request to the weight route (the dynamic mode, as today) and one render per page,
+  two pages at a time, with no cap on their number. The rate limits are today's:
+  every request carries the system header, so all of them count in the per-IP bucket of the system header,
+  and each page also counts in its own per-document bucket.
+  The worst-case wait and what an operator sees are in the amendment of ADR-0022.
+- **What still holds.** The grant is random, opaque, hashed at rest, valid 60 seconds and single use,
+  is never sent to a browser, a log or a problem detail, and is accepted by the weight route only.
+  It shows no page to a person and adds no right to anyone: the plugin can already render any page of its site by writing it.
+- **Not added.** A grant for any other purpose, a grant bound to more than one page, a route that mints it,
+  a longer lifetime, or a grant that survives a save of the reusable block's draft.
+- **Implementation.** CMS first (standard, section 6), in follow-up tasks of bogd3v/micelio#976:
+  `micelio-plugin-core` mints the grant, binds the block's version and answers the draft read;
+  `micelio` accepts it in the weight route, renders from the answer and keys the report by the block's version;
+  `micelio-plugin-core` then refuses the publish (the amendment of ADR-0022).
+  The plugin's tests must show that this grant is refused when spent, expired, minted for another version of the block,
+  another page, locale or block, for a page that no longer references the block in its published version, or when presented to the exchange;
+  the frontend's, that the draft routes and `/_preview` refuse it and that the report of the page with the block's draft
+  is never the cached report of the page's own draft or of another version of the block.
