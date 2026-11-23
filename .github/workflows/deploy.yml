@@ -289,6 +289,57 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  # Both images build with Docker on every pull request, so a Dockerfile change that only Podman accepts (ADR-0002 of micelio-engineering,
+  # Decision 4) cannot merge. Nothing is published: no login, no SBOM, no provenance, and the cache is read, never written
+  images:
+    name: Docker images (pull request)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      # Without a login the GHCR copy of the Node base is unavailable: the entry is empty and the build pulls from Docker Hub
+      - name: Resolve the Node base image
+        id: node-base
+        uses: ./.github/actions/node-base
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build the site image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          build-contexts: ${{ steps.node-base.outputs.build-context }}
+          push: false
+          build-args: |
+            GIT_COMMIT_SHA=${{ github.sha }}
+            GIT_COMMIT_DATE=${{ steps.meta.outputs.created }}
+          cache-from: type=gha
+          platforms: linux/amd64
+
+      - name: Build the builder image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          build-contexts: ${{ steps.node-base.outputs.build-context }}
+          target: static
+          push: false
+          build-args: |
+            GIT_COMMIT_SHA=${{ github.sha }}
+            GIT_COMMIT_DATE=${{ steps.meta.outputs.created }}
+          cache-from: type=gha,scope=builder-linux-amd64
+          platforms: linux/amd64
+
   # Built while the tests run; only the commit tag is pushed, and deploy promotes it to edge (releases add X.Y.Z, X.Y and latest: release.yml)
   build-and-push:
     name: Build & Push Docker Image

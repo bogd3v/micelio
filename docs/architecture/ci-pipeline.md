@@ -42,7 +42,7 @@ The `Dockerfile` pulls `node:22.23-slim` (pinned by digest, see below) from Dock
 2. If `ghcr.io/<owner>/node:<tag>-<digest hex>` does not exist, it copies the multi-architecture image there from the digest with `docker buildx imagetools create`, using the workflow's own `GITHUB_TOKEN` (no secret to add). This is the only contact with Docker Hub, once per tag and digest. The name holds the digest and is never moved, so a rerun of an older commit pulls its own base layers, and checking the copy needs GHCR only.
 3. It gives `build-push-action` a `build-contexts` entry that replaces `node:<tag>@sha256:<digest>` with the copy. BuildKit matches the context by the full reference, digest included. The `Dockerfile` stays unchanged, so local builds and forks keep using Docker Hub.
 
-If the copy or the lookup fails, the entry is empty and the build uses Docker Hub as before, with a warning in the log. The copy is a package of the owner: make it public in the package settings if forks or other repositories must pull it.
+If the copy or the lookup fails, the entry is empty and the build uses Docker Hub as before, with a warning in the log. The `images` job of `deploy.yml` (`Docker images (pull request)`), which builds the site image and the `static` target with Docker on every pull request and publishes nothing (`push: false`, no `cache-to`), runs the same action without a GHCR login: the copy is then unavailable and its builds pull from Docker Hub. The copy is a package of the owner: make it public in the package settings if forks or other repositories must pull it.
 
 ### Base image digests
 
