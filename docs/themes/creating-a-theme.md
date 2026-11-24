@@ -246,8 +246,8 @@ in the layer `myc.theme`:
   a `max-width` on the text of a rich-text hides `data-width`,
   and `grid-template-columns` on `.myc-section-items` hides `data-columns`.
   Leave those properties alone where you want the option to work.
-- `columns` does nothing on the bento and list feature grids, the table pricing and the marquee logo cloud,
-  which set their own columns.
+- `columns` does nothing on the bento and list feature grids, the table pricing, the marquee logo cloud and the single
+  testimonial, which set their own columns.
 - Some values have no core look and render the block's own: `layout: stacked`, `height` on a hero
   or a scene (the attribute is written, so a theme can style them), `width: wide` on a section
   (the container the default has), `height: s` on a playground and `ratio: auto` on a slider.

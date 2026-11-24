@@ -62,8 +62,8 @@
     }
 }
 
-/* The list and bento feature grids, the pricing table and the marquee set their own columns */
-:is([data-section="feature-grid"][data-variant="grid"], [data-section="stats"], [data-section="pricing"][data-variant="cards"]):not([data-columns="3"])[data-columns] .myc-section-items,
+/* The list and bento feature grids, the pricing table, the marquee and the single testimonial set their own columns */
+:is([data-section="feature-grid"][data-variant="grid"], [data-section="stats"], [data-section="pricing"][data-variant="cards"], [data-section="testimonials"][data-variant="grid"]):not([data-columns="3"])[data-columns] .myc-section-items,
 [data-section="logo-cloud"]:not([data-columns="3"])[data-columns] .myc-section-logo-track:not([data-variant="marquee"]) > .myc-section-items {
     display: grid;
     grid-template-columns: repeat(var(--myc-columns), minmax(0, 1fr));

@@ -159,7 +159,7 @@ const logoCloudSchema = responseSchema<LogoCloudSection>()(
 )
 
 const testimonialItemSchema = responseSchema<TestimonialItem>()(
-  z.strictObject({ itemId: z.string().optional(), quote: z.string().meta({ description: 'Plain text, not Markdown.' }), author: z.string(), role: z.string().optional(), avatar: pageMediaSchema.optional() }).meta({ id: 'TestimonialItem', description: 'One quote of a testimonials section.' }),
+  z.strictObject({ itemId: z.string().optional(), quote: z.string().meta({ description: 'Plain text, not Markdown.' }), author: z.string(), role: z.string().optional(), avatar: pageMediaSchema.optional(), sourceUrl: z.string().optional().meta({ description: 'http(s) only.' }), logo: pageMediaSchema.optional(), rating: z.number().int().min(1).max(5).optional() }).meta({ id: 'TestimonialItem', description: 'One quote of a testimonials section.' }),
 )
 
 const testimonialsSchema = responseSchema<TestimonialsSection>()(

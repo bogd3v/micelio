@@ -76,8 +76,8 @@ function showcaseSections(es, landing) {
       variant: 'grid',
       title: t('What neighbors say', 'Lo que dicen los vecinos'),
       items: [
-        { id: 1, quote: t('The basil smells all the way to the street.', 'La albahaca se huele hasta la calle.'), author: 'Sam', role: t('Neighbor', 'Vecino'), avatar: media(107, 'sam.png', { width: 96, height: 96 }) },
-        { id: 2, quote: t('I started my own pots.', 'Empecé mis macetas.'), author: 'Robin', role: null, avatar: null },
+        { id: 1, quote: t('The basil smells all the way to the street.', 'La albahaca se huele hasta la calle.'), author: 'Sam', role: t('Neighbor', 'Vecino'), avatar: media(107, 'sam.png', { width: 96, height: 96 }), sourceUrl: 'https://garden.example.com/letters/1', logo: media(105, 'logo-circle.svg', { mime: 'image/svg+xml', width: 120, height: 40 }), rating: 4 },
+        { id: 2, quote: t('I started my own pots.', 'Empecé mis macetas.'), author: 'Robin', role: null, avatar: null, sourceUrl: null, logo: null, rating: null },
       ],
     },
     {
@@ -249,6 +249,8 @@ const valueBlocks = {
   'stats': (title, o) => ({ __component: 'section.stats', variant: 'row', title, items: ['A', 'B', 'C', 'D', 'E', 'F'].map((label, index) => ({ id: index + 1, value: String(index + 1), label })), ...o }),
   'logo-cloud': (title, o) => ({ __component: 'section.logo-cloud', variant: 'row', title, logos, ...o }),
   'testimonials': (title, o) => ({ __component: 'section.testimonials', variant: 'grid', title, items: ['A', 'B', 'C'].map((author, index) => ({ id: index + 1, quote: `Quote ${author}`, author, role: null, avatar: null })), ...o }),
+  // Six quotes with the sourceUrl, the logo and the rating (#451), for the columns the block offers
+  'testimonials-wall': (title, o) => ({ __component: 'section.testimonials', variant: 'grid', title, items: ['A', 'B', 'C', 'D', 'E', 'F'].map((author, index) => ({ id: index + 1, quote: `Quote ${author}`, author, role: null, avatar: null, sourceUrl: 'https://garden.example.com/letters/1', logo: null, rating: 5 })), ...o }),
   'pricing': (title, o) => ({ __component: 'section.pricing', variant: 'cards', title, text: null, plans: ['A', 'B', 'C', 'D'].map((name, index) => ({ id: index + 1, name, price: '$5', period: null, features: 'One\nTwo', recommended: false, link: null })), ...o }),
   'faq': (title, o) => ({ __component: 'section.faq', variant: 'list', title, items: [{ id: 1, question: 'Why?', answer: 'Because.', defaultOpen: false }], ...o }),
   'cta-card': (title, o) => ({ __component: 'section.cta', variant: 'card', title, text: 'Text of the call.', primaryLink: link('Go', '/'), secondaryLink: null, ...o }),
@@ -274,6 +276,7 @@ export const blockValueCases = [
   ['stats', {}], ['stats', { columns: '2' }], ['stats', { columns: '4' }], ['stats', { align: 'center' }], ['stats', { tone: 'raised' }], ['stats', { tone: 'accent' }],
   ['logo-cloud', {}], ['logo-cloud', { columns: '2' }], ['logo-cloud', { columns: '4' }], ['logo-cloud', { columns: '6' }], ['logo-cloud', { density: 'compact' }], ['logo-cloud', { align: 'center' }], ['logo-cloud', { tone: 'raised' }], ['logo-cloud', { tone: 'accent' }],
   ['testimonials', {}], ['testimonials', { layout: 'stacked' }], ['testimonials', { layout: 'split' }], ['testimonials', { density: 'compact' }], ['testimonials', { align: 'center' }], ['testimonials', { tone: 'raised' }], ['testimonials', { tone: 'accent' }],
+  ['testimonials-wall', {}], ['testimonials-wall', { columns: '2' }], ['testimonials-wall', { columns: '4' }],
   ['pricing', {}], ['pricing', { columns: '2' }], ['pricing', { columns: '4' }], ['pricing', { align: 'center' }], ['pricing', { tone: 'raised' }], ['pricing', { tone: 'accent' }],
   ['faq', {}], ['faq', { density: 'compact' }], ['faq', { align: 'center' }], ['faq', { tone: 'raised' }], ['faq', { tone: 'accent' }],
   ['cta-card', {}], ['cta-card', { layout: 'stacked' }], ['cta-card', { layout: 'split' }], ['cta-card', { align: 'center' }], ['cta-card', { tone: 'raised' }], ['cta-card', { tone: 'accent' }],
@@ -290,6 +293,7 @@ export const blockValueCases = [
   // The default value of each option, stored as Strapi stores it: it must look like the plain twin
   ['hero-split', { layout: 'centered', tone: 'default', height: 'm' }, true], ['feature-grid', { columns: '3', density: 'comfortable' }, true], ['showcase', { ratio: '16:9' }, true],
   ['stats', { columns: '3', align: 'start', tone: 'default' }, true], ['logo-cloud', { columns: '3', density: 'comfortable' }, true], ['testimonials', { layout: 'centered', density: 'comfortable' }, true],
+  ['testimonials-wall', { columns: '3' }, true],
   ['pricing', { columns: '3' }, true], ['faq', { density: 'comfortable' }, true], ['cta-card', { layout: 'centered', align: 'start', tone: 'default' }, true],
   ['post-list', { density: 'comfortable' }, true], ['newsletter', { align: 'start', tone: 'default' }, true], ['rich-text', { width: 'prose' }, true], ['gallery', { width: 'prose', density: 'comfortable' }, true],
   ['scene-inline', { height: 'm' }, true], ['scene-background', { height: 'm' }, true],

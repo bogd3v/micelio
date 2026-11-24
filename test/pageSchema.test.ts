@@ -301,3 +301,37 @@ describe('parseSection of a newsletter', () => {
     }
   })
 })
+
+describe('parseSection of a testimonial', () => {
+  const testimonials = (item: Record<string, unknown>): unknown => parseSection({ __component: 'section.testimonials', variant: 'grid', items: [{ quote: 'Nice', author: 'Sam', ...item }] }, context)
+  const itemOf = (parsed: unknown): Record<string, unknown> => (parsed as { items: Array<Record<string, unknown>> }).items[0]!
+
+  it('keeps the source URL, the logo and the rating', () => {
+    const item = itemOf(testimonials({ sourceUrl: 'https://garden.example.com/letters/1', logo: image, rating: 4 }))
+    expect(item).toMatchObject({ sourceUrl: 'https://garden.example.com/letters/1', logo: { url: '/uploads/a.png', width: 800, height: 600 }, rating: 4 })
+    expect(item.logo).not.toHaveProperty('formats')
+  })
+
+  it('leaves out the three fields of a testimonial stored before them, null or absent', () => {
+    for (const stored of [{}, { sourceUrl: null, logo: null, rating: null }, { sourceUrl: '', rating: 0 }]) {
+      const item = itemOf(testimonials(stored))
+      expect(item, JSON.stringify(stored)).toEqual({ quote: 'Nice', author: 'Sam' })
+    }
+  })
+
+  it('drops a rating outside 1 to 5 or not a whole number, and keeps the quotation', () => {
+    for (const rating of [6, 0, -1, 4.5, '4', 5.0001, Number.NaN]) {
+      const item = itemOf(testimonials({ rating }))
+      expect(item, String(rating)).toEqual({ quote: 'Nice', author: 'Sam' })
+    }
+    expect(itemOf(testimonials({ rating: 1 })).rating).toBe(1)
+    expect(itemOf(testimonials({ rating: 5 })).rating).toBe(5)
+  })
+
+  it('drops a source URL that is not http or https, and a logo that is not on the site\'s media origins', () => {
+    for (const sourceUrl of ['javascript:alert(1)', 'mailto:a@b.test', '/letters/1', 'ftp://a.test/x', 'https://a.test/x y', 'data:text/html,x']) {
+      expect(itemOf(testimonials({ sourceUrl })).sourceUrl, sourceUrl).toBeUndefined()
+    }
+    expect(itemOf(testimonials({ logo: { ...image, url: 'https://evil.test/logo.png' } })).logo).toBeUndefined()
+  })
+})

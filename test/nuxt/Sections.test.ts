@@ -509,6 +509,53 @@ describe('testimonials', () => {
     expect(figures[0]!.get('figcaption img').attributes('alt')).toBe('')
     if (variant === 'grid') expect(figures[1]!.get('figcaption').text()).toBe('Robin')
   })
+
+  const sourced = (): PageSection => ({
+    __component: 'section.testimonials',
+    variant: 'grid',
+    title: 'What neighbors say',
+    items: [
+      {
+        quote: 'The basil smells all the way to the street.',
+        author: 'Sam',
+        role: 'Neighbor',
+        sourceUrl: 'https://garden.example.com/letters/1',
+        logo: image('garden.svg', { mime: 'image/svg+xml', width: 120, height: 40, alternativeText: 'Garden Co-op' }),
+        rating: 4,
+      },
+    ],
+  })
+
+  it('a testimonial renders blockquote cite, its logo and its rating as text', async () => {
+    const wrapper = await render(sourced())
+    const figure = wrapper.get('li.myc-section-item > figure')
+    expect(figure.get('blockquote').attributes('cite')).toBe('https://garden.example.com/letters/1')
+    expect(figure.get('blockquote').text()).toBe('The basil smells all the way to the street.')
+    const caption = figure.get('figcaption.myc-section-author')
+    expect(caption.text()).toContain('Sam · Neighbor · 4 of 5')
+    expect(caption.get('img').attributes('alt')).toBe('Garden Co-op')
+    // Nothing structured and nothing from a third party: the source is an attribute, the rating text
+    expect(wrapper.html()).not.toContain('application/ld+json')
+    expect(wrapper.find('[itemtype]').exists()).toBe(false)
+  })
+
+  it('a testimonial without the new fields renders as before', async () => {
+    const wrapper = await render(sections.testimonials('grid'))
+    const figures = wrapper.findAll('li.myc-section-item > figure')
+    expect(figures[0]!.get('blockquote').attributes('cite')).toBeUndefined()
+    expect(figures[0]!.get('figcaption').text()).toBe('Sam · Neighbor')
+    expect(figures[0]!.findAll('figcaption img')).toHaveLength(1)
+    expect(figures[1]!.get('blockquote').attributes('cite')).toBeUndefined()
+    expect(figures[1]!.get('figcaption').text()).toBe('Robin')
+    expect(figures[1]!.find('figcaption img').exists()).toBe(false)
+    expect(wrapper.find('.myc-section-quote-rating').exists()).toBe(false)
+    expect(wrapper.find('.myc-section-quote-logo').exists()).toBe(false)
+  })
+
+  it('a rating is text in Spanish too', async () => {
+    const wrapper = await render(sourced(), '/es')
+    expect(wrapper.get('figcaption').text()).toContain('4 de 5')
+  })
 })
 
 describe('pricing', () => {
