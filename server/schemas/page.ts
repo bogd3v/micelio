@@ -168,7 +168,17 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
       blockId: optional(text),
       variant: variant(['single', 'grid']),
       title: optional(text),
-      items: list(z.object({ itemId: optional(text), quote: text, author: text, role: optional(text), avatar: optional(media) })),
+      items: list(z.object({
+        itemId: optional(text),
+        quote: text,
+        author: text,
+        role: optional(text),
+        avatar: optional(media),
+        // Strapi checks `min` and the URL format on publish only: a draft may hold a value that is dropped alone here
+        sourceUrl: optional(httpUrl),
+        logo: optional(media),
+        rating: optional(z.number().int().min(1).max(5)),
+      })),
     }),
     'section.pricing': z.object({
       __component: z.literal('section.pricing'),

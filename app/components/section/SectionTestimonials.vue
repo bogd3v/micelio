@@ -15,18 +15,15 @@ const items = computed(() => props.section.variant === 'single' ? props.section.
       <SectionHead :title="section.title" :eyebrow="section.eyebrow" :anchor="section.anchor" :title-id="titleId" />
       <ul class="myc-section-items">
         <li v-for="(item, index) in items" :key="item.itemId ?? index" class="myc-section-item">
-          <figure>
-            <blockquote class="myc-section-quote">
-              <p>{{ item.quote }}</p>
-            </blockquote>
-            <figcaption class="myc-section-author">
-              <SectionMedia v-if="item.avatar" :media="item.avatar" sizes="48px" decorative />
-              <span>
-                <strong>{{ item.author }}</strong>
-                <span v-if="item.role"> · {{ item.role }}</span>
-              </span>
-            </figcaption>
-          </figure>
+          <SectionQuotation
+            :quote="item.quote"
+            :author="item.author"
+            :role="item.role"
+            :avatar="item.avatar"
+            :source-url="item.sourceUrl"
+            :logo="item.logo"
+            :rating="item.rating"
+          />
         </li>
       </ul>
     </div>

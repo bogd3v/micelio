@@ -826,6 +826,7 @@
   "sections": {
     "recommended": "Recomendado",
     "video": "Tu navegador no puede reproducir este video.",
+    "rating": "{rating} de {max}",
     "pricing": {
       "caption": "Planes y precios",
       "plan": "Plan",

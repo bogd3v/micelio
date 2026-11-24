@@ -826,6 +826,7 @@
   "sections": {
     "recommended": "Recommended",
     "video": "Your browser cannot play this video.",
+    "rating": "{rating} of {max}",
     "pricing": {
       "caption": "Plans and prices",
       "plan": "Plan",

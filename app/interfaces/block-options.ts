@@ -58,7 +58,7 @@ export const BLOCK_EXPOSES = {
   'section.media-showcase': ['align', 'tone', 'ratio'],
   'section.stats': ['columns', 'align', 'tone'],
   'section.logo-cloud': ['columns', 'density', 'align', 'tone'],
-  'section.testimonials': ['layout', 'density', 'align', 'tone'],
+  'section.testimonials': ['layout', 'columns', 'density', 'align', 'tone'],
   'section.pricing': ['columns', 'align', 'tone'],
   'section.faq': ['density', 'align', 'tone'],
   'section.cta': ['layout', 'align', 'tone'],

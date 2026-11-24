@@ -160,6 +160,8 @@ const CHECKS: Record<string, Check> = {
     if (mobile) expect(list.y).toBeGreaterThanOrEqual(h.bottom - 1)
     else expect(list.x).toBeGreaterThanOrEqual(h.right - 1)
   },
+  'testimonials-wall columns=2': columns(2),
+  'testimonials-wall columns=4': columns(4),
   'testimonials density=compact': compact,
   'pricing columns=2': columns(2),
   'pricing columns=4': columns(4),

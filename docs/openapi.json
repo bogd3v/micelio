@@ -10837,6 +10837,18 @@
           },
           "avatar": {
             "$ref": "#/components/schemas/PageMedia"
+          },
+          "sourceUrl": {
+            "description": "http(s) only.",
+            "type": "string"
+          },
+          "logo": {
+            "$ref": "#/components/schemas/PageMedia"
+          },
+          "rating": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
           }
         },
         "required": [
@@ -10859,6 +10871,14 @@
               "centered",
               "split",
               "stacked"
+            ]
+          },
+          "columns": {
+            "type": "string",
+            "enum": [
+              "2",
+              "3",
+              "4"
             ]
           },
           "density": {

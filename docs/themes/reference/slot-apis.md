@@ -873,6 +873,12 @@ export interface TestimonialItem {
   author: string
   role?: string
   avatar?: PageMedia
+  /** Where the quotation was said or published: an `http(s)` URL, the `cite` attribute of its `<blockquote>`. */
+  sourceUrl?: string
+  /** The logo of the author's company. */
+  logo?: PageMedia
+  /** A whole number from 1 to 5, shown as text ("4 of 5"). A value outside the range never reaches the page. */
+  rating?: number
 }
 ```
 

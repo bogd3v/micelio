@@ -37,7 +37,7 @@ The section types available to editors, with their variants and their required f
 | Media showcase | left, right, stacked | title is optional; the media is required | One picture or video next to a rich text and an optional link |
 | Stats | row, cards | none; each item needs a value and a label | Numbers with their labels |
 | Logo cloud | row, marquee | none; each logo needs an image and a name | Logos of clients or partners, optionally linked |
-| Testimonials | single, grid | none; each one needs a quote and an author | Quotes from people, with an optional role and picture |
+| Testimonials | single, grid | none; each one needs a quote and an author | Quotes from people, with an optional role, picture, source link, company logo and rating (1 to 5, shown as text: "4 of 5") |
 | Pricing | cards, table | none; each plan needs a name and a price | Plans with their features and an optional link |
 | FAQ | list, two-columns | none; each question needs an answer | Questions and answers in rich text |
 | Call to action | banner, card | title | A closing message with one or two links |

@@ -261,3 +261,21 @@ describe('the theme contract', () => {
     expect(imports.at(-1)).toBe('section-options')
   })
 })
+
+describe('the testimonials block', () => {
+  // micelio-plugin-core#258: `columns` joins the options of `testimonials` (2, 3 or 4; 6 stays with the logo cloud)
+  it('exposes columns 2, 3 and 4 and keeps the other options', () => {
+    expect(exposedOptions('section.testimonials')).toEqual(['layout', 'columns', 'density', 'align', 'tone'])
+    expect(optionValues('section.testimonials', 'columns')).toEqual(['2', '3', '4'])
+    expect(parseOption('section.testimonials', 'columns', 4)).toBe('4')
+    expect(parseOption('section.testimonials', 'columns', '6')).toBeUndefined()
+  })
+
+  it('writes columns on its root and lays the grid variant out with the core columns rule', () => {
+    const parsed = parseSection({ __component: 'section.testimonials', variant: 'grid', columns: 2, items: [{ quote: 'Q', author: 'A' }] }, context)
+    expect(parsed).toMatchObject({ columns: '2' })
+    expect(optionAttributes(parsed as { __component: string })).toEqual({ 'data-columns': '2' })
+    const css = read('app/assets/css/components/section-options.css').replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(css).toContain('[data-section="testimonials"][data-variant="grid"]):not([data-columns="3"])[data-columns] .myc-section-items')
+  })
+})

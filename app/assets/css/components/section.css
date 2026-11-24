@@ -236,6 +236,21 @@
     border-radius: var(--radius-full);
 }
 
+/* The logo of the author's company sits at the end of the caption; the avatar keeps its round box */
+.myc-section-author .myc-section-quote-logo {
+    width: auto;
+    max-width: var(--space-12);
+    margin-inline-start: auto;
+    border-radius: 0;
+}
+
+.myc-section-author .myc-section-quote-logo img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: var(--space-8);
+}
+
 /* Cta */
 [data-section="cta"] .myc-section-inner {
     justify-items: start;

@@ -35,7 +35,7 @@ export const PAGE_POPULATE = {
       'section.media-showcase': { populate: { media: PAGE_MEDIA, link: true } },
       'section.stats': { populate: { items: true } },
       'section.logo-cloud': { populate: { logos: { populate: { image: PAGE_MEDIA } } } },
-      'section.testimonials': { populate: { items: { populate: { avatar: PAGE_MEDIA } } } },
+      'section.testimonials': { populate: { items: { populate: { avatar: PAGE_MEDIA, logo: PAGE_MEDIA } } } },
       'section.pricing': { populate: { plans: { populate: { link: true } } } },
       'section.faq': { populate: { items: true } },
       'section.cta': { populate: { primaryLink: true, secondaryLink: true } },

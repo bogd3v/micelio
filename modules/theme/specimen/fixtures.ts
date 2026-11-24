@@ -179,9 +179,9 @@ const LOGOS: LogoItem[] = [
 ]
 
 const TESTIMONIALS: TestimonialItem[] = [
-  { quote: 'The basil smells all the way to the street.', author: 'Sam', role: 'Neighbor', avatar: avatar('sam.svg') },
+  { quote: 'The basil smells all the way to the street.', author: 'Sam', role: 'Neighbor', avatar: avatar('sam.svg'), sourceUrl: 'https://garden.example.com/letters/1', logo: logo('logo-circle.svg'), rating: 5 },
   { quote: 'I started my own pots.', author: 'Robin' },
-  { quote: 'Four hours of sun were enough.', author: 'Alex', role: 'Gardener', avatar: avatar('alex.svg') },
+  { quote: 'Four hours of sun were enough.', author: 'Alex', role: 'Gardener', avatar: avatar('alex.svg'), rating: 4 },
 ]
 
 const PLANS: PricingPlan[] = [
