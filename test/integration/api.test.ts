@@ -2760,6 +2760,19 @@ describe('the preview of the admin (ADR 0019)', () => {
     expect(staticMode).not.toMatch(/<script[^>]*id="micelio-island-/)
     expect(staticMode).not.toMatch(/<script[^>]*src="[^"]*\/_islands\//)
   })
+
+  // The weight of a block is the difference between two renders of the draft; the payload writes each shared object once, where it first meets it,
+  // so the order of its keys (the order the data calls finished) changed the length of the page between two renders (bogd3v/micelio#980)
+  it('writes the keys of the payload of a draft in order, so two renders of one draft have the same length', async () => {
+    const { cookie } = await openPreview({ kind: 'page', documentId: 'doc-page-draft', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    const html = await (await fetch('/drafts/pages/doc-page-draft?locale=en&mode=static', { headers: { cookie } })).text()
+    const payload = JSON.parse(/id="__NUXT_DATA__">(.*?)<\/script>/s.exec(html)![1]!) as unknown[]
+    // `data` is a ShallowReactive wrapper, `["ShallowReactive", <index of the record>]`
+    const wrapper = payload[(payload[1] as { data: number }).data] as [string, number]
+    const data = payload[wrapper[1]] as Record<string, number>
+    expect(Object.keys(data).length).toBeGreaterThan(1)
+    expect(Object.keys(data)).toEqual(Object.keys(data).toSorted())
+  })
 })
 
 describe('the weight of a draft (bogd3v/micelio#730)', () => {
