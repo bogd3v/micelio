@@ -21,16 +21,18 @@ export default defineEventHandler(async (event): Promise<WeightReportResponse> =
   const params = weightParamsSchema.safeParse(getRouterParams(event, { decode: true }))
   const kind = params.success ? PREVIEW_CONTENT_TYPES[params.data.uid] : undefined
   if (!grant || !params.success || !kind) throw draftNotFound()
-  const query = validQuery(event, weightQuerySchema)
+  // A `measure` other than `reference` is the draft 404, before the CMS is asked: the marker only selects the populate of a grant bound to a reference
+  const query = validQuery(event, weightQuerySchema, error => error.issues.some(issue => issue.path[0] === 'measure') ? draftNotFound() : invalidQuery(error))
   const bucket = ipBucket(clientIp(event))
   // A caller of the header is limited per address first, in the bucket sized for bulk publishing; the per-document count waits for the CMS to confirm the grant
   assertRateLimit(event, sent ? 'previewWeightSystemPerIp' : 'previewWeightPerIp', bucket)
 
   const { documentId, uid } = params.data
-  const { actor, draft } = await redeemDraft(event, grant, kind, documentId)
+  const { actor, draft, reference } = await redeemDraft(event, grant, kind, documentId, query.measure)
   // The header is the CMS's: a grant of the editor is the cookie's, behind the origin gate
   if (sent && actor !== 'system') throw draftNotFound()
+  // A grant bound to a reference counts against the page of the path, which `redeemDraft` checked its answer is
   if (actor === 'system') assertRateLimit(event, 'previewWeightPerDocument', `${uid}:${documentId}`)
-  const data = await previewWeightReport(event, kind, documentId, query.locale ?? defaultLocale, query.mode, draft)
+  const data = await previewWeightReport(event, kind, documentId, query.locale ?? defaultLocale, query.mode, draft, reference)
   return { data }
 })

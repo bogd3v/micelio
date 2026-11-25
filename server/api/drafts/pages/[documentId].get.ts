@@ -27,7 +27,9 @@ export default defineEventHandler(async (event): Promise<DraftPageResponse> => {
   }
 
   const config = useRuntimeConfig()
-  const parsed = parseDraftPage(raw, { render: markdownRenderer(locale).renderMarkdown, siteUrl: config.public.siteUrl, mediaOrigins: [config.public.strapiUrl, config.mediaUrl] })
+  // The copy of a grant bound to a reference carries the reusable block's draft in each reference's relation, which the parse of a section drops: it becomes the reference's `block` (ADR 0019, amendment of 2026-11-23)
+  const targets = Boolean(inherited) && previewContextReference(event) !== null
+  const parsed = parseDraftPage(raw, { render: markdownRenderer(locale).renderMarkdown, siteUrl: config.public.siteUrl, mediaOrigins: [config.public.strapiUrl, config.mediaUrl] }, { targets })
   if (!parsed) throw draftNotFound()
   const page: DraftPage = { ...parsed, sections: await resolvePostLists(parsed.sections, locale) }
   const updatedAt = (raw as { updatedAt?: unknown }).updatedAt

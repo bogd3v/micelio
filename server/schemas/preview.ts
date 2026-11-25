@@ -4,6 +4,9 @@ import { previewMode } from '~/helpers/preview'
 import { Locale } from '~/interfaces/locale'
 import { THEME_ID, THEME_VERSION, VERSION_MAX_LENGTH } from '../../modules/theme/constants'
 
+/** The value of `measure` that names a measurement of a page with a reusable block's draft (ADR 0019, amendment of 2026-11-23): the weight request's marker and the `meta.measure` of the CMS's answer. */
+const MEASURE_REFERENCE = 'reference'
+
 /** The query of `/_preview`: the token, and optionally the mode the draft route opens in. Anything else is ignored. */
 export const previewQuerySchema = z.object({
   token: z.string().min(1).max(PREVIEW_TOKEN_MAX_LENGTH),
@@ -43,12 +46,17 @@ export const previewGrantSchema = z.object({
 export type PreviewGrant = z.infer<typeof previewGrantSchema>['data']
 
 /**
- * The `meta` of the CMS's answer to a draft read: who the grant acts for (ADR 0019, amendment of 2026-10-25), and the overrides bound to an admin grant (amendment of 2026-11-25).
+ * The `meta` of the CMS's answer to a draft read: who the grant acts for (ADR 0019, amendment of 2026-10-25), the overrides bound to an admin grant (amendment of 2026-11-25), and for a system grant bound to a reference, `measure` and the reusable block and version it resolved (amendment of 2026-11-23).
  *
  * @remarks
- * An answer without a known actor, or with an override outside its grammar, does not parse. A reader uses `overrides` only when `actor` is `admin`.
+ * An answer without a known actor, with an override outside its grammar, with a `measure` other than `reference`, or with `measure` and `reusableBlock` not both present on a `system` answer does not parse. A reader uses `overrides` only when `actor` is `admin`.
  */
-export const previewDraftMetaSchema = z.object({ actor: z.enum(['admin', 'system']), overrides: previewOverridesSchema.optional() })
+export const previewDraftMetaSchema = z.object({
+  actor: z.enum(['admin', 'system']),
+  overrides: previewOverridesSchema.optional(),
+  measure: z.literal(MEASURE_REFERENCE).optional(),
+  reusableBlock: z.object({ documentId: z.string().min(1), version: z.string().min(1) }).optional(),
+}).refine(({ actor, measure, reusableBlock }) => (measure === undefined && reusableBlock === undefined) || (actor === 'system' && measure !== undefined && reusableBlock !== undefined))
 
 /** The route parameters of the weight report: the content type of the preview kinds and the document, checked before any CMS call. */
 export const weightParamsSchema = z.object({
@@ -56,8 +64,14 @@ export const weightParamsSchema = z.object({
   documentId: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/),
 })
 
-/** The query of the weight report: the language the draft is rendered in (default `en`) and the mode (default `dynamic`; anything but `static` is `dynamic`, as for `/_preview`). */
+/**
+ * The query of the weight report: the language the draft is rendered in (default `en`), the mode (default `dynamic`; anything but `static` is `dynamic`, as for `/_preview`) and `measure`.
+ *
+ * @remarks
+ * `measure` is absent, or `reference` on the request of a system grant bound to a reference (ADR 0019, amendment of 2026-11-23; bogd3v/micelio-plugin-core#267). It is no credential: it only selects the `populate` of the draft read, and the CMS's answer must agree with it. Any other value fails, which the route answers with the draft 404.
+ */
 export const weightQuerySchema = z.object({
   locale: z.preprocess(value => value === '' ? undefined : value, z.enum(Object.values(Locale) as [Locale, ...Locale[]], { error: 'Unsupported locale' }).optional()),
   mode: z.unknown().optional().transform(previewMode),
+  measure: z.literal(MEASURE_REFERENCE).optional(),
 })

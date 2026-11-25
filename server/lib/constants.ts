@@ -57,6 +57,25 @@ export const PAGE_POPULATE = {
  */
 export const DRAFT_PAGE_POPULATE = PAGE_POPULATE
 
+/** The fragments of a reusable block's `blocks` zone: a page's, but `section.rich-text`, which the CMS keeps in a page's zone only and the plugin's catalogue lacks, so its zone refuses it with `400`. */
+const { 'section.rich-text': _legacyRichText, ...REUSABLE_BLOCK_FRAGMENTS } = PAGE_POPULATE.sections.on
+
+/**
+ * The Strapi populate of a page read by a system grant bound to a reference (ADR 0019, amendment of 2026-11-23): that of a page, plus the reference's `group` and the reusable block it points at, with its `blocks` zone.
+ *
+ * @remarks
+ * Only the weight route sends it, and only on a request marked `measure=reference`: the plugin refuses with `400` a `populate` that reaches the reusable block for any other grant, and only a CMS whose pages have `section.reusable` mints that grant. The block's zone takes the fragments of a page's sections without `section.rich-text` (not a block of the catalogue: the plugin fills the zone from it), without `section.reusable` (one level) and without `group` (the reference holds it).
+ */
+export const REFERENCE_PAGE_POPULATE = {
+  ...PAGE_POPULATE,
+  sections: {
+    on: {
+      ...PAGE_POPULATE.sections.on,
+      'section.reusable': { populate: { group: true, reusableBlock: { populate: { blocks: { on: REUSABLE_BLOCK_FRAGMENTS } } } } },
+    },
+  },
+}
+
 /**
  * The Strapi populate of the site identity: one entry per relation or component `parseSiteSettings` reads.
  *
