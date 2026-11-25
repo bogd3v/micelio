@@ -36,4 +36,52 @@ describe('silenceDefaultReport', () => {
     expect(event.node.res.statusCode).toBe(500)
     expect(event.node.res.getHeader('x-test')).toBe('1')
   })
+
+  it('gives the handler and the fallback a default answer whose url has no query', async () => {
+    const defaultHandler = vi.fn((): ReturnType<NitroErrorHandlerContext['defaultHandler']> => ({ ...defaultResponse(), body: { error: true, url: 'http://localhost:3000/_preview?token=secret-1' } }))
+    const received: unknown[] = []
+    const answered = newEvent()
+    await silenceDefaultReport(async (error, ev, context) => {
+      received.push((await context.defaultHandler(error, ev)).body)
+      ev.node.res.end()
+    })('error', answered, { defaultHandler })
+    expect(received).toEqual([{ error: true, url: 'http://localhost:3000/_preview' }])
+
+    const unanswered = newEvent()
+    const written: string[] = []
+    vi.spyOn(unanswered.node.res, 'end').mockImplementation(((chunk?: unknown) => {
+      written.push(String(chunk))
+      return unanswered.node.res
+    }) as ServerResponse['end'])
+    await silenceDefaultReport(() => undefined)('error', unanswered, { defaultHandler })
+    expect(written.map(chunk => JSON.parse(chunk) as unknown)).toEqual([{ error: true, url: 'http://localhost:3000/_preview' }])
+  })
+
+  it('keeps the query out of the message, status text and data of the error and of every answer', async () => {
+    const secret = 'secret-2'
+    const event = newEvent()
+    event.node.req.url = `/no/such-page?code=${secret}`
+    const error = Object.assign(new Error(`Page not found: /no/such-page?code=${secret}`), { statusMessage: `Page not found: /no/such-page?code=${secret}`, data: { path: `/no/such-page?code=${secret}`, list: [`?code=${secret}`] } })
+    const defaultHandler = vi.fn((e: unknown): ReturnType<NitroErrorHandlerContext['defaultHandler']> => {
+      const { message, statusMessage, data } = e as typeof error
+      return { status: 404, statusText: statusMessage, headers: {}, body: { error: true, url: `http://localhost:3000/no/such-page?code=${secret}`, statusMessage, message, data } }
+    })
+    const seen: unknown[] = []
+    const written: string[] = []
+    vi.spyOn(event.node.res, 'end').mockImplementation(((chunk?: unknown) => {
+      written.push(String(chunk))
+      return event.node.res
+    }) as ServerResponse['end'])
+    await silenceDefaultReport(async (e, ev, context) => {
+      const { message, statusMessage, data } = e as typeof error
+      seen.push({ message, statusMessage, data }, await context.defaultHandler(e, ev))
+    })(error, event, { defaultHandler })
+    const plain = { statusMessage: 'Page not found: /no/such-page', message: 'Page not found: /no/such-page', data: { path: '/no/such-page', list: [''] } }
+    expect(seen).toEqual([
+      { message: 'Page not found: /no/such-page', statusMessage: 'Page not found: /no/such-page', data: { path: '/no/such-page', list: [''] } },
+      { status: 404, statusText: 'Page not found: /no/such-page', headers: {}, body: { error: true, url: 'http://localhost:3000/no/such-page', ...plain } },
+    ])
+    expect(event.node.res.statusMessage).toBe('Page not found: /no/such-page')
+    expect(written.join('')).not.toContain(secret)
+  })
 })

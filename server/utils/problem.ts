@@ -167,7 +167,7 @@ export function problem(code: ProblemCode, options: ProblemOptions = {}): Return
  * The RFC 9457 members of a catalog code, for a route that writes its own error answer.
  *
  * @remarks
- * For a route whose address holds a secret (`/_preview` and its token): the error handler of Nitro would echo the request URL.
+ * For a route outside `/api/` that answers a problem detail of its own (`/_preview` and its `themeNotInstalled`), where the problem details plugin does not write the error answer.
  */
 export function problemDetailOf(code: ProblemCode): Pick<ProblemBody, 'type' | 'title' | 'status' | 'detail' | 'code'> {
   const { status, title, detail } = PROBLEM_CODES[code]
