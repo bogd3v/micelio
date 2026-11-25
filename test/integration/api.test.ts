@@ -2543,6 +2543,37 @@ describe('/api/drafts', () => {
   })
 })
 
+describe('error answers outside /api/', () => {
+  it('answers the error of a page without the query of its address, as JSON and as a page', async () => {
+    const secret = 'secret-code-992'
+    const json = await fetch(`/no-such-page-992?code=${secret}`, { headers: { accept: 'application/json' } })
+    expect(json.status).toBe(404)
+    const body = await json.text()
+    expect(body).not.toContain(secret)
+    const url = new URL((JSON.parse(body) as { url: string }).url)
+    expect(url.pathname + url.search).toBe('/no-such-page-992')
+    const page = await fetch(`/no-such-page-992?code=${secret}`, { headers: { accept: 'text/html' } })
+    expect(page.status).toBe(404)
+    const html = await page.text()
+    expect(html).toContain('myc-error-page')
+    expect(html).not.toContain(secret)
+  })
+
+  it('answers a path no page matches without its query in any member, as JSON and as a page', async () => {
+    const secret = 'secret-code-992-router'
+    for (const accept of ['application/json', 'text/html']) {
+      const response = await fetch(`/no/such-page-992?code=${secret}`, { headers: { accept } })
+      expect(response.status, accept).toBe(404)
+      expect(response.statusText, accept).not.toContain(secret)
+      for (const [name, value] of response.headers) expect(value, `${accept} ${name}`).not.toContain(secret)
+      const body = await response.text()
+      // The router's 404 names the path in its message: the path stays, its query goes
+      if (accept === 'application/json') expect(body).toContain('Page not found: /no/such-page-992"')
+      expect(body, accept).not.toContain(secret)
+    }
+  })
+})
+
 describe('the preview of the admin (ADR 0019)', () => {
   const FRAME_ANCESTORS_NONE = 'frame-ancestors \'none\''
   const noRedirect = { redirect: 'manual' } as const
@@ -2671,6 +2702,25 @@ describe('the preview of the admin (ADR 0019)', () => {
     expect(sameNetwork.status).toBe(429)
     expect(sameNetwork.headers.get('retry-after')).toBeTruthy()
     expect((await from('2001:db8:99:2::1')).status).toBe(404)
+  })
+
+  it('keeps the token out of every refusal of /_preview, as JSON and as a page', async () => {
+    /** Asks once as JSON and once as a page, from one address, and checks the status and that no body or header holds the token. */
+    async function refusals(token: string, address: string, status: number): Promise<void> {
+      for (const accept of ['application/json', 'text/html']) {
+        const response = await fetch(`/_preview?token=${token}`, { ...noRedirect, headers: { 'accept': accept, 'x-forwarded-for': address } })
+        expect(response.status, accept).toBe(status)
+        expect(await response.text(), accept).not.toContain(token)
+        for (const [name, value] of response.headers) expect(value, `${accept} ${name}`).not.toContain(token)
+      }
+    }
+    const used = mock.preview.issue({ documentId: 'doc-linux', locale: 'en', adminOrigin: ADMIN_ORIGIN })
+    expect((await fetch(`/_preview?token=${used}`, { ...noRedirect, headers: { 'x-forwarded-for': '2001:db8:99:3::1' } })).status).toBe(303)
+    await refusals(used, '2001:db8:99:3::1', 404)
+    await refusals('never-issued-token-992', '2001:db8:99:3::1', 404)
+    // A bucket of its own, filled to its limit, so the token is refused by the rate limit before any exchange
+    for (let i = 0; i < 30; i++) expect((await fetch('/_preview?token=never-issued', { ...noRedirect, headers: { 'x-forwarded-for': `2001:db8:99:4::${i + 1}` } })).status).toBe(404)
+    await refusals(mock.preview.issue({ documentId: 'doc-linux', locale: 'en', adminOrigin: ADMIN_ORIGIN }), '2001:db8:99:4::ff', 429)
   })
 
   it('answers the same 404 to a grant for another document, an ended grant and a made up one, and 404 to a page draft without a session', async () => {

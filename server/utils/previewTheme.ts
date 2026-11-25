@@ -31,7 +31,7 @@ export async function previewedTheme(event: H3Event, wanted: { id: string, versi
  * Answers the problem `themeNotInstalled` (409) from the route itself, as `application/problem+json`.
  *
  * @remarks
- * For `/_preview`, whose address holds the token: the error handler of Nitro would echo the request URL in its answer, and the token must appear in no problem detail (ADR 0019, section 3).
+ * For `/_preview`, which is outside `/api/`: the problem details plugin does not answer its errors, and the admin reads this code. The answer holds no part of the address, so no token (ADR 0019, section 3).
  */
 export function sendThemeNotInstalled(event: H3Event): Promise<void> {
   const body = problemDetailOf('themeNotInstalled')
