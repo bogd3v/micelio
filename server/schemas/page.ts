@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { Locale } from '~/interfaces/locale'
-import type { DraftPage, DraftPageSection, DraftPlaygroundSection, Page, PageSection, PageSeo, PostListSection } from '~/interfaces'
+import type { DraftPage, DraftPageSection, DraftPlaygroundSection, Page, PageSection, PageSeo, PostListSection, ReusableTarget } from '~/interfaces'
 
 import { PAGE_SLUG_PATTERN } from '~/constants/pages'
 import { isGlbUrl } from '~/helpers/scene'
@@ -310,6 +310,23 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
 /** One section, or null when its component is unknown or it fails its schema. */
 export function parseSection(raw: unknown, context: PageContext): PageSection | null {
   return parseWith(raw, sectionSchemas(context, sharedSchemas(context)))
+}
+
+/**
+ * The one block of a reusable block's entry, as the CMS answers it (its `blocks` dynamic zone), parsed into a reference's `block` (ADR 0022, section 1).
+ *
+ * @remarks
+ * Null when the entry has no `blocks` list of exactly one block, when that block is a reference (one level), carries a `group` key (the reference holds it) or fails its section schema. The caller reads the target's published version in the page's locale.
+ */
+export function parseReusableTarget(entry: unknown, context: PageContext): ReusableTarget | null {
+  const blocks = entry && typeof entry === 'object' ? (entry as { blocks?: unknown }).blocks : undefined
+  if (!Array.isArray(blocks) || blocks.length !== 1) return null
+  const raw: unknown = blocks[0]
+  if (!raw || typeof raw !== 'object' || ('group' in raw && raw.group !== null && raw.group !== undefined)) return null
+  const section = parseSection(raw, context)
+  if (!section || section.__component === 'section.reusable') return null
+  // The parse leaves `group` as an undefined key on a block that has none; the target carries no such key
+  return Object.fromEntries(Object.entries(section).filter(([key]) => key !== 'group')) as ReusableTarget
 }
 
 function parseWith<T>(raw: unknown, schemas: Record<string, z.ZodType<T>>): T | null {

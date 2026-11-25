@@ -930,3 +930,92 @@ describe('presentation options', () => {
     }
   })
 })
+
+describe('groups and references (ADR 0022)', () => {
+  const grouped = (section: PageSection, groupId: string, tone: 'default' | 'raised' | 'accent', extra: Record<string, unknown> = {}): PageSection => ({ ...section, ...extra, group: { groupId, tone } }) as PageSection
+  const reference = (block: PageSection | undefined, extra: Record<string, unknown> = {}): PageSection => ({
+    __component: 'section.reusable',
+    reusableBlock: { documentId: 'reusable-a' },
+    ...(block && { block }),
+    ...extra,
+  }) as PageSection
+  // In one element, so a query lists in document order: the wrapper of a component with several roots lists the matching roots before what they hold
+  const inHost = (props: { sections: PageSection[], markers?: Array<Record<string, string>> }) => mountSuspended(defineComponent({ render: () => h('div', [h(SectionRenderer, props)]) }))
+  const inOrder = (wrapper: { element: Element }, selector: string): HTMLElement[] => [...wrapper.element.querySelectorAll<HTMLElement>(selector)]
+
+  it('wraps consecutive members of a group in myc-group with its data-tone', async () => {
+    const list = [
+      sections.hero('centered'),
+      grouped(sections.stats('row'), 'band-1', 'accent'),
+      grouped(sections.cta('card'), 'band-1', 'accent', { tone: 'raised' }),
+      sections.faq('list'),
+      grouped(sections.cta('banner'), 'band-2', 'raised'),
+    ]
+    const wrapper = await inHost({ sections: list })
+    const groups = wrapper.findAll('.myc-group')
+    expect(groups.map(group => [group.element.tagName, group.attributes('data-tone'), group.findAll(':scope > section.myc-section').map(node => node.attributes('data-section'))])).toEqual([
+      ['DIV', 'accent', ['stats', 'cta']],
+      ['DIV', 'raised', ['cta']],
+    ])
+    // The sections outside a group stay where they were, as direct children of the renderer's parent
+    expect(inOrder(wrapper, 'section.myc-section').map(node => [node.dataset.section, node.parentElement!.classList.contains('myc-group')])).toEqual([
+      ['hero', false], ['stats', true], ['cta', true], ['faq', false], ['cta', true],
+    ])
+    // A member yields its own tone to the group's
+    expect(groups[0]!.findAll('[data-tone]').map(node => node.attributes('data-tone'))).toEqual([])
+    // Markup with no script: the static build writes the same band (e2e/static/composition.spec.ts)
+    expect(groups[0]!.html()).toMatch(/^<div class="myc-group" data-tone="accent">/)
+    // A group that comes back after another section is a second band
+    const split = await mountSuspended(SectionRenderer, { props: { sections: [grouped(sections.cta('card'), 'band-1', 'accent'), sections.faq('list'), grouped(sections.cta('banner'), 'band-1', 'accent')] } })
+    expect(split.findAll('.myc-group')).toHaveLength(2)
+  })
+
+  it('a reusable block renders its target and the group\'s tone wins', async () => {
+    const target = { ...sections.cta('card'), title: 'A shared call', tone: 'raised' } as PageSection
+    const list = [grouped(sections.stats('row'), 'band-1', 'accent'), reference(target, { group: { groupId: 'band-1', tone: 'accent' }, blockId: 'ref-1' })]
+    const wrapper = await mountSuspended(SectionRenderer, { props: { sections: list } })
+    const group = wrapper.get('.myc-group')
+    expect(group.attributes('data-tone')).toBe('accent')
+    const drawn = group.findAll(':scope > section.myc-section')
+    // The target's own root, under its own data-section hook, directly in the band: no root of the reference's own
+    expect(drawn.map(node => node.attributes('data-section'))).toEqual(['stats', 'cta'])
+    expect(drawn[1]!.get('h2').text()).toBe('A shared call')
+    expect(drawn[1]!.attributes('data-tone')).toBeUndefined()
+    expect(wrapper.html()).not.toContain('reusable')
+    // Outside a group the target keeps its own tone
+    const alone = await mountSuspended(SectionRenderer, { props: { sections: [reference(target)] } })
+    expect(alone.findAll('section.myc-section').map(node => [node.attributes('data-section'), node.attributes('data-tone')])).toEqual([['cta', 'raised']])
+    expect(alone.find('.myc-group').exists()).toBe(false)
+    // In the draft route, the target's root carries the markers of the reference's position
+    const markers = knownSections(list).map((section, index) => blockMarkers(section.__component, index))
+    const marked = await inHost({ sections: list, markers })
+    expect(inOrder(marked, 'section.myc-section').map(node => [node.dataset.section, node.dataset.mycBlock, node.dataset.mycIndex])).toEqual([['stats', 'stats', '0'], ['cta', 'reusable', '1']])
+  })
+
+  it('a reference without a block renders nothing, and with the draft markers keeps one empty element at its position', async () => {
+    const list = [sections.cta('banner'), reference(undefined, { group: { groupId: 'band-1', tone: 'raised' } }), reference(undefined), sections.faq('list')]
+    const published = await mountSuspended(SectionRenderer, { props: { sections: list } })
+    expect(published.findAll('section.myc-section').map(node => node.attributes('data-section'))).toEqual(['cta', 'faq'])
+    expect(published.get('.myc-group').element.children).toHaveLength(0)
+    expect(published.html()).not.toContain('data-myc-')
+    const html = await renderToString(createSSRApp({ render: () => h(SectionRenderer, { sections: [reference(undefined)] }) }))
+    expect(html.replace(/<!--[^>]*-->/g, '')).toBe('')
+
+    const markers = knownSections(list).map((section, index) => blockMarkers(section.__component, index))
+    const draft = await inHost({ sections: list, markers })
+    // Each reference keeps one empty element with the markers of its position, inside its band when it is a member; the sections after it keep theirs
+    const marked = inOrder(draft, '[data-myc-index]')
+    expect(marked.map(node => [node.tagName, node.dataset.mycBlock, node.dataset.mycIndex])).toEqual([['SECTION', 'cta', '0'], ['DIV', 'reusable', '1'], ['DIV', 'reusable', '2'], ['SECTION', 'faq', '3']])
+    expect([marked[1]!.childNodes.length, marked[2]!.childNodes.length]).toEqual([0, 0])
+    expect(marked[1]!.parentElement!.classList.contains('myc-group')).toBe(true)
+    expect(marked[2]!.getAttributeNames().sort()).toEqual(['data-myc-block', 'data-myc-index'])
+  })
+
+  it('a reference that draws a faq gives its questions to the page, and one that draws a hero opens the page with its h1', async () => {
+    const wrapper = await mountSuspended(SectionRenderer, { props: { sections: [reference(sections.hero('centered')), reference(sections.faq('list'))], pageTitle: 'A page' } })
+    expect(wrapper.findAll('h1').map(node => node.text())).toEqual(['Grow food where you live'])
+    expect(wrapper.find('[data-section="title"]').exists()).toBe(false)
+    await vi.waitFor(() => expect([...document.head.querySelectorAll('script[type="application/ld+json"]')].map(script => script.textContent).join('\n')).toContain('Do I need a garden?'))
+    wrapper.unmount()
+  })
+})

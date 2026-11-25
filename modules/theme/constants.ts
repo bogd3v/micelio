@@ -10,13 +10,13 @@ import type { ContractAddition, ContractVersion, LayoutRegion } from './types'
  * printed in the generated theme reference. Contract 2 removed the five built-in categories from the slot APIs (ADR 0016). A new
  * performance budget a theme can fail raises the minor too (ADR 0005, section 9).
  */
-export const CONTRACT_VERSION: ContractVersion = { major: 2, minor: 4 }
+export const CONTRACT_VERSION: ContractVersion = { major: 2, minor: 5 }
 
 /**
  * What each minor above `.0` of the current major added, so the validator can compute the minimum minor a theme uses.
  *
  * @remarks
- * 2.1 added the presentation options of the blocks as hooks, 2.2 the carbon budget, 2.4 the `myc-news-consent` hook (2.3 is reserved for the region options, ADR 0005; `docs/themes/contract-changelog.md`). Adding to the contract appends a row here with the new minor, raises `CONTRACT_VERSION.minor`
+ * 2.1 added the presentation options of the blocks as hooks, 2.2 the carbon budget, 2.4 the `myc-news-consent` hook, 2.5 the `myc-group` hook of a band of page sections (2.3 is reserved for the region options, ADR 0005; `docs/themes/contract-changelog.md`). Adding to the contract appends a row here with the new minor, raises `CONTRACT_VERSION.minor`
  * and adds the section to `docs/themes/contract-changelog.md`. Names: a slot as in `SLOT_NAMES`, a layout variant as `region:variant`,
  * a role as in the contract, a hook as its class (`myc-…`) or attribute (`data-…`), a budget as its metric in `scripts/perf/budgets.json`.
  * Limits: a hook counts only when a selector of the theme's CSS uses it (not slot-template markup), and a type-scale role cannot be an
@@ -32,6 +32,7 @@ export const CONTRACT_ADDITIONS: readonly ContractAddition[] = [
   { minor: 1, kind: 'hook', name: 'data-height' },
   { minor: 2, kind: 'budget', name: 'co2Mg' },
   { minor: 4, kind: 'hook', name: 'myc-news-consent' },
+  { minor: 5, kind: 'hook', name: 'myc-group' },
 ]
 
 /** The regions of the page whose layout variant a theme can choose (ADR 0005). */

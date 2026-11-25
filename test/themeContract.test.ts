@@ -110,13 +110,13 @@ describe('contract minor versions (ADR 0008, decision 2)', () => {
     expect(parseContractVersion(declared)).toEqual({ major: 2, minor: 0 })
   })
 
-  it.each(['2.5', '2.7'])('rejects a theme that needs contract %s, which this core does not implement', (declared) => {
+  it.each(['2.6', '2.7'])('rejects a theme that needs contract %s, which this core does not implement', (declared) => {
     const problems = problemsOf(install('newer', m => (m.contract = declared)))
     expect(problems).toEqual([`contract: needs contract ${declared}; this core implements ${formatContractVersion(CONTRACT_VERSION)} (what each minor added: docs/themes/contract-changelog.md)`])
   })
 
   it('names the theme in the error that fails the build', () => {
-    expect(() => validateThemes(discoverThemes([install('newer', m => (m.contract = '2.5'))]), hooks)).toThrow(/Theme "newer": contract: needs contract 2\.5; this core implements 2\.4/)
+    expect(() => validateThemes(discoverThemes([install('newer', m => (m.contract = '2.6'))]), hooks)).toThrow(/Theme "newer": contract: needs contract 2\.6; this core implements 2\.5/)
   })
 
   it.each([1, '1.0', '1.4', 3, '3.0'])('rejects the other major %j with the migration note', (declared) => {
@@ -138,7 +138,7 @@ describe('contract minor versions (ADR 0008, decision 2)', () => {
   it('computes the highest minor over slots, layout variants, roles and hooks', () => {
     const theme = installed(m => (m.contract = '2.0'))
     theme.manifest.layout = { header: 'centered' }
-    expect(contractUsage(theme, hooks, ADDITIONS)).toEqual({ declared: '2.0', used: '2.2', core: '2.4' })
+    expect(contractUsage(theme, hooks, ADDITIONS)).toEqual({ declared: '2.0', used: '2.2', core: '2.5' })
     expect(contractUsageProblems({ ...theme, manifest: { ...theme.manifest, contract: '2.1' } }, hooks, ADDITIONS)[0]).toContain('layout variant header:centered in 2.2')
     expect(contractUsageProblems({ ...theme, manifest: { ...theme.manifest, contract: '2.2' } }, hooks, ADDITIONS)).toEqual([])
   })
@@ -178,13 +178,13 @@ describe('contract minor versions (ADR 0008, decision 2)', () => {
   })
 
   it('reports a newer minor in the same pass as other schema errors', () => {
-    const problems = contractProblems({ ...minimal(), contract: '2.5', name: 7 })
+    const problems = contractProblems({ ...minimal(), contract: '2.6', name: 7 })
     expect(problems).toHaveLength(2)
-    expect(problems.join('\n')).toMatch(/needs contract 2\.5; this core implements 2\.4 \(.*contract-changelog\.md\)/)
+    expect(problems.join('\n')).toMatch(/needs contract 2\.6; this core implements 2\.5 \(.*contract-changelog\.md\)/)
   })
 
   it('uses 2.0 for a theme that uses nothing a minor added', () => {
-    expect(contractUsage(installed(() => {}), hooks)).toEqual({ declared: '2.0', used: '2.0', core: '2.4' })
+    expect(contractUsage(installed(() => {}), hooks)).toEqual({ declared: '2.0', used: '2.0', core: '2.5' })
   })
 
   // Contract 2.4 (micelio-cms#443): the consent line of the newsletter form is a public hook; 2.3 stays reserved for the region options
@@ -194,6 +194,19 @@ describe('contract minor versions (ADR 0008, decision 2)', () => {
     expect(contractUsage(theme, hooks).used).toBe('2.4')
     expect(contractUsageProblems(theme, hooks)[0]).toContain('myc-news-consent in 2.4')
     expect(contractUsageProblems({ ...theme, manifest: { ...theme.manifest, contract: '2.4' } }, hooks)).toEqual([])
+  })
+
+  // Contract 2.5 (ADR 0022, section 2): the band of a group of page sections is a public hook
+  it('CONTRACT_ADDITIONS lists myc-group with the new minor', () => {
+    expect(CONTRACT_ADDITIONS).toContainEqual({ minor: 5, kind: 'hook', name: 'myc-group' })
+    expect(CONTRACT_VERSION.minor).toBe(5)
+    expect(hooks.classes.has('myc-group')).toBe(true)
+    const theme = installed(m => (m.contract = '2.4'), { 'theme.css': '.myc-group[data-tone="accent"] { background: none }' })
+    expect(contractUsage(theme, hooks).used).toBe('2.5')
+    expect(contractUsageProblems(theme, hooks)[0]).toContain('myc-group in 2.5')
+    expect(contractUsageProblems({ ...theme, manifest: { ...theme.manifest, contract: '2.5' } }, hooks)).toEqual([])
+    // A theme that does not select it keeps validating on its earlier minor
+    expect(contractUsageProblems(installed(m => (m.contract = '2.4')), hooks)).toEqual([])
   })
 
   // Contract 2.2 (#847): the carbon budget binds every theme, so a theme that declares 2.0 or 2.1 keeps validating
@@ -219,7 +232,7 @@ describe('contract validation', () => {
   it('rejects a theme that still declares contract 1 and points to the upgrade notes', () => {
     const problems = problemsOf(install('old', m => (m.contract = 1)))
     expect(problems.join('\n')).toMatch(/contract: declares contract 1, this build implements contract 2 \(see "Upgrade notes" in docs\/themes\/creating-a-theme\.md\)/)
-    expect(CONTRACT_VERSION).toEqual({ major: 2, minor: 4 })
+    expect(CONTRACT_VERSION).toEqual({ major: 2, minor: 5 })
   })
 
   it('names the theme and the problem in the error that fails the build', () => {

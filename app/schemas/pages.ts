@@ -23,6 +23,7 @@ import type {
   PricingSection,
   ProseSection,
   ReusableSection,
+  ReusableTarget,
   RichTextSection,
   SectionGroup,
   SceneSection,
@@ -304,15 +305,6 @@ const proseSchema = responseSchema<ProseSection>()(
   }).meta({ id: 'ProseSection', description: 'The `prose` block in a page: Markdown, the same as in an article.' }),
 )
 
-const reusableSchema = responseSchema<ReusableSection>()(
-  z.strictObject({
-    __component: z.literal('section.reusable'),
-    ...groupShape,
-    blockId: z.string().optional(),
-    reusableBlock: z.strictObject({ documentId: z.string() }).optional().meta({ description: 'The reusable block it references, by its document id; absent when the relation is empty.' }),
-  }).meta({ id: 'ReusableSection', description: 'A reference to a reusable block of the page\'s site; the block it points to is what renders.' }),
-)
-
 const gallerySchema = responseSchema<GallerySection>()(
   z.strictObject({
     __component: z.literal('section.gallery'),
@@ -340,6 +332,37 @@ const sceneSchema = responseSchema<SceneSection>()(
     title: z.string().optional(),
     text: z.string().optional(),
   }).meta({ id: 'SceneSection', description: 'A 3D model with a poster image, shown as a background or inline.' }),
+)
+
+/** The block of a reusable block, as a reference carries it: any section but a reference, with no `group` key (the reference holds it). */
+const reusableTargetSchema = responseSchema<ReusableTarget>()(
+  z.discriminatedUnion('__component', [
+    heroSchema.omit({ group: true }).meta({ id: 'HeroTarget' }),
+    featureGridSchema.omit({ group: true }).meta({ id: 'FeatureGridTarget' }),
+    mediaShowcaseSchema.omit({ group: true }).meta({ id: 'MediaShowcaseTarget' }),
+    statsSchema.omit({ group: true }).meta({ id: 'StatsTarget' }),
+    logoCloudSchema.omit({ group: true }).meta({ id: 'LogoCloudTarget' }),
+    testimonialsSchema.omit({ group: true }).meta({ id: 'TestimonialsTarget' }),
+    pricingSchema.omit({ group: true }).meta({ id: 'PricingTarget' }),
+    faqSchema.omit({ group: true }).meta({ id: 'FaqTarget' }),
+    ctaSchema.omit({ group: true }).meta({ id: 'CtaTarget' }),
+    postListSchema.omit({ group: true }).meta({ id: 'PostListTarget' }),
+    newsletterSchema.omit({ group: true }).meta({ id: 'NewsletterTarget' }),
+    richTextSchema,
+    proseSchema,
+    gallerySchema.omit({ group: true }).meta({ id: 'GalleryTarget' }),
+    sceneSchema.omit({ group: true }).meta({ id: 'SceneTarget' }),
+  ]).meta({ id: 'ReusableTarget', description: 'The block of a reusable block: any section but a reference, with no `group` key.' }),
+)
+
+const reusableSchema = responseSchema<ReusableSection>()(
+  z.strictObject({
+    __component: z.literal('section.reusable'),
+    ...groupShape,
+    blockId: z.string().optional(),
+    reusableBlock: z.strictObject({ documentId: z.string() }).optional().meta({ description: 'The reusable block it references, by its document id; absent when the relation is empty.' }),
+    block: reusableTargetSchema.optional().meta({ description: 'The published block of the target in the page\'s locale, drawn in the reference\'s place; absent when the target is not resolved, and then nothing is drawn.' }),
+  }).meta({ id: 'ReusableSection', description: 'A reference to a reusable block of the page\'s site; the block it points to is what renders.' }),
 )
 
 /** Any section of a page, by `__component`; one schema per member of `PAGE_SECTION_COMPONENTS`, and one for `shared.rich-text` (`prose`). */

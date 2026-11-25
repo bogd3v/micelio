@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { PAGE_SECTION_COMPONENTS } from '../app/interfaces'
-import type { Page } from '../app/interfaces'
-import { knownSections } from '../app/helpers/pages'
+import type { Page, PageSection } from '../app/interfaces'
+import { heroLeadsPage, knownSections } from '../app/helpers/pages'
+import { drawnSection, sectionRuns } from '../app/helpers/composition'
 import { sectionAnchors } from '../app/helpers/landing'
 import { pageSchema, pageSectionSchema } from '../app/schemas/pages'
-import { parsePage, parseSection } from '../server/schemas/page'
+import { parsePage, parseReusableTarget, parseSection } from '../server/schemas/page'
 import { pageFixtures } from '../e2e/fixtures/pages.mjs'
 
 // Page composition (ADR-0022): the `group` key of a page section and the `reusable` block, as the plugin's content API answers them
@@ -112,10 +113,10 @@ describe('the reusable block', () => {
     expect(PAGE_SECTION_COMPONENTS as readonly string[]).not.toContain('reusable')
     const reusable = parsed('section.reusable') as { __component: string }
     const cta = parsed('section.cta') as { __component: string }
-    expect(knownSections([reusable, cta])).toEqual([cta])
-    // What `SectionRenderer` draws is `knownSections` of the page: the sections around a reference stay in order, and a page of references alone draws nothing
-    expect(knownSections([cta, reusable, cta])).toEqual([cta, cta])
-    expect(knownSections([reusable])).toEqual([])
+    expect(knownSections([reusable, cta])).toEqual([reusable, cta])
+    // What `SectionRenderer` draws is `knownSections` of the page: a reference keeps its position, so the markers of the draft route count it
+    expect(knownSections([cta, reusable, cta])).toEqual([cta, reusable, cta])
+    expect(knownSections([reusable])).toEqual([reusable])
   })
 
   it('has no anchor in the landing navigation', () => {
@@ -141,5 +142,76 @@ describe('the response schema of a page with groups and references', () => {
     }
     expect(pageSectionSchema.safeParse({ ...reusable, reusableBlock: { documentId: 'a', id: 9 } }).success).toBe(false)
     expect(pageSectionSchema.safeParse({ ...reusable, tone: 'accent' }).success).toBe(false)
+  })
+})
+
+describe('the target of a reference', () => {
+  // A reusable block's entry as the CMS answers it: its name, its site and its `blocks` dynamic zone of one block
+  const entry = (blocks: unknown): Record<string, unknown> => ({ id: 9, documentId: 'reusable-a', name: 'Internal', blocks })
+  const ctaBlock = { id: 1, __component: 'section.cta', variant: 'card', title: 'Join us', text: null, primaryLink: null, secondaryLink: null, tone: 'raised', group: null }
+
+  it('parses a target\'s one block into the reference\'s block, and gives none for a reference, a group key or an invalid block', () => {
+    const block = parseReusableTarget(entry([ctaBlock]), context)
+    // The block keeps its own options, and carries no group key, not even an empty one
+    expect(send(block)).toEqual({ __component: 'section.cta', variant: 'card', title: 'Join us', tone: 'raised' })
+    expect(block).not.toHaveProperty('group')
+    expect(send(parseReusableTarget(entry([{ __component: 'shared.rich-text', body: 'Text' }]), context))).toEqual({ __component: 'shared.rich-text', html: '<p>Text</p>' })
+    // A reference to a reference: one level only
+    expect(parseReusableTarget(entry([{ __component: 'section.reusable', reusableBlock: { documentId: 'reusable-b' } }]), context)).toBeNull()
+    // A group key belongs to the reference, never to its target, even one the page would drop
+    for (const group of [{ groupId: 'band-1', tone: 'accent' }, { tone: 'accent' }]) expect(parseReusableTarget(entry([{ ...ctaBlock, group }]), context), JSON.stringify(group)).toBeNull()
+    // A block that fails its schema, an unknown one, and a zone that is not exactly one block
+    expect(parseReusableTarget(entry([{ ...ctaBlock, title: null }]), context)).toBeNull()
+    expect(parseReusableTarget(entry([{ __component: 'section.carousel' }]), context)).toBeNull()
+    for (const blocks of [[], [ctaBlock, ctaBlock], null, undefined, 'x']) expect(parseReusableTarget(entry(blocks), context), JSON.stringify(blocks)).toBeNull()
+    for (const value of [null, undefined, 'reusable-a', [ctaBlock]]) expect(parseReusableTarget(value, context), JSON.stringify(value)).toBeNull()
+  })
+
+  it('the response schema accepts a reference with its block, and refuses a block that is a reference or carries a group', () => {
+    const block = send(parseReusableTarget(entry([ctaBlock]), context))
+    const reusable = { __component: 'section.reusable', reusableBlock: { documentId: 'reusable-a' }, group: { groupId: 'band-1', tone: 'accent' } }
+    expect(pageSectionSchema.parse({ ...reusable, block })).toEqual({ ...reusable, block })
+    expect(pageSectionSchema.safeParse({ ...reusable, block: { __component: 'shared.rich-text', html: '<p>Text</p>' } }).success).toBe(true)
+    expect(pageSectionSchema.safeParse({ ...reusable, block: { ...reusable } }).success).toBe(false)
+    expect(pageSectionSchema.safeParse({ ...reusable, block: { ...(block as object), group: { groupId: 'band-1', tone: 'accent' } } }).success).toBe(false)
+    expect(pageSectionSchema.safeParse({ ...reusable, block: { ...(block as object), title: 7 } }).success).toBe(false)
+  })
+
+  it('is what the page draws at the reference\'s position; an unresolved reference draws itself, which renders nothing', () => {
+    const cta = parsed('section.cta') as PageSection
+    const target = parseReusableTarget(entry([ctaBlock]), context)!
+    const resolved = { ...parsed('section.reusable'), block: target } as PageSection
+    const unresolved = parsed('section.reusable') as PageSection
+    expect(knownSections([cta, resolved, unresolved]).map(drawnSection)).toEqual([cta, target, unresolved])
+  })
+
+  it('opens a page as a hero when the first reference draws a hero', () => {
+    const hero = parseReusableTarget(entry([{ __component: 'section.hero', variant: 'centered', title: 'T' }]), context)!
+    const reference = { ...parsed('section.reusable'), block: hero } as PageSection
+    expect(heroLeadsPage([reference])).toBe(true)
+    expect(heroLeadsPage([parsed('section.reusable') as PageSection, hero as PageSection])).toBe(false)
+  })
+})
+
+describe('the runs of the sections a page draws', () => {
+  const member = (groupId: string, tone = 'accent'): PageSection => parsed('section.cta', { group: { groupId, tone } }) as PageSection
+  const plain = parsed('section.cta') as PageSection
+
+  it('joins consecutive members of a group, and keeps a section outside any group alone', () => {
+    const [a, b, c] = [member('band-1'), member('band-1', 'raised'), member('band-2', 'raised')]
+    const runs = sectionRuns([plain, a, b, plain, c])
+    expect(runs.map(run => [run.group, run.members.map(entry => entry.index)])).toEqual([
+      [undefined, [0]],
+      // The run takes the tone of its first member
+      [{ groupId: 'band-1', tone: 'accent' }, [1, 2]],
+      [undefined, [3]],
+      [{ groupId: 'band-2', tone: 'raised' }, [4]],
+    ])
+    expect(runs[0]).not.toHaveProperty('group')
+  })
+
+  it('makes a second run of a group that comes back after another section', () => {
+    expect(sectionRuns([member('band-1'), plain, member('band-1')]).map(run => run.group?.groupId)).toEqual(['band-1', undefined, 'band-1'])
+    expect(sectionRuns([])).toEqual([])
   })
 })

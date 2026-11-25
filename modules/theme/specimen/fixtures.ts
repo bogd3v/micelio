@@ -311,3 +311,22 @@ export const PAGE_SECTIONS: SpecimenPageSection[] = [
   ...entries('gallery', ['grid', 'masonry'], gallery),
   ...entries('scene', ['background', 'inline'], scene),
 ]
+
+/**
+ * A band of each tone of a group and a reference drawn as its target (ADR 0022): the `myc-group` hook and its `data-tone` values.
+ *
+ * @remarks
+ * The raised band holds a reference whose target is a call to action: it renders as that block, with no root of its own.
+ */
+export const COMPOSITION_SECTIONS: PageSection[] = [
+  { ...stats('row'), blockId: 'band-default-stats', group: { groupId: 'band-default', tone: 'default' } },
+  { ...cta('banner'), blockId: 'band-raised-cta', title: 'A band of two', group: { groupId: 'band-raised', tone: 'raised' } },
+  {
+    __component: 'section.reusable',
+    blockId: 'band-raised-reference',
+    reusableBlock: { documentId: 'specimen-reusable-cta' },
+    group: { groupId: 'band-raised', tone: 'raised' },
+    block: { ...cta('card'), title: 'A reusable call to action' },
+  },
+  { ...stats('cards'), blockId: 'band-accent-stats', tone: 'raised', group: { groupId: 'band-accent', tone: 'accent' } },
+]

@@ -739,6 +739,7 @@ export interface SubscribeRequest {
 | `ProseSection` | interface | The `prose` block in a page, `shared.rich-text`: the same Markdown as an article's, rendered by the same component. |
 | `GallerySection` | interface | A grid or a masonry of images, `section.gallery`. |
 | `SceneSection` | interface | A 3D model with a poster image, `section.scene`, shown as a background or inline. |
+| `ReusableTarget` | type | The block a reusable block holds, as a reference carries it (ADR 0022, section 1): any page section but a reference, with no `group` key. |
 | `ReusableSection` | interface | A reference to a reusable block of the page's site, `section.reusable` (ADR 0022, section 1). |
 | `PageSection` | type | Any section of a page, discriminated by `__component`: the ones the renderer draws and the reference to a reusable block. |
 | `Page` | interface | A page built from sections, as the server returns it after validation. |
@@ -1023,6 +1024,8 @@ export interface ReusableSection extends SectionGroupFields {
   blockId?: string
   /** The reusable block it references, by its document id; absent when the relation is empty or not populated. */
   reusableBlock?: { documentId: string }
+  /** The published block of the target, in the page's locale; absent when the target is not resolved: unpublished, missing in that locale, or not read (bogd3v/micelio#987 reads it). */
+  block?: ReusableTarget
 }
 ```
 

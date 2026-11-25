@@ -1,7 +1,7 @@
 import type { PageSection } from '~/interfaces'
 import { PAGE_SECTION_COMPONENTS } from '~/interfaces/page'
 
-const KNOWN_COMPONENTS: ReadonlySet<string> = new Set<string>([...PAGE_SECTION_COMPONENTS.map(kind => `section.${kind}`), 'shared.rich-text'])
+const KNOWN_COMPONENTS: ReadonlySet<string> = new Set<string>([...PAGE_SECTION_COMPONENTS.map(kind => `section.${kind}`), 'shared.rich-text', 'section.reusable'])
 
 const WARN_EVERY_MS = 10 * 60 * 1000
 const WARN_MAX_KEYS = 100
@@ -17,12 +17,18 @@ export function warnOnce(key: string, message: string): void {
   console.warn(message)
 }
 
-/** The sections the frontend can render, in order; a page draft's Playground blocks and the references to a reusable block (bogd3v/micelio#896), which it does not render yet, are left out. */
+/**
+ * The sections the frontend can render, in order: a page draft's Playground blocks are left out.
+ *
+ * @remarks
+ * A reference to a reusable block stays, resolved or not, so the positions are the page's own: `data-myc-index` counts them (ADR 0019).
+ */
 export function knownSections(sections: ReadonlyArray<{ __component: string }> | null | undefined): PageSection[] {
   return (sections ?? []).filter(section => KNOWN_COMPONENTS.has(section.__component)) as PageSection[]
 }
 
-/** A page opened by a hero takes its h1 from the hero; any other page shows its own title. */
+/** A page opened by a hero, drawn as itself or through a reference, takes its h1 from the hero; any other page shows its own title. */
 export function heroLeadsPage(sections: PageSection[] | null | undefined): boolean {
-  return knownSections(sections)[0]?.__component === 'section.hero'
+  const first = knownSections(sections)[0]
+  return (first?.__component === 'section.reusable' ? first.block : first)?.__component === 'section.hero'
 }

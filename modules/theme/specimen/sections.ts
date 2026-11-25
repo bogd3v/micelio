@@ -9,6 +9,7 @@ import SpecimenForms from './sections/SpecimenForms.vue'
 import SpecimenStates from './sections/SpecimenStates.vue'
 import SpecimenRegions from './sections/SpecimenRegions.vue'
 import SpecimenPageSection from './sections/SpecimenPageSection.vue'
+import SpecimenComposition from './sections/SpecimenComposition.vue'
 import { PAGE_SECTION_COMPONENTS } from '../../../app/interfaces/page'
 
 interface SpecimenSection {
@@ -37,6 +38,8 @@ export const SPECIMEN_SECTIONS: SpecimenSection[] = [
   { id: 'forms', title: 'specimen.sections.forms', component: SpecimenForms },
   { id: 'states', title: 'specimen.sections.states', component: SpecimenStates },
   { id: 'regions', title: 'specimen.sections.regions', component: SpecimenRegions },
+  // Groups and reusable blocks (ADR 0022): the myc-group hook and a reference drawn as its target
+  { id: 'composition', title: 'specimen.sections.composition', component: SpecimenComposition },
   // The page section catalog (#244): a group per section, ids `page-<kind>` (the sections' own `data-section` is the bare kind)
   ...PAGE_SECTION_COMPONENTS.map(kind => ({ id: `page-${kind}`, title: `specimen.pageSections.kinds.${kind}`, component: SpecimenPageSection, props: { kind } })),
 ]

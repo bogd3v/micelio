@@ -2,7 +2,7 @@
 
 # Hooks
 
-Public styling hooks of contract v2.4, from `app/theme/hooks.json`. A theme's `theme.css` and slot CSS may select only these `myc-*` classes and core `data-*` attributes; every other one is internal and can change in any release. Adding a hook raises the minor of contract v2 (a row in [the contract changelog](../contract-changelog.md)); removing or renaming one is a new major. A state is a class or attribute the hook takes.
+Public styling hooks of contract v2.5, from `app/theme/hooks.json`. A theme's `theme.css` and slot CSS may select only these `myc-*` classes and core `data-*` attributes; every other one is internal and can change in any release. Adding a hook raises the minor of contract v2 (a row in [the contract changelog](../contract-changelog.md)); removing or renaming one is a new major. A state is a class or attribute the hook takes.
 
 ## Attributes
 
@@ -19,7 +19,7 @@ Public styling hooks of contract v2.4, from `app/theme/hooks.json`. A theme's `t
 | `data-columns` | Contract 2.1. The root of a block that exposes the columns option (feature-grid, stats, pricing, logo-cloud, testimonials): the columns of its grid at desktop width; the core collapses them to one at phone width. `3`, the default, keeps the grid's own columns. Ignored by the bento and list feature grids, the table pricing, the marquee logo cloud and the single testimonial, which set their own. `6` only on logo-cloud. | `2`, `3`, `4`, `6` |
 | `data-density` | Contract 2.1. The root of a block that exposes the density option (feature-grid, logo-cloud, testimonials, faq, post-list, gallery): the spacing steps between its parts. | `comfortable`, `compact` |
 | `data-align` | Contract 2.1. The root of a block that exposes the align option (hero, feature-grid, media-showcase, stats, logo-cloud, testimonials, pricing, faq, cta, post-list, newsletter, rich-text, gallery, scene, and quote; a scene only in its `inline` variant): where its text sits. There is no `end`: it would mean right or left depending on the language. | `start`, `center` |
-| `data-tone` | Contract 2.1. The root of a block that exposes the tone option (hero, feature-grid, media-showcase, stats, logo-cloud, testimonials, pricing, faq, cta, post-list, newsletter, rich-text, gallery, scene; a scene only in its `inline` variant): the surface it sits on, `surface`, `surface-raised` or `accent-soft`. | `default`, `raised`, `accent` |
+| `data-tone` | Contract 2.1. The root of a block that exposes the tone option (hero, feature-grid, media-showcase, stats, logo-cloud, testimonials, pricing, faq, cta, post-list, newsletter, rich-text, gallery, scene; a scene only in its `inline` variant): the surface it sits on, `surface`, `surface-raised` or `accent-soft`. From contract 2.5 also the .myc-group of a band of page sections: the group's surface, which wins over a member's own (a member writes none). | `default`, `raised`, `accent` |
 | `data-ratio` | Contract 2.1. The root of a block that exposes the ratio option (media-showcase, media, slider): the aspect ratio of its media, as `width:height`; `auto` reserves no space and leaves the shape to the file. A slider keeps its own 16:10 for `16:9` and `auto`, because its slides are stacked. | `16:9`, `4:3`, `1:1`, `auto` |
 | `data-height` | Contract 2.1. The root of a block that exposes the height option (hero, scene, playground): how tall it is. Only a playground has a core look for it: `l` is 40rem at least and `full` one viewport, and `s` is as tall as its code, like `m`. On a hero and a scene the attribute is written and the core renders the block's own look, whatever the value. | `s`, `m`, `l`, `full` |
 
@@ -214,6 +214,7 @@ These appear in every layout variant.
 | `myc-comment-form` | The comment form. |  |
 | `myc-related` | Related articles. |  |
 | `myc-related-grid` | Grid of related articles. |  |
+| `myc-group` | Contract 2.5. A band of page sections (ADR 0022, section 2): consecutive blocks that share a group key, wrapped in one element on the surface of the group's tone. Its members are the .myc-section roots directly inside it, which yield their vertical spacing to it. In every site mode. A theme may restyle it and its values, never remove them. | `[data-tone]` |
 | `myc-section` | Root of a page section (a `<section>`). Select it with data-section and data-variant: .myc-section[data-section="hero"][data-variant="split"]. | `[data-section]`, `[data-variant]` |
 | `myc-section-inner` | Width-limited content of a section. |  |
 | `myc-section-head` | Eyebrow, title and text of a section. |  |

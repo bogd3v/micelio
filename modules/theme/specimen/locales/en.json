@@ -13,7 +13,8 @@
       "prose": "Prose, callouts and code",
       "forms": "Forms",
       "states": "Notices, empty and error states",
-      "regions": "Layout regions"
+      "regions": "Layout regions",
+      "composition": "Groups and reusable blocks"
     },
     "foundations": {
       "type": "Type scale",
@@ -137,6 +138,10 @@
       "postList": "Post list: grid and log views",
       "home": "Home (the latest-articles block reads the CMS)",
       "article": "Article (draft mode, no comments or related posts)"
+    },
+    "composition": {
+      "groups": "A band per tone: default, raised and accent",
+      "reference": "The raised band ends with a reusable block, drawn as its target"
     },
     "pageSections": {
       "kinds": {

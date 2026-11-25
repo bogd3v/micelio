@@ -13,7 +13,8 @@
       "prose": "Prosa, avisos y código",
       "forms": "Formularios",
       "states": "Avisos, estados vacíos y de error",
-      "regions": "Regiones de layout"
+      "regions": "Regiones de layout",
+      "composition": "Grupos y bloques reutilizables"
     },
     "foundations": {
       "type": "Escala tipográfica",
@@ -137,6 +138,10 @@
       "postList": "Lista de artículos: vistas en cuadrícula y en bitácora",
       "home": "Inicio (el bloque de últimos artículos lee el CMS)",
       "article": "Artículo (modo borrador, sin comentarios ni relacionados)"
+    },
+    "composition": {
+      "groups": "Una banda por tono: default, raised y accent",
+      "reference": "La banda raised termina con un bloque reutilizable, dibujado como su destino"
     },
     "pageSections": {
       "kinds": {
