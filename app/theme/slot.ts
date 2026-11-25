@@ -16,7 +16,7 @@ export interface SlotEntries {
  * section 4; ADR 0009, #402).
  *
  * @remarks
- * The theme comes from `useThemeData().id`. The build's theme's component is bundled; any other is its own chunk, loaded
+ * The theme comes from `useThemeData().id`, and `defaultSlots` (a preview of a theme the image was not built with) always chooses the core default. The build's theme's component is bundled; any other is its own chunk, loaded
  * with `defineAsyncComponent`, rendered by the server and hydrated by the client. Attributes, listeners and Vue slots pass
  * through. `T` is the core default's type, which every theme's component of the slot matches (the slot API), so call
  * sites keep their prop types.
@@ -29,7 +29,8 @@ export function defineSlot<T>(name: string, entries: SlotEntries): T {
     name,
     inheritAttrs: false,
     setup(_props, { attrs, slots }) {
-      const chosen = themes[useThemeData().id] ?? fallback
+      const data = useThemeData()
+      const chosen = (data.defaultSlots ? undefined : themes[data.id]) ?? fallback
       return () => h(chosen, { ...attrs }, slots)
     },
   })

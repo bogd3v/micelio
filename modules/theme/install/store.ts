@@ -302,6 +302,31 @@ export async function cleanTemporary(storeDir: string): Promise<void> {
 }
 
 /**
+ * The package digests of the entries compiled with `currentKey` whose manifests name theme `id` at `version`, for a lookup without a digest (the preview of ADR 0019, amendment of 2026-11-25).
+ *
+ * @remarks
+ * The manifests are read but not verified, and an entry whose manifest cannot be read is skipped: the caller loads each digest with `installedEntry`, which decides whether it is installed.
+ *
+ * @param currentKey - The compile key of this core build (`compileKey()`).
+ */
+export async function packageDigestsOf(storeDir: string, id: string, version: string, currentKey: string): Promise<string[]> {
+  const { entries } = layout(storeDir)
+  const found: string[] = []
+  for (const name of await exists(entries) ? await readdir(entries) : []) {
+    if (!COMPILED_DIGEST.test(name)) continue
+    let manifest: EntryManifest
+    try {
+      manifest = parseEntryManifest(await readFile(join(entries, name, ENTRY_MANIFEST)), name)
+    } catch {
+      // Not installed for this lookup: `installedEntry` would refuse it too, and the switch never reads it
+      continue
+    }
+    if (manifest.id === id && manifest.version === version && manifest.compileKey === currentKey && manifest.origin === 'package') found.push(manifest.packageDigest)
+  }
+  return found
+}
+
+/**
  * Removes the entries compiled for other core builds, and the kept packages no remaining entry uses, except those of `keep`.
  *
  * @remarks

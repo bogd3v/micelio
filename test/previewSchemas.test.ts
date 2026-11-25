@@ -30,6 +30,23 @@ describe('previewGrantSchema', () => {
   })
 })
 
+describe('the theme override of a grant', () => {
+  it('reads a theme override bound to the grant, and an answer without one', () => {
+    const theme = { id: 'starter', version: '0.1.0' }
+    expect(previewGrantSchema.parse({ data: { ...grant, overrides: { theme } } }).data.overrides).toEqual({ theme })
+    // The accents are #737's: they are dropped, and an override of accents alone reads as one without a theme
+    expect(previewGrantSchema.parse({ data: { ...grant, overrides: { theme, accentOverrides: [{ mode: 'light', color: '#1A2B3C' }] } } }).data.overrides).toEqual({ theme })
+    expect(previewGrantSchema.parse({ data: { ...grant, overrides: { accentOverrides: [] } } }).data.overrides).toEqual({})
+    expect(previewGrantSchema.parse({ data: grant }).data).not.toHaveProperty('overrides')
+  })
+
+  it('refuses a theme override outside the grammar of a pin', () => {
+    for (const theme of [{ id: 'starter' }, { version: '1.0.0' }, { id: 'Starter', version: '1.0.0' }, { id: '../x', version: '1.0.0' }, { id: 'starter', version: '1.0' }, { id: 'starter', version: '1.0.0+build' }, { id: 'starter', version: `1.0.0-${'a'.repeat(128)}` }, 'starter@1.0.0', null]) {
+      expect(previewGrantSchema.safeParse({ data: { ...grant, overrides: { theme } } }).success, JSON.stringify(theme)).toBe(false)
+    }
+  })
+})
+
 describe('weightParamsSchema', () => {
   it('accepts the two content types of the preview and a document id', () => {
     expect(weightParamsSchema.parse({ uid: 'api::article.article', documentId: 'kd8f3j2l1m0p' })).toEqual({ uid: 'api::article.article', documentId: 'kd8f3j2l1m0p' })

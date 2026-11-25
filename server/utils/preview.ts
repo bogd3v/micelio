@@ -6,7 +6,7 @@ import { secondsUntil } from '~/helpers/preview'
 import type { DraftPreview } from '~/interfaces'
 import type { PreviewActor, PreviewDraftContext } from '../lib/types'
 import { previewDraftMetaSchema, previewGrantSchema } from '../schemas/preview'
-import type { PreviewGrant } from '../schemas/preview'
+import type { PreviewGrant, PreviewOverrides } from '../schemas/preview'
 
 /**
  * The origin of the admin that may frame a draft, from `NUXT_PREVIEW_ADMIN_ORIGIN`; `''` when the preview is off.
@@ -83,10 +83,12 @@ export async function exchangePreviewToken(event: H3Event, token: string): Promi
  * @param query - The Strapi query of the draft (`populate`), encoded by this function.
  * @param options - `allowSystem` accepts a `system` grant too; only the weight route says so, so a route that forgets the check refuses it.
  *
+ * @returns The draft, who the grant acts for, and the overrides bound to an admin grant (`meta.overrides`, ADR 0019, amendment of 2026-11-25); a `system` grant's answer never gives any.
+ *
  * @remarks
- * The locale is the grant's, so none is sent. A refusal of the grant (404), of the frontend's API token (401 or 403, also logged as `config.preview-token`), a request the CMS refuses as invalid (400, logged as `config.preview-request` with the status only: the frontend and the CMS disagree on the populate), an empty answer, an answer without a known `meta.actor` (logged as `config.preview-actor`: the plugin is older than the system grant) and a `system` actor on a route that does not allow it are the draft 404 of `draftNotFound`; any other failure is a 502, as for the editor session. A `system` grant is single use, so it is spent by this call.
+ * The locale is the grant's, so none is sent. A refusal of the grant (404), of the frontend's API token (401 or 403, also logged as `config.preview-token`), a request the CMS refuses as invalid (400, logged as `config.preview-request` with the status only: the frontend and the CMS disagree on the populate), an empty answer, an answer without a known `meta.actor` or with an override outside its grammar (logged as `config.preview-actor`: the plugin is older than the system grant, or answers what this core does not read) and a `system` actor on a route that does not allow it are the draft 404 of `draftNotFound`; any other failure is a 502, as for the editor session. A `system` grant is single use, so it is spent by this call.
  */
-export async function fetchPreviewDraft<T>(event: H3Event, grant: string, documentId: string, query: Record<string, unknown>, options: { allowSystem?: boolean } = {}): Promise<{ data: T, actor: PreviewActor }> {
+export async function fetchPreviewDraft<T>(event: H3Event, grant: string, documentId: string, query: Record<string, unknown>, options: { allowSystem?: boolean } = {}): Promise<{ data: T, actor: PreviewActor, overrides?: PreviewOverrides }> {
   const path = `/api/micelio/preview/draft?${qs.stringify({ ...query, documentId }, { skipNulls: true })}`
   let response: { data?: T | null, meta?: unknown }
   try {
@@ -101,12 +103,13 @@ export async function fetchPreviewDraft<T>(event: H3Event, grant: string, docume
   }
   const meta = previewDraftMetaSchema.safeParse(response.meta)
   if (!meta.success) {
-    logWarn('config.preview-actor', 'The CMS answered the preview draft without a known meta.actor: it needs a micelio-plugin-core that sends it', { event })
+    logWarn('config.preview-actor', 'The CMS answered the preview draft without a known meta.actor, or with an override this core does not read: it needs a micelio-plugin-core that sends them as this core expects', { event })
     throw draftNotFound()
   }
-  const { actor } = meta.data
+  const { actor, overrides } = meta.data
   if (!response.data || (actor === 'system' && !options.allowSystem)) throw draftNotFound()
-  return { data: response.data, actor }
+  // Only an admin grant carries an override: one on any other answer is ignored (ADR 0019, amendment of 2026-11-25)
+  return { data: response.data, actor, ...(actor === 'admin' && overrides && { overrides }) }
 }
 
 /**

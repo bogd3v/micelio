@@ -282,7 +282,7 @@
       "get": {
         "operationId": "getPreview",
         "summary": "Open a draft in the admin's iframe with a preview token",
-        "description": "The CMS gives the admin page a one-use token (`docs/operate/preview.md`); the frame opens this route with it. The frontend exchanges the token for a grant, keeps the grant in the `__Host-micelio_preview` cookie (`HttpOnly`, `Secure`, `SameSite=None`, `Partitioned`) and redirects to the draft route without the token. A token that is used, expired, altered or of another site, a grant for another admin origin, and a site with `NUXT_PREVIEW_ADMIN_ORIGIN` unset all answer the same 404 page. Answers `private, no-store`.",
+        "description": "The CMS gives the admin page a one-use token (`docs/operate/preview.md`); the frame opens this route with it. The frontend exchanges the token for a grant, keeps the grant in the `__Host-micelio_preview` cookie (`HttpOnly`, `Secure`, `SameSite=None`, `Partitioned`) and redirects to the draft route without the token. A token that is used, expired, altered or of another site, a grant for another admin origin, and a site with `NUXT_PREVIEW_ADMIN_ORIGIN` unset all answer the same 404 page. A token the CMS bound to a theme override (`<id>@<version>`, ADR 0019, amendment of 2026-11-25) opens the draft rendered with that installed theme: one in none of the theme stores answers `themeNotInstalled` (409) and sets no cookie, and a code theme the image was not built with is opened on the core's default slots with `X-Micelio-Theme-Preview: rebuild-required`. Answers `private, no-store`.",
         "tags": [
           "Drafts"
         ],
@@ -337,6 +337,30 @@
                         "code": {
                           "enum": [
                             "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict. The `code` is one of:\n- `themeNotInstalled`: The theme the preview names is in none of the theme stores of this site; a preview installs nothing.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "themeNotInstalled"
                           ]
                         }
                       }
@@ -8633,6 +8657,7 @@
               "notFound",
               "payloadTooLarge",
               "requestRejected",
+              "themeNotInstalled",
               "tooManyRequests",
               "unauthorized",
               "unknown",

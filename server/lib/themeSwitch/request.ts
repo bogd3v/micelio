@@ -9,6 +9,9 @@ import type { ThemeData, ThemeMessages } from '~/interfaces/theme'
 /** The request header the theme's digest travels in, so a page cache that lists it in `varies` keeps one entry per theme (docs/api.md, "Theme status"). */
 export const THEME_HEADER = 'x-micelio-theme'
 
+/** The response header that says the previewed theme is a code theme the image was not built with, so activating it needs a rebuild (ADR 0019, amendment of 2026-11-25); its value is `rebuild-required`. */
+export const THEME_PREVIEW_HEADER = 'x-micelio-theme-preview'
+
 /**
  * Pins a request to the theme that is active when it arrives: the render, the payload and any cache key read this theme, however long the render takes.
  *

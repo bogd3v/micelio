@@ -1,5 +1,5 @@
 import type { BuiltInTheme } from '../lib/types'
-import type { ThemeSwitch } from '../lib/themeSwitch/types'
+import type { PreviewedTheme, ThemeSwitch } from '../lib/themeSwitch/types'
 import type { ThemeStatus } from '~/interfaces/theme'
 
 // The theme this process renders and serves: one switch every reader asks (ADR 0009, section 6). Created once at boot by server/plugins/builtInTheme.ts.
@@ -24,6 +24,11 @@ export function activeTheme(): BuiltInTheme {
 /** The theme whose files `/_t/<digest>/` may serve, or `undefined` for any other digest: the active, the last good and the ones retired within the last hour. */
 export function servedTheme(digest: string): BuiltInTheme | undefined {
   return current?.served(digest)
+}
+
+/** The installed theme a preview grant names, or `null` when no store holds it; activates and installs nothing (`ThemeSwitch.preview`). */
+export function previewTheme(wanted: { id: string, version: string }): Promise<PreviewedTheme | null> {
+  return themeSwitch().preview(wanted)
 }
 
 /** Tells the switch what the site settings of the default language name; it switches in the background, so this never waits. */

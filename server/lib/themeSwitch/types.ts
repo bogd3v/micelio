@@ -46,12 +46,28 @@ export interface SwitchDeps {
   warn: (event: string, message: string, cause?: string) => void
 }
 
+/** A theme a preview grant names (ADR 0019, amendment of 2026-11-25), found in a store, for one draft response. */
+export interface PreviewedTheme {
+  theme: BuiltInTheme
+  /** Whether it is a theme of the built-in store at that version: the image was built with it, so its own slots are compiled in. Any other renders the core's default slots. */
+  builtIn: boolean
+  /** Whether activating it needs an image built with it: a code theme the image was not built with (ADR 0009, section 4), which only the preview renders, from its data. */
+  rebuildToActivate: boolean
+}
+
 /** The server's one source of truth for the theme every request renders. */
 export interface ThemeSwitch {
   /** The theme new requests render. */
   active: () => BuiltInTheme
-  /** The theme whose files `/_t/<digest>/` may serve, or `undefined`: the active, the last good and the ones retired in the last hour. */
+  /** The theme whose files `/_t/<digest>/` may serve, or `undefined`: the active, the last good, the ones retired in the last hour and the ones a preview named in the last 15 minutes. */
   served: (digest: string) => BuiltInTheme | undefined
+  /**
+   * The installed theme a preview grant names, for one draft response, or `null` when no store holds it; never the network.
+   *
+   * @remarks
+   * Looks in the built-in store, then in the deployment store, and installs, activates and evicts nothing: the active theme, the last good one and the status stay as they are. `/_t/` serves the theme found for 15 minutes, the life of a grant.
+   */
+  preview: (wanted: { id: string, version: string }) => Promise<PreviewedTheme | null>
   /** Reads the theme the site settings name; never waits for the network, the switch happens in the background. */
   observe: (raw: { themeId?: string, themeVersion?: string, themeDigest?: string } | null | undefined) => void
   /** Holds the background work of `observe` until `until` settles (the boot work that restores the remembered themes); what the settings ask for is recorded meanwhile. `until` must not reject. */

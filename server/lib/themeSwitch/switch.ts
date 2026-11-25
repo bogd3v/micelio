@@ -1,5 +1,5 @@
 import { InstallError } from '../../../modules/theme/install/error'
-import { installedEntry } from '../../../modules/theme/install/installed'
+import { installedEntry, installedVersion } from '../../../modules/theme/install/installed'
 import { parseRuntime } from '../../../modules/theme/install/runtime'
 import { ENTRY_FILES } from '../../../modules/theme/install/constants'
 import { loadEntry } from '../../../modules/theme/install/store'
@@ -12,7 +12,7 @@ import { DOWNLOAD_TIMEOUT_MS, MAX_REASON_LENGTH, PREVIOUS_SERVED, PREVIOUS_SERVE
 import { createInstallLimiter, storeFull } from './limits'
 import type { InstallLimiter } from './limits'
 import type { RequestedTheme, ThemeIdentity, ThemeStatus, ThemeSwitchFailure, ThemeSwitchRule } from '../../../app/interfaces/theme'
-import type { PersistedPins, SwitchDeps, ThemeSwitch } from './types'
+import type { PersistedPins, PreviewedTheme, SwitchDeps, ThemeSwitch } from './types'
 
 // The active theme of the server: one state every reader uses, switched atomically and only to a theme that is already verified and in memory (ADR 0009, sections 3 to 6).
 // Nothing here waits for the network inside a request: `observe` starts the work in the background and returns.
@@ -34,6 +34,12 @@ type Target = Wanted | { kind: 'invalid', requested: RequestedTheme, reason: str
 
 /** Milliseconds before the same request is tried again after a failure that may pass (a registry that was down). */
 const RETRY_AFTER_MS = 60_000
+
+/** How long `/_t/` serves the theme a preview named: the life of a preview grant (ADR 0019, section 3). */
+const PREVIEW_SERVED_MS = 15 * 60_000
+
+/** How many previewed themes `/_t/` serves at once; the oldest is forgotten first. */
+const PREVIEW_SERVED = 4
 
 /** The text of a failure on one line, without a URL or a control character, short enough for the status. */
 function oneLine(text: string): string {
@@ -77,6 +83,18 @@ function samePin(a: ThemePin | null, b: ThemePin): boolean {
   return a !== null && a.id === b.id && a.version === b.version && a.digest === b.digest
 }
 
+/** The theme of a verified entry of the deployment store for a preview, code or not, or `null` when its runtime data does not parse. */
+function previewOfEntry(entry: LoadedEntry): BuiltInTheme | null {
+  const file = entry.files.get(ENTRY_FILES.runtime)
+  if (file === undefined) return null
+  try {
+    return { entry, runtime: parseRuntime(file, entry.manifest.digest) }
+  } catch {
+    // An entry that is not whole is never used in part (ADR 0009, section 6): the preview answers that no store holds the theme
+    return null
+  }
+}
+
 /** The theme of a verified entry of a package, or throws: it must be the pinned data-only package. */
 function themeOfEntry(entry: LoadedEntry, pin: ThemePin): BuiltInTheme {
   const file = entry.files.get(ENTRY_FILES.runtime)
@@ -110,6 +128,7 @@ export function createThemeSwitch(deps: SwitchDeps, limiter: InstallLimiter = cr
   let lastGood: BuiltInTheme | null = null
   let lastGoodPin: ThemePin | null = null
   let retired: Array<{ theme: BuiltInTheme, until: number }> = []
+  let previewed: Array<{ found: PreviewedTheme, until: number }> = []
   let requested: RequestedTheme | null = null
   let error: ThemeSwitchFailure | null = null
   let retryAfter = 0
@@ -246,6 +265,28 @@ export function createThemeSwitch(deps: SwitchDeps, limiter: InstallLimiter = cr
       if (active.runtime.digest === digest) return active
       if (lastGood?.runtime.digest === digest) return lastGood
       return retired.find(old => old.until > now && old.theme.runtime.digest === digest)?.theme
+        ?? previewed.find(seen => seen.until > now && seen.found.theme.runtime.digest === digest)?.found.theme
+    },
+    async preview({ id, version }) {
+      const now = deps.now()
+      previewed = previewed.filter(seen => seen.until > now)
+      let found = previewed.find(seen => seen.found.theme.runtime.id === id && seen.found.theme.runtime.version === version)?.found ?? null
+      if (found === null) {
+        const built = deps.builtIn(id)
+        if (built?.runtime.version === version) {
+          found = { theme: built, builtIn: true, rebuildToActivate: false }
+        } else if (deps.install) {
+          const { install } = deps
+          const registry = install.registry(AbortSignal.abort())
+          const entry = await installedVersion(install.storeDir, id, version, install.options.coreBuild, (pin, bundle) => registry.verify(pin, bundle))
+          const theme = entry === null ? null : previewOfEntry(entry)
+          if (theme !== null) found = { theme, builtIn: false, rebuildToActivate: entry!.manifest.code || theme.runtime.code }
+        }
+      }
+      if (found === null) return null
+      const theme = found.theme
+      previewed = [{ found, until: now + PREVIEW_SERVED_MS }, ...previewed.filter(seen => seen.found.theme !== theme)].slice(0, PREVIEW_SERVED)
+      return found
     },
     observe(raw) {
       const target = targetOf(raw)

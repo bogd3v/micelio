@@ -23,6 +23,12 @@ describe('PROBLEM_CODES', () => {
   })
 })
 
+describe('problemDetailOf', () => {
+  it('gives the RFC 9457 members of a catalog code and nothing of a request', () => {
+    expect(mod.problemDetailOf('themeNotInstalled')).toEqual({ type: 'about:blank', title: 'Conflict', status: 409, detail: mod.PROBLEM_CODES.themeNotInstalled.detail, code: 'themeNotInstalled' })
+  })
+})
+
 /** The statuses the auth routes have always answered; the catalog must not drift from them. */
 const AUTH_STATUS: Record<string, number> = {
   invalidCredentials: 400,

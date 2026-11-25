@@ -12,6 +12,7 @@ export type ProblemCode
     | 'upstreamUnavailable'
     | 'internalError'
     | 'requestRejected'
+    | 'themeNotInstalled'
 
 /** What the catalog says about one code: the HTTP status, its phrase and a fixed developer-facing explanation. */
 interface ProblemEntry {
@@ -89,6 +90,7 @@ export const PROBLEM_CODES: Record<ProblemCode, ProblemEntry> = {
   internalError: { status: 500, title: 'Internal Server Error', detail: 'The server failed to handle the request.' },
   invalidToken: { status: 400, title: BAD_REQUEST, detail: 'The token is missing or malformed.' },
   requestRejected: { status: 400, title: BAD_REQUEST, detail: 'The server refused the request.' },
+  themeNotInstalled: { status: 409, title: 'Conflict', detail: 'The theme the preview names is in none of the theme stores of this site; a preview installs nothing.' },
 }
 
 /** Status phrases of RFC 9110, for statuses no catalog entry covers. */
@@ -159,6 +161,17 @@ export function problem(code: ProblemCode, options: ProblemOptions = {}): Return
   })
   if (options.detail) Object.assign(error, { [DETAIL_KEY]: options.detail })
   return error
+}
+
+/**
+ * The RFC 9457 members of a catalog code, for a route that writes its own error answer.
+ *
+ * @remarks
+ * For a route whose address holds a secret (`/_preview` and its token): the error handler of Nitro would echo the request URL.
+ */
+export function problemDetailOf(code: ProblemCode): Pick<ProblemBody, 'type' | 'title' | 'status' | 'detail' | 'code'> {
+  const { status, title, detail } = PROBLEM_CODES[code]
+  return { type: 'about:blank', title, status, detail, code }
 }
 
 /**

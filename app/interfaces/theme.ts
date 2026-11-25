@@ -37,6 +37,12 @@ export interface ThemeData {
   mermaid: Record<string, string>
   /** Whether the entry ships `sections.css`, which the page sections link (`/_t/<digest>/sections.css`). */
   sections: boolean
+  /**
+   * Whether every slot renders the core's default in `app/theme/defaults/`, even when a theme of the build has the same id: set only for the preview of a theme the image was not built with (ADR 0019, amendment of 2026-11-25).
+   *
+   * @defaultValue false
+   */
+  defaultSlots?: boolean
 }
 
 /** The `theme.*` messages of one locale, compiled to the AST vue-i18n formats without a compiler. */

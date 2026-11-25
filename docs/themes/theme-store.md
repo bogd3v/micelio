@@ -114,7 +114,7 @@ Errors are `InstallError` with a `rule` (`pin`, `package`, `identity`, `code`, `
 
 - `createThemeSwitch()` (`switch.ts`) is pure of Nitro and tested with a fake registry. `observe(settings)` is called by `loadSite()` for the default language; it parses the pin, queues the target and returns. One switch runs at a time and the latest request wins.
 - `activeTheme()` (`server/utils/activeTheme.ts`) is what every reader calls; a request keeps the theme it began with in `event.context.activeTheme` and the digest in the `x-micelio-theme` request header.
-- `servedTheme(digest)` answers `/_t/`: the active theme, the last good one, and up to two replaced ones for 3,660 s.
+- `servedTheme(digest)` answers `/_t/`: the active theme, the last good one, up to two replaced ones for 3,660 s, and up to four themes a valid preview grant named (`ThemeSwitch.preview`, ADR 0019, amendment of 2026-11-25) for 15 minutes.
 - `limits.ts` holds the install rate, the backoff and the store caps; `guardedFetch.ts` the private-address check on every hop of a download; `state.ts` the pins kept in `<store>/v1/state.json`; `prune.ts` the cleanup behind `npm run theme:prune`.
 - A switch calls `clearSiteCache()` and `purgePageCache()`, so nothing cached names the old stylesheet. The status is `themeStatus()` behind `GET /api/theme/status`.
 
