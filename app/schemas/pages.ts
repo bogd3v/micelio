@@ -22,7 +22,9 @@ import type {
   PricingPlan,
   PricingSection,
   ProseSection,
+  ReusableSection,
   RichTextSection,
+  SectionGroup,
   SceneSection,
   StatItem,
   StatsSection,
@@ -30,6 +32,7 @@ import type {
   TestimonialsSection,
 } from '~/interfaces/page'
 import type { PostTranslation } from '~/interfaces/strapi-post'
+import { BLOCK_OPTIONS } from '~/interfaces/block-options'
 import { optionResponseShape } from './blockOptions'
 import { iconSymbolsSchema } from './blocks'
 import { postListItemSchema } from './posts'
@@ -81,10 +84,24 @@ const sectionHeadShape = {
   anchor: z.string().optional().meta({ description: 'The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.' }),
 }
 
+/** The `group` key of a page section: the band it belongs to and the surface of that band (ADR 0022, section 2). */
+const groupSchema = responseSchema<SectionGroup>()(
+  z.strictObject({
+    groupId: z.string().meta({ description: 'An opaque string, unique in the page; consecutive blocks that share it form one band.' }),
+    tone: z.enum(BLOCK_OPTIONS.tone.values).meta({ description: 'The surface of the band: `default`, `raised` or `accent`.' }),
+  }).meta({ id: 'SectionGroup', description: 'The group key of a page section: consecutive blocks that share a `groupId` form one band on the surface of its `tone`.' }),
+)
+
+/** The optional `group` of a section that may be a member of a group. */
+const groupShape = {
+  group: groupSchema.optional(),
+}
+
 const heroSchema = responseSchema<HeroSection>()(
   z.strictObject({
     __component: z.literal('section.hero'),
     ...optionResponseShape('section.hero'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['centered', 'split', 'full-bleed']),
@@ -104,6 +121,7 @@ const featureGridSchema = responseSchema<FeatureGridSection>()(
   z.strictObject({
     __component: z.literal('section.feature-grid'),
     ...optionResponseShape('section.feature-grid'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['grid', 'list', 'bento']),
@@ -117,6 +135,7 @@ const mediaShowcaseSchema = responseSchema<MediaShowcaseSection>()(
   z.strictObject({
     __component: z.literal('section.media-showcase'),
     ...optionResponseShape('section.media-showcase'),
+    ...groupShape,
     blockId: z.string().optional(),
     variant: z.enum(['left', 'right', 'stacked']),
     title: z.string().optional(),
@@ -134,6 +153,7 @@ const statsSchema = responseSchema<StatsSection>()(
   z.strictObject({
     __component: z.literal('section.stats'),
     ...optionResponseShape('section.stats'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['row', 'cards']),
@@ -150,6 +170,7 @@ const logoCloudSchema = responseSchema<LogoCloudSection>()(
   z.strictObject({
     __component: z.literal('section.logo-cloud'),
     ...optionResponseShape('section.logo-cloud'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['row', 'marquee']),
@@ -166,6 +187,7 @@ const testimonialsSchema = responseSchema<TestimonialsSection>()(
   z.strictObject({
     __component: z.literal('section.testimonials'),
     ...optionResponseShape('section.testimonials'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['single', 'grid']),
@@ -190,6 +212,7 @@ const pricingSchema = responseSchema<PricingSection>()(
   z.strictObject({
     __component: z.literal('section.pricing'),
     ...optionResponseShape('section.pricing'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['cards', 'table']),
@@ -207,6 +230,7 @@ const faqSchema = responseSchema<FaqSection>()(
   z.strictObject({
     __component: z.literal('section.faq'),
     ...optionResponseShape('section.faq'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['list', 'two-columns']),
@@ -219,6 +243,7 @@ const ctaSchema = responseSchema<CtaSection>()(
   z.strictObject({
     __component: z.literal('section.cta'),
     ...optionResponseShape('section.cta'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['banner', 'card']),
@@ -233,6 +258,7 @@ const postListSchema = responseSchema<PostListSection>()(
   z.strictObject({
     __component: z.literal('section.post-list'),
     ...optionResponseShape('section.post-list'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['cards', 'list']),
@@ -248,6 +274,7 @@ const newsletterSchema = responseSchema<NewsletterSection>()(
   z.strictObject({
     __component: z.literal('section.newsletter'),
     ...optionResponseShape('section.newsletter'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['inline', 'card']),
@@ -277,10 +304,20 @@ const proseSchema = responseSchema<ProseSection>()(
   }).meta({ id: 'ProseSection', description: 'The `prose` block in a page: Markdown, the same as in an article.' }),
 )
 
+const reusableSchema = responseSchema<ReusableSection>()(
+  z.strictObject({
+    __component: z.literal('section.reusable'),
+    ...groupShape,
+    blockId: z.string().optional(),
+    reusableBlock: z.strictObject({ documentId: z.string() }).optional().meta({ description: 'The reusable block it references, by its document id; absent when the relation is empty.' }),
+  }).meta({ id: 'ReusableSection', description: 'A reference to a reusable block of the page\'s site; the block it points to is what renders.' }),
+)
+
 const gallerySchema = responseSchema<GallerySection>()(
   z.strictObject({
     __component: z.literal('section.gallery'),
     ...optionResponseShape('section.gallery'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['grid', 'masonry']),
@@ -293,6 +330,7 @@ const sceneSchema = responseSchema<SceneSection>()(
   z.strictObject({
     __component: z.literal('section.scene'),
     ...optionResponseShape('section.scene'),
+    ...groupShape,
     ...sectionHeadShape,
     blockId: z.string().optional(),
     variant: z.enum(['background', 'inline']),
@@ -320,6 +358,7 @@ export const pageSectionSchema = responseSchema<PageSection>()(
     newsletterSchema,
     richTextSchema,
     proseSchema,
+    reusableSchema,
     gallerySchema,
     sceneSchema,
   ]).meta({ id: 'PageSection', description: 'Any section of a page, discriminated by `__component`.' }),

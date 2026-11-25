@@ -1,5 +1,5 @@
 import type { IconSymbolCarrier } from './icons'
-import type { BlockOptions } from './block-options'
+import type { BlockOptions, BlockOptionValue } from './block-options'
 import type { Locale } from './locale'
 import type { PostListItem, PostTranslation } from './strapi-post'
 
@@ -76,6 +76,30 @@ interface SectionBase<K extends PageSectionKind> {
 }
 
 /**
+ * The group key of a page section (ADR 0022, section 2): consecutive blocks that share a `groupId` form one band on the surface of its `tone`.
+ *
+ * @remarks
+ * One level: a member is never a group. The CMS refuses a save where a `groupId` is in two runs or its members differ in `tone`; stored content is not re-checked, so a renderer must not assume it. A member's own `tone` option is ignored while it is in the group. The server drops a key with no `groupId` or an unknown `tone`, and the block stays, outside any group.
+ *
+ * @public
+ */
+export interface SectionGroup {
+  /** An opaque string, unique in the page; blocks that share it form one group. */
+  groupId: string
+  /** The group's surface, a value of the `tone` option (`BLOCK_OPTIONS.tone`). */
+  tone: BlockOptionValue<'tone'>
+}
+
+/**
+ * The optional `group` key of a page section. `rich-text`, `prose` and the article blocks take none.
+ *
+ * @public
+ */
+export interface SectionGroupFields {
+  group?: SectionGroup
+}
+
+/**
  * The two optional fields of a section that renders a heading: a short label above the title and an explicit anchor.
  *
  * @remarks
@@ -95,7 +119,7 @@ export interface SectionHeadFields {
  *
  * @public
  */
-export interface HeroSection extends SectionBase<'hero'>, SectionHeadFields, BlockOptions<'section.hero'> {
+export interface HeroSection extends SectionBase<'hero'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.hero'> {
   variant: 'centered' | 'split' | 'full-bleed'
   title: string
   text?: string
@@ -122,7 +146,7 @@ export interface FeatureItem {
  *
  * @public
  */
-export interface FeatureGridSection extends SectionBase<'feature-grid'>, SectionHeadFields, BlockOptions<'section.feature-grid'> {
+export interface FeatureGridSection extends SectionBase<'feature-grid'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.feature-grid'> {
   variant: 'grid' | 'list' | 'bento'
   title?: string
   text?: string
@@ -134,7 +158,7 @@ export interface FeatureGridSection extends SectionBase<'feature-grid'>, Section
  *
  * @public
  */
-export interface MediaShowcaseSection extends SectionBase<'media-showcase'>, BlockOptions<'section.media-showcase'> {
+export interface MediaShowcaseSection extends SectionBase<'media-showcase'>, SectionGroupFields, BlockOptions<'section.media-showcase'> {
   variant: 'left' | 'right' | 'stacked'
   title?: string
   /** Sanitized HTML of the Markdown text */
@@ -161,7 +185,7 @@ export interface StatItem {
  *
  * @public
  */
-export interface StatsSection extends SectionBase<'stats'>, SectionHeadFields, BlockOptions<'section.stats'> {
+export interface StatsSection extends SectionBase<'stats'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.stats'> {
   variant: 'row' | 'cards'
   title?: string
   items: StatItem[]
@@ -186,7 +210,7 @@ export interface LogoItem {
  *
  * @public
  */
-export interface LogoCloudSection extends SectionBase<'logo-cloud'>, SectionHeadFields, BlockOptions<'section.logo-cloud'> {
+export interface LogoCloudSection extends SectionBase<'logo-cloud'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.logo-cloud'> {
   variant: 'row' | 'marquee'
   title?: string
   logos: LogoItem[]
@@ -218,7 +242,7 @@ export interface TestimonialItem {
  *
  * @public
  */
-export interface TestimonialsSection extends SectionBase<'testimonials'>, SectionHeadFields, BlockOptions<'section.testimonials'> {
+export interface TestimonialsSection extends SectionBase<'testimonials'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.testimonials'> {
   variant: 'single' | 'grid'
   title?: string
   items: TestimonialItem[]
@@ -246,7 +270,7 @@ export interface PricingPlan {
  *
  * @public
  */
-export interface PricingSection extends SectionBase<'pricing'>, SectionHeadFields, BlockOptions<'section.pricing'> {
+export interface PricingSection extends SectionBase<'pricing'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.pricing'> {
   variant: 'cards' | 'table'
   title?: string
   text?: string
@@ -273,7 +297,7 @@ export interface FaqItem {
  *
  * @public
  */
-export interface FaqSection extends SectionBase<'faq'>, SectionHeadFields, BlockOptions<'section.faq'> {
+export interface FaqSection extends SectionBase<'faq'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.faq'> {
   variant: 'list' | 'two-columns'
   title?: string
   items: FaqItem[]
@@ -284,7 +308,7 @@ export interface FaqSection extends SectionBase<'faq'>, SectionHeadFields, Block
  *
  * @public
  */
-export interface CtaSection extends SectionBase<'cta'>, SectionHeadFields, BlockOptions<'section.cta'> {
+export interface CtaSection extends SectionBase<'cta'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.cta'> {
   variant: 'banner' | 'card'
   title: string
   text?: string
@@ -300,7 +324,7 @@ export interface CtaSection extends SectionBase<'cta'>, SectionHeadFields, Block
  *
  * @public
  */
-export interface PostListSection extends SectionBase<'post-list'>, SectionHeadFields, BlockOptions<'section.post-list'> {
+export interface PostListSection extends SectionBase<'post-list'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.post-list'> {
   variant: 'cards' | 'list'
   title?: string
   /** Category or tag slug the list is filtered by; never both */
@@ -317,7 +341,7 @@ export interface PostListSection extends SectionBase<'post-list'>, SectionHeadFi
  *
  * @public
  */
-export interface NewsletterSection extends SectionBase<'newsletter'>, SectionHeadFields, BlockOptions<'section.newsletter'> {
+export interface NewsletterSection extends SectionBase<'newsletter'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.newsletter'> {
   variant: 'inline' | 'card'
   title?: string
   text?: string
@@ -361,7 +385,7 @@ export interface ProseSection {
  *
  * @public
  */
-export interface GallerySection extends SectionBase<'gallery'>, SectionHeadFields, BlockOptions<'section.gallery'> {
+export interface GallerySection extends SectionBase<'gallery'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.gallery'> {
   variant: 'grid' | 'masonry'
   title?: string
   images: PageMedia[]
@@ -372,7 +396,7 @@ export interface GallerySection extends SectionBase<'gallery'>, SectionHeadField
  *
  * @public
  */
-export interface SceneSection extends SectionBase<'scene'>, SectionHeadFields, BlockOptions<'section.scene'> {
+export interface SceneSection extends SectionBase<'scene'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.scene'> {
   variant: 'background' | 'inline'
   /** A binary glTF file (`.glb`); with any other file the server drops the section. */
   model: PageMedia
@@ -385,12 +409,28 @@ export interface SceneSection extends SectionBase<'scene'>, SectionHeadFields, B
 }
 
 /**
- * Any section of a page, discriminated by `__component`.
+ * A reference to a reusable block of the page's site, `section.reusable` (ADR 0022, section 1).
+ *
+ * @remarks
+ * It has no presentation options and no content of its own: the block it points to is what renders, with that block's own options. It is not in `PAGE_SECTION_COMPONENTS`, since it has no `data-section` of its own, and `SectionRenderer` does not render it yet (bogd3v/micelio#896): `knownSections` leaves it out. The page request does not populate the relation yet either, so `reusableBlock` is absent until the renderer asks for it. It may carry a `group` key and is then a member like any other.
+ *
+ * @public
+ */
+export interface ReusableSection extends SectionGroupFields {
+  __component: 'section.reusable'
+  /** The stable id of this block instance, as on any section. */
+  blockId?: string
+  /** The reusable block it references, by its document id; absent when the relation is empty or not populated. */
+  reusableBlock?: { documentId: string }
+}
+
+/**
+ * Any section of a page, discriminated by `__component`: the ones the renderer draws and the reference to a reusable block.
  *
  * @public
  */
 export type PageSection
-  = | HeroSection | FeatureGridSection | MediaShowcaseSection | StatsSection | LogoCloudSection
+  = | ReusableSection | HeroSection | FeatureGridSection | MediaShowcaseSection | StatsSection | LogoCloudSection
     | TestimonialsSection | PricingSection | FaqSection | CtaSection | PostListSection
     | NewsletterSection | RichTextSection | ProseSection | GallerySection | SceneSection
 

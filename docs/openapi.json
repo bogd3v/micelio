@@ -6955,6 +6955,9 @@
               "accent"
             ]
           },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
+          },
           "eyebrow": {
             "description": "A short label above the title.",
             "type": "string"
@@ -7335,6 +7338,9 @@
               "accent"
             ]
           },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
+          },
           "eyebrow": {
             "description": "A short label above the title.",
             "type": "string"
@@ -7407,6 +7413,9 @@
               "raised",
               "accent"
             ]
+          },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
           },
           "eyebrow": {
             "description": "A short label above the title.",
@@ -7528,6 +7537,9 @@
               "accent"
             ]
           },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
+          },
           "eyebrow": {
             "description": "A short label above the title.",
             "type": "string"
@@ -7602,6 +7614,9 @@
               "l",
               "full"
             ]
+          },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
           },
           "eyebrow": {
             "description": "A short label above the title.",
@@ -7693,6 +7708,9 @@
               "raised",
               "accent"
             ]
+          },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
           },
           "eyebrow": {
             "description": "A short label above the title.",
@@ -7854,6 +7872,9 @@
               "auto"
             ]
           },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
+          },
           "blockId": {
             "type": "string"
           },
@@ -7908,6 +7929,9 @@
               "raised",
               "accent"
             ]
+          },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
           },
           "eyebrow": {
             "description": "A short label above the title.",
@@ -8104,6 +8128,9 @@
           },
           {
             "$ref": "#/components/schemas/ProseSection"
+          },
+          {
+            "$ref": "#/components/schemas/ReusableSection"
           },
           {
             "$ref": "#/components/schemas/GallerySection"
@@ -8400,6 +8427,9 @@
               "accent"
             ]
           },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
+          },
           "eyebrow": {
             "description": "A short label above the title.",
             "type": "string"
@@ -8517,6 +8547,9 @@
               "raised",
               "accent"
             ]
+          },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
           },
           "eyebrow": {
             "description": "A short label above the title.",
@@ -9152,6 +9185,39 @@
         "additionalProperties": false,
         "description": "An article of a reading path."
       },
+      "ReusableSection": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.reusable"
+          },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "reusableBlock": {
+            "description": "The reusable block it references, by its document id; absent when the relation is empty.",
+            "type": "object",
+            "properties": {
+              "documentId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "documentId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "__component"
+        ],
+        "additionalProperties": false,
+        "description": "A reference to a reusable block of the page's site; the block it points to is what renders."
+      },
       "RichTextBlock": {
         "type": "object",
         "properties": {
@@ -9263,6 +9329,9 @@
               "l",
               "full"
             ]
+          },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
           },
           "eyebrow": {
             "description": "A short label above the title.",
@@ -9386,6 +9455,30 @@
         ],
         "additionalProperties": false,
         "description": "An article that matched, the field that matched and an excerpt around the match (empty when there is none)."
+      },
+      "SectionGroup": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "description": "An opaque string, unique in the page; consecutive blocks that share it form one band."
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ],
+            "description": "The surface of the band: `default`, `raised` or `accent`."
+          }
+        },
+        "required": [
+          "groupId",
+          "tone"
+        ],
+        "additionalProperties": false,
+        "description": "The group key of a page section: consecutive blocks that share a `groupId` form one band on the surface of its `tone`."
       },
       "Site": {
         "type": "object",
@@ -9766,6 +9859,9 @@
               "raised",
               "accent"
             ]
+          },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
           },
           "eyebrow": {
             "description": "A short label above the title.",
@@ -10902,6 +10998,9 @@
               "raised",
               "accent"
             ]
+          },
+          "group": {
+            "$ref": "#/components/schemas/SectionGroup"
           },
           "eyebrow": {
             "description": "A short label above the title.",

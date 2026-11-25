@@ -76,7 +76,7 @@ describe('pageSchema', () => {
 
   it('has a schema for every section component, and only those', () => {
     const options = (pageSectionSchema as unknown as { options: { shape: { __component: { value: string } } }[] }).options
-    expect(options.map(option => option.shape.__component.value).sort()).toEqual([...PAGE_SECTION_COMPONENTS.map(kind => `section.${kind}`), 'shared.rich-text'].sort())
+    expect(options.map(option => option.shape.__component.value).sort()).toEqual([...PAGE_SECTION_COMPONENTS.map(kind => `section.${kind}`), 'shared.rich-text', 'section.reusable'].sort())
   })
 
   it('describes the card the allow-list sends, and rejects the CMS keys it drops', () => {

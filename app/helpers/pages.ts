@@ -17,7 +17,7 @@ export function warnOnce(key: string, message: string): void {
   console.warn(message)
 }
 
-/** The sections the frontend can render, in order; a page draft's Playground blocks, which it does not render, are left out. */
+/** The sections the frontend can render, in order; a page draft's Playground blocks and the references to a reusable block (bogd3v/micelio#896), which it does not render yet, are left out. */
 export function knownSections(sections: ReadonlyArray<{ __component: string }> | null | undefined): PageSection[] {
   return (sections ?? []).filter(section => KNOWN_COMPONENTS.has(section.__component)) as PageSection[]
 }

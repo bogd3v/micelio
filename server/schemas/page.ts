@@ -5,6 +5,7 @@ import type { DraftPage, DraftPageSection, DraftPlaygroundSection, Page, PageSec
 import { PAGE_SLUG_PATTERN } from '~/constants/pages'
 import { isGlbUrl } from '~/helpers/scene'
 import { optionInputShape } from '~/schemas/blockOptions'
+import { BLOCK_OPTIONS } from '~/interfaces/block-options'
 
 /** Fewest posts a `section.post-list` shows: its `count` is clamped up to this. */
 export const POST_LIST_MIN = 1
@@ -110,10 +111,14 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
   // An anchor that is not a kebab-case slug is dropped alone: the plugin refuses it on save, but content stored before may hold one
   const headFields = { eyebrow: optional(text), anchor: optional(text.regex(ANCHOR)) }
 
+  // The `group` key (ADR 0022, section 2). A key with no `groupId` makes no member and one with a `tone` the contract does not know cannot be placed: both drop the key alone and the block stays, outside any group. Stored content is not re-checked by the CMS, so the contiguity of a group is left to the renderer
+  const group = optional(z.object({ groupId: text, tone: z.enum(BLOCK_OPTIONS.tone.values) }))
+
   const schemas: Record<string, z.ZodType<PageSection>> = {
     'section.hero': z.object({
       __component: z.literal('section.hero'),
       ...optionInputShape('section.hero'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['centered', 'split', 'full-bleed']),
@@ -126,6 +131,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.feature-grid': z.object({
       __component: z.literal('section.feature-grid'),
       ...optionInputShape('section.feature-grid'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['grid', 'list', 'bento']),
@@ -136,6 +142,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.media-showcase': z.object({
       __component: z.literal('section.media-showcase'),
       ...optionInputShape('section.media-showcase'),
+      group,
       blockId: optional(text),
       variant: variant(['left', 'right', 'stacked']),
       title: optional(text),
@@ -146,6 +153,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.stats': z.object({
       __component: z.literal('section.stats'),
       ...optionInputShape('section.stats'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['row', 'cards']),
@@ -155,6 +163,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.logo-cloud': z.object({
       __component: z.literal('section.logo-cloud'),
       ...optionInputShape('section.logo-cloud'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['row', 'marquee']),
@@ -164,6 +173,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.testimonials': z.object({
       __component: z.literal('section.testimonials'),
       ...optionInputShape('section.testimonials'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['single', 'grid']),
@@ -183,6 +193,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.pricing': z.object({
       __component: z.literal('section.pricing'),
       ...optionInputShape('section.pricing'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['cards', 'table']),
@@ -201,6 +212,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.faq': z.object({
       __component: z.literal('section.faq'),
       ...optionInputShape('section.faq'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['list', 'two-columns']),
@@ -210,6 +222,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.cta': z.object({
       __component: z.literal('section.cta'),
       ...optionInputShape('section.cta'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['banner', 'card']),
@@ -221,6 +234,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.post-list': z.object({
       __component: z.literal('section.post-list'),
       ...optionInputShape('section.post-list'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['cards', 'list']),
@@ -236,6 +250,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.newsletter': z.object({
       __component: z.literal('section.newsletter'),
       ...optionInputShape('section.newsletter'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['inline', 'card']),
@@ -257,9 +272,17 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
       blockId: optional(text),
       body: markdown,
     }).transform(({ body, ...rest }) => ({ ...rest, html: body })),
+    // A reference to a reusable block (ADR 0022, section 1): it has no options and no content, so only the target's document id is kept
+    'section.reusable': z.object({
+      __component: z.literal('section.reusable'),
+      blockId: optional(text),
+      group,
+      reusableBlock: optional(z.object({ documentId: text }).transform(({ documentId }) => ({ documentId }))),
+    }),
     'section.gallery': z.object({
       __component: z.literal('section.gallery'),
       ...optionInputShape('section.gallery'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['grid', 'masonry']),
@@ -269,6 +292,7 @@ function sectionSchemas(context: PageContext, { media, link }: ReturnType<typeof
     'section.scene': z.object({
       __component: z.literal('section.scene'),
       ...optionInputShape('section.scene'),
+      group,
       ...headFields,
       blockId: optional(text),
       variant: variant(['background', 'inline']),
