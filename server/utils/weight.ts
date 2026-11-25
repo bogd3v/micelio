@@ -7,8 +7,8 @@ import { previewDraftPath } from '~/helpers/preview'
 import { declaredAssets, measurePage, weightReport } from '~/helpers/weight'
 import type { PageBytes, SentFile } from '~/helpers/weight'
 import type { Locale, PreviewMode, WeightReport } from '~/interfaces'
-import { ARTICLE_POPULATE, PAGE_POPULATE } from '../lib/constants'
-import type { PreviewActor, PreviewDraftContext } from '../lib/types'
+import { ARTICLE_POPULATE, PAGE_POPULATE, REFERENCE_PAGE_POPULATE } from '../lib/constants'
+import type { PreviewActor, PreviewDraftContext, PreviewReference } from '../lib/types'
 
 /** How long a report is kept, per document version (ADR 0019 and bogd3v/micelio#730). */
 const REPORT_CACHE_MS = 5 * 60 * 1000
@@ -40,18 +40,23 @@ function componentId(component: unknown): string {
 interface RedeemedDraft {
   actor: PreviewActor
   draft: PreviewDraftContext['draft']
+  /** The reusable block and version the copy carries, for a grant bound to a reference. */
+  reference?: PreviewReference
 }
 
 /**
  * Redeems the preview grant of a weight request with the CMS, once, and returns the draft it names.
  *
  * @param grant - A grant of either actor (ADR 0019, amendment of 2026-10-25): the editor's from the cookie, or the CMS's own from `X-Micelio-Preview-Grant`.
+ * @param measure - The request's marker: with `reference`, the page is read with `REFERENCE_PAGE_POPULATE`, which reaches the reusable block of each reference, and the answer must be that of a grant bound to a reference (ADR 0019, amendment of 2026-11-23). An article has no reference, so the marker on one is the draft 404 before the CMS is asked.
  *
- * @throws The draft 404 when the CMS refuses the grant, the draft is missing or the answer does not say who the grant acts for.
+ * @throws The draft 404 when the CMS refuses the grant, the draft is missing, the answer does not say who the grant acts for or its `meta.measure` disagrees with the marker.
  */
-export async function redeemDraft(event: H3Event, grant: string, kind: 'article' | 'page', documentId: string): Promise<RedeemedDraft> {
-  const { data, actor } = await fetchPreviewDraft<PreviewDraftContext['draft']>(event, grant, documentId, { populate: kind === 'page' ? PAGE_POPULATE : ARTICLE_POPULATE }, { allowSystem: true })
-  return { actor, draft: data }
+export async function redeemDraft(event: H3Event, grant: string, kind: 'article' | 'page', documentId: string, measure?: 'reference'): Promise<RedeemedDraft> {
+  if (measure && kind !== 'page') throw draftNotFound()
+  const populate = kind === 'article' ? ARTICLE_POPULATE : measure ? REFERENCE_PAGE_POPULATE : PAGE_POPULATE
+  const { data, actor, reusableBlock } = await fetchPreviewDraft<PreviewDraftContext['draft']>(event, grant, documentId, { populate }, { allowSystem: true, measure })
+  return { actor, draft: data, ...(reusableBlock && { reference: reusableBlock }) }
 }
 
 /** The draft's `updatedAt` and its blocks' ids. */
@@ -217,23 +222,24 @@ async function computeAndKeep(key: string, event: H3Event, kind: 'article' | 'pa
  * The weight report of a draft the CMS gave to a preview grant: the draft rendered in `mode` and once more without each of its blocks.
  *
  * @param draft - What `redeemDraft` returned, so the CMS is asked for the draft once per report (a `system` grant is single use).
+ * @param reference - What `redeemDraft` returned for a grant bound to a reference: the draft is then the page's published version with the reusable block's draft, and the draft page route draws each reference from it (ADR 0019, amendment of 2026-11-23).
  *
  * @remarks
- * Kept 5 minutes per document version (`updatedAt`), so saving the draft measures it again. A report in progress is shared by the requests that ask for the same one, and a failed one is not kept. The draft is kept in this request's `event.context` for the length of the report: each render is a request made in process (`event.$fetch`) whose page and draft route read it from there, so neither the grant nor a cookie travels (ADR 0019, amendment of 2026-10-25). The public page is rendered with none of the caller's headers.
+ * Kept 5 minutes per document version (`updatedAt`), and for a reference also per reusable block and version, so saving the draft measures it again and the report of a page with a block's draft is never that of the page's own draft or of another version of the block. A report in progress is shared by the requests that ask for the same one, and a failed one is not kept. The draft is kept in this request's `event.context` for the length of the report: each render is a request made in process (`event.$fetch`) whose page and draft route read it from there, so neither the grant nor a cookie travels (ADR 0019, amendment of 2026-10-25). The public page is rendered with none of the caller's headers.
  *
  * @throws A 502 when a render or an asset fails.
  */
-export async function previewWeightReport(event: H3Event, kind: 'article' | 'page', documentId: string, locale: Locale, mode: PreviewMode, draft: unknown): Promise<WeightReport> {
+export async function previewWeightReport(event: H3Event, kind: 'article' | 'page', documentId: string, locale: Locale, mode: PreviewMode, draft: unknown, reference?: PreviewReference): Promise<WeightReport> {
   const zone = await zoneOf(draft, kind, locale)
   const { updatedAt } = zone
-  const key = `${kind}:${documentId}:${locale}:${mode}:${updatedAt}`
+  const key = `${kind}:${documentId}:${locale}:${mode}:${updatedAt}${reference ? `:reference:${reference.documentId}:${reference.version}` : ''}`
   const now = Date.now()
   for (const [id, entry] of reports) {
     if (entry.expires <= now) reports.delete(id)
   }
   const cached = reports.get(key)
   if (cached) return cached.report
-  event.context[PREVIEW_DRAFT_CONTEXT_KEY] = { kind, documentId, draft } satisfies PreviewDraftContext
+  event.context[PREVIEW_DRAFT_CONTEXT_KEY] = { kind, documentId, draft, ...(reference && { reference }) } satisfies PreviewDraftContext
   const report = computeAndKeep(key, event, kind, documentId, locale, mode, zone)
   reports.set(key, { expires: now + REPORT_CACHE_MS, report })
   if (reports.size > REPORT_CACHE_MAX) reports.delete(reports.keys().next().value!)

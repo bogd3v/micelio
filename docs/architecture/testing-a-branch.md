@@ -73,7 +73,7 @@ and the maintainer's demo stack.
 
 ## Run this branch's image against the plugin's compose
 
-You need Docker with Compose v2, or rootless Podman with `podman.socket` enabled and `DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock` set (`herdr/factory-agent.sh enter` of `micelio-engineering` sets it on the factory host), Node 22, Git and free ports 1337 and 3000 on `127.0.0.1` (the compose publishes them with fixed numbers).
+You need Docker with Compose v2, or rootless Podman with `podman.socket` enabled and `DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock` set (`herdr/factory-agent.sh enter` of `micelio-engineering` sets it on the factory host), Node 22, Git and two free ports on `127.0.0.1`: the compose publishes 1337 (the CMS) and 3000 (the frontend) by default, and `CMS_PORT` and `FRONTEND_PORT` move them (step 3).
 
 1. Build the image from the branch. The default target of the `Dockerfile` is the site; it takes a few minutes:
 
@@ -90,7 +90,9 @@ You need Docker with Compose v2, or rootless Podman with `podman.socket` enabled
    FRONTEND_IMAGE=micelio:branch npm run dev:docker
    ```
 
-   The first run writes `.env.docker` (throwaway secrets: never print or commit it), builds the CMS image and waits until every service is healthy. Another stack on the machine needs another project name and ports: `COMPOSE_PROJECT_NAME=<name>` renames the project, but the ports are fixed in the file, so run one stack at a time.
+   The first run writes `.env.docker` (throwaway secrets: never print or commit it), builds the CMS image and waits until every service is healthy. Another stack on the machine needs another project name and ports: `COMPOSE_PROJECT_NAME=<name>` renames the project, and `CMS_PORT` and `FRONTEND_PORT` (default 1337 and 3000) move the two host ports; the seed's site `url` and the frontend's settings follow them. The steps below use the defaults: with other ports, put yours in their URLs.
+
+   On rootless Podman, add `HOST_UID=0 HOST_GID=0`. The script runs the CMS as your user id, which the rootless engine maps to another user on the host, so it cannot write to the plugin's folder and stops with `EACCES` on `docker/cms/public/uploads`; root in the container is you on the host. To start the stack again with a new `FRONTEND_IMAGE`, remove `media-forward` first, then the frontend (`docker compose -p <project> -f compose.dev.yml --env-file .env.docker rm -sf media-forward`, then the same with `frontend`), and run `npm run dev:docker` again: `media-forward` shares the frontend's network, and Podman will not recreate a container another one depends on ("has dependent containers which must be removed before it").
 4. Open <http://localhost:1337/admin> and create the first administrator (any values). The seed has made the pages "Open source, in plain words" and "A heavy page" and the article "A draft article" as drafts, and a least-privilege token for the frontend, which the compose passes to it.
 5. In Content Manager → Page, open "Open source, in plain words" and press **Preview** (the eye), or open `http://localhost:1337/admin/plugins/micelio/preview/api::page.page/<documentId>`, with the `documentId` from the address. The frame shows the draft in this branch's frontend. For a feature other than the preview (the weight report, the cost meter), the plugin's [manual testing guide](https://github.com/bogd3v/micelio-plugin-core/blob/main/docs/operate/manual-testing.md) has the steps.
 6. Without a browser, ask the CMS for a preview token and let the frontend exchange it. Do not run the exchange step of the plugin's "Try the preview with curl": it asks for a token of `api::note.note`, which the frontend does not render (only `api::page.page` and `api::article.article`), and a token that was already exchanged is used up. Log in as the administrator of step 4, then:

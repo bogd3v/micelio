@@ -54,10 +54,19 @@ export interface BuiltInTheme {
 /** Who a preview grant acts for, as the CMS says in `meta.actor` of the draft (ADR 0019, section 3 and the amendment of 2026-10-25). */
 export type PreviewActor = 'admin' | 'system'
 
+/** The reusable block and the version of its draft that the CMS resolved for a system grant bound to a reference (`meta.reusableBlock`, ADR 0019, amendment of 2026-11-23). */
+export interface PreviewReference {
+  documentId: string
+  /** The `updatedAt` of the block's draft the answer carries. */
+  version: string
+}
+
 /** The draft a request to the weight route redeemed, which its in-process sub-requests read instead of asking the CMS. */
 export interface PreviewDraftContext {
   kind: 'article' | 'page'
   documentId: string
   /** The draft as the CMS sanitized it, still to be shaped by the draft route. */
   draft: unknown
+  /** Set when `draft` is the page's published version with a reusable block's draft in place of its references (a grant bound to a reference): the draft page route then draws each reference from the block the copy carries. */
+  reference?: PreviewReference
 }

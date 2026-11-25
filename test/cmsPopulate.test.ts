@@ -29,6 +29,14 @@ const TABLE: Record<string, string> = {
   POST_CARD_POPULATE: 'api::article.article',
 }
 
+/**
+ * The populate constants the check does not walk, each with its reason: what they name is not in the pinned copy of the CMS's schema (`PIN`).
+ * Each still has a test of its own below.
+ */
+const EXCEPTIONS: Record<string, string> = {
+  REFERENCE_PAGE_POPULATE: 'Only a system grant bound to a reference sends it, and only a CMS whose pages have `section.reusable` mints one; the pinned schema has no `section.reusable`, and bogd3v/micelio#977 does not move the pin',
+}
+
 function stringArgs(node: ts.TypeNode): string[] {
   if (ts.isLiteralTypeNode(node) && ts.isStringLiteral(node.literal)) return [node.literal.text]
   if (ts.isTupleTypeNode(node)) return node.elements.flatMap(stringArgs)
@@ -201,7 +209,25 @@ describe('the populate check', () => {
 
   it('every exported populate constant is covered by the check', () => {
     const exported = Object.keys(constants).filter(name => name.endsWith('_POPULATE'))
-    expect(exported.sort()).toEqual(Object.keys(TABLE).sort())
+    expect(exported.sort()).toEqual([...Object.keys(TABLE), ...Object.keys(EXCEPTIONS)].sort())
+  })
+
+  it('a constant of the exception is not walked, and every other one is', () => {
+    expect(Object.keys(EXCEPTIONS).filter(name => name in TABLE)).toEqual([])
+    for (const [name, reason] of Object.entries(EXCEPTIONS)) expect(reason.trim().length, name).toBeGreaterThan(0)
+    // The pinned schema has no `section.reusable`: walked, the constant fails there and only there
+    const reference = constants.REFERENCE_PAGE_POPULATE
+    expect(walk('REFERENCE_PAGE_POPULATE', reference, 'api::page.page')).toEqual([
+      'REFERENCE_PAGE_POPULATE.sections.on.section.reusable: not in the zone of api::page.page.sections',
+    ])
+    // The rest of it is the page's populate, which the check walks
+    const { 'section.reusable': _reusable, ...pageFragments } = reference.sections.on
+    expect(pageFragments).toEqual(constants.PAGE_POPULATE.sections.on)
+    expect(walk('REFERENCE_PAGE_POPULATE', { ...reference, sections: { on: pageFragments } }, 'api::page.page')).toEqual([])
+    // The reusable block's zone takes the page's fragments, without the text component the plugin's catalogue lacks, a reference or a group key
+    const { 'section.rich-text': _legacy, ...catalogue } = constants.PAGE_POPULATE.sections.on
+    expect(reference.sections.on['section.reusable'].populate.reusableBlock.populate.blocks.on).toEqual(catalogue)
+    expect(Object.keys(reference.sections.on['section.reusable'].populate.reusableBlock.populate.blocks.on)).not.toContain('section.reusable')
   })
 
   it('the fixture names a commit of micelio-cms in PIN', () => {

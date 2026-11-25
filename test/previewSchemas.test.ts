@@ -70,4 +70,15 @@ describe('weightQuerySchema', () => {
     expect(weightQuerySchema.safeParse({ locale: 'fr' }).success).toBe(false)
     expect(weightQuerySchema.safeParse({ locale: ['en', 'es'] }).success).toBe(false)
   })
+
+  it('weightQuerySchema reads measure=reference and refuses any other measure', () => {
+    expect(weightQuerySchema.parse({ locale: 'en', mode: 'dynamic', measure: 'reference' })).toEqual({ locale: 'en', mode: 'dynamic', measure: 'reference' })
+    expect(weightQuerySchema.parse({ mode: 'dynamic' })).not.toHaveProperty('measure')
+    for (const measure of ['', 'Reference', 'draft', 'page', ['reference'], ['reference', 'reference'], 1, true, null]) {
+      const parsed = weightQuerySchema.safeParse({ mode: 'dynamic', measure })
+      expect(parsed.success, JSON.stringify(measure)).toBe(false)
+      // The route tells the marker's refusal (the draft 404) from a locale's (400) by the path of the issue
+      expect(parsed.error?.issues.map(issue => issue.path[0]), JSON.stringify(measure)).toEqual(['measure'])
+    }
+  })
 })

@@ -363,7 +363,7 @@ const draftPlayground = z.object({
   setup: optional(z.string()),
 }).transform(({ setup, ...rest }): DraftPlaygroundSection => ({ ...rest, position: 0, ...(setup && { setup }) }))
 
-function parsePageWith<T extends DraftPageSection>(data: unknown, context: PageContext, extra: Record<string, z.ZodType<T>>, place?: (section: T, position: number) => T): (Omit<Page, 'sections'> & { sections: T[] }) | null {
+function parsePageWith<T extends DraftPageSection>(data: unknown, context: PageContext, extra: Record<string, z.ZodType<T>>, place?: (section: T, position: number, raw: unknown) => T): (Omit<Page, 'sections'> & { sections: T[] }) | null {
   const shared = sharedSchemas(context)
   const header = pageHeader(shared.seo).safeParse(data)
   if (!header.success) return null
@@ -374,7 +374,7 @@ function parsePageWith<T extends DraftPageSection>(data: unknown, context: PageC
     ...(pageSeo && { seo: pageSeo as PageSeo }),
     sections: (sections ?? []).flatMap((section, position) => {
       const parsed = parseWith(section, schemas)
-      return parsed ? [place ? place(parsed, position) : parsed] : []
+      return parsed ? [place ? place(parsed, position, section) : parsed] : []
     }),
     translations: (localizations ?? []).flatMap((entry) => {
       const parsed = translation.safeParse(entry)
@@ -394,10 +394,17 @@ export function parsePage(data: unknown, context: PageContext): Page | null {
 /**
  * Strapi's page draft, validated as `parsePage` does, and keeping the Playground blocks (`shared.playground`) that have a language and code, which `micelio:run` runs.
  *
+ * @param options - `targets` sets the `block` of each reference (`section.reusable`) from the reusable block its relation carries, with `parseReusableTarget`. The draft route asks for it only for the copy of a grant bound to a reference, whose reusable block is the block's draft (ADR 0019, amendment of 2026-11-23); a reference whose block does not parse keeps none and draws nothing.
+ *
  * @remarks
- * Only the draft route calls it: the public page never carries a Playground block.
+ * Only the draft route calls it: the public page never carries a Playground block, nor a reusable block's draft.
  */
-export function parseDraftPage(data: unknown, context: PageContext): DraftPage | null {
+export function parseDraftPage(data: unknown, context: PageContext, options: { targets?: boolean } = {}): DraftPage | null {
   // A Playground block keeps its place in the CMS's list, which a section dropped before it does not shift (`micelio:run` addresses it so)
-  return parsePageWith<DraftPageSection>(data, context, { 'shared.playground': draftPlayground }, (section, position) => section.__component === 'shared.playground' ? { ...section, position } : section)
+  return parsePageWith<DraftPageSection>(data, context, { 'shared.playground': draftPlayground }, (section, position, raw) => {
+    if (section.__component === 'shared.playground') return { ...section, position }
+    if (!options.targets || section.__component !== 'section.reusable') return section
+    const block = parseReusableTarget((raw as { reusableBlock?: unknown }).reusableBlock, context)
+    return block ? { ...section, block } : section
+  })
 }
