@@ -999,7 +999,8 @@ describe('groups and references (ADR 0022)', () => {
     expect(published.get('.myc-group').element.children).toHaveLength(0)
     expect(published.html()).not.toContain('data-myc-')
     const html = await renderToString(createSSRApp({ render: () => h(SectionRenderer, { sections: [reference(undefined)] }) }))
-    expect(html.replace(/<!--[^>]*-->/g, '')).toBe('')
+    // Nothing but Vue's fragment comments: no element and no text
+    expect(html).toMatch(/^(?:<!--[^>]*-->)*$/)
 
     const markers = knownSections(list).map((section, index) => blockMarkers(section.__component, index))
     const draft = await inHost({ sections: list, markers })

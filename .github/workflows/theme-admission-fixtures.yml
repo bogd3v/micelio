@@ -113,7 +113,7 @@ jobs:
           expect quality 'a11y\.spec\.ts › home has no axe violations: [\s\S]*color-contrast'
           expect accessibility '^test/fixtures/admission/accessibility/admission-broken\.json: lines\.keyboard\.focus-visible\.issue: '
           echo "data-only passed with its accessibility record, alternates on the shared build with its variant allowance; admission-broken failed with the contrast, budget, axe and record messages"
-      # Every baseline visual.spec.ts takes of the data-only theme, as <mode>/<viewport>/<page>.png: 54 when this was written (52 before the specimen group `icons`, #895). A page or
+      # Every baseline visual.spec.ts takes of the data-only theme, as <mode>/<viewport>/<page>.png: 56 when this was written (52 before the specimen group `icons`, #895, and 54 before the specimen group `composition`, #896). A page or
       # viewport added to the spec changes the number on purpose
       - name: Check the baselines
         env:
@@ -121,5 +121,5 @@ jobs:
         run: |
           test "${SNAPSHOTS}" = success
           find snapshots -name '*.png' | sort
-          test "$(find snapshots -name '*.png' | wc -l)" -eq 54
+          test "$(find snapshots -name '*.png' | wc -l)" -eq 56
           echo "theme-snapshots.yml rendered the baselines of data-only"
