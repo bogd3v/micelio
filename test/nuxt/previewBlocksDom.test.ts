@@ -34,6 +34,27 @@ describe('the geometry of the zone', () => {
     expect(blockElements(zone).map(element => element.getAttribute('data-myc-block'))).toEqual(['hero', 'feature-grid', 'cta'])
   })
 
+  // A band of a group (ADR 0022, section 2) holds its members: they stay blocks of the zone, in order, and the band is not one
+  it('finds the members of a band of the zone, in order, and a block nested deeper stays out', () => {
+    document.body.innerHTML = `
+      <div data-myc-zone="sections">
+        <section data-myc-block="hero" data-myc-index="0"><h2>Hero</h2></section>
+        <div class="myc-group" data-tone="accent">
+          <section data-myc-block="stats" data-myc-index="1"><h2>Stats</h2></section>
+          <div data-myc-block="reusable" data-myc-index="2"></div>
+        </div>
+        <section data-myc-block="cta" data-myc-index="3"><div class="myc-group"><div data-myc-block="nested" data-myc-index="0"></div></div></section>
+      </div>
+      <div class="myc-group"><section data-myc-block="outside" data-myc-index="9"><h2>Outside</h2></section></div>`
+    zone = document.querySelector('[data-myc-zone]')!
+    expect(blockElements(zone).map(element => element.getAttribute('data-myc-block'))).toEqual(['hero', 'stats', 'reusable', 'cta'])
+    expect(findBlock(zone, { zone: 'sections', index: 2, block: 'reusable', version: VERSION })?.getAttribute('data-myc-index')).toBe('2')
+    expect(pointedAt(zone, zone.querySelector('[data-myc-block="stats"] h2'), VERSION)).toEqual({ address: { zone: 'sections', index: 1, block: 'stats', version: VERSION }, item: null })
+    expect(pointedAt(zone, zone.querySelector('.myc-group'), VERSION)).toBeUndefined()
+    expect(pointedAt(zone, zone.querySelector('[data-myc-block="nested"]'), VERSION)).toBeUndefined()
+    expect(pointedAt(zone, document.querySelector('[data-myc-block="outside"] h2'), VERSION)).toBeUndefined()
+  })
+
   it('lists the items of a block in order and leaves the aria-hidden copies out', () => {
     const grid = zone.querySelector<HTMLElement>('[data-myc-block="feature-grid"]')!
     expect(itemElements(grid).map(item => item.textContent?.trim())).toEqual(['One', 'Two'])

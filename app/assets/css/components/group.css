@@ -1,0 +1,35 @@
+/* A group of page sections (ADR 0022, section 2; contract 2.5): consecutive blocks that share a group key, wrapped in one band on the
+   surface of the group's tone. The band owns the vertical spacing, so a member yields its own at the band's edges and half of it
+   between members; flow-root keeps a member's margin from collapsing through the band, which the builder's overlay measures.
+   A member's own data-tone is not written while it is in the group. A theme restyles .myc-group and its data-tone values in its own layer. */
+.myc-group {
+    display: flow-root;
+    padding-block: var(--space-section);
+    background: var(--surface);
+}
+
+.myc-group[data-tone="raised"] {
+    background: var(--surface-raised);
+}
+
+.myc-group[data-tone="accent"] {
+    background: var(--accent-soft);
+}
+
+.myc-group > [data-section] {
+    padding-block: calc(var(--myc-section-pad, var(--space-section)) / 2);
+}
+
+.myc-group > [data-section]:first-child {
+    padding-block-start: 0;
+}
+
+.myc-group > [data-section]:last-child {
+    padding-block-end: 0;
+}
+
+/* A band whose members all draw nothing (a reference without its block, a newsletter with the module off) is empty but for
+   Vue's comments, which :empty ignores: it takes no room. On the draft route a reference keeps its marked element, so the band stays */
+.myc-group:empty {
+    display: none;
+}

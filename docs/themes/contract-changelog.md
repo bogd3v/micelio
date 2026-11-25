@@ -44,6 +44,15 @@ These did not move the version, because they add no role, slot, variant or hook 
 - Added: the optional `version` (semver without build metadata) and `license` (an SPDX id or `LicenseRef-<name>`) of `theme.json`; both are required to pack a theme.
 - Tightened: `id` is 1 to 64 characters of lowercase letters and digits in groups separated by single hyphens (ADR 0009, section 2). `--x`, `x-`, `-x` and ids over 64 characters no longer validate; `bogota`, `starter` and every id with single hyphens do.
 
+## 2.5
+
+Adds one hook: `myc-group`, the band of a group of page sections (ADR 0022, section 2; the amendment of 2026-11-11 of ADR 0005, section 11; #896).
+
+- Added hook: `myc-group`, a `<div>` that wraps consecutive page sections sharing a group key, with `data-tone` set to the group's `tone` (`default`, `raised` or `accent`, the values of the tone option). It exists in every site mode, since it is markup.
+- The core styles it: the surface of the tone's role (`surface`, `surface-raised`, `accent-soft`) and the vertical spacing around the band. The members are the `.myc-section` roots directly inside it; each yields its vertical spacing to the band, and a member writes no `data-tone` of its own while it is in the group. A band whose members all draw nothing (a reference without its block, a section whose module is off) takes no room (`:empty`).
+- A theme declares `2.5` only when its CSS selects `myc-group`; a theme that declares an earlier minor keeps validating and rendering, and the band keeps the core's style. A theme may restyle the hook and its values, never remove them.
+- A reference to a reusable block draws its target under the target's own `data-section` hook, with no root of its own: it adds no hook.
+
 ## 2.4
 
 Adds one hook: `myc-news-consent`, the consent line of the newsletter form (a required checkbox beside the legal text of the block's `consentText`; micelio-cms#443).

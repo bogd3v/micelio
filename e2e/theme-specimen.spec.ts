@@ -89,3 +89,52 @@ test('draws its icons from one inline sprite, with no icon request', async ({ pa
   expect(requested.filter(path => (/\.svg$/.test(path) && !/\/_?media\//.test(path)) || /\/icons?\//.test(path))).toEqual([])
   expect(response?.headers()['content-security-policy']).not.toMatch(/icon/i)
 })
+
+// Groups and reusable blocks (ADR 0022): the bands of the myc-group hook and a reference drawn as its target
+test('shows a group in myc-group with its data-tone', async ({ page }) => {
+  await page.goto('/_theme', { waitUntil: 'networkidle' })
+  const groups = page.locator('.myc-specimen-group[data-section="composition"] .myc-group')
+  await expect(groups).toHaveCount(3)
+  expect(await groups.evaluateAll(nodes => nodes.map(node => [node.tagName, node.getAttribute('data-tone'), [...node.children].map(child => child.getAttribute('data-section'))]))).toEqual([
+    ['DIV', 'default', ['stats']],
+    ['DIV', 'raised', ['cta', 'cta']],
+    ['DIV', 'accent', ['stats']],
+  ])
+  // Each tone takes its role's surface, and a member writes no tone of its own (the accent band's stats store `raised`)
+  const surfaces = await groups.evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundColor))
+  expect(new Set(surfaces).size).toBe(3)
+  await expect(groups.nth(2).locator('[data-tone]')).toHaveCount(0)
+  // The band owns the vertical spacing: its first member yields the top of its own
+  await expect(groups.first().locator('> section.myc-section')).toHaveCSS('padding-top', '0px')
+})
+
+test('shows a reference as its target under the target\'s own data-section hook, with no root of its own', async ({ page }) => {
+  await page.goto('/_theme', { waitUntil: 'networkidle' })
+  const band = page.locator('.myc-specimen-group[data-section="composition"] .myc-group[data-tone="raised"]')
+  const target = band.locator('> section.myc-section[data-section="cta"]', { has: page.getByRole('heading', { name: 'A reusable call to action' }) })
+  await expect(target).toBeVisible()
+  await expect(target).toHaveAttribute('data-variant', 'card')
+  await expect(page.locator('[data-section="composition"] [data-section="reusable"], [data-section="composition"] [data-myc-block]')).toHaveCount(0)
+})
+
+// A band whose members all draw nothing is left with Vue's comments alone (a reference without its block, a module that is off):
+// it takes no room, while a band with a member keeps its surface
+test('takes no room for a band whose members draw nothing', async ({ page }) => {
+  await page.goto('/_theme', { waitUntil: 'networkidle' })
+  const frame = page.locator('.myc-specimen-group[data-section="composition"] .myc-specimen-frame')
+  const [empty, held] = await frame.evaluate((node) => {
+    const band = (inner: Node[]): HTMLElement => {
+      const element = document.createElement('div')
+      element.className = 'myc-group'
+      element.dataset.tone = 'accent'
+      element.append(...inner)
+      node.append(element)
+      return element
+    }
+    const measure = (element: HTMLElement): [string, number] => [getComputedStyle(element).display, element.getBoundingClientRect().height]
+    return [measure(band([document.createComment('['), document.createComment(']')])), measure(band([document.createElement('div')]))] as const
+  })
+  expect(empty).toEqual(['none', 0])
+  expect(held[0]).toBe('flow-root')
+  expect(held[1]).toBeGreaterThan(0)
+})

@@ -53,6 +53,7 @@ const MAX_INDEX = 10_000
 const MAX_REQUEST_ID = 256
 const ITEM_SELECTOR = '.myc-section-item'
 const BLOCK_SELECTOR = '[data-myc-block]'
+const GROUP_SELECTOR = '.myc-group'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -228,9 +229,15 @@ function boxOf(element: Element, scroll: { x: number, y: number }): PreviewBox {
   return { x: round(rect.left + scroll.x), y: round(rect.top + scroll.y), width: round(rect.width), height: round(rect.height) }
 }
 
-/** The blocks of the zone: the elements with `data-myc-block` that are its direct children, a gap's spacer left out. */
+/** The blocks of the zone, in order: the elements with `data-myc-block` that are its direct children or the members of one of its `myc-group` bands (ADR 0022, section 2), a gap's spacer left out. */
 export function blockElements(zone: Element): HTMLElement[] {
-  return [...zone.querySelectorAll<HTMLElement>(`:scope > ${BLOCK_SELECTOR}`)]
+  return [...zone.querySelectorAll<HTMLElement>(`:scope > ${BLOCK_SELECTOR}, :scope > ${GROUP_SELECTOR} > ${BLOCK_SELECTOR}`)]
+}
+
+// A block's parent is the zone, or a band of the zone
+function isInZone(block: Element, zone: Element): boolean {
+  const parent = block.parentElement
+  return parent === zone || (parent?.matches(GROUP_SELECTOR) === true && parent.parentElement === zone)
 }
 
 /** The repeatable items of a block, in order: its `.myc-section-item`s, the aria-hidden copies of a marquee left out. */
@@ -274,7 +281,7 @@ export function boxOfPointer(zone: Element, address: BlockAddress | null, item: 
 export function pointedAt(zone: Element, target: EventTarget | null, version: string): { address: BlockAddress, item: number | null } | undefined {
   const start = target instanceof Element ? target : null
   const block = start?.closest(BLOCK_SELECTOR)
-  if (!block || block.parentElement !== zone) return undefined
+  if (!block || !isInZone(block, zone)) return undefined
   const address = addressOf(block, version)
   if (!address) return undefined
   const item = start!.closest(ITEM_SELECTOR)

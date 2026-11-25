@@ -7021,6 +7021,74 @@
         "additionalProperties": false,
         "description": "A call to action with up to two links."
       },
+      "CtaTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.cta"
+          },
+          "layout": {
+            "type": "string",
+            "enum": [
+              "centered",
+              "split",
+              "stacked"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "banner",
+              "card"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "primaryLink": {
+            "$ref": "#/components/schemas/PageLink"
+          },
+          "secondaryLink": {
+            "$ref": "#/components/schemas/PageLink"
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "title"
+        ],
+        "additionalProperties": false
+      },
       "DraftArticleResponse": {
         "type": "object",
         "properties": {
@@ -7401,6 +7469,70 @@
         "additionalProperties": false,
         "description": "A list of questions and answers."
       },
+      "FaqTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.faq"
+          },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "list",
+              "two-columns"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FaqItem"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "items"
+        ],
+        "additionalProperties": false
+      },
       "FeatureGridSection": {
         "type": "object",
         "properties": {
@@ -7480,6 +7612,82 @@
         ],
         "additionalProperties": false,
         "description": "A grid, a list or a bento layout of features."
+      },
+      "FeatureGridTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.feature-grid"
+          },
+          "columns": {
+            "type": "string",
+            "enum": [
+              "2",
+              "3",
+              "4"
+            ]
+          },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "grid",
+              "list",
+              "bento"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeatureItem"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "items"
+        ],
+        "additionalProperties": false
       },
       "FeatureItem": {
         "type": "object",
@@ -7600,6 +7808,78 @@
         "additionalProperties": false,
         "description": "A grid or a masonry of images."
       },
+      "GalleryTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.gallery"
+          },
+          "width": {
+            "type": "string",
+            "enum": [
+              "prose",
+              "wide",
+              "full"
+            ]
+          },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "grid",
+              "masonry"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageMedia"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "images"
+        ],
+        "additionalProperties": false
+      },
       "HeroSection": {
         "type": "object",
         "properties": {
@@ -7684,6 +7964,87 @@
         ],
         "additionalProperties": false,
         "description": "The opening section of a page: a title, an optional text, up to two links and a media."
+      },
+      "HeroTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.hero"
+          },
+          "layout": {
+            "type": "string",
+            "enum": [
+              "centered",
+              "split",
+              "stacked"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "height": {
+            "type": "string",
+            "enum": [
+              "s",
+              "m",
+              "l",
+              "full"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "centered",
+              "split",
+              "full-bleed"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "primaryLink": {
+            "$ref": "#/components/schemas/PageLink"
+          },
+          "secondaryLink": {
+            "$ref": "#/components/schemas/PageLink"
+          },
+          "media": {
+            "$ref": "#/components/schemas/PageMedia"
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "title"
+        ],
+        "additionalProperties": false
       },
       "IconSymbols": {
         "type": "object",
@@ -7771,6 +8132,79 @@
         ],
         "additionalProperties": false,
         "description": "A row or a moving strip of logos."
+      },
+      "LogoCloudTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.logo-cloud"
+          },
+          "columns": {
+            "type": "string",
+            "enum": [
+              "2",
+              "3",
+              "4",
+              "6"
+            ]
+          },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "row",
+              "marquee"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "logos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LogoItem"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "logos"
+        ],
+        "additionalProperties": false
       },
       "LogoItem": {
         "type": "object",
@@ -7932,6 +8366,69 @@
         "additionalProperties": false,
         "description": "A media file with a text beside it."
       },
+      "MediaShowcaseTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.media-showcase"
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "ratio": {
+            "type": "string",
+            "enum": [
+              "16:9",
+              "4:3",
+              "1:1",
+              "auto"
+            ]
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right",
+              "stacked"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "html": {
+            "description": "Sanitized HTML of the Markdown text.",
+            "type": "string"
+          },
+          "media": {
+            "$ref": "#/components/schemas/PageMedia"
+          },
+          "link": {
+            "$ref": "#/components/schemas/PageLink"
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "media"
+        ],
+        "additionalProperties": false
+      },
       "NewsletterSection": {
         "type": "object",
         "properties": {
@@ -8003,6 +8500,74 @@
         ],
         "additionalProperties": false,
         "description": "The newsletter sign-up form."
+      },
+      "NewsletterTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.newsletter"
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "inline",
+              "card"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "buttonLabel": {
+            "type": "string"
+          },
+          "consentText": {
+            "description": "The legal text beside a required checkbox; with none, the form has no consent line and no checkbox.",
+            "type": "string"
+          },
+          "successMessage": {
+            "description": "The sentence after a subscription; with none, the core's own string.",
+            "type": "string"
+          },
+          "placeholder": {
+            "description": "The hint of the address field; with none, the core's own string.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "__component",
+          "variant"
+        ],
+        "additionalProperties": false
       },
       "OkResponse": {
         "type": "object",
@@ -8504,6 +9069,84 @@
         "additionalProperties": false,
         "description": "A list of the newest published posts, optionally filtered by a category or a tag."
       },
+      "PostListTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.post-list"
+          },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "cards",
+              "list"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "category": {
+            "description": "Category slug the list is filtered by; never sent together with `tag`.",
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "posts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PostListItem"
+            },
+            "description": "The newest published posts, resolved on the server for the first four post lists of a page; empty for the others."
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "count",
+          "posts"
+        ],
+        "additionalProperties": false
+      },
       "PricingPlan": {
         "type": "object",
         "properties": {
@@ -8613,6 +9256,74 @@
         ],
         "additionalProperties": false,
         "description": "Plans as cards or as a comparison table."
+      },
+      "PricingTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.pricing"
+          },
+          "columns": {
+            "type": "string",
+            "enum": [
+              "2",
+              "3",
+              "4"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "cards",
+              "table"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "plans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PricingPlan"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "plans"
+        ],
+        "additionalProperties": false
       },
       "Problem": {
         "type": "object",
@@ -9235,6 +9946,10 @@
               "documentId"
             ],
             "additionalProperties": false
+          },
+          "block": {
+            "description": "The published block of the target in the page's locale, drawn in the reference's place; absent when the target is not resolved, and then nothing is drawn.",
+            "$ref": "#/components/schemas/ReusableTarget"
           }
         },
         "required": [
@@ -9242,6 +9957,56 @@
         ],
         "additionalProperties": false,
         "description": "A reference to a reusable block of the page's site; the block it points to is what renders."
+      },
+      "ReusableTarget": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/HeroTarget"
+          },
+          {
+            "$ref": "#/components/schemas/FeatureGridTarget"
+          },
+          {
+            "$ref": "#/components/schemas/MediaShowcaseTarget"
+          },
+          {
+            "$ref": "#/components/schemas/StatsTarget"
+          },
+          {
+            "$ref": "#/components/schemas/LogoCloudTarget"
+          },
+          {
+            "$ref": "#/components/schemas/TestimonialsTarget"
+          },
+          {
+            "$ref": "#/components/schemas/PricingTarget"
+          },
+          {
+            "$ref": "#/components/schemas/FaqTarget"
+          },
+          {
+            "$ref": "#/components/schemas/CtaTarget"
+          },
+          {
+            "$ref": "#/components/schemas/PostListTarget"
+          },
+          {
+            "$ref": "#/components/schemas/NewsletterTarget"
+          },
+          {
+            "$ref": "#/components/schemas/RichTextSection"
+          },
+          {
+            "$ref": "#/components/schemas/ProseSection"
+          },
+          {
+            "$ref": "#/components/schemas/GalleryTarget"
+          },
+          {
+            "$ref": "#/components/schemas/SceneTarget"
+          }
+        ],
+        "description": "The block of a reusable block: any section but a reference, with no `group` key."
       },
       "RichTextBlock": {
         "type": "object",
@@ -9402,6 +10167,81 @@
         ],
         "additionalProperties": false,
         "description": "A 3D model with a poster image, shown as a background or inline."
+      },
+      "SceneTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.scene"
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "height": {
+            "type": "string",
+            "enum": [
+              "s",
+              "m",
+              "l",
+              "full"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "background",
+              "inline"
+            ]
+          },
+          "model": {
+            "description": "A binary glTF file (`.glb`); with any other file the server drops the section.",
+            "$ref": "#/components/schemas/PageMedia"
+          },
+          "poster": {
+            "$ref": "#/components/schemas/PageMedia"
+          },
+          "alt": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "model",
+          "poster",
+          "alt"
+        ],
+        "additionalProperties": false
       },
       "SearchPostResult": {
         "type": "object",
@@ -9923,6 +10763,71 @@
         ],
         "additionalProperties": false,
         "description": "A row or a set of cards of figures."
+      },
+      "StatsTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.stats"
+          },
+          "columns": {
+            "type": "string",
+            "enum": [
+              "2",
+              "3",
+              "4"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "row",
+              "cards"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatItem"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "items"
+        ],
+        "additionalProperties": false
       },
       "StrapiAboutResponse": {
         "type": "object",
@@ -11062,6 +11967,86 @@
         ],
         "additionalProperties": false,
         "description": "One quote or a grid of quotes."
+      },
+      "TestimonialsTarget": {
+        "type": "object",
+        "properties": {
+          "__component": {
+            "type": "string",
+            "const": "section.testimonials"
+          },
+          "layout": {
+            "type": "string",
+            "enum": [
+              "centered",
+              "split",
+              "stacked"
+            ]
+          },
+          "columns": {
+            "type": "string",
+            "enum": [
+              "2",
+              "3",
+              "4"
+            ]
+          },
+          "density": {
+            "type": "string",
+            "enum": [
+              "comfortable",
+              "compact"
+            ]
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "center"
+            ]
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "default",
+              "raised",
+              "accent"
+            ]
+          },
+          "eyebrow": {
+            "description": "A short label above the title.",
+            "type": "string"
+          },
+          "anchor": {
+            "description": "The id of the heading and the target of its self-link: a kebab-case slug, unique in the page.",
+            "type": "string"
+          },
+          "blockId": {
+            "type": "string"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "single",
+              "grid"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestimonialItem"
+            }
+          }
+        },
+        "required": [
+          "__component",
+          "variant",
+          "items"
+        ],
+        "additionalProperties": false
       },
       "ThemeStatus": {
         "type": "object",

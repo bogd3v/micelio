@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
-import type { PageSection } from '~/interfaces'
+import type { Component, FunctionalComponent } from 'vue'
+import type { PageSection, SectionGroup } from '~/interfaces'
 import { heroLeadsPage, knownSections as filterKnown } from '~/helpers/pages'
+import { drawnSection, sectionRuns } from '~/helpers/composition'
 import { sectionAnchors } from '~/helpers/landing'
 import { faqStructuredData, jsonLd } from '~/helpers/faqStructuredData'
 import SectionHero from '~/components/section/SectionHero.vue'
@@ -19,6 +20,16 @@ import SectionRichText from '~/components/section/SectionRichText.vue'
 import SectionGallery from '~/components/section/SectionGallery.vue'
 import SectionScene from '~/components/section/SectionScene.vue'
 
+// What a run draws: each member's key and position, and its section, absent for a reference without its block
+interface DrawnRun {
+  key: string
+  group?: SectionGroup
+  members: Array<{ index: number, key: string, section?: PageSection }>
+}
+
+// The wrapper of a run outside any group: its member alone, with no element of its own
+const Alone: FunctionalComponent = (_props, { slots }) => slots.default?.()
+
 const props = defineProps<{
   sections: PageSection[] | null | undefined
   /** The first section, when it is a hero, carries the page's h1 */
@@ -34,7 +45,7 @@ const props = defineProps<{
   staticBlocks?: ReadonlySet<number>
 }>()
 
-// `section.reusable` is not here: `knownSections` leaves it out until the renderer draws it (bogd3v/micelio#896)
+// `section.reusable` is not here: a reference draws its target's component, or nothing (ADR 0022, section 1)
 const componentMap: Readonly<Record<Exclude<PageSection['__component'], 'section.reusable'>, Component>> = {
   'section.hero': SectionHero,
   'section.feature-grid': SectionFeatureGrid,
@@ -63,10 +74,23 @@ const heroLeads = computed<boolean>(() => props.pageTitle !== undefined ? heroLe
 const theme = useThemeData()
 if (theme.sections) useHead({ link: [{ rel: 'stylesheet', href: `/_t/${theme.digest}/sections.css` }] })
 const knownSections = computed<PageSection[]>(() => filterKnown(props.sections))
+// What each position draws: a reference with its block is that block
+const drawnSections = computed<PageSection[]>(() => knownSections.value.map(drawnSection))
+// The bands of the page: consecutive members of a group share one `myc-group` (ADR 0022, section 2); a run outside any group has one member
+const runs = computed<DrawnRun[]>(() => {
+  const seen = new Map<string, number>()
+  return sectionRuns(knownSections.value).map(({ group, members }) => {
+    const drawn = members.map(({ index }) => ({ index, key: keyOf(knownSections.value[index]!, index), section: drawnAt(index, Boolean(group)) }))
+    if (!group) return { key: drawn[0]!.key, members: drawn }
+    const count = (seen.get(group.groupId) ?? 0) + 1
+    seen.set(group.groupId, count)
+    return { key: `group:${group.groupId}:${count}`, group, members: drawn }
+  })
+})
 // One JSON-LD `FAQPage` with the questions of every faq block of the page; here and not in `usePageSeo`, so its code stays out of the entry bundle every page loads
 useHead({
   script: () => {
-    const faq = faqStructuredData(knownSections.value)
+    const faq = faqStructuredData(drawnSections.value)
     return faq ? [{ type: 'application/ld+json', innerHTML: jsonLd(faq) }] : []
   },
 })
@@ -74,6 +98,17 @@ useHead({
 const anchorIds = computed<Map<number, string>>(() => __STATIC_BUILD__ && isLanding
   ? new Map(sectionAnchors(knownSections.value, { newsletterOn: newsletterOn?.value ?? false, blogEnabled }).map(anchor => [anchor.index, anchor.id]))
   : new Map())
+
+// The section a position draws, or undefined for a reference without its block; a member of a group yields its own `tone` to the group's
+function drawnAt(index: number, inGroup: boolean): PageSection | undefined {
+  const section = drawnSections.value[index]!
+  if (section.__component === 'section.reusable') return undefined
+  return inGroup ? Object.fromEntries(Object.entries(section).filter(([name]) => name !== 'tone')) as PageSection : section
+}
+
+function keyOf(section: PageSection, index: number): string {
+  return `${section.blockId ?? `${section.__component}-${index}`}${props.staticBlocks?.has(index) ? '-static' : ''}`
+}
 
 // The props of the first section and, on the draft route, the markers of every root; a public page binds nothing more than before
 function bindingsOf(section: PageSection, index: number): Record<string, unknown> {
@@ -89,14 +124,12 @@ function bindingsOf(section: PageSection, index: number): Record<string, unknown
       <h1 class="myc-section-title">{{ pageTitle }}</h1>
     </div>
   </section>
-  <component
-    :is="componentMap[section.__component as keyof typeof componentMap]"
-    v-for="(section, index) in knownSections"
-    :id="anchorIds.get(index)"
-    :key="`${section.blockId ?? `${section.__component}-${index}`}${staticBlocks?.has(index) ? '-static' : ''}`"
-    :section="section"
-    v-bind="bindingsOf(section, index)"
-  />
+  <component :is="run.group ? 'div' : Alone" v-for="run in runs" :key="run.key" v-bind="run.group && { 'class': 'myc-group', 'data-tone': run.group.tone }">
+    <template v-for="member in run.members" :key="member.key">
+      <component :is="componentMap[member.section.__component as keyof typeof componentMap]" v-if="member.section" :id="anchorIds.get(member.index)" :section="member.section" v-bind="bindingsOf(member.section, member.index)" />
+      <div v-else-if="markers" v-bind="markers[member.index]" />
+    </template>
+  </component>
 </template>
 
 <style>
@@ -106,6 +139,7 @@ function bindingsOf(section: PageSection, index: number): Record<string, unknown
 @import "~/assets/css/components/section-logos.css" layer(myc.components);
 @import "~/assets/css/components/section-pricing.css" layer(myc.components);
 @import "~/assets/css/components/section-faq.css" layer(myc.components);
+@import "~/assets/css/components/group.css" layer(myc.components);
 @import "~/assets/css/components/section-options.css" layer(myc.components);
 @import "~/assets/css/animations/section-marquee.css" layer(myc.animations);
 </style>

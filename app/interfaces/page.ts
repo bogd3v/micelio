@@ -408,11 +408,24 @@ export interface SceneSection extends SectionBase<'scene'>, SectionGroupFields, 
   text?: string
 }
 
+// Distributes over the union, so each member keeps its own `__component`
+type WithoutGroup<S> = S extends unknown ? Omit<S, 'group'> : never
+
+/**
+ * The block a reusable block holds, as a reference carries it (ADR 0022, section 1): any page section but a reference, with no `group` key.
+ *
+ * @remarks
+ * The key of the band belongs to the reference, which is the member of the page; the target's own `tone` and other options are its own.
+ *
+ * @public
+ */
+export type ReusableTarget = WithoutGroup<Exclude<PageSection, ReusableSection>>
+
 /**
  * A reference to a reusable block of the page's site, `section.reusable` (ADR 0022, section 1).
  *
  * @remarks
- * It has no presentation options and no content of its own: the block it points to is what renders, with that block's own options. It is not in `PAGE_SECTION_COMPONENTS`, since it has no `data-section` of its own, and `SectionRenderer` does not render it yet (bogd3v/micelio#896): `knownSections` leaves it out. The page request does not populate the relation yet either, so `reusableBlock` is absent until the renderer asks for it. It may carry a `group` key and is then a member like any other.
+ * It has no presentation options and no content of its own: `SectionRenderer` draws its `block`, with that block's own options, under the block's own `data-section` and with no root of its own. Without a `block` the page draws nothing in its place, and the draft route keeps an empty element there that carries the markers of its position. It is not in `PAGE_SECTION_COMPONENTS`, since it has no `data-section` of its own. The page request does not populate the relation yet, so `reusableBlock` is absent until bogd3v/micelio#987 asks for it. It may carry a `group` key and is then a member like any other: the group's `tone` wins over the block's.
  *
  * @public
  */
@@ -422,6 +435,8 @@ export interface ReusableSection extends SectionGroupFields {
   blockId?: string
   /** The reusable block it references, by its document id; absent when the relation is empty or not populated. */
   reusableBlock?: { documentId: string }
+  /** The published block of the target, in the page's locale; absent when the target is not resolved: unpublished, missing in that locale, or not read (bogd3v/micelio#987 reads it). */
+  block?: ReusableTarget
 }
 
 /**
