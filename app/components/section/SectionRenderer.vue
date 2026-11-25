@@ -34,7 +34,8 @@ const props = defineProps<{
   staticBlocks?: ReadonlySet<number>
 }>()
 
-const componentMap: Readonly<Record<PageSection['__component'], Component>> = {
+// `section.reusable` is not here: `knownSections` leaves it out until the renderer draws it (bogd3v/micelio#896)
+const componentMap: Readonly<Record<Exclude<PageSection['__component'], 'section.reusable'>, Component>> = {
   'section.hero': SectionHero,
   'section.feature-grid': SectionFeatureGrid,
   'section.media-showcase': SectionMediaShowcase,
@@ -89,7 +90,7 @@ function bindingsOf(section: PageSection, index: number): Record<string, unknown
     </div>
   </section>
   <component
-    :is="componentMap[section.__component]"
+    :is="componentMap[section.__component as keyof typeof componentMap]"
     v-for="(section, index) in knownSections"
     :id="anchorIds.get(index)"
     :key="`${section.blockId ?? `${section.__component}-${index}`}${staticBlocks?.has(index) ? '-static' : ''}`"

@@ -715,6 +715,8 @@ export interface SubscribeRequest {
 | `PageMedia` | interface | An image, a video or a 3D model file of a page section, validated by the server. |
 | `PageLink` | interface | A link of a page section, to another page or to an external address. |
 | `PageSeo` | interface | The search and share metadata of a page, validated by the server. |
+| `SectionGroup` | interface | The group key of a page section (ADR 0022, section 2): consecutive blocks that share a `groupId` form one band on the surface of its `tone`. |
+| `SectionGroupFields` | interface | The optional `group` key of a page section. `rich-text`, `prose` and the article blocks take none. |
 | `SectionHeadFields` | interface | The two optional fields of a section that renders a heading: a short label above the title and an explicit anchor. |
 | `HeroSection` | interface | The opening section of a page, `section.hero`: a title, an optional text, up to two links and a media. |
 | `FeatureItem` | interface | One feature of a `FeatureGridSection`, `section.feature-item`. |
@@ -737,7 +739,8 @@ export interface SubscribeRequest {
 | `ProseSection` | interface | The `prose` block in a page, `shared.rich-text`: the same Markdown as an article's, rendered by the same component. |
 | `GallerySection` | interface | A grid or a masonry of images, `section.gallery`. |
 | `SceneSection` | interface | A 3D model with a poster image, `section.scene`, shown as a background or inline. |
-| `PageSection` | type | Any section of a page, discriminated by `__component`. |
+| `ReusableSection` | interface | A reference to a reusable block of the page's site, `section.reusable` (ADR 0022, section 1). |
+| `PageSection` | type | Any section of a page, discriminated by `__component`: the ones the renderer draws and the reference to a reusable block. |
 | `Page` | interface | A page built from sections, as the server returns it after validation. |
 
 #### `PageMedia`
@@ -789,6 +792,19 @@ export interface PageSeo {
 }
 ```
 
+#### `SectionGroup`
+
+The group key of a page section (ADR 0022, section 2): consecutive blocks that share a `groupId` form one band on the surface of its `tone`.
+
+```ts
+export interface SectionGroup {
+  /** An opaque string, unique in the page; blocks that share it form one group. */
+  groupId: string
+  /** The group's surface, a value of the `tone` option (`BLOCK_OPTIONS.tone`). */
+  tone: BlockOptionValue<'tone'>
+}
+```
+
 #### `SectionHeadFields`
 
 The two optional fields of a section that renders a heading: a short label above the title and an explicit anchor.
@@ -821,7 +837,7 @@ export interface FeatureItem {
 A media file with a text beside it, `section.media-showcase`.
 
 ```ts
-export interface MediaShowcaseSection extends SectionBase<'media-showcase'>, BlockOptions<'section.media-showcase'> {
+export interface MediaShowcaseSection extends SectionBase<'media-showcase'>, SectionGroupFields, BlockOptions<'section.media-showcase'> {
   variant: 'left' | 'right' | 'stacked'
   title?: string
   /** Sanitized HTML of the Markdown text */
@@ -921,7 +937,7 @@ export interface FaqItem {
 A list of the newest published posts, optionally filtered by a category or a tag, `section.post-list`.
 
 ```ts
-export interface PostListSection extends SectionBase<'post-list'>, SectionHeadFields, BlockOptions<'section.post-list'> {
+export interface PostListSection extends SectionBase<'post-list'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.post-list'> {
   variant: 'cards' | 'list'
   title?: string
   /** Category or tag slug the list is filtered by; never both */
@@ -939,7 +955,7 @@ export interface PostListSection extends SectionBase<'post-list'>, SectionHeadFi
 The newsletter sign-up form, `section.newsletter`.
 
 ```ts
-export interface NewsletterSection extends SectionBase<'newsletter'>, SectionHeadFields, BlockOptions<'section.newsletter'> {
+export interface NewsletterSection extends SectionBase<'newsletter'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.newsletter'> {
   variant: 'inline' | 'card'
   title?: string
   text?: string
@@ -983,7 +999,7 @@ export interface ProseSection {
 A 3D model with a poster image, `section.scene`, shown as a background or inline.
 
 ```ts
-export interface SceneSection extends SectionBase<'scene'>, SectionHeadFields, BlockOptions<'section.scene'> {
+export interface SceneSection extends SectionBase<'scene'>, SectionGroupFields, SectionHeadFields, BlockOptions<'section.scene'> {
   variant: 'background' | 'inline'
   /** A binary glTF file (`.glb`); with any other file the server drops the section. */
   model: PageMedia
@@ -993,6 +1009,20 @@ export interface SceneSection extends SectionBase<'scene'>, SectionHeadFields, B
   alt: string
   title?: string
   text?: string
+}
+```
+
+#### `ReusableSection`
+
+A reference to a reusable block of the page's site, `section.reusable` (ADR 0022, section 1).
+
+```ts
+export interface ReusableSection extends SectionGroupFields {
+  __component: 'section.reusable'
+  /** The stable id of this block instance, as on any section. */
+  blockId?: string
+  /** The reusable block it references, by its document id; absent when the relation is empty or not populated. */
+  reusableBlock?: { documentId: string }
 }
 ```
 

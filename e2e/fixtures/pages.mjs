@@ -237,6 +237,29 @@ const sceneHero = {
   localizations: [],
 }
 
+// A page with the `group` key (ADR-0022, section 2) and a `reusable` block (section 1), as the plugin's content API answers them: `group`
+// is a component with `groupId` and `tone`, and the relation of `reusable` is `reusableBlock`. It is its own page, and not part of the
+// showcase, because `e2e/contract/mock-shape.spec.ts` compares the showcase with the CMS image, whose components have neither: a `group`
+// the mock answers on a block that image does have fails it as a key "in the mock, not in the CMS". A page that no suite compares has none
+// of that limit. The relation carries what the content API sends, the document id and the ids of the entry.
+const composition = {
+  id: 8,
+  documentId: 'page-composition',
+  title: 'Composition',
+  slug: 'composition',
+  locale: 'en',
+  seo: null,
+  sections: [
+    { id: 1, __component: 'section.hero', variant: 'centered', title: 'A band', text: null, primaryLink: null, secondaryLink: null, media: null, group: { id: 1, groupId: 'band-1', tone: 'accent' } },
+    { id: 2, __component: 'section.stats', variant: 'row', title: 'In the same band', items: [{ id: 1, value: '3', label: 'members' }], group: { id: 2, groupId: 'band-1', tone: 'accent' } },
+    { id: 3, __component: 'section.reusable', reusableBlock: { id: 31, documentId: 'reusable-newsletter' }, group: { id: 3, groupId: 'band-1', tone: 'accent' } },
+    { id: 4, __component: 'section.cta', variant: 'card', title: 'Outside any band', text: null, primaryLink: null, secondaryLink: null, group: null },
+    { id: 5, __component: 'section.reusable', reusableBlock: { id: 32, documentId: 'reusable-announcement' }, group: null },
+    { id: 6, __component: 'section.reusable', reusableBlock: null },
+  ],
+  localizations: [],
+}
+
 // One section for each value of each option on each block that exposes it, and a plain twin of each block, for the table of
 // e2e/theme/block-values.spec.ts: the title of a section is its key, "<block> <option>=<value>", and the twin's "<block> plain"
 const items = names => names.map((title, index) => ({ id: index + 1, icon: null, title, text: `Item ${title}` }))
@@ -404,7 +427,7 @@ const blockOptionsLists = { id: 7, documentId: 'page-block-options-lists', title
 const withBlockIds = page => ({ ...page, sections: withIds(page.sections, page.slug) })
 
 /** Mutable: a test may publish a page after a first miss. */
-export const pageFixtures = [showcase(false), showcase(true), partial, manyLists, sceneHero, blockOptions, blockOptionsLists].map(withBlockIds)
+export const pageFixtures = [showcase(false), showcase(true), partial, manyLists, sceneHero, blockOptions, blockOptionsLists, composition].map(withBlockIds)
 
 // What replaces the showcase pages when there are no articles
 const landingShowcases = [showcase(false, true), showcase(true, true)].map(withBlockIds)
