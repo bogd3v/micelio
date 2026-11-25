@@ -479,3 +479,75 @@ The records above are not rewritten.
   another page, locale or block, for a page that no longer references the block in its published version, or when presented to the exchange;
   the frontend's, that the draft routes and `/_preview` refuse it and that the report of the page with the block's draft
   is never the cached report of the page's own draft or of another version of the block.
+
+**Amendment (2026-11-25, [bogd3v/micelio#988](https://github.com/bogd3v/micelio/issues/988)):
+preview overrides bound to the token.**
+The builder's phase 3 previews what a site would look like before anything is saved:
+a candidate theme beside the active one (bogd3v/micelio#736, for the Themes page of bogd3v/micelio-plugin-core#59),
+and candidate accents in the full-screen customizer (bogd3v/micelio#737, for bogd3v/micelio-plugin-core#60 and #61).
+Section 3 binds a token to the admin user, the site, the content type, the `documentId`, the locale and the admin's origin,
+and nothing else; the frontend has no way to learn that a preview should render with another theme or accent.
+The maintainer decided on 2026-11-25 that the override travels as one more binding of the token,
+set by the CMS and never read by the frontend from a URL, a cookie or a message.
+Every rule of section 3, and of the amendments above, that this one does not name still holds.
+The records above are not rewritten.
+
+- **What may be bound.** Two optional fields, alone or together, in the body of `POST /micelio/preview/token`:
+  - `theme`: `{ id, version }`, an installed theme to render with instead of the active one.
+    `id` and `version` have the grammar of `themeId` and `themeVersion` of the site's theme component
+    (`server/src/components/site/theme.json` of `micelio-plugin-core`: a lowercase slug, an exact SemVer version).
+    No digest: a preview never installs a theme, so it only chooses among the themes the frontend already holds,
+    which were checked when they were installed ([ADR-0009](0009-theme-delivery-at-runtime.md), sections 2 and 3).
+  - `accentOverrides`: `[{ mode, color }]`, the shape of the site's own field ([ADR-0005](0005-theme-contract.md) section 8):
+    `mode` a slug, unique in the list, `color` `#RRGGBB`, at most 16 entries.
+    Only the accent per mode: ADR-0005 section 8 lets a site override nothing else,
+    and a display font, a default mode or region options are not added here.
+  A body with any other key under them, or a value outside that grammar, is refused with `400 previewRequestInvalid`, as a malformed body is today.
+  The CMS checks only the grammar. Whether the theme is installed, whether it has that mode,
+  and whether the accent passes contrast are the frontend's to decide, because only the frontend knows them.
+- **Who may bind them.** Whoever may ask for a token: the permission `plugin::micelio.preview` and the right to read the document, as section 3 says.
+  An override changes only what the editor who asked sees, in one frame or tab, for the life of one grant,
+  of a document that editor may already read; it changes no content and no setting of the site.
+  Activating a theme and saving overrides keep their own permissions (bogd3v/micelio-plugin-core#59 and #60).
+- **What the CMS stores.** The override is stored with the token, next to its other bindings and in the same row,
+  and copied to the grant at the exchange. It is not a secret: it is stored as given, not hashed, and may appear in the CMS's own records.
+  A token and its grant carry the same override for their whole life: a new override is a new token.
+- **What the exchange answers.** `POST /api/micelio/preview/exchange` adds `overrides: { theme?, accentOverrides? }` to its `data`
+  when the token has one, and nothing when it has none, so a frontend that does not read it previews as today.
+- **What the draft read answers.** `GET /api/micelio/preview/draft`, for an admin grant that carries an override,
+  adds the same `overrides` to its `meta`, next to `actor`.
+  The frontend renders every load of the draft route from that answer,
+  so a reload or a `load-draft` (section 4) keeps the override without the frontend keeping it anywhere,
+  and the grant cookie (section 3) still holds the grant and nothing else.
+- **What a system grant carries.** Nothing. A system grant (amendments of 2026-10-25 and 2026-11-23) is minted by plugin code,
+  never from a request body, binds no override, and its draft read answers no `overrides`.
+  The frontend ignores `overrides` in any answer whose `meta.actor` is not `admin`.
+  A report of the weight route is therefore always of the site's own theme and accents.
+- **What the frontend does with it.** It applies the override to the draft route's responses for the grant that carries it, and to nothing else:
+  a request without an admin grant never reads one, a public page and its cache never change,
+  and every draft response stays `private, no-store`.
+  A `theme` that is in none of its stores is answered with the problem `themeNotInstalled` once the grant is valid;
+  a code theme the image was not built with is rendered from its data on the core's default slots,
+  for the preview only, and the answer says activating it needs a rebuild (ADR-0009 section 4 still refuses to activate it).
+  `accentOverrides` replace the saved ones for that response and go through the same resolution and contrast adjustment
+  of ADR-0005 section 8, into the same `<style id="theme-overrides">`.
+- **What does not change.** Tokens and grants stay random, opaque, single use for a token, 60 seconds and 15 minutes,
+  bound and hashed as section 3 says. No message of section 4 carries an override, so the envelope's `v` does not move,
+  and the frame and the admin keep the schemas of `contract/preview.ts`.
+  Every refusal of a token or a grant is still the same 404, `frame-ancestors` relaxes only as section 5 says,
+  and revocation is unchanged.
+- **Cost.** Each candidate value is a new token, an exchange and a reload of the frame, within today's limits
+  (20 tokens a minute per admin user, 60 exchanges a minute per API token):
+  the customizer asks for a token when the editor stops changing a value, not on every change.
+  Raising those limits is not added.
+- **Not added.** An override in a URL, a cookie or a message; an override a system grant carries;
+  overrides of any other role, of the display font, the default mode or region options;
+  installing a theme from a preview; a change to an override during a grant's life.
+- **Implementation.** CMS first (standard, section 6), in follow-up tasks:
+  `micelio-plugin-core` takes the overrides on the token route, stores them, copies them to the grant,
+  and answers them on the exchange and the draft read;
+  `micelio` renders with them (bogd3v/micelio#736 for the theme, bogd3v/micelio#737 for the accents).
+  The plugin's tests must show that each override is stored with the token and answered by the exchange and the draft read,
+  that a body outside the grammar is refused, that a token without one answers none,
+  and that a system grant answers none; the frontend's, that an override changes only the draft response of the grant that carries it
+  and is ignored on any answer whose actor is not `admin`.
