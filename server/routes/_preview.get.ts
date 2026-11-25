@@ -21,6 +21,8 @@ export default defineEventHandler(async (event) => {
     if (grant) logWarn('authz.preview-refused', 'The preview grant is for another admin origin or content type', { event, cause: kind ? 'adminOrigin' : 'contentType' })
     throw problem('notFound', { statusMessage: 'Page not found' })
   }
+  // A theme override the grant carries must be in a store before the draft is opened with it (ADR 0019, amendment of 2026-11-25); the draft route reads it again on every load
+  if (grant.overrides?.theme && !await previewedTheme(event, grant.overrides.theme)) return sendThemeNotInstalled(event)
   setPreviewGrantCookie(event, grant.grant, grant.expiresAt)
   return sendRedirect(event, previewDraftPath(kind, grant.documentId, grant.locale, previewMode(query.data.mode)), 303)
 })

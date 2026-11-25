@@ -11,10 +11,11 @@ function freeze<T>(value: T): T {
  *
  * @param runtime - The parsed `runtime.json` of the active entry.
  * @param sections - Whether the entry holds a `sections.css`.
+ * @param defaultSlots - Whether the page renders the core's default slots whatever the id: the preview of a theme the image was not built with (ADR 0019, amendment of 2026-11-25).
  */
-export function themeDataOf(runtime: RuntimeData, sections = false): ThemeData {
+export function themeDataOf(runtime: RuntimeData, sections = false, defaultSlots = false): ThemeData {
   const { id, digest, modes, images, layout, mermaid } = runtime
-  return freeze(structuredClone({ id, digest, modes, images, layout, mermaid, sections }))
+  return freeze(structuredClone({ id, digest, modes, images, layout, mermaid, sections, ...(defaultSlots && { defaultSlots }) }))
 }
 
 /**

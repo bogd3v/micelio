@@ -31,6 +31,14 @@ describe('a slot component', () => {
     expect(wrapper.html()).toBe('<div aria-hidden="true"></div>')
   })
 
+  it('renders the core default, not the build theme\'s own component, for the preview of a theme the image was not built with', async () => {
+    setThemeData({ id: 'starter', defaultSlots: true })
+    const wrapper = await mountSuspended(ThemeMark, { props: { context: 'footer' } })
+    await flushPromises()
+    expect(wrapper.find('.starter-mark').exists()).toBe(false)
+    expect(wrapper.find('span[aria-hidden="true"]').exists()).toBe(true)
+  })
+
   it('renders the core default for a theme the build does not carry', async () => {
     setThemeData({ id: 'unknown-theme' })
     const wrapper = await mountSuspended(ThemeMark)

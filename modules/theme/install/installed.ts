@@ -2,7 +2,7 @@ import { pinProblem } from '../registry/pin'
 import type { ThemePin } from '../registry/types'
 import { InstallError } from './error'
 import { compileKey, compiledDigest } from './key'
-import { loadEntry, readKeptPackage } from './store'
+import { loadEntry, packageDigestsOf, readKeptPackage } from './store'
 import type { LoadedEntry } from './types'
 
 /**
@@ -36,4 +36,22 @@ export async function installedEntry(storeDir: string, pin: ThemePin, coreBuild:
   }
   if (entry === null || entry.manifest.packageDigest !== pin.digest || entry.manifest.origin !== 'package') return null
   return entry
+}
+
+/**
+ * The compiled entry of theme `id` at `version` the store holds as installed, found without a digest, or `null`.
+ *
+ * @remarks
+ * For the preview of a theme the CMS names by id and version only (ADR 0019, amendment of 2026-11-25): each entry of this core whose
+ * manifest names that version is checked as `installedEntry` checks a pin, and the first that passes is the answer.
+ *
+ * @param verify - Verifies the kept attestation bundle of the pin it is given; it throws to refuse.
+ */
+export async function installedVersion(storeDir: string, id: string, version: string, coreBuild: string, verify?: (pin: ThemePin, bundle: Uint8Array) => void): Promise<LoadedEntry | null> {
+  for (const digest of await packageDigestsOf(storeDir, id, version, compileKey(coreBuild))) {
+    const pin = { id, version, digest }
+    const entry = await installedEntry(storeDir, pin, coreBuild, verify && (bundle => verify(pin, bundle)))
+    if (entry !== null) return entry
+  }
+  return null
 }

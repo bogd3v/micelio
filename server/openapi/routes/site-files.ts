@@ -16,14 +16,14 @@ const PREVIEW_ROUTES: RouteEntry[] = [
     method: 'get',
     path: '/_preview',
     summary: 'Open a draft in the admin\'s iframe with a preview token',
-    description: 'The CMS gives the admin page a one-use token (`docs/operate/preview.md`); the frame opens this route with it. The frontend exchanges the token for a grant, keeps the grant in the `__Host-micelio_preview` cookie (`HttpOnly`, `Secure`, `SameSite=None`, `Partitioned`) and redirects to the draft route without the token. A token that is used, expired, altered or of another site, a grant for another admin origin, and a site with `NUXT_PREVIEW_ADMIN_ORIGIN` unset all answer the same 404 page. Answers `private, no-store`.',
+    description: 'The CMS gives the admin page a one-use token (`docs/operate/preview.md`); the frame opens this route with it. The frontend exchanges the token for a grant, keeps the grant in the `__Host-micelio_preview` cookie (`HttpOnly`, `Secure`, `SameSite=None`, `Partitioned`) and redirects to the draft route without the token. A token that is used, expired, altered or of another site, a grant for another admin origin, and a site with `NUXT_PREVIEW_ADMIN_ORIGIN` unset all answer the same 404 page. A token the CMS bound to a theme override (`<id>@<version>`, ADR 0019, amendment of 2026-11-25) opens the draft rendered with that installed theme: one in none of the theme stores answers `themeNotInstalled` (409) and sets no cookie, and a code theme the image was not built with is opened on the core\'s default slots with `X-Micelio-Theme-Preview: rebuild-required`. Answers `private, no-store`.',
     tag: 'Drafts',
     parameters: [
       { name: 'token', in: 'query', description: 'The preview token.', schema: { type: 'string' }, required: true },
       { name: 'mode', in: 'query', description: 'The mode of the draft route: `dynamic` (default) or `static`, which leaves every island on its static alternative.', schema: { type: 'string', enum: ['dynamic', 'static'] } },
     ],
     response: { status: 303, description: 'The draft route of the document the grant names, without the token.' },
-    errors: ['notFound', 'tooManyRequests', 'upstreamUnavailable'],
+    errors: ['notFound', 'themeNotInstalled', 'tooManyRequests', 'upstreamUnavailable'],
   },
 ]
 

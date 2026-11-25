@@ -54,6 +54,21 @@ describe('fetchPreviewDraft', () => {
     expect(logWarn).toHaveBeenCalledWith('config.preview-actor', expect.any(String), { event })
   })
 
+  it('gives the theme override of an admin grant, and ignores one on a system grant\'s answer', async () => {
+    const overrides = { theme: { id: 'starter', version: '0.1.0' } }
+    strapiFetch.mockResolvedValue({ data: { documentId: 'doc-1' }, meta: { actor: 'admin', overrides } })
+    await expect(fetchPreviewDraft(event, 'g', 'doc-1', {})).resolves.toEqual({ data: { documentId: 'doc-1' }, actor: 'admin', overrides })
+    // A system grant never carries one (ADR 0019, amendment of 2026-11-25): the weight report is always of the site's own theme
+    strapiFetch.mockResolvedValue({ data: { documentId: 'doc-1' }, meta: { actor: 'system', overrides } })
+    await expect(fetchPreviewDraft(event, 'g', 'doc-1', {}, { allowSystem: true })).resolves.toEqual({ data: { documentId: 'doc-1' }, actor: 'system' })
+  })
+
+  it('refuses an answer whose theme override is outside the grammar of a pin, and logs why', async () => {
+    strapiFetch.mockResolvedValue({ data: { documentId: 'doc-1' }, meta: { actor: 'admin', overrides: { theme: { id: '../x', version: '1.0.0' } } } })
+    await expect(fetchPreviewDraft(event, 'g', 'doc-1', {})).rejects.toMatchObject({ code: 'notFound' })
+    expect(logWarn).toHaveBeenCalledWith('config.preview-actor', expect.any(String), { event })
+  })
+
   it('refuses an empty answer', async () => {
     strapiFetch.mockResolvedValue({ data: null, meta: { actor: 'admin' } })
     await expect(fetchPreviewDraft(event, 'g', 'doc-1', {})).rejects.toMatchObject({ code: 'notFound' })

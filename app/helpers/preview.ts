@@ -67,6 +67,24 @@ export function previewDraftPath(kind: 'article' | 'page', documentId: string, l
   return `${prefix}/${route}/${encodeURIComponent(documentId)}?${query}`
 }
 
+/**
+ * The draft a request path opens, as `previewDraftPath` writes it, or `null` for any other path.
+ *
+ * @remarks
+ * Matches the page of the draft route only (`/drafts/<documentId>`, `/drafts/pages/<documentId>`, with the prefix of a locale the site serves), never its API route or a file under it. A `documentId` that is not valid percent-encoding is `null`.
+ */
+export function previewDraftTarget(path: string): { kind: 'article' | 'page', documentId: string } | null {
+  const prefixes = Object.values(Locale).filter(locale => locale !== defaultLocale).join('|')
+  const match = new RegExp(`^(?:/(?:${prefixes}))?/drafts/(?:(pages)/)?([^/?#]+)/?(?:[?#]|$)`).exec(path)
+  if (!match) return null
+  try {
+    return { kind: match[1] ? 'page' : 'article', documentId: decodeURIComponent(match[2]!) }
+  } catch {
+    // Not a document any route serves: the page answers its own 404
+    return null
+  }
+}
+
 /** Seconds from `now` until `expiresAt`, rounded up; 0 for a date that has passed or is not a date. */
 export function secondsUntil(expiresAt: string, now: number = Date.now()): number {
   const end = Date.parse(expiresAt)

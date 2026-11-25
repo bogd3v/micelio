@@ -15,6 +15,7 @@ function refusal(status, code) {
 
 /**
  * Answers `POST /api/micelio/preview/exchange` and `GET /api/micelio/preview/draft` like the plugin: a token works once, a grant names one document, and the draft says who the grant acts for (`meta.actor`).
+ * A token made with a theme override answers it on the exchange (`data.overrides`) and on every draft read of its grant (`meta.overrides`), bogd3v/micelio-plugin-core#268.
  * A system grant (`issueSystem`, which the plugin mints for itself at publish) lives 60 seconds, is claimed by the first check that matches its document, and is refused when the draft was saved since.
  *
  * @param options.apiToken - The API token the routes accept; any other, or none, is the 401 Strapi answers.
@@ -34,11 +35,11 @@ export function createPreviewMock({ apiToken } = {}) {
   /**
    * Makes a token for a draft, as the admin's token route does.
    *
-   * @param {{ kind?: 'article' | 'page', documentId: string, locale?: string, adminOrigin: string }} binding
+   * @param {{ kind?: 'article' | 'page', documentId: string, locale?: string, adminOrigin: string, theme?: { id: string, version: string } }} binding - `theme` is the theme override the token carries (ADR 0019, amendment of 2026-11-25).
    */
-  function issue({ kind = 'article', documentId, locale = 'en', adminOrigin }) {
+  function issue({ kind = 'article', documentId, locale = 'en', adminOrigin, theme }) {
     const token = `preview-token-${++count}-${'x'.repeat(24)}`
-    tokens.set(token, { contentType: CONTENT_TYPES[kind], documentId, locale, adminOrigin, expiresAt: Date.now() + 60_000, used: false })
+    tokens.set(token, { contentType: CONTENT_TYPES[kind], documentId, locale, adminOrigin, ...(theme && { overrides: { theme } }), expiresAt: Date.now() + 60_000, used: false })
     return token
   }
 
@@ -72,7 +73,8 @@ export function createPreviewMock({ apiToken } = {}) {
     const grant = `preview-grant-${++count}-${'y'.repeat(24)}`
     const expiresAt = Date.now() + 15 * 60_000
     grants.set(grant, { ...token, expiresAt })
-    return { status: 200, body: { data: { grant, expiresAt: new Date(expiresAt).toISOString(), adminOrigin: token.adminOrigin, contentType: token.contentType, documentId: token.documentId, locale: token.locale } } }
+    // The override is copied to the grant and answered only when the token has one, as the plugin does
+    return { status: 200, body: { data: { grant, expiresAt: new Date(expiresAt).toISOString(), adminOrigin: token.adminOrigin, contentType: token.contentType, documentId: token.documentId, locale: token.locale, ...(token.overrides && { overrides: token.overrides }) } } }
   }
 
   function draft(headers, query) {
@@ -94,7 +96,9 @@ export function createPreviewMock({ apiToken } = {}) {
       ? pages.find(page => page.documentId === grant.documentId)
       : articles.find(article => article.documentId === grant.documentId && article.locale === grant.locale)
     if (system && entry?.updatedAt !== system.version) return refusal(404, 'previewRefused')
-    return entry ? { status: 200, body: { data: entry, meta: state.omitActor ? {} : { actor: system ? 'system' : 'admin' } } } : refusal(404, 'previewRefused')
+    // A system grant carries no override; an admin grant answers its own in `meta.overrides`
+    const meta = state.omitActor ? {} : { actor: system ? 'system' : 'admin', ...(!system && grant.overrides && { overrides: grant.overrides }) }
+    return entry ? { status: 200, body: { data: entry, meta } } : refusal(404, 'previewRefused')
   }
 
   function handle(method, pathname, query, headers, body) {
