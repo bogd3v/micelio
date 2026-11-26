@@ -9,8 +9,11 @@ const PROBLEM_HEADERS: Record<string, string> = {
   'content-security-policy': 'script-src \'none\'; frame-ancestors \'none\';',
 }
 
+/** The paths whose errors are problem details: the API, and the JSON routes the admin reads under `/_micelio/` (bogd3v/micelio#737). */
+const PROBLEM_PREFIXES = ['/api/', '/_micelio/']
+
 /**
- * Answers every error of an `/api/*` route as an RFC 9457 problem detail (`application/problem+json`, ADR 0015).
+ * Answers every error of an `/api/*` or `/_micelio/*` route as an RFC 9457 problem detail (`application/problem+json`, ADR 0015).
  *
  * @remarks
  * Nuxt 4 has no `render:error` hook, so this wraps the `onError` of the H3 app: the error is captured as Nitro does (`errorLog.ts` still logs it), then the response is written here. Pages keep the Nuxt error page. Headers the route already set, like `Retry-After`, stay.
@@ -18,7 +21,7 @@ const PROBLEM_HEADERS: Record<string, string> = {
 export default defineNitroPlugin((nitroApp) => {
   const original = nitroApp.h3App.options.onError
   nitroApp.h3App.options.onError = async (error, event) => {
-    if (!event.path.startsWith('/api/') || event.handled) return original?.(error, event)
+    if (!PROBLEM_PREFIXES.some(prefix => event.path.startsWith(prefix)) || event.handled) return original?.(error, event)
     nitroApp.captureError(error, { event, tags: ['request'] })
     const body = problemFromError(error)
     // A 5xx is never stored, whatever the route set; otherwise Nitro's rule: keep the route's header, but never cache a 404. A route that already said `no-store` keeps it: it is stricter than `no-cache`

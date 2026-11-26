@@ -57,6 +57,11 @@ export interface Hooks {
   attributes: ReadonlySet<string>
 }
 
+/** sRGB channels in 0..1. */
+export interface Rgb { r: number, g: number, b: number }
+/** `Rgb` with an alpha channel `a` in 0..1. */
+export interface Rgba extends Rgb { a: number }
+
 /** One contrast requirement of ADR 0005, section 1. */
 export interface ContrastRule {
   /** The foreground role. */
@@ -67,6 +72,19 @@ export interface ContrastRule {
   min: number
   /** The contract minor (`major.minor`) from which the rule applies: a theme that declares an older one is not held to it. */
   since?: string
+}
+
+/**
+ * The contrast matrix of a theme as the server reads it (`runtime.json`, `GET /_micelio/contrast`): the rules `theme:check` holds it to, and the color of every role they name in each mode.
+ *
+ * @remarks
+ * A color is sRGB with alpha, each channel in 0..1 and unrounded, so the server measures what `theme:check` measures; `null` when the role has no value or is not a color.
+ */
+export interface ContrastTable {
+  /** The rules of the theme's contract, without `since`, and the `contrast` its tokens declare. */
+  rules: ContrastRule[]
+  /** Mode id, then role, to `[r, g, b, a]`. */
+  modes: Record<string, Record<string, [number, number, number, number] | null>>
 }
 
 /** A piece of generated CSS, evaluated each time its template is rebuilt. */

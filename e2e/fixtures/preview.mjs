@@ -15,7 +15,7 @@ function refusal(status, code) {
 
 /**
  * Answers `POST /api/micelio/preview/exchange` and `GET /api/micelio/preview/draft` like the plugin: a token works once, a grant names one document, and the draft says who the grant acts for (`meta.actor`).
- * A token made with a theme override answers it on the exchange (`data.overrides`) and on every draft read of its grant (`meta.overrides`), bogd3v/micelio-plugin-core#268.
+ * A token made with overrides (a theme, accent overrides) answers them on the exchange (`data.overrides`) and on every draft read of its grant (`meta.overrides`), bogd3v/micelio-plugin-core#268.
  * A system grant (`issueSystem`, which the plugin mints for itself at publish) lives 60 seconds, is claimed by the first check that matches its document, and is refused when the draft was saved since.
  *
  * @param options.apiToken - The API token the routes accept; any other, or none, is the 401 Strapi answers.
@@ -35,11 +35,12 @@ export function createPreviewMock({ apiToken } = {}) {
   /**
    * Makes a token for a draft, as the admin's token route does.
    *
-   * @param {{ kind?: 'article' | 'page', documentId: string, locale?: string, adminOrigin: string, theme?: { id: string, version: string } }} binding - `theme` is the theme override the token carries (ADR 0019, amendment of 2026-11-25).
+   * @param {{ kind?: 'article' | 'page', documentId: string, locale?: string, adminOrigin: string, theme?: { id: string, version: string }, accentOverrides?: Array<{ mode: string, color: string }>, overrides?: Record<string, unknown> }} binding - `theme` and `accentOverrides` are the overrides the token carries (ADR 0019, amendment of 2026-11-25). `overrides` is answered as given, for a test of what the plugin refuses and the frontend must ignore.
    */
-  function issue({ kind = 'article', documentId, locale = 'en', adminOrigin, theme }) {
+  function issue({ kind = 'article', documentId, locale = 'en', adminOrigin, theme, accentOverrides, overrides: raw }) {
     const token = `preview-token-${++count}-${'x'.repeat(24)}`
-    tokens.set(token, { contentType: CONTENT_TYPES[kind], documentId, locale, adminOrigin, ...(theme && { overrides: { theme } }), expiresAt: Date.now() + 60_000, used: false })
+    const overrides = { ...raw, ...(theme && { theme }), ...(accentOverrides && { accentOverrides }) }
+    tokens.set(token, { contentType: CONTENT_TYPES[kind], documentId, locale, adminOrigin, ...(Object.keys(overrides).length && { overrides }), expiresAt: Date.now() + 60_000, used: false })
     return token
   }
 

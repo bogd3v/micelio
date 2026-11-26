@@ -1,9 +1,9 @@
 // Pure color math (sRGB, WCAG 2, OKLCH). No lightningcss: the build (modules/theme/color.ts) and the server both import it.
 
-/** sRGB channels in 0..1. */
-export interface Rgb { r: number, g: number, b: number }
-/** `Rgb` with an alpha channel `a` in 0..1. */
-export interface Rgba extends Rgb { a: number }
+import type { Rgb, Rgba } from '../../modules/theme/types'
+
+export type { Rgb, Rgba }
+
 interface Oklch { l: number, c: number, h: number }
 
 const MAX_REF_DEPTH = 20

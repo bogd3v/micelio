@@ -2,14 +2,13 @@ import { describe, expect, it } from 'vitest'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { CONTRACT_ADDITIONS, CONTRACT_VERSION } from '../modules/theme/constants'
+import { CONTRACT_ADDITIONS, CONTRACT_VERSION, CONTRAST_RULES } from '../modules/theme/constants'
 import { MAX_MODES, contractProblems, themeIdProblem, themeJsonSchema, validateContract } from '../modules/theme/contract'
 import { loadHooks } from '../modules/theme/hooks'
 import { discoverThemes, themeRoots } from '../modules/theme/themes'
 import { themeProblems, validateThemes } from '../modules/theme/validate'
 import { contractUsage, contractUsageProblems, formatContractVersion, parseContractVersion } from '../modules/theme/version'
 import type { ContractAddition } from '../modules/theme/types'
-import { CONTRAST_RULES } from '../modules/theme/contrast'
 
 const FIXTURES = join(process.cwd(), 'test/fixtures/themes')
 const hooks = loadHooks(join(process.cwd(), 'app'))

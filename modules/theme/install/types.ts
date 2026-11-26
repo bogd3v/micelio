@@ -1,4 +1,4 @@
-import type { ContrastRule, Hooks, LayoutRegion, ModeDefinition, ModePalette, SlotName, SlotOptions, ThemeManifest } from '../types'
+import type { ContrastRule, ContrastTable, Hooks, LayoutRegion, ModeDefinition, ModePalette, SlotName, SlotOptions, ThemeManifest } from '../types'
 import type { ThemeDisplay } from '../display-family'
 import type { ThemePin } from '../registry/types'
 
@@ -122,6 +122,8 @@ export interface RuntimeData {
   mermaid: NonNullable<ThemeManifest['mermaid']>
   display: ThemeDisplay
   palette: { modes: Record<string, ModePalette>, rules: ContrastRule[] }
+  /** The contrast matrix of `theme:check`, for `GET /_micelio/contrast`. */
+  contrast: ContrastTable
   /** Messages by locale, each compiled to the AST the client formats without a compiler. */
   messages: Record<string, Record<string, unknown>>
 }

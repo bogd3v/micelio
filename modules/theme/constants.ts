@@ -1,4 +1,4 @@
-import type { ContractAddition, ContractVersion, LayoutRegion } from './types'
+import type { ContractAddition, ContractVersion, ContrastRule, LayoutRegion } from './types'
 
 /**
  * The theme contract version this build implements: a `theme.json` declares the same `major` and a `minor` no higher than this one.
@@ -112,3 +112,45 @@ export const URL_FUNCTIONS: ReadonlySet<string> = new Set(['image-set', '-webkit
 
 /** Files served from a theme's `fonts/`: fonts and their license texts; anything else is skipped with a warning. Not `FONT_FILE` of the contract, which names the font files a `theme.json` may declare. */
 export const FONT_ASSET_FILE = /\.(woff2?|txt)$/i
+
+// The contrast rules of ADR 0005, section 1 (WCAG 2 AA) and its 2026-10-06 amendment, which `theme:check` and `GET /_micelio/contrast` measure
+// with `contrastPairs` (app/helpers/contrast.ts)
+
+/**
+ * Minimum contrast ratio of text (WCAG 2 AA).
+ *
+ * @internal Exported for tests.
+ */
+export const TEXT_MIN = 4.5
+const CONTROL_MIN = 3
+
+const SURFACES = ['surface', 'surface-raised', 'surface-sunken']
+/** The surface the `tone: accent` option of a section puts under its text (#731). */
+const TONE_SURFACES = ['accent-soft']
+const STATES = ['success', 'warning', 'danger', 'info']
+const CATEGORY_ROLES = [1, 2, 3, 4, 5].map(n => `category-${n}`)
+
+/** Text roles: on the three surfaces and on their own `-soft` (when it exists). */
+const SOFT_TEXT = ['accent', 'link', ...STATES, ...CATEGORY_ROLES]
+
+/**
+ * The contrast every installed theme must meet in every mode (ADR 0005, section 1 and its 2026-10-06 amendment).
+ *
+ * @remarks
+ * Text meets `TEXT_MIN` (4.5:1): `ink` and `ink-muted` on the three surfaces; the `code-*` roles on `surface-sunken`; `on-ink` on `ink`; `on-accent` on `accent`
+ * and `accent-hover`; `accent`, `link`, the states and the categories on the three surfaces and on their own `-soft` role.
+ * From contract 2.1, `ink`, `ink-muted` and `link` are also held on `accent-soft`, which `tone: accent` makes the surface of a section (#731);
+ * a theme that declares an older contract is not (`ContrastRule.since`).
+ * `line-strong` and `focus` meet 3:1 on the surfaces. An optional role the theme omits is checked with its core default. `theme:check`
+ * adds the `contrast` assertions that a theme declares on its tokens.
+ */
+export const CONTRAST_RULES: ContrastRule[] = [
+  ...['ink', 'ink-muted'].map(role => ({ role, surfaces: SURFACES, min: TEXT_MIN })),
+  ...SOFT_TEXT.map(role => ({ role, surfaces: [...SURFACES, `${role}-soft`], min: TEXT_MIN })),
+  { role: 'on-ink', surfaces: ['ink'], min: TEXT_MIN },
+  { role: 'on-accent', surfaces: ['accent', 'accent-hover'], min: TEXT_MIN },
+  ...['line-strong', 'focus'].map(role => ({ role, surfaces: SURFACES, min: CONTROL_MIN })),
+  ...['code-ink', 'code-muted', 'code-keyword', 'code-string', 'code-number', 'code-function'].map(role => ({ role, surfaces: ['surface-sunken'], min: TEXT_MIN })),
+  // Contract 2.1 (#731): a theme that declares an older contract keeps validating
+  ...['ink', 'ink-muted', 'link'].map(role => ({ role, surfaces: TONE_SURFACES, min: TEXT_MIN, since: '2.1' })),
+]

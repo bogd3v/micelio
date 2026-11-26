@@ -17,7 +17,7 @@ Nothing from a theme is executed, imported or evaluated at any step. A source is
 
 ## Reading an entry back
 
-`loadEntry()` and, for a server plugin that Nitro does not wait for, `loadEntrySync()` verify an entry against its manifest and return its bytes. `parseRuntime()` (`install/runtime.ts`) then reads `runtime.json` with a schema that re-derives every value that can reach HTML, a header or a path: ids and modes in the grammar of the contract, font and image URLs under the entry's own `/_t/<digest>/` folders, short text with no control characters or tags, palette colors as `#rrggbb`, and message trees of the message compiler's node types with no prototype keys and a size cap. It never echoes the offending value.
+`loadEntry()` and, for a server plugin that Nitro does not wait for, `loadEntrySync()` verify an entry against its manifest and return its bytes. `parseRuntime()` (`install/runtime.ts`) then reads `runtime.json` with a schema that re-derives every value that can reach HTML, a header or a path: ids and modes in the grammar of the contract, font and image URLs under the entry's own `/_t/<digest>/` folders, short text with no control characters or tags, palette colors as `#rrggbb`, contrast colors as four channels in 0..1, and message trees of the message compiler's node types with no prototype keys and a size cap. It never echoes the offending value.
 
 `InstallOptions.buildChecksOnly` is for the image's own build: it runs the contract, hook and package checks of the Nuxt build and skips the admission checks of `theme:check` (contrast and static budgets), which a build never made for a theme the operator installed by hand. A server install never sets it.
 
@@ -69,7 +69,7 @@ The worker is `worker.ts` next to it, loaded through jiti in tests and dev. A pr
 | --- | --- |
 | `theme.css` | `fonts.css`, `font-fallbacks.css` and the role tokens in `myc.settings`; the mode switch in `myc.components`; the CSS of the layout variants the theme chose (header and footer in `myc.layout`; home, postList and article in `myc.pages`); `theme.css` (and, for a code theme, `slots/*.css`) in `myc.theme`. Minified and lowered with the core's browser targets |
 | `sections.css` | The theme's `sections.css` in `myc.theme`, kept apart as in the build |
-| `runtime.json` | Id, version, both digests, contract, `code`, modes, fonts and preloads with their URLs, images, layout, slots, display-family data, the palette and contrast rules, and the `theme.*` messages compiled to the AST |
+| `runtime.json` | Id, version, both digests, contract, `code`, modes, fonts and preloads with their URLs, images, layout, slots, display-family data, the palette and contrast rules, the contrast matrix of `theme:check` (its rules and every role's color per mode, for `GET /_micelio/contrast`), and the `theme.*` messages compiled to the AST |
 | `fonts/`, `images/` | The files `fonts/` (woff, woff2, license texts) and `images/` allow |
 | `*.gz`, `*.br` | A gzip and a brotli copy of each `.css`, `.json`, `.svg` and `.txt` file |
 | `manifest.json` | The size and sha256 of every other file, the package digest, the compile key and whether the entry came from a package or a folder |

@@ -35,6 +35,7 @@ The preview is **off** until you set one variable.
   - The theme is looked up in the built-in store at that version, then in the deployment store (`docs/themes/theme-store.md`). A theme in neither answers `409` `themeNotInstalled`, from `/_preview` (which then sets no cookie) and from the draft route.
   - A theme of the built-in store renders with its own slots. Any other renders the core's default slots (`app/theme/defaults/`): a code theme the image was not built with is previewed from its data only, and the response carries `X-Micelio-Theme-Preview: rebuild-required`, because activating it needs an image built with it (ADR 0009, section 4).
   - Each load of the draft route with the grant cookie asks the CMS for the draft's `meta` once before rendering, so a preview costs one more draft read per page load, override or not.
+- A token may also carry **accent overrides**, one candidate accent per mode (`[{ mode, color }]`, the shape of the site's own field), which the full-screen customizer asks for (bogd3v/micelio-plugin-core#61; ADR 0019, amendment of 2026-11-25). They are read like the theme override, from the CMS's answers for the editor's grant only, and the draft response renders them in place of the site's saved accents, adjusted for contrast as the saved ones are (ADR 0005, section 8). A mode the theme does not have and any other value are ignored; nothing is saved, and public pages do not change. A CMS that does not send them previews the saved accents, as before.
 - Every preview answer is `private, no-store` and `X-Robots-Tag: noindex, nofollow`. The routes are in no sitemap, feed or search index, and public pages do not change.
 - `GET /api/preview/<content type>/<documentId>/weight` answers what the draft weighs (HTML, scripts, styles, fonts, images, and the script of its islands apart), per block, for the cost meter of the plugin. It takes the same grant cookie as the draft routes, and the system grant the CMS mints for itself to measure a draft at publish, in the `X-Micelio-Preview-Grant` header (bogd3v/micelio-plugin-core#46): that grant is used once, lives at most 60 seconds, names one version of one draft, frames nothing and works with the preview off. No other credential opens it (`docs/api.md`, `docs/performance.md`).
 - The admin page reads that report from the browser with the editor's grant:
@@ -43,7 +44,7 @@ The preview is **off** until you set one variable.
   `Access-Control-Allow-Credentials: true` and `Vary: Origin`
   when the request's `Origin` is exactly that origin,
   and no `Access-Control-*` header to any other origin or with the preview off.
-  The card route does the same (below); no other route does.
+  The card route and the contrast route do the same (below); no other route does.
   A `GET` with the cookie is a simple request, so there is no preflight,
   and the admin must not add a header to it.
   In WebKit the cookie does not reach a cross-site `fetch` either (see below),
@@ -57,6 +58,12 @@ The preview is **off** until you set one variable.
   media: the route sends the same CORS headers, to the admin origin only.
   Preview only: it is not the `og:image` of a published page (`docs/api.md`, "Social card of a
   draft").
+- `GET /_micelio/contrast?documentId=<documentId>&accent=<mode>:<#RRGGBB>` answers the contrast
+  matrix of the active theme, every pair with its ratio, minimum and result in each mode, with the
+  candidate accents applied, for the Customize page of the plugin (bogd3v/micelio-plugin-core#60):
+  the same AA result as `npm run theme:check`.
+  It takes the grant cookie only, for the document it names, and the same CORS headers as the
+  card route; anything else is a `404` (`docs/api.md`, "Contrast of the active theme").
 - A static or landing site has no preview (the drafts module is off in those modes).
 
 ## The cookie in a cross-site frame

@@ -3,7 +3,8 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { composite, contrastRatio } from '../modules/theme/color'
 import type { Rgb } from '../modules/theme/color'
-import { TEXT_MIN, lookupFor, resolveOver } from '../modules/theme/contrast'
+import { TEXT_MIN } from '../modules/theme/constants'
+import { lookupFor, resolveOver } from '../modules/theme/contrast'
 import { discoverThemes, themeRoots } from '../modules/theme/themes'
 
 // The head of a background scene sits on a panel of the surface role over the poster, which can be any image (#246).

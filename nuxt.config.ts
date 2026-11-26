@@ -152,6 +152,7 @@ export default defineNuxtConfig({
     '/es/newsletter/unsubscribe': { headers: tokenPageHeaders },
     '/_preview': { headers: tokenPageHeaders },
     '/api/preview/**': { headers: tokenPageHeaders },
+    '/_micelio/contrast': { headers: tokenPageHeaders },
     '/_theme': { headers: privatePageHeaders },
     '/_theme/icons': { headers: privatePageHeaders },
     '/es/_theme': { headers: privatePageHeaders },

@@ -7,7 +7,7 @@ import { cssUrls } from '../css-rules'
 import { themeDisplay } from '../display-family'
 import { readThemeFile } from '../files'
 import { buildSegmentedCss } from '../modes'
-import { buildPalette } from '../palette'
+import { buildContrastTable, buildPalette } from '../palette'
 import { gzipDeterministic } from '../registry/gzip'
 import { buildTokensCss } from '../tokens.mjs'
 import type { InstalledTheme, LayoutRegion } from '../types'
@@ -257,6 +257,7 @@ export async function compileTheme({ theme, packageDigest, code, coreBuild, layo
     mermaid: manifest.mermaid ?? {},
     display: themeDisplay(manifest),
     palette: { modes: palette.modes, rules: palette.rules },
+    contrast: buildContrastTable(manifest),
     messages,
   }
   files.set(ENTRY_FILES.runtime, Buffer.from(JSON.stringify(runtime)))
