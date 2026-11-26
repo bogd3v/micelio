@@ -141,7 +141,7 @@ const DETAIL_KEY = 'problemDetail'
  * Builds the error of a failed request for `code`, and returns it so the caller throws it.
  *
  * @remarks
- * The status comes from the catalog (`PROBLEM_CODES`) and `data` is `{ code, ...data }`. `statusMessage` is the catalog `title` unless `options` overrides it (auth errors pass the code), and `message` follows it unless overridden: the text each route always sent, so clients that read it keep working. `server/plugins/problemDetails.ts` turns it into an `application/problem+json` response for `/api/*`.
+ * The status comes from the catalog (`PROBLEM_CODES`) and `data` is `{ code, ...data }`. `statusMessage` is the catalog `title` unless `options` overrides it (auth errors pass the code), and `message` follows it unless overridden: the text each route always sent, so clients that read it keep working. `server/plugins/problemDetails.ts` turns it into an `application/problem+json` response for `/api/*` and `/_micelio/*`.
  *
  * @param code - The catalog code.
  * @param options - A fixed developer `detail`, the legacy `message` and `statusMessage`, and extra `data` members.
@@ -167,7 +167,7 @@ export function problem(code: ProblemCode, options: ProblemOptions = {}): Return
  * The RFC 9457 members of a catalog code, for a route that writes its own error answer.
  *
  * @remarks
- * For a route outside `/api/` that answers a problem detail of its own (`/_preview` and its `themeNotInstalled`), where the problem details plugin does not write the error answer.
+ * For a route outside `/api/` and `/_micelio/` that answers a problem detail of its own (`/_preview` and its `themeNotInstalled`), where the problem details plugin does not write the error answer.
  */
 export function problemDetailOf(code: ProblemCode): Pick<ProblemBody, 'type' | 'title' | 'status' | 'detail' | 'code'> {
   const { status, title, detail } = PROBLEM_CODES[code]
