@@ -13,17 +13,34 @@ export const previewQuerySchema = z.object({
   mode: z.string().optional(),
 })
 
+/** A mode id, as the site's `accentOverrides` names it. */
+const MODE_SLUG = /^[a-z][a-z0-9-]*$/
+/** The most accent overrides a token binds (ADR 0019, amendment of 2026-11-25). */
+const MAX_ACCENT_OVERRIDES = 16
+
+/**
+ * Candidate accents, one per mode, in the shape of the site's `accentOverrides` (ADR 0005, section 8): `mode` a slug unique in the list, `color` `#RRGGBB`, at most 16.
+ *
+ * @remarks
+ * A list outside that grammar does not parse. Whether the theme has the mode, and whether the color reaches contrast, is decided when it is resolved (`resolveTheme`).
+ */
+export const accentOverridesSchema = z.array(z.object({ mode: z.string().max(64).regex(MODE_SLUG), color: z.string().regex(/^#[\da-f]{6}$/i) }))
+  .max(MAX_ACCENT_OVERRIDES)
+  .refine(items => new Set(items.map(item => item.mode)).size === items.length, 'a mode is named twice')
+
 /**
  * The overrides the CMS bound to a preview token and answers on the exchange (`data.overrides`) and the draft read (`meta.overrides`), ADR 0019, amendment of 2026-11-25.
  *
  * @remarks
- * Only `theme` is read here: an installed theme, by id and exact version, to render the draft with instead of the active one. Its grammar is the pin's (ADR 0009, section 2), checked again whatever the CMS checked. Other members (`accentOverrides`) are dropped.
+ * `theme` is an installed theme, by id and exact version, to render the draft with instead of the active one; its grammar is the pin's (ADR 0009, section 2).
+ * `accentOverrides` replace the site's saved accents for the draft response. Both are checked again whatever the CMS checked; any other member is dropped.
  */
 export const previewOverridesSchema = z.object({
   theme: z.object({
     id: z.string().regex(THEME_ID),
     version: z.string().max(VERSION_MAX_LENGTH).regex(THEME_VERSION),
   }).optional(),
+  accentOverrides: accentOverridesSchema.optional(),
 })
 
 /** The overrides of a preview grant. */
@@ -58,10 +75,29 @@ export const previewDraftMetaSchema = z.object({
   reusableBlock: z.object({ documentId: z.string().min(1), version: z.string().min(1) }).optional(),
 }).refine(({ actor, measure, reusableBlock }) => (measure === undefined && reusableBlock === undefined) || (actor === 'system' && measure !== undefined && reusableBlock !== undefined))
 
+/** A document id as the CMS writes it. */
+const DOCUMENT_ID = /^[A-Za-z0-9_-]{1,64}$/
+
 /** The route parameters of the weight report: the content type of the preview kinds and the document, checked before any CMS call. */
 export const weightParamsSchema = z.object({
   uid: z.string().refine(uid => Object.hasOwn(PREVIEW_CONTENT_TYPES, uid)),
-  documentId: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/),
+  documentId: z.string().regex(DOCUMENT_ID),
+})
+
+/**
+ * The query of `GET /_micelio/contrast`: the document the editor's grant names, and the candidate accents as `accent=<mode>:<#RRGGBB>`, repeated once per mode.
+ *
+ * @remarks
+ * The candidates follow `accentOverridesSchema`; a query outside it does not parse, and the route answers its 404.
+ */
+export const contrastQuerySchema = z.object({
+  documentId: z.string().regex(DOCUMENT_ID),
+  accent: z.union([z.string(), z.array(z.string())]).optional()
+    .transform(value => (value === undefined ? [] : [value].flat()).map((item) => {
+      const separator = item.indexOf(':')
+      return separator < 0 ? { mode: item, color: '' } : { mode: item.slice(0, separator), color: item.slice(separator + 1) }
+    }))
+    .pipe(accentOverridesSchema),
 })
 
 /**

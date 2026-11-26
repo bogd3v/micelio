@@ -3,7 +3,7 @@
   "info": {
     "title": "Micelio site API",
     "version": "0.9.0",
-    "description": "The HTTP routes every Micelio site serves: 42 paths and 44 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
+    "description": "The HTTP routes every Micelio site serves: 43 paths and 45 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
     "license": {
       "name": "AGPL-3.0-only",
       "identifier": "AGPL-3.0-only"
@@ -266,6 +266,132 @@
                         "code": {
                           "enum": [
                             "methodNotAllowed"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_micelio/contrast": {
+      "get": {
+        "operationId": "getMicelioContrast",
+        "summary": "Get the contrast matrix of the active theme with candidate accents",
+        "description": "For the Customize page of the admin (bogd3v/micelio#737): every pair of the contrast matrix `npm run theme:check` holds the active theme to (ADR 0005, section 1 and its 2026-10-06 amendment), in every mode, with its ratio, minimum and result, measured on the colors `theme:check` measures. A candidate accent is resolved as a saved override is (ADR 0005, section 8: moved in lightness until it passes, the theme's own accent when none does), and its family replaces the roles it moves: `accent`, `accent-soft`, `accent-hover`, `on-accent`, and `link`, `focus` and `link-soft` when the theme defines them from the accent. A mode the theme lacks is ignored. Nothing is saved. Authorised by the editor's preview grant of ADR 0019, in the `__Host-micelio_preview` cookie, which the CMS checks with a draft read of the document named in `documentId`, and only when `NUXT_PREVIEW_ADMIN_ORIGIN` is set; the system grant is not accepted. No grant, a made-up, ended or system grant, a grant for another document, a query outside its grammar and a site with the preview off are the same `notFound`. 60 requests a minute per visitor. The admin page reads it with the grant in a credentialed `fetch`: the route sends the CORS headers of the weight report to the configured admin origin, and to no other. Answers `private, no-store`.",
+        "tags": [
+          "Drafts"
+        ],
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "query",
+            "description": "The document the editor's grant names.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,64}$"
+            }
+          },
+          {
+            "name": "accent",
+            "in": "query",
+            "description": "A candidate accent as `<mode>:<#RRGGBB>`, repeated once per mode, at most 16, each mode once. Optional: without one the matrix is the theme's own.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*:#[0-9A-Fa-f]{6}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The matrix of the active theme in every mode, with the candidates applied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContrastReportResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. The `code` is one of:\n- `notFound`: The resource does not exist.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "notFound"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The `code` is one of:\n- `tooManyRequests`: Too many requests. Wait for the time in the Retry-After header, if present, before trying again.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "tooManyRequests"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again, when the limit says.",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway. The `code` is one of:\n- `upstreamUnavailable`: The CMS failed while it checked the grant.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Problem"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "upstreamUnavailable"
                           ]
                         }
                       }
@@ -6960,6 +7086,123 @@
         ],
         "additionalProperties": false,
         "description": "Whether the confirmation worked; `alreadyConfirmed` is true when the address was confirmed before."
+      },
+      "ContrastModeReport": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string"
+          },
+          "accent": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "accent": {
+                    "type": "string"
+                  },
+                  "accentSoft": {
+                    "type": "string"
+                  },
+                  "accentHover": {
+                    "type": "string"
+                  },
+                  "onAccent": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "accent",
+                  "accentSoft",
+                  "accentHover",
+                  "onAccent"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The accent family the candidate resolves to after the contrast adjustment of ADR 0005 section 8, as `#rrggbb`; `null` when the theme's own accent stays."
+          },
+          "pairs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContrastPairResult"
+            },
+            "description": "Every pair of the matrix of `theme:check` for the theme's contract, in its order."
+          }
+        },
+        "required": [
+          "mode",
+          "accent",
+          "pairs"
+        ],
+        "additionalProperties": false
+      },
+      "ContrastPairResult": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "surface": {
+            "type": "string"
+          },
+          "ratio": {
+            "description": "The WCAG 2 ratio floored to two decimals, as `theme:check` prints it; `null` when a color cannot be measured.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "min": {
+            "type": "number"
+          },
+          "passes": {
+            "type": "boolean",
+            "description": "Whether the unrounded ratio reaches `min`."
+          }
+        },
+        "required": [
+          "role",
+          "surface",
+          "ratio",
+          "min",
+          "passes"
+        ],
+        "additionalProperties": false,
+        "description": "One pair of the contrast matrix of ADR 0005, section 1: a foreground role on a surface."
+      },
+      "ContrastReportResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "theme": {
+                "type": "string",
+                "description": "The id of the active theme."
+              },
+              "modes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ContrastModeReport"
+                }
+              }
+            },
+            "required": [
+              "theme",
+              "modes"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "additionalProperties": false,
+        "description": "The contrast matrix of the active theme in every mode, with the candidate accents applied."
       },
       "CtaSection": {
         "type": "object",

@@ -10,6 +10,8 @@ process.env.E2E_BUILD = '1'
 const mockPort = Number(process.env.PREVIEW_MOCK_PORT ?? 4336)
 const appPort = Number(process.env.PREVIEW_APP_PORT ?? 3236)
 const adminPort = Number(process.env.PREVIEW_ADMIN_PORT ?? 4436)
+// The same build with the preview off (e2e/preview/contrast.spec.ts)
+const offPort = Number(process.env.PREVIEW_OFF_PORT ?? 3237)
 
 export default defineConfig({
   testDir: 'e2e/preview',
@@ -25,5 +27,5 @@ export default defineConfig({
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
-  webServer: webServers({ mockPort, appPort, preview: { adminPort, tlsDir: previewTlsDir() }, siteUrl: `https://127.0.0.1:${appPort}` }),
+  webServer: webServers({ mockPort, appPort, preview: { adminPort, tlsDir: previewTlsDir(), offPort }, siteUrl: `https://127.0.0.1:${appPort}` }),
 })

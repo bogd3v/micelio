@@ -40,6 +40,8 @@ declare module 'h3' {
     theme?: ThemeData
     /** The active theme's messages by locale, frozen and shared by every request; a page takes the one of its locale. */
     themeMessages?: Record<string, ThemeMessages>
+    /** The accents an editor's preview grant carries, set by `server/middleware/01-preview-theme.ts` for the draft response only; `render:html` resolves them in place of the saved ones (ADR 0019, amendment of 2026-11-25). */
+    previewAccentOverrides?: Array<{ mode: string, color: string }>
   }
 }
 

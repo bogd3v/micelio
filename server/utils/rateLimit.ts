@@ -24,6 +24,8 @@ const RATE_LIMITS = {
   previewWeightPerDocument: { limit: 8, windowMs: 60 * 1000 },
   // A card is one raster of 1200 by 630 pixels, far cheaper than a report, and the admin asks for it when an editor generates one
   previewCardPerIp: { limit: 30, windowMs: 60 * 1000 },
+  // The Customize page asks for the matrix when the editor stops changing an accent; each answer costs one draft read of the CMS
+  previewContrastPerIp: { limit: 60, windowMs: 60 * 1000 },
   webfingerPerIp: { limit: 30, windowMs: 60 * 1000 },
   // The CMS counts every forwarded lookup against the frontend's own address, with the site settings and feeds: half of its default `api` rule (600 a minute) stays for them
   webfingerGlobal: { limit: 300, windowMs: 60 * 1000 },

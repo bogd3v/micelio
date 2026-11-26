@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { CONTRAST_RULES } from '../modules/theme/contrast'
+import { CONTRAST_RULES } from '../modules/theme/constants'
 import { buildPalette } from '../modules/theme/palette'
 import { discoverThemes } from '../modules/theme/themes'
 

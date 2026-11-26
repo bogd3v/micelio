@@ -1,7 +1,8 @@
 import { toHex } from './color'
-import { CONTRAST_RULES, lookupFor, resolveOver } from './contrast'
+import { CONTRAST_RULES } from './constants'
+import { colorsOf, contrastRulesFor, lookupFor, resolveOver } from './contrast'
 import type { Lookup } from './contrast'
-import type { ContrastRule, ModePalette, ThemeManifest } from './types'
+import type { ContrastRule, ContrastTable, ModePalette, ThemeManifest } from './types'
 
 // The slice of the active theme the server needs to compute accent contrast at runtime (#micelio/theme-palette, Nitro only).
 
@@ -77,4 +78,19 @@ export function buildPalette(manifest: ThemeManifest): ThemePalette {
     }
   }
   return { modes, rules: CONTRAST_RULES.filter(rule => PALETTE_RULE_ROLES.includes(rule.role) && !rule.since), skipped }
+}
+
+/** The contrast matrix of a theme with a valid contract, for the server to measure as `theme:check` does (`ContrastTable`). */
+export function buildContrastTable(manifest: ThemeManifest): ContrastTable {
+  const rules = contrastRulesFor(manifest)
+  const roles = [...new Set(['surface', ...rules.flatMap(rule => [rule.role, ...rule.surfaces])])]
+  const modes = Object.fromEntries(manifest.modes.map((mode) => {
+    const colorOf = colorsOf(lookupFor(manifest, mode.id))
+    return [mode.id, Object.fromEntries(roles.map((role) => {
+      const color = colorOf(role)
+      const channels: [number, number, number, number] | null = typeof color === 'string' ? null : [color.r, color.g, color.b, color.a]
+      return [role, channels]
+    }))]
+  }))
+  return { rules, modes }
 }

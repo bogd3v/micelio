@@ -10,6 +10,12 @@ const IDENT = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const FONT_FILE_NAME = /^[\w.-]{1,100}\.woff2$/
 const IMAGE_PATH = /^[\w.-]{1,100}(?:\/[\w.-]{1,100}){0,7}$/
 const COLOR = /^#[0-9a-f]{6}$/
+const CHANNEL = z.number().min(0).max(1)
+/** The name of a role or token (`modules/theme/contract.ts`); a declared rule may name any token. */
+const TOKEN_NAME = z.string().max(128).regex(/^[\w-]+$/)
+// The core's rule table and the few rules a theme declares on its tokens; the roles they name, per mode
+const MAX_CONTRAST_RULES = 200
+const MAX_CONTRAST_ROLES = 400
 const hasControl = (value: string): boolean => [...value].some(char => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127)
 const TEXT = z.string().max(200).refine(value => !hasControl(value) && !/[<>]/.test(value), 'contains a control character or a tag')
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
@@ -85,6 +91,11 @@ function schema(): z.ZodType<RuntimeData> {
     palette: z.strictObject({
       modes: z.record(z.string().regex(IDENT), Palette),
       rules: z.array(z.strictObject({ role: z.string().regex(IDENT), surfaces: z.array(z.string().regex(IDENT)).max(10), min: z.number().min(1).max(21) })).max(50),
+    }),
+    contrast: z.strictObject({
+      rules: z.array(z.strictObject({ role: TOKEN_NAME, surfaces: z.array(TOKEN_NAME).max(10), min: z.number().min(1).max(21) })).max(MAX_CONTRAST_RULES),
+      modes: z.record(z.string().regex(IDENT), z.record(TOKEN_NAME, z.tuple([CHANNEL, CHANNEL, CHANNEL, CHANNEL]).nullable())
+        .refine(roles => Object.keys(roles).length <= MAX_CONTRAST_ROLES, 'names too many roles')),
     }),
     messages: Messages,
   }).superRefine((data, ctx) => {

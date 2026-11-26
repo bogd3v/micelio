@@ -1,6 +1,7 @@
 import { draftListResponseSchema, draftPageResponseSchema } from '~/schemas/drafts'
 import { draftArticleResponseSchema } from '~/schemas/posts'
 import { weightReportResponseSchema } from '~/schemas/preview'
+import { contrastReportResponseSchema } from '~/schemas/theme'
 import type { ParameterSpec, RouteEntry } from '../types'
 
 const WITHOUT_PARAMETER: ParameterSpec = {
@@ -90,5 +91,20 @@ export const DRAFT_ROUTES: RouteEntry[] = [
     response: { status: 200, contentType: 'image/png', description: 'The card, a PNG of 1200 by 630 pixels.' },
     errors: ['notFound', 'tooManyRequests', 'upstreamUnavailable', 'internalError'],
     errorDetails: { upstreamUnavailable: 'The CMS failed while it checked the grant or read the draft.', internalError: 'The theme ships no font file, or the card could not be drawn.' },
+  },
+  {
+    file: 'server/routes/_micelio/contrast.get.ts',
+    method: 'get',
+    path: '/_micelio/contrast',
+    summary: 'Get the contrast matrix of the active theme with candidate accents',
+    description: 'For the Customize page of the admin (bogd3v/micelio#737): every pair of the contrast matrix `npm run theme:check` holds the active theme to (ADR 0005, section 1 and its 2026-10-06 amendment), in every mode, with its ratio, minimum and result, measured on the colors `theme:check` measures. A candidate accent is resolved as a saved override is (ADR 0005, section 8: moved in lightness until it passes, the theme\'s own accent when none does), and its family replaces the roles it moves: `accent`, `accent-soft`, `accent-hover`, `on-accent`, and `link`, `focus` and `link-soft` when the theme defines them from the accent. A mode the theme lacks is ignored. Nothing is saved. Authorised by the editor\'s preview grant of ADR 0019, in the `__Host-micelio_preview` cookie, which the CMS checks with a draft read of the document named in `documentId`, and only when `NUXT_PREVIEW_ADMIN_ORIGIN` is set; the system grant is not accepted. No grant, a made-up, ended or system grant, a grant for another document, a query outside its grammar and a site with the preview off are the same `notFound`. 60 requests a minute per visitor. The admin page reads it with the grant in a credentialed `fetch`: the route sends the CORS headers of the weight report to the configured admin origin, and to no other. Answers `private, no-store`.',
+    tag: 'Drafts',
+    parameters: [
+      { name: 'documentId', in: 'query', description: 'The document the editor\'s grant names.', schema: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,64}$' }, required: true },
+      { name: 'accent', in: 'query', description: 'A candidate accent as `<mode>:<#RRGGBB>`, repeated once per mode, at most 16, each mode once. Optional: without one the matrix is the theme\'s own.', schema: { type: 'string', pattern: '^[a-z][a-z0-9-]*:#[0-9A-Fa-f]{6}$' } },
+    ],
+    response: { status: 200, schema: contrastReportResponseSchema, description: 'The matrix of the active theme in every mode, with the candidates applied.' },
+    errors: ['notFound', 'tooManyRequests', 'upstreamUnavailable'],
+    errorDetails: { upstreamUnavailable: 'The CMS failed while it checked the grant.' },
   },
 ]

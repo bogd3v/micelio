@@ -1,3 +1,5 @@
+import type { AccentColors } from './site'
+
 /**
  * A mode id declared by the active theme (`light` | `dark` in the starter).
  *
@@ -101,5 +103,33 @@ export interface ThemeStatus {
     builtIn: Array<{ id: string, version?: string, code: boolean }>
     /** Whether a data-only theme named by a pin is installed from the registry when the store lacks it, and the tiers it may have. */
     registry: { install: boolean, tiers: string[] }
+  }
+}
+
+/** One pair of the contrast matrix of ADR 0005, section 1, in one mode: a foreground role on a surface. */
+export interface ContrastPairResult {
+  role: string
+  surface: string
+  /** The measured WCAG 2 ratio, floored to two decimals as `theme:check` prints it; `null` when a color cannot be measured. */
+  ratio: number | null
+  min: number
+  /** Whether the unrounded ratio reaches `min`. */
+  passes: boolean
+}
+
+/** The contrast matrix of one mode of the active theme, with the candidate accent applied. */
+export interface ContrastModeReport {
+  mode: string
+  /** The accent family the candidate resolves to, after the adjustment of ADR 0005 section 8; `null` when the theme's own accent stays (no candidate, the theme's own color, or none that reaches contrast). */
+  accent: AccentColors | null
+  pairs: ContrastPairResult[]
+}
+
+/** What `GET /_micelio/contrast` answers: the active theme's matrix in every mode, as `theme:check` measures it. */
+export interface ContrastReportResponse {
+  data: {
+    /** The id of the active theme. */
+    theme: string
+    modes: ContrastModeReport[]
   }
 }

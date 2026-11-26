@@ -7,7 +7,7 @@ import { buildPalette } from '../modules/theme/palette'
 import type { ThemePalette } from '../modules/theme/palette'
 import { discoverThemes } from '../modules/theme/themes'
 import type { ThemeManifest } from '../modules/theme/types'
-import { resetThemeLog, resolveTheme, themeOverridesCss } from '../server/utils/theme'
+import { accentRoleColors, resetThemeLog, resolveTheme, themeOverridesCss, withPreviewAccents } from '../server/utils/theme'
 import type { ThemeSettings } from '../app/interfaces/site'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -181,5 +181,44 @@ describe('themeOverridesCss', () => {
     expect(themeOverridesCss({ id: 'bogota', accents: { dia: { ...accents, accent: '</style><script>x</script>' } } }, ['dia'])).toBeNull()
     expect(themeOverridesCss({ id: 'bogota', accents: { dia: accents } }, ['dia"]{}'])).toBeNull()
     error.mockRestore()
+  })
+})
+
+describe('withPreviewAccents', () => {
+  const palette = buildPalette(manifestOf('starter'))
+  const saved = resolveTheme({ defaultMode: 'dark', accentOverrides: [{ mode: 'dark', color: '#ffcf5a' }] }, palette, 'starter')!
+
+  it('renders the grant\'s accents in place of the saved ones, and keeps the saved default mode', () => {
+    const theme = withPreviewAccents(saved, [{ mode: 'light', color: '#8a1c1c' }], palette, 'starter')
+    expect(theme.defaultMode).toBe('dark')
+    expect(Object.keys(theme.accents)).toEqual(['light'])
+    expect(theme.accents.light).toEqual(resolveTheme({ accentOverrides: [{ mode: 'light', color: '#8a1c1c' }] }, palette, 'starter')!.accents.light)
+  })
+
+  it('resolves an editor\'s candidate without the theme.adjusted log of a saved setting', () => {
+    const candidate = [{ mode: 'light', color: '#ffff00' }]
+    const theme = withPreviewAccents(saved, candidate, palette, 'starter')
+    expect(theme.accents.light!.accent).not.toBe('#ffff00')
+    const impossible: ThemePalette = { ...palette, modes: { light: { ...palette.modes.light!, 'surface': '#000000', 'surface-raised': '#ffffff' } }, rules: [{ role: 'accent', surfaces: ['surface', 'surface-raised'], min: 10 }] }
+    expect(resolveTheme({ accentOverrides: candidate }, impossible, 'starter', { candidate: true })).toBeNull()
+    expect(warn).not.toHaveBeenCalled()
+    // The same accent saved is logged
+    resolveTheme({ accentOverrides: candidate }, palette, 'starter')
+    expect(warned()).toEqual([expect.stringContaining('adjusted for contrast')])
+  })
+
+  it('ignores a mode the theme lacks, and an empty list leaves the theme\'s own accents', () => {
+    expect(withPreviewAccents(saved, [{ mode: 'sepia', color: '#8a1c1c' }], palette, 'starter').accents).toEqual({})
+    expect(withPreviewAccents(undefined, [], palette, 'starter')).toEqual({ id: 'starter', accents: {} })
+  })
+})
+
+describe('accentRoleColors', () => {
+  it('moves link, focus and link-soft only when the theme defines them from the accent', () => {
+    const accents = { accent: '#8a1c1c', accentSoft: '#f1dfd1', accentHover: '#6f1d16', onAccent: '#ffffff' }
+    const [own, linked, soft] = THEMES.map(([, manifest]) => buildPalette(manifest).modes.light!)
+    expect(Object.keys(accentRoleColors(accents, own!)).sort()).toEqual(['accent', 'accent-hover', 'accent-soft', 'on-accent'])
+    expect(accentRoleColors(accents, linked!)).toMatchObject({ 'link': '#8a1c1c', 'focus': '#8a1c1c', 'link-soft': expect.stringMatching(/^#[\da-f]{6}$/) })
+    expect(accentRoleColors(accents, soft!)['link-soft']).toBe('#f1dfd1')
   })
 })

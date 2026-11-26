@@ -5,7 +5,7 @@ import { Locale, defaultLocale } from '~/interfaces/locale'
 import { displayFontOverride, insertThemeLinks, themePreloadLinks } from '../utils/displayFonts'
 import { overridesFor } from '../lib/themeSwitch/request'
 import { activeTheme } from '../utils/activeTheme'
-import { themeOverridesCss } from '../utils/theme'
+import { themeOverridesCss, withPreviewAccents } from '../utils/theme'
 
 /** The locale of the page from its path prefix (`/es/...`); the default one otherwise. */
 function pathLocale(path: string): Locale {
@@ -19,7 +19,7 @@ export default defineNitroPlugin((nitroApp) => {
   // style, which style-src 'unsafe-inline' allows. A script would be blocked.
   nitroApp.hooks.hook('render:html', async (html, { event }) => {
     // The theme this request began with, not the one active now: a page never mixes two themes
-    const { digest, modes, fonts, display: themeDisplay, layout } = (event.context.activeTheme ?? activeTheme()).runtime
+    const { id, digest, modes, fonts, display: themeDisplay, layout, palette } = (event.context.activeTheme ?? activeTheme()).runtime
     const first = modes[0]
     if (!first) return
     // Strapi down or slow: the theme's own first mode and colors, as before
@@ -30,7 +30,10 @@ export default defineNitroPlugin((nitroApp) => {
       loaded = undefined
     }
     // Overrides resolved against another theme (a switch happened while this page rendered) are left out
-    const theme = overridesFor(loaded, digest)
+    const saved = overridesFor(loaded, digest)
+    // A draft for an editor's grant renders the accents the grant carries in place of the saved ones, resolved against the theme it renders (ADR 0019, amendment of 2026-11-25)
+    const previewAccents = event.context.previewAccentOverrides
+    const theme = previewAccents ? withPreviewAccents(saved, previewAccents, palette, id) : saved
     const chosen = modes.find(mode => mode.id === theme?.defaultMode)
     const initial = chosen ?? first
     // data-mode-default is read by the init script (modules/theme/init-script.mjs); the visitor's stored choice still wins

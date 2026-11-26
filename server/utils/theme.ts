@@ -61,18 +61,35 @@ function derive(accent: Rgb, mode: ModePalette): Derived {
   }
 }
 
+/** The roles an accent moves in a mode: its family and, when the theme defines them as the accent, link, focus and link-soft. */
+function followers(derived: Derived, mode: ModePalette): Record<string, Rgb> {
+  const moved: Record<string, Rgb> = { ...derived }
+  if (mode.focusIsAccent) moved.focus = derived.accent
+  if (!mode.linkIsAccent) return moved
+  moved.link = derived.accent
+  if (mode.linkSoftIsAccentSoft) moved['link-soft'] = derived['accent-soft']
+  // The core default, color-mix(in srgb, var(--link) 12%, var(--surface))
+  else if (mode.linkSoftIsDefault) moved['link-soft'] = rgb(toHex(mixSrgb(derived.accent, rgb(mode.surface), LINK_SOFT_SHARE)))
+  return moved
+}
+
+/**
+ * The colors of the roles an override's accent family moves in one mode, as `#rrggbb`: `accent`, `accent-soft`, `accent-hover`, `on-accent`, and `link`, `focus` and `link-soft` when the theme defines them from the accent.
+ *
+ * @remarks
+ * The roles `resolveTheme` checks the override against (ADR 0005, section 8); any other role keeps the theme's value.
+ */
+export function accentRoleColors(accents: AccentColors, mode: ModePalette): Record<string, string> {
+  const derived: Derived = { 'accent': rgb(accents.accent), 'accent-soft': rgb(accents.accentSoft), 'accent-hover': rgb(accents.accentHover), 'on-accent': rgb(accents.onAccent) }
+  return Object.fromEntries(Object.entries(followers(derived, mode)).map(([role, color]) => [role, toHex(color)]))
+}
+
 /** Whether `accent` keeps every rule the accent can break: itself, its family and, when the theme defines them as the accent, link and focus. */
 function passes(accent: Rgb, mode: ModePalette, rules: ContrastRule[]): boolean {
   const derived = derive(accent, mode)
+  const moved = followers(derived, mode)
   const colorOf = (role: string): Rgb | undefined => {
-    if (role in derived) return derived[role as keyof Derived]
-    if (role === 'link' && mode.linkIsAccent) return derived.accent
-    if (role === 'focus' && mode.focusIsAccent) return derived.accent
-    if (role === 'link-soft' && mode.linkIsAccent) {
-      if (mode.linkSoftIsAccentSoft) return derived['accent-soft']
-      // The core default, color-mix(in srgb, var(--link) 12%, var(--surface))
-      if (mode.linkSoftIsDefault) return rgb(toHex(mixSrgb(derived.accent, rgb(mode.surface), LINK_SOFT_SHARE)))
-    }
+    if (Object.hasOwn(moved, role)) return moved[role]
     const value = (mode as unknown as Record<string, unknown>)[role]
     return typeof value === 'string' && value.startsWith('#') ? rgb(value) : undefined
   }
@@ -96,17 +113,17 @@ function accentColors(derived: Derived): AccentColors {
   }
 }
 
-/** The accent family for `color` in `mode`: the color itself when it passes, the nearest lightness that does, or null when none does. */
-function resolveAccent(color: string, modeId: string, mode: ModePalette, rules: ContrastRule[]): AccentColors | null {
+/** The accent family for `color` in `mode`: the color itself when it passes, the nearest lightness that does, or null when none does. A candidate (`log` false) is not logged. */
+function resolveAccent(color: string, modeId: string, mode: ModePalette, rules: ContrastRule[], log: boolean): AccentColors | null {
   const wanted = parseHex(color)
   if (!wanted) return null
   const found = nearestWhere(wanted, candidate => passes(candidate, mode, rules), rgb(mode.surface))
   if (!found) {
-    logOnce(`Theme accent override ${color} for mode "${modeId}" reaches no contrast; the theme's accent stays`)
+    if (log) logOnce(`Theme accent override ${color} for mode "${modeId}" reaches no contrast; the theme's accent stays`)
     return null
   }
   const result = accentColors(derive(found, mode))
-  if (result.accent !== color.toLowerCase()) {
+  if (log && result.accent !== color.toLowerCase()) {
     logOnce(`Theme accent override for mode "${modeId}" adjusted for contrast: ${color.toLowerCase()} -> ${result.accent}`)
   }
   return result
@@ -119,8 +136,11 @@ function resolveAccent(color: string, modeId: string, mode: ModePalette, rules: 
  * `buildTheme` is the id of the active theme. A `themeId` that names another theme is not acted on here (the switch activates it, or
  * reports why not, ADR 0009): the overrides go to the active theme meanwhile. A `defaultMode` and overrides for modes the theme does not have
  * are ignored, and so is an accent equal to the theme's own. A failing accent is moved in OKLCH lightness until it passes.
+ *
+ * An accent moved or kept is logged once as `theme.adjusted`, because it says a saved setting renders otherwise. `options.candidate` says the settings are
+ * an editor's unsaved candidates (a preview token's accents, the query of `GET /_micelio/contrast`): they are resolved the same way and logged never.
  */
-export function resolveTheme(raw: ThemeSettings | null | undefined, palette: PaletteInput, buildTheme: string): SiteTheme | null {
+export function resolveTheme(raw: ThemeSettings | null | undefined, palette: PaletteInput, buildTheme: string, options: { candidate?: boolean } = {}): SiteTheme | null {
   if (!raw) return null
   if (raw.themeId && raw.themeId !== buildTheme) {
     logOnce(`Strapi's theme "${raw.themeId}" is not the active theme "${buildTheme}" (yet, or it could not be activated); its overrides apply to the active one`)
@@ -132,7 +152,7 @@ export function resolveTheme(raw: ThemeSettings | null | undefined, palette: Pal
   for (const { mode: modeId, color } of raw.accentOverrides ?? []) {
     const mode = Object.hasOwn(palette.modes, modeId) ? palette.modes[modeId] : undefined
     if (!mode || color.toLowerCase() === mode.accent) continue
-    const accents = resolveAccent(color, modeId, mode, palette.rules)
+    const accents = resolveAccent(color, modeId, mode, palette.rules, !options.candidate)
     if (accents && accents.accent !== mode.accent) theme.accents[modeId] = accents
   }
   return theme.defaultMode || theme.displayFont || Object.keys(theme.accents).length ? theme : null
@@ -158,4 +178,16 @@ export function themeOverridesCss(theme: SiteTheme | undefined, modeIds: string[
     return null
   }
   return css
+}
+
+/**
+ * The site's theme overrides with the accents a preview grant carries in place of the saved ones (ADR 0019, amendment of 2026-11-25).
+ *
+ * @remarks
+ * The candidates are resolved as the saved ones are, against the palette of the theme the draft renders: a mode the theme lacks is ignored and a failing
+ * accent is moved until it passes, without the `theme.adjusted` log of a saved setting. The saved default mode and display font stay.
+ */
+export function withPreviewAccents(saved: SiteTheme | undefined, accentOverrides: Array<{ mode: string, color: string }>, palette: PaletteInput, themeId: string): SiteTheme {
+  const accents = resolveTheme({ accentOverrides }, palette, themeId, { candidate: true })?.accents ?? {}
+  return { ...saved, id: themeId, accents }
 }
