@@ -61,8 +61,10 @@ export function slotModule(name: string, buildTheme: string, themes: readonly Sl
  *
  * @remarks
  * Every theme of the build (`themes/`, the lock's, `MICELIO_THEME_DIRS`) has its slots compiled in, chosen by the active
- * theme's id (`defineSlot`); a theme without its own component renders the core default. #403 must also check the digest
- * before a theme installed at runtime can reuse a built-in theme's id. The build's theme's slots stay bundled; the others
+ * theme's id (`defineSlot`); a theme without its own component renders the core default. The server's theme switch
+ * activates the id of a compiled-in code theme only at the package digest the image was built with and refuses any other
+ * pin with that id (`server/lib/themeSwitch/switch.ts`, `local` and `resolve`; ADR 0009, amendment of 2026-10-30), so
+ * choosing by id renders a code theme's slots only for that package. The build's theme's slots stay bundled; the others
  * load on demand and are never prefetched. The theme's `slots/*.css` files are compiled into its stylesheet in the store
  * (`install/compile.ts`).
  */
