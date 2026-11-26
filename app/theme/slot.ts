@@ -19,7 +19,10 @@ export interface SlotEntries {
  * The theme comes from `useThemeData().id`, and `defaultSlots` (a preview of a theme the image was not built with) always chooses the core default. The build's theme's component is bundled; any other is its own chunk, loaded
  * with `defineAsyncComponent`, rendered by the server and hydrated by the client. Attributes, listeners and Vue slots pass
  * through. `T` is the core default's type, which every theme's component of the slot matches (the slot API), so call
- * sites keep their prop types.
+ * sites keep their prop types. The id is enough to choose by, because the server's theme switch activates the id of a
+ * compiled-in code theme only at the package digest the image was built with (`server/lib/themeSwitch/switch.ts`, `local`
+ * and `resolve`; ADR 0009, amendment of 2026-10-30), and a preview of a theme the image was not built with sets
+ * `defaultSlots`.
  */
 export function defineSlot<T>(name: string, entries: SlotEntries): T {
   const view = (entry: RegionVariant): Component => 'component' in entry ? entry.component : defineAsyncComponent(entry.load)
