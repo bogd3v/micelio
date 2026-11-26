@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { CONTRACT_VERSION, THEME_VERSION } from '../constants'
 import { parseContractVersion } from '../version'
 import { signerOptions, verifyBundle } from './attestation'
-import { ATTESTATION_TAG_SUFFIX, BUNDLE_MEDIA_TYPE, DEFAULT_REGISTRY, INDEX_MEDIA_TYPE, INDEX_REPOSITORY, INDEX_TAG, MAX_BUNDLE_BYTES, MAX_COMPRESSED_BYTES, MAX_INDEX_BYTES, PACKAGE_MEDIA_TYPE } from './constants'
+import { ATTESTATION_TAG_SUFFIX, BUNDLE_MEDIA_TYPE, DEFAULT_REGISTRY, INDEX_MEDIA_TYPE, INDEX_REPOSITORY, INDEX_TAG, MAX_BUNDLE_BYTES, MAX_COMPRESSED_BYTES, MAX_INDEX_BYTES, PACKAGE_MEDIA_TYPE, THEME_DIGEST } from './constants'
 import { RegistryError, safeText, withPin } from './error'
 import { parseIndex } from './registry-index'
 import { createOciClient } from './oci'
@@ -10,6 +10,9 @@ import type { OciClientOptions, OciDescriptor } from './oci'
 import { assertPin } from './pin'
 import { compareVersions, highestSatisfying, satisfies } from './semver'
 import type { BundleVerifier, IndexVersion, RegistryIndex, SignerIdentity, ThemePin, ThemeRegistry } from './types'
+
+/** Largest admission report read, in bytes, while streaming. */
+const MAX_REPORT_BYTES = 1024 * 1024
 
 /** Options of `createRegistry`. */
 export interface RegistryOptions extends Partial<Pick<OciClientOptions, 'fetch' | 'timeoutMs'>> {
@@ -56,6 +59,16 @@ function incompatibleWith(entry: IndexVersion, core: string | undefined): boolea
 function compatible(contract: string): boolean {
   const version = parseContractVersion(contract)
   return version !== null && version.major === CONTRACT_VERSION.major && version.minor <= CONTRACT_VERSION.minor
+}
+
+/**
+ * Whether a core of version `core` runs the version `entry` of the index: it implements the contract the version declares, and the index does not mark the version incompatible with it.
+ *
+ * @remarks
+ * The rules `resolve` applies, except the status: a `yanked` version still runs. Without `core`, every version the index marks `incompatible` does not run.
+ */
+export function runsOn(entry: IndexVersion, core: string | undefined): boolean {
+  return compatible(entry.contract) && !incompatibleWith(entry, core)
 }
 
 /**
@@ -183,6 +196,15 @@ export function createRegistry(options: RegistryOptions): ThemeRegistry {
       } catch (error) {
         throw withPin(error, pin)
       }
+    },
+    async index() {
+      return index()
+    },
+    async report(id, digest) {
+      assertName(id)
+      if (!THEME_DIGEST.test(digest)) throw new RegistryError('registry', 'the report digest of the index is not a sha256 digest', { id })
+      signer()
+      return oci.blob(id, digest, MAX_REPORT_BYTES)
     },
     verify(pin, bundle) {
       assertName(pin.id)

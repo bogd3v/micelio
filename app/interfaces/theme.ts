@@ -106,6 +106,93 @@ export interface ThemeStatus {
   }
 }
 
+/** Who stands behind a version of the registry (ADR 0008, decision 7). */
+export type CatalogueTier = 'official' | 'verified' | 'community'
+
+/** A theme of one of this server's stores, as the catalogue lists it. */
+export interface CatalogueInstalledTheme {
+  id: string
+  version: string
+  /** `sha256:` of the package: the digest the lock pins for a built-in theme from the registry, else the digest of the entry's package or file tree. */
+  packageDigest: string
+  /** The contract the theme declares, as `major.minor`. */
+  contract: string
+  /** Whether the theme ships slots, which only an image built with it runs (ADR 0009, section 4). */
+  code: boolean
+  /** `built-in`: compiled into the image; `deployment`: installed into `MICELIO_THEME_STORE`. */
+  store: 'built-in' | 'deployment'
+  /** From the index, when it lists this version with this package digest. */
+  tier?: CatalogueTier
+  /** The SPDX id of the index, when it lists this version with this package digest. */
+  license?: string
+  /** The digest of the admission report the index names for this version, when it lists it with this package digest. */
+  report?: string
+}
+
+/** One version of a theme of the registry's index, as the catalogue lists it. */
+export interface CatalogueVersion {
+  version: string
+  /** `sha256:` of the package. */
+  digest: string
+  contract: string
+  license: string
+  tier: CatalogueTier
+  /** `licensed` versions are listed as the index lists them; nothing here downloads them. */
+  distribution: 'public' | 'licensed'
+  status: 'published' | 'yanked' | 'incompatible'
+  code: boolean
+  /** The digest of the version's admission report, when the index names one. */
+  report?: string
+  /** Whether this core runs the version: it implements its contract and the index does not mark it incompatible with this core. */
+  runs: boolean
+}
+
+/** A theme of the registry's index, its versions newest first. */
+export interface CatalogueTheme {
+  id: string
+  versions: CatalogueVersion[]
+}
+
+/** A newer version of an installed theme that this server could take. */
+export interface CatalogueUpdate {
+  id: string
+  /** The installed version. */
+  from: string
+  store: CatalogueInstalledTheme['store']
+  /** The newest version of the index that is `published`, newer than `from` and runs on this core. */
+  version: string
+  digest: string
+}
+
+/** The result of an admission report the index names, read from the registry after its digest matched. */
+export interface CatalogueReport {
+  id: string
+  version: string
+  /** The `report` digest of the index. */
+  digest: string
+  /** Whether admission found no error. */
+  ok: boolean
+  /** The Markdown summary of the report (`reportSummary`). */
+  summary: string
+}
+
+/**
+ * What `GET /api/theme/catalogue` answers: the installed themes, the registry's themes, the updates and the admission reports, for the Themes page of the CMS (bogd3v/micelio-plugin-core#59).
+ *
+ * @remarks
+ * Built in the background from the signed index and the stores, and answered from memory (ADR 0009, sections 3 and 6). It holds nothing secret: no token, licence key, URL query or file system path.
+ */
+export interface ThemeCatalogue {
+  installed: CatalogueInstalledTheme[]
+  /** The themes of the verified index, by id; `null` when the index has not been read or did not verify. */
+  registry: CatalogueTheme[] | null
+  /** Why the last read of the index failed, or why none is made; one line with no URL and no path. `null` after a read that succeeded. */
+  reason: string | null
+  updates: CatalogueUpdate[]
+  /** At most 50: the newest `published` version of each theme and each installed version, for those whose report was read. */
+  reports: CatalogueReport[]
+}
+
 /** One pair of the contrast matrix of ADR 0005, section 1, in one mode: a foreground role on a surface. */
 export interface ContrastPairResult {
   role: string

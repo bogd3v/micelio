@@ -428,3 +428,20 @@ describe('bounded work on hostile input', () => {
     expect(performance.now() - started).toBeLessThan(2000)
   })
 })
+
+describe('reading an admission report', () => {
+  it('reads the blob the index names by its digest, checked against it, and never asks for a digest that is not one', async () => {
+    const fake = await withSample()
+    const bytes = Buffer.from('{"report":true}')
+    const digest = fake.publish('sample', 'report', bytes, 'application/json', false)
+    const registry = create(fake)
+    expect(await registry.report('sample', digest)).toEqual(bytes)
+    fake.tamper(digest, Buffer.from('{"report":false}'))
+    expect((await failure(() => registry.report('sample', digest))).failure).toBe('digest')
+    const before = fake.seen.length
+    expect((await failure(() => registry.report('sample', '../../etc/passwd'))).failure).toBe('registry')
+    expect((await failure(() => registry.report('index', digest))).failure).toBe('pin')
+    expect((await failure(() => createRegistry({ registry: fake.registry, identity: null }).report('sample', digest))).failure).toBe('signer')
+    expect(fake.seen.length).toBe(before)
+  })
+})

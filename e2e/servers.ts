@@ -51,6 +51,8 @@ export function webServers({ mockPort, appPort, modulesOff = false, themeOverrid
       `NUXT_PUBLIC_STRAPI_URL=http://127.0.0.1:${mockPort}`,
       `NUXT_PUBLIC_SITE_URL=${siteUrl}`,
       'NUXT_STRAPI_API_TOKEN=e2e-api-token',
+      // The theme catalogue reads the registry in the background: one with no signer identity is never read, so no server reaches ghcr.io
+      'MICELIO_THEME_REGISTRY=127.0.0.1:9/micelio-themes',
       ...(theme ? [`NUXT_PUBLIC_THEME=${theme}`] : []),
       // The site settings are cached for 60 s; a test waits for a switch, not for the cache
       ...(themeSwitch ? ['NUXT_SITE_CACHE_SECONDS=1'] : []),

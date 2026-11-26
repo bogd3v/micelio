@@ -1,6 +1,6 @@
 import type { SiteSettings } from '../../app/interfaces/site'
 import type { LoadedEntry, RuntimeData } from '../../modules/theme/install/types'
-import type { ThemeData, ThemeMessages } from '../../app/interfaces/theme'
+import type { ThemeCatalogue, ThemeData, ThemeMessages } from '../../app/interfaces/theme'
 
 /** What a call to Strapi needs: the pure part of `strapiFetch`, usable outside Nitro (build modules). */
 export interface StrapiRequestConfig {
@@ -71,4 +71,16 @@ export interface PreviewDraftContext {
   draft: unknown
   /** Set when `draft` is the page's published version with a reusable block's draft in place of its references (a grant bound to a reference): the draft page route then draws each reference from the block the copy carries. */
   reference?: PreviewReference
+}
+
+/** The catalogue of this process, built in the background. */
+export interface ThemeCatalogueHolder {
+  /** The last catalogue built: what the route answers, with no I/O. */
+  current: () => ThemeCatalogue
+  /** Reads the stores, the index and the reports again; a failed read keeps the last good index and reports and sets `reason`. Never rejects. */
+  refresh: () => Promise<void>
+  /** Reads the stores again and keeps the index and the reports read last, with no network (after a switch installed a theme). Never rejects. */
+  relist: () => Promise<void>
+  /** Refreshes now and then once an hour (`CATALOGUE_REFRESH_MS`, `server/lib/themeCatalogue.ts`); returns the function that stops it. */
+  start: () => () => void
 }

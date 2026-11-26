@@ -176,6 +176,14 @@ export interface ThemeRegistry {
    * `yanked` or `incompatible` when `locked` (the digest is this site's own pin), and the attestation verifies.
    */
   fetch: (pin: ThemePin, options?: { locked?: boolean }) => Promise<FetchedPackage>
+  /** The whole index, read once per client after its signature verifies; a failed read is not kept, so the next call tries again. */
+  index: () => Promise<RegistryIndex>
+  /**
+   * The bytes of the admission report that the index names by `digest` for theme `id`: the blob of the report referrer in the theme's repository, at most 1 MiB, whose sha256 is checked against `digest` before it is returned.
+   *
+   * @throws `RegistryError` (`registry`) when `digest` is not a sha256 digest, (`signer`) when no signer identity is known, and the failures of a blob read.
+   */
+  report: (id: string, digest: string) => Promise<Buffer>
   /** Verifies, with no network, the attestation bundle of a package that was kept (for example in the cache). */
   verify: (pin: ThemePin, bundle: Uint8Array) => void
 }

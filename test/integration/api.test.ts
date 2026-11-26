@@ -21,7 +21,7 @@ import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/sche
 import { draftListResponseSchema, draftPageResponseSchema } from '~/schemas/drafts'
 import { pageSchema } from '~/schemas/pages'
 import { siteSchema } from '~/schemas/site'
-import { themeStatusSchema } from '~/schemas/theme'
+import { themeCatalogueSchema, themeStatusSchema } from '~/schemas/theme'
 import { articlePageSchema, articleSchema, categoryCountSchema, draftArticleResponseSchema, readingPathSchema, searchResultSchema } from '~/schemas/posts'
 import { contrastRatio, parseHex } from '~/helpers/color'
 import { inlineScripts } from '~/helpers/securityHeaders'
@@ -1314,6 +1314,24 @@ describe('/api/theme/status', () => {
     } finally {
       mock.theme.value = before
     }
+  })
+})
+
+describe('/api/theme/catalogue', () => {
+  it('answers GET /api/theme/catalogue with the built-in themes and public caching', async () => {
+    const response = await fetch('/api/theme/catalogue')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('public, s-maxage=60')
+    const catalogue = themeCatalogueSchema.parse(await response.json())
+    const status = themeStatusSchema.parse(await (await fetch('/api/theme/status')).json())
+    expect(catalogue.installed.map(theme => theme.id).sort()).toEqual(status.available.builtIn.map(theme => theme.id).sort())
+    expect(catalogue.installed.every(theme => theme.store === 'built-in' && /^sha256:[0-9a-f]{64}$/.test(theme.packageDigest) && /^\d+\.\d+$/.test(theme.contract))).toBe(true)
+    // A registry without its signer identity is not read, and the catalogue says why without a URL or a path
+    expect(catalogue.registry).toBeNull()
+    expect(catalogue.reason).toMatch(/MICELIO_THEME_REGISTRY_IDENTITY is not set/)
+    expect(JSON.stringify(catalogue)).not.toMatch(/https?:|127\.0\.0\.1|\/(?:home|app|tmp)\//)
+    expect(mock.requests).toEqual([])
+    for (const method of ['POST', 'PUT', 'DELETE']) expect((await fetch('/api/theme/catalogue', { method })).status, method).toBeGreaterThanOrEqual(404)
   })
 })
 

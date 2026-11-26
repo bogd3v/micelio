@@ -2,7 +2,7 @@ import { pinProblem } from '../registry/pin'
 import type { ThemePin } from '../registry/types'
 import { InstallError } from './error'
 import { compileKey, compiledDigest } from './key'
-import { loadEntry, packageDigestsOf, readKeptPackage } from './store'
+import { loadEntry, packageDigestsOf, readKeptPackage, storedPins } from './store'
 import type { LoadedEntry } from './types'
 
 /**
@@ -54,4 +54,18 @@ export async function installedVersion(storeDir: string, id: string, version: st
     if (entry !== null) return entry
   }
   return null
+}
+
+/**
+ * Every compiled entry of this core the store holds as an installed theme, for the theme catalogue: each pin `storedPins` finds, checked as `installedEntry` checks it.
+ *
+ * @param verify - Verifies the kept attestation bundle of the pin it is given; it throws to refuse.
+ */
+export async function installedPackages(storeDir: string, coreBuild: string, verify?: (pin: ThemePin, bundle: Uint8Array) => void): Promise<LoadedEntry[]> {
+  const found: LoadedEntry[] = []
+  for (const pin of await storedPins(storeDir, compileKey(coreBuild))) {
+    const entry = await installedEntry(storeDir, pin, coreBuild, verify && (bundle => verify(pin, bundle)))
+    if (entry !== null) found.push(entry)
+  }
+  return found
 }
