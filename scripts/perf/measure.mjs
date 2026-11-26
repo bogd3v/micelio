@@ -127,6 +127,8 @@ function startServers() {
     NUXT_PUBLIC_STRAPI_URL: `http://127.0.0.1:${MOCK_PORT}`,
     NUXT_PUBLIC_SITE_URL: base,
     NUXT_STRAPI_API_TOKEN: 'perf-api-token',
+    // The theme catalogue reads the registry in the background: one with no signer identity is never read, so the measured server makes no call to ghcr.io
+    MICELIO_THEME_REGISTRY: '127.0.0.1:9/micelio-themes',
     ...(displayFont && { MOCK_DISPLAY_FONT: displayFont }),
     NUXT_PUBLIC_UMAMI_WEBSITE_ID: '',
     NUXT_MEDIA_URL: 'https://resources.example.com',

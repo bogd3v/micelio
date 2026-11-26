@@ -3,15 +3,18 @@ import { dirname, join } from 'node:path'
 import { cleanTemporary } from '../../../modules/theme/install/store'
 import { readInstallConfig } from '../../../modules/theme/install/config'
 import { BUILT_WORKER } from '../../../modules/theme/install/constants'
+import { installedPackages } from '../../../modules/theme/install/installed'
 import { installIsolated } from '../../../modules/theme/install/isolated'
 import { recompileStored } from '../../../modules/theme/install/recompile'
 import { createRegistry } from '../../../modules/theme/registry/client'
 import { DEFAULT_REGISTRY } from '../../../modules/theme/registry/constants'
 import { identityFor } from '../../../modules/theme/registry/identity'
 import { parseRegistry } from '../../../modules/theme/registry/oci'
-import type { ThemePin } from '../../../modules/theme/registry/types'
+import type { ThemePin, ThemeRegistry } from '../../../modules/theme/registry/types'
 import { listBuiltInThemes, loadBuiltInTheme, loadDefaultTheme, readInstallInputs } from '../builtInStore'
-import type { BuiltInTheme } from '../types'
+import { createThemeCatalogue } from '../themeCatalogue'
+import type { CatalogueDeps, StoredTheme } from '../themeCatalogue'
+import type { BuiltInTheme, ThemeCatalogueHolder } from '../types'
 import { DOWNLOAD_TIMEOUT_MS } from './constants'
 import { createGuardedFetch } from './guardedFetch'
 import { createThemeSwitch } from './switch'
@@ -46,6 +49,27 @@ export interface StartedSwitch {
   ready: Promise<void>
   /** Loads the default theme again (development: the build rewrote the store's index). */
   reload: () => void
+  /** The theme catalogue of `GET /api/theme/catalogue`, not started: the server starts its background reads (`ThemeCatalogueHolder.start`). */
+  catalogue: ThemeCatalogueHolder
+}
+
+/**
+ * The registry the catalogue reads: the one of the server install, with its signer identity, guarded fetch and timeouts, also when there is no deployment store.
+ *
+ * @remarks
+ * A registry address or identity that is not valid stops the boot only when a store is set (`installOf`); without one, the catalogue reads nothing and says why.
+ */
+function catalogueRegistry(options: StartOptions): Pick<CatalogueDeps, 'registry' | 'offReason'> {
+  const address = options.env.MICELIO_THEME_REGISTRY?.trim() || DEFAULT_REGISTRY
+  try {
+    const registryHost = new URL(parseRegistry(address).origin).host
+    const identity = identityFor(address, options.env)
+    if (identity === null) return { registry: null, offReason: 'MICELIO_THEME_REGISTRY is not the default registry and MICELIO_THEME_REGISTRY_IDENTITY is not set: the registry is not read' }
+    // One deadline per read of the catalogue: the index and the reports together
+    return { registry: (): ThemeRegistry => createRegistry({ registry: address, identity, timeoutMs: DOWNLOAD_TIMEOUT_MS, fetch: createGuardedFetch({ registryHost, signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS) }), ...(options.core && { core: options.core }) }) }
+  } catch {
+    return { registry: null, offReason: 'MICELIO_THEME_REGISTRY or MICELIO_THEME_REGISTRY_IDENTITY is not valid: the registry is not read' }
+  }
 }
 
 function installOf(options: StartOptions): SwitchInstall | null {
@@ -121,11 +145,23 @@ export function startThemeSwitch(options: StartOptions): StartedSwitch {
     }
   }
   const ready = boot()
+  async function stored(): Promise<StoredTheme[]> {
+    const builtInThemes = listBuiltInThemes(options.builtInDir).flatMap(({ id, version, code }): StoredTheme[] => {
+      const theme = builtIn(id)
+      return theme ? [{ id, version: theme.runtime.version ?? version, packageDigest: theme.pinned ?? theme.entry.manifest.packageDigest, contract: theme.runtime.contract, code, store: 'built-in' }] : []
+    })
+    if (!install) return builtInThemes
+    const registry = install.registry(AbortSignal.abort())
+    const deployment = await installedPackages(install.storeDir, install.options.coreBuild, (pin, bundle) => registry.verify(pin, bundle))
+    return [...builtInThemes, ...deployment.map(({ manifest }): StoredTheme => ({ id: manifest.id, version: manifest.version, packageDigest: manifest.packageDigest, contract: manifest.contract, code: manifest.code, store: 'deployment' }))]
+  }
+  const catalogue = createThemeCatalogue({ stored, ...catalogueRegistry(options), ...(options.core && { core: options.core }), warn: options.warn })
   // A read of the site settings that comes before the boot work ends (the config check does) is resolved after it
   themeSwitch.hold(ready)
   return {
     themeSwitch,
     ready,
+    catalogue,
     reload() {
       loaded.clear()
       listed = undefined

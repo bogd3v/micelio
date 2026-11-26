@@ -3,7 +3,7 @@
   "info": {
     "title": "Micelio site API",
     "version": "0.9.0",
-    "description": "The HTTP routes every Micelio site serves: 43 paths and 45 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
+    "description": "The HTTP routes every Micelio site serves: 44 paths and 46 operations, from `server/api` and `server/routes`. Generated from `server/openapi/` and the zod schemas of `server/schemas/`; do not edit by hand. Errors under `/api` are problem details (RFC 9457). Response bodies with a schema are in `components.schemas`; the others are described by status and media type, naming their TypeScript type in `app/interfaces`.",
     "license": {
       "name": "AGPL-3.0-only",
       "identifier": "AGPL-3.0-only"
@@ -5862,6 +5862,38 @@
         }
       }
     },
+    "/api/theme/catalogue": {
+      "get": {
+        "operationId": "getApiThemeCatalogue",
+        "summary": "List the installed themes, the registry's themes, the updates and the admission reports",
+        "description": "Read from memory: the stores, the signed index of `MICELIO_THEME_REGISTRY` and the admission reports it names are read in the background, at boot and then once an hour (ADR 0009). Reading it installs, activates and evicts nothing. `registry` is `null`, and `reason` says why in one line with no URL or path, until the index is read and verifies; a later failure keeps the last good catalogue and sets `reason`. Public: it holds no token, licence key, URL query or path.",
+        "tags": [
+          "Content"
+        ],
+        "responses": {
+          "200": {
+            "description": "The installed themes, the registry's themes with whether this core runs each version, the updates of the installed themes and at most 50 admission report results. Cache-Control: `public, s-maxage=60`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThemeCatalogue"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other error, usually a 500 `internalError` or a 405 `methodNotAllowed`.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/theme/status": {
       "get": {
         "operationId": "getApiThemeStatus",
@@ -6770,6 +6802,202 @@
         ],
         "additionalProperties": false,
         "description": "The account, or `user: null` when the visitor is signed out."
+      },
+      "CatalogueInstalledTheme": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "packageDigest": {
+            "type": "string"
+          },
+          "contract": {
+            "type": "string"
+          },
+          "code": {
+            "type": "boolean"
+          },
+          "store": {
+            "type": "string",
+            "enum": [
+              "built-in",
+              "deployment"
+            ]
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "official",
+              "verified",
+              "community"
+            ]
+          },
+          "license": {
+            "type": "string"
+          },
+          "report": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "packageDigest",
+          "contract",
+          "code",
+          "store"
+        ],
+        "additionalProperties": false,
+        "description": "A theme of the built-in or the deployment store; `tier`, `license` and `report` come from the index when it lists this version with this package digest."
+      },
+      "CatalogueReport": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "digest": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "digest",
+          "ok",
+          "summary"
+        ],
+        "additionalProperties": false,
+        "description": "The result and the Markdown summary of an admission report, read from the registry after its bytes matched the digest the index names."
+      },
+      "CatalogueTheme": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "versions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogueVersion"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "versions"
+        ],
+        "additionalProperties": false,
+        "description": "A theme of the index, its versions newest first."
+      },
+      "CatalogueUpdate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "store": {
+            "type": "string",
+            "enum": [
+              "built-in",
+              "deployment"
+            ]
+          },
+          "version": {
+            "type": "string"
+          },
+          "digest": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "from",
+          "store",
+          "version",
+          "digest"
+        ],
+        "additionalProperties": false,
+        "description": "The newest version of the index that is published, newer than the installed `from` and runs on this core."
+      },
+      "CatalogueVersion": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "digest": {
+            "type": "string"
+          },
+          "contract": {
+            "type": "string"
+          },
+          "license": {
+            "type": "string"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "official",
+              "verified",
+              "community"
+            ]
+          },
+          "distribution": {
+            "type": "string",
+            "enum": [
+              "public",
+              "licensed"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "published",
+              "yanked",
+              "incompatible"
+            ]
+          },
+          "code": {
+            "type": "boolean"
+          },
+          "report": {
+            "type": "string"
+          },
+          "runs": {
+            "type": "boolean",
+            "description": "Whether this core implements the contract of the version and the index does not mark it incompatible with this core."
+          }
+        },
+        "required": [
+          "version",
+          "digest",
+          "contract",
+          "license",
+          "tier",
+          "distribution",
+          "status",
+          "code",
+          "runs"
+        ],
+        "additionalProperties": false,
+        "description": "A version of the index, as the index lists it, with whether this core runs it."
       },
       "CategoryEntry": {
         "type": "object",
@@ -12302,6 +12530,60 @@
           "items"
         ],
         "additionalProperties": false
+      },
+      "ThemeCatalogue": {
+        "type": "object",
+        "properties": {
+          "installed": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogueInstalledTheme"
+            }
+          },
+          "registry": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CatalogueTheme"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The themes of the verified index; `null` when the index has not been read or did not verify."
+          },
+          "reason": {
+            "description": "Why the last read of the index failed, or why none is made, as one line with no URL and no path; `null` after a read that succeeded.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogueUpdate"
+            }
+          },
+          "reports": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogueReport"
+            }
+          }
+        },
+        "required": [
+          "installed",
+          "registry",
+          "reason",
+          "updates",
+          "reports"
+        ],
+        "additionalProperties": false,
+        "description": "The installed themes, the registry's themes, the updates and the admission reports, built in the background from the signed index and the stores."
       },
       "ThemeStatus": {
         "type": "object",

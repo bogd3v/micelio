@@ -9,7 +9,7 @@ import { startThemeSwitch } from '../lib/themeSwitch/boot'
 import { pinRequestToTheme } from '../lib/themeSwitch/request'
 import type { BuiltInTheme } from '../lib/types'
 import { themeDataOf, themeMessagesOf } from '../lib/themeData'
-import { setThemeSwitch } from '../utils/activeTheme'
+import { setThemeCatalogue, setThemeSwitch } from '../utils/activeTheme'
 import { clearSiteCache } from '../utils/site'
 import { purgePageCache } from '../utils/themeCache'
 
@@ -38,6 +38,8 @@ export default defineNitroPlugin((nitroApp) => {
       // The site settings were resolved against the theme that was replaced, and any cached page names its stylesheet (ADR 0009, section 8)
       clearSiteCache()
       void purge()
+      // A switch may have installed a theme into the deployment store; the catalogue lists it without reading the registry
+      void started.catalogue.relist()
     },
   })
   async function purge(): Promise<void> {
@@ -48,12 +50,15 @@ export default defineNitroPlugin((nitroApp) => {
     }
   }
   setThemeSwitch(started.themeSwitch)
+  setThemeCatalogue(started.catalogue)
   // Requests wait only for the local boot work (the store clean-up and the remembered themes). The site settings are read once here, in
   // the background, so a restart picks up the theme they name; a Strapi or registry that is slow never holds a request (ADR 0009, section 6).
   const ready = (async (): Promise<void> => {
     await started.ready
-    // A static build never switches (#315)
+    // A static build never switches (#315) and serves no catalogue
     if (isStaticMode(buildSiteMode)) return
+    // The index and the reports are read here and then once an hour, never inside a request (ADR 0009, sections 3 and 6)
+    started.catalogue.start()
     try {
       await loadSite(defaultLocale, { quiet: true })
     } catch {

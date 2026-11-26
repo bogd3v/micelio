@@ -88,16 +88,17 @@ async function localResponse(event: H3Event | null, path: string, headers: Recor
   let encoding = null as string | null
   let status = 200
   // `event.$fetch` forwards the caller's headers (its cookies and `x-forwarded-for`); the global `$fetch` calls the same server in process and forwards none
-  const call = event ? event.$fetch : $fetch
-  const body = await call<ArrayBuffer>(path, {
+  const options = {
     headers: { 'accept-encoding': 'br, gzip', ...headers },
-    responseType: 'arrayBuffer',
+    responseType: 'arrayBuffer' as const,
     ignoreResponseError: true,
-    onResponse({ response }) {
+    onResponse({ response }: { response: Response }) {
       encoding = response.headers.get('content-encoding')
       status = response.status
     },
-  })
+  }
+  // Two calls, not one call of `event ? event.$fetch : $fetch`: TypeScript compares the route types of the two `$Fetch` types for that union and can hit its depth limit (#993)
+  const body = event ? await event.$fetch<ArrayBuffer>(path, options) : await $fetch<ArrayBuffer>(path, options)
   return { status, raw: Buffer.from(body), encoding }
 }
 

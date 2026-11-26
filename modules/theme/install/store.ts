@@ -5,6 +5,7 @@ import { dirname, join, resolve, sep } from 'node:path'
 import { COMPILED_DIGEST, ENTRY_MANIFEST, INSTALL_LEASE_MS, MAX_ENTRY_MANIFEST_BYTES, MAX_LOADED_BYTES, STORE_DIR, STORE_VERSION } from './constants'
 import { InstallError } from './error'
 import type { EntryFile, EntryManifest, LoadedEntry } from './types'
+import type { ThemePin } from '../registry/types'
 
 // The theme store (ADR 0009, section 1): <root>/v1/entries/<digest>/ per compiled entry, packages/<hex>/ for the verified packages
 // they came from, and .tmp/ for staging and locks. Only the installer's uid writes it.
@@ -302,16 +303,16 @@ export async function cleanTemporary(storeDir: string): Promise<void> {
 }
 
 /**
- * The package digests of the entries compiled with `currentKey` whose manifests name theme `id` at `version`, for a lookup without a digest (the preview of ADR 0019, amendment of 2026-11-25).
+ * The pins of the entries compiled with `currentKey` from a package, as their manifests name them, for a lookup without a digest (the preview of ADR 0019, amendment of 2026-11-25, and the theme catalogue).
  *
  * @remarks
- * The manifests are read but not verified, and an entry whose manifest cannot be read is skipped: the caller loads each digest with `installedEntry`, which decides whether it is installed.
+ * The manifests are read but not verified, and an entry whose manifest cannot be read is skipped: the caller loads each pin with `installedEntry`, which decides whether it is installed.
  *
  * @param currentKey - The compile key of this core build (`compileKey()`).
  */
-export async function packageDigestsOf(storeDir: string, id: string, version: string, currentKey: string): Promise<string[]> {
+export async function storedPins(storeDir: string, currentKey: string): Promise<ThemePin[]> {
   const { entries } = layout(storeDir)
-  const found: string[] = []
+  const found: ThemePin[] = []
   for (const name of await exists(entries) ? await readdir(entries) : []) {
     if (!COMPILED_DIGEST.test(name)) continue
     let manifest: EntryManifest
@@ -321,9 +322,18 @@ export async function packageDigestsOf(storeDir: string, id: string, version: st
       // Not installed for this lookup: `installedEntry` would refuse it too, and the switch never reads it
       continue
     }
-    if (manifest.id === id && manifest.version === version && manifest.compileKey === currentKey && manifest.origin === 'package') found.push(manifest.packageDigest)
+    if (manifest.compileKey === currentKey && manifest.origin === 'package') found.push({ id: manifest.id, version: manifest.version, digest: manifest.packageDigest })
   }
   return found
+}
+
+/**
+ * The package digests of the entries compiled with `currentKey` whose manifests name theme `id` at `version` (`storedPins`).
+ *
+ * @param currentKey - The compile key of this core build (`compileKey()`).
+ */
+export async function packageDigestsOf(storeDir: string, id: string, version: string, currentKey: string): Promise<string[]> {
+  return (await storedPins(storeDir, currentKey)).filter(pin => pin.id === id && pin.version === version).map(pin => pin.digest)
 }
 
 /**

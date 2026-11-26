@@ -1,10 +1,11 @@
-import type { BuiltInTheme } from '../lib/types'
+import type { BuiltInTheme, ThemeCatalogueHolder } from '../lib/types'
 import type { PreviewedTheme, ThemeSwitch } from '../lib/themeSwitch/types'
-import type { ThemeStatus } from '~/interfaces/theme'
+import type { ThemeCatalogue, ThemeStatus } from '~/interfaces/theme'
 
 // The theme this process renders and serves: one switch every reader asks (ADR 0009, section 6). Created once at boot by server/plugins/builtInTheme.ts.
 
 let current: ThemeSwitch | undefined
+let catalogue: ThemeCatalogueHolder | undefined
 
 /** Records the switch of this process; called at boot. */
 export function setThemeSwitch(themeSwitch: ThemeSwitch): void {
@@ -39,4 +40,15 @@ export function observeTheme(raw: Parameters<ThemeSwitch['observe']>[0]): void {
 /** What `GET /api/theme/status` answers. */
 export function themeStatus(): ThemeStatus {
   return themeSwitch().status()
+}
+
+/** Records the theme catalogue of this process; called at boot. */
+export function setThemeCatalogue(holder: ThemeCatalogueHolder): void {
+  catalogue = holder
+}
+
+/** What `GET /api/theme/catalogue` answers: the catalogue last built in the background, with no I/O. */
+export function themeCatalogue(): ThemeCatalogue {
+  if (catalogue === undefined) throw new Error('The theme catalogue is not loaded: the built-in theme plugin has not run')
+  return catalogue.current()
 }

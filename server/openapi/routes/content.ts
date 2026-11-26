@@ -4,7 +4,7 @@ import { fediverseStatsByIdSchema, fediverseStatsSchema } from '~/schemas/fedive
 import { aboutResponseSchema } from '~/schemas/blocks'
 import { commentSchema, commentsResponseSchema, commentTreeSchema } from '~/schemas/comments'
 import { siteSchema } from '~/schemas/site'
-import { themeStatusSchema } from '~/schemas/theme'
+import { themeCatalogueSchema, themeStatusSchema } from '~/schemas/theme'
 import { pageResponseSchema } from '~/schemas/pages'
 import { articlePageSchema, articleResponseSchema, categoryCountSchema, readingPathSchema, searchResultSchema, tagCountSchema } from '~/schemas/posts'
 import { guestCommentSchema } from '../../schemas/comments'
@@ -163,6 +163,16 @@ export const CONTENT_ROUTES: RouteEntry[] = [
     description: 'The state of the theme switch (ADR 0009), read from memory: it calls neither the CMS nor the registry. `error` says why the theme the site settings name was not activated; the active theme stays. Public: the ids and digests are in every page, and the message carries no URL or path.',
     tag: 'Content',
     response: { status: 200, schema: themeStatusSchema, description: 'The active, requested and last good theme, the last error, and what this image can activate.', cache: 'public, s-maxage=5, stale-while-revalidate=10' },
+    errors: [],
+  },
+  {
+    file: 'server/api/theme/catalogue.get.ts',
+    method: 'get',
+    path: '/api/theme/catalogue',
+    summary: 'List the installed themes, the registry\'s themes, the updates and the admission reports',
+    description: 'Read from memory: the stores, the signed index of `MICELIO_THEME_REGISTRY` and the admission reports it names are read in the background, at boot and then once an hour (ADR 0009). Reading it installs, activates and evicts nothing. `registry` is `null`, and `reason` says why in one line with no URL or path, until the index is read and verifies; a later failure keeps the last good catalogue and sets `reason`. Public: it holds no token, licence key, URL query or path.',
+    tag: 'Content',
+    response: { status: 200, schema: themeCatalogueSchema, description: 'The installed themes, the registry\'s themes with whether this core runs each version, the updates of the installed themes and at most 50 admission report results.', cache: 'public, s-maxage=60' },
     errors: [],
   },
   {

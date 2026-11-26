@@ -39,7 +39,7 @@ export default defineConfig({
       timeout: 15_000,
     },
     {
-      command: `HOST=127.0.0.1 PORT=${appPort} NUXT_PUBLIC_STRAPI_URL=http://127.0.0.1:${proxyPort} NUXT_STRAPI_API_TOKEN=${token} NUXT_PUBLIC_SITE_URL=http://127.0.0.1:${appPort} NUXT_TRUST_PROXY=false node .output/server/index.mjs`,
+      command: `HOST=127.0.0.1 PORT=${appPort} NUXT_PUBLIC_STRAPI_URL=http://127.0.0.1:${proxyPort} NUXT_STRAPI_API_TOKEN=${token} NUXT_PUBLIC_SITE_URL=http://127.0.0.1:${appPort} NUXT_TRUST_PROXY=false MICELIO_THEME_REGISTRY=127.0.0.1:9/micelio-themes node .output/server/index.mjs`,
       port: appPort,
       reuseExistingServer: false,
       timeout: 30_000,
