@@ -85,6 +85,20 @@ test('the prose block of a page renders next to rich-text, with an id on every h
   await expect(prose.locator('p')).toHaveText('The same Markdown as an article.')
 })
 
+// Page composition (ADR 0022, section 1): the server reads the targets of the `composition` page's references from the mock Strapi, which answers
+// `reusable-newsletter` in English and not `reusable-announcement`, published in Spanish only
+test('a reference renders its published target, and nothing for one missing in the locale', async ({ page }) => {
+  await page.goto('/composition')
+  const band = page.locator('.myc-group')
+  await expect(band).toHaveAttribute('data-tone', 'accent')
+  // The target draws in the reference's place, inside the band the reference is a member of
+  expect(await band.evaluate(node => [...node.children].map(child => child.getAttribute('data-section')))).toEqual(['hero', 'stats', 'newsletter'])
+  await expect(band.locator('> section.myc-section[data-section="newsletter"]')).toContainText('A reusable newsletter')
+  // The missing target, and the reference with no target, draw nothing
+  expect(await page.locator('section.myc-section').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-section')))).toEqual(['hero', 'stats', 'newsletter', 'cta'])
+  await expect(page.getByText('Un anuncio')).toHaveCount(0)
+})
+
 test.describe('without JavaScript', () => {
   test.use({ javaScriptEnabled: false })
 

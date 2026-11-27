@@ -18,33 +18,74 @@ const PAGE_MEDIA = { fields: ['url', 'alternativeText', 'width', 'height', 'mime
 /** The fields of an image of the site identity (logo, favicon, default social image). */
 const SITE_IMAGE = { fields: ['url', 'alternativeText', 'width', 'height'] }
 
+/** The group key of a block in a page's zone (ADR 0022, section 2): a component with `groupId` and `tone`. */
+const GROUP = { group: true } as const
+
+/** The nested links, media and relations of each block of the catalogue, without the `group` key. */
+const HERO = { primaryLink: true, secondaryLink: true, media: PAGE_MEDIA }
+const FEATURE_GRID = { items: { populate: { icon: PAGE_MEDIA } } }
+const MEDIA_SHOWCASE = { media: PAGE_MEDIA, link: true }
+const ITEMS = { items: true }
+const LOGO_CLOUD = { logos: { populate: { image: PAGE_MEDIA } } }
+const TESTIMONIALS = { items: { populate: { avatar: PAGE_MEDIA, logo: PAGE_MEDIA } } }
+const PRICING = { plans: { populate: { link: true } } }
+const CTA = { primaryLink: true, secondaryLink: true }
+const POST_LIST = { category: { fields: ['slug'] }, tag: { fields: ['slug'] } }
+const GALLERY = { images: PAGE_MEDIA }
+const SCENE = { model: PAGE_MEDIA, poster: PAGE_MEDIA }
+
+/**
+ * The fragments of a reusable block's `blocks` zone (ADR 0022, section 1): the blocks of the catalogue a page's zone has, each without its `group` key.
+ *
+ * @remarks
+ * It leaves out `section.rich-text`, which the CMS keeps in a page's zone only and the plugin's catalogue lacks, so the reusable block's zone refuses it with `400`; `section.reusable`, since a target is never a reference (one level); and `group`, which the reference holds (the plugin refuses a reusable block's block with one, `reusableBlockInvalid`).
+ */
+const REUSABLE_BLOCK_FRAGMENTS = {
+  'section.hero': { populate: HERO },
+  'section.feature-grid': { populate: FEATURE_GRID },
+  'section.media-showcase': { populate: MEDIA_SHOWCASE },
+  'section.stats': { populate: ITEMS },
+  'section.logo-cloud': { populate: LOGO_CLOUD },
+  'section.testimonials': { populate: TESTIMONIALS },
+  'section.pricing': { populate: PRICING },
+  'section.faq': { populate: ITEMS },
+  'section.cta': { populate: CTA },
+  'section.post-list': { populate: POST_LIST },
+  'section.newsletter': true,
+  'shared.rich-text': true,
+  'section.gallery': { populate: GALLERY },
+  'section.scene': { populate: SCENE },
+}
+
 /**
  * The Strapi populate of a page.
  *
  * @remarks
  * Strapi does not mix '*' with keyed entries, so every relation of every section is named. Links and media are listed explicitly, and each media names its fields, so a new CMS field never widens the response.
  * It names both text components, `section.rich-text` and `shared.rich-text` (`prose`): a fragment populate returns only the components it names, and the CMS keeps `section.rich-text` in the zone for one release.
+ * Each block that may be a member of a group asks for its `group` key, and `section.reusable` for its `group` and the document id of the reusable block it references (ADR 0022): the target is read apart, published and in the page's locale (`readReusableTargets`, `server/utils/reusableTargets.ts`). A CMS without these components (`micelio-cms` before 0.10) answers `400`.
  */
 export const PAGE_POPULATE = {
   seo: { populate: { metaImage: PAGE_MEDIA } },
   localizations: { fields: ['slug', 'locale'] },
   sections: {
     on: {
-      'section.hero': { populate: { primaryLink: true, secondaryLink: true, media: PAGE_MEDIA } },
-      'section.feature-grid': { populate: { items: { populate: { icon: PAGE_MEDIA } } } },
-      'section.media-showcase': { populate: { media: PAGE_MEDIA, link: true } },
-      'section.stats': { populate: { items: true } },
-      'section.logo-cloud': { populate: { logos: { populate: { image: PAGE_MEDIA } } } },
-      'section.testimonials': { populate: { items: { populate: { avatar: PAGE_MEDIA, logo: PAGE_MEDIA } } } },
-      'section.pricing': { populate: { plans: { populate: { link: true } } } },
-      'section.faq': { populate: { items: true } },
-      'section.cta': { populate: { primaryLink: true, secondaryLink: true } },
-      'section.post-list': { populate: { category: { fields: ['slug'] }, tag: { fields: ['slug'] } } },
-      'section.newsletter': { populate: '*' },
+      'section.hero': { populate: { ...HERO, ...GROUP } },
+      'section.feature-grid': { populate: { ...FEATURE_GRID, ...GROUP } },
+      'section.media-showcase': { populate: { ...MEDIA_SHOWCASE, ...GROUP } },
+      'section.stats': { populate: { ...ITEMS, ...GROUP } },
+      'section.logo-cloud': { populate: { ...LOGO_CLOUD, ...GROUP } },
+      'section.testimonials': { populate: { ...TESTIMONIALS, ...GROUP } },
+      'section.pricing': { populate: { ...PRICING, ...GROUP } },
+      'section.faq': { populate: { ...ITEMS, ...GROUP } },
+      'section.cta': { populate: { ...CTA, ...GROUP } },
+      'section.post-list': { populate: { ...POST_LIST, ...GROUP } },
+      'section.newsletter': { populate: GROUP },
       'section.rich-text': { populate: '*' },
       'shared.rich-text': true,
-      'section.gallery': { populate: { images: PAGE_MEDIA } },
-      'section.scene': { populate: { model: PAGE_MEDIA, poster: PAGE_MEDIA } },
+      'section.gallery': { populate: { ...GALLERY, ...GROUP } },
+      'section.scene': { populate: { ...SCENE, ...GROUP } },
+      'section.reusable': { populate: { ...GROUP, reusableBlock: { fields: ['documentId'] } } },
     },
   },
 }
@@ -53,25 +94,31 @@ export const PAGE_POPULATE = {
  * The Strapi populate of a page draft: that of a page.
  *
  * @remarks
- * It names only components of the `sections` zone of the page (`shared.rich-text` since micelio-cms #502): the plugin refuses with `400` a fragment populate that names a component the zone lacks. `shared.playground` is not in that zone, so a Playground block of a page is not asked for until the CMS adds it (bogd3v/micelio#908).
+ * It names only components of the `sections` zone of the page (`shared.rich-text` since micelio-cms #502, `section.reusable` since micelio-cms #527): the plugin refuses with `400` a fragment populate that names a component the zone lacks. `shared.playground` is not in that zone, so a Playground block of a page is not asked for until the CMS adds it (bogd3v/micelio#908).
  */
 export const DRAFT_PAGE_POPULATE = PAGE_POPULATE
 
-/** The fragments of a reusable block's `blocks` zone: a page's, but `section.rich-text`, which the CMS keeps in a page's zone only and the plugin's catalogue lacks, so its zone refuses it with `400`. */
-const { 'section.rich-text': _legacyRichText, ...REUSABLE_BLOCK_FRAGMENTS } = PAGE_POPULATE.sections.on
+/**
+ * The Strapi populate of the published reusable blocks a page references, read with one filtered `GET /api/reusable-blocks` (ADR 0022, section 1): their `blocks` zone, with the fragments of `REUSABLE_BLOCK_FRAGMENTS`.
+ *
+ * @see `readReusableTargets` in `server/utils/reusableTargets.ts`
+ */
+export const REUSABLE_BLOCK_POPULATE = {
+  blocks: { on: REUSABLE_BLOCK_FRAGMENTS },
+}
 
 /**
- * The Strapi populate of a page read by a system grant bound to a reference (ADR 0019, amendment of 2026-11-23): that of a page, plus the reference's `group` and the reusable block it points at, with its `blocks` zone.
+ * The Strapi populate of a page read by a system grant bound to a reference (ADR 0019, amendment of 2026-11-23): that of a page, but the reference's entry reaches the reusable block it points at, with its `blocks` zone.
  *
  * @remarks
- * Only the weight route sends it, and only on a request marked `measure=reference`: the plugin refuses with `400` a `populate` that reaches the reusable block for any other grant, and only a CMS whose pages have `section.reusable` mints that grant. The block's zone takes the fragments of a page's sections without `section.rich-text` (not a block of the catalogue: the plugin fills the zone from it), without `section.reusable` (one level) and without `group` (the reference holds it).
+ * Only the weight route sends it, and only on a request marked `measure=reference`: the plugin refuses with `400` a `populate` that reaches the reusable block for any other grant, and only a CMS whose pages have `section.reusable` mints that grant. Its `section.reusable` entry replaces the page's: the reference's `group`, and the block's zone with `REUSABLE_BLOCK_FRAGMENTS`.
  */
 export const REFERENCE_PAGE_POPULATE = {
   ...PAGE_POPULATE,
   sections: {
     on: {
       ...PAGE_POPULATE.sections.on,
-      'section.reusable': { populate: { group: true, reusableBlock: { populate: { blocks: { on: REUSABLE_BLOCK_FRAGMENTS } } } } },
+      'section.reusable': { populate: { ...GROUP, reusableBlock: { populate: { blocks: { on: REUSABLE_BLOCK_FRAGMENTS } } } } },
     },
   },
 }

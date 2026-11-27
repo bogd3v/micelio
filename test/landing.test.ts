@@ -48,6 +48,32 @@ describe('sectionAnchors', () => {
   })
 })
 
+describe('a reference on a landing', () => {
+  it('a reference whose target block has an anchor gets its id and its link, in the anchors and in the navigation links', () => {
+    const sections: PageSection[] = [
+      hero(),
+      // A reference draws its target's block at its own position: the block's title names the anchor, and its call to action is a link
+      { __component: 'section.reusable', reusableBlock: { documentId: 'reusable-a' }, block: { __component: 'section.feature-grid', variant: 'grid', title: 'Pricing', items: [] } },
+      feature('Pricing'),
+      { __component: 'section.reusable', reusableBlock: { documentId: 'reusable-b' }, block: { __component: 'section.cta', variant: 'banner', title: 'Join', primaryLink: { label: 'Sign up', url: '/signup' } } },
+      // A reference with no target, and one whose target renders no anchor, get none
+      { __component: 'section.reusable', reusableBlock: { documentId: 'reusable-c' } },
+      { __component: 'section.reusable', reusableBlock: { documentId: 'reusable-d' }, block: { __component: 'shared.rich-text', html: '<h2>About</h2>' } },
+    ]
+    expect(sectionAnchors(sections, context)).toEqual([
+      { index: 1, id: 'section-pricing', label: 'Pricing' },
+      { index: 2, id: 'section-pricing-2', label: 'Pricing' },
+      { index: 3, id: 'section-join', label: 'Join' },
+    ])
+    expect(landingLinks(sections, '/', context, resolve).map(link => [link.label, link.to])).toEqual([
+      ['Pricing', '/#section-pricing'],
+      ['Pricing', '/#section-pricing-2'],
+      ['Join', '/#section-join'],
+      ['Sign up', '/signup'],
+    ])
+  })
+})
+
 describe('landingLinks', () => {
   it('lists the anchors, then the links of the hero and the call to action once each', () => {
     const sections: PageSection[] = [

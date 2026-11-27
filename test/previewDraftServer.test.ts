@@ -288,9 +288,11 @@ describe('a grant bound to a reference', () => {
     // A Node server answers 431 past 16 KiB of request line and headers: the line keeps 2 KiB for the headers (the API token, the grant, the forwarded address)
     const [sentPath] = strapiFetch.mock.calls[0] as [string]
     expect(sentPath.length).toBeLessThanOrEqual(14 * 1024)
-    // The block's zone is the catalogue's: the plugin answers 400 to `section.rich-text` there, which only a page's zone keeps
-    const { 'section.rich-text': _legacy, ...catalogue } = (asSent(PAGE_POPULATE) as typeof PAGE_POPULATE).sections.on
-    expect(populateSent(0).sections.on['section.reusable']).toEqual({ populate: { group: 'true', reusableBlock: { populate: { blocks: { on: catalogue } } } } })
+    // The block's zone is the catalogue's: the plugin answers 400 to `section.rich-text` there, which only a page's zone keeps, and refuses a reusable block's block with a `group` key
+    const blocks = (populateSent(0).sections.on['section.reusable'] as { populate: { group: string, reusableBlock: { populate: { blocks: { on: Record<string, unknown> } } } } }).populate
+    expect(blocks.group).toBe('true')
+    expect(Object.keys(blocks.reusableBlock.populate.blocks.on)).not.toContain('section.rich-text')
+    expect(JSON.stringify(blocks.reusableBlock)).not.toContain('group')
 
     // A system grant of the page's own publish, and an editor's grant, send today's populate
     strapiFetch.mockResolvedValueOnce({ data: publishedPage('2026-11-23T08:02:00.000Z'), meta: { actor: 'system' } })
@@ -301,7 +303,7 @@ describe('a grant bound to a reference', () => {
     await handlers.weight(weightRequest(handlers, { mode: 'dynamic' }, 'page-1', {}) as unknown as H3Event)
     for (const call of [1, 2]) {
       expect(populateSent(call), String(call)).toEqual(asSent(PAGE_POPULATE))
-      expect(Object.keys(populateSent(call).sections.on), String(call)).not.toContain('section.reusable')
+      expect(JSON.stringify(populateSent(call).sections.on['section.reusable']), String(call)).not.toContain('blocks')
     }
     expect(strapiFetch).toHaveBeenCalledTimes(3)
 

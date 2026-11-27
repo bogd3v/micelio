@@ -71,6 +71,8 @@ export interface PreviewDraftContext {
   draft: unknown
   /** Set when `draft` is the page's published version with a reusable block's draft in place of its references (a grant bound to a reference): the draft page route then draws each reference from the block the copy carries. */
   reference?: PreviewReference
+  /** The published reusable blocks the page's references point at, read once for the whole report by document id (`readReusableTargets`); absent for an article. */
+  targets?: ReadonlyMap<string, unknown>
 }
 
 /** The catalogue of this process, built in the background. */

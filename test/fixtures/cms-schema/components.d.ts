@@ -222,12 +222,40 @@ export interface MicelioEditorialEditorial extends Struct.ComponentSchema {
     icon: 'check'
   }
   attributes: {
+    note: Schema.Attribute.Text &
+      Schema.Attribute.Private &
+      Schema.Attribute.SetPluginOptions<{
+        micelio: {
+          export: 'always'
+        }
+      }> &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1000
+      }>
     publishAt: Schema.Attribute.DateTime
     publishedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>
     reviewedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'>
     state: Schema.Attribute.Enumeration<['draft', 'in_review', 'scheduled', 'published']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'draft'>
+  }
+}
+
+export interface MicelioPageVisibility extends Struct.ComponentSchema {
+  collectionName: 'components_micelio_page_visibilities'
+  info: {
+    description: 'Where a page shows up: the navigation menu, the sitemap and feeds, and search engines (the page settings of the builder)'
+    displayName: 'Visibility'
+    icon: 'eye'
+  }
+  attributes: {
+    inMenu: Schema.Attribute.Boolean & Schema.Attribute.Required & Schema.Attribute.DefaultTo<true>
+    inSitemap: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<true>
+    noindex: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<false>
   }
 }
 
@@ -364,6 +392,7 @@ export interface SectionCta extends Struct.ComponentSchema {
     anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     primaryLink: Schema.Attribute.Component<'section.link', false>
     secondaryLink: Schema.Attribute.Component<'section.link', false>
     text: Schema.Attribute.Text
@@ -388,6 +417,7 @@ export interface SectionFaq extends Struct.ComponentSchema {
     anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     items: Schema.Attribute.Component<'section.faq-item', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -431,6 +461,7 @@ export interface SectionFeatureGrid extends Struct.ComponentSchema {
     anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     items: Schema.Attribute.Component<'section.feature-item', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -476,6 +507,7 @@ export interface SectionGallery extends Struct.ComponentSchema {
     anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     images: Schema.Attribute.Media<'images', true> & Schema.Attribute.Required
     title: Schema.Attribute.String
     tone: Schema.Attribute.Enumeration<['default', 'raised', 'accent']> &
@@ -483,6 +515,19 @@ export interface SectionGallery extends Struct.ComponentSchema {
     variant: Schema.Attribute.Enumeration<['grid', 'masonry']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'grid'>
+  }
+}
+
+export interface SectionGroup extends Struct.ComponentSchema {
+  collectionName: 'components_section_groups'
+  info: {
+    description: 'The group of a page section: consecutive sections that share a groupId form one band on the surface of its tone (ADR-0022, section 2)'
+    displayName: 'Group'
+    icon: 'layer'
+  }
+  attributes: {
+    groupId: Schema.Attribute.String & Schema.Attribute.Required
+    tone: Schema.Attribute.Enumeration<['default', 'raised', 'accent']> & Schema.Attribute.Required
   }
 }
 
@@ -498,6 +543,7 @@ export interface SectionHero extends Struct.ComponentSchema {
     anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     media: Schema.Attribute.Media<'images' | 'videos'>
     primaryLink: Schema.Attribute.Component<'section.link', false>
     secondaryLink: Schema.Attribute.Component<'section.link', false>
@@ -519,6 +565,11 @@ export interface SectionLink extends Struct.ComponentSchema {
     icon: 'link'
   }
   attributes: {
+    download: Schema.Attribute.Boolean
+    external: Schema.Attribute.Boolean
+    icon: Schema.Attribute.String & Schema.Attribute.CustomField<'plugin::micelio.icon'>
+    iconPosition: Schema.Attribute.Enumeration<['start', 'end', 'only']> &
+      Schema.Attribute.DefaultTo<'start'>
     label: Schema.Attribute.String & Schema.Attribute.Required
     url: Schema.Attribute.String & Schema.Attribute.Required
   }
@@ -551,6 +602,7 @@ export interface SectionLogoCloud extends Struct.ComponentSchema {
     anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     logos: Schema.Attribute.Component<'section.logo', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -577,6 +629,7 @@ export interface SectionMediaShowcase extends Struct.ComponentSchema {
   attributes: {
     align: Schema.Attribute.Enumeration<['start', 'center']> & Schema.Attribute.DefaultTo<'start'>
     blockId: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     link: Schema.Attribute.Component<'section.link', false>
     media: Schema.Attribute.Media<'images' | 'videos'> & Schema.Attribute.Required
     text: Schema.Attribute.RichText
@@ -603,6 +656,7 @@ export interface SectionNewsletter extends Struct.ComponentSchema {
     buttonLabel: Schema.Attribute.String
     consentText: Schema.Attribute.Text
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     placeholder: Schema.Attribute.String
     successMessage: Schema.Attribute.String
     text: Schema.Attribute.Text
@@ -656,11 +710,15 @@ export interface SectionPostList extends Struct.ComponentSchema {
       > &
       Schema.Attribute.DefaultTo<3>
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
+    showExcerpt: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>
+    sort: Schema.Attribute.Enumeration<['newest', 'oldest', 'alphabetical']> &
+      Schema.Attribute.DefaultTo<'newest'>
     tag: Schema.Attribute.Relation<'oneToOne', 'plugin::micelio.tag'>
     title: Schema.Attribute.String
     tone: Schema.Attribute.Enumeration<['default', 'raised', 'accent']> &
       Schema.Attribute.DefaultTo<'default'>
-    variant: Schema.Attribute.Enumeration<['cards', 'list']> &
+    variant: Schema.Attribute.Enumeration<['cards', 'list', 'featured']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'cards'>
   }
@@ -678,6 +736,7 @@ export interface SectionPricing extends Struct.ComponentSchema {
     anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     plans: Schema.Attribute.Component<'section.plan', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -695,11 +754,25 @@ export interface SectionPricing extends Struct.ComponentSchema {
   }
 }
 
+export interface SectionReusable extends Struct.ComponentSchema {
+  collectionName: 'components_section_reusables'
+  info: {
+    description: 'A reference to a reusable block of the site (ADR-0022, section 1)'
+    displayName: 'Reusable'
+    icon: 'link'
+  }
+  attributes: {
+    blockId: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
+    reusableBlock: Schema.Attribute.Relation<'oneToOne', 'plugin::micelio.reusable-block'>
+  }
+}
+
 export interface SectionRichText extends Struct.ComponentSchema {
   collectionName: 'components_section_rich_texts'
   info: {
-    description: 'Long text in Markdown'
-    displayName: 'Rich text'
+    description: 'Retired: its content moved to prose, the shared Rich text block. A save that sends it is refused.'
+    displayName: 'Rich text (retired: use shared Rich text)'
     icon: 'feather'
   }
   attributes: {
@@ -724,6 +797,7 @@ export interface SectionScene extends Struct.ComponentSchema {
     anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     model: Schema.Attribute.Media<'files'> & Schema.Attribute.Required
     poster: Schema.Attribute.Media<'images'> & Schema.Attribute.Required
     text: Schema.Attribute.Text
@@ -762,6 +836,7 @@ export interface SectionStats extends Struct.ComponentSchema {
     anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     items: Schema.Attribute.Component<'section.stat', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -817,6 +892,7 @@ export interface SectionTestimonials extends Struct.ComponentSchema {
     anchor: Schema.Attribute.String
     blockId: Schema.Attribute.String
     eyebrow: Schema.Attribute.String
+    group: Schema.Attribute.Component<'section.group', false>
     items: Schema.Attribute.Component<'section.testimonial', true> &
       Schema.Attribute.SetMinMax<
         {
@@ -830,6 +906,40 @@ export interface SectionTestimonials extends Struct.ComponentSchema {
     variant: Schema.Attribute.Enumeration<['single', 'grid']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'single'>
+  }
+}
+
+export interface SharedCode extends Struct.ComponentSchema {
+  collectionName: 'components_shared_codes'
+  info: {
+    description: 'Code shown with its file name, highlighted lines and a caption, highlighted on the server'
+    displayName: 'Code'
+    icon: 'code'
+  }
+  attributes: {
+    blockId: Schema.Attribute.String
+    caption: Schema.Attribute.Text
+    code: Schema.Attribute.Text
+    filename: Schema.Attribute.String
+    highlight: Schema.Attribute.JSON
+    language: Schema.Attribute.Enumeration<
+      [
+        'bash',
+        'shell',
+        'javascript',
+        'typescript',
+        'json',
+        'yaml',
+        'xml',
+        'css',
+        'python',
+        'sql',
+        'diff',
+        'dockerfile',
+        'ini',
+        'markdown',
+      ]
+    >
   }
 }
 
@@ -1023,17 +1133,12 @@ export interface SharedSeo extends Struct.ComponentSchema {
     metaDescription: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
-        maxLength: 160
         minLength: 50
       }>
     metaImage: Schema.Attribute.Media<'images' | 'files' | 'videos'> & Schema.Attribute.Required
     metaRobots: Schema.Attribute.String
     metaSocial: Schema.Attribute.Component<'shared.meta-social', true>
-    metaTitle: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 60
-      }>
+    metaTitle: Schema.Attribute.String & Schema.Attribute.Required
     metaViewport: Schema.Attribute.String
     structuredData: Schema.Attribute.JSON
   }
@@ -1065,6 +1170,49 @@ export interface SharedSlider extends Struct.ComponentSchema {
     blockId: Schema.Attribute.String
     files: Schema.Attribute.Media<'images', true>
     items: Schema.Attribute.Component<'shared.slide', true>
+  }
+}
+
+export interface SharedTable extends Struct.ComponentSchema {
+  collectionName: 'components_shared_tables'
+  info: {
+    description: 'A table of data with a caption, header cells and a header column'
+    displayName: 'Table'
+    icon: 'grid'
+  }
+  attributes: {
+    blockId: Schema.Attribute.String
+    caption: Schema.Attribute.Text
+    columns: Schema.Attribute.Component<'shared.table-column', true>
+    headerColumn: Schema.Attribute.Boolean
+    rows: Schema.Attribute.Component<'shared.table-row', true>
+  }
+}
+
+export interface SharedTableColumn extends Struct.ComponentSchema {
+  collectionName: 'components_shared_table_columns'
+  info: {
+    description: 'A column of a table: its header label and how its cells align'
+    displayName: 'Table column'
+    icon: 'grid'
+  }
+  attributes: {
+    align: Schema.Attribute.Enumeration<['start', 'center']>
+    itemId: Schema.Attribute.String
+    label: Schema.Attribute.String
+  }
+}
+
+export interface SharedTableRow extends Struct.ComponentSchema {
+  collectionName: 'components_shared_table_rows'
+  info: {
+    description: 'A row of a table: one string per column, in the order of the columns'
+    displayName: 'Table row'
+    icon: 'grid'
+  }
+  attributes: {
+    cells: Schema.Attribute.JSON
+    itemId: Schema.Attribute.String
   }
 }
 
@@ -1231,6 +1379,7 @@ declare module '@strapi/strapi' {
       'about.topic': AboutTopic
       'about.topics': AboutTopics
       'micelio-editorial.editorial': MicelioEditorialEditorial
+      'micelio-page.visibility': MicelioPageVisibility
       'micelio-site.accent-override': MicelioSiteAccentOverride
       'micelio-site.author': MicelioSiteAuthor
       'micelio-site.fediverse': MicelioSiteFediverse
@@ -1243,6 +1392,7 @@ declare module '@strapi/strapi' {
       'section.feature-grid': SectionFeatureGrid
       'section.feature-item': SectionFeatureItem
       'section.gallery': SectionGallery
+      'section.group': SectionGroup
       'section.hero': SectionHero
       'section.link': SectionLink
       'section.logo': SectionLogo
@@ -1252,12 +1402,14 @@ declare module '@strapi/strapi' {
       'section.plan': SectionPlan
       'section.post-list': SectionPostList
       'section.pricing': SectionPricing
+      'section.reusable': SectionReusable
       'section.rich-text': SectionRichText
       'section.scene': SectionScene
       'section.stat': SectionStat
       'section.stats': SectionStats
       'section.testimonial': SectionTestimonial
       'section.testimonials': SectionTestimonials
+      'shared.code': SharedCode
       'shared.image-credit': SharedImageCredit
       'shared.media': SharedMedia
       'shared.meta-social': SharedMetaSocial
@@ -1268,6 +1420,9 @@ declare module '@strapi/strapi' {
       'shared.seo': SharedSeo
       'shared.slide': SharedSlide
       'shared.slider': SharedSlider
+      'shared.table': SharedTable
+      'shared.table-column': SharedTableColumn
+      'shared.table-row': SharedTableRow
       'shared.tech-item': SharedTechItem
       'shared.translation-credit': SharedTranslationCredit
       'site.accent-override': SiteAccentOverride

@@ -2,6 +2,7 @@ import qs from 'qs'
 import { parsePage } from '../schemas/page'
 import { ARTICLE_HAS_SLUG, PAGE_POPULATE, POST_CARD_POPULATE } from '../lib/constants'
 import { publicPostCard } from '../lib/publicShapes'
+import { resolveReusableTargets } from './reusableTargets'
 import type { Page, PostListItem, PostListSection, RawStrapiArticle, StrapiPaginatedResponse } from '~/interfaces'
 
 /** The newest published posts of a `post-list` section; none (or a Strapi failure) gives an empty list. */
@@ -57,18 +58,21 @@ async function fetchPage(slug: string, locale: string | undefined): Promise<Page
   }
 
   const config = useRuntimeConfig()
-  const page = parsePage(response.data?.[0], {
+  const context = {
     render: markdownRenderer(locale).renderMarkdown,
     siteUrl: config.public.siteUrl,
     mediaOrigins: [config.public.strapiUrl, config.mediaUrl],
-  })
+  }
+  const page = parsePage(response.data?.[0], context)
   // undefined is not stored by the cache, so a page published later shows up at once
-  return page ? { ...page, sections: await resolvePostLists(page.sections, locale) } : undefined
+  if (!page) return undefined
+  // The targets of its references are read here, inside the cached function, so they share the page's entry and its 300 s (ADR 0022, section 1)
+  return { ...page, sections: await resolvePostLists(await resolveReusableTargets(page.sections, locale, context), locale) }
 }
 
 /**
- * A page for 5 minutes, per locale and slug (stale while revalidating). Not found is `undefined` and
- * errors are thrown; neither is stored. The route's `Cache-Control` is only defensive (ADR 0001).
+ * A page for 5 minutes, per locale and slug (stale while revalidating), with the published targets of its references (`resolveReusableTargets`). Not found is `undefined` and
+ * errors are thrown; neither is stored. A failed read of the targets is not an error: the references draw nothing until the entry revalidates. The route's `Cache-Control` is only defensive (ADR 0001).
  */
 export const loadPage = defineCachedFunction(fetchPage, {
   name: 'page',
