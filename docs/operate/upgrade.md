@@ -79,6 +79,13 @@ Pull and start the new frontend image, with the same environment. The frontend h
   on the status page and in `npx micelio doctor`, until they upgrade to `micelio-cms` 0.9.
   The check never stops a boot.
   Upgrade the CMS first, then the frontend.
+- **The frontend needs `micelio-cms` 0.10 (0.10.0).**
+  The page request asks the CMS for the `group` key of each block and for the `reusable` block (ADR 0022),
+  and reads the reusable blocks a page references from `GET /api/reusable-blocks`.
+  A `micelio-cms` older than 0.10.0 has neither component and answers `400`,
+  so every page of the site answers `502`.
+  Upgrade the CMS to 0.10.0 first, then the frontend.
+  The read tokens need `plugin::micelio.reusable-block.find`, which `micelio-cms` 0.10.0 grants at boot.
 
 ## Image tags
 

@@ -1,5 +1,7 @@
 import { brotliCompressSync } from 'node:zlib'
-import { describe, expect, it } from 'vitest'
+import qs from 'qs'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { H3Event } from 'h3'
 import { swdMilligramsPerView } from '../app/helpers/carbon'
 import { declaredAssets, eagerImages, fontsOf, islandBytes, islandEntries, islandReferences, kb, measurePage, totalBytes, weightReport } from '../app/helpers/weight'
 import type { FetchSentFile, PageBytes, SentFile } from '../app/helpers/weight'
@@ -216,5 +218,156 @@ describe('weightReport', () => {
   it('never reports a negative share', () => {
     const heavier: PageBytes = { ...whole, html: 9_000, onDemand: 200_000 }
     expect(weightReport('static', whole, ['hero'], [heavier]).blocks).toEqual([{ id: 'hero', kb: 0, onDemandKb: 0 }])
+  })
+})
+
+describe('the targets of a page in a weight report', () => {
+  const ORIGIN = 'https://site.example.com'
+  const strapiFetch = vi.fn()
+  const rendered: string[] = []
+  type Handler = (event: H3Event) => Promise<unknown>
+  interface TestEvent {
+    context: Record<string, unknown>
+    query?: Record<string, string>
+    node: { req: { headers: Record<string, string>, __unenv__?: Record<string, unknown> } }
+    $fetch?: unknown
+  }
+
+  const cta = (title: string) => ({ __component: 'section.cta', variant: 'card', title })
+  /** The published reusable blocks the CMS answers the filtered read with, whatever ids it is asked for. */
+  const published = { data: [{ documentId: 'reusable-a', blocks: [cta('Published A')] }, { documentId: 'reusable-b', blocks: [cta('Published B')] }] }
+
+  /** Renders a draft path in process as `event.$fetch` does: the middleware carries the parent's context, and the draft page route answers; its sections stand for the page's HTML. */
+  async function reportEvent(): Promise<TestEvent> {
+    const carry = (await import('../server/middleware/00-preview-draft')).default as unknown as Handler
+    const draftPage = (await import('../server/api/drafts/pages/[documentId].get')).default as unknown as Handler
+    const event: TestEvent = { context: {}, query: {}, node: { req: { headers: {} } } }
+    event.$fetch = vi.fn(async (path: string, options: { onResponse: (context: { response: Response }) => void }) => {
+      const url = new URL(path, ORIGIN)
+      const child: TestEvent = { context: { params: { documentId: decodeURIComponent(url.pathname.split('/').pop()!) } }, query: Object.fromEntries(url.searchParams), node: { req: { headers: {}, __unenv__: event.context } } }
+      await carry(child as unknown as H3Event)
+      const { page } = await draftPage(child as unknown as H3Event) as { page: { sections: unknown[] } }
+      const html = `<!doctype html><html><body>${page.sections.map(section => `<section>${JSON.stringify(section)}</section>`).join('')}</body></html>`
+      rendered.push(html)
+      options.onResponse({ response: new Response(null, { status: 200 }) })
+      return new TextEncoder().encode(html).buffer
+    })
+    return event
+  }
+
+  /** The document ids each read of the targets asked for. */
+  const reads = (): unknown[] => strapiFetch.mock.calls.map(([url]) => (qs.parse((url as string).split('?')[1]!, { depth: 20 }) as { filters: { documentId: { $in: unknown } } }).filters.documentId.$in)
+
+  beforeEach(async () => {
+    rendered.length = 0
+    const preview = await import('../server/utils/preview')
+    const stubs: Record<string, unknown> = {
+      strapiFetch,
+      logError: vi.fn(),
+      defineEventHandler: (handler: unknown) => handler,
+      preventCaching: () => {},
+      getRouterParam: (event: TestEvent, name: string) => (event.context.params as Record<string, string>)[name],
+      getQuery: (event: TestEvent) => event.query ?? {},
+      draftLocale: (event: TestEvent) => event.query?.locale,
+      draftNotFound: () => Object.assign(new Error('notFound'), { statusCode: 404 }),
+      problem: (code: string) => Object.assign(new Error(code), { code }),
+      previewContextDraft: preview.previewContextDraft,
+      previewContextReference: preview.previewContextReference,
+      previewAdminOrigin: () => '',
+      previewGrantOf: () => null,
+      getRequestURL: () => new URL(`${ORIGIN}/api/preview`),
+      useRuntimeConfig: () => ({ public: { siteUrl: ORIGIN, strapiUrl: 'https://cms.example.com' }, mediaUrl: '' }),
+      loadSiteCached: async () => ({ site: { homePage: null } }),
+      markdownRenderer: () => ({ renderMarkdown: (markdown: string) => `<p>${markdown}</p>` }),
+      resolvePostLists: async (sections: unknown[]) => sections,
+      // The public page of the document: not published at its path here
+      $fetch: async (_: string, options: { onResponse: (context: { response: Response }) => void }) => {
+        options.onResponse({ response: new Response(null, { status: 404 }) })
+        return new ArrayBuffer(0)
+      },
+    }
+    for (const [name, value] of Object.entries(stubs)) vi.stubGlobal(name, value)
+    strapiFetch.mockResolvedValue(published)
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.clearAllMocks()
+  })
+
+  it('a weight report reads each target once, not once per render', async () => {
+    const { previewWeightReport } = await import('../server/utils/weight')
+    const draft = {
+      documentId: 'page-1',
+      title: 'Landing',
+      updatedAt: '2026-11-27T08:00:00.000Z',
+      slug: 'landing',
+      sections: [
+        { __component: 'section.hero', variant: 'centered', title: 'Welcome' },
+        { __component: 'section.reusable', reusableBlock: { id: 1, documentId: 'reusable-a' } },
+        { __component: 'section.reusable', reusableBlock: { id: 1, documentId: 'reusable-a' } },
+        { __component: 'section.reusable', reusableBlock: { id: 2, documentId: 'reusable-b' } },
+      ],
+    }
+    const event = await reportEvent()
+    const report = await previewWeightReport(event as unknown as H3Event, 'page', 'page-1', 'en' as never, 'dynamic', draft)
+    expect(report.blocks.map(block => block.id)).toEqual(['hero', 'reusable', 'reusable', 'reusable'])
+    // Five renders (whole, and once without each block), one read of the two distinct targets
+    expect(rendered).toHaveLength(5)
+    expect(reads()).toEqual([['reusable-a', 'reusable-b']])
+    expect(rendered[0]).toContain('Published A')
+    expect(rendered[0]).toContain('Published B')
+    expect(rendered[4]).not.toContain('Published B')
+    // The report kept for this version reads nothing more
+    await previewWeightReport(event as unknown as H3Event, 'page', 'page-1', 'en' as never, 'dynamic', draft)
+    expect(strapiFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('two overlapping requests for the same report share it: one read of the targets and one set of renders', async () => {
+    const { previewWeightReport } = await import('../server/utils/weight')
+    const draft = {
+      documentId: 'page-1',
+      title: 'Landing',
+      updatedAt: '2026-11-27T10:00:00.000Z',
+      slug: 'landing',
+      sections: [
+        { __component: 'section.hero', variant: 'centered', title: 'Welcome' },
+        { __component: 'section.reusable', reusableBlock: { id: 1, documentId: 'reusable-a' } },
+      ],
+    }
+    const first = await reportEvent()
+    const second = await reportEvent()
+    // The second request arrives while the first one is still reading the targets
+    const reports = await Promise.all([
+      previewWeightReport(first as unknown as H3Event, 'page', 'page-1', 'en' as never, 'dynamic', draft),
+      previewWeightReport(second as unknown as H3Event, 'page', 'page-1', 'en' as never, 'dynamic', draft),
+    ])
+    expect(reports[1]).toEqual(reports[0])
+    expect(reads()).toEqual([['reusable-a']])
+    expect(rendered).toHaveLength(3)
+    expect(second.$fetch).not.toHaveBeenCalled()
+  })
+
+  it('a reference grant\'s draft block is not replaced by the published target', async () => {
+    const { previewWeightReport } = await import('../server/utils/weight')
+    // The copy a grant bound to `reusable-a` returns: that reference carries the block's draft, the other one only its target's document id
+    const draft = {
+      documentId: 'page-1',
+      title: 'Landing',
+      updatedAt: '2026-11-27T09:00:00.000Z',
+      slug: 'landing',
+      sections: [
+        { __component: 'section.reusable', reusableBlock: { id: 1, documentId: 'reusable-a', blocks: [cta('The block\'s draft')] } },
+        { __component: 'section.reusable', reusableBlock: { id: 2, documentId: 'reusable-b' } },
+      ],
+    }
+    const event = await reportEvent()
+    await previewWeightReport(event as unknown as H3Event, 'page', 'page-1', 'en' as never, 'dynamic', draft, { documentId: 'reusable-a', version: '2026-11-27T09:00:00.000Z' })
+    // Only the other target is read, though the CMS would answer the published `reusable-a` too
+    expect(reads()).toEqual([['reusable-b']])
+    expect(rendered).toHaveLength(3)
+    expect(rendered[0]).toContain('The block\'s draft')
+    expect(rendered[0]).not.toContain('Published A')
+    expect(rendered[0]).toContain('Published B')
   })
 })

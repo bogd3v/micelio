@@ -18,6 +18,9 @@ const DIR = 'test/fixtures/cms-schema/'
 /** The content type a media attribute points at: its entry carries the fields of a file. */
 const UPLOAD_FILE = 'plugin::upload.file'
 
+/** The fields Strapi accepts under `fields` of any content type though no schema lists them (`validateFields`, `@strapi/utils`). */
+const DOCUMENT_FIELDS = ['id', 'documentId']
+
 /** The populate constants of `server/lib/constants.ts`, each with the content type it is walked from. */
 const TABLE: Record<string, string> = {
   PAGE_POPULATE: 'api::page.page',
@@ -27,15 +30,15 @@ const TABLE: Record<string, string> = {
   ARTICLE_POPULATE: 'api::article.article',
   FEED_POPULATE: 'api::article.article',
   POST_CARD_POPULATE: 'api::article.article',
+  REFERENCE_PAGE_POPULATE: 'api::page.page',
+  REUSABLE_BLOCK_POPULATE: 'plugin::micelio.reusable-block',
 }
 
 /**
  * The populate constants the check does not walk, each with its reason: what they name is not in the pinned copy of the CMS's schema (`PIN`).
  * Each still has a test of its own below.
  */
-const EXCEPTIONS: Record<string, string> = {
-  REFERENCE_PAGE_POPULATE: 'Only a system grant bound to a reference sends it, and only a CMS whose pages have `section.reusable` mints one; the pinned schema has no `section.reusable`, and bogd3v/micelio#977 does not move the pin',
-}
+const EXCEPTIONS: Record<string, string> = {}
 
 function stringArgs(node: ts.TypeNode): string[] {
   if (ts.isLiteralTypeNode(node) && ts.isStringLiteral(node.literal)) return [node.literal.text]
@@ -131,7 +134,7 @@ function checkEntry(entry: unknown, attribute: Attribute, uid: string, path: str
     if (!Array.isArray(entry.fields)) failures.push(`${path}.fields: an array of attribute names`)
     else {
       for (const name of entry.fields) {
-        if (!(name in attributes)) failures.push(`${path}.fields.${name}: not an attribute of ${target}`)
+        if (!(name in attributes) && !(target.includes('::') && DOCUMENT_FIELDS.includes(name))) failures.push(`${path}.fields.${name}: not an attribute of ${target}`)
       }
     }
   }
@@ -215,19 +218,32 @@ describe('the populate check', () => {
   it('a constant of the exception is not walked, and every other one is', () => {
     expect(Object.keys(EXCEPTIONS).filter(name => name in TABLE)).toEqual([])
     for (const [name, reason] of Object.entries(EXCEPTIONS)) expect(reason.trim().length, name).toBeGreaterThan(0)
-    // The pinned schema has no `section.reusable`: walked, the constant fails there and only there
+    // The pinned schema has `section.reusable` and `group`: the populate a reference grant sends names nothing it lacks, so it is walked
     const reference = constants.REFERENCE_PAGE_POPULATE
-    expect(walk('REFERENCE_PAGE_POPULATE', reference, 'api::page.page')).toEqual([
-      'REFERENCE_PAGE_POPULATE.sections.on.section.reusable: not in the zone of api::page.page.sections',
-    ])
-    // The rest of it is the page's populate, which the check walks
-    const { 'section.reusable': _reusable, ...pageFragments } = reference.sections.on
-    expect(pageFragments).toEqual(constants.PAGE_POPULATE.sections.on)
-    expect(walk('REFERENCE_PAGE_POPULATE', { ...reference, sections: { on: pageFragments } }, 'api::page.page')).toEqual([])
+    expect(walk('REFERENCE_PAGE_POPULATE', reference, 'api::page.page')).toEqual([])
+    // Its fragments but `section.reusable` are the page's, `group` included; its own `section.reusable` entry replaces the page's
+    const { 'section.reusable': ownReference, ...pageFragments } = reference.sections.on
+    const { 'section.reusable': pageReference, ...ownFragments } = constants.PAGE_POPULATE.sections.on
+    expect(pageFragments).toEqual(ownFragments)
+    expect(ownReference).not.toEqual(pageReference)
     // The reusable block's zone takes the page's fragments, without the text component the plugin's catalogue lacks, a reference or a group key
-    const { 'section.rich-text': _legacy, ...catalogue } = constants.PAGE_POPULATE.sections.on
-    expect(reference.sections.on['section.reusable'].populate.reusableBlock.populate.blocks.on).toEqual(catalogue)
-    expect(Object.keys(reference.sections.on['section.reusable'].populate.reusableBlock.populate.blocks.on)).not.toContain('section.reusable')
+    const { 'section.rich-text': _legacy, ...catalogue } = ownFragments
+    const withoutGroup = Object.fromEntries(Object.entries(catalogue).map(([name, entry]) => {
+      if (typeof entry !== 'object' || typeof entry.populate !== 'object') return [name, entry]
+      const { group: _group, ...populate } = entry.populate as Record<string, unknown>
+      return [name, Object.keys(populate).length ? { ...entry, populate } : true]
+    }))
+    const blocks = ownReference.populate.reusableBlock.populate.blocks.on
+    expect(blocks).toEqual(withoutGroup)
+    expect(JSON.stringify(blocks)).not.toContain('group')
+    expect(Object.keys(blocks)).not.toContain('section.reusable')
+    // The read of the targets asks for the same zone
+    expect(constants.REUSABLE_BLOCK_POPULATE.blocks.on).toEqual(blocks)
+  })
+
+  it('a field Strapi gives every content type passes, and not on a component', () => {
+    expect(walk('X', { category: { fields: ['documentId', 'id'] } }, 'api::article.article')).toEqual([])
+    expect(walk('X', { seo: { fields: ['documentId'] } }, 'api::page.page')).toEqual(['X.seo.fields.documentId: not an attribute of shared.seo'])
   })
 
   it('the fixture names a commit of micelio-cms in PIN', () => {

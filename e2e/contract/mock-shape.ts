@@ -29,6 +29,7 @@ export const MOCK_ROUTES: Record<string, string> = {
   'GET /api/site-setting': 'compared',
   'GET /api/pages': 'compared',
   'GET /api/about': 'compared',
+  'GET /api/reusable-blocks': 'no page of the demo CMS references a reusable block, so no frontend request reaches the route there; the read is checked by test/reusableTargets.test.ts and the populate it sends by test/cmsPopulate.test.ts',
   'GET /api/comments*': 'compared',
   'POST /api/comments*': 'a write: the contract suite makes it on the real CMS (writes.spec.ts)',
   'POST /api/subscribers/lookup': 'a lookup by request body: the contract suite makes it on the real CMS (writes.spec.ts)',

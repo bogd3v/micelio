@@ -8,7 +8,7 @@ import { createPreviewMock } from './fixtures/preview.mjs'
 import { createRedirectsMock } from './fixtures/redirects.mjs'
 import { noisePng, texturedGlb, triangleGlb } from './fixtures/glb.mjs'
 import { withIds } from './fixtures/ids.mjs'
-import { findPages } from './fixtures/pages.mjs'
+import { findPages, findReusableBlocks } from './fixtures/pages.mjs'
 
 // MOCK_EMPTY_SITE=1 simulates a CMS with no BogDev value: no site identity, no about page, a neutral author (e2e/empty-site.spec.ts)
 const emptySite = process.env.MOCK_EMPTY_SITE === '1'
@@ -778,6 +778,12 @@ const server = createServer(async (req, res) => {
 
   if (method === 'GET' && url.pathname === '/api/pages') {
     const result = findPages(query, getNestedValue)
+    sendJson(res, result.status, result.body)
+    return
+  }
+
+  if (method === 'GET' && url.pathname === '/api/reusable-blocks') {
+    const result = findReusableBlocks(query, getNestedValue)
     sendJson(res, result.status, result.body)
     return
   }

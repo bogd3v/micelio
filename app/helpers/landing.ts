@@ -21,9 +21,15 @@ interface SectionAnchor {
 const ID_PREFIX = 'section-'
 const BLOG_PATH = new RegExp(`^${localePrefixSource()}/blog(?:[/?#]|$)`)
 
+/** The section a position draws: a reference draws its target's `block`, which the server sets, and nothing without one (ADR 0022, section 1). */
+function drawn(section: PageSection): Exclude<PageSection, { __component: 'section.reusable' }> | undefined {
+  return section.__component === 'section.reusable' ? section.block : section
+}
+
 /** The title of a section that renders and is worth a navigation entry (the hero opens the page: the brand link goes there). */
-function anchorTitle(section: PageSection, context: LandingContext): string | undefined {
-  if (section.__component === 'section.hero' || section.__component === 'section.rich-text' || section.__component === 'shared.rich-text' || section.__component === 'section.reusable') return undefined
+function anchorTitle(position: PageSection, context: LandingContext): string | undefined {
+  const section = drawn(position)
+  if (!section || section.__component === 'section.hero' || section.__component === 'section.rich-text' || section.__component === 'shared.rich-text') return undefined
   if (section.__component === 'section.post-list' && !section.posts?.length) return undefined
   if (section.__component === 'section.newsletter' && !context.newsletterOn) return undefined
   return section.title?.trim() || undefined
@@ -32,6 +38,7 @@ function anchorTitle(section: PageSection, context: LandingContext): string | un
 /**
  * Stable `id`s for the sections of the home page that have a title, derived from the title and unique on the page
  * (`section-pricing`, `section-pricing-2`). The renderer and the navigation call this with the same sections, so they agree.
+ * A reference takes the title of the target it draws, at its own position.
  */
 export function sectionAnchors(sections: readonly PageSection[], context: LandingContext): SectionAnchor[] {
   const taken = new Set<string>()
@@ -49,16 +56,17 @@ export function sectionAnchors(sections: readonly PageSection[], context: Landin
 }
 
 function actionLinks(sections: readonly PageSection[]): PageLink[] {
-  return sections.flatMap((section) => {
-    if (section.__component === 'section.hero') return [section.primaryLink, section.secondaryLink]
-    if (section.__component === 'section.cta') return [section.primaryLink]
+  return sections.flatMap((position) => {
+    const section = drawn(position)
+    if (section?.__component === 'section.hero') return [section.primaryLink, section.secondaryLink]
+    if (section?.__component === 'section.cta') return [section.primaryLink]
     return []
   }).filter((link): link is PageLink => Boolean(link))
 }
 
 /**
  * The navigation of a landing: anchors to the titled sections of the home page (`homePath` + `#id`), then the links of its hero
- * and call to action sections, once each. A link the section renderer would reject, or one to a blog the build does not have, is left out.
+ * and call to action sections, once each; a reference counts as the target it draws. A link the section renderer would reject, or one to a blog the build does not have, is left out.
  */
 export function landingLinks(
   sections: readonly PageSection[],

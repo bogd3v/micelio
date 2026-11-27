@@ -1185,9 +1185,10 @@ describe('/api/pages/[slug]', () => {
       },
     })
     const populate = request.query.populate as { sections: { on: Record<string, unknown> } }
-    // The page asks for the prose block (`shared.rich-text`) right after `section.rich-text`, where `PAGE_POPULATE` lists it
+    // The page asks for the prose block (`shared.rich-text`) right after `section.rich-text`, where `PAGE_POPULATE` lists it, and last for the reference (`section.reusable`), reduced to its target's document id
     const afterRichText = COMPONENTS.indexOf('section.rich-text') + 1
-    expect(Object.keys(populate.sections.on)).toEqual([...COMPONENTS.slice(0, afterRichText), 'shared.rich-text', ...COMPONENTS.slice(afterRichText)])
+    expect(Object.keys(populate.sections.on)).toEqual([...COMPONENTS.slice(0, afterRichText), 'shared.rich-text', ...COMPONENTS.slice(afterRichText), 'section.reusable'])
+    expect(populate.sections.on['section.reusable']).toEqual({ populate: { group: 'true', reusableBlock: { fields: ['documentId'] } } })
   })
 
   it('resolves the post list on the server', async () => {

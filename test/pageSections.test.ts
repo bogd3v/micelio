@@ -52,9 +52,9 @@ describe('the published page', () => {
     // The reference keeps only the document id of its target: the block's draft is never drawn on the page a visitor gets
     expect(loaded?.sections).toEqual([{ __component: 'section.reusable', blockId: 'b1', reusableBlock: { documentId: 'reusable-a' } }])
     expect(JSON.stringify(loaded)).not.toContain('The block\'s draft')
-    // Nor is it asked for: the page's populate does not reach the reusable block
+    // Nor is it asked for: the page's populate reduces the relation to the target's document id, and the target is read published
     const [path] = strapiFetch.mock.calls[0] as unknown as [string]
     const query = qs.parse(path.split('?')[1]!, { depth: 20 }) as { populate: { sections: { on: Record<string, unknown> } } }
-    expect(Object.keys(query.populate.sections.on)).not.toContain('section.reusable')
+    expect(query.populate.sections.on['section.reusable']).toEqual({ populate: { group: 'true', reusableBlock: { fields: ['documentId'] } } })
   })
 })

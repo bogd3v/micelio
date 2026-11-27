@@ -429,6 +429,24 @@ const withBlockIds = page => ({ ...page, sections: withIds(page.sections, page.s
 /** Mutable: a test may publish a page after a first miss. */
 export const pageFixtures = [showcase(false), showcase(true), partial, manyLists, sceneHero, blockOptions, blockOptionsLists, composition].map(withBlockIds)
 
+// The published reusable blocks (ADR-0022, section 1) the references of the `composition` page point at, as the plugin's content API answers
+// `GET /api/reusable-blocks`: `reusable-newsletter` in English, and `reusable-announcement` in Spanish only, so in English it is missing and its
+// reference draws nothing. Each holds one block in its `blocks` zone, with no `group` key (the reference holds it).
+const reusableBlocks = [
+  { id: 31, documentId: 'reusable-newsletter', name: 'Newsletter band', locale: 'en', blocks: [{ id: 1, __component: 'section.newsletter', variant: 'card', title: 'A reusable newsletter', text: 'Drawn from its reusable block.', buttonLabel: 'Subscribe', group: null }] },
+  { id: 33, documentId: 'reusable-announcement', name: 'Announcement', locale: 'es', blocks: [{ id: 1, __component: 'section.cta', variant: 'banner', title: 'Un anuncio', text: null, primaryLink: null, secondaryLink: null, group: null }] },
+].map(entry => ({ ...entry, blocks: withIds(entry.blocks, entry.documentId) }))
+
+/** Answers GET /api/reusable-blocks like Strapi: the published entries of `filters[documentId][$in]` in `locale`, one page of `pagination[pageSize]`. */
+export function findReusableBlocks(query, getNestedValue) {
+  const wanted = getNestedValue(query, ['filters', 'documentId', '$in'])
+  const ids = Array.isArray(wanted) ? wanted : Object.values(wanted ?? {})
+  const locale = query.locale ?? 'en'
+  const data = reusableBlocks.filter(entry => ids.includes(entry.documentId) && entry.locale === locale)
+  const pageSize = Number(getNestedValue(query, ['pagination', 'pageSize']) ?? 25)
+  return { status: 200, body: { data: data.slice(0, pageSize), meta: { pagination: { page: 1, pageSize, pageCount: Math.ceil(data.length / pageSize), total: data.length } } } }
+}
+
 // What replaces the showcase pages when there are no articles
 const landingShowcases = [showcase(false, true), showcase(true, true)].map(withBlockIds)
 

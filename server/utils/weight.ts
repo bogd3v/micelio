@@ -9,6 +9,7 @@ import type { PageBytes, SentFile } from '~/helpers/weight'
 import type { Locale, PreviewMode, WeightReport } from '~/interfaces'
 import { ARTICLE_POPULATE, PAGE_POPULATE, REFERENCE_PAGE_POPULATE } from '../lib/constants'
 import type { PreviewActor, PreviewDraftContext, PreviewReference } from '../lib/types'
+import { readReusableTargets, reusableTargetIds } from './reusableTargets'
 
 /** How long a report is kept, per document version (ADR 0019 and bogd3v/micelio#730). */
 const REPORT_CACHE_MS = 5 * 60 * 1000
@@ -207,10 +208,17 @@ async function computeReport(event: H3Event, kind: 'article' | 'page', documentI
   return weightReport(mode, whole, zone.blocks, without, draft)
 }
 
-/** Computes a report and forgets it when it fails, so the callers that share it all get the problem and the next request tries again. */
-async function computeAndKeep(key: string, event: H3Event, kind: 'article' | 'page', documentId: string, locale: Locale, mode: PreviewMode, zone: DraftZone): Promise<WeightReport> {
+/**
+ * Computes a report and forgets it when it fails, so the callers that share it all get the problem and the next request tries again.
+ * It reads the targets of a page's references first, once for the report, and keeps them with the copy in this request's `event.context` for the renders.
+ */
+async function computeAndKeep(key: string, event: H3Event, copy: PreviewDraftContext, locale: Locale, mode: PreviewMode, zone: DraftZone): Promise<WeightReport> {
   try {
-    return await computeReport(event, kind, documentId, locale, mode, zone)
+    // Not once per render; a reference that carries its block is not read (`reusableTargetIds`)
+    const sections = copy.kind === 'page' ? (copy.draft as { sections?: unknown } | null)?.sections : undefined
+    const targets = Array.isArray(sections) ? await readReusableTargets(reusableTargetIds(sections), locale, event) : undefined
+    event.context[PREVIEW_DRAFT_CONTEXT_KEY] = { ...copy, ...(targets && { targets }) } satisfies PreviewDraftContext
+    return await computeReport(event, copy.kind, copy.documentId, locale, mode, zone)
   } catch (error: unknown) {
     reports.delete(key)
     if (error instanceof Error && 'statusCode' in error) throw error
@@ -226,6 +234,7 @@ async function computeAndKeep(key: string, event: H3Event, kind: 'article' | 'pa
  * @param reference - What `redeemDraft` returned for a grant bound to a reference: the draft is then the page's published version with the reusable block's draft, and the draft page route draws each reference from it (ADR 0019, amendment of 2026-11-23).
  *
  * @remarks
+ * A page's references are drawn from their published targets, read once per report (`readReusableTargets`), not once per render; a reference that carries its block (a grant bound to a reference) keeps it.
  * Kept 5 minutes per document version (`updatedAt`), and for a reference also per reusable block and version, so saving the draft measures it again and the report of a page with a block's draft is never that of the page's own draft or of another version of the block. A report in progress is shared by the requests that ask for the same one, and a failed one is not kept. The draft is kept in this request's `event.context` for the length of the report: each render is a request made in process (`event.$fetch`) whose page and draft route read it from there, so neither the grant nor a cookie travels (ADR 0019, amendment of 2026-10-25). The public page is rendered with none of the caller's headers.
  *
  * @throws A 502 when a render or an asset fails.
@@ -240,8 +249,8 @@ export async function previewWeightReport(event: H3Event, kind: 'article' | 'pag
   }
   const cached = reports.get(key)
   if (cached) return cached.report
-  event.context[PREVIEW_DRAFT_CONTEXT_KEY] = { kind, documentId, draft, ...(reference && { reference }) } satisfies PreviewDraftContext
-  const report = computeAndKeep(key, event, kind, documentId, locale, mode, zone)
+  // Kept before anything awaits, so a request for the same report that arrives meanwhile shares it
+  const report = computeAndKeep(key, event, { kind, documentId, draft, ...(reference && { reference }) }, locale, mode, zone)
   reports.set(key, { expires: now + REPORT_CACHE_MS, report })
   if (reports.size > REPORT_CACHE_MAX) reports.delete(reports.keys().next().value!)
   return report

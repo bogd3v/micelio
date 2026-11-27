@@ -3,6 +3,8 @@ import type { DraftPage, DraftPageResponse } from '~/interfaces'
 import { withoutIndex } from '~/helpers/preview'
 import { DRAFT_PAGE_POPULATE } from '../../../lib/constants'
 import { parseDraftPage } from '../../../schemas/page'
+import { previewContextTargets } from '../../../utils/preview'
+import { resolveReusableTargets, withReusableTargets } from '../../../utils/reusableTargets'
 
 export default defineEventHandler(async (event): Promise<DraftPageResponse> => {
   preventCaching(event)
@@ -29,9 +31,13 @@ export default defineEventHandler(async (event): Promise<DraftPageResponse> => {
   const config = useRuntimeConfig()
   // The copy of a grant bound to a reference carries the reusable block's draft in each reference's relation, which the parse of a section drops: it becomes the reference's `block` (ADR 0019, amendment of 2026-11-23)
   const targets = Boolean(inherited) && previewContextReference(event) !== null
-  const parsed = parseDraftPage(raw, { render: markdownRenderer(locale).renderMarkdown, siteUrl: config.public.siteUrl, mediaOrigins: [config.public.strapiUrl, config.mediaUrl] }, { targets })
+  const context = { render: markdownRenderer(locale).renderMarkdown, siteUrl: config.public.siteUrl, mediaOrigins: [config.public.strapiUrl, config.mediaUrl] }
+  const parsed = parseDraftPage(raw, context, { targets })
   if (!parsed) throw draftNotFound()
-  const page: DraftPage = { ...parsed, sections: await resolvePostLists(parsed.sections, locale) }
+  // Each other reference draws its target's published block in the page's locale (ADR 0022, section 1): read on each request, or once for a whole weight report, which hands it down
+  const read = inherited ? previewContextTargets(event) : null
+  const sections = read ? withReusableTargets(parsed.sections, read, context) : await resolveReusableTargets(parsed.sections, locale, context, event)
+  const page: DraftPage = { ...parsed, sections: await resolvePostLists(sections, locale) }
   const updatedAt = (raw as { updatedAt?: unknown }).updatedAt
   return { page, updatedAt: typeof updatedAt === 'string' ? updatedAt : null, ...(grant && { preview: draftPreview() }) }
 })

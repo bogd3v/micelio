@@ -1024,7 +1024,7 @@ export interface ReusableSection extends SectionGroupFields {
   blockId?: string
   /** The reusable block it references, by its document id; absent when the relation is empty or not populated. */
   reusableBlock?: { documentId: string }
-  /** The published block of the target, in the page's locale; absent when the target is not resolved: unpublished, missing in that locale, or not read (bogd3v/micelio#987 reads it). */
+  /** The published block of the target, in the page's locale; absent when the target is not resolved: unpublished, missing in that locale, of another site, without a valid block, or not read because the read failed. */
   block?: ReusableTarget
 }
 ```

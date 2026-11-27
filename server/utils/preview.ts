@@ -146,6 +146,11 @@ export function previewContextReference(event: H3Event): PreviewReference | null
   return (event.context[PREVIEW_DRAFT_CONTEXT_KEY] as PreviewDraftContext | undefined)?.reference ?? null
 }
 
+/** The published targets the weight route read once for its report (`PreviewDraftContext.targets`), or `null` for every other request; read from `event.context` only, as `previewContextDraft`. */
+export function previewContextTargets(event: H3Event): ReadonlyMap<string, unknown> | null {
+  return (event.context[PREVIEW_DRAFT_CONTEXT_KEY] as PreviewDraftContext | undefined)?.targets ?? null
+}
+
 /** What a draft answer carries to say the request came with a valid grant: the admin origin the frame may talk to. */
 export function draftPreview(): DraftPreview {
   return { adminOrigin: previewAdminOrigin() }
