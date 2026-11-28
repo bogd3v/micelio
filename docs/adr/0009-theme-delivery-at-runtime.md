@@ -346,6 +346,8 @@ with these details, and with two departures that the bullets "Yanked and incompa
   The download of a package signed by Sigstore, against a real registry and the demo instance,
   is outside what a mock proves (the real registry holds only the code theme `bogota`).
 
+**Amendment (2026-11-27, #1019): the official image is built with every official theme.** Section 4 holds: a code theme activates only on an image built with its exact package. The image bogd3v publishes pins every theme of tier `official` in `themes.lock.json`, at its newest published version that runs on the core, so each is in `available.builtIn` and activates with a bare `themeId`. The slots of the default theme stay bundled; those of the others are chunks loaded on demand and never prefetched (section 6, `modules/theme/slots.ts`). Consequences: a new version of an official code theme reaches a site with a new image, never at runtime; the performance budgets are measured for each locked theme, not only for the default one; a page of a theme must not load a chunk of another theme, and a test proves it. An operator who builds their own image decides its lock as before. Themes of other tiers are not built into the official image.
+
 ## Open questions
 
 Each has a recommendation; the pull request that implements it records the answer as an amendment here.
