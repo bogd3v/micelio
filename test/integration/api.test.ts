@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { brotliDecompressSync, gunzipSync } from 'node:zlib'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { request as httpRequest } from 'node:http'
 import { join } from 'node:path'
 import sanitizeHtml from 'sanitize-html'
@@ -29,6 +29,7 @@ import { declaredAssets, fontsOf, kb as weightKb } from '~/helpers/weight'
 import type { WeightReport } from '~/interfaces/preview'
 import { weightReportResponseSchema } from '~/schemas/preview'
 import { renderSocialCard } from '../../server/lib/socialCard'
+import { DEFAULT_LAYOUT } from '../../modules/theme/constants'
 
 const SITE_URL = 'https://bogdev.test'
 
@@ -1333,6 +1334,19 @@ describe('/api/theme/catalogue', () => {
     expect(JSON.stringify(catalogue)).not.toMatch(/https?:|127\.0\.0\.1|\/(?:home|app|tmp)\//)
     expect(mock.requests).toEqual([])
     for (const method of ['POST', 'PUT', 'DELETE']) expect((await fetch('/api/theme/catalogue', { method })).status, method).toBeGreaterThanOrEqual(404)
+  })
+
+  it('answers GET /api/theme/catalogue with each built-in theme\'s name, modes and layout', async () => {
+    const catalogue = themeCatalogueSchema.parse(await (await fetch('/api/theme/catalogue')).json())
+    expect(catalogue.installed.map(theme => theme.id)).toEqual(expect.arrayContaining(['bogota', 'starter']))
+    for (const theme of catalogue.installed) {
+      // The theme's own folder in the repository, or the one theme:pull installed it into
+      const file = [join('themes', theme.id, 'theme.json'), join('.micelio/themes', theme.id, 'theme.json')].find(path => existsSync(path))
+      expect(file, theme.id).toBeDefined()
+      const manifest = JSON.parse(readFileSync(file!, 'utf8')) as { name?: string, modes: unknown[], layout?: Record<string, string> }
+      expect({ name: theme.name, modes: theme.modes, layout: theme.layout }, theme.id).toEqual({ name: manifest.name ?? null, modes: manifest.modes, layout: { ...DEFAULT_LAYOUT, ...manifest.layout } })
+    }
+    expect(mock.requests).toEqual([])
   })
 })
 

@@ -1,12 +1,13 @@
 import { reportSummary } from '../../modules/theme/admission/collect'
 import { AdmissionReportSchema } from '../../modules/theme/admission/report'
+import type { AdmissionReport } from '../../modules/theme/admission/types'
 import { THEME_VERSION } from '../../modules/theme/constants'
 import { runsOn } from '../../modules/theme/registry/client'
 import { THEME_DIGEST } from '../../modules/theme/registry/constants'
 import { RegistryError } from '../../modules/theme/registry/error'
 import { compareVersions } from '../../modules/theme/registry/semver'
 import type { IndexVersion, RegistryIndex, ThemeRegistry } from '../../modules/theme/registry/types'
-import type { CatalogueInstalledTheme, CatalogueReport, CatalogueTheme, CatalogueUpdate, ThemeCatalogue } from '../../app/interfaces/theme'
+import type { CatalogueAccessibility, CatalogueCheckStatus, CatalogueChecks, CatalogueInstalledTheme, CatalogueReport, CatalogueTheme, CatalogueUpdate, ThemeCatalogue } from '../../app/interfaces/theme'
 import type { ThemeCatalogueHolder } from './types'
 
 // The theme catalogue of `GET /api/theme/catalogue` (#993): the stores of this server, the signed index of its registry and the admission
@@ -18,8 +19,14 @@ export const CATALOGUE_REFRESH_MS = 60 * 60_000
 /** Most admission reports the catalogue reads and holds. */
 const MAX_REPORTS = 50
 
-/** A theme of one of the stores, before the index is matched. */
-export type StoredTheme = Pick<CatalogueInstalledTheme, 'id' | 'version' | 'packageDigest' | 'contract' | 'code' | 'store'>
+/** A theme of one of the stores, before the index is matched: `name`, `modes` and `layout` from its compiled `theme.json`. */
+export type StoredTheme = Pick<CatalogueInstalledTheme, 'id' | 'version' | 'packageDigest' | 'contract' | 'code' | 'store' | 'name' | 'modes' | 'layout'>
+
+/** A report to read: the theme version and the report digest the index names. */
+type ReportTarget = Pick<CatalogueReport, 'id' | 'version' | 'digest'>
+
+/** The performance results from worst to best: the catalogue answers the first one a run has. */
+const PERFORMANCE_ORDER: CatalogueCheckStatus[] = ['failed', 'missing', 'skipped', 'passed']
 
 /** What `createThemeCatalogue` needs from the server. */
 export interface CatalogueDeps {
@@ -59,8 +66,8 @@ function newestFirst(a: [string, IndexVersion], b: [string, IndexVersion]): numb
 }
 
 /** The reports to read: each installed version the index lists, then the newest `published` version of each theme; at most `MAX_REPORTS`, one per digest, and only digests of the sha256 grammar. */
-function reportTargets(index: RegistryIndex, stored: StoredTheme[]): Array<Omit<CatalogueReport, 'ok' | 'summary'>> {
-  const targets: Array<Omit<CatalogueReport, 'ok' | 'summary'>> = []
+function reportTargets(index: RegistryIndex, stored: StoredTheme[]): ReportTarget[] {
+  const targets: ReportTarget[] = []
   const add = (id: string, version: string, entry: IndexVersion | undefined): void => {
     const report = entry && reportOf(entry).report
     if (report !== undefined && !targets.some(target => target.digest === report)) targets.push({ id, version, digest: report })
@@ -79,6 +86,18 @@ function reportTargets(index: RegistryIndex, stored: StoredTheme[]): Array<Omit<
  */
 function withoutPaths(summary: string): string {
   return summary.split(/(https?:\/\/[^\s)`'"<>]+)/).map((part, at) => (at % 2 === 1 ? part.replace(/[?#].*$/, '') : part.replace(/(?<![\w.~-])(?:[A-Za-z]:)?(?:[\\/][\w.@~+-]+){2,}[\\/]?/g, '<path>'))).join('')
+}
+
+/** The results of a report's checks: `static` and `quality` as it says, `performance` the worst of its runs and `missing` with none. */
+function checksOf(report: AdmissionReport): CatalogueChecks {
+  const performance = PERFORMANCE_ORDER.find(status => report.checks.performance.some(run => run.status === status)) ?? 'missing'
+  return { static: report.checks.static.status, quality: report.checks.quality.status, performance }
+}
+
+/** The report's manual accessibility check, without the record's lines, its author or its notes; `null` when the report has none. */
+function accessibilityOf(report: AdmissionReport): CatalogueAccessibility | null {
+  const { accessibility } = report
+  return accessibility ? { status: accessibility.status, current: accessibility.current, date: accessibility.record.date ?? null } : null
 }
 
 /** The report digest of an entry, only when it has the sha256 grammar: the index allows any short text there, and the catalogue never passes one on. */
@@ -147,11 +166,11 @@ export function createThemeCatalogue(deps: CatalogueDeps): ThemeCatalogueHolder 
     }
   }
 
-  async function readReport(registry: ThemeRegistry, target: Omit<CatalogueReport, 'ok' | 'summary'>): Promise<CatalogueReport | null> {
+  async function readReport(registry: ThemeRegistry, target: ReportTarget): Promise<CatalogueReport | null> {
     try {
       const parsed = AdmissionReportSchema.safeParse(JSON.parse((await registry.report(target.id, target.digest)).toString('utf8')))
       if (!parsed.success) throw new RegistryError('registry', 'the report does not match its schema')
-      return { ...target, ok: parsed.data.ok, summary: withoutPaths(reportSummary(parsed.data)) }
+      return { ...target, ok: parsed.data.ok, summary: withoutPaths(reportSummary(parsed.data)), checks: checksOf(parsed.data), accessibility: accessibilityOf(parsed.data) }
     } catch (error) {
       deps.warn('theme.catalogue', `The admission report of ${target.id}@${target.version} is left out`, error instanceof RegistryError ? error.failure : 'registry')
       return null

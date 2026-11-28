@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { CatalogueInstalledTheme, CatalogueReport, CatalogueTheme, CatalogueUpdate, CatalogueVersion, ContrastModeReport, ContrastPairResult, ContrastReportResponse, ThemeCatalogue, ThemeStatus } from '~/interfaces/theme'
+import type { CatalogueAccessibility, CatalogueChecks, CatalogueInstalledTheme, CatalogueReport, CatalogueTheme, CatalogueUpdate, CatalogueVersion, ContrastModeReport, ContrastPairResult, ContrastReportResponse, ThemeCatalogue, ThemeStatus } from '~/interfaces/theme'
 import { responseSchema } from './response'
 
 const requested = z.strictObject({ id: z.string(), version: z.string().optional(), digest: z.string().optional() })
@@ -34,6 +34,11 @@ const catalogueInstalled = responseSchema<CatalogueInstalledTheme>()(
     contract: z.string(),
     code: z.boolean(),
     store: z.enum(['built-in', 'deployment']),
+    name: z.string().nullable().meta({ description: 'The `name` of the theme\'s `theme.json`; `null` when it has none.' }),
+    modes: z.array(z.strictObject({ id: z.string(), scheme: z.enum(['dark', 'light']), name: z.string().optional() }))
+      .meta({ description: 'The modes of the theme\'s `theme.json`, in its order: the first is the default.' }),
+    layout: z.strictObject({ header: z.string(), home: z.string(), postList: z.string(), article: z.string(), footer: z.string() })
+      .meta({ description: 'The variant of each region: the theme\'s `layout`, with the core\'s first variant for a region it omits.' }),
     tier: tier.optional(),
     license: z.string().optional(),
     report: z.string().optional(),
@@ -64,9 +69,27 @@ const catalogueUpdate = responseSchema<CatalogueUpdate>()(
     .meta({ id: 'CatalogueUpdate', description: 'The newest version of the index that is published, newer than the installed `from` and runs on this core.' }),
 )
 
+const checkStatus = z.enum(['passed', 'failed', 'skipped', 'missing'])
+
+const catalogueChecks = responseSchema<CatalogueChecks>()(
+  z.strictObject({
+    static: checkStatus,
+    quality: checkStatus,
+    performance: checkStatus.meta({ description: 'The worst of the performance runs, in the order `failed`, `missing`, `skipped`, `passed`; `missing` when the report has no run.' }),
+  }).meta({ id: 'CatalogueChecks', description: 'The results of the automatic checks of an admission report; `missing`: the job that should have produced one did not.' }),
+)
+
+const catalogueAccessibility = responseSchema<CatalogueAccessibility>()(
+  z.strictObject({
+    status: z.enum(['passed', 'passed-with-core-failures', 'partial', 'failed']),
+    current: z.boolean().meta({ description: 'Whether the record is for the version the report admitted.' }),
+    date: z.string().nullable().meta({ description: 'When the checklist was run, from the record; `null` when the record has none.' }),
+  }).meta({ id: 'CatalogueAccessibility', description: 'The manual accessibility check of an admission report.' }),
+)
+
 const catalogueReport = responseSchema<CatalogueReport>()(
-  z.strictObject({ id: z.string(), version: z.string(), digest: z.string(), ok: z.boolean(), summary: z.string() })
-    .meta({ id: 'CatalogueReport', description: 'The result and the Markdown summary of an admission report, read from the registry after its bytes matched the digest the index names.' }),
+  z.strictObject({ id: z.string(), version: z.string(), digest: z.string(), ok: z.boolean(), summary: z.string(), checks: catalogueChecks, accessibility: catalogueAccessibility.nullable() })
+    .meta({ id: 'CatalogueReport', description: 'The result, the Markdown summary, the check results and the manual accessibility check of an admission report, read from the registry after its bytes matched the digest the index names.' }),
 )
 
 /** The answer of `GET /api/theme/catalogue`. */

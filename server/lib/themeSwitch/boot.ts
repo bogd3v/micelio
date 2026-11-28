@@ -1,8 +1,10 @@
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { LAYOUT_REGIONS } from '../../../modules/theme/constants'
+import { parseRuntime } from '../../../modules/theme/install/runtime'
 import { cleanTemporary } from '../../../modules/theme/install/store'
 import { readInstallConfig } from '../../../modules/theme/install/config'
-import { BUILT_WORKER } from '../../../modules/theme/install/constants'
+import { BUILT_WORKER, ENTRY_FILES } from '../../../modules/theme/install/constants'
 import { installedPackages } from '../../../modules/theme/install/installed'
 import { installIsolated } from '../../../modules/theme/install/isolated'
 import { recompileStored } from '../../../modules/theme/install/recompile'
@@ -10,6 +12,7 @@ import { createRegistry } from '../../../modules/theme/registry/client'
 import { DEFAULT_REGISTRY } from '../../../modules/theme/registry/constants'
 import { identityFor } from '../../../modules/theme/registry/identity'
 import { parseRegistry } from '../../../modules/theme/registry/oci'
+import type { RuntimeData } from '../../../modules/theme/install/types'
 import type { ThemePin, ThemeRegistry } from '../../../modules/theme/registry/types'
 import { listBuiltInThemes, loadBuiltInTheme, loadDefaultTheme, readInstallInputs } from '../builtInStore'
 import { createThemeCatalogue } from '../themeCatalogue'
@@ -69,6 +72,21 @@ function catalogueRegistry(options: StartOptions): Pick<CatalogueDeps, 'registry
     return { registry: (): ThemeRegistry => createRegistry({ registry: address, identity, timeoutMs: DOWNLOAD_TIMEOUT_MS, fetch: createGuardedFetch({ registryHost, signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS) }), ...(options.core && { core: options.core }) }) }
   } catch {
     return { registry: null, offReason: 'MICELIO_THEME_REGISTRY or MICELIO_THEME_REGISTRY_IDENTITY is not valid: the registry is not read' }
+  }
+}
+
+/**
+ * The name, the modes and the layout of a theme, from the `runtime.json` the store compiled from its `theme.json`.
+ *
+ * @remarks
+ * The compiler already filled the core's first variant into a region the theme omits (`compileTheme`); the parser held the text to short
+ * strings with no tag, and nothing here is a path.
+ */
+function described(runtime: RuntimeData): Pick<StoredTheme, 'name' | 'modes' | 'layout'> {
+  return {
+    name: runtime.name ?? null,
+    modes: runtime.modes.map(({ id, scheme, name }) => ({ id, scheme, ...(name !== undefined && { name }) })),
+    layout: Object.fromEntries(LAYOUT_REGIONS.map(region => [region, runtime.layout[region]])) as StoredTheme['layout'],
   }
 }
 
@@ -148,12 +166,21 @@ export function startThemeSwitch(options: StartOptions): StartedSwitch {
   async function stored(): Promise<StoredTheme[]> {
     const builtInThemes = listBuiltInThemes(options.builtInDir).flatMap(({ id, version, code }): StoredTheme[] => {
       const theme = builtIn(id)
-      return theme ? [{ id, version: theme.runtime.version ?? version, packageDigest: theme.pinned ?? theme.entry.manifest.packageDigest, contract: theme.runtime.contract, code, store: 'built-in' }] : []
+      return theme ? [{ id, version: theme.runtime.version ?? version, packageDigest: theme.pinned ?? theme.entry.manifest.packageDigest, contract: theme.runtime.contract, code, store: 'built-in', ...described(theme.runtime) }] : []
     })
     if (!install) return builtInThemes
     const registry = install.registry(AbortSignal.abort())
     const deployment = await installedPackages(install.storeDir, install.options.coreBuild, (pin, bundle) => registry.verify(pin, bundle))
-    return [...builtInThemes, ...deployment.map(({ manifest }): StoredTheme => ({ id: manifest.id, version: manifest.version, packageDigest: manifest.packageDigest, contract: manifest.contract, code: manifest.code, store: 'deployment' }))]
+    return [...builtInThemes, ...deployment.flatMap(({ manifest, files }): StoredTheme[] => {
+      try {
+        // A runtime.json the parser refuses (a `name` with a tag, longer than its cap) leaves this theme out, never the whole listing
+        const runtime = parseRuntime(files.get(ENTRY_FILES.runtime) ?? new Uint8Array(), manifest.digest)
+        return [{ id: manifest.id, version: manifest.version, packageDigest: manifest.packageDigest, contract: manifest.contract, code: manifest.code, store: 'deployment', ...described(runtime) }]
+      } catch {
+        options.warn('theme.catalogue', `The theme ${manifest.id}@${manifest.version} of the deployment store is left out of the catalogue: its runtime data does not parse`)
+        return []
+      }
+    })]
   }
   const catalogue = createThemeCatalogue({ stored, ...catalogueRegistry(options), ...(options.core && { core: options.core }), warn: options.warn })
   // A read of the site settings that comes before the boot work ends (the config check does) is resolved after it

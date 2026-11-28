@@ -6803,6 +6803,78 @@
         "additionalProperties": false,
         "description": "The account, or `user: null` when the visitor is signed out."
       },
+      "CatalogueAccessibility": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "passed-with-core-failures",
+              "partial",
+              "failed"
+            ]
+          },
+          "current": {
+            "type": "boolean",
+            "description": "Whether the record is for the version the report admitted."
+          },
+          "date": {
+            "description": "When the checklist was run, from the record; `null` when the record has none.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "current",
+          "date"
+        ],
+        "additionalProperties": false,
+        "description": "The manual accessibility check of an admission report."
+      },
+      "CatalogueChecks": {
+        "type": "object",
+        "properties": {
+          "static": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "skipped",
+              "missing"
+            ]
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "skipped",
+              "missing"
+            ]
+          },
+          "performance": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "skipped",
+              "missing"
+            ],
+            "description": "The worst of the performance runs, in the order `failed`, `missing`, `skipped`, `passed`; `missing` when the report has no run."
+          }
+        },
+        "required": [
+          "static",
+          "quality",
+          "performance"
+        ],
+        "additionalProperties": false,
+        "description": "The results of the automatic checks of an admission report; `missing`: the job that should have produced one did not."
+      },
       "CatalogueInstalledTheme": {
         "type": "object",
         "properties": {
@@ -6828,6 +6900,69 @@
               "deployment"
             ]
           },
+          "name": {
+            "description": "The `name` of the theme's `theme.json`; `null` when it has none.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "modes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "scheme": {
+                  "type": "string",
+                  "enum": [
+                    "dark",
+                    "light"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "scheme"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The modes of the theme's `theme.json`, in its order: the first is the default."
+          },
+          "layout": {
+            "type": "object",
+            "properties": {
+              "header": {
+                "type": "string"
+              },
+              "home": {
+                "type": "string"
+              },
+              "postList": {
+                "type": "string"
+              },
+              "article": {
+                "type": "string"
+              },
+              "footer": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "header",
+              "home",
+              "postList",
+              "article",
+              "footer"
+            ],
+            "additionalProperties": false,
+            "description": "The variant of each region: the theme's `layout`, with the core's first variant for a region it omits."
+          },
           "tier": {
             "type": "string",
             "enum": [
@@ -6849,7 +6984,10 @@
           "packageDigest",
           "contract",
           "code",
-          "store"
+          "store",
+          "name",
+          "modes",
+          "layout"
         ],
         "additionalProperties": false,
         "description": "A theme of the built-in or the deployment store; `tier`, `license` and `report` come from the index when it lists this version with this package digest."
@@ -6871,6 +7009,19 @@
           },
           "summary": {
             "type": "string"
+          },
+          "checks": {
+            "$ref": "#/components/schemas/CatalogueChecks"
+          },
+          "accessibility": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CatalogueAccessibility"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -6878,10 +7029,12 @@
           "version",
           "digest",
           "ok",
-          "summary"
+          "summary",
+          "checks",
+          "accessibility"
         ],
         "additionalProperties": false,
-        "description": "The result and the Markdown summary of an admission report, read from the registry after its bytes matched the digest the index names."
+        "description": "The result, the Markdown summary, the check results and the manual accessibility check of an admission report, read from the registry after its bytes matched the digest the index names."
       },
       "CatalogueTheme": {
         "type": "object",
