@@ -1,13 +1,17 @@
+import { readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { assembleReport, reportSummary } from '../modules/theme/admission/collect'
-import { AdmissionReportSchema } from '../modules/theme/admission/report'
+import { ACCESSIBILITY_LINES, AdmissionReportSchema } from '../modules/theme/admission/report'
+import type { AdmissionReport } from '../modules/theme/admission/types'
+import { REGION_VARIANTS } from '../modules/theme/layout/variants'
 import { installTheme } from '../modules/theme/install/install'
 import { loadBuiltInTheme } from '../server/lib/builtInStore'
 import { startThemeSwitch } from '../server/lib/themeSwitch/boot'
 import type { StartedSwitch } from '../server/lib/themeSwitch/boot'
 import { digestOf, startRegistry, stubBundle, TEST_IDENTITY } from './fixtures/registry'
 import type { FakeRegistry } from './fixtures/registry'
-import { builtInStore, cleanup, CORE, HOOKS, listing, packaged, scratch, STARTER_PINNED } from './fixtures/themeSwitch'
+import { builtInStore, cleanup, CORE, HOOKS, listing, packaged, ROOT, scratch, STARTER_PINNED } from './fixtures/themeSwitch'
 
 // The server's own wiring (boot.ts) over a fake registry: the stand-in bundles of the fixtures replace Sigstore's offline verification.
 vi.mock('../modules/theme/registry/attestation', async (original) => {
@@ -31,14 +35,14 @@ async function fakeRegistry(): Promise<FakeRegistry> {
 }
 
 /** The server's switch over the test image's built-in store, a deployment store and the fake registry, with its catalogue refreshed once. */
-async function boot(fake: FakeRegistry, env: Record<string, string | undefined> = {}): Promise<StartedSwitch & { builtInDir: string }> {
+async function boot(fake: FakeRegistry, env: Record<string, string | undefined> = {}, warn: (event: string, message: string) => void = () => undefined): Promise<StartedSwitch & { builtInDir: string }> {
   const builtInDir = await builtInStore()
   const started = startThemeSwitch({
     builtInDir,
     configured: '',
     env: { MICELIO_THEME_INSTALL: 'false', MICELIO_THEME_REGISTRY: fake.registry, MICELIO_THEME_REGISTRY_IDENTITY: IDENTITY, ...env },
     onSwitch: () => undefined,
-    warn: () => undefined,
+    warn,
   })
   await started.ready
   await started.catalogue.refresh()
@@ -46,17 +50,33 @@ async function boot(fake: FakeRegistry, env: Record<string, string | undefined> 
 }
 
 /** Installs a data-only package into a deployment store as a server install leaves it: compiled for the test core, with its package and attestation kept. */
-async function installed(store: string, id: string, version = '1.0.0'): Promise<{ data: Buffer, digest: string }> {
-  const pkg = packaged(id, undefined, version)
+async function installed(store: string, id: string, version = '1.0.0', edit?: (manifest: Record<string, unknown>) => void): Promise<{ data: Buffer, digest: string }> {
+  const pkg = packaged(id, edit && ((dir) => {
+    const file = join(dir, 'theme.json')
+    const manifest = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>
+    edit(manifest)
+    writeFileSync(file, JSON.stringify(manifest))
+  }), version)
   await installTheme({ kind: 'package', data: pkg.data, pin: pkg.pin, attestation: stubBundle(TEST_IDENTITY.packages, pkg.pin.digest.slice(7)) }, { storeDir: store, hooks: HOOKS, coreBuild: CORE, layoutCss: {} })
   return { data: pkg.data, digest: pkg.pin.digest }
 }
 
 const d = (text: string): string => digestOf(Buffer.from(text))
 
-/** A valid admission report of `id`@`version`, as its bytes and the digest the index names. */
-function report(id: string, version: string, ok = true, message = 'a role is missing'): { bytes: Buffer, digest: string, summary: string } {
-  const parsed = AdmissionReportSchema.parse(assembleReport({
+/** The name, modes and layout of a `theme.json` of the repository, as the catalogue answers them. */
+function describedIn(file: string): { name: string | null, modes: unknown[], layout: Record<string, string> } {
+  const manifest = JSON.parse(readFileSync(join(ROOT, file), 'utf8')) as { name?: string, modes: unknown[], layout?: Record<string, string> }
+  return { name: manifest.name ?? null, modes: manifest.modes, layout: { ...FIRST_VARIANTS, ...manifest.layout } }
+}
+
+/** The core's first variant of each region. */
+const FIRST_VARIANTS = Object.fromEntries(Object.entries(REGION_VARIANTS).map(([region, { variants }]) => [region, variants[0]!]))
+const STARTER = 'themes/starter/theme.json'
+const MINIMAL = 'test/fixtures/themes/minimal/theme.json'
+
+/** A valid admission report of `id`@`version`, as its bytes and the digest the index names; `edit` changes it before it is checked again. */
+function report(id: string, version: string, ok = true, message = 'a role is missing', edit?: (report: AdmissionReport) => void): { bytes: Buffer, digest: string, summary: string } {
+  const assembled = AdmissionReportSchema.parse(assembleReport({
     themeId: id,
     staticResult: { theme: { id, version, contract: '2.0', code: false }, errors: ok ? [] : [{ check: 'static', kind: 'contract', message }], warnings: [], package: { file: `${id}-${version}.tgz`, digest: d(id), bytes: 1 } },
     performance: [],
@@ -68,6 +88,8 @@ function report(id: string, version: string, ok = true, message = 'a role is mis
     run: null,
     now: new Date('2026-11-25T12:00:00Z'),
   }))
+  edit?.(assembled)
+  const parsed = AdmissionReportSchema.parse(assembled)
   const bytes = Buffer.from(JSON.stringify(parsed))
   return { bytes, digest: digestOf(bytes), summary: reportSummary(parsed) }
 }
@@ -86,11 +108,115 @@ describe('the theme catalogue', () => {
     const started = await boot(fake, { MICELIO_THEME_STORE: store })
     const minimal = loadBuiltInTheme(started.builtInDir, 'minimal')
     expect(started.catalogue.current().installed).toEqual([
-      { id: 'minimal', version: '', packageDigest: minimal.entry.manifest.packageDigest, contract: minimal.runtime.contract, code: false, store: 'built-in' },
+      { id: 'minimal', version: '', packageDigest: minimal.entry.manifest.packageDigest, contract: minimal.runtime.contract, code: false, store: 'built-in', ...describedIn(MINIMAL) },
       // The digest the image's lock pins, not the digest of the file tree it was built from
-      { id: 'starter', version: '0.1.0', packageDigest: STARTER_PINNED, contract: '2.1', code: true, store: 'built-in' },
-      { id: 'calm', version: '1.0.0', packageDigest: calm.digest, contract: '2.1', code: false, store: 'deployment', tier: 'verified', license: 'MIT', report: d('calm report') },
+      { id: 'starter', version: '0.1.0', packageDigest: STARTER_PINNED, contract: '2.1', code: true, store: 'built-in', ...describedIn(STARTER) },
+      // A copy of the starter
+      { id: 'calm', version: '1.0.0', packageDigest: calm.digest, contract: '2.1', code: false, store: 'deployment', ...describedIn(STARTER), tier: 'verified', license: 'MIT', report: d('calm report') },
     ])
+  })
+
+  it('lists each installed theme\'s name, modes and layout from its theme.json, in both stores', async () => {
+    const fake = await fakeRegistry()
+    const store = scratch()
+    const modes = [{ id: 'dark', scheme: 'dark', name: 'Night' }, { id: 'light', scheme: 'light' }]
+    const layout = { header: 'bar', home: 'index', postList: 'grid', article: 'centered', footer: 'columns' }
+    await installed(store, 'calm', '1.0.0', (manifest) => {
+      manifest.name = 'Calm'
+      // The default mode first, one without a name
+      manifest.modes = modes
+      manifest.layout = layout
+    })
+    const installedThemes = (await boot(fake, { MICELIO_THEME_STORE: store })).catalogue.current().installed
+    expect(installedThemes.map(({ id, store: kind, name, modes: listed, layout: chosen }) => ({ id, store: kind, name, modes: listed, layout: chosen }))).toEqual([
+      { id: 'minimal', store: 'built-in', ...describedIn(MINIMAL) },
+      { id: 'starter', store: 'built-in', ...describedIn(STARTER) },
+      { id: 'calm', store: 'deployment', name: 'Calm', modes, layout },
+    ])
+    expect(installedThemes.find(theme => theme.id === 'starter')).toMatchObject({ name: 'Starter', modes: [{ id: 'light', scheme: 'light', name: 'Light' }, { id: 'dark', scheme: 'dark', name: 'Dark' }] })
+    // Text of theme.json and variant names: no path and no URL
+    expect(JSON.stringify(installedThemes.map(({ name, modes: listed, layout: chosen }) => ({ name, listed, chosen })))).not.toMatch(/https?:|\/(?:home|tmp|app)\/|\.json/)
+  })
+
+  it('answers the core\'s first variant for a region the theme omits, and null for a theme with no name', async () => {
+    const fake = await fakeRegistry()
+    const store = scratch()
+    await installed(store, 'plain', '1.0.0', (manifest) => {
+      delete manifest.name
+      manifest.layout = { home: 'index' }
+    })
+    const installedThemes = (await boot(fake, { MICELIO_THEME_STORE: store })).catalogue.current().installed
+    expect(installedThemes.find(theme => theme.id === 'plain')).toMatchObject({ name: null, layout: { header: 'bar', home: 'index', postList: 'grid', article: 'aside', footer: 'columns' } })
+    expect(FIRST_VARIANTS).toEqual({ header: 'bar', home: 'showcase', postList: 'grid', article: 'aside', footer: 'columns' })
+    // The built-in minimal names no region
+    expect(installedThemes.find(theme => theme.id === 'minimal')).toMatchObject({ name: 'Minimal', layout: FIRST_VARIANTS })
+  })
+
+  it('leaves out a deployment theme whose runtime data does not parse, with a warning, and lists every other theme', async () => {
+    const fake = await fakeRegistry()
+    const store = scratch()
+    const calm = await installed(store, 'calm')
+    // theme.schema.json allows any string as a name; the runtime parser refuses a tag
+    await installed(store, 'tagged', '1.0.0', (manifest) => {
+      manifest.name = 'Tagged <b>theme</b>'
+    })
+    const warnings: string[] = []
+    const installedThemes = (await boot(fake, { MICELIO_THEME_STORE: store }, (event, message) => warnings.push(`${event}: ${message}`))).catalogue.current().installed
+    expect(installedThemes.map(theme => theme.id)).toEqual(['minimal', 'starter', 'calm'])
+    expect(installedThemes.find(theme => theme.id === 'calm')?.packageDigest).toBe(calm.digest)
+    expect(warnings).toContain('theme.catalogue: The theme tagged@1.0.0 of the deployment store is left out of the catalogue: its runtime data does not parse')
+  })
+
+  it('answers each report\'s static, quality and performance results and its manual accessibility check', async () => {
+    const fake = await fakeRegistry()
+    const lines = Object.fromEntries(ACCESSIBILITY_LINES.map(line => [line, { result: 'pass' as const }])) as NonNullable<AdmissionReport['accessibility']>['record']['lines']
+    const checked = report('checked', '1.0.0', true, undefined, (assembled) => {
+      assembled.checks.static.status = 'passed'
+      assembled.checks.quality = { status: 'failed', visual: true, specs: [{ file: 'a11y.spec.ts', passed: 3, failed: 1, skipped: 0 }] }
+      assembled.checks.performance = [{ mode: 'blog', status: 'passed', pages: [] }, { mode: 'static', status: 'passed', pages: [] }]
+      assembled.accessibility = { status: 'partial', current: false, record: { version: '0.9.0', date: '2026-10-18', by: 'A tester', method: 'Firefox and NVDA', lines } }
+    })
+    const unchecked = report('unchecked', '1.0.0', false, 'a role is missing', (assembled) => {
+      assembled.checks.quality = { status: 'missing', visual: false, specs: [] }
+    })
+    publishReport(fake, 'checked', checked.bytes)
+    publishReport(fake, 'unchecked', unchecked.bytes)
+    fake.publishIndex({
+      version: 1,
+      themes: {
+        checked: { versions: { '1.0.0': listing(d('checked'), { report: checked.digest }) } },
+        unchecked: { versions: { '1.0.0': listing(d('unchecked'), { report: unchecked.digest }) } },
+      },
+    })
+    const reports = (await boot(fake)).catalogue.current().reports
+    expect(reports.map(({ id, checks, accessibility }) => ({ id, checks, accessibility }))).toEqual([
+      { id: 'checked', checks: { static: 'passed', quality: 'failed', performance: 'passed' }, accessibility: { status: 'partial', current: false, date: '2026-10-18' } },
+      { id: 'unchecked', checks: { static: 'failed', quality: 'missing', performance: 'missing' }, accessibility: null },
+    ])
+    // Only the status, whether it is current and the date: not who ran it, how, or its lines
+    expect(JSON.stringify(reports.map(({ checks, accessibility }) => ({ checks, accessibility })))).not.toMatch(/A tester|NVDA|keyboard/)
+  })
+
+  it('answers performance as its worst run, and missing when the report has none', async () => {
+    const fake = await fakeRegistry()
+    const cases: Array<[string, Array<'passed' | 'failed' | 'skipped' | 'missing'>, string]> = [
+      ['all-passed', ['passed', 'passed'], 'passed'],
+      ['one-skipped', ['passed', 'skipped'], 'skipped'],
+      ['one-missing', ['skipped', 'missing', 'passed'], 'missing'],
+      ['one-failed', ['missing', 'failed', 'skipped'], 'failed'],
+      ['no-run', [], 'missing'],
+    ]
+    const themes: Record<string, { versions: Record<string, unknown> }> = {}
+    for (const [id, runs] of cases) {
+      const own = report(id, '1.0.0', true, undefined, (assembled) => {
+        assembled.checks.performance = runs.map((status, at) => ({ mode: `mode-${at}`, status, pages: [] }))
+      })
+      publishReport(fake, id, own.bytes)
+      themes[id] = { versions: { '1.0.0': listing(d(id), { report: own.digest }) } }
+    }
+    fake.publishIndex({ version: 1, themes })
+    const reports = (await boot(fake)).catalogue.current().reports
+    expect(Object.fromEntries(reports.map(read => [read.id, read.checks.performance]))).toEqual(Object.fromEntries(cases.map(([id, , worst]) => [id, worst])))
   })
 
   it('lists the registry\'s versions with runs set by the core\'s contract and the incompatible mark, and licensed ones without a download', async () => {
@@ -185,8 +311,8 @@ describe('the theme catalogue', () => {
     })
     const catalogue = (await boot(fake, { MICELIO_THEME_STORE: store })).catalogue.current()
     expect(catalogue.reports).toEqual([
-      { id: 'calm', version: '1.0.0', digest: calmReport.digest, ok: true, summary: calmReport.summary },
-      { id: 'calm', version: '1.1.0', digest: failed.digest, ok: false, summary: failed.summary.replace('/home/runner/work/calm/theme.css', '<path>').replace('?token=abc', '') },
+      { id: 'calm', version: '1.0.0', digest: calmReport.digest, ok: true, summary: calmReport.summary, checks: { static: 'passed', quality: 'skipped', performance: 'missing' }, accessibility: null },
+      { id: 'calm', version: '1.1.0', digest: failed.digest, ok: false, summary: failed.summary.replace('/home/runner/work/calm/theme.css', '<path>').replace('?token=abc', ''), checks: { static: 'failed', quality: 'skipped', performance: 'missing' }, accessibility: null },
     ])
     expect(catalogue.reports[1]?.summary).toContain('fonts/a.woff2 failed in <path>, see https://example.test/run/1')
     // A report digest that is not a digest never reaches a URL or the catalogue

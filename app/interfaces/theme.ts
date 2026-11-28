@@ -121,6 +121,12 @@ export interface CatalogueInstalledTheme {
   code: boolean
   /** `built-in`: compiled into the image; `deployment`: installed into `MICELIO_THEME_STORE`. */
   store: 'built-in' | 'deployment'
+  /** The `name` of the theme's `theme.json`, or `null` when it has none. */
+  name: string | null
+  /** The modes of the theme's `theme.json`, in its order: the first is the default. */
+  modes: ThemeModeDefinition[]
+  /** The variant of each region: the theme's `layout`, with the core's first variant for a region it omits. */
+  layout: ThemeData['layout']
   /** From the index, when it lists this version with this package digest. */
   tier?: CatalogueTier
   /** The SPDX id of the index, when it lists this version with this package digest. */
@@ -164,6 +170,28 @@ export interface CatalogueUpdate {
   digest: string
 }
 
+/** The result of one check of an admission report (`themes/admission-report.schema.json`); `missing`: the job that should have produced it did not. */
+export type CatalogueCheckStatus = 'passed' | 'failed' | 'skipped' | 'missing'
+
+/** The results of the automatic checks of an admission report. */
+export interface CatalogueChecks {
+  /** `theme:check`, as the report says. */
+  static: CatalogueCheckStatus
+  /** Visual regression and axe, as the report says. */
+  quality: CatalogueCheckStatus
+  /** The worst of the performance runs, in the order `failed`, `missing`, `skipped`, `passed`; `missing` when the report has no run. */
+  performance: CatalogueCheckStatus
+}
+
+/** The manual accessibility check of an admission report (`docs/themes/accessibility-checklist.md`). */
+export interface CatalogueAccessibility {
+  status: 'passed' | 'passed-with-core-failures' | 'partial' | 'failed'
+  /** Whether the record is for the version the report admitted. */
+  current: boolean
+  /** When the checklist was run (`YYYY-MM-DD`), from the record; `null` when the record has none. */
+  date: string | null
+}
+
 /** The result of an admission report the index names, read from the registry after its digest matched. */
 export interface CatalogueReport {
   id: string
@@ -174,6 +202,9 @@ export interface CatalogueReport {
   ok: boolean
   /** The Markdown summary of the report (`reportSummary`). */
   summary: string
+  checks: CatalogueChecks
+  /** The report's manual accessibility check, or `null` when the report has none. */
+  accessibility: CatalogueAccessibility | null
 }
 
 /**
